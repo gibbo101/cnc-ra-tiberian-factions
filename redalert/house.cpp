@@ -306,21 +306,12 @@ DiffType HouseClass::Assign_Handicap(DiffType handicap)
     return (old);
 }
 
-/*
-**	Lobby AI difficulty -> IQ tier for a computer-controlled house. Difficulty is
-**	behavioural only (stat handicaps stay at DIFF_NORMAL's 1.0x biases): the IQ value
-**	is the single signal every IQ-gated behaviour keys off. Easy loses the
-**	Rule.IQ* >= 4 behaviours (superweapons, aircraft AI, guard-area, content-scan);
-**	Hard gets the full Rule.MaxIQ set including MaxIQ-gated smart behaviours.
-*/
+// The AI house IQ for a lobby difficulty; difficulty changes only IQ-gated behaviour. Every AI keeps MaxIQ
+// until a lobby difficulty has arrived, so a silent client can't demote it.
 bool TFLobbyAIDifficultySet = false;
 
 int TF_AI_IQ_From_Difficulty(DiffType diff)
 {
-    /*
-    **	Until the client has actually sent a lobby difficulty this match, keep the
-    **	vanilla behaviour (every AI at MaxIQ) so a silent client can't demote the AI.
-    */
     if (!TFLobbyAIDifficultySet) {
         return (Rule.MaxIQ);
     }
@@ -595,12 +586,8 @@ HouseClass::HouseClass(HousesType house)
     , BuildSpeedBias(1)
     , RepairDelay(0)
     , BuildDelay(0)
-    // Tiberian Factions: HOUSE_GOOD (GDI) acts like HOUSE_GREECE (canonical
-    // Allied house — 'G' campaign prefix); HOUSE_BAD (Nod) acts like
-    // HOUSE_USSR (canonical Soviet house). Without this, ActLike-gated code
-    // paths (Soviet parabomb spawns, Allied/Soviet infantry voice prefixes,
-    // mapsel.cpp side selection, saveload.cpp side persistence) never fire
-    // for the new factions, leaving them without their inherited roster.
+    // TF: GDI and Nod houses act like Greece and the USSR, so ActLike-gated code treats them as Allied and
+    // Soviet until Init_Data gives a multiplayer house its own.
     , ActLike(Class->House == HOUSE_GOOD ? HOUSE_GREECE
             : Class->House == HOUSE_BAD  ? HOUSE_USSR
             : Class->House)
@@ -770,10 +757,7 @@ HouseClass::HouseClass(HousesType house)
     new (&SuperWeapon[SPC_GPS])
         SuperClass(TICKS_PER_MINUTE * Rule.GPSTime, true, VOX_NONE, VOX_NONE, VOX_NOT_READY, VOX_INSUFFICIENT_POWER);
 
-    // Tiberian Factions mod — GDI Ion Cannon. TD-authentic 10-minute
-    // recharge per tiberiandawn/defines.h ION_CANNON_GONE_TIME
-    // (10 * TICKS_PER_MINUTE). Powered = true so a power-starved base
-    // suspends the timer (matches RA's nuke / chrono behaviour).
+    // TF: GDI Ion Cannon. TD's 10-minute recharge (ION_CANNON_GONE_TIME); powered, so low power suspends it.
     new (&SuperWeapon[SPC_TD_ION_CANNON]) SuperClass(TICKS_PER_MINUTE * 10,
                                                      true,
                                                      VOX_TD_ION_CHARGING,
@@ -781,11 +765,8 @@ HouseClass::HouseClass(HousesType house)
                                                      VOX_NOT_READY,
                                                      VOX_INSUFFICIENT_POWER);
 
-    // Tiberian Factions mod — TS Ion Cannon (uplink-granted). Its own
-    // superweapon slot so a house holding both the TD Advanced Comm Centre
-    // and the TS uplink fields both strikes side by side. Same TS-authentic
-    // 10-minute recharge as TS rules.ini and the same charge voices as the
-    // TD cannon (identical EVA wording).
+    // TF: TS Ion Cannon, from the uplink plug. Its own slot, so a house holding both ion cannons fields both;
+    // TS's 10-minute recharge and the TD cannon's charge voices (the same EVA wording).
     new (&SuperWeapon[SPC_TS_ION_CANNON]) SuperClass(TICKS_PER_MINUTE * 10,
                                                      true,
                                                      VOX_TD_ION_CHARGING,
@@ -793,33 +774,27 @@ HouseClass::HouseClass(HousesType house)
                                                      VOX_NOT_READY,
                                                      VOX_INSUFFICIENT_POWER);
 
-    // Tiberian Factions mod — TS Drop Pod reinforcements (TSPODS plug).
-    // Orbital delivery, so unpowered like the paratroop drops it parallels;
-    // 5-minute cadence sits between the paratroops and the ion cannon.
+    // TF: TS Drop Pods (the TSPODS plug). Orbital, so unpowered like the paratroop drops.
     new (&SuperWeapon[SPC_TS_DROPPODS])
         SuperClass(TICKS_PER_MINUTE * 5, false, VOX_NONE, VOX_NONE, VOX_NOT_READY, VOX_NOT_READY);
 
-    // Tiberian Factions mod — TS Hunter Seeker (TSSEEK plug). TS rules.ini
+    // TF: TS Hunter Seeker (TSSEEK plug). TS rules.ini
     // [HuntSeekSpecial]: RechargeTime=12, IsPowered=true, no voices.
     new (&SuperWeapon[SPC_TS_HUNTSEEK])
         SuperClass(TICKS_PER_MINUTE * 12, true, VOX_NONE, VOX_NONE, VOX_NOT_READY, VOX_INSUFFICIENT_POWER);
 
-    // Tiberian Factions mod — TS E.M. Pulse (EMP Cannon). TS rules.ini
-    // [EMPulseSpecial]: RechargeTime=4.5, IsPowered=true. TS records only the
-    // "E.M. pulse cannon ready" line, so every other moment stays silent rather
-    // than borrow another era's announcer.
+    // TF: TS E.M. Pulse (EMP Cannon). TS [EMPulseSpecial] RechargeTime=4.5, IsPowered=true. TS recorded only
+    // the ready line, so every other moment stays silent rather than borrow another era's announcer.
     new (&SuperWeapon[SPC_TS_EMP])
         SuperClass(TICKS_PER_MINUTE * 9 / 2, true, VOX_NONE, VOX_TS_EMP_READY, VOX_NONE, VOX_NONE);
 
-    // Tiberian Factions mod — TS Firestorm Defense (Firestorm Generator). TS rules.ini
+    // TF: TS Firestorm Defense (Firestorm Generator). TS rules.ini
     // [FirestormSpecial]: RechargeTime=3, IsPowered, UseChargeDrain, RechargeVoice=00-I162.
     new (&SuperWeapon[SPC_TS_FIRESTORM])
         SuperClass(TICKS_PER_MINUTE * 3, true, VOX_NONE, VOX_TS_FIRESTORM_READY, VOX_NONE, VOX_NONE);
 
-    // Tiberian Factions mod — Nod Nuclear Strike. TD-authentic 14-minute
-    // recharge per tiberiandawn/defines.h NUKE_GONE_TIME (14 *
-    // TICKS_PER_MINUTE). TD has no "charging" voice for the nuke so the
-    // charging slot is VOX_NONE; VOX_TD_NUKE_AVAILABLE plays on ready.
+    // TF: Nod Nuclear Strike. TD's 14-minute recharge (NUKE_GONE_TIME); TD has no charging line for the nuke,
+    // so only the ready line plays.
     new (&SuperWeapon[SPC_TD_NUKE]) SuperClass(TICKS_PER_MINUTE * 14,
                                                true,
                                                VOX_NONE,
@@ -827,13 +802,12 @@ HouseClass::HouseClass(HousesType house)
                                                VOX_NOT_READY,
                                                VOX_INSUFFICIENT_POWER);
 
-    // Tiberian Factions mod — Nod paratroops. Same cadence and voice
-    // handling as the RA paratroop drop it splits from.
+    // TF: Nod paratroops. Same cadence and voice handling as the RA paratroop drop it splits from.
     new (&SuperWeapon[SPC_TD_PARA_INFANTRY])
         SuperClass(TICKS_PER_MINUTE * Rule.ParaInfantryTime, false, VOX_NONE, VOX_NONE, VOX_NOT_READY, VOX_NOT_READY);
 
-    // Tiberian Factions mod — Nod recon flight, split from the Soviet spy
-    // plane so each era's airstrip carries its own single-badged special.
+    // TF: Nod recon flight, split from the Soviet spy plane so each era's airstrip carries its own
+    // single-badged special.
     new (&SuperWeapon[SPC_TD_SPY_MISSION])
         SuperClass(TICKS_PER_MINUTE * Rule.SpyTime, false, VOX_NONE, VOX_SPY_PLANE, VOX_NOT_READY, VOX_NOT_READY);
 
@@ -929,20 +903,9 @@ HouseStaticClass::HouseStaticClass(void)
  *   10/23/1996 JLB : Hack to allow Tanya to both sides in multiplay.                          *
  *   11/04/1996 JLB : Computer uses prerequisite record.                                       *
  *=============================================================================================*/
-/*
-**  Tiberian Factions -- is this type part of the ownership-gated TS tree?
-**  Membership = its Prerequisite= names a TS-tree building (the TS yard, or
-**  anything in the TS enum block, or the TS power plant which predates the
-**  block). TS-tree types are faction-agnostic: Can_Build's faction-yard gate
-**  skips them and the sidebar never faction-badges their cameos
-**  (docs/ts-gdi-tree-plan.md).
-*/
-/*
-**	Does this house have the given addon plug installed in any live building?
-**	Plugs never stand on the map (they live inside their host's UpgradeTypes),
-**	so ownership tests for what a plug grants — the Ion Cannon Uplink's
-**	superweapon — scan the building heap rather than Has_Building_Active.
-*/
+
+// The house's live building with the given addon plug installed, or NULL. Plugs never stand on the map, so
+// Has_Building_Active can't see them: they live in their host's UpgradeTypes.
 BuildingClass* TF_House_Plug_Host(HouseClass const* house, StructType plug)
 {
     for (int i = 0; i < Buildings.Count(); i++) {
@@ -963,6 +926,8 @@ bool TF_House_Has_Plug(HouseClass const* house, StructType plug)
     return (TF_House_Plug_Host(house, plug) != NULL);
 }
 
+// True when Prerequisite= names a TS-tree building: the TS yard, the TS power plant or the TS enum block.
+// Can_Build's faction-yard gate skips these types (the TS yard gates them) and the sidebar badges them TS GDI.
 bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type)
 {
     if (type == NULL) {
@@ -982,28 +947,13 @@ bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type)
     return false;
 }
 
-/*
-**	Every unit the dropship bay delivers. The one list consulted by the factory
-**	binding, the order gates, the sidebar keep-alive and the countdown cameo
-**	alike -- a future unit (or group) added here inherits the whole delivery
-**	arrangement, cooldown included (Luke, 2026-08-12: the cooldown is the
-**	BAY's, shared across everything it can send, not per unit type).
-*/
+// Every unit the dropship bay delivers: the one list the factory binding, order gates, sidebar and countdown
+// cameo consult. The delivery cooldown is the bay's, shared by everything it sends.
 bool TF_Is_Dropship_Delivered(UnitTypeClass const* type)
 {
     return (type != NULL && (type->Type == UNIT_TSHMEC || type->Type == UNIT_TSMDIV));
 }
 
-/*
-**	Whether an order goes to the dropship bay's own factory slot rather than the war
-**	factory's, so a human player's bay and war factory build side by side. Computer
-**	houses need no slot: each of their factory buildings holds its own production.
-*/
-/*
-**	The EMP Cannon that fires the E.M. Pulse special at a cell: the house's nearest cannon that
-**	stands built and powered with the cell inside its weapon's reach, or NULL. TS
-**	[EMPulseWeapon] Range=40 cells, measured on cell deltas as TS does (OpenTS suprtype.cpp).
-*/
 /*
 **	Whether the house has a radar building that an E.M. Pulse has not stunned.
 */
@@ -1019,6 +969,8 @@ bool HouseClass::Has_Working_Radar(void) const
     return (false);
 }
 
+// The house's nearest built, powered and unstunned EMP Cannon with the cell in reach, or NULL. TS
+// [EMPulseWeapon] Range=40 cells, measured on cell deltas as TS does (OpenTS suprtype.cpp).
 BuildingClass* TF_EMP_Launch_Site(HouseClass const* house, CELL cell)
 {
     enum { EMP_RANGE_CELLS = 40 };
@@ -1045,17 +997,8 @@ BuildingClass* TF_EMP_Launch_Site(HouseClass const* house, CELL cell)
     return (best);
 }
 
-/*
-**	The E.M. Pulse landing at a cell (OpenTS empulse.cpp Create). Within spread cells:
-**	aircraft taking off, landing or flying low crash, a Limpet Mine is destroyed, and
-**	every other building, every vehicle and ship, and every aircraft sitting on open
-**	ground is stunned for duration frames. Only a cell's building is considered
-**	when it has one, so an aircraft parked on its pad is spared. A stunned vehicle stops
-**	where it is and sparks until the stun wears off; a building sparks only if it can pack
-**	up and move. A vehicle digging underground is stunned too: it makes for the nearest
-**	ground it can surface on, is destroyed if there is none, and sparks once it surfaces.
-**	Infantry are untouched. The source, if any, is spared.
-*/
+// The E.M. Pulse at a cell (OpenTS empulse.cpp Create): within spread cells low-flying aircraft crash, Limpet
+// Mines die, and buildings, vehicles and grounded aircraft are stunned; infantry and the source are spared.
 void TF_EMPulse(CELL center, TechnoClass* source, int spread, int duration)
 {
     enum
@@ -1198,20 +1141,16 @@ void TF_EMPulse(CELL center, TechnoClass* source, int spread, int duration)
 #endif
 }
 
+// Whether an order goes to the dropship bay's own factory slot, so a human's bay and war factory build side
+// by side. Computer houses need no slot: each of their factory buildings holds its own production.
 bool TF_Bay_Order(RTTIType type, int id)
 {
     return ((type == RTTI_UNITTYPE || type == RTTI_UNIT) && id >= 0 && id < UNIT_COUNT
             && TF_Is_Dropship_Delivered(&UnitTypeClass::As_Reference((UnitType)id)));
 }
 
-/*
-**	How many Mammoth Mk. IIs a house may field at once (Luke, 2026-08-12;
-**	expected to rise to 3). Counted off the Units heap directly: the CSII
-**	quantity fold aliases mod-unit indices onto vanilla UQuantity slots, so
-**	the per-type counters cannot be trusted for TS types. The count includes
-**	one riding a pod in limbo, which is wanted -- a delivery in flight is a
-**	Mk. II spoken for.
-*/
+// How many Mammoth Mk. IIs a house may field at once, counted off the Units heap (a Mk. II in a delivery pod
+// counts): the CSII quantity fold aliases mod units onto vanilla UQuantity slots.
 int const TF_MK2_CAP = 1;
 
 bool TF_Mk2_At_Cap(HouseClass const* house)
@@ -1266,12 +1205,8 @@ bool TF_Mwar_At_Cap(HouseClass const* house)
 
 
 
-/*
-**	The shared wall a TS construction yard provides: SANDBAGS, beside the TS tree's own
-**	walls (gated by the TS yard like the rest of the tree). Sandbags' Owner= list does not
-**	mention every faction, so a TS yard has to satisfy the ownership test for them whoever
-**	is holding it.
-*/
+// True for sandbags, the shared wall a TS construction yard builds beside the TS tree's own walls. A standing
+// TS yard satisfies Can_Build's ownership test for them, whoever holds it.
 bool TF_Is_TS_Yard_Wall(ObjectTypeClass const* type)
 {
     if (type == NULL || type->What_Am_I() != RTTI_BUILDINGTYPE) {
@@ -1280,12 +1215,8 @@ bool TF_Is_TS_Yard_Wall(ObjectTypeClass const* type)
     return (((BuildingTypeClass const*)type)->Type == STRUCT_SANDBAG_WALL);
 }
 
-/*
-**	Line fill (the TS / RA2 wall-building rule): placing a wall section within TF_WALL_FILL_RANGE
-**	cells in a straight line of another of the house's sections of the same type fills the cells
-**	between, provided every one of them is clear to build. Each filled section is charged like a
-**	normal build of it; a gap the house cannot pay for in full is left empty.
-*/
+// Line fill (the TS and RA2 wall rule): a section placed within this many cells in line of one of the house's
+// own sections of its type fills the cells between, if all are clear to build and the house can pay for all.
 static const int TF_WALL_FILL_RANGE = 5;
 
 /*
@@ -1392,11 +1323,8 @@ COORDINATE TF_Firestorm_On_Path(COORDINATE from, COORDINATE to, HouseClass const
     return (TF_Firestorm_Wall_At(Coord_Cell(to), shooter) != NULL ? Cell_Coord(Coord_Cell(to)) : 0);
 }
 
-/*
-**	What a live field does each frame: anything on one of the house's sections dies (its own
-**	units too, as in TS), and so does any aircraft over one, at any height. The Hunter Seeker
-**	is built to ignore the field.
-*/
+// The flare and sound of the field killing something: an air burst at the victim's height when it flies,
+// a ground burst on the wall otherwise.
 void TF_Firestorm_Flare(COORDINATE wall, COORDINATE victim, int height)
 {
     Sound_Effect(VOC_TS_FIRSTRM1, wall);
@@ -1407,6 +1335,8 @@ void TF_Firestorm_Flare(COORDINATE wall, COORDINATE victim, int height)
     }
 }
 
+// What a live field does each frame: anything on one of the house's sections dies, its own units too (TS),
+// as does any aircraft over one at any height, except the Hunter Seeker.
 static void TF_Firestorm_Burn(HouseClass* house)
 {
     for (int i = 0; i < Buildings.Count(); i++) {
@@ -1416,10 +1346,6 @@ static void TF_Firestorm_Burn(HouseClass* house)
         }
         CELL cell = Coord_Cell(b->Coord);
 
-        /*
-        **	The field is a flicker of columns, not a solid sheet: every eighth frame each hub
-        **	(anything but a straight run) has a one-in-sixteen chance of throwing one up (TS).
-        */
         if ((Frame % 8) == 0 && Random_Pick(0, 15) == 0) {
             int joins = b->Shape_Number() & 15;
             if (joins != 5 && joins != 10) {
@@ -1462,6 +1388,7 @@ static void TF_Firestorm_Burn(HouseClass* house)
     }
 }
 
+// Applies the line fill to a section of `type` just placed at `cell`, charging each filled section as a build.
 void TF_Wall_Line_Fill(HouseClass* house, StructType type, CELL cell)
 {
     BuildingTypeClass const& btype = BuildingTypeClass::As_Reference(type);
@@ -1469,9 +1396,6 @@ void TF_Wall_Line_Fill(HouseClass* house, StructType type, CELL cell)
     static FacingType const _dirs[] = {FACING_N, FACING_E, FACING_S, FACING_W};
 
     for (int d = 0; d < (int)ARRAY_SIZE(_dirs); d++) {
-        /*
-        **	The nearest own section of this type along the line, if any is in range.
-        */
         CELL c = cell;
         int reach = 0;
         for (int step = 1; step <= TF_WALL_FILL_RANGE; step++) {
@@ -1488,9 +1412,6 @@ void TF_Wall_Line_Fill(HouseClass* house, StructType type, CELL cell)
             continue;
         }
 
-        /*
-        **	Every cell between must be clear to build, or the line is left alone.
-        */
         bool clear = true;
         c = cell;
         for (int step = 1; step < reach; step++) {
@@ -2062,14 +1983,9 @@ void HouseClass::AI(void)
     **	If base building has been turned on by a trigger, then force the house to begin
     **	production and team creation as well. This is also true if the IQ is high enough to
     **	being base building.
-    **
-    **	Tiberian Factions: rules.ini lowers IQProduction to 3 so skirmish Easy AIs (IQ 3)
-    **	still base-build -- a skirmish/MP tuning only. Stock campaigns are balanced around
-    **	vanilla's threshold (MaxIQ), where a scripted enemy with a modest IQ stays static
-    **	until a trigger sets IsBaseBuilding. In campaign, use the vanilla threshold so we
-    **	don't wake enemies EA meant to sit still (they were producing units and base-
-    **	building far too early otherwise).
     */
+    // TF: skirmish base-builds from rules.ini's lowered IQProduction so Easy AIs build; campaigns keep vanilla's
+    // MaxIQ threshold so the scripted enemies EA meant to sit still wait for their trigger.
     int iq_production = (Session.Type == GAME_NORMAL) ? Rule.MaxIQ : Rule.IQProduction;
     if (!IsHuman && (IsBaseBuilding || IQ >= iq_production)) {
         IsBaseBuilding = true;
@@ -2467,39 +2383,12 @@ void HouseClass::AI(void)
         }
 
 #ifdef REMASTER_BUILD
-        // Tiberian Factions: radar on/off sting for the LOCAL player.
-        //
-        // Fire on a STABLE "has a powered radar building" signal -- a Buildings-heap
-        // count of the player's radar structures (STRUCT_RADAR / STRUCT_TDHQ /
-        // STRUCT_TDEYE) AND Power_Fraction() -- NOT the scan bits. This is the crux of
-        // the 2026-06-03 radar-loop saga: ActiveBScan/BScan & STRUCTF_RADAR (and the
-        // derived `this->Radar` / global Map.IsRadarActive) OSCILLATE 1/0 every single
-        // frame at full power -- a Recalc_Attributes rebuild quirk proven by
-        // tf_radar.log -- so every edge-detector polled on the scan state looped the
-        // sting infinitely. The heap count only changes on a real build/destroy, and
-        // Power_Fraction() is steady at steady state, so `functional` below is stable
-        // and fires exactly once on radar-online and once on radar-offline (power up /
-        // down) -- which is the desired behaviour. A short debounce makes it impossible
-        // to machine-gun even if either input ever twitches. The launcher's own
-        // hardcoded radar auto-fire stays muted by the silent RADARON2/RADARDN1 stubs;
-        // per-faction routing (RAORAD*/TFRADR*) is in dllinterface On_Sound_Effect.
-        // Gate on IsHuman, NOT `this == PlayerPtr`: in REMASTER_BUILD HouseClass::AI
-        // calls Logic_Switch_Player_Context(this) at its top (line ~1208), so PlayerPtr
-        // is reassigned to the current house and `this == PlayerPtr` is ALWAYS true ->
-        // the block ran for EVERY house, and radar_count alternated between the human
-        // (1 radar) and the AI (0) each frame, thrashing the shared debounce so nothing
-        // fired (proven by tf_radar2.log). IsHuman is true only for the human house(s);
-        // in skirmish that's the single local player. (Network play with 2+ humans would
-        // still thrash the shared static -> no sting, but no loop; gate on the local
-        // GlyphX player index if per-client MP radar sound is ever wanted.)
+        // TF: the radar on/off sting for the human house, from a heap count of working radar buildings and the
+        // power, debounced; never from the scan bits (docs/launcher-vs-dll-ownership.md).
         if (IsHuman) {
             int radar_count = 0;
             for (int ri = 0; ri < Buildings.Count(); ri++) {
                 BuildingClass* rb = Buildings.Ptr(ri);
-                // Skip !IsInLimbo: a building being produced in the sidebar exists in
-                // the Buildings heap in LIMBO before it is placed on the map, so without
-                // this guard the sting fired the instant you clicked the radar in the
-                // sidebar instead of when you place it (= when it comes online).
                 if (rb != NULL && !rb->IsInLimbo && rb->House == PlayerPtr && !rb->Is_Immobilized()
                     && (*rb == STRUCT_RADAR || *rb == STRUCT_TDHQ || *rb == STRUCT_TDEYE || *rb == STRUCT_TSRADR)) {
                     radar_count++;
@@ -2507,8 +2396,6 @@ void HouseClass::AI(void)
             }
             bool functional = (radar_count > 0 || IsGPSActive) && (IsGPSActive || Power_Fraction() >= 1);
 
-            // Debounce: only commit (and sound) a state that has held for ~0.5s, so a
-            // per-frame twitch in either input can never produce a repeating sting.
             static bool tf_radar_on = false; // last committed/sounded state
             static bool tf_pending = false;  // candidate state being timed
             static int tf_stable = 0;        // frames the candidate has held
@@ -2619,12 +2506,8 @@ void HouseClass::Super_Weapon_Handler(void)
         if (super->Is_Present()) {
 
 #if TF_DEV_BUILD
-            /*
-            **  Dev cheat: human-owned superweapons recharge in 5 seconds so a strike
-            **  can be tested without the multi-minute wait, and still announce
-            **  themselves ready. Runtime-gated like the instant-build cheat
-            **  (tf_dev_off.flag).
-            */
+            // TF: dev cheat: a human house's superweapons recharge in 5 seconds and still announce ready.
+            // tf_dev_off.flag turns it off with the other dev cheats.
             if (TF_Dev_Cheats() && IsHuman && !super->Is_Ready()) {
                 super->Cap_Recharge(TICKS_PER_SECOND * 5);
             }
@@ -2650,13 +2533,8 @@ void HouseClass::Super_Weapon_Handler(void)
         }
     }
 
-    /*
-    ** Does this house still own a GPS-granting tech centre? Mirror the grant test below
-    ** (~line 1912): Allied Advanced Tech (STRUCTF_ADVANCED_TECH) OR GDI's Eye (TDEYE). TDEYE is
-    ** past the 32-bit BScan mask, so the raw STRUCTF_ADVANCED_TECH test never sees it -- without
-    ** this, GDI's GPS was revoked and its sidebar icon removed every frame (flicker, no tooltip).
-    ** Not TDTMPL: Nod gets the targeted Spy Plane, not full-map GPS.
-    */
+    // TF: GDI's Advanced Comm Centre (TDEYE) grants the GPS as the Allied tech centre does, tested by type since
+    // it lies past the 32-bit BScan mask. The Temple of Nod grants none.
     bool has_gps_techcenter = ((ActiveBScan & STRUCTF_ADVANCED_TECH) != 0) || Has_Building_Active(STRUCT_TDEYE);
 
     /*
@@ -2680,10 +2558,8 @@ void HouseClass::Super_Weapon_Handler(void)
                 Map.Shroud_The_Map(this);
             }
 
-            /*
-            ** The satellite's reveal was shared with allied players (ShareAllyVisibility), so it
-            ** leaves them with it, except those whose own GPS is still up.
-            */
+            // TF: the satellite's reveal is shared with allies (ShareAllyVisibility), so it is taken from them too,
+            // except from those whose own GPS is still up.
             if (ShareAllyVisibility) {
                 for (int i = 0; i < Session.Players.Count(); i++) {
                     HouseClass* ally = HouseClass::As_Pointer(Session.Players[i]->Player.ID);
@@ -2725,9 +2601,7 @@ void HouseClass::Super_Weapon_Handler(void)
                 IsRecalcNeeded = true;
                 for (int index = 0; index < Buildings.Count(); index++) {
                     BuildingClass* bldg = Buildings.Ptr(index);
-                    // GDI's tech centre is TDEYE, not ADVANCED_TECH -- match both, or a GDI GPS
-                    // never marks HasFired (so the grant re-enables it next frame -> "began again")
-                    // and never gets MISSION_MISSILE (so the satellite never launches -> no reveal).
+                    // TF: the Advanced Comm Centre launches the satellite too; without HasFired the GPS is re-granted.
                     if ((*bldg == STRUCT_ADVANCED_TECH || *bldg == STRUCT_TDEYE) && bldg->House == this) {
                         bldg->HasFired = true;
                         bldg->Assign_Mission(MISSION_MISSILE);
@@ -2744,9 +2618,7 @@ void HouseClass::Super_Weapon_Handler(void)
         if (((ActiveBScan & STRUCTF_ADVANCED_TECH) != 0 || Has_Building_Active(STRUCT_TDEYE)) && !IsGPSActive
             && Control.TechLevel >= Rule.GPSTechLevel && (IsHuman || IQ >= Rule.IQSuperWeapons)) {
 
-            // GDI GPS: the Advanced Comm (TDEYE) is GDI's tech-centre equivalent, so it grants
-            // the GPS satellite exactly as the Allied Tech Center does. TDEYE is past the 32-bit
-            // BScan mask, hence the Has_Building_Active gate above rather than a STRUCTF_ flag.
+            // TF: the Advanced Comm Centre grants the GPS as well (see has_gps_techcenter).
             bool canfire = false;
             for (int index = 0; index < Buildings.Count(); index++) {
                 BuildingClass* bldg = Buildings.Ptr(index);
@@ -2994,14 +2866,8 @@ void HouseClass::Super_Weapon_Handler(void)
         }
     }
 
-    /*
-    **  Tiberian Factions mod — GDI Ion Cannon (SPC_TD_ION_CANNON). Mirrors
-    **  the SPC_NUCLEAR_BOMB block above, swapped for TDEYE as the host
-    **  building. Uses Has_Building_Active(STRUCT_TDEYE) because the heap
-    **  type is past 31 (STRUCT_TDEYE can't fit in the 32-bit BScan mask).
-    **  No side restriction here — any house with a TDEYE gets the super,
-    **  which matches HOUSEF_GOOD ownership on the building itself.
-    */
+    // TF: GDI Ion Cannon, granted while the house holds an Advanced Comm Centre (TDEYE), on the nuke's pattern.
+    // TDEYE lies past the 32-bit BScan mask, so it is tested by type.
     bool ion_host = Has_Building_Active(STRUCT_TDEYE);
     if (SuperWeapon[SPC_TD_ION_CANNON].Is_Present()) {
         if ((!ion_host && !SuperWeapon[SPC_TD_ION_CANNON].Is_One_Time()) || IsDefeated) {
@@ -3037,13 +2903,7 @@ void HouseClass::Super_Weapon_Handler(void)
         }
     }
 
-    /*
-    **  Tiberian Factions mod — TS Ion Cannon (SPC_TS_ION_CANNON). Its own
-    **  superweapon, granted by the TS Ion Cannon Uplink plug (TSPION
-    **  installed in a TSPLUG): a house holding both the TD Advanced Comm
-    **  Centre and the uplink fields both ion strikes side by side, each on
-    **  its own charge timer.
-    */
+    // TF: TS Ion Cannon, granted by the uplink plug (TSPION in a TSPLUG), on its own timer beside the TD one.
     bool ts_ion_host = TF_House_Has_Plug(this, STRUCT_TSPION);
     if (SuperWeapon[SPC_TS_ION_CANNON].Is_Present()) {
         if ((!ts_ion_host && !SuperWeapon[SPC_TS_ION_CANNON].Is_One_Time()) || IsDefeated) {
@@ -3079,10 +2939,7 @@ void HouseClass::Super_Weapon_Handler(void)
         }
     }
 
-    /*
-    **  Tiberian Factions mod — TS E.M. Pulse (SPC_TS_EMP), granted while the house
-    **  has an EMP Cannon standing; its range and power are checked when it fires.
-    */
+    // TF: TS E.M. Pulse, granted while the house owns an EMP Cannon; range and power are checked when it fires.
     bool ts_emp_host = Get_Quantity(STRUCT_TSPULS) > 0;
     if (SuperWeapon[SPC_TS_EMP].Is_Present()) {
         if ((!ts_emp_host && !SuperWeapon[SPC_TS_EMP].Is_One_Time()) || IsDefeated) {
@@ -3118,12 +2975,8 @@ void HouseClass::Super_Weapon_Handler(void)
         }
     }
 
-    /*
-    **  Tiberian Factions mod — TS Firestorm Defense (SPC_TS_FIRESTORM), granted while the house
-    **  has a Firestorm Generator standing. The field drops when the drain runs out, the power
-    **  falls short or the last generator goes; a charge interrupted by low power starts again
-    **  from zero, as in TS.
-    */
+    // TF: TS Firestorm Defense, granted while the house owns a Firestorm Generator. The field drops when its
+    // drain runs out, power falls short or the last generator goes; low power restarts a charge from zero (TS).
     bool ts_fs_host = Get_Quantity(STRUCT_TSFGEN) > 0;
     SuperClass& firestorm = SuperWeapon[SPC_TS_FIRESTORM];
     if (IsFirestormLive && (!ts_fs_host || Power_Fraction() < 1 || firestorm.Drain_Expired() || IsDefeated)) {
@@ -3174,11 +3027,7 @@ void HouseClass::Super_Weapon_Handler(void)
         }
     }
 
-    /*
-    **  Tiberian Factions mod — TS Drop Pod reinforcements (SPC_TS_DROPPODS),
-    **  granted by the Drop Pod Node plug (TSPODS in a TSPLUG). Same shape as
-    **  the TS Ion Cannon block above.
-    */
+    // TF: TS Drop Pods, granted by the Drop Pod Node plug (TSPODS in a TSPLUG).
     bool ts_pods_host = TF_House_Has_Plug(this, STRUCT_TSPODS);
     if (SuperWeapon[SPC_TS_DROPPODS].Is_Present()) {
         if ((!ts_pods_host && !SuperWeapon[SPC_TS_DROPPODS].Is_One_Time()) || IsDefeated) {
@@ -3214,11 +3063,8 @@ void HouseClass::Super_Weapon_Handler(void)
         }
     }
 
-    /*
-    **  Tiberian Factions mod — TS Hunter Seeker (SPC_TS_HUNTSEEK), granted
-    **  by the Seeker Control plug (TSSEEK in a TSPLUG). Same shape as the
-    **  TS Ion Cannon block above.
-    */
+    // TF: TS Hunter Seeker, granted by the Seeker Control plug (TSSEEK in a TSPLUG). The droid picks its own
+    // victim: a computer house launches it once charged, a human with one click on the cameo.
     bool ts_seek_host = TF_House_Has_Plug(this, STRUCT_TSSEEK);
     if (SuperWeapon[SPC_TS_HUNTSEEK].Is_Present()) {
         if ((!ts_seek_host && !SuperWeapon[SPC_TS_HUNTSEEK].Is_One_Time()) || IsDefeated) {
@@ -3232,11 +3078,6 @@ void HouseClass::Super_Weapon_Handler(void)
                 IsRecalcNeeded = true;
             }
         } else {
-            /*
-            **  The droid finds its own victim. A computer house launches it the tick
-            **  it is charged; a human launches it with one click on the cameo
-            **  (TF_Patch_ClientG_Click_Specials sends that click to the DLL).
-            */
             if (!IsHuman && SuperWeapon[SPC_TS_HUNTSEEK].Is_Ready()) {
                 Place_Special_Blast(SPC_TS_HUNTSEEK, 0);
             }
@@ -3259,12 +3100,8 @@ void HouseClass::Super_Weapon_Handler(void)
         }
     }
 
-    /*
-    **  Tiberian Factions mod — Nod Nuclear Strike (SPC_TD_NUKE). Same shape
-    **  as the Ion Cannon block above, swapped for TDTMPL as the host
-    **  building. Uses Has_Building_Active(STRUCT_TDTMPL) since heap types
-    **  past 31 can't represent themselves in BScan.
-    */
+    // TF: Nod Nuclear Strike, granted while the house holds a Temple of Nod (TDTMPL), tested by type since it
+    // lies past the 32-bit BScan mask.
     if (SuperWeapon[SPC_TD_NUKE].Is_Present()) {
         if ((!Has_Building_Active(STRUCT_TDTMPL) && !SuperWeapon[SPC_TD_NUKE].Is_One_Time()) || IsDefeated) {
             if (SuperWeapon[SPC_TD_NUKE].Remove()) {
@@ -3299,10 +3136,8 @@ void HouseClass::Super_Weapon_Handler(void)
         }
     }
 
-    // The recon flight is a per-era special like the paratroop drops: the Soviet
-    // airfield grants the RA spy plane, the Nod airstrip its own recon flight, and
-    // a house holding both flies both on separate timers. Concrete-building tests
-    // throughout, since the Nod airstrip shadows STRUCTF_AIRSTRIP in the scan.
+    // TF: the spy plane is per era: the Soviet airfield grants it and the Nod airstrip its own recon flight. Both
+    // test the real building, since the TD airfields shadow STRUCTF_AIRSTRIP in the scan.
     if (SuperWeapon[SPC_SPY_MISSION].Is_Present()) {
         if (!Has_Building_Active(STRUCT_AIRSTRIP)) {
             if (SuperWeapon[SPC_SPY_MISSION].Remove()) {
@@ -3372,10 +3207,8 @@ void HouseClass::Super_Weapon_Handler(void)
         }
     }
 
-    // Parabombs are the Soviet airfield's support power in every session type, not
-    // just campaign (air-additions design: each faction's airstrip is its offensive
-    // air hub). The concrete-building test also replaces the STRUCTF_AIRSTRIP scan
-    // bit, which the Nod airstrip shadows, so only a real Soviet airfield qualifies.
+    // TF: parabombs are the Soviet airfield's power in every session type, not just campaigns. It tests the real
+    // building, since the TD airfields shadow STRUCTF_AIRSTRIP in the scan.
     if (SuperWeapon[SPC_PARA_BOMB].Is_Present()) {
         if (!Has_Building_Active(STRUCT_AIRSTRIP)) {
             if (SuperWeapon[SPC_PARA_BOMB].Remove()) {
@@ -3407,10 +3240,8 @@ void HouseClass::Super_Weapon_Handler(void)
         }
     }
 
-    // Paratroops are per-era specials: the Soviet airfield grants the RA drop, the Nod
-    // airstrip + Hand of Nod grant the TD drop, and a house holding both eras' buildings
-    // fields both. The Nod airstrip (TDAFLD) shadows STRUCTF_AIRSTRIP in the scan, so
-    // presence and removal both test the concrete building, never the scan bit.
+    // TF: paratroops are per era: the Soviet airfield grants the RA drop, the Nod airstrip and Hand of Nod the TD
+    // drop. Both test the real buildings, since the TD airfields shadow STRUCTF_AIRSTRIP in the scan.
     if (SuperWeapon[SPC_PARA_INFANTRY].Is_Present()) {
         if (!Has_Building_Active(STRUCT_AIRSTRIP)) {
             if (SuperWeapon[SPC_PARA_INFANTRY].Remove()) {
@@ -3455,7 +3286,6 @@ void HouseClass::Super_Weapon_Handler(void)
             }
         }
     } else {
-        // The airstrip flies them in; the Hand of Nod supplies the infantry.
         if (Has_Building_Active(STRUCT_TDAFLD) && Has_Building_Active(STRUCT_TDHAND)
             && Control.TechLevel >= Rule.ParaInfantryTechLevel) {
             SuperWeapon[SPC_TD_PARA_INFANTRY].Enable(false, this == PlayerPtr, false);
