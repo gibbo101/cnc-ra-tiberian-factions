@@ -219,13 +219,16 @@ def text_rows(ini, display, desc):
 
 def pack(ini):
     stem, poses, cameo_stem, icon, display, desc = UNITS[ini]
-    first_flight = FLIGHT_POSES.get(ini, poses)
-    frames = []
-    for i in range(poses):
-        pose, shadow = frame(stem, i), frame(stem, i + poses)
-        frames.append(place(with_shadow(pose, shadow) if i < first_flight else pose))
-    write_zip(asset_packs.art_zip(ini, "UNITS"), ini.lower(), frames)
-    patch_tileset(ini, len(frames))
+    if asset_packs.hd_owned(ini):
+        print(f"{ini}: HD art (ts_pack_hd_buildings.py), not written")
+    else:
+        first_flight = FLIGHT_POSES.get(ini, poses)
+        frames = []
+        for i in range(poses):
+            pose, shadow = frame(stem, i), frame(stem, i + poses)
+            frames.append(place(with_shadow(pose, shadow) if i < first_flight else pose))
+        write_zip(asset_packs.art_zip(ini, "UNITS"), ini.lower(), frames)
+        patch_tileset(ini, len(frames))
     cameo(cameo_stem, icon)
     sidebar(ini, icon)
     text_rows(ini, display, desc)

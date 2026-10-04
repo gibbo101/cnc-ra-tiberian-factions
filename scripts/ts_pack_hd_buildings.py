@@ -301,6 +301,12 @@ UNITS = {
     "TSHUNT": _voxel_unit("tshunt", 8),
     "TSLIMP": _voxel_unit("tslimp", 20),
     "TSJUGG": _voxel_unit("tsjugg", 202, lead_muzzle=dict(table="muzzle.txt", sets=((120, 32), (152, 32)))),
+    "TSE1": _voxel_unit("tse1", 292),
+    "TSE2": _voxel_unit("tse2", 292),
+    "TSENGINEER": _voxel_unit("tsengineer", 292),
+    "TSGHOST": _voxel_unit("tsghost", 292),
+    "TSMEDIC": _voxel_unit("tsmedic", 307),
+    "TSJUMPJET": _voxel_unit("tsjumpjet", 451),
     "R2APOC": _voxel_unit("r2apoc", 64),
     "R2PRIS": _voxel_unit("r2pris", 64),
 }

@@ -1,6 +1,6 @@
 # TS-HD 3D models
 
-The 3D models of the HD rebuilds: Tiberian Sun's GDI buildings and some of its units, each fitted to Tiberian
+The 3D models of the HD rebuilds: Tiberian Sun's GDI buildings, units and infantry, each fitted to Tiberian
 Sun's own sprites or voxels. Each building's and unit's HD art is rendered from its model here. The game does not use
 this folder: it is here for anyone who wants the models themselves, to render new angles or to use them in another
 engine.
@@ -63,6 +63,21 @@ mask (north 1, east 2, south 4, west 8), plus 16 damaged and 32 with the field o
 | `juggernaut-deployed.glb` | JUGG (deployed) | TSJUGG | base (as deployed facing south-west), cabin turned east, barrels on a hinge; muzzle_left, muzzle_middle and muzzle_right markers | aim (the barrels raised to 45 degrees and back) |
 | `hunter-seeker.glb` | GHUNTER | TSHUNT | the droid | |
 | `limpet-drone.glb` | LIMPET | TSLIMP | the drone; light_left and light_right markers | |
+
+## Infantry
+
+| File | Tiberian Sun | In Tiberian Factions | Parts | Animations |
+|---|---|---|---|---|
+| `light-infantry.glb` | E1 | TSE1 | helmet, mask, vest, rifle and the rest, each its own node; a muzzle marker | stand, walk, idle1, idle2, crawl, death1, death2, fire, prone_fire, lie_down, get_up |
+| `disc-thrower.glb` | E2 | TSE2 | the same body with a rucksack; a throw marker in the right palm, where the disc leaves | the same, fire and prone_fire being the throw |
+| `engineer.glb` | ENGINEER | TSENGINEER | the same body with a toolbox, respirator and goggles | the same without fire and prone_fire (he is unarmed) |
+| `ghost-stalker.glb` | GHOST | TSGHOST | hood, the bedroll on his back, the railgun; a muzzle marker | the same as the light infantry |
+| `medic.glb` | MEDIC | TSMEDIC | the same body with the medkit and the crosses | the same as the engineer, plus heal |
+| `jumpjet-infantry.glb` | JUMPJET | TSJUMPJET | the jetpack with its nozzles and wings, the rifle; a muzzle marker | stand, walk, idle1, idle2, crawl, fire, prone_fire, lie_down, get_up, fly, hover, fire_fly, tumble |
+
+The infantry face east (+x) with their position at the origin, on the ground, and play their animations facing east at
+the game's speed (15 ticks a second); the looping ones end on their first frame. Each part is one rigid solid posed per
+frame by its node, and each file carries `camera_mod`, which frames the infantry's 267 x 208 canvas exactly.
 
 Units face east (+x) with their position at the origin, on the ground; the aircraft's origin is the voxel's own. For a
 sprite in 32 facings (0 north, 8 west, 16 south, 24 east), facing f is the model turned (f - 24) x 11.25 degrees

@@ -3,23 +3,23 @@
 // unit centre: [0] standing, [1] prone.
 static const short _tsghost_muzzle[2][8][2] = {
     {
-        {-8, -90},  // facing 0, 3 flash stages
-        {-86, -56},  // facing 1, 3 flash stages
-        {-112, -23},  // facing 2, 3 flash stages
-        {-89, 19},  // facing 3, 3 flash stages
-        {-21, -10},  // facing 4, 3 flash stages
-        {34, 12},  // facing 5, 3 flash stages
-        {55, -31},  // facing 6, 3 flash stages
-        {38, -68},  // facing 7, 3 flash stages
+        {-9, -96},  // facing 0, 3 flash stages
+        {-85, -60},  // facing 1, 3 flash stages
+        {-114, -31},  // facing 2, 3 flash stages
+        {-92, 20},  // facing 3, 3 flash stages
+        {-21, -8},  // facing 4, 3 flash stages
+        {37, 14},  // facing 5, 3 flash stages
+        {59, -33},  // facing 6, 3 flash stages
+        {37, -71},  // facing 7, 3 flash stages
     },
     {
-        {-9, -27},  // facing 0, 3 flash stages
-        {-117, -10},  // facing 1, 3 flash stages
-        {-140, 41},  // facing 2, 3 flash stages
-        {-122, 110},  // facing 3, 3 flash stages
-        {-39, 136},  // facing 4, 3 flash stages
-        {77, 103},  // facing 5, 3 flash stages
-        {83, 33},  // facing 6, 3 flash stages
-        {47, -14},  // facing 7, 3 flash stages
+        {-11, -32},  // facing 0, 3 flash stages
+        {-119, -13},  // facing 1, 3 flash stages
+        {-142, 36},  // facing 2, 3 flash stages
+        {-126, 113},  // facing 3, 3 flash stages
+        {-41, 141},  // facing 4, 3 flash stages
+        {81, 106},  // facing 5, 3 flash stages
+        {82, 29},  // facing 6, 3 flash stages
+        {49, -19},  // facing 7, 3 flash stages
     },
 };
