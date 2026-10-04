@@ -73,11 +73,8 @@ public:
     */
     CDTimerClass<FrameTimerClass> PulseCountDown;
 
-    /*
-    ** v4.0 Obelisk Attack Sub charge windup. While ObeliskCharge counts down the sub stays surfaced
-    ** (vulnerable) and Can_Fire holds the laser; the shot fires when it expires. IsObeliskCharging
-    ** marks an in-progress wind-up so it isn't restarted each frame. See docs/naval-and-air-units.md.
-    */
+    // TF: Obelisk Attack Sub wind-up: while ObeliskCharge runs the sub stays surfaced and Can_Fire holds the laser,
+    // which fires when it expires. IsObeliskCharging marks a wind-up under way (docs/naval-and-air-units.md).
     CDTimerClass<FrameTimerClass> ObeliskCharge;
     unsigned IsObeliskCharging : 1;
 

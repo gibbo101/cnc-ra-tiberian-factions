@@ -463,14 +463,8 @@ bool CellClass::Is_Clear_To_Build(SpeedType loco) const
     if (ScenarioInit)
         return (true);
 
-    /*
-    **	TS building aprons (refinery dock bay + concrete skirt): walkable
-    **	ground art, never buildable. This is the choke point BOTH the
-    **	launcher's placement preview (Get_Placement_State) and the game-side
-    **	placement legality share -- a veto anywhere higher misses the
-    **	preview, and the preview's green cells were honoured at click time
-    **	(Luke placed a building on the pad, 2026-08-04 23:16).
-    */
+    // TF: a TS building's apron is walkable ground, never buildable. The veto sits here because both the
+    // launcher's placement preview and placement legality test this cell.
     if (Is_TS_Apron_Cell(Cell_Number())) {
         return (false);
     }
@@ -502,13 +496,8 @@ bool CellClass::Is_Clear_To_Build(SpeedType loco) const
 
     /*
     **	Building over a bib is not allowed.
-    **
-    **	The TS concrete aprons are the exception. They are a building's ground
-    **	art, covering its whole plot and spilling a cell past the east edge
-    **	where the concrete tapers out, so their own footprint says nothing
-    **	about where building is legal -- Is_TS_Apron_Cell above owns that, and
-    **	it vetoes the plot only. Add any further apron smudge here too.
     */
+    // TF: except a TS concrete apron, which spills past its building's plot; Is_TS_Apron_Cell vetoes the plot.
     if (Smudge != SMUDGE_NONE && SmudgeTypeClass::As_Reference(Smudge).IsBib && !Is_TS_Apron_Smudge(Smudge)
         /* && Owner != HOUSE_NONE*/) {
         return (false);
@@ -993,37 +982,11 @@ bool CellClass::Get_Template_Info(char* template_name, int& icon, void*& image_d
 {
     TemplateTypeClass const* ttype = NULL;
 
-    /*
-    ** Tiberian Factions -- TD-ported terrain templates (TEMPLATE_TDSH1 and up)
-    ** must not reach the launcher by name: its HD template atlas is preloaded
-    ** from the base MEG only, and an unknown template AssetName NULL-crashes at
-    ** render time (ClientG RVA 0x56A539). This function only feeds the launcher
-    ** (static-map snapshot + radar cell updates), so report a vanilla stand-in;
-    ** the real TD tile art is synthesized per-cell through the dynamic-map path
-    ** in Cell_Class_Draw_It, which resolves loose mod art (the TIB01 pipeline).
-    ** Engine-side state (land-type, pathing, classic render) keeps the real
-    ** template. The stand-in is picked by the ICON'S ART (offline-classified
-    ** into TF_TdTileRadarClass by build_td_tiles.py) because the launcher
-    ** also paints the RADAR from this name: land type is too crude (TD types
-    ** whole bridge blocks as WATER -> blue rectangles bulging past the river)
-    ** and a flat CLEAR spoof drew the ocean as green land. 'W' water-dominant
-    ** icons report W1 (blue radar); 'B' beach/waterline icons report SH02
-    ** icon 9, RA's driest sand piece (the coastline ring, and the visible
-    ** bridge strip over water); 'C' reports CLEAR (land).
-    */
+    // TF: a TD-ported template reaches the launcher's static map and radar as a vanilla stand-in, picked by its
+    // icon's art class (TF_TdTileRadarClass); its own art draws through the dynamic map.
     if (TType >= TEMPLATE_TDSH1 && TType < TEMPLATE_COUNT) {
-        /*
-        ** Interior theatre (TD desert maps): the W1/RV13/SH02 stand-ins below
-        ** do not exist in the interior atlas -- reporting them would hit the
-        ** same unknown-asset NULL-crash the stand-ins exist to avoid. Instead
-        ** the DESERT RADAR PALETTE stands in: interior art is sacrificed
-        ** (nothing multiplayer uses interior) and four interior templates are
-        ** path-shadowed with TD desert pixels by the mod's loose Data/ART
-        ** tree (scripts/build_desert_radar_palette.py) -- CLEAR1 = sand,
-        ** ARRO0001 = water, ARRO0002 = bright coast, ARRO0003 = river. The
-        ** 2026-06-10 W1 spike proved the launcher's radar samples loose
-        ** path-shadowed pixels, so the minimap shows desert-true colours.
-        */
+        // A template name the launcher's atlas lacks NULL-crashes it, and the interior atlas lacks the stand-ins
+        // below, so interior (TD desert) maps report the desert radar palette's interior templates instead.
         if (Scen.Theater == THEATER_INTERIOR) {
             extern char const* const TF_TdTileRadarClass[];
             char const* irow = TF_TdTileRadarClass[TType - TEMPLATE_TDSH1];
@@ -1052,14 +1015,6 @@ bool CellClass::Get_Template_Info(char* template_name, int& icon, void*& image_d
             image_data = (void*)stand->ImageData;
             return true;
         }
-        /*
-        ** Same-named same-size VANILLA twin (TF_TdTileVanillaTwin, generated):
-        ** report RA's own template + the SAME icon for the static map + radar.
-        ** Rivers/roads/water/slopes radar as RA's real art (the class
-        ** stand-ins blurred them to texture swatches), and the static ground
-        ** under overlay/smudge cells keeps road/river continuity. Shores and
-        ** bridges have no same-size twin and fall through to the stand-ins.
-        */
         extern short const TF_TdTileVanillaTwin[];
         short twin = TF_TdTileVanillaTwin[TType - TEMPLATE_TDSH1];
         if (twin >= 0) {
@@ -1075,11 +1030,6 @@ bool CellClass::Get_Template_Info(char* template_name, int& icon, void*& image_d
         if (cls == 'W') {
             ttype = &TemplateTypeClass::As_Reference(TEMPLATE_WATER);
             icon = 0;
-            /*
-            ** River-adjacent water continues the textured rv* radar art:
-            ** flat sea W1 against textured river banks reads as a seam on
-            ** the radar (river-fed lakes, river mouths).
-            */
             for (int face = FACING_N; face < FACING_COUNT; face++) {
                 CellClass const* adj = Adjacent_Cell((FacingType)face);
                 if (adj != NULL
@@ -1091,13 +1041,9 @@ bool CellClass::Get_Template_Info(char* template_name, int& icon, void*& image_d
                 }
             }
         } else if (cls == 'R') {
-            // river water (bridge spans) -- continues the textured rv* radar
-            // art instead of flat sea W1
             ttype = &TemplateTypeClass::As_Reference(TEMPLATE_RIVER13);
             icon = 6;
         } else if (cls == 'K') {
-            // rock/cliff (slopes + boulders) -- RA's own slope art reads as
-            // a cliff band on the radar
             ttype = &TemplateTypeClass::As_Reference(TEMPLATE_SLOPE01);
             icon = 0;
         } else if (cls == 'B') {
@@ -1794,11 +1740,8 @@ bool CellClass::Has_Gate_Along(bool east_west) const
     return (false);
 }
 
-/*
-**	Can a building of this type be placed onto this cell's wall segment, replacing it?
-**	Only a bare component tower or a gate can, onto a wall that joins them, with nothing
-**	else standing in the cell. Whose wall it is is the proximity check's business.
-*/
+// Can a building of this type replace this cell's wall? Only a bare component tower or a gate, onto a wall
+// that joins them, with nothing else in the cell.
 bool CellClass::Takes_Building_On_Wall(BuildingTypeClass const* type) const
 {
     return (type != NULL && (type->Type == STRUCT_TSCTWR || TF_Gate_Info(type->Type) != NULL)
@@ -1807,10 +1750,8 @@ bool CellClass::Takes_Building_On_Wall(BuildingTypeClass const* type) const
 
 void CellClass::Wall_Update(bool force)
 {
-    /*
-    **	force = recompute the neighbours' joins regardless of what this cell holds:
-    **	used when a component tower arrives in or leaves this cell.
-    */
+    // TF: force recomputes the neighbours' joins whatever this cell holds, for a component tower arriving
+    // or leaving.
     if (!force) {
         if (Overlay == OVERLAY_NONE) {
             return;
@@ -1837,10 +1778,7 @@ void CellClass::Wall_Update(bool force)
             */
             for (unsigned i = 0; i < (sizeof(_offsets) / sizeof(_offsets[0]) - 1); i++) {
                 CellClass* adjcell = newcell->Adjacent_Cell(_offsets[i]);
-                /*
-                **	A wall that joins component towers runs into a tower next to it, up to
-                **	the coupling on the tower's side, and into a gate's end along its axis.
-                */
+                // TF: a tower-joint wall also joins a component tower beside it and a gate's end along its axis.
                 bool joint = TF_Is_Tower_Joint_Wall(newcell->Overlay);
                 if (adjcell
                     && (adjcell->Overlay == newcell->Overlay || (joint && adjcell->Has_TS_Wall_Tower())
@@ -1855,8 +1793,7 @@ void CellClass::Wall_Update(bool force)
             **	is calculated, but there is no artwork for it, then consider the wall to be
             **	completely destroyed.
             */
-            // Tiberian Factions -- TSWALL shares BRIK's 16x3 frame layout: past the
-            // third damage stage there is no art, so the wall is gone.
+            // TF: TS walls share the brick wall's 16x3 frame layout, so past the third damage stage they are gone.
             if ((newcell->Overlay == OVERLAY_TSWALL || newcell->Overlay == OVERLAY_TSNWALL) && newcell->OverlayData == 48) {
                 newcell->Overlay = OVERLAY_NONE;
                 newcell->OverlayData = 0;
@@ -2358,9 +2295,7 @@ int CellClass::Tiberium_Adjust(bool pregame)
                     Overlay = Random_Pick(OVERLAY_GEMS1, OVERLAY_GEMS4);
                     break;
 
-                // Tiberian Factions -- Tiberium uses the Ore value and the same
-                // 12-step density model (_adj table below). Single visual type,
-                // so no Random_Pick variant shuffle needed.
+                // TF: Tiberium is worth the Ore value and uses the same 12-step density model.
                 case OVERLAY_TIB01:
                     value = Rule.GoldValue;
                     break;
@@ -2399,12 +2334,8 @@ int CellClass::Tiberium_Adjust(bool pregame)
 
 extern bool MPSuperWeaponDisable;
 
-/***********************************************************************************************
- * House_Has_MCV -- Does this house own any MCV (stock or faction)?                            *
- *                                                                                              *
- *    The UScan bitmask can only represent the first 32 unit Types, so the faction MCVs         *
- *    (past that range) are invisible to a UNITF_MCV test; scan the unit heap instead.          *
- *=============================================================================================*/
+// True when the house has an MCV of any faction on the map. Scans the heap: the faction MCVs lie past
+// UScan's 32 bits.
 static bool House_Has_MCV(HouseClass const* house)
 {
     for (int i = 0; i < Units.Count(); i++) {
@@ -2762,12 +2693,7 @@ bool CellClass::Goodie_Check(FootClass* object)
             **	give him another one.
             */
             if (force_mcv) {
-                /*
-                **	W2 b3: a comeback MCV must be the recipient's OWN faction's —
-                **	this fires when the player is already wiped, the one moment an
-                **	off-faction yard would be unrecoverable. Campaign keeps the
-                **	stock MCV.
-                */
+                // TF: in skirmish a comeback MCV is the recipient's own faction's; campaigns keep the stock MCV.
                 UnitType mcv_type = UNIT_MCV;
                 if (Session.Type != GAME_NORMAL) {
                     switch (object->House->ActLike) {
@@ -2807,13 +2733,8 @@ bool CellClass::Goodie_Check(FootClass* object)
                 utp = &UnitTypeClass::As_Reference(Rule.UnitCrateType);
             }
 
-            /*
-            **  Tiberian Factions -- skirmish and multiplayer unit crates draw evenly from one pool of
-            **  every faction's crate vehicles, whoever finds them: RA, TD, TS, RA2 and C&C3 alike, any
-            **  faction's MCV included when bases are on (the yard it deploys grants its own tech tree).
-            **  Harvesters are in too; every harvester docks at every refinery. The superseded RA and TD
-            **  MCVs stay out (the per-faction MCVs replace them).
-            */
+            // TF: skirmish unit crates draw evenly from every faction's crate vehicles, faction MCVs included
+            // when bases are on; never the stock-campaign MCVs.
             if (utp == NULL && Session.Type != GAME_NORMAL) {
                 UnitType pool[UNIT_COUNT];
                 int count = 0;
@@ -3395,8 +3316,7 @@ bool CellClass::Can_Tiberium_Grow(void) const
     if (OverlayData >= 11)
         return (false);
 
-    // Tiberian Factions -- TIB01 grows (densifies) like Gold. Gems are excluded
-    // here in vanilla, which is why they stay static; TIB01 joins the Gold set.
+    // TF: Tiberium grows like Gold; gems stay static.
     if (Overlay != OVERLAY_GOLD1 && Overlay != OVERLAY_GOLD2 && Overlay != OVERLAY_GOLD3 && Overlay != OVERLAY_GOLD4
         && Overlay != OVERLAY_TIB01)
         return (false);
@@ -3437,7 +3357,7 @@ bool CellClass::Can_Tiberium_Spread(void) const
     if (OverlayData <= 6)
         return (false);
 
-    // Tiberian Factions -- TIB01 spreads to adjacent cells like Gold once dense.
+    // TF: Tiberium spreads like Gold once dense.
     if (Overlay != OVERLAY_GOLD1 && Overlay != OVERLAY_GOLD2 && Overlay != OVERLAY_GOLD3 && Overlay != OVERLAY_GOLD4
         && Overlay != OVERLAY_TIB01)
         return (false);
@@ -3496,9 +3416,7 @@ bool CellClass::Spread_Tiberium(bool forced)
         CellClass* newcell = Adjacent_Cell(index + offset);
 
         if (newcell != NULL && newcell->Can_Tiberium_Germinate()) {
-            // Tiberian Factions -- Tiberium spreads as Tiberium; Ore spreads as
-            // Ore. Match the new field's type to this source cell so TIB01 and
-            // Gold stay distinct resources instead of cross-contaminating.
+            // TF: a field spreads as its own resource, so Tiberium and Ore never mix.
             OverlayType spawn =
                 (Overlay == OVERLAY_TIB01) ? OVERLAY_TIB01 : Random_Pick(OVERLAY_GOLD1, OVERLAY_GOLD4);
             new OverlayClass(spawn, newcell->Cell_Number());

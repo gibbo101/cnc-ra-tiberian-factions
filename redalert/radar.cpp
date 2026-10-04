@@ -251,11 +251,7 @@ bool RadarClass::Radar_Activate(int control)
             if (IsRadarActive && !IsRadarDeactivating) {
 #ifndef REMASTER_BUILD
                 // MBL 07.20.2020: These are never being sent to the client, so handled there; Disabling here for good measure.
-                // Tiberian Factions: In REMASTER_BUILD the sound is fired
-                // from HouseClass::AI's radar block (house.cpp) with proper
-                // edge-detection on the local human's own radar state. Doing
-                // it here would fire on every AI player's ping-pong write
-                // to Map.IsRadarActive in skirmish.
+                // TF: the remaster fires the radar sounds from HouseClass::AI, on the local human's own radar state.
                 Sound_Effect(VOC_RADAR_OFF);
 #endif
                 IsRadarDeactivating = true;
