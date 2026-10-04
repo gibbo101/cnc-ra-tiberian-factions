@@ -200,6 +200,7 @@ if(BUILD_REMASTERRA)
     add_library(RedAlert SHARED 
         dllinterface.cpp
         dllinterfaceeditor.cpp
+        tf_launcher.cpp
         sidebarglyphx.cpp
         ${REDALERT_SRC}
         ${REDALERT_HEADERS}
