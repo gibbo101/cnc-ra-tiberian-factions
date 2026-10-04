@@ -116,12 +116,8 @@ extern bool Is_Legacy_Render_Enabled(void);
 #define Is_Legacy_Render_Enabled() true
 #endif
 
-/*
-**  Map a deploying MCV to the StructType it should produce. The MCV TYPE
-**  carries the faction (W2 b3), so an MCV built from a captured factory
-**  deploys the capturing lineage's yard with no extra state. The
-**  stock-campaign pair keeps its vanilla round-trip.
-*/
+// The construction yard a deploying MCV becomes. The MCV's type carries the faction, so the yard follows the
+// type, not the owner.
 static StructType MCV_Deploy_Building(UnitClass const* unit)
 {
     if (unit != NULL) {
@@ -319,17 +315,11 @@ UnitClass::UnitClass(UnitType classid, HousesType house)
     Reload = 0;
     FireAnim = 0;
 
-    /*
-    **	TF: attack-move (CFE port). Constructor init, not declaration init --
-    **	savegame load copies the data before placement-new runs.
-    */
+    // TF: our fields are set here, not by initialisers at their declarations: those would also run in the
+    // NoInitClass constructor a savegame load calls, and wipe the loaded values.
     MLoriginalposition = TARGET_NONE;
     MLattackmovemode = 0;
 
-    /*
-    **	TF harvester unreachable-target recovery -- constructor init (not declaration
-    **	init; savegame load copies the data before placement-new runs).
-    */
     HarvTargetCell = -1;
     HarvBestDist = 0;
     HarvStallFrame = 0;
@@ -468,11 +458,8 @@ void UnitClass::AI(void)
         Commence();
     }
 
-    /*
-    **	TF subterranean cycle owns the vehicle's motion while it runs: the drive
-    **	layer only gets to finish a track the unit was already on when the dig
-    **	order arrived. Mission/team/cloak processing (FootClass::AI) still ticks.
-    */
+    // TF: deploy-to-fire, flame-stream and EMP-charge ticks. The subterranean cycle owns the vehicle's motion
+    // while it runs; the drive layer only finishes a track already under way when the dig order came.
     if (Class->IsDeployToFire) {
         Deploy_AI();
         if (!IsActive) {
@@ -502,35 +489,13 @@ void UnitClass::AI(void)
         return;
     }
 
-    /*
-    **	Tiberian Factions (B2 dust-loop dock). The dump frame counter (StageClass)
-    **	advances every game frame, but Mission_Unload is only called every
-    **	Normal_Delay ticks -- so the dust-loop wrap MUST run here in AI() (every
-    **	frame). Done in Mission_Unload the stage overshoots past the dust window into
-    **	the down-ramp frames between calls = the bucket visibly bobbing up and down.
-    **	While a harvester is unloading with load remaining, once the stage passes the
-    **	last dust frame (13 -> SHP 109) bank one bail and wrap back to the first dust
-    **	frame (8 -> SHP 104): the bucket stays UP and only the dust cloud cycles. When
-    **	the load is empty we stop wrapping and let the stage free-run through the
-    **	down-ramp (Mission_Unload Phase C) so the bucket lowers and it drives off.
-    **	Also a safety net: IsDumping blocks driving (drive.cpp), so clear it if a
-    **	harvester is ever flagged dumping outside MISSION_UNLOAD (force-ordered away
-    **	mid-unload). Scoped to UNIT_HARVESTER so UNIT_MAD's detonation dump is untouched.
-    **	Lockstep-safe: deterministic, no RNG.
-    */
+    // TF: the RA harvester's dust loop wraps here, every frame: Mission_Unload runs too seldom, so the bucket would
+    // bob. See docs/harvester-docking-rework-plan.md.
     if (IsDumping && (*this == UNIT_HARVESTER || *this == UNIT_TDHARV || *this == UNIT_TSHARV)) {
         if (Mission != MISSION_UNLOAD) {
-            // Force-ordered away mid-unload: IsDumping blocks driving (drive.cpp), so
-            // clear it. (UNIT_TDHARV at an RA refinery uses the timer-offload path and
-            // is never auto-cleared elsewhere; the dust-loop wrap below stays HARV-only.)
+            // IsDumping blocks driving, and nothing else clears it for a harvester ordered away mid-unload.
             IsDumping = false;
         } else if (*this == UNIT_HARVESTER && Tiberium > 0 && Fetch_Stage() > 13) {
-            /*
-            **	TF economy-pace compromise: bank HARV_DOCK_BAILS_PER_CYCLE bails per dust
-            **	cycle (1=old TD-matched, 2=half). The dust ANIMATION cadence (DOCK_DUMP_RATE)
-            **	is untouched -- identical look, fewer cycles. Same dial drives all four dock
-            **	pairings so the RA + TD economies stay equal. See HARV_DOCK_BAILS_PER_CYCLE.
-            */
             for (int b = 0; b < HARV_DOCK_BAILS_PER_CYCLE && Tiberium > 0; b++) {
                 int bail = Offload_Tiberium_Bail();
                 if (bail) {
@@ -543,31 +508,15 @@ void UnitClass::AI(void)
         }
     }
 
-    /*
-    **	Tiberian Factions -- the Visceroid feeds on Tiberium and regenerates while
-    **	standing in it (mirrors TD UNIT.CPP:434). Heals 1 HP every 16 frames when
-    **	below full health and on a Tiberium cell.
-    */
+    // TF: the Visceroid regenerates on Tiberium, as in TD.
     if (*this == UNIT_TDVICE && (Frame % 16) == 0 && Health_Ratio() < 0x0100
         && Map[Coord_Cell(Coord)].Land_Type() == LAND_TIBERIUM) {
         Strength++;
         Mark(MARK_CHANGE);
     }
 
-    /*
-    **	Tiberian Factions -- harvester unreachable-target recovery (NO-PROGRESS detector).
-    **	A harvester can fail to reach an ore patch even when the movement-zone map says it is
-    **	reachable: placing a BUILDING (a turret, the AI walling its own gems) does NOT recompute
-    **	zones, so the patch reads "reachable", A* fails, and the LEGACY pathfinder keeps handing
-    **	out wandering routes that never arrive -- so the no-path branch never fires (which is why
-    **	hooking the path-failure point missed it). The robust, pathfinder-agnostic signal is the
-    **	symptom itself: we are not getting any closer to our ore. Track the best (closest)
-    **	distance achieved toward the ore NavCom; if it has not improved for HARV_STALL_FRAMES,
-    **	blacklist that patch and drop the target so Mission_Harvest re-scans a reachable field
-    **	(Goto_Tiberium skips the blacklist) or waits the block out. A legitimately far-but-
-    **	reachable patch keeps improving its best distance, so it is never blacklisted.
-    **	Lockstep-safe: per-unit ints + Frame, deterministic, no RNG.
-    */
+    // TF: a harvester that stops closing on its ore for 5 s blacklists the field, after up to three more windows
+    // while A* still finds a path. Zones ignore buildings. See docs/harvester-recovery-design.md.
     if (Class->IsToHarvest && Mission == MISSION_HARVEST && Target_Legal(NavCom)
         && Map[As_Cell(NavCom)].Land_Type() == LAND_TIBERIUM) {
         const long HARV_STALL_FRAMES = TICKS_PER_SECOND * 5; // no progress for 5s == suspect unreachable
@@ -576,33 +525,20 @@ void UnitClass::AI(void)
         CELL navc = As_Cell(NavCom);
         int dist = (int)Distance(NavCom);
         if (HarvTargetCell != navc) {
-            HarvTargetCell = navc; // new target -- start a fresh progress window
+            HarvTargetCell = navc;
             HarvBestDist = dist;
             HarvStallFrame = Frame;
             HarvReachableResets = 0;
         } else if (dist + HARV_PROGRESS_MARGIN < HarvBestDist) {
-            HarvBestDist = dist; // got meaningfully closer -- reset the stall timer
+            HarvBestDist = dist;
             HarvStallFrame = Frame;
             HarvReachableResets = 0;
         } else if (Frame - HarvStallFrame >= HARV_STALL_FRAMES) {
-            /*
-            **	TF: stalled 5s toward the ore. The 5s-no-progress symptom matches TWO very
-            **	different situations -- a genuinely WALLED field (A* fails; the case this
-            **	detector was built for) and a field we are merely BLOCKED from for a moment by
-            **	base traffic / parked vehicles / our own buildings. Blacklisting the latter is
-            **	what flung harvesters across the map past base-adjacent ore (the "ignored the
-            **	field by the refinery and drove south" bug). Disambiguate with a direct A*
-            **	query: if A* can still path to the field it is reachable -- just congested -- so
-            **	keep trying and wait it out; only blacklist when A* confirms no path exists.
-            **	A* accounts for buildings (unlike the movement-zone map), so the original
-            **	walled-gems case still blacklists correctly. A bounded number of free passes
-            **	stops a harvester pinned by a never-moving blocker from idling forever.
-            */
             bool reachable =
                 Find_Path_AStar(NULL, Coord_Cell(Center_Coord()), navc, MAP_CELL_TOTAL, MOVE_MOVING_BLOCK, -1) > 0;
             if (reachable && HarvReachableResets < HARV_MAX_REACHABLE_RESETS) {
                 HarvReachableResets++;
-                HarvStallFrame = Frame; // congested but reachable -- grant another window
+                HarvStallFrame = Frame;
             } else {
                 Blacklist_Harvest_Cell(navc);
                 Assign_Destination(TARGET_NONE);
@@ -611,38 +547,20 @@ void UnitClass::AI(void)
             }
         }
     } else if (HarvTargetCell != -1 && !Target_Legal(NavCom)) {
-        HarvTargetCell = -1; // not pursuing ore right now -- clear tracking
+        HarvTargetCell = -1;
     }
 
-    /*
-    **	Tiberian Factions -- harvester ANTI-STUCK watchdog (vanilla dock-contention / idle recovery).
-    **	Detector 1 above handles "pursuing ore but not getting closer -> A* check -> blacklist the
-    **	walled field". This watchdog handles the broader PHYSICAL/idle failures that all share one
-    **	symptom: the harvester is NOT moving and NOT doing productive work -- wedged in base traffic,
-    **	crowding a dock, OR having GIVEN UP (dropped to GUARD/HUNT when it found no reachable ore) and
-    **	parked forever. It watches the CELL, not a target, so it works in any mission. Escalate the
-    **	longer it stays put:
-    **	  ~3s  -- shove idle friendly infantry off the path ahead,
-    **	  ~6s  -- Try_Deadlock_Scatter: physically displace us to a free neighbour (breaks a wedge that
-    **	          re-targeting alone never moves -- the harvester literally can't take its first step),
-    **	  ~12s -- hard restart: drop radio, clear targets, re-enter MISSION_HARVEST at LOOKING (a gave-up
-    **	          harvester retries; a loaded one routes home). NO blacklist here -- Detector 1 owns
-    **	          field-blacklisting via real A* reachability; blacklisting on a physical wedge poisons
-    **	          good fields the harvester simply couldn't walk to (observed: blskips=151 churn).
-    **	EXEMPT: productive work (IsHarvesting/IsDumping is reset), and a HUMAN player's manual park
-    **	(MISSION_MOVE/GUARD/GUARD_AREA/STICKY) so a retreat-to-hide order is never overridden. AI
-    **	harvesters get no manual orders, so they are always eligible -- which is what recovers a gave-up
-    **	AI harvester sitting idle. Lockstep-safe: per-unit ints + Frame + deterministic Scatter/Assign.
-    */
+    // TF: anti-stuck watchdog for a harvester idle in one cell and not parked by a human: it clears infantry,
+    // scatters, then restarts its harvest cycle. See docs/harvester-recovery-design.md.
     if (Class->IsToHarvest) {
         bool player_parked = House->IsHuman
                              && (Mission == MISSION_MOVE || Mission == MISSION_GUARD
                                  || Mission == MISSION_GUARD_AREA || Mission == MISSION_STICKY);
-        bool productive = IsHarvesting || IsDumping; // legitimately stationary -- don't disturb
+        bool productive = IsHarvesting || IsDumping;
         CELL mycell = Coord_Cell(Center_Coord());
 
         if (player_parked || productive || mycell != HarvStuckCell) {
-            HarvStuckCell = mycell; // moving, working, or under manual command -- reset the watchdog
+            HarvStuckCell = mycell;
             HarvStuckFrame = Frame;
         } else {
             const long HARV_STUCK_NUDGE = TICKS_PER_SECOND * 3;    // shove blocking infantry
@@ -651,12 +569,6 @@ void UnitClass::AI(void)
             const int HARV_STUCK_SCAN_CELLS = 6;
             long stuck = Frame - HarvStuckFrame;
 
-            /*
-            **	Direction to clear: the actual next path step when we have one (follows a bent route
-            **	around obstacles), else the bearing to our target, else to the refinery we are tethered
-            **	to. Using Path[0] fixes the off-axis case where the straight-line bearing rounds to the
-            **	wrong eighth and the scan misses a blocker sitting just off-axis.
-            */
             if (stuck >= HARV_STUCK_NUDGE) {
                 FacingType face = FACING_NONE;
                 if (Path[0] != FACING_NONE) {
@@ -671,23 +583,11 @@ void UnitClass::AI(void)
                 }
             }
 
-            /*
-            **	Physically displace a wedged harvester to a free neighbour (the shared deadlock breaker:
-            **	shoves an idle blocker then id-seed-scatters us onto open ground, re-queuing our goal).
-            **	This frees a harvester that simply can't take its first step. No-ops safely when there is
-            **	no goal or no free cell.
-            */
             if (stuck >= HARV_STUCK_SCATTER) {
                 Try_Deadlock_Scatter();
             }
 
             if (stuck >= HARV_STUCK_RESET) {
-                /*
-                **	Re-decide. End any refinery radio session, drop every target, and re-enter the harvest
-                **	state machine at LOOKING (Status 0): a gave-up/idle harvester retries finding ore, a
-                **	loaded one auto-routes home (LOOKING redirects a full load to FINDHOME). Field selection
-                **	+ blacklisting are left to Detector 1 / Goto_Tiberium -- we only re-kick the cycle.
-                */
                 if (In_Radio_Contact()) {
                     Transmit_Message(RADIO_OVER_OUT);
                 }
@@ -714,11 +614,7 @@ void UnitClass::AI(void)
         }
     }
 
-    /*
-    **	Tiberian Factions -- drive the constant animation for IsAnimating units
-    **	(the Visceroid's writhing blob), mirroring TD UNIT.CPP:471. Advance the
-    **	graphic stage and loop back at the end of the SHP.
-    */
+    // TF: IsAnimating units (the Visceroid) loop their whole SHP, as in TD.
     if (Class->IsAnimating) {
         if (!Fetch_Rate()) {
             Set_Rate(2);
@@ -736,11 +632,8 @@ void UnitClass::AI(void)
         IsHarvesting = false;
     }
 
-    /*
-    **	TF: harvester QoL (CFE port) — clear the unload refinery whenever the
-    **	harvester is neither harvesting nor entering a refinery, so stale
-    **	bookings don't inflate other harvesters' wait estimates.
-    */
+    // TF: a harvester neither harvesting nor entering a refinery drops its refinery booking, so a stale
+    // booking does not inflate other harvesters' wait estimates (CFE port).
     if (Class->IsToHarvest && Mission != MISSION_HARVEST) {
         if (Mission != MISSION_ENTER || !In_Radio_Contact() || Contact_With_Whom()->What_Am_I() != RTTI_BUILDING
             || (*((BuildingClass*)Contact_With_Whom()) != STRUCT_REFINERY
@@ -792,12 +685,8 @@ void UnitClass::AI(void)
     */
     Reload_AI();
 
-    /*
-    **	Attack-move (CFE port): backstop in case a minelayer gets stuck mid
-    **	attack-move. If we reached (or got close to) the remembered destination,
-    **	lay mines; otherwise head home. (The CFE veterancy ammo-regen block above
-    **	this point is not ported -- we have no veterancy.)
-    */
+    // TF: attack-move backstop for a minelayer stuck mid attack-move: it lays mines near the remembered
+    // destination, otherwise heads home (CFE port).
     if (AttackMove && (*this == UNIT_MINELAYER) && !IsDriving && !IsRotating
         && (Mission != MISSION_MOVE) && (Mission != MISSION_UNLOAD)
         && (MissionQueue != MISSION_MOVE) && (MissionQueue != MISSION_UNLOAD)) {
@@ -878,14 +767,8 @@ void UnitClass::Rotation_AI(void)
             **	if the vehicle isn't currently moving or facing the correct direction. This
             **	applies only to tracked vehicles. Wheeled vehicles never rotate to face the
             **	target, since they aren't maneuverable enough.
-            **
-            **	Tiberian Factions -- the Recon Bike (UNIT_TDBIKE) is the TD-authentic
-            **	exception: TD special-cases its wheeled bike to rotate its hull to fire
-            **	(tiberiandawn/tarcom.cpp:166, `|| *this == UNIT_BIKE`). RA commented that
-            **	clause out because vanilla RA has no bike; restore it for our TDBIKE so it
-            **	turns to bring its forward-firing TDDragon launcher to bear instead of only
-            **	firing at targets it already happens to face.
             */
+            // TF: the Recon Bike also turns its hull to fire, as in TD, because its launcher fires forward only.
             if ((Class->Speed == SPEED_TRACK || *this == UNIT_TDBIKE) && !Target_Legal(NavCom) && !IsDriving
                 && PrimaryFacing.Difference(dir)) {
                 PrimaryFacing.Set_Desired(dir);
@@ -907,10 +790,8 @@ void UnitClass::Rotation_AI(void)
 
             if (SecondaryFacing.Is_Rotating()) {
                 Mark(MARK_CHANGE_REDRAW);
-                // TSHVR: the rack is large and its side-on frames are much taller
-                // than its end-on frames, so a fast sweep reads as the rack
-                // popping upward. A slower swing renders the intermediate frames
-                // as a deliberate turret rotation instead.
+                // TF: the Hover MLRS rack turns slowly. Its side-on frames are much taller than its end-on ones, so a
+                // fast sweep reads as the rack popping upward.
                 if (SecondaryFacing.Rotation_Adjust((*this == UNIT_TSHVR) ? 3 : Class->ROT + 1)) {
                     Mark(MARK_CHANGE_REDRAW);
                 }
@@ -1012,18 +893,8 @@ void UnitClass::Reload_AI(void)
  *=============================================================================================*/
 void UnitClass::Firing_AI(void)
 {
-    /*
-    **	A DeployToFire unit sets down to fire only on an attack it was ordered to make: a
-    **	target it merely noticed while guarding leaves it standing, so it never plants itself
-    **	on the way out of the factory. A target beyond its reach is walked toward first, and one
-    **	inside the weapon's minimum range is backed away from (Approach_Target picks the cell)
-    **	rather than set down on top of.
-    */
-    /*
-    **	On attack-move (how the AI releases its attack waves) targets are picked up while the
-    **	move order still stands, so one within reach turns the walk into that attack: the unit
-    **	stops and sets down below, and attack-move walks it on once the target is gone.
-    */
+    // TF: a deploy-to-fire unit sets down only to make an ordered attack or take an attack-move target in reach,
+    // never for one noticed on guard, and not with the target inside its weapon's minimum range.
     if (Class->IsDeployToFire && DeployState == DEPLOY_MOBILE && AttackMove && Mission == MISSION_MOVE
         && Target_Legal(TarCom) && Class->PrimaryWeapon != NULL) {
         int which = What_Weapon_Should_I_Use(TarCom);
@@ -1268,12 +1139,6 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                 }
                 return (RADIO_ROGER);
             }
-            /*
-            **	TD harv -> TD ref (the special case): verbatim TD attach maneuver -- turn
-            **	DIR_SW, then Force_Track BACKUP_INTO_REFINERY into the building's south-row
-            **	cell; Per_Cell_Process completes the Limbo + Attach handshake. The TS
-            **	harvester never reaches here (handled above).
-            */
             if (!IsRotating && PrimaryFacing != DIR_SW) {
                 Do_Turn(DIR_SW);
             } else {
@@ -1304,17 +1169,8 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                 TechnoClass* whom = Contact_With_Whom();
                 if (IsTethered && whom != NULL) {
                     if (whom->What_Am_I() == RTTI_BUILDING && Mission == MISSION_ENTER) {
-                        /*
-                        **	Tiberian Factions B2/B3 -- tell the refinery we're docked
-                        **	(RADIO_IM_IN starts MISSION_UNLOAD) but do NOT send
-                        **	RADIO_UNLOADED here. The original RA flow sent it immediately,
-                        **	which freed the dock and dropped radio contact right at unload
-                        **	start. We keep the harvester tethered + in radio contact for the
-                        **	whole dust-loop instead, so the dock reads as occupied (queueing)
-                        **	and an engineer capturing the refinery mid-unload also takes the
-                        **	harvester. RADIO_UNLOADED is sent at completion (Mission_Unload
-                        **	Phase C).
-                        */
+                        // TF: RADIO_UNLOADED waits for the end of Mission_Unload, so the harvester holds the dock
+                        // while it unloads and an engineer who captures the refinery takes it too.
                         Transmit_Message(RADIO_IM_IN, whom);
                     }
                 }
@@ -1610,10 +1466,7 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
     // bool select = (IsSelected && House->IsPlayerControl);
     bool select = (Is_Selected_By_Player()); //&& House->IsPlayerControl);
 
-    /*
-    **	TF: nothing on the surface reaches a vehicle travelling underground.
-    **	Only a forced hit (the tunnel self-destruct, the future EMP kill) lands.
-    */
+    // TF: nothing on the surface reaches a vehicle underground; only a forced hit, such as Tunnel_Explode, lands.
     if (TunnelState == TUNNEL_TUNNELING && !forced) {
         return (RESULT_NONE);
     }
@@ -1671,21 +1524,11 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
             if (Percent_Chance(50)) {
                 InfantryClass* i = 0;
 
+                // TF: a TS vehicle's survivor is TS Light Infantry and a TD vehicle's the TD Minigunner, armed or not.
+                // This spawn names the type itself, so Crew_Type does not decide it.
                 if (Class->IniName[0] == 'T' && Class->IniName[1] == 'S') {
-                    /*
-                    **	Every TS vehicle -- armed or not -- puts out TS Light Infantry
-                    **	(INFANTRY_TSE1) as its survivor, matching the crew a sold TS
-                    **	building hands back.
-                    */
                     i = new InfantryClass(INFANTRY_TSE1, House->Class->House);
                 } else if (Class->IniName[0] == 'T' && Class->IniName[1] == 'D') {
-                    /*
-                    **	Tiberian Factions: EVERY TD vehicle -- armed or not, incl. the
-                    **	MCV and Harvester -- drops the TD Minigunner (INFANTRY_TDE1), not
-                    **	RA's rifle infantry or a technician. This is the ACTUAL death-
-                    **	survivor spawn (it hardcodes the type rather than calling
-                    **	Crew_Type), so the TD-prefix check has to live right here.
-                    */
                     i = new InfantryClass(INFANTRY_TDE1, House->Class->House);
                 } else if (Class->PrimaryWeapon == NULL) {
                     i = new InfantryClass(INFANTRY_C1, House->Class->House);
@@ -1806,11 +1649,9 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
                     && Health_Ratio() <= Rule.ConditionYellow) {
 
                     /*
-                    **	Find a nearby refinery and flee to it. Any harvester can use
-                    **	any refinery type now (cross-dock), so try the native type first
-                    **	then fall back to the others. (In normal play a house owns only one
-                    **	type, so the fallback is inert; it matters in mixed/captured setups.)
+                    **	Find nearby refinery and head to it?
                     */
+                    // TF: any harvester docks at any refinery type, so it tries its own type first, then the others.
                     StructType native = (*this == UNIT_TDHARV)   ? STRUCT_TDPROC
                                         : (*this == UNIT_TSHARV) ? STRUCT_TSPROC
                                                                  : STRUCT_REFINERY;
@@ -1846,15 +1687,6 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
     return (res);
 }
 
-/***********************************************************************************************
- * UnitClass::Response_Select/Move/Attack -- vehicle voice responses.                          *
- *                                                                                             *
- *   GDI/Nod (HOUSE_GOOD/HOUSE_BAD) voice with TD's vehicle takes: the .V00/.V02 samples carry *
- *   the baked-in radio-comms static, selected via the negative variation the base DriveClass  *
- *   also uses (On_Sound_Effect routes GDI/Nod to the TD assets). Allied/Soviet MUST defer to  *
- *   the base DriveClass::Response_* (their normal RA vehicle voices) -- this override shadows  *
- *   DriveClass, so without the explicit base call RA vehicles go silent.                      *
- *=============================================================================================*/
 /*
 **	TS Limpet Drone: it answers in its own chirps (Firestorm [LIMPET] VoiceSelect/Move/Attack).
 */
@@ -1869,11 +1701,8 @@ static bool TF_Limpet_Voice(UnitClass const* unit, VocType a, VocType b)
     return (true);
 }
 
-/*
-**	The RA2 and C&C3 tanks answer in their own crews' voices, whoever owns them. A move order
-**	also spools an RA2 tank's engine up (YR MoveStart); the C&C3 tanks answer with the voice
-**	alone, as C&C3 plays them. Returns false for every other unit.
-*/
+// The RA2 and C&C3 tanks answer in their own crews' voices, whoever owns them; a move order also spools an RA2
+// tank's engine up. False for every other unit.
 enum TFVoiceKind { TF_VOICE_SELECT, TF_VOICE_MOVE, TF_VOICE_ATTACK };
 
 static bool TF_RA2_Voice(UnitClass const* unit, TFVoiceKind kind)
@@ -1928,6 +1757,8 @@ static bool TF_RA2_Voice(UnitClass const* unit, TFVoiceKind kind)
     return (true);
 }
 
+// Vehicle voice replies: the Limpet, RA2 and C&C3 tanks speak for themselves, a GDI or Nod player hears TD's
+// vehicle takes, and anyone else DriveClass's RA voices, which these overrides would otherwise silence.
 void UnitClass::Response_Select(void)
 {
     if (TF_Limpet_Voice(this, VOC_TS_LIMPQ3, VOC_TS_LIMPQ4)) {
@@ -2438,8 +2269,7 @@ bool UnitClass::Try_To_Deploy(void)
                     **	MCV.
                     */
                     if (building->House == PlayerPtr) {
-                        // Tiberian Factions mod: TD con-yard (TDFACT etc.) slams
-                        // down with TD's HVYDOOR1 instead of RA's PLACBLDG.
+                        // TF: a TD or TS yard slams down with its own era's placement sound.
                         bool td_bldg = building->Class->Is_Tiberian_Era();
                         bool ts_bldg = building->Class->Is_TS_Era();
                         Sound_Effect(ts_bldg ? VOC_TS_PLACE_BUILDING_DOWN
@@ -2582,25 +2412,8 @@ void UnitClass::Per_Cell_Process(PCPType why)
                         break;
 
                     case RADIO_ATTACH:
-                        /*
-                        **	TD-verbatim absorb (tiberiandawn/unit.cpp:1771-1777).
-                        **	Drives the UNIT_TDHARV → STRUCT_TDPROC dock — once
-                        **	the Force_Track(BACKUP_INTO_REFINERY) animation has
-                        **	parked the harvester on the building's south-row
-                        **	cell, Per_Cell_Process fires RADIO_IM_IN here and
-                        **	STRUCT_TDPROC responds RADIO_ATTACH (building.cpp
-                        **	Receive_Message RADIO_IM_IN). Mark off the map,
-                        **	Limbo to clear the cell, then attach as building
-                        **	cargo so the BSTATE_AUX1 siphon cycle (driven by
-                        **	BuildingClass::Mission_Harvest_TD) can pull bails
-                        **	via Attached_Object(). Detach + re-spawn happens
-                        **	via STRUCT_TDPROC's Exit_Object branch.
-                        **
-                        **	RA's original `case RADIO_ATTACH: break;` was a
-                        **	stub — building->Attach was never called, so a TD-
-                        **	style refinery dock would have left the harvester
-                        **	stranded in radio contact with no cargo binding.
-                        */
+                        // TF: a TD harvester at a TD refinery becomes the building's cargo, so its siphon cycle draws
+                        // bails through Attached_Object; the refinery's Exit_Object puts it back out.
                         Mark(MARK_UP);
                         SpecialFlag = true;
                         Limbo();
@@ -2877,9 +2690,7 @@ int UnitClass::Shape_Number(void) const
     assert(Units.ID(this) == ID);
     assert(IsActive);
 
-    /*
-    **	TS Limpet Drone: no facings, a ten-frame crawl cycle.
-    */
+    // TF: the Limpet Drone has no facings, only a ten-frame crawl cycle.
     if (*this == UNIT_TSLIMP) {
         return (((::Frame + ID) / 2) % 10);
     }
@@ -2918,13 +2729,6 @@ int UnitClass::Shape_Number(void) const
 #endif
 
         /*
-        **  Tiberian Factions — TS walker gait. Body tileset = WalkFacings
-        **  blocks of WalkFrames (see type.h). Stage runs off the global frame
-        **  counter (offset by ID so a formation doesn't march in lockstep)
-        **  while the unit is actually driving; a standing walker rests on the
-        **  first frame of its facing's cycle. Cadence /2 ≈ TS WalkRate=2.
-        */
-        /*
         **	TF subterranean ladders (docs/subterranean-design.md shape contract):
         **	dive = 32 + facing8*5 + (step-1), emerge = 72 + facing8*5 + (step-1).
         **	The dive ladder runs shallow->steep and the emerge ladder steep->shallow
@@ -2942,36 +2746,21 @@ int UnitClass::Shape_Number(void) const
             }
         }
 
+        // TF: a TS walker's tileset: walk blocks, firing blocks, then a DeployToFire walker's 64 set-down facings
+        // (barrels level, then pitched onto a target as TS's BarrelPitch) and its ladder. Firing outranks the gait.
         if (Class->WalkFrames > 1) {
-            /*
-            **  A DeployToFire walker set down shows the deployed facing of its turret; mid-ladder
-            **  it shows the ladder frame, run forwards to set down and backwards to pack up.
-            */
             if (Class->IsDeployToFire && DeployState != DEPLOY_MOBILE) {
                 int walk_end = Class->WalkFacings * (Class->WalkFrames + Class->FiringFrames);
                 if (DeployState == DEPLOY_DEPLOYED) {
-                    /*
-                    **  The barrels rest level and pitch up onto a target (TS raises BarrelPitch while
-                    **  it has one and drops it back after the shot): the second set of 32 facings.
-                    */
                     int aimed = Target_Legal(TarCom) ? 32 : 0;
                     return (walk_end + aimed + TechnoClass::BodyShape[Dir_To_32(SecondaryFacing)]);
                 }
                 int step = (DeployState == DEPLOY_DEPLOYING) ? (int)DeployStep : (Class->DeployFrames - 1 - (int)DeployStep);
                 return (walk_end + 64 + min(max(step, 0), Class->DeployFrames - 1));
             }
-            // BodyShape maps the clockwise DirType index into CCW frame space
-            // (0=N advancing CCW) — the same space every 32-frame tileset and
-            // the turret draw use. The walker tilesets are packed CCW too.
             int wfacing =
                 ((TechnoClass::BodyShape[Dir_To_32(PrimaryFacing)] * Class->WalkFacings + 16) / 32) % Class->WalkFacings;
 
-            /*
-            **  The firing block sits immediately after the walk cycle, laid out
-            **  the same way (WalkFacings blocks of FiringFrames). While FireAnim
-            **  runs it outranks the gait, so a shot always reads as a shot even
-            **  if the walker is still rotating onto its target.
-            */
             if (Class->FiringFrames > 0 && FireAnim > 0) {
                 int elapsed = (Class->FiringFrames * Class->WalkRate) - (int)FireAnim;
                 int fstage = elapsed / Class->WalkRate;
@@ -2984,14 +2773,10 @@ int UnitClass::Shape_Number(void) const
         }
 
         /*
-        **	Fetch the harvesting animation stage as appropriate. Two layouts:
-        **	UNIT_HARVESTER (RA): 32 rotation + 8 dirs × 8 load = 96 frames.
-        **	UNIT_TDHARV (TD): 32 rotation + 8 dirs × 4 load = 64 frames.
-        **	TD-verbatim shape calc per tiberiandawn/unit.cpp:2126-2129.
+        **	Fetch the harvesting animation stage as appropriate.
         */
-        // UNIT_TSHARV: the voxel render is 32 rotation frames ONLY — no load or
-        // dump anim shapes exist, so both anim branches below are skipped and the
-        // body facing frame draws throughout harvest/unload.
+        // TF: the TD harvester has 4 load frames per direction (TD's 64-frame sprite); the TS harvester has no load or
+        // dump frames, so it draws its facing throughout.
         /*
         **	TS's UnloadingHarvester: while the TS harvester unloads at the TS
         **	refinery its body is the HORV model (bed lowered), packed as the
@@ -3068,12 +2853,7 @@ int UnitClass::Shape_Number(void) const
                     shapenum += Door_Stage();
                 }
 
-                /*
-                **	Tiberian Factions: the TS Amphibious APC has no door art, and swaps
-                **	to its water hull (TS apcw.vxl, frames 32-63, sitting low in the
-                **	water) whenever its cell is water and not a bridge -- as TS's own
-                **	UnitClass draw does (OpenTS unit.cpp: AuxVoxel on LAND_WATER).
-                */
+                // TF: on water the TS Amphibious APC draws its water hull, frames 32-63, as in TS. It has no door art.
                 if (*this == UNIT_TSAPC && Map[Coord_Cell(Center_Coord())].Land_Type() == LAND_WATER) {
                     shapenum += 32;
                 }
@@ -3129,19 +2909,8 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
     DirType rotation = DIR_N;
     int scale = 0x0100;
 
-    // (TS-spike note: TSHVR's on-screen size comes from its classic stub SHP in
-    // TFASSETS.MIX, which is 48x48 -- tank-sized, matching [TSHVR] ShapeSize. The
-    // rack seats below were dialled against a sprite at that size, so the dims are
-    // load-bearing. The earlier draw-scale hack sheared the turret off its hull
-    // because scale is applied about the ground anchor per-draw; keep scale at 1.0.)
-    //
-    // Hover bob (TS-authentic): the whole unit, shadow included, gently rides up and
-    // down. Applied to y before both hull and turret draw (turret copies y), so the
-    // rack rides with the hull. Each hover unit's shadow is its own shape block (Hover
-    // MLRS 64-95, Limpet Drone 10-19) drawn first at shadow_y. An E.M. Pulse cuts the
-    // lift: the bob stops and the hull settles 3 px onto its shadow over the stun's
-    // first 12 frames, then rises again over its last 12 (TS HoverLocomotionClass
-    // Power_Off).
+    // TF: the Hover MLRS and Limpet Drone bob, shadow and all; their shadow is its own shape block drawn at
+    // shadow_y. A stun stops the bob and settles the hull up to 3 px onto the shadow, as TS's hover Power_Off.
     int shadow_y = y;
     if (Class->Type == UNIT_TSHVR || Class->Type == UNIT_TSLIMP) {
         static const int _hover_bob[8] = {0, -1, -2, -2, -1, 0, 1, 1};
@@ -3167,14 +2936,9 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
     */
     bool is_hidden = (Visual_Character() == VISUAL_HIDDEN) && (window != WINDOW_VIRTUAL);
 
-    /*
-    **	TF subterranean: the hull stays hidden under the fresh DIG mound for the
-    **	emerge lead-in (step 0), and settles a few pixels into the ground while
-    **	the dive ladder pitches it over (the angle leads, the sink follows).
-    */
+    // TF: the subterranean hull hides under the dig mound for the emerge lead-in and sinks a few pixels as the
+    // dive ladder pitches it over.
     if (Is_Subterranean()) {
-        // Underground, Shape_Number swaps the hull for the earth marker (the launcher
-        // draws an owner's CLOAKED unit solid, so the sprite itself must read as buried).
         if (TunnelState == TUNNEL_EMERGING && TunnelStep == 0) {
             is_hidden = true;
         }
@@ -3183,11 +2947,6 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
             y += _settle[TunnelStep <= 5 ? TunnelStep : 5];
         }
     }
-    /*
-    **	War factory: a vehicle seated deep in the bay is hidden by the shut
-    **	shutter and the near face, and revealed as the shutter rises -- no
-    **	draw suppression needed (08-29, the emergence Luke wants).
-    */
     if (!is_hidden) {
         shapenum = Shape_Number();
 
@@ -3252,7 +3011,7 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
             **	Determine which turret shape to use. This depends on if there
             **	is any firing animation in progress.
             */
-            // TS walkers put their turret block after the walk and firing frames, not at 32.
+            // TF: a TS walker's turret block follows its walk and firing frames instead of starting at 32.
             int turret_base =
                 (Class->WalkFrames > 1)
                     ? (Class->WalkFacings * (Class->WalkFrames + Class->FiringFrames))
@@ -3270,14 +3029,9 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
                 Recoil_Adjust(SecondaryFacing, xx, yy);
             }
 
+            // TF: the Hover MLRS rack seats from a display-only slewed copy of the hull facing, so the hull's flicking
+            // between move directions does not swing it. It must never feed the sim.
             if (*this == UNIT_TSHVR) {
-                // Two-part seat: mount position from the hull facing, art
-                // residual from the rack facing actually drawn. The mount uses
-                // a DRAW-SIDE slewed copy of the hull facing: RA pathing flicks
-                // the hull heading between move directions every few ticks, and
-                // a mount keyed raw to it pendulums several px per flick. The
-                // slew glides a quarter of the gap per rendered frame (display
-                // state only -- never feeds the sim, so save/MP-safe).
                 static unsigned char _rack_disp[600];
                 static bool _rack_disp_ok[600];
                 DirType hull = PrimaryFacing.Current();
@@ -3338,8 +3092,8 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
 
             /*
             **	Actually perform the draw. Overlay an optional shimmer effect as necessary.
-            **	(Pass the body's draw scale so a scaled unit's turret matches its hull.)
             */
+            // TF: the turret draws at the body's scale, so a scaled unit's turret matches its hull.
             Techno_Draw_Object(shapefile, shapenum, xx, yy, window, rotation, scale);
         }
     }
@@ -3418,7 +3172,7 @@ int UnitClass::Tiberium_Check(CELL& center, int x, int y)
             case OVERLAY_GOLD2:
             case OVERLAY_GOLD3:
             case OVERLAY_GOLD4:
-            case OVERLAY_TIB01: // Tiberian Factions -- Tiberium worth the same as Ore.
+            case OVERLAY_TIB01: // TF: Tiberium is worth the same as Ore.
                 value = Rule.GoldValue;
                 break;
             case OVERLAY_GEMS1:
@@ -3442,32 +3196,16 @@ static const long HARV_BLACKLIST_TTL = TICKS_PER_SECOND * 15; // retry a blackli
 static const int HARV_FLOOD_CAP = 256;                       // max ore cells visited when sizing a field
 // Travel-distance-aware field selection (Goto_Tiberium pathcost mode):
 static const int HARV_FIELD_CANDIDATES = 10;                 // max fields A*-compared per long-scan rescan (nearest rings)
-static const int HARV_FIELD_LOAD_DIVISOR = 2;                // a field must hold >= a full harvester load / this to be "rich
-                                                             // enough" to prefer over a closer one (=2 -> half a load). Rejects
-                                                             // lone regrown blocks. Below the bar, the richest reachable field
-                                                             // still wins (never a lone block over a fuller one). Tune freely:
-                                                             // 4 = quarter load (less roaming), 1 = a full pristine field.
-// Threat-aware field selection (Goto_Tiberium pathcost mode): keep harvesters off ore the enemy is
-// sitting on. Built on a custom enemy-proximity scan, NOT the engine region-threat map -- that map
-// (MapClass::Cell_Threat) is only populated under Session.Type==GAME_NORMAL (campaign), so it reads
-// ~0 everywhere in skirmish (same GAME_NORMAL gating as [[project-skirmish-difficulty-flat]]).
+static const int HARV_FIELD_LOAD_DIVISOR = 2;                // a field under a full load divided by this loses
+                                                             // to any reachable field over it (2 = half a load)
+// Threat-aware field selection (Goto_Tiberium pathcost mode) counts enemies itself: the engine's threat map
+// (MapClass::Cell_Threat) is filled only in campaign games, so it reads about zero in skirmish.
 static const int HARV_THREAT_RADIUS = 6;                     // an armed enemy techno within this many cells "threatens" a field
 static const int HARV_THREAT_PENALTY = 6;                    // A*-cells of extra effective cost added per threatening enemy
 static const int HARV_THREAT_CAP = 8;                        // max enemies counted per field (one swarm can't dominate the pick)
 
-/***********************************************************************************************
- * UnitClass::Field_Tiberium_Value -- Total harvestable value of the field containing a cell.  *
- *                                                                                             *
- *    Flood-fills the contiguous LAND_TIBERIUM field from `seed` (8-connected, the same walk    *
- *    as Blacklist_Harvest_Cell) and sums each cell's ore value -- (OverlayData+1) * per-type    *
- *    value, exactly as Tiberium_Check scores a single cell. Early-exits the instant the running *
- *    total reaches `cap`, so a rich field costs only a handful of cell reads while a lone        *
- *    regrown block (a near-empty patch) floods out cheaply on its own. Used by the field picker  *
- *    to reject near-empty fields in favour of a fuller one. Pure cell reads -> lockstep-safe.    *
- *                                                                                             *
- * INPUT:   seed = an ore cell in the field; cap = stop summing once the total reaches this.    *
- * OUTPUT:  the field's harvestable value, clamped to `cap`.                                    *
- *=============================================================================================*/
+// The harvestable value of the 8-connected Tiberium field holding seed, each cell scored as Tiberium_Check
+// scores it; stops counting at cap.
 int UnitClass::Field_Tiberium_Value(CELL seed, int cap) const
 {
     if (Map[seed].Land_Type() != LAND_TIBERIUM) {
@@ -3534,22 +3272,8 @@ int UnitClass::Field_Tiberium_Value(CELL seed, int cap) const
     return ((int)(total > cap ? cap : total));
 }
 
-/***********************************************************************************************
- * UnitClass::Field_Threat_Level -- Count armed enemy technos sitting near an ore field.        *
- *                                                                                             *
- *    Custom enemy-proximity scan for threat-aware field selection. Walks the Units, Infantry,   *
- *    Vessels and Buildings heaps and counts every ACTIVE, non-limbo, weapon-equipped techno     *
- *    that this harvester's house is NOT allied with and that sits within HARV_THREAT_RADIUS      *
- *    cells (crow-flies) of `seed`. The count is clamped to HARV_THREAT_CAP so one swarm can't    *
- *    dominate the field pick. Pure heap reads + cell-distance maths -> lockstep-deterministic.   *
- *                                                                                             *
- *    Deliberately NOT built on MapClass::Cell_Threat / HouseClass::Regions[].Threat_Value: that  *
- *    region-threat map is only populated via ObjectClass::Mark under Session.Type==GAME_NORMAL   *
- *    (campaign), so it reads ~0 everywhere in skirmish. A direct heap scan is live in skirmish.  *
- *                                                                                             *
- * INPUT:   seed = an ore cell in the candidate field.                                          *
- * OUTPUT:  number of threatening enemy combat technos near the field (0..HARV_THREAT_CAP).      *
- *=============================================================================================*/
+// Armed enemy technos within HARV_THREAT_RADIUS cells of seed, capped at HARV_THREAT_CAP. A heap scan, since the
+// engine's region-threat map is empty outside campaign games.
 int UnitClass::Field_Threat_Level(CELL seed) const
 {
     int seedx = Cell_X(seed);
@@ -3557,11 +3281,6 @@ int UnitClass::Field_Threat_Level(CELL seed) const
     int threatrad2 = HARV_THREAT_RADIUS * HARV_THREAT_RADIUS;
     int count = 0;
 
-    /*
-    **	A single lambda body inlined per heap: an enemy is a threat if it is real, on the map,
-    **	armed, hostile to us, and inside the radius. Defensive structures count too -- a gun
-    **	turret or obelisk guarding ore is exactly the threat we want to route around.
-    */
 #define TF_THREAT_SCAN(HEAP)                                                                       \
     for (int i = 0; i < (HEAP).Count() && count < HARV_THREAT_CAP; i++) {                          \
         TechnoClass* t = (HEAP).Ptr(i);                                                            \
@@ -3603,9 +3322,7 @@ static FILE* TF_Harv_Logfile(void)
 }
 #endif
 
-/***********************************************************************************************
- * UnitClass::Is_Harvest_Blacklisted -- Is this ore cell in a recently-unreachable patch?      *
- *=============================================================================================*/
+// Whether cell lies in a field blacklisted as unreachable whose blacklisting has not yet expired.
 bool UnitClass::Is_Harvest_Blacklisted(CELL cell) const
 {
     int cx = Cell_X(cell);
@@ -3624,10 +3341,7 @@ bool UnitClass::Is_Harvest_Blacklisted(CELL cell) const
     return (false);
 }
 
-/***********************************************************************************************
- * UnitClass::Has_Active_Harvest_Blacklist -- Are we currently avoiding any blocked patch?     *
- *    Distinguishes "ore is temporarily blocked, wait it out" from "no ore anywhere, idle".    *
- *=============================================================================================*/
+// Whether any blacklist slot is live: blocked ore to wait out, as opposed to no ore at all.
 bool UnitClass::Has_Active_Harvest_Blacklist(void) const
 {
     for (int i = 0; i < HARV_BLACKLIST_MAX; i++) {
@@ -3638,21 +3352,10 @@ bool UnitClass::Has_Active_Harvest_Blacklist(void) const
     return (false);
 }
 
-/***********************************************************************************************
- * UnitClass::Blacklist_Harvest_Cell -- Mark an ore patch path-unreachable for a while.        *
- *    TTL-based (never permanent) so a sold/destroyed blocker lets the harvester retry later.   *
- *=============================================================================================*/
+// Blacklists the whole ore field holding cell, by its bounding box, for HARV_BLACKLIST_TTL, so a field walled
+// off by a building that later goes is retried.
 void UnitClass::Blacklist_Harvest_Cell(CELL cell)
 {
-    /*
-    **	Flood-fill the contiguous ore field from `cell` (8-connectivity, bounded by
-    **	HARV_FLOOD_CAP) and blacklist its whole bounding box. Blacklisting a single cell
-    **	failed on big walled fields: the harvester gave up on one cell, then Goto_Tiberium
-    **	re-picked another ore cell of the SAME dead field a few cells away and span again.
-    **	One detection now covers the entire field. The flood walks only LAND_TIBERIUM, so it
-    **	never escapes the patch; the cap means even a map-spanning field costs a bounded scan.
-    **	Logic-thread only + pure cell reads -> lockstep-deterministic.
-    */
     CELL flood[HARV_FLOOD_CAP]; // doubles as the visited set (a cell is enqueued at most once)
     int n = 0;
     flood[n++] = cell;
@@ -3758,27 +3461,8 @@ bool UnitClass::Goto_Tiberium(int rad, bool pathcost)
             return (true);
         } else {
 
-            /*
-            **	TF: travel-distance-aware field selection (the LOOKING-state field pick).
-            **	The vanilla ring search below returns the densest cell in the FIRST ring
-            **	(crow-flies) that holds any ore, so a field that is near in a straight line
-            **	but only reachable the long way around water/cliff beats a slightly-farther-
-            **	by-ring field that is a short straight drive. When pathcost is set, gather the
-            **	NEAREST ore cell from each of the closest HARV_FIELD_CANDIDATES rings, then
-            **	choose the one with the shortest ACTUAL A* path (Find_Path_AStar's cell length
-            **	around obstacles), not the smallest ring. A null resultPath makes A* return
-            **	just the length cheaply; it consumes no RNG and is the same pathfinder used for
-            **	real movement, so this stays lockstep-deterministic. Bounded to <=
-            **	HARV_FIELD_CANDIDATES A* calls and only on the (infrequent) field rescan.
-            **
-            **	Candidates are chosen by PROXIMITY, never density. An earlier cut picked each
-            **	ring's *densest* cell -- but the near fields a harvester works get mined down
-            **	(low density) while a pristine far/contested field stays full, so the dense-
-            **	cell rule handed every candidate slot to distant fields and skipped the close
-            **	partly-mined ones entirely (harvesters drove across the map / into the enemy
-            **	base past plenty of nearer ore). A* min-path does the real selection; density
-            **	is only a tiebreak between two equally-close-by-road fields.
-            */
+            // TF: with pathcost the field is picked by A* road distance, not ring: of the nearest ore cells of the
+            // closest rings, the nearest rich-enough field wins (threat adds distance), else the richest reachable.
             if (pathcost) {
                 CELL candidates[HARV_FIELD_CANDIDATES];
                 int candvalue[HARV_FIELD_CANDIDATES];
@@ -3810,10 +3494,6 @@ bool UnitClass::Goto_Tiberium(int rad, bool pathcost)
                                 if (bl)
                                     dbg_blskips++;
 #endif
-                                /*
-                                **	Pick the ore cell nearest the harvester within this ring
-                                **	(squared crow-flies offset) -- proximity, NOT how rich it is.
-                                */
                                 if (!bl && d2 < ringbestdist) {
                                     ringbestdist = d2;
                                     ringcell = cell;
@@ -3830,16 +3510,6 @@ bool UnitClass::Goto_Tiberium(int rad, bool pathcost)
                 }
                 if (ncand > 0) {
                     CELL src = Coord_Cell(Center_Coord());
-                    /*
-                    **	TF: field-richness gate. Two tiers so a lone regrown block in a mined-out
-                    **	patch never lures a harvester off a fuller field. A field is "rich enough"
-                    **	if it holds at least a fraction of a full harvester load (BailCount bails of
-                    **	gold-equivalent value). TIER 1: among rich-enough reachable fields, take the
-                    **	NEAREST by A* road distance (value as a tiebreak) -- the prior travel-distance
-                    **	behaviour, now restricted to substantial fields. TIER 2 (fallback): if NO
-                    **	field clears the bar, take the RICHEST reachable field (not the nearest), so a
-                    **	near-empty patch only wins when it is genuinely the best ore in reach.
-                    */
                     const int richthresh = (Rule.BailCount * Rule.GoldValue) / HARV_FIELD_LOAD_DIVISOR;
                     CELL bestfull = 0; // tier 1: nearest rich-enough field
                     int bestfullpath = 0x7FFFFFFF;
@@ -3853,25 +3523,8 @@ bool UnitClass::Goto_Tiberium(int rad, bool pathcost)
                     int candthreat[HARV_FIELD_CANDIDATES];
 #endif
                     for (int i = 0; i < ncand; i++) {
-                        /*
-                        **	MOVE_MOVING_BLOCK, not the harvester's strict PathThreshhold: a field
-                        **	is "reachable" if TERRAIN allows it -- infantry/vehicles standing on
-                        **	the route are transient (they move; give-way pushes them) and must NOT
-                        **	read as a wall, or the harvester skips near ore for distant clear ore
-                        **	(the unit-blocked near field showed apath=0). Walls/buildings/water
-                        **	still block, so a genuinely walled field still scores unreachable.
-                        */
                         int plen = Find_Path_AStar(NULL, src, candidates[i], MAP_CELL_TOTAL, MOVE_MOVING_BLOCK, -1);
                         int fieldval = Field_Tiberium_Value(candidates[i], richthresh);
-                        /*
-                        **	TF: threat-aware penalty. Armed enemies sitting on/near a field add
-                        **	effective road-distance, so a contested field only wins if it is much
-                        **	closer (or the only reachable ore). A soft penalty, not a hard veto:
-                        **	better to mine contested ore than to idle when every field is threatened.
-                        **	Mirrors the richness graceful-degrade -- prefer clear ore, fall back to
-                        **	threatened ore rather than stalling. Penalty rides the NEAREST comparison
-                        **	(effpath), never the reachability gate (raw plen) or the richness sum.
-                        */
                         int threat = Field_Threat_Level(candidates[i]);
                         int effpath = plen + threat * HARV_THREAT_PENALTY;
 #if TF_DEV_BUILD
@@ -3880,19 +3533,12 @@ bool UnitClass::Goto_Tiberium(int rad, bool pathcost)
                         candthreat[i] = threat;
 #endif
                         if (plen <= 0)
-                            continue; // unreachable by road -- skip (also catches walled fields)
-                        /*
-                        **	Tier 2: track the richest reachable field, nearest (threat-adjusted)
-                        **	as the tiebreak.
-                        */
+                            continue;
                         if (fieldval > bestrichval || (fieldval == bestrichval && effpath < bestrichpath)) {
                             bestrichval = fieldval;
                             bestrichpath = effpath;
                             bestrich = candidates[i];
                         }
-                        /*
-                        **	Tier 1: nearest (threat-adjusted) field that clears the richness bar.
-                        */
                         if (fieldval >= richthresh
                             && (effpath < bestfullpath || (effpath == bestfullpath && candvalue[i] > bestfulltib))) {
                             bestfullpath = effpath;
@@ -3900,10 +3546,6 @@ bool UnitClass::Goto_Tiberium(int rad, bool pathcost)
                             bestfulltib = candvalue[i];
                         }
                     }
-                    /*
-                    **	Prefer a rich-enough field; else the richest reachable; else (nothing
-                    **	reachable at all) the crow-flies nearest so we never regress to "do nothing".
-                    */
                     CELL best = bestfull ? bestfull : bestrich;
                     int bestpath = bestfull ? bestfullpath : bestrichpath;
                     if (!best)
@@ -3968,12 +3610,8 @@ bool UnitClass::Goto_Tiberium(int rad, bool pathcost)
                     for (int c = 0; c < 4; c++) {
                         cell = center;
                         tiberium = Tiberium_Check(cell, corners[c][0], corners[c][1]);
-                        /*
-                        **	TF: skip ore patches we recently failed to PATH to. The vanilla
-                        **	scan (Tiberium_Check) only zone-filters, but buildings don't
-                        **	update the zone map, so a turret-walled patch still reads
-                        **	"reachable" -- without this the harvester re-picks it forever.
-                        */
+                        // TF: skip fields blacklisted as unreachable. Zones ignore buildings, so a walled field still
+                        // passes Tiberium_Check and would be re-picked forever.
                         if (tiberium > besttiberium && !Is_Harvest_Blacklisted(cell)) {
                             bestcell = cell;
                             besttiberium = tiberium;
@@ -4038,7 +3676,7 @@ bool UnitClass::Harvesting(void)
         case OVERLAY_GOLD2:
         case OVERLAY_GOLD3:
         case OVERLAY_GOLD4:
-        case OVERLAY_TIB01: // Tiberian Factions -- Tiberium banks as Ore (same value).
+        case OVERLAY_TIB01: // TF: Tiberium banks as Ore.
             Gold += reducer;
             break;
 
@@ -4082,10 +3720,8 @@ bool UnitClass::Harvesting(void)
     return (true);
 }
 
-/*
-**	Starts the deploy ladder (deploy true) or the pack-up ladder. Any stride or path is
-**	dropped; a destination the unit was given is kept for after it has packed up.
-*/
+// Starts the deploy ladder (deploy true) or the pack-up ladder, to TS's BuildingDrop sound. Any path is dropped;
+// a destination the unit was given is kept for after it has packed up.
 void UnitClass::Deploy_Begin(bool deploy)
 {
     if (Target_Legal(NavCom)) {
@@ -4102,18 +3738,11 @@ void UnitClass::Deploy_Begin(bool deploy)
     DeployTick = 0;
     Mark(MARK_CHANGE);
 
-    /*
-    **	TS sets a deploying unit down with its BuildingDrop sound (PLACE2); packing up plays it too.
-    */
     Sound_Effect(VOC_TS_PLACE_BUILDING_DOWN, Center_Coord());
 }
 
-/*
-**	The DeployToFire stance machine, one tick a frame (TS's deployed Juggernaut is a
-**	building; here the unit keeps its stance itself). Set down, a move packs it up first;
-**	mid-ladder, moves wait; a ladder that finishes either settles the stance or releases
-**	the held move.
-*/
+// The DeployToFire stance machine, ticked every frame: a move packs a set-down unit up first and waits out a
+// ladder in progress; a finished ladder settles the stance or releases the held move.
 void UnitClass::Deploy_AI(void)
 {
     switch (DeployState) {
@@ -4173,12 +3802,8 @@ void UnitClass::Deploy_AI(void)
  * HISTORY:                                                                                    *
  *   07/18/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-/*
-**	TS harvester seat per foreign refinery pairing: pixels east / north of the dock
-**	cell centre, and a settling facing (-1 = keep). Shared by the park nudge and the
-**	dock-end roll-off rail so the seat is left exactly the way it was entered.
-**	VISUAL DIALS (must stay under half a cell, 12 px, so the dock cell is unchanged).
-*/
+// Harvester seats at a foreign refinery: pixels east / north of the dock cell centre and a settling facing (-1 =
+// keep), shared by the park nudge and the roll-off rail. Under 12 px, or the nudge moves the unit out of its cell.
 static const int TD_DOCK_NUDGE_RIGHT = 6; // TD harvester at the RA refinery: pixels east (toward the pillars)
 static const int TD_DOCK_NUDGE_UP = 6;    // pixels north (rear toward the intake)
 static const int TS_AT_RA_NUDGE_RIGHT = 0, TS_AT_RA_NUDGE_UP = 0, TS_AT_RA_DOCK_DIR = -1;
@@ -4195,10 +3820,7 @@ int UnitClass::Mission_Unload(void)
     if (Is_In_Tunnel_Cycle()) {
         return (TICKS_PER_SECOND / 2);
     }
-    /*
-    **	The deploy order toggles a DeployToFire unit's stance; the ladder plays out in
-    **	Deploy_AI.
-    */
+    // TF: the deploy order toggles a DeployToFire unit's stance; Deploy_AI plays the ladder.
     if (Class->IsDeployToFire) {
         if (DeployState == DEPLOY_MOBILE) {
             if (IsDriving) {
@@ -4237,23 +3859,11 @@ int UnitClass::Mission_Unload(void)
         if (!IsDumping) {
             IsDumping = true;
             Set_Stage(0);
-            /*
-            **	Tiberian Factions B2 -- dust-loop animation/offload speed (ticks per
-            **	frame). Decoupled from the global Rule.OreDumpRate (=2, still used by
-            **	other dump paths) so the dock can be paced without side effects. One
-            **	bail is banked per ~7-frame dust cycle (UnitClass::AI), so total unload
-            **	~= BailCount * 7 * DOCK_DUMP_RATE ticks. At 3 a full 28-bail load runs
-            **	~588 ticks, ~matching the current TD dock time (decided 2026-06-17).
-            **	THE dock-time / animation-speed DIAL -- raise to slow further.
-            */
+            // TF: the dust loop's own rate (ticks per frame), apart from Rule.OreDumpRate. It and the bails per cycle
+            // set the RA harvester's unload time.
             const int DOCK_DUMP_RATE = 3;
             Set_Rate(DOCK_DUMP_RATE);
-            /*
-            **	Tiberian Factions B4 visual -- when an RA harvester docks at a TD refinery
-            **	(TDPROC ramp), nudge it a touch EAST so it lines up under the ramp better.
-            **	Gated on STRUCT_TDPROC so the native RA-refinery dock is unchanged. Small,
-            **	stays within the dock cell. Applied once on entering the dump. VISUAL DIAL.
-            */
+            // TF: at a TD refinery the RA harvester sits 5 px east, under the ramp, inside its dock cell.
             TechnoClass* dockb = Contact_With_Whom();
             if (dockb != NULL && dockb->What_Am_I() == RTTI_BUILDING
                 && *((BuildingClass*)dockb) == STRUCT_TDPROC) {
@@ -4351,61 +3961,20 @@ int UnitClass::Mission_Unload(void)
         **	StageClass), so it is immune to the dust-loop overshoot that forced the RA
         **	per-bail logic into UnitClass::AI. Lockstep-safe: deterministic, no RNG.
         */
-        const int TD_DOCK_OFFLOAD_DELAY = 21; // ticks/bail -- matches the RA dust-loop dock time (DOCK_DUMP_RATE 3 * ~7-frame cycle); THE TD-at-RA dock-time dial.
+        const int TD_DOCK_OFFLOAD_DELAY = 21; // ticks between bail batches; sets the dock time
 
-        /*
-        **	One-time dock nudge: shift the parked harvester NORTH-EAST so its rear almost
-        **	touches the refinery's right-side wooden pillars. ~8px each stays within the
-        **	DIR_S apron cell (< half a cell == 12px == 128 leptons), so Coord_Cell is
-        **	unchanged and there is no footprint conflict. Applied once on entering the
-        **	dump; the puff follows for free (spawned relative to Coord). Mark up/down
-        **	re-registers the sub-cell position. VISUAL DIAL.
-        */
-        /*
-        **	The forced bay-exit track (Track16) keeps the mission queue from
-        **	committing MISSION_HARVEST for a tick or two, so this mission can
-        **	re-run after the dock is finished -- with radio contact already
-        **	dropped. The re-entry ran the dock-start block against a NULL
-        **	contact, which slipped past the TS-refinery fume suppression (it
-        **	keys on the contact's type) and spawned green fumes at the bay.
-        **	Nothing to unload and nobody to talk to: just go harvest.
-        */
+        // The bay-exit track can hold off MISSION_HARVEST a tick or two, so this mission may re-run after the dock with
+        // radio contact gone; it must not run the dock start again.
         if (!IsDumping && !In_Radio_Contact()) {
             Assign_Mission(MISSION_HARVEST);
             break;
         }
         if (!IsDumping) {
-            IsDumping = true; // park (blocks driving) + mark "actively unloading" for B3 capture
-            /*
-            **	Kill any navigation laid during the approach: the docking
-            **	maintenance loop can re-order the truck to its line-up cell
-            **	while the reverse track is still driving, and that stale
-            **	NavCom resumes after the park -- the "drives 1 tile SE to
-            **	actually unload" bug (Luke, 2026-08-06). The truck must not
-            **	move again until the unload finishes.
-            */
+            IsDumping = true; // blocks driving; a refinery captured meanwhile takes it too
             Assign_Destination(TARGET_NONE);
-            /*
-            **	Park nudge per refinery: at the TD refinery the rear noses NE
-            **	toward the pillars; at the TS refinery the truck seats SE onto
-            **	the hazard ramp (Luke's Aseprite point, +5/+7 from the pad cell
-            **	centre). VISUAL DIALS.
-            */
             TechnoClass* nref = Contact_With_Whom();
             bool ts_dock = (nref != NULL && nref->What_Am_I() == RTTI_BUILDING
                             && *((BuildingClass*)nref) == STRUCT_TSPROC);
-            /*
-            **	NO seat nudge at the TS ramp: every post-turn shift reads as a
-            **	slide/teleport (Luke, 2026-08-05 01:00), and the ramp's stripe
-            **	centreline measures within ~3px of the pad cell centre anyway
-            **	-- the un-nudged park IS aligned. TD refinery keeps its
-            **	long-shipped pillar nudge.
-            */
-            /*
-            **	The TS harvester has its own seat per refinery pairing (voxel hull,
-            **	different silhouette from the TD truck). VISUAL DIALS: pixels
-            **	east / north of the dock cell, and a settling facing (-1 = keep).
-            */
             bool td_dock = (nref != NULL && nref->What_Am_I() == RTTI_BUILDING
                             && *((BuildingClass*)nref) == STRUCT_TDPROC);
             if (*this == UNIT_TSHARV && !ts_dock) {
@@ -4460,20 +4029,7 @@ int UnitClass::Mission_Unload(void)
             }
 #endif
 
-            /*
-            **	Green "Tiberium fumes" venting during the unload -- ONE persistent plume
-            **	spawned at dock start (ANIM_TIB_FUMES loops ~one full unload), NOT a puff
-            **	per bail (which piled up). Attach_To the refinery so it renders in the
-            **	GROUND layer sorted ~1 cell south of the refinery: ABOVE the refinery but
-            **	BELOW the harvester (a free anim would land in LAYER_AIR, on top of
-            **	everything). The Y offset is a VISUAL DIAL (more negative = higher above
-            **	the harvester; more positive = more hidden behind it).
-            */
             TechnoClass* refc = Contact_With_Whom();
-            /*
-            **	No green fumes at the TS refinery (Luke, 2026-08-05) -- its
-            **	dock stays clean; the other refineries keep the plume.
-            */
             AnimClass* fumes = (refc != NULL && refc->What_Am_I() == RTTI_BUILDING
                                 && *((BuildingClass*)refc) == STRUCT_TSPROC)
                                    ? NULL
@@ -4482,17 +4038,8 @@ int UnitClass::Mission_Unload(void)
                 if (refc != NULL && refc->What_Am_I() == RTTI_BUILDING) {
                     fumes->Attach_To(refc);
                 }
-                /*
-                **	Size the plume so it plays its FULL arc and ENDS NATURALLY ~when the
-                **	unload finishes -- killing it abruptly mid-animation read weird. The
-                **	fume is a 72-frame rise (once) then a 20-frame wisp loop at delay 2,
-                **	so total ~= FUME_RISE_TICKS + loops*FUME_LOOP_TICKS. The unload takes
-                **	~load * TD_DOCK_OFFLOAD_DELAY ticks, so solve for the loop count.
-                **	Set Loops AFTER Attach_To (its Unlimbo resets Loops to the class default).
-                */
                 const int FUME_RISE_TICKS = 72 * 2;
                 const int FUME_LOOP_TICKS = 20 * 2;
-                // N bails bank per delay (HARV_DOCK_BAILS_PER_CYCLE), so cycles = ceil(load/N).
                 int unload_ticks =
                     ((max(Tiberium, 1) + HARV_DOCK_BAILS_PER_CYCLE - 1) / HARV_DOCK_BAILS_PER_CYCLE)
                     * TD_DOCK_OFFLOAD_DELAY;
@@ -4508,12 +4055,6 @@ int UnitClass::Mission_Unload(void)
         }
 
         if (Tiberium > 0) {
-            /*
-            **	TF economy-pace compromise: bank HARV_DOCK_BAILS_PER_CYCLE bails per hold,
-            **	halving this dock to match the other three pairings. Cadence
-            **	(TD_DOCK_OFFLOAD_DELAY) + the fume plume are untouched -- fewer holds, same
-            **	look. Total credits/load unchanged. See HARV_DOCK_BAILS_PER_CYCLE.
-            */
             for (int b = 0; b < HARV_DOCK_BAILS_PER_CYCLE && Tiberium > 0; b++) {
                 int bail = Offload_Tiberium_Bail();
                 if (bail) {
@@ -4521,27 +4062,14 @@ int UnitClass::Mission_Unload(void)
                 }
             }
             if (Tiberium > 0) {
-                return (TD_DOCK_OFFLOAD_DELAY); // hold the dock; next bail-batch after the dial
+                return (TD_DOCK_OFFLOAD_DELAY);
             }
         }
 
-        /*
-        **	Finish: clear dumping, tell the refinery (frees the dock + ReconsiderRefinery
-        **	for the queue), drop radio contact, drive off. As with the RA path,
-        **	RADIO_UNLOADED is sent here (not at dock time) so the dock stayed occupied +
-        **	the harvester stayed capturable through the whole unload. The fume plume is
-        **	NOT killed here -- it was sized at dock start to end on its own (a clean loop
-        **	boundary) right around now, so it tapers out naturally instead of cutting.
-        */
         IsDumping = false;
         Tiberium = Gold = Gems = 0; // defensive
-        /*
-        **	Captured before the radio drops: a truck that reverse-docked deep
-        **	into the TS refinery's bay (Track15) sits inside the building's
-        **	occupy cell and must be DRIVEN out (Track16) -- normal pathing
-        **	from an occupied cell stalls. The RA-refinery pairing parks on a
-        **	free apron cell and just drives off.
-        */
+        // Read before the radio drops: a truck reversed into the TS refinery's bay sits in the building's occupy
+        // cell and must be driven out on a track, since pathing from an occupied cell stalls.
         {
             TechnoClass* exref = Contact_With_Whom();
             bool ts_bay_exit = (exref != NULL && exref->What_Am_I() == RTTI_BUILDING
@@ -4593,13 +4121,6 @@ int UnitClass::Mission_Unload(void)
                     Roll_Off_Seat(TD_DOCK_NUDGE_RIGHT, TD_DOCK_NUDGE_UP);
                 }
             }
-            /*
-            **	No scripted bay exit (Luke, 2026-08-06: "eliminate the drive
-            **	forward"): the truck leaves the park under normal pathing.
-            **	The pad's only free neighbours are the plate cells, so it
-            **	drives out over the concrete anyway -- organically, facing
-            **	wherever it's actually going.
-            */
         }
         break;
     }
@@ -4676,7 +4197,7 @@ int UnitClass::Mission_Unload(void)
 #ifdef FIXIT_PHASETRANSPORT //	checked - ajw 9/28/98
     case UNIT_PHASE:
 #endif
-    case UNIT_TDAPC: // Tiberian Factions: TD APC -- same unload state machine as UNIT_APC.
+    case UNIT_TDAPC: // TF: the TD APC unloads as UNIT_APC does.
     case UNIT_TSAPC: // TS Amphibious APC -- same machine; its door state has no art but still gates the cycle.
     case UNIT_TSSAPC: // Subterranean APC -- surface unload uses the same door state machine.
         switch (Status) {
@@ -4771,9 +4292,9 @@ int UnitClass::Mission_Unload(void)
         return (1);
 
     case UNIT_MCV:
-    case UNIT_TDMCV:    // TD MCV — same deploy AI as UNIT_MCV.
-    case UNIT_AMCV:     // W2 b3 faction MCVs — same deploy AI, different yard
-    case UNIT_SMCV:     // via MCV_Deploy_Building.
+    case UNIT_TDMCV:    // TF: TD MCV -- same deploy AI as UNIT_MCV.
+    case UNIT_AMCV:     // faction MCVs -- same deploy AI, the yard
+    case UNIT_SMCV:     // from MCV_Deploy_Building.
     case UNIT_TDGMCV:
     case UNIT_TDNMCV:
     case UNIT_TSMCV:    // TS MCV — deploys STRUCT_TSFACT (the TS-tree gate).
@@ -4820,10 +4341,7 @@ int UnitClass::Mission_Unload(void)
                 Status = MANEUVERING;
                 return (1);
             } else {
-                /*
-                **	Attack-move (CFE port): out of mines on arrival -- if in
-                **	attack-move, head home instead of standing guard.
-                */
+                // TF: attack-move (CFE port): a minelayer out of mines heads home instead of standing guard.
                 if (AttackMove) {
                     MinelayerGoHome();
                     return (1);
@@ -4891,10 +4409,7 @@ int UnitClass::Mission_Unload(void)
                 APC_Close_Door();
             }
             if (Is_Door_Closed()) {
-                /*
-                **	Attack-move (CFE port): after laying a mine, look for the next
-                **	spot (if we still have mines) or head home; otherwise guard.
-                */
+                // TF: attack-move (CFE port): after a mine, find the next spot while mines remain, else head home.
                 if (AttackMove) {
                     if (Ammo) {
                         MinelayerFindSpot();
