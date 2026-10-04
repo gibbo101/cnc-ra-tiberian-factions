@@ -16,7 +16,8 @@ lobby's Tiberium option is on. Tiberium and Ore never convert each other where t
 A blossom tree is a building, `STRUCT_TDBLOSSOM`, owned by `HOUSE_NEUTRAL`. On each growth tick it
 spreads a neighbouring Tiberium cell, or failing that seeds an empty one (`building.cpp`). An
 ordinary tree with Tiberium in six or more of its eight neighbours turns into a blossom tree
-(`terrain.cpp`).
+(`terrain.cpp`). The blossom tree's frame comes from `Frame` plus an ID-based stagger, so it needs
+no saved state and never conflicts with the building's static (rate-0) animation.
 
 ## Damage to infantry
 

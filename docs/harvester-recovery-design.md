@@ -22,10 +22,22 @@ Docking is `harvester-docking-rework-plan.md`.
 - **Retreat:** in `Mission_Harvest` LOOKING, a harvester more than 4 cells from its refinery heads
   for `Nearby_Location(Find_Best_Refinery())` and rescans from there; near base it waits and
   rescans. It stays in `MISSION_HARVEST`, for humans and AI alike.
+- **The `ArchiveTarget` zone gate** (`Mission_Harvest`): a harvester returns to its last-mined
+  field only if that field is in its own zone. A walled-off last field stays a legal target but
+  unreachable: A* fails, which clears `NavCom`, the rescan finds nothing, and without the gate the
+  cycle repeats forever.
 - **The anti-stuck watchdog** (3.0.0, `UnitClass::AI`): a harvester that stops moving shoves
   blocking infantry after 3 s, scatters itself after 6 s, and re-decides after 12 s. It never
   blacklists: it can't tell an unreachable field from a wedged harvester, so field blacklisting
   belongs to the detector alone.
+  Its nudge direction uses `Path[0]` first: the straight-line bearing can round to the wrong eighth
+  and miss a blocker just off-axis.
+- **The field pick** (`Goto_Tiberium`, pathcost mode): the candidates are each ring's nearest ore
+  cell, chosen by distance, not density (picking the densest gave every slot to distant untouched
+  fields). Reachability uses `MOVE_MOVING_BLOCK`, so units parked on the route don't count as walls.
+  The threat penalty enters only the nearest-distance comparison, never the reachability gate
+  (`plen`) or the richness sum; defensive buildings count as threats on purpose. With nothing
+  reachable it falls back to the straight-line nearest candidate.
 
 ## The bug
 A harvester ordered/heading to an ore patch that has been **walled off by a BUILDING** (a turret,

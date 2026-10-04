@@ -4,7 +4,7 @@
 engine type; every TD building ships this way. Production buildings also need the traps in
 `td-port-playbook.md` §3.13–§3.19.
 
-**Recipe scope:** taking a TD-themed mod entry from the v0.3-era Logic=alias model (where it rides on a vanilla RA donor type) to a fully-separated `STRUCT_TDxxxx` heap entry with its own `BuildingTypeClass`, own `_anims[]`, own assets, own behavior. Zero engine-time inheritance from vanilla RA donors; vanilla code paths never reach the TD entity.
+**Recipe scope:** porting a TD building as a fully separated `STRUCT_TDxxxx` heap entry with its own `BuildingTypeClass`, own `_anims[]`, own assets, own behavior. Zero engine-time inheritance from vanilla RA donors; vanilla code paths never reach the TD entity.
 
 Companion docs:
 - `docs/td-audio-routing-recipe.md` — the SFXEvent alias recipe for TD sounds (step 5)
@@ -230,6 +230,10 @@ Full game restart on the Deck (DLL has new enum value → new save format).
 17. **`ShapeSize=` must match the footprint at 24 px a cell:** 1x1 `24,24`, 2x1 `48,24`, 1x2 `24,48`, 2x2 `48,48`, 3x2 `72,48`, 3x3 `72,72`, 4x2 `96,48`. The wrong ratio stretches the sprite into the wrong box (TDFACT shipped as `72,72` on a 3x2 and bulged off its pad). Count the cells in the `List**` array.
 18. **RA's `Track13` is overridden to pure south** (`drive.cpp`, the `#if (1)` block), against `TrackControl`'s declared `DIR_SW` final facing. TD-style vehicle factories exit on `Track14` (the SW variant, `OUT_OF_WEAPON_FACTORY_TD`), forced from `BuildingClass::Mission_Unload` with the destination at `Adjacent_Cell(Center_Coord(), FACING_SW)` so the track starts exactly at the spawn; a follow-up `Assign_Destination` keeps the unit moving after the track ends. `Exit_Object`'s `STRUCT_WEAP` case (spawn at `Exit_Coord()`, `RADIO_TETHER`, the building on `MISSION_UNLOAD`) is the model for any new vehicle factory.
 19. **Separating a shared RA production building:** never owner-open the RA one (`naval-and-air-units.md`). Copy its art into `TD*`-named files (`scripts/bundle_ra_building.py`), never share frames. The engine hardcodes `STRUCT_SHIP_YARD` / `SUB_PEN` / `AIRSTRIP` in about 30 sites (vessel exit, dock, repair, fixed-wing landing, the `STRUCTF_AIRSTRIP` BScan flag); add the new type to each that applies (`TDAFLD` is the airstrip precedent). Units keep the RA prerequisite token (`syrd`, `spen`, `afld`) plus a `Can_Build` equivalence, because `BuildingTypeClass::From_Name` resolves only below `STRUCT_COUNT`, so a `tdgyard` token silently fails.
+20. **`Occupy_List` must match the `BSIZE_*`.** It feeds the launcher's ghost placement grid,
+    `Legal_Placement` and the placement proximity check. The placement preview also draws the bib
+    row, so a 2x2 with a bib previews three rows tall: size the building from its `BSIZE_*`, not
+    from the preview.
 
 ---
 

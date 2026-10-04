@@ -167,7 +167,16 @@ porting rule is "document deviations."
   boats exempt. Deliberately does *not* switch between two armed targets (avoids dithering) —
   it only breaks passive-building tunnel-vision. Verified in play.
 
-### 1.3 Attack-move special cases (`TechnoClass::AI`)
+### 1.3 Repair-bay exits and the minelayer
+
+- **`DoSmarterRunAway`** picks the cell a repaired unit leaves to. The RA repair pad is a plus
+  shape, so its cardinal exits are two cells out; the TS Service Depot is solid, so every exit is two
+  cells out and never through the gantry. Units on the chosen cell and just beyond are asked to
+  scatter, because the movement code treats the leaving unit as close enough and won't move them.
+- **`MinelayerFindSpot`** tests cells with `Can_Enter_Cell` plus "no building", which lets a
+  minelayer avoid cloaked enemy mines: a small information leak that came with the port.
+
+### 1.4 Attack-move special cases (`TechnoClass::AI`)
 
 - **Chrono Tank:** when charged it teleports toward `RememberedNavCom`. `Teleport_To` resets
   attack-move, so the state is saved and restored, only while `NavQueue` still holds movement. This

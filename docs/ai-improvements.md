@@ -231,8 +231,7 @@ Symptoms observed: harvesters get stuck near refineries, wander to dangerous
 ore patches near enemy bases, and queue up at one refinery while another sits
 idle.
 
-**Status:** Research complete. Implementation deferred until four-faction
-core lands.
+Problems 4, 5 and 6 are fixed; the shipped recovery is in `harvester-recovery-design.md`.
 
 ## Problem 4 — Harvesters get permanently stuck
 
@@ -245,15 +244,14 @@ patch.
 ### Root cause
 The per-house latch `HouseClass::IsTiberiumShort` is set to `true` at
 `unit.cpp:2977` whenever a harvester's expanding-ring scan fails to find
-ore — **and is never reset to `false` anywhere in the codebase** (verified
-across `house.cpp`, `house.h`, `unit.cpp`).
+ore, and EA never resets it. The fix: `Mission_Harvest` clears it whenever a harvester finds ore.
 
 ```cpp
 // unit.cpp:2964-2979 (state LOOKING, nothing found, no ArchiveTarget)
 } else {
     Status = GOINGTOIDLE;
     IsUseless = true;
-    House->IsTiberiumShort = true;   // latch — never reset
+    House->IsTiberiumShort = true;   // EA's latch
     return (TICKS_PER_SECOND * 7);
 }
 ```
@@ -292,8 +290,7 @@ player manually issues a move order.
 
 ### Fix
 Pure DLL change.
-- Reset `IsTiberiumShort` periodically in `HouseClass::AI` (e.g. when
-  `Map.Total_Tiberium() > 0` and a refinery exists). ~5 lines.
+- Clear `IsTiberiumShort` when a harvester finds ore (shipped, in `Mission_Harvest`).
 - Drop the `!House->IsHuman` gate at `unit.cpp:3814` so player harvesters
   also auto-re-queue. One token.
 - Fix the `GOINGTOIDLE` fall-through with a `return` or `else`. One line.
@@ -423,9 +420,8 @@ behaviour, or cache freshness. All harvester fixes are DLL changes.
 
 Ranked by impact-vs-effort.
 
-1. **Reset `IsTiberiumShort` periodically** — TINY effort, HIGH impact.
-   ~5 lines in `HouseClass::AI`. Fixes "AI suddenly stopped harvesting
-   forever" failure mode.
+1. **Clear `IsTiberiumShort`** (shipped: `Mission_Harvest` clears it on finding ore). Fixed the
+   "AI suddenly stopped harvesting forever" failure mode.
 2. **Drop the `!House->IsHuman` gate at `unit.cpp:3814`** — TINY effort,
    HIGH impact. One-token change. Combined with #1, addresses ~90% of "my
    harvester is just sitting there" complaints.
@@ -753,7 +749,7 @@ if (IQ >= Rule.IQHarvester && !IsTiberiumShort && !IsHuman
 ```
 
 **Hard difficulty AI has harvester auto-replace explicitly disabled.**
-Combined with the never-reset `IsTiberiumShort` latch (Problem 4), a
+Combined with EA's never-reset `IsTiberiumShort` latch (Problem 4, since fixed), a
 Hard-difficulty AI that loses a harvester or has the latch trip is
 permanently unable to recover its economy. Easy/Normal AI auto-replaces.
 
@@ -1016,8 +1012,7 @@ work on AI polish post-four-faction-core.
 
 1. **Fix `Greatest_Threat` `bestval` bug** (Problem 7) — ~4-token fix in
    `techno.cpp:2271-2342`. Repairs basic target selection across all units.
-2. **Reset `IsTiberiumShort` periodically** (Problem 4) — ~5-line change
-   in `HouseClass::AI`. Fixes "AI stopped harvesting forever."
+2. **Clear `IsTiberiumShort`** (Problem 4) — shipped in `Mission_Harvest`.
 3. **Drop `!House->IsHuman` gate at `unit.cpp:3814`** (Problem 4) —
    one-token change. Player harvesters auto-recover from stuck states.
 4. **Hoist Radar Dome queue out of `airthreat` block** (Problem 1) — small
