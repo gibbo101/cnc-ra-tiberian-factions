@@ -7,20 +7,25 @@ beat. Two bars in, on the first big accent, a flash cuts to the montage. Each sh
 steel-bezelled window over
 the menu's smoke backdrop (the low-res FMV stays sharp at window size, as Retaliation's framed
 inset did) and lasts a whole number of beats (120 BPM: one beat is 15 frames at 30 fps), so
-cuts land on the beat. The band's entry gets a flash on the cut it falls on; the last shot ends
-on the phrase two bars after the quick cuts begin, where Hell March fades out under a white flash
-to the menu.
+cuts land on the beat. The band's entry gets a flash on the cut it falls on. The last shot, the
+finale, comes in with a flash on the phrase two bars after the quick cuts begin: Nod's flame
+tanks, whose flames engulf the street on the next bar, where Hell March starts to fade. Over its
+last beat the shot dissolves into the title and emblems, which hold and then fade out into the
+menu's own background (ending 'menu': the launcher's menu then appears over the same picture) or
+to black (ending 'black').
 The launcher fits the movie inside the screen and, about 10 s in, reveals the menu wherever the
-movie doesn't cover it. The movie is 16:9, so it fills 16:9 screens; on 16:10 (the Steam Deck)
-the bands above and below show the menu background's margins, which menu_art.py makes the same
-smoke at the same shade as this backdrop, the same texture at the same scale.
+movie doesn't cover it. The movie is 16:9, so it fills 16:9 screens; elsewhere the menu
+background's margins show beside it (16:10, the Steam Deck: above and below; wider screens:
+either side). The backdrop is that background's own smoke at the same scale, brightened so that
+once the launcher has drawn it, darker than a texture, it shows at the menu's shade and the
+margins carry straight on from it.
 
 The FMV library (decoded movies, frame cache, the Hell March WAV) lives outside the repo, at
 $TF_FMV_LIB or ~/Desktop/Tiberian Factions/tf-intro-lib; see README.md beside this script.
 
-usage: intro_cut.py <shots.tsv> preview <out.mp4> [A|B|C]   720p H.264 + AAC for review
-       intro_cut.py <shots.tsv> frames <out dir> [A|B|C]   1920x1080 JPEGs (q95) + music WAV for the Bink encode
-A|B|C picks the music ending (see music()); C, the fade, is the default.
+usage: intro_cut.py <shots.tsv> preview <out.mp4> [menu|black]   720p H.264 + AAC for review
+       intro_cut.py <shots.tsv> frames <out dir> [menu|black]   1920x1080 JPEGs (q95) + music WAV for the Bink encode
+menu|black picks how the title fades out (see closing()); menu is the default.
 """
 import os
 import subprocess
@@ -35,17 +40,23 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import logo_art  # noqa: E402
 import menu_art  # noqa: E402
 import title_art  # noqa: E402
+import title_logo_build  # noqa: E402
 
 FPS, W, H = 30, 1920, 1080
 BEAT = 15                                  # frames per beat at 120 BPM
 WINDOW = (240, 135, 1440, 810)             # x, y, w, h of the video window
+# The launcher draws the (Bink 1) movie darker in the shadows than a texture of the same value: a
+# dark tone v shows as about 1.08 v - 9, and from 112 up a tone shows as itself (measured on the
+# desktop framebuffer and from a 32:9 screen recording against the movie file).
+VIDEO_LEVELS = (1.08, -9.0)
 HELL_MARCH_HIT = 0.279                     # the opening hit, which the title slams in on (s)
 OPENING_FRAMES = 128                       # two bars later, the first big accent: the montage (4.267 s)
-OUTRO_FRAMES = 60                          # white flash on the final hit, fading to black with its tail
 BAND_ENTRY = 32.276                        # the band comes in (s); a cut falls on it
-FINAL_HIT = 40.281                         # the phrase the last shot ends on (s)
-FKTS = LIB / 'audio/RAB_MUS_HELL_MARCH_FKTS.WAV'
-FKTS_STAB, FKTS_GAIN = 211.835, 0.665      # its final stab, scaled to the Remastered level
+FINALE = 40.281                            # the phrase the finale, the last shot, comes in on (s)
+FADE_START = FINALE + 2.0                  # the next bar, where the finale's flames hit: Hell March fades
+TITLE_HOLD = 75                            # the title and emblems hold after the finale, to the next bar
+FADE_OUT = 30                              # then fade out
+REST = 15                                  # and what they fade to holds until the launcher's menu
 MUSIC = LIB / 'audio/RAR_MUS_HELL_MARCH_pcm16.wav'
 CACHE = LIB / 'edit/cache'
 EMBLEMS = ('allied.png', 'soviet.png', 'gdi.png', 'nod.png', 'tsgdi.png', 'tsnod.png')
@@ -93,8 +104,23 @@ def shot_frames(movie, first, beats):
 def backdrop():
     hero = Image.open(menu_art.KEY_ART / 'remastered-library_hero_2x.jpg').convert('RGB')
     smoke = menu_art.smoke(hero).convert('RGB')
-    core = smoke.crop((menu_art.CORE[0], menu_art.CORE[1], menu_art.CORE[0] + W, menu_art.CORE[1] + H))
-    return Image.eval(core, lambda v: int(v * menu_art.MARGIN_SHADE))
+    return as_texture(core_of(smoke))
+
+
+def core_of(menu_size_image):
+    x, y = menu_art.CORE
+    return menu_size_image.convert('RGB').crop((x, y, x + W, y + H))
+
+
+def as_texture(picture):
+    """The picture to put in the movie for it to show as the same picture in a texture would."""
+    gain, offset = VIDEO_LEVELS
+    return Image.eval(picture, lambda v: max(v, round((v - offset) / gain)))
+
+
+def menu_picture():
+    """The main menu's background where the movie covers it, as the launcher shows it next."""
+    return as_texture(core_of(menu_art.background(menu_art.stock_bytes(title_logo_build.ATLAS))))
 
 
 def framed(bg):
@@ -144,12 +170,30 @@ def emblem(name, h):
     return e
 
 
-def opening(bg):
-    """Black until the title slams in on Hell March's opening hit, then one emblem pops in per beat."""
+def title_parts():
     title = title_art.render()
     title = title.resize((1300, round(title.height * 1300 / title.width)), Image.LANCZOS)
-    marks = [emblem(n, 170) for n in EMBLEMS]
-    xs = [960 + (i - 2.5) * 230 for i in range(6)]
+    return title, [emblem(n, 170) for n in EMBLEMS]
+
+
+def title_card(bg, title, marks, s=1.0, ks=None):
+    """The title over the backdrop with the emblems in a row below it: the title at scale s, and
+    emblem i at scale ks[i] (None: not shown yet)."""
+    ks = [1.0] * len(marks) if ks is None else ks
+    xs = [960 + (i - 2.5) * 230 for i in range(len(marks))]
+    canvas = bg.convert('RGBA')
+    t = title.resize((round(title.width * s), round(title.height * s)), Image.LANCZOS)
+    canvas.alpha_composite(t, (960 - t.width // 2, 300 - t.height // 2))
+    for x, mark, k in zip(xs, marks, ks):
+        if k is None:
+            continue
+        m = mark.resize((round(mark.width * k), round(mark.height * k)), Image.LANCZOS)
+        canvas.alpha_composite(m, (round(x - m.width / 2), round(760 - m.height / 2)))
+    return canvas.convert('RGB')
+
+
+def opening(bg, title, marks):
+    """Black until the title slams in on Hell March's opening hit, then one emblem pops in per beat."""
     title_frame = round(HELL_MARCH_HIT * FPS)
     emblem_frames = [title_frame + BEAT * (i + 1) for i in range(len(EMBLEMS))]
     frames = []
@@ -157,48 +201,52 @@ def opening(bg):
         if f < title_frame:
             frames.append(Image.new('RGB', (W, H)))
             continue
-        canvas = bg.convert('RGBA')
         s = 1.0 + 0.12 * max(0.0, 1 - (f - title_frame) / 8)
-        t = title.resize((round(title.width * s), round(title.height * s)), Image.LANCZOS)
-        canvas.alpha_composite(t, (960 - t.width // 2, 300 - t.height // 2))
-        for i, mark in enumerate(marks):
-            age = f - emblem_frames[i]
-            if age < 0:
-                continue
-            k = 1.0 + 0.3 * max(0.0, 1 - age / 5)
-            m = mark.resize((round(mark.width * k), round(mark.height * k)), Image.LANCZOS)
-            canvas.alpha_composite(m, (round(xs[i] - m.width / 2), round(760 - m.height / 2)))
-        frames.append(flash(canvas.convert('RGB'), max(0.0, 1 - (f - title_frame) / 12)))
+        ks = [None if f < at else 1.0 + 0.3 * max(0.0, 1 - (f - at) / 5) for at in emblem_frames]
+        frames.append(flash(title_card(bg, title, marks, s, ks), max(0.0, 1 - (f - title_frame) / 12)))
     return frames
 
 
-def outro(last):
-    """A white flash off the last shot, fading to black."""
-    white = Image.new('RGB', (W, H), (255, 255, 255))
-    for f in range(OUTRO_FRAMES):
-        if f < 3:
-            yield Image.blend(last, white, (f + 1) / 3)
-        else:
-            yield Image.blend(white, Image.new('RGB', (W, H)), (f - 2) / (OUTRO_FRAMES - 3))
+def eased(f, frames):
+    t = (f + 1) / frames
+    return t * t * (3 - 2 * t)
 
 
-def render(shots):
+def closing(card, ending):
+    """The title and emblems hold, then fade out: into the main menu's background, so the menu the
+    launcher shows next appears over the same picture ('menu'), or to black ('black')."""
+    target = menu_picture() if ending == 'menu' else Image.new('RGB', (W, H))
+    for _ in range(TITLE_HOLD):
+        yield card
+    for f in range(FADE_OUT):
+        yield Image.blend(card, target, eased(f, FADE_OUT))
+    for _ in range(REST):
+        yield target
+
+
+def render(shots, ending):
     bg = backdrop()
     base = framed(bg)
-    yield from opening(bg)
+    title, marks = title_parts()
+    card = title_card(bg, title, marks)
+    yield from opening(bg, title, marks)
     start = OPENING_FRAMES
-    band_entry = round(BAND_ENTRY * FPS)
+    finale = start + sum(beats for _, _, beats in shots[:-1]) * BEAT
+    end = finale + shots[-1][2] * BEAT
+    flashes = ((start, (0.6, 0.25)), (round(BAND_ENTRY * FPS), (0.7, 0.4, 0.15)), (finale, (0.6, 0.25)))
     n = start
     for movie, first, beats in shots:
         pictures, box = shot_frames(movie, first, beats)
         for picture in pictures:
             frame = in_window(base, Image.open(picture).crop(box))
-            for cut, strengths in ((start, (0.6, 0.25)), (band_entry, (0.7, 0.4, 0.15))):
+            for cut, strengths in flashes:
                 if 0 <= n - cut < len(strengths):
                     frame = flash(frame, strengths[n - cut])
+            if end - n <= BEAT:
+                frame = Image.blend(frame, card, eased(BEAT - (end - n), BEAT))
             yield frame
             n += 1
-    yield from outro(frame)
+    yield from closing(card, ending)
 
 
 def load_wav(path):
@@ -208,35 +256,15 @@ def load_wav(path):
     return np.frombuffer(raw, dtype=np.int16).reshape(-1, 2).astype(float)
 
 
-def music(seconds, ending):
-    """Hell March from its first note to the final downbeat, then the ending:
-    A: the Remastered downbeat hit itself rings out through a short echo;
-    B: Frank Klepacki and the Tiberian Sons' final stab (FKTS) lands on the downbeat;
-    C: Hell March plays on through the white flash and fades out (the menu's own music, the
-       Retaliation remix, fades in after it)."""
+def music(seconds):
+    """Hell March from its first note, fading out from the bar where the finale's flames hit (the
+    menu's own music, the Retaliation remix, fades in after it)."""
     rate = 44100
-    rar = load_wav(MUSIC)
-    cut = int(FINAL_HIT * rate)
-    body = rar[:cut].copy()
-    body[-176:] *= np.linspace(1, 0, 176)[:, None]
-    tail_len = int(seconds * rate) - cut
-    t = np.arange(tail_len) / rate
-    if ending == 'C':
-        fade = np.cos(np.linspace(0, np.pi / 2, tail_len)) ** 2
-        return np.clip(np.concatenate([rar[:cut], rar[cut:cut + tail_len] * fade[:, None]]),
-                       -32768, 32767).astype(np.int16)
-    if ending == 'A':
-        hit = rar[cut:cut + tail_len] * np.where(t < 0.06, 1.0, np.exp(-(t - 0.06) / 0.10))[:, None]
-        tail = hit.copy()
-        for k in range(1, 12):
-            d = int(k * 0.11 * rate)
-            tail[d:] += hit[:tail_len - d] * (0.5 ** k)
-    else:
-        fk = load_wav(FKTS)
-        start = int((FKTS_STAB - 0.004) * rate)
-        tail = fk[start:start + tail_len] * FKTS_GAIN
-    tail *= np.clip((tail_len - np.arange(tail_len)) / (0.3 * rate), 0, 1)[:, None]
-    return np.clip(np.concatenate([body, tail]), -32768, 32767).astype(np.int16)
+    total = int(seconds * rate)
+    tune = load_wav(MUSIC)[:total].copy()
+    at = int(FADE_START * rate)
+    tune[at:] *= (np.cos(np.linspace(0, np.pi / 2, total - at)) ** 2)[:, None]
+    return np.clip(tune, -32768, 32767).astype(np.int16)
 
 
 def write_wav(path, samples):
@@ -248,32 +276,32 @@ def write_wav(path, samples):
         w.writeframes(samples.tobytes())
 
 
-def main(shot_path, mode, out, ending='C'):
+def main(shot_path, mode, out, ending='menu'):
     shots = read_shots(shot_path)
-    total = OPENING_FRAMES + sum(b for _, _, b in shots) * BEAT + OUTRO_FRAMES
+    total = OPENING_FRAMES + sum(b for _, _, b in shots) * BEAT + TITLE_HOLD + FADE_OUT + REST
     seconds = total / FPS
     if mode == 'preview':
         wav = Path(out).with_suffix('.wav')
-        write_wav(wav, music(seconds, ending))
+        write_wav(wav, music(seconds))
         ff = subprocess.Popen(
             ['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}', '-r', str(FPS),
              '-i', '-', '-i', str(wav), '-t', f'{seconds:.3f}', '-vf', 'scale=1280:720',
              '-c:v', 'libx264', '-crf', '22', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '160k', out],
             stdin=subprocess.PIPE)
-        for frame in render(shots):
+        for frame in render(shots, ending):
             ff.stdin.write(frame.tobytes())
         ff.stdin.close()
         ff.wait()
     else:
         Path(out).mkdir(parents=True, exist_ok=True)
-        for i, frame in enumerate(render(shots)):
+        for i, frame in enumerate(render(shots, ending)):
             frame.save(Path(out) / f'frame_{i:05d}.jpg', quality=95)
-        write_wav(Path(out) / 'music.wav', music(seconds, ending))
+        write_wav(Path(out) / 'music.wav', music(seconds))
     print(f'{mode}: {total} frames, {seconds:.2f} s -> {out}')
 
 
 if __name__ == '__main__':
-    if len(sys.argv) not in (4, 5) or sys.argv[2] not in ('preview', 'frames') or sys.argv[4:] not in ([], ['A'], ['B'], ['C']):
+    if len(sys.argv) not in (4, 5) or sys.argv[2] not in ('preview', 'frames') or sys.argv[4:] not in ([], ['menu'], ['black']):
         print(__doc__)
         sys.exit(1)
     main(*sys.argv[1:])

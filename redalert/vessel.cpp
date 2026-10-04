@@ -1152,7 +1152,13 @@ FireErrorType VesselClass::Can_Fire(TARGET target, int which) const
         dir = Direction(target);
 
         if (weapon->Bullet->IsSubSurface) {
-            if (!isseatarget && Is_Target_Object(target)) {
+            /*
+            **	A vehicle afloat on open water (a hover or amphibious one) is in the torpedo's
+            **	element too: a torpedo running through its cell detonates on it.
+            */
+            UnitClass const* unit = As_Unit(target);
+            bool afloat = (unit != NULL && unit->Height == 0 && Map[unit->Center_Coord()].Land_Type() == LAND_WATER);
+            if (!isseatarget && !afloat && Is_Target_Object(target)) {
                 return (FIRE_CANT);
             }
 

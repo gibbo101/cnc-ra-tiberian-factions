@@ -9,16 +9,17 @@
 # Needs the FMV library at $TF_FMV_LIB (default ~/Desktop/Tiberian Factions/tf-intro-lib) with its decoder and
 # RAD Video Tools set up (README.md).
 #
-# usage: scripts/intro_work/build_intro.sh [shots.tsv]
+# usage: scripts/intro_work/build_intro.sh [shots.tsv] [menu|black]   (the ending; menu is the cut that ships)
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 LIB="${TF_FMV_LIB:-$HOME/Desktop/Tiberian Factions/tf-intro-lib}"
 SHOTS="${1:-scripts/intro_work/shots.tsv}"
+ENDING="${2:-menu}"
 OUT="resources/remaster_mods/Vanilla_RA/Data/ART/MOVIES/RA/REDINTRO.BK2"
 WORK="$(mktemp -d "$LIB/edit/build.XXXX")"
 trap 'rm -rf "$WORK"' EXIT
 
-python3 scripts/intro_work/intro_cut.py "$SHOTS" frames "$WORK/frames"
+python3 scripts/intro_work/intro_cut.py "$SHOTS" frames "$WORK/frames" "$ENDING"
 last=$(( $(ls "$WORK/frames"/frame_*.jpg | wc -l) - 1 ))
 "$LIB/tools/radvideo.sh" binkc "$WORK/frames/frame_?????.jpg*0-$last" "$WORK/video.bik" \
     /V100 /F30 /D1500000 /L-1 /O

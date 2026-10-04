@@ -6767,6 +6767,13 @@
 			<BuildIcon>BuildIcon_TSFSDF_G</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSPULS_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSPULS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPULS_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSPULS_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<!-- END generated TS-tree badge variants -->
 	<!-- BEGIN hand-written TS-tree base cameo entries (keep OUTSIDE the generated block).
 	     Every buildable needs a base RA_<IniName> entry naming its pristine cameo; the

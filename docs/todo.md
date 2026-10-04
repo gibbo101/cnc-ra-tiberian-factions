@@ -85,6 +85,22 @@ Spike: a launcher-resident patch from the DLL (like the click and key patches,
 dialog closes. Start from the log strings above. Test the Workshop map browser, custom-map lists
 and a LAN game afterwards: a wrong patch can break them.
 
+## Backlog: smoke beside the startup intro from its first frame (Luke, 2026-10-04)
+
+On screens that aren't 16:9 (Luke's 5120x1440 desktop, the Deck) the bands beside the 16:9 intro
+stay black until the launcher reveals the main menu behind it, about 10 s in, then switch to the
+menu background's smoke, which the intro's backdrop matches. The switch is the one pop left.
+Every full-screen Bink movie, the intro and the campaign and mission movies alike, plays on one
+screen, `UI_FULL_SCREEN_MOVIE_BINK_DIALOG.BUI` (the only one ClientG names). Its
+`Background_Quad` is a plain black full-screen tint with no texture. Tested 2026-10-04 with that
+tint's alpha at 0: the intro stayed black until the reveal (nothing is drawn behind it yet), and a
+mission movie showed the in-game sidebar through its bars. Campaign and mission movies keep black
+bars (Luke), so no data edit of that screen can do it.
+
+Spike: an intro-only patch from the DLL (in-process while the intro plays, like the RAM lever in
+`radar-crest-ram-spike.md`) that gives the dialog's background the menu's smoke, or a matching
+fill, only for the startup movie, and restores it before any other movie plays.
+
 ## TS chrono arrival at skirmish start (Luke's idea, 2026-09-27, after the GDI roster)
 
 Lore: a Chronosphere accident rips the TS faction back through time. So a TS player's opening

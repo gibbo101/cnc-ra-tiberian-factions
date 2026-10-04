@@ -1931,6 +1931,15 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
         if (t == STRUCT_POWER && Has_Building_Active(STRUCT_ADVANCED_POWER))
             continue;
         /*
+        **	The Missile Silo is both RA sides' (Owner=soviet,allies) but names only the Soviet
+        **	tech center, so a house holding an Allied yard builds it from its own Advanced Tech
+        **	Center.
+        */
+        if (t == STRUCT_SOVIET_TECH && type->What_Am_I() == RTTI_BUILDINGTYPE
+            && ((BuildingTypeClass const*)type)->Type == STRUCT_MSLO && (Yard_Factions() & HOUSEF_ALLIES) != 0
+            && Has_Building_Active(STRUCT_ADVANCED_TECH))
+            continue;
+        /*
         **	A deployed Mobile War Factory is a war factory for every prerequisite (Firestorm
         **	[General] PrerequisiteFactory / PrerequisiteGDIFactory list DGWEAP beside GAWEAP).
         */
@@ -2869,6 +2878,20 @@ void HouseClass::Super_Weapon_Handler(void)
 
             if (IsHuman) {
                 Map.Shroud_The_Map(this);
+            }
+
+            /*
+            ** The satellite's reveal was shared with allied players (ShareAllyVisibility), so it
+            ** leaves them with it, except those whose own GPS is still up.
+            */
+            if (ShareAllyVisibility) {
+                for (int i = 0; i < Session.Players.Count(); i++) {
+                    HouseClass* ally = HouseClass::As_Pointer(Session.Players[i]->Player.ID);
+                    if (ally != NULL && ally != this && ally->IsActive && ally->IsHuman && Is_Ally(ally)
+                        && !ally->IsGPSActive) {
+                        Map.Shroud_The_Map(ally);
+                    }
+                }
             }
         }
     }

@@ -1644,8 +1644,9 @@ typedef enum StructType : short
     **	TS GDI tree (ownership-gated: Prerequisite=TSFACT is the sole discriminator —
     **	docs/ts-gdi-tree-plan.md). Appended past the RA additions because enum values
     **	are serialized raw; the block gets its own contiguous range and markers, and
-    **	Is_Tiberian_Era covers it as a second range. Keep new TS buildings inside
-    **	this run and move STRUCT_TS_TREE_LAST when appending.
+    **	Is_Tiberian_Era covers it as a second range. Every building inside it needs a
+    **	standing TS yard (HouseClass::Can_Build), so move STRUCT_TS_TREE_LAST only for a
+    **	new TS-tree building; another faction's building appended after it stays outside.
     */
     STRUCT_TSFACT, // TS Construction Yard "TSFACT" (TS GACNST; 3x2 TD-parity) — deployed from UNIT_TSMCV; the gate on the TS tree. Not sidebar-buildable.
     STRUCT_TSPILE, // TS Barracks "TSPILE" (GAPILE, 2x2) — infantry factory.
@@ -1705,10 +1706,12 @@ typedef enum StructType : short
 
     /*
     **	Bounds of the TS-tree block appended past the RA additions (see STRUCT_TSFACT).
-    **	Second range of BuildingTypeClass::Is_Tiberian_Era.
+    **	Second range of BuildingTypeClass::Is_Tiberian_Era. Every building in it needs a
+    **	standing TS yard, so it ends at the TS gates: the Allied, Soviet, GDI and Nod gates
+    **	after them belong to their own factions' yards.
     */
     STRUCT_TS_TREE_FIRST = STRUCT_TSFACT,
-    STRUCT_TS_TREE_LAST = STRUCT_TDNGATEV
+    STRUCT_TS_TREE_LAST = STRUCT_TSNGATEV
 } StructType;
 
 /*

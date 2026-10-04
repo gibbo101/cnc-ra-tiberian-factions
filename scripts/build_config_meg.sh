@@ -13,7 +13,8 @@
 #  - Tiberian Dawn's skirmish lobby, LAN lobby, LAN match list and Workshop map browser on
 #    RA's steel backdrop (UI_SKIRMISH_GAMELOBBY.BUI and its LAN/Workshop siblings, by
 #    scripts/bui_lobby_build.py, which also sizes its faction picture for RA's emblems
-#    in BUTTONFACTIONCOMBOBOX.BUI and sets the text on its steel slots and rows in green);
+#    in BUTTONFACTIONCOMBOBOX.BUI, gives its nine-row list room in UI_GAMELOBBY_PLAYERSLOT.BUI,
+#    and sets the text on its steel slots and rows in green);
 #    factions_build.py points the RA front end at them
 #  - the mod's green text styles in FONTLIBRARY.BFD (scripts/fontlib_build.py)
 #  - GAMECONSTANTS.XML with CFE Patch Redux pixel-perfect zoom factors,
@@ -52,7 +53,7 @@ BASE_LOAD="scripts/bui_work/RA_UI_LOADINGSCREEN.base.BUI"
 EDIT_LOAD="scripts/bui_work/RA_UI_LOADINGSCREEN.edited.BUI"
 BASE_LOBBY="scripts/bui_work/UI_SKIRMISH_GAMELOBBY.base.BUI"
 EDIT_LOBBY="scripts/bui_work/UI_SKIRMISH_GAMELOBBY.edited.BUI"
-TD_SCREENS="UI_LAN_GAMELOBBY UI_LAN_MULTIPLAYERMENU UI_WORKSHOPMAP_BROWSE BUTTONPLAYERNAMECOMBOBOX BUTTONTEAMCOMBOBOX UI_LISTBOX_MAPSELECT_ENTRY UI_LISTBOX_LAN_ENTRY"
+TD_SCREENS="UI_LAN_GAMELOBBY UI_LAN_MULTIPLAYERMENU UI_WORKSHOPMAP_BROWSE BUTTONPLAYERNAMECOMBOBOX BUTTONTEAMCOMBOBOX UI_LISTBOX_MAPSELECT_ENTRY UI_LISTBOX_LAN_ENTRY UI_GAMELOBBY_PLAYERSLOT"
 BASE_FCOMBO="scripts/bui_work/BUTTONFACTIONCOMBOBOX.base.BUI"
 BASE_FONT="scripts/font_work/FONTLIBRARY.base.BFD"
 EDIT_FONT="scripts/font_work/FONTLIBRARY.edited.BFD"

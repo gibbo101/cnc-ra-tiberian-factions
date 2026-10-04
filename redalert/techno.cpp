@@ -4770,8 +4770,11 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                         int primary = What_Weapon_Should_I_Use(object->As_Target());
                         WeaponTypeClass const* weapon =
                             (primary == 0) ? Techno_Type_Class()->PrimaryWeapon : Techno_Type_Class()->SecondaryWeapon;
-                        if ((object->What_Am_I() != RTTI_AIRCRAFT)
-                            || ((weapon != NULL) && weapon->Bullet->IsAntiAircraft)
+                        // An airborne jumpjet counts as an aircraft here: only anti-air weapons can hit it.
+                        bool in_air = object->What_Am_I() == RTTI_AIRCRAFT
+                                      || (object->What_Am_I() == RTTI_INFANTRY
+                                          && ((InfantryClass const*)object)->Is_Airborne_Jumpjet());
+                        if (!in_air || ((weapon != NULL) && weapon->Bullet->IsAntiAircraft)
                             || (object->Is_Techno() && (((TechnoClass*)object)->Height == 0))) {
                             if (Can_Player_Move() || In_Range(object, primary)) {
                                 if (In_Range(object, primary)

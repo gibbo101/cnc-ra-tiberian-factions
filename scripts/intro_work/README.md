@@ -1,7 +1,7 @@
 # Startup intro
 
 The mod replaces Red Alert's startup movie (the metal logo slam and targeting scope) with its own,
-42.3 s, 1920x1080, 30 fps:
+47.8 s, 1920x1080, 30 fps:
 
 Hell March (Remastered) plays from its first note:
 
@@ -10,8 +10,11 @@ Hell March (Remastered) plays from its first note:
 2. **Montage (from 4.27 s).** Two bars in, on the first big accent, a flash cuts to a Red Alert /
    Tiberian Dawn / Tiberian Sun FMV montage in a steel-framed window: 16 two-second shots (the band
    comes in, with a flash, on the cut into the 15th at 32.28 s), then eight half-second cuts.
-3. **Ending.** On the next phrase (40.28 s) a white flash; Hell March fades out under it, and the
-   main menu fades in its own music, the Hell March Retaliation remix (`scripts/musicevents_build.py`).
+3. **Finale (from 40.28 s).** On the next phrase a flash cuts to Nod's flame tanks; their flames
+   engulf the street on the bar after (42.28 s), where Hell March starts to fade. Over the shot's
+   last beat it dissolves into the title and emblems, which hold, then fade out into the main
+   menu's own background, so the menu appears over the same picture. The menu fades in its own
+   music, the Hell March Retaliation remix (`scripts/musicevents_build.py`).
 
 ## The Steam Deck freeze
 
@@ -26,8 +29,10 @@ hashing too fast to notice.
 
 - `shots.tsv` is the montage: movie, first frame, length in beats (one beat = 15 frames at 30 fps).
 - `intro_cut.py` renders it: `preview <out.mp4>` for a 720p review copy, `frames <dir>` for the
-  1080p frames and the music the Bink encode takes. Timings (the opening hit, the montage's start,
-  the band's entry, the final phrase) are constants at its top.
+  1080p frames and the music the Bink encode takes; `black` as a last argument fades the title to
+  black instead of into the menu background. Timings (the opening hit, the montage's start, the
+  band's entry, the finale's phrase, the fade) are constants at its top. The last shot in the list
+  is the finale.
 - `build_intro.sh` does the whole build and installs the result as
   `resources/remaster_mods/Vanilla_RA/Data/ART/MOVIES/RA/REDINTRO.BK2`. It reproduces the movie byte
   for byte.
@@ -42,11 +47,15 @@ header. A loose `Data/ART/MOVIES/RA/REDINTRO.BK2` in the mod replaces the stock 
 Bink 2 both play; Theora data hangs startup on a black screen, and a loose `.OGV` beside it is
 ignored. We encode Bink 1 at 1.5 MB/s (about the stock intro's rate), because RAD Video Tools (free)
 makes it. The launcher shows the movie darker in the shadows than a texture of the same value (a
-dark tone v displays as about 1.08 v - 9); `menu_art.py` matches the menu's margins to that.
+dark tone v displays as about 1.08 v - 9; from 112 up a tone displays as itself), so the movie's
+backdrop and its last picture, the menu background, are brightened to show at the menu's shade.
 
 The launcher fits the movie inside the screen and, about 10 s in, reveals the main menu wherever
-the movie doesn't cover it. The movie is 16:9; on 16:10 screens (the Steam Deck) the bands above
-and below show the menu background's margins, which `menu_art.py` fills with the same smoke.
+the movie doesn't cover it. The movie is 16:9; elsewhere the menu background's margins show
+beside it (above and below on 16:10, the Steam Deck; either side on wider screens). They hold only
+the backdrop's smoke at the same scale, so they carry straight on from it. Until the reveal those
+bands are black: every full-screen movie plays on one launcher screen, and campaign movies keep
+their black bars (backlog item in `docs/todo.md`).
 
 ## The source library
 

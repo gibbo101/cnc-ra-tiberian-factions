@@ -6,10 +6,12 @@ Writes into the mod's Data/ART/TEXTURES/SRGB/ directory:
     1920x1080 (the CORE, at 479,60) to the screen and lets the margins show on wider or
     taller screens, so the composition is laid out in core coordinates and the smoke
     backdrop runs to every edge. Left: the Remastered goggles soldier; right: the Tiberian
-    Sun soldier; both dissolve into the smoke before the menu box. The Westwood plate and
-    publisher logos sit at their stock positions, because the logo buttons draw their colour
-    hover art at those fixed spots; at rest the logos show as faint steel silhouettes. Outside
-    the core there is only smoke, shaded like the startup intro's backdrop, for 16:10 screens.
+    Sun soldier; both dissolve into the smoke before the menu box and before the core's edge.
+    The Westwood plate and publisher logos sit at their stock positions, because the logo
+    buttons draw their colour hover art at those fixed spots; at rest the logos show as faint
+    steel silhouettes. Outside the core there is only the smoke, at the core's own shade: the
+    startup intro's backdrop is this smoke made to show at the same shade, so the margins
+    continue it on any screen that isn't 16:9.
   * UI_RA_MAINMENU_GRID_RED.DDS and _01.DDS, fully transparent, so the stock radar grid no
     longer draws behind the menu.
   * the box (UI_RA_MAINMENU_BUTTON_BG and _SCANLINES atlas regions, drawn only by the main
@@ -41,11 +43,7 @@ TEXTURES_MEG = Path.home() / '.steam/steam/steamapps/common/CnCRemastered/Data/T
 BG_SIZE = (2878, 1200)
 CORE = (479, 60)
 BOX = (602, 322, 1314, 944)            # the menu box on the core, from the live layout
-CORE_H = 1080
-MARGIN_SHADE = 0.85                    # the startup intro's backdrop brightness
-# The launcher draws the (Bink 1) startup movie darker than a texture of the same value: a dark
-# tone v shows as about 1.08 v - 9 (measured on the desktop framebuffer, dark range).
-VIDEO_LEVELS = (1.08, -9.0)
+CORE_W, CORE_H = 1920, 1080
 PLATE = (52, 24, 506, 142)             # Westwood plate, core coordinates
 # Publisher logos: the hover art's atlas region and where the stock background engraves it (core).
 LOGOS = (((6491, 5420, 86, 64), (78, 1006, 88, 66)),       # Petroglyph
@@ -108,19 +106,6 @@ def below_core_fade(rows, top):
     return 1 - ramp(rows, CORE_H - 30 - top, CORE_H - top)
 
 
-def shade_margins(canvas):
-    """Makes the rows outside the core look like the intro's backdrop as the launcher shows it:
-    16:10 screens (the Steam Deck) see these rows above and below the 16:9 startup movie once
-    the launcher reveals the menu behind it, so they continue the movie's backdrop."""
-    a = np.asarray(canvas).astype(float)
-    rows = np.arange(a.shape[0])
-    inside = ramp(len(rows), CORE[1], CORE[1] + 20) * (1 - ramp(len(rows), CORE[1] + CORE_H - 20, CORE[1] + CORE_H))
-    gain, offset = VIDEO_LEVELS
-    as_video = (a[..., :3] * MARGIN_SHADE * gain + offset).clip(0, 255)
-    a[..., :3] = a[..., :3] * inside[:, None, None] + as_video * (1 - inside[:, None, None])
-    return Image.fromarray(a.clip(0, 255).astype('uint8'), canvas.mode)
-
-
 def remastered_soldier(hero):
     face = hero.crop((0, 0, 1560, 1240))
     s = 0.76
@@ -128,7 +113,7 @@ def remastered_soldier(hero):
     x, y = -70, 1140 - face.height
     fw, fh = face.size
     fade_right = 1 - ramp(fw, BOX[0] - 90 - x, BOX[0] - 10 - x)
-    mask = ramp(fh, 0, 330)[:, None] * ramp(fw, 0, 140)[None, :] * fade_right[None, :]
+    mask = ramp(fh, 0, 330)[:, None] * ramp(fw, -x, 70 - x)[None, :] * fade_right[None, :]
     mask *= below_core_fade(fh, y)[:, None]
     return with_mask(face, mask), (x, y)
 
@@ -143,7 +128,7 @@ def ts_soldier():
     r = np.hypot((xx - tw * 0.50) / (tw * 0.58), (yy - th * 0.56) / (th * 0.66))
     mask = np.clip((1.12 - r) / 0.40, 0, 1)
     mask *= ramp(tw, BOX[2] + 10 - x, BOX[2] + 110 - x)[None, :] * ramp(th, 0, 200)[:, None]
-    mask *= (1 - ramp(tw, tw - 170, tw - 20))[None, :]
+    mask *= (1 - ramp(tw, CORE_W - 150 - x, CORE_W - x))[None, :]
     mask *= below_core_fade(th, y)[:, None]
     return with_mask(ts, mask), (x, y)
 
@@ -172,7 +157,7 @@ def background(stock_atlas):
     for layer, xy in (remastered_soldier(hero), ts_soldier(), stock_piece(stock, PLATE, 6),
                       *logo_silhouettes(stock_atlas)):
         place(canvas, layer, xy)
-    return shade_margins(canvas)
+    return canvas
 
 
 def steel(region_img, gains, cap):
