@@ -22,6 +22,8 @@ anywhere it self-destructs; a stop order underground heads for the nearest surfa
 - **State machine** (`UnitClass::Tunnel_AI`, `unit.cpp`): `TUNNEL_IDLE / TURNING / DIGGING_IN /
   TUNNELING / EMERGING / ABORTING`. `Assign_Destination` runs `Should_Dig_To` (another zone, or a
   distance of at least `[General] TunnelDigThreshold=6`; never an adjacent cell).
+- **The earth marker is the underground sprite itself** (frame 112, `Draw_It` / `Shape_Number`):
+  the launcher draws an owner's cloaked unit solid, so the owner sees the marker, not the tank.
 - **While underground:** `UnitClass::Mark` keeps `IsDown` without cell occupancy;
   `TechnoClass::Is_Tunneling()` folds into `Is_Cloaked` for every non-ally query; the launcher
   export is `Cloak=CLOAKED` with `VisibleFlags` cleared for non-allies; `Take_Damage` is immune

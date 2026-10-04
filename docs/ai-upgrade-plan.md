@@ -150,7 +150,9 @@ Engineering survey COMPLETE (2026-07-17). Load-bearing findings:
    faction building already offers its faction's roster (today's TDWEAP/TDHPAD prove it).
    Faction-tagged types with pinned ActLike (building.cpp:2008-2022 Unlimbo pinning; 4
    factions map cleanly onto GREECE/USSR/GOOD/BAD placeholders) make lineage automatic —
-   NO capture-specific code.
+   NO capture-specific code. A building both TD factions can own (`Owner=GoodGuy,BadGuy`) keeps
+   its owner's ActLike instead: the pinning branch tests GDI before Nod, so a pinned side would
+   give a Nod yard the GDI sidebar and flag shared buildings as captured.
 2. **The prereq-liveness gap is ONE SITE:** `sidebarglyphx.cpp:474` — the every-frame
    sidebar Recalc evicts via `Who_Can_Build_Me(intheory=true, legal=false, …)`, and
    `legal=false` short-circuits the prereq check (object.cpp:2411). Fix = make eviction

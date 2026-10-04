@@ -125,6 +125,9 @@ superweapon payload, or dormant.
 
 ### The Upgrade Center's superweapons
 
+Nine Upgrade Center art blocks cover every state (`BuildingClass::Shape_Number`): the
+one-of-each rule bars two plugs of one type, so no other combination can occur.
+
 - **Drop pods** (`SPC_TS_DROPPODS`): altitude draws as a northward screen shift, so only east and
   west approaches read as a 45° fall; from the south a pod would draw two drop-heights off-screen
   and pop in late. The spawn sits one drop-height back along the approach so the slide lands on the
@@ -144,7 +147,8 @@ superweapon payload, or dormant.
 - **Component towers are standalone defences:** a wall run stops at one rather than binding into
   it, a tower can't be placed on a wall segment, and wall arms end flush on the cell boundary.
 - **The plug is the armed tower type.** Placing TSVULC, TSCSAM or TSROCK replaces the bare TSCTWR
-  in place, keeps its health ratio and installs rather than builds; selling refunds both. Weapons
+  in place, keeps its health ratio and installs rather than builds; selling an armed tower refunds
+both the tower and the plug (`Refund_Amount`). Weapons
   are TS verbatim (`[TSVulcanTower]`/`[TSSA]`, `[TSRPGTower]`/`[TSRPG]`, `[TSRedEye2]`/`[TSSAMWH]`).
   The AI builds them as a two-step (`TF_AI_Tower_Step`: a bare tower, then the plug, counting plugs
   in production against bare towers; `TF_Plug_Host`).
@@ -227,7 +231,7 @@ machine in `BulletClass::AI` (descend and flare, 4 s dwell, climb out), with no 
 shadow sits on the pad and grows (shapes 1-3, pre-scaled silhouettes picked by Height). TS's
 DROPDWN1 and DROPUP1 play at touchdown and liftoff. The Mk. II walks out from under the hull to the
 bay's rally point (`Rally_Unit`; the bay is a real factory) or two rows out. The landing point is
-the deck's visual centre, 160 leptons north of the plot centre.
+the deck's visual centre, 0x20 (32) leptons north of the 3x2 plot centre.
 
 - **Mech Division** (`UNIT_TSMDIV`) is a token the pod expands into 3 Titans + 2 Wolverines, single
   file every 9 frames. **The Mk. II field cap** (`TF_MK2_CAP` in `house.cpp`) is heap-counted:
@@ -271,8 +275,10 @@ our TS sprites run to 301 px wide against RA's 228, and a fraction gave the Mk. 
 The Hover MLRS keeps its own float.
 
 **Hover MLRS (TSHVR).**
-- The rack seat is two-part (`Hover_Rack_Seat(hull, rack)` in `udata.cpp`). Facing32 resting
-  diagonals read seat index 3/13/19/29, never 4/12/20/28 (EA's 3D Studio 45° compensation).
+- The rack seat is two-part (`Hover_Rack_Seat(hull, rack)` in `udata.cpp`): a projection of the mount
+  (9 px aft, deck height 4, camera vertical factor 6) plus a dialled residual (`_res`) of 2 px at
+  most. `Sonic_Turret_Seat` treats the hover deck lift as 4.5 px, not 4. Facing32 resting diagonals
+  read seat index 3/13/19/29, never 4/12/20/28 (EA's 3D Studio 45° compensation).
 - A draw-side slewed hull facing stops the mount jumping as RA pathing flicks the heading each
   cell; the rack swings 3 directions a tick so sweeps read as rotation; the seat cancels each pod
   frame's centroid offset so stationary spins hold within ~1 px.
@@ -302,7 +308,8 @@ the launcher can't do, and TS ships no sonic-wave art.
   muzzle-to-target line (`SonicT`, `SonicTether`); a broken tether (firer dead, `TarCom` changed,
   or the target beyond `SONIC_TETHER_RANGE`, 2172 leptons) retracts the band from the tank end and
   stops its damage; `SonicBandEnd` holds the next shot until the band is gone.
-- `PrimaryOffset` 0x50 roots the band at the horn; `NoMovingFire=yes`, as TS's `[SONIC]` requires.
+- `PrimaryOffset` 0x50 is read only for range (`Fire_Data`, `In_Range`); `Fire_Coord` ignores it for
+  the Disruptor. `NoMovingFire=yes`, as TS's `[SONIC]` requires.
   The turret renders came from the opposite camera side, so the packer maps
   `turret[j] = render[(16-j)%32]`.
 

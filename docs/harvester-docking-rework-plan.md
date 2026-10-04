@@ -66,6 +66,23 @@ unchanged, fewer cycles, credits per load unchanged. Keeping the same value on e
 the RA and TD economies equal, which is what makes cross-faction unit balance tractable. 1 =
 TD-matched, 4 = close to RA's instant dump.
 
+## Docking traps
+
+- **The park** (`Mission_Unload`, TD and TS harvesters): the fume plume is attached to the refinery
+  (`Attach_To`) so it draws above the refinery and below the harvester (a free anim lands in
+  `LAYER_AIR`). It is sized at dock start to end with the unload, and `Loops` is set after
+  `Attach_To`, whose `Unlimbo` resets it. The TS refinery gets no plume. The docking maintenance
+  loop can re-order the truck to its line-up cell during the reverse, and that `NavCom` resumes
+  after parking unless cleared. There is no seat nudge at the TS ramp: any shift after the turn
+  reads as a slide, and the ramp's centreline is within about 3 px of the pad centre.
+
+- **Only the current customer is accepted** (`Receive_Message` `RADIO_DOCKING`). `Transmit_Message`
+  delivers a message aimed at a unit even without radio contact, so a queued harvester's
+  `Mission_Enter` sends `RADIO_DOCKING` into a busy dock every tick.
+- **The TDPROC exit offset** (`Exit_Object`): the harvester's `Coord` still holds its pre-limbo
+  position, so adding 0x0055, 0x0060 puts it back on the southern cell it attached in. The HELLO and
+  TETHER messages are needed by the `OUT_OF_REFINERY` track.
+
 ## Recovery lessons that apply to docking
 - **Two detectors, and only one blacklists.** The ore no-progress detector owns field blacklisting
   (A* reachability); the position watchdog owns physical un-sticking and idle restart and must not
