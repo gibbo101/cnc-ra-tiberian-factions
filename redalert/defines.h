@@ -35,17 +35,8 @@
 
 #include "endianness.h"
 
-/**********************************************************************
-**	TF dev-build switch.
-**	  1 (default) = local development build. The dev cheats (instant-build,
-**	      reveal-all) and the A* diagnostic log are compiled in. The cheats
-**	      default ON but can be turned off at runtime by creating the file
-**	      Documents/CnCRemastered/tf_dev_off.flag (read once at startup, so set
-**	      it before launching). See TF_Dev_Cheats().
-**	  0   = release / Workshop build. All of the above are compiled out
-**	      entirely. package-for-workshop.sh builds with -DTF_DEV_BUILD=0, so
-**	      the shipped DLL never contains cheat code. Nothing else to flip.
-*/
+// TF_DEV_BUILD 1 compiles in the dev cheats and diagnostic logs, the cheats on unless Documents/CnCRemastered/
+// tf_dev_off.flag exists (TF_Dev_Cheats). package-for-workshop.sh builds with 0, so releases carry neither.
 #ifndef TF_DEV_BUILD
 #define TF_DEV_BUILD 1
 #endif
@@ -644,7 +635,7 @@ typedef enum MZoneType : unsigned char
     MZONE_CRUSHER,   // Can crush crushable wall types.
     MZONE_DESTROYER, // Can destroy walls.
     MZONE_WATER,     //	Water based objects.
-    MZONE_HOVER,     // Hover objects (TS-spike): flood-filled with SPEED_HOVER passability, so one zone spans land AND water. NOTE: grows CellClass::Zones[] — breaks old skirmish saves (accepted, same as any enum addition).
+    MZONE_HOVER,     // Hover objects: zoned on SPEED_HOVER passability, so one zone spans land and water.
 
     MZONE_COUNT,
     MZONE_FIRST = 0
@@ -779,16 +770,16 @@ typedef enum SpecialWeaponType : char
     SPC_IRON_CURTAIN,  // Bestow invulnerability on a unit/building
     SPC_GPS,           // give allies free unjammable radar.
 
-    // Tiberian Factions mod superweapons.
+    // TF: superweapons.
     SPC_TD_ION_CANNON,    // GDI Ion Cannon strike (ANIM_TD_ION_CANNON, sourced from STRUCT_TDEYE)
     SPC_TD_NUKE,          // Nod Nuclear Strike (BULLET_NUKE_DOWN + ANIM_ATOM_BLAST, sourced from STRUCT_TDTMPL)
     SPC_TD_PARA_INFANTRY, // Nod paratroops (TD infantry drop, sourced from STRUCT_TDAFLD + STRUCT_TDHAND)
     SPC_TD_SPY_MISSION,   // Nod recon flight (sourced from STRUCT_TDAFLD; same U2 flyover, own timer)
     SPC_TS_ION_CANNON,    // TS Ion Cannon strike (ANIM_TS_ION_BEAM + RING1, sourced from the TSPION uplink plug)
-    SPC_TS_DROPPODS,      // TS Drop Pod reinforcements (3 BULLET_TSPODDROP pods of infantry, sourced from the TSPODS plug)
+    SPC_TS_DROPPODS,      // TS Drop Pod reinforcements (5 BULLET_TSPODDROP infantry pods, sourced from the TSPODS plug)
     SPC_TS_HUNTSEEK,      // TS Hunter Seeker droid (a self-targeting kamikaze flyer, sourced from the TSSEEK plug)
-    SPC_TS_EMP,           // TS E.M. Pulse (TS [EMPulseSpecial]): the nearest powered EMP Cannon (STRUCT_TSPULS) in range lobs a pulse ball at the target
-    SPC_TS_FIRESTORM,     // TS Firestorm Defense (TS [FirestormSpecial], charge-drain): raises every Firestorm Wall Section the house owns while the Firestorm Generator (STRUCT_TSFGEN) stands and is powered
+    SPC_TS_EMP,           // TS E.M. Pulse, fired by the nearest powered EMP Cannon (STRUCT_TSPULS) in range
+    SPC_TS_FIRESTORM,     // TS Firestorm Defense: raises the house's Firestorm walls while a powered TSFGEN stands
 
     SPC_COUNT,
     SPC_FIRST = 0,
@@ -1015,11 +1006,8 @@ typedef enum MissionType : char
     MISSION_MISSILE,
     MISSION_HARMLESS, // Sit around and don't appear like a threat.
 
-    /*
-    **	TF: attack-move (ported from CFE Patch Redux, GPL v3). Pseudo-missions so the
-    **	attack-move order can ride the multiplayer event queue; event.cpp converts them
-    **	back to MISSION_MOVE plus the per-unit AttackMove flag on receipt.
-    */
+    // TF: attack-move, ported from CFE Patch Redux. Pseudo-missions that carry the order through the
+    // MP event queue; event.cpp turns them back into MISSION_MOVE plus the unit's AttackMove flag.
     MISSION_ATTACKMOVE,
     MISSION_QATTACKMOVE, // attack-move combined with the client's queued-movement toggle
 
@@ -1136,13 +1124,8 @@ enum ConcreteEnum
 **	Units that move can move at different speeds. These enumerate the
 **	different speeds that a unit can move.
 */
-// The trailing comment on each line is the equivalent rules.ini `Speed=` value.
-// CRITICAL: rules.ini `Speed=` is a 1..100 PERCENTAGE, scaled back to this 0..255
-// MPHType by the engine via _Scale_To_256 (techno.cpp): MaxSpeed = Speed * 256 / 100.
-// So to reproduce a TD MPHType in rules.ini, `Speed = round(MPHType * 100 / 256)`
-// (i.e. divide by ~2.56). Do NOT use MPHType/2 -- that runs every unit ~28% too fast
-// (the original TD-port speed bug, fixed 2026-05-31). The low-value comments below were
-// previously wrong (used /2); corrected here.
+// TF: each legend is the rules.ini Speed= for that MPH. Speed= is a percentage scaled by Speed * 256 / 100,
+// so Speed = round(MPH * 100 / 256), never MPH / 2 (docs/td-vehicle-port-recipe.md).
 typedef enum MPHType : unsigned char
 {
     MPH_IMMOBILE = 0,
@@ -1198,35 +1181,17 @@ inline HousesType operator++(HousesType& ht)
     return ht;
 }
 
-// Tiberian Factions mod: GDI (HOUSE_GOOD) and Nod (HOUSE_BAD) detached from
-// the Allied / Soviet umbrella so they form their own factions. Vanilla RA
-// had HOUSE_GOOD bundled into HOUSEF_ALLIES and HOUSE_BAD into HOUSEF_SOVIET,
-// causing the TD houses to silently inherit RA's tech trees.
-//
-// Tiberian Sun GDI is the fifth faction and takes the same treatment one step
-// further: rather than mint a new HousesType, it claims the GERMANY country
-// house and leaves the Allied umbrella. The launcher knows Germany natively --
-// colour, flag, start markers, loading screens -- so a faction built this way
-// needs no launcher-side enum at all, and the picker row the player clicks IS
+// TF: GDI and Nod leave the Allied and Soviet umbrellas. TS GDI plays as Germany, so the picker row clicked is
 // the house they play. See docs/ts-factions-feasibility.md.
-//
-// TF_TS_GDI_FACTION is the release switch for the fifth faction. Built with it at 0,
-// Germany goes back to being an Allied country duplicate and every trace of TS GDI
-// leaves the game: Is_TS_GDI() is constant false, so the starting roster, EVA, unit
-// voices, side name and radar crest all fall through to their old branches, and
-// HOUSEF_TSGDI is empty, so the TS construction yard grants no tree of its own.
-// package-for-workshop.sh builds with 0 and regenerates the picker data to match,
-// so the faction can sit finished on main without appearing in a release.
+
+// TF_TS_GDI_FACTION 0 builds the DLL without the fifth faction: Germany is Allied again, Is_TS_GDI() is false.
+// Build the front end with TF_TS_GDI_FACTION=0 too, so the picker matches (docs/ts-gdi-faction.md).
 #ifndef TF_TS_GDI_FACTION
 #define TF_TS_GDI_FACTION 1
 #endif
 
-// TF_TD_MAPS is the switch for the converted Tiberian Dawn maps and their terrain.
-// At 1 the mod installs the maps in <mod>/CustomMaps/ and reads the TD tile cells
-// they carry in [TFTDTiles]. At 0 neither happens: the maps and the TD terrain art
-// sit outside the mod (parked/td-maps/), any copies an earlier version installed in
-// Local_Custom_Maps are removed, and a converted map that turns up anyway loads its
-// vanilla-safe [MapPack]. The TD template types stay registered either way.
+// TF_TD_MAPS: at 1 the DLL installs <mod>/CustomMaps/ and reads the maps' [TFTDTiles]; at 0 it deletes the
+// installed copies and ignores [TFTDTiles], so a stray map loads its [MapPack]. See docs/td-skirmish-map-import.md.
 #ifndef TF_TD_MAPS
 #define TF_TD_MAPS 0
 #endif
@@ -1247,13 +1212,8 @@ inline HousesType operator++(HousesType& ht)
      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8)
 #define HOUSEF_NONE 0
 
-/*
-**	True when this house plays as Tiberian Sun GDI. The faction rides the GERMANY
-**	country house (see the HOUSEF_TSGDI note above), so every side-flavoured branch
-**	-- starting roster, EVA voice, unit responses, side name -- asks through here
-**	rather than naming the country, which reads as an unrelated RA country everywhere
-**	it appears.
-*/
+// True when this house plays as TS GDI, which rides the Germany country house. Side-flavoured branches
+// (roster, EVA, voices, side name) ask here rather than testing HOUSE_GERMANY.
 inline bool Is_TS_GDI(HousesType house)
 {
 #if TF_TS_GDI_FACTION
@@ -1428,32 +1388,31 @@ typedef enum BulletType : char
     BULLET_NUKE_UP,
     BULLET_NUKE_DOWN,
 
-    // Tiberian Factions mod bullets ported from TD (tiberiandawn/defines.h
-    // BULLET_*). Each maps to a [Name] section in rules.ini.
+    // TF: bullets. bbdata.cpp registers them in this order under their rules.ini names: keep the two in step.
     BULLET_SSM,   // Surface-to-surface missile — homing, AA + AG capable.
     BULLET_LASER, // Obelisk instant-hit beam (Inviso, light_speed, no rotation).
     BULLET_TDAPDS, // TD Nod Turret 120mm shell (visually mirrors [Cannon]).
     BULLET_TDSPREADFIRE, // TD GDI Guard Tower chain-gun pellet (Inviso, light_speed).
     BULLET_TDPATRIOT, // TD SAM Site Patriot missile (Homing, AA-only, MPH_VERY_FAST).
-    BULLET_TDBULLET, // TD small-arms invisible round ("50cal") — Pistol/M16/M60MG; warhead set on the weapon.
+    BULLET_TDBULLET, // TD small-arms invisible round (TD50cal): TDM16, TDRifle, TDM60mg. The weapon sets the warhead.
     BULLET_TDTOW, // TD Rocket Soldier missile (E3 Dragon/TOW) — Homing, visible 32-frame rotating, WARHEAD_TDAP.
     BULLET_TDFLAME, // TD Flamethrower round (E4) — invisible; the visible effect is the ANIM_FLAME_N muzzle jet.
-    BULLET_TDCHEM, // TD Chem Warrior spray (E5) — invisible; the visible effect is the ANIM_CHEM_N muzzle jet. Warhead=TDHE.
-    BULLET_TDSSM2, // TD Rocket Launcher missile (MLRS, BULLET_SSM2) — Homing, AA+AG, visible TDDRAGON sprite, WARHEAD_TDHE. = TDSSM but Arm=9/ROT=7.
-    BULLET_TDMISSILE, // TD SSM Launcher Honest John (BULLET_HONEST_JOHN) — NON-homing, accurate, visible TDMISSILE sprite (32-frame rotating), WARHEAD_TDFIRE, ANIM_NAPALM3 impact.
-    BULLET_TDNAPALM,  // TD A-10 napalm bomblet (BULLET_NAPALM/ClassNapalm verbatim) — Dropping, Arm 24, BOMBLET sprite, WARHEAD_TDFIRE, ANIM_NAPALM2 impact (bullet ImpactAnim; TDFire warhead Explosion=0).
-    BULLET_TSFIRE,    // TS fire-stream particle (FireStream, FLAMEALL sprite): flies as a bullet, ages through 19 states, burns whatever shares its cell every 3 frames, rests as a burning puddle at the target. Registered "TSFire".
-    BULLET_TSDROPPOD, // TS Dropship Bay delivery — a descent, not a weapon: carries TFPayload, sets it down and applies no damage. Cloned from NukeDown's fall rather than amending it, so the Nod strike is untouched.
-    BULLET_TSPODDROP, // TS infantry drop pod (SPC_TS_DROPPODS) — streaks in at DropPodAngle strafing the LZ, spawns its trooper + husk on touchdown. OpenTS droppod.cpp ported onto the bullet frame like the dropship above.
-    BULLET_TSHUNTER,  // TS Hunter Seeker droid (SPC_TS_HUNTSEEK) — a self-guided kamikaze on the bullet frame (self-deletes cleanly, unlike the aircraft attempt): homes to a random enemy TF_Hunter_Seeker_Acquire picks and detonates on it. Art = the TSHUNT 8-frame spin.
+    BULLET_TDCHEM, // TD Chem Warrior spray (E5): invisible; the visible effect is the ANIM_CHEM_N muzzle jet.
+    BULLET_TDSSM2, // TD Rocket Launcher missile (MLRS): TDSSM with Arm=9, ROT=7.
+    BULLET_TDMISSILE, // TD SSM Launcher's Honest John: non-homing, TDMISSILE art.
+    BULLET_TDNAPALM,  // TD A-10 napalm bomblet: drops on the target, BOMBLET art.
+    BULLET_TSFIRE,    // TS fire-stream particle: ages through 19 states and burns its cell every 3 frames.
+    BULLET_TSDROPPOD, // TS Dropship Bay delivery: falls like NukeDown, sets its cargo down, does no damage.
+    BULLET_TSPODDROP, // TS infantry drop pod (SPC_TS_DROPPODS), OpenTS droppod.cpp: strafes the LZ, lands its trooper.
+    BULLET_TSHUNTER,  // Unused: nothing creates it. The Hunter Seeker is AIRCRAFT_TSHUNT.
     BULLET_TSLOBBED2,       // TS [Lobbed2]: the RPG tower's arcing canister (TSCANIST, 15-frame tumble).
-    BULLET_TSAAHEATSEEKER,  // TS [AAHeatSeeker]: the SAM tower's and Mk. I's missile, drawn with RA's MISSILE on RA's homing path, trailing TS's SMOKEY2.
-    BULLET_TSLOBBED,        // TS [Lobbed]: the Disc Thrower's disc, a bouncing Floater arc drawn with TS's DISCUS (TSDISCUS, 7-frame spin).
-    BULLET_TSINVISIBLE3,    // TS [Invisible3]: instant and unseen, hits air and ground alike (the Jumpjet Infantry's cannon).
-    BULLET_TSHELLFIRE,      // TS [AAHeatSeeker2]: the Orca Fighter's homing missile, air and ground, on RA's homing path with DRAGON art.
-    BULLET_TSBOMBSHELL,     // TS [Cannon2] as the Orca Bomber drops it: a falling bomb (RA Dropping) with the TD bomblet art.
+    BULLET_TSAAHEATSEEKER,  // TS [AAHeatSeeker]: the SAM tower's and Mk. I's missile, RA's MISSILE art and homing path.
+    BULLET_TSLOBBED,        // TS [Lobbed]: the Disc Thrower's disc, drawn with TS's DISCUS (TSDISCUS).
+    BULLET_TSINVISIBLE3,    // TS [Invisible3]: instant and unseen, air and ground (the Jumpjet Infantry's cannon).
+    BULLET_TSHELLFIRE,      // TS [AAHeatSeeker2]: the Orca Fighter's homing missile, air and ground, DRAGON art.
+    BULLET_TSBOMBSHELL,     // TS [Cannon2] as the Orca Bomber drops it: a falling bomb with the TD bomblet art.
     BULLET_TSBALLISTIC2,    // Firestorm [Ballistic2]: the Juggernaut's arcing, inaccurate 120MM shell.
-    BULLET_TSPULSBALL,      // TS [PulsPr]: the EMP Cannon's pulse ball, lobbed high at the E.M. Pulse target. Its landing plays the impact anim instead of doing damage.
+    BULLET_TSPULSBALL,      // TS [PulsPr]: the EMP Cannon's pulse ball. It lands as an E.M. Pulse, doing no damage.
 
     BULLET_COUNT,
     BULLET_FIRST = 0
@@ -1470,11 +1429,7 @@ inline BulletType operator++(BulletType& n)
 **	All game buildings (structures) are enumerated here. This includes
 **	civilian structures as well.
 */
-/*
-**	Widened from char 2026-08-01: the TS-tree wave pushed the enum past 127.
-**	Not part of the launcher ABI (dllinterface.h carries its own int fields);
-**	old saves break, the standard accepted consequence of enum growth.
-*/
+// TF: short, not char: the building types run past 127. StructType never crosses dllinterface.h.
 typedef enum StructType : short
 {
     STRUCT_NONE = -1,
@@ -1489,7 +1444,7 @@ typedef enum StructType : short
     STRUCT_TURRET,
     STRUCT_AAGUN,
     STRUCT_FLAME_TURRET,
-    STRUCT_CONST, // RA Construction Yard "FACT" — stock-campaign type; skirmish uses the faction yards (AFACT/SFACT) after the W2 split.
+    STRUCT_CONST, // RA Construction Yard "FACT": the campaigns' yard; skirmish uses AFACT/SFACT.
     STRUCT_REFINERY,
     STRUCT_STORAGE,
     STRUCT_HELIPAD,
@@ -1581,72 +1536,58 @@ typedef enum StructType : short
     STRUCT_LARVA2,
 #endif
 
-    // Tiberian Factions mod buildings — fully separated STRUCT_TDxxxx
-    // entries with own BuildingTypeClass instances, own _anims[], own
-    // _presets[], own ImageData routing. No Logic= alias inheritance from
-    // vanilla RA donors — see docs/building-separation-plan.md for the
-    // committed strategic direction (2026-05-21).
-    //
-    // First vertical slice: STRUCT_TDOBLI (Nod Obelisk of Light).
-    // Subsequent buildings (TDATWR, TDGUN, TDPROC, etc.) land per-tier
-    // in the building-separation milestones.
+    // TF: TD buildings, each a type of its own (docs/td-building-separation-recipe.md).
     STRUCT_TDOBLI,
-    // M2 Tier 1 — pure data ports (power plants, GDI barracks, ore silo).
+    // Power plants, the GDI barracks and the silo.
     STRUCT_TDNUKE,
     STRUCT_TDNUK2,
     STRUCT_TDPYLE,
     STRUCT_TDSILO,
-    // M3 Tier 2 — defensive turrets.
+    // Defensive turrets.
     STRUCT_TDGTWR,
     STRUCT_TDATWR,
     STRUCT_TDGUN,
     STRUCT_TDSAM,
-    // M4 Tier 3 — production/economy buildings.
+    // Production and economy.
     STRUCT_TDHAND,
     STRUCT_TDHPAD,
     STRUCT_TDFIX,
     STRUCT_TDHQ,
     STRUCT_TDWEAP,
     STRUCT_TDAFLD,
-    STRUCT_TDFACT, // TD Construction Yard "TDFACT" — classic shared GDI/Nod type; skirmish uses the faction yards (TDGFACT/TDNFACT) after the W2 split.
+    STRUCT_TDFACT, // TD Construction Yard "TDFACT": the campaigns' GDI/Nod yard; skirmish uses TDGFACT/TDNFACT.
     STRUCT_TDPROC,
 
-    // M5 Tier 4 — superweapon hosts.
+    // Superweapon hosts.
     STRUCT_TDEYE,
     STRUCT_TDTMPL,
-    STRUCT_TDBLOSSOM, // TD blossom tree rendered as a building (terrain can't take custom HD art). Neutral, unselectable, invulnerable, seeds Tiberium. bdata.cpp.
-    // v4.0 separated faction naval/air production buildings (clone RA art via Image=; faction-logo
-    // reskins later). Owner-locked so each yields ONLY its faction roster (the proven TDHPAD pattern,
-    // NOT the owner-open shortcut). See docs/navy-4.0-design.md + docs/air-additions-4.0-design.md.
-    STRUCT_TDGYARD,   // GDI Naval Yard (clone of SYRD, Owner=GoodGuy, RTTI_VESSELTYPE) — Gunboat + Hovercraft.
-    STRUCT_TDNPEN,    // Nod Sub Pen (clone of SPEN, Owner=BadGuy, RTTI_VESSELTYPE) — Submarine + Obelisk Sub + Hovercraft.
+    STRUCT_TDBLOSSOM, // TD blossom tree as a Neutral building (terrain can't take new art); seeds Tiberium.
+    // TF: faction naval and air production, owner-locked so each builds only its own faction's roster.
+    STRUCT_TDGYARD,   // GDI Naval Yard (clone of SYRD, Owner=GoodGuy): gunboat, destroyer, cruiser.
+    STRUCT_TDNPEN,    // Nod Sub Pen (clone of SPEN, Owner=BadGuy): submarine, missile sub.
     STRUCT_TDGAFLD,   // GDI Airfield (clone of AFLD, Owner=GoodGuy, RTTI_AIRCRAFTTYPE) — A-10.
-    STRUCT_TDSTEALTH, // Nod Stealth Generator (reuses GAP sprite; cloaks friendly buildings+units in radius). bdata.cpp / building.cpp driver.
-    STRUCT_TDFBNK,    // Nod Flame Bunker (clone of PBOX, Owner=BadGuy) — anti-infantry TDFire flame weapon (range 4). bdata.cpp ClassFlameBunker.
-    STRUCT_TSPOWR,    // TS-spike: Tiberian Sun GDI Power Plant (GAPOWR art) — clone of ClassPower (2x2, Power in rules.ini). HD-only art from the TS SHP; POWR donor ImageData/BuildupData.
-    STRUCT_TDNFACT,   // Nod Construction Yard — own pipeline-built art (TDNFACT keys); separate type so the BUILDING carries the faction.
+    STRUCT_TDSTEALTH, // Nod Stealth Generator: cloaks friendly buildings and units in its radius.
+    STRUCT_TDFBNK,    // Nod Flame Bunker (Pillbox art): anti-infantry TDFlameBunker flamer, range 4.
+    STRUCT_TSPOWR,    // TS GDI Power Plant "TSPOWR" (TS GAPOWR).
+    STRUCT_TDNFACT,   // Nod Construction Yard, a type of its own so the building carries the faction.
     STRUCT_TDGFACT,   // GDI Construction Yard — sibling of STRUCT_TDNFACT.
-    STRUCT_TDGHPAD,   // GDI Helipad — W2 (d) split of the shared TDHPAD.
+    STRUCT_TDGHPAD,   // GDI Helipad; TDHPAD is the campaigns' shared one.
     STRUCT_TDNHPAD,   // Nod Helipad — sibling of STRUCT_TDGHPAD. LAST Tiberian-era entry — see STRUCT_TIBERIAN_LAST.
 
     /*
     **	Red Alert side additions go BELOW the Tiberian-era marker, so they do not inherit
     **	TD construction/place-down audio by enum position.
     */
-    STRUCT_SFACT, // Soviet Construction Yard — own pipeline-built art (SFACT keys); separate type so the BUILDING carries the faction.
+    STRUCT_SFACT, // Soviet Construction Yard, a type of its own so the building carries the faction.
     STRUCT_AFACT, // Allied Construction Yard — sibling of STRUCT_SFACT.
-    STRUCT_AWEAP, // Allied War Factory — W2 (c) split of the shared WEAP; own pipeline art (AWEAP/AWEAP2 keys).
+    STRUCT_AWEAP, // Allied War Factory; WEAP is the campaigns' shared one.
     STRUCT_SWEAP, // Soviet War Factory — sibling of STRUCT_AWEAP.
-    STRUCT_AHPAD, // Allied Helipad — W2 (d) split of the shared HPAD.
+    STRUCT_AHPAD, // Allied Helipad; HPAD is the campaigns' shared one.
     STRUCT_SHPAD, // Soviet Helipad — sibling of STRUCT_AHPAD.
 
     /*
-    **	TS GDI tree (ownership-gated: Prerequisite=TSFACT is the sole discriminator —
-    **	docs/ts-gdi-tree-plan.md). Appended past the RA additions because enum values
-    **	are serialized raw; the block gets its own contiguous range and markers, and
-    **	Is_Tiberian_Era covers it as a second range. Every building inside it needs a
-    **	standing TS yard (HouseClass::Can_Build), so move STRUCT_TS_TREE_LAST only for a
-    **	new TS-tree building; another faction's building appended after it stays outside.
+    **	TF: the TS tree, STRUCT_TS_TREE_FIRST to STRUCT_TS_TREE_LAST. Every building in it needs a standing
+    **	TS yard (HouseClass::Can_Build), so move STRUCT_TS_TREE_LAST only for a new TS-tree building.
     */
     STRUCT_TSFACT, // TS Construction Yard "TSFACT" (TS GACNST; 3x2 TD-parity) — deployed from UNIT_TSMCV; the gate on the TS tree. Not sidebar-buildable.
     STRUCT_TSPILE, // TS Barracks "TSPILE" (GAPILE, 2x2) — infantry factory.
@@ -1659,13 +1600,13 @@ typedef enum StructType : short
     STRUCT_TSDEPT, // TS Service Depot "TSDEPT" (GADEPT, 3x3) — repair bay.
     STRUCT_TSDROP, // TS Dropship Bay "TSDROP" (Westwood's cut GADROP, 3x3) — the Mammoth Mk. II arrives here by Orca. Art is TSDEPT's octagonal pad alone (shp_gtdeptbb); the gantry and its anims are unused.
     STRUCT_TSTURB, // TS Power Turbine "TSTURB" (GAPOWRUP) — a building ADDON: never unlimbos onto the map, installs into a placed TSPOWR (PowersUpBuilding) and adds its Power. Art = the plant's own GTPOWR_B turbine.
-    STRUCT_TSPLUG, // TS GDI Upgrade Centre "TSPLUG" (GAPLUG, 3x2 like TSTECH) — the addon HOST with 2 plug slots; cloak sensor (IsScanner). Drain 150.
-    STRUCT_TSPION, // TS Ion Cannon Uplink "TSPION" (GAPLUG3) — addon plug for TSPLUG; grants the GDI Ion Cannon special while installed. Drain 100. Art = GTPLUG_F dish.
-    STRUCT_TSPODS, // TS Drop Pod Node "TSPODS" (our Firestorm-style plug — base TS grants pods by script only); grants Drop Pod reinforcements while installed. Art = GTPLUG_D dome.
-    STRUCT_TSSEEK, // TS Seeker Control "TSSEEK" (GAPLUG2) — addon plug for TSPLUG; grants the Hunter Seeker special while installed. Drain 50. Art = GTPLUG_E node.
-    STRUCT_TSWALL, // TS GDI Concrete Wall "TSWALL" (GAWALL) — wall-type building: placement converts it to OVERLAY_TSWALL (building.cpp), like BRIK. Generated voxel art on the grid axes (scripts/ts_pack_walls.py).
-    STRUCT_TSCTWR, // TS GDI Component Tower "TSCTWR" (GACTWR) — the bare, unarmed wall joint: walls terminate into it (cell.cpp Has_TS_Wall_Tower). One plug slot (UpgradesMax=1). Sensors=yes -> IsScanner. Voxel drum + feet art (scripts/ts_pack_towers.py).
-    STRUCT_TSVULC, // TS Vulcan Cannon tower "TSVULC" (GAVULC) — the tower's Vulcan plug AND the armed tower type in one: PowersUpBuilding=TSCTWR, and installing it REPLACES the bare tower with this rotating-turret building (building.cpp Unlimbo divert). TDGUN frame layout (32 facings, +32 recoil, +64 damaged). Fires TSVulcanTower.
+    STRUCT_TSPLUG, // TS GDI Upgrade Centre "TSPLUG" (GAPLUG): hosts 2 addon plugs; a cloak sensor (IsScanner).
+    STRUCT_TSPION, // TS Ion Cannon Uplink "TSPION" (GAPLUG3): a TSPLUG plug that grants SPC_TS_ION_CANNON.
+    STRUCT_TSPODS, // TS Drop Pod Node "TSPODS": a TSPLUG plug that grants SPC_TS_DROPPODS (TS drops pods by script).
+    STRUCT_TSSEEK, // TS Seeker Control "TSSEEK" (GAPLUG2): a TSPLUG plug that grants SPC_TS_HUNTSEEK.
+    STRUCT_TSWALL, // TS GDI Concrete Wall "TSWALL" (GAWALL): placed as OVERLAY_TSWALL, like BRIK.
+    STRUCT_TSCTWR, // TS GDI Component Tower "TSCTWR" (GACTWR): the bare wall joint, with one slot for a weapon plug.
+    STRUCT_TSVULC, // TS Vulcan tower "TSVULC" (GAVULC): the TSCTWR plug that replaces the bare tower with an armed one.
     STRUCT_TSROCK, // TS RPG Upgrade tower "TSROCK" (GAROCK) — same plug-is-the-armed-tower pattern as TSVULC. Fires TSRPGTower (arcing, MinimumRange 2).
     STRUCT_TSCSAM, // TS SAM Upgrade tower "TSCSAM" (GACSAM) — same pattern. Fires TSRedEye2 (AA-only homing missile). Powered.
     STRUCT_TSDLIMP, // TS Limpet Mine "TSDLIMP" (Firestorm DLIMPET, 1x1) — the drone settled: cloaked, driven over like a mine, fires its LimpetFactor warhead at a passing vehicle and is spent. The deploy order packs it back into UNIT_TSLIMP.
@@ -1678,38 +1619,25 @@ typedef enum StructType : short
     STRUCT_TSNWALL, // TS Nod Wall "TSNWALL" (NAWALL) — wall-type building: placement converts it to OVERLAY_TSNWALL (building.cpp), like BRIK and TSWALL. HD art: scripts/ts_pack_gdi_wall.py --nod.
     STRUCT_TSGATEH, // TS GDI Gate, east-west "TSGATEH" (GAGATE_A, 3x1): stands in a wall line; owner and allies path through it, it opens as one comes up and closes behind (BuildingClass::Open_Gate). Art: scripts/ts_pack_gates.py.
     STRUCT_TSGATEV, // TS GDI Gate, north-south "TSGATEV" (GAGATE_B, 1x3): TSGATEH turned.
-    STRUCT_TSNGATEH, // TS Nod Gate, east-west "TSNGATEH" (3x1): a gate like TSGATEH, its own art and door timing (building.cpp TFGates).
+    STRUCT_TSNGATEH, // TS Nod Gate, east-west "TSNGATEH" (3x1): a gate like TSGATEH, its own art and door timing.
     STRUCT_TSNGATEV, // TS Nod Gate, north-south "TSNGATEV" (1x3).
-    STRUCT_ALGATEH, // Allied Gate, east-west "ALGATEH" (3x1): a gate like TSGATEH, its own art and door timing (building.cpp TFGates).
+    STRUCT_ALGATEH, // Allied Gate, east-west "ALGATEH" (3x1): a gate like TSGATEH, its own art and door timing.
     STRUCT_ALGATEV, // Allied Gate, north-south "ALGATEV" (1x3).
-    STRUCT_SVGATEH, // Soviet Tesla Gate, east-west "SVGATEH" (3x1): a gate like TSGATEH, its own art and door timing (building.cpp TFGates).
+    STRUCT_SVGATEH, // Soviet Tesla Gate, east-west "SVGATEH" (3x1): a gate like TSGATEH, its own art and door timing.
     STRUCT_SVGATEV, // Soviet Tesla Gate, north-south "SVGATEV" (1x3).
-    STRUCT_TDGGATEH, // TD GDI Gate, east-west "TDGGATEH" (3x1): a gate like TSGATEH, its own art and door timing (building.cpp TFGates).
+    STRUCT_TDGGATEH, // TD GDI Gate, east-west "TDGGATEH" (3x1): a gate like TSGATEH, its own art and door timing.
     STRUCT_TDGGATEV, // TD GDI Gate, north-south "TDGGATEV" (1x3).
-    STRUCT_TDNGATEH, // TD Nod Laser Gate, east-west "TDNGATEH" (3x1): a gate like TSGATEH, its own art and door timing (building.cpp TFGates).
+    STRUCT_TDNGATEH, // TD Nod Laser Gate, east-west "TDNGATEH" (3x1): a gate like TSGATEH, its own art and door timing.
     STRUCT_TDNGATEV, // TD Nod Laser Gate, north-south "TDNGATEV" (1x3).
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
 
-    /*
-    **	Last entry of the Tiberian-era block (the TD ports plus the TS spike), which runs
-    **	unbroken from STRUCT_TDOBLI. Tiberian-era buildings share TD's construction and
-    **	place-down audio; see BuildingTypeClass::Is_Tiberian_Era.
-    **
-    **	Enum values may only ever be APPENDED (Type numbers are serialized raw and there is
-    **	no save-version constant), so anything added later lands past this marker and is NOT
-    **	Tiberian-era by default -- which is what an Allied or Soviet addition wants. Move this
-    **	marker only when appending another TD/TS entity. Testing the block by IniName prefix
-    **	instead would be wrong: RA's own Tesla coil is "TSLA".
-    */
+    // TF: the end of the first Tiberian-era block (from STRUCT_TDOBLI), whose buildings take TD's build and
+    // place-down audio (Is_Tiberian_Era). RA buildings appended past it keep RA's.
     STRUCT_TIBERIAN_LAST = STRUCT_TDNHPAD,
 
-    /*
-    **	Bounds of the TS-tree block appended past the RA additions (see STRUCT_TSFACT).
-    **	Second range of BuildingTypeClass::Is_Tiberian_Era. Every building in it needs a
-    **	standing TS yard, so it ends at the TS gates: the Allied, Soviet, GDI and Nod gates
-    **	after them belong to their own factions' yards.
-    */
+    // TF: the TS-tree block (see STRUCT_TSFACT), Is_Tiberian_Era's second range. It ends at the TS gates; the
+    // Allied, Soviet, GDI and Nod gates after it belong to their own factions' yards.
     STRUCT_TS_TREE_FIRST = STRUCT_TSFACT,
     STRUCT_TS_TREE_LAST = STRUCT_TSNGATEV
 } StructType;
@@ -1719,21 +1647,12 @@ typedef enum StructType : short
 */
 #define TF_SENSOR_RADIUS_CELLS 25
 
-/*
-**	Upper bound on the BuildingTypes heap (vanilla enum entries + mod heap
-**	slots reserved by `BuildingTypes.Set_Heap()` in init.cpp). Used to size
-**	per-Type counter arrays on HouseClass so mod-defined IniNames index
-**	safely past STRUCT_COUNT. Keep in sync with init.cpp's Set_Heap call.
-*/
+// BuildingTypes heap size: the enum plus 50 slots for rules.ini [NewBuildings]. HouseClass sizes its
+// per-type counts by it, so those types index safely past STRUCT_COUNT.
 #define MAX_BUILDING_TYPES (STRUCT_COUNT + 50)
 
-/*
-**  Same as MAX_BUILDING_TYPES but for UnitTypes — gives [NewUnits] entries
-**  in rules.ini room past UNIT_COUNT. Without this, UnitTypes.Set_Heap()
-**  sizes the heap to exactly UNIT_COUNT and Alloc() for a mod entry silently
-**  fails (heap full), making `As_Pointer("TDMCV")` return NULL despite
-**  [NewUnits] parsing the section. Headroom of 50 matches the building side.
-*/
+// UnitTypes heap size: the enum plus 50 slots for rules.ini [NewUnits]. At exactly UNIT_COUNT, Alloc()
+// fails silently for a [NewUnits] entry and As_Pointer() returns NULL for it.
 #define MAX_UNIT_TYPES (UNIT_COUNT + 50)
 
 /*
@@ -1816,28 +1735,14 @@ typedef enum OverlayType : char
     OVERLAY_STEEL_CRATE, //	Steel goodie crate.
     OVERLAY_FENCE,       // New fangled fence.
     OVERLAY_WATER_CRATE, //	Water goodie crate.
-    // Tiberian Factions -- TD-style harvestable Tiberium, coexisting with Ore/Gems.
-    // Placed at the END of the overlay enum (after the vanilla types) so
-    // OVERLAY_SANDBAG_WALL..OVERLAY_WATER_CRATE keep their vanilla index values.
-    // Stock campaign maps store overlays by index; inserting TIB01 mid-enum (its
-    // old position, right after GEMS4) shifted every later overlay up by one and
-    // misread their fences/crates/fields (e.g. a fence at vanilla index 23 read
-    // as OVERLAY_STEEL_CRATE). The launcher resource-range check that used to rely
-    // on TIB01 being contiguous with the ore/gems block is now explicit (see
-    // dllinterface.cpp Get_Map_Cell IsResource). Single visual type; the 12
-    // density frames live in the SHP and are indexed by OverlayData (like Gold).
-    // Static by default (NOT added to Can_Tiberium_Grow/Spread). Value = Ore.
-    // NOTE: any map data or tool that writes TIB01 by index must use the new
-    // value -- scripts/td_map_to_ra.py is kept in sync.
+    // TF: TD's harvestable Tiberium. Appended so the stock overlays keep the index numbers maps store; tools
+    // that write TIB01 by index (scripts/td_map_to_ra.py) must use this value.
     OVERLAY_TIB01,
-    // Tiberian Factions -- TS GDI concrete wall (GAWALL). Appended past TIB01 for the
-    // same raw-index reason. Exported to the launcher AS OVERLAY_BRICK_WALL for its
-    // wall/sell semantics while AssetName "TSWALL" selects our own art (the TIB01
-    // precedent: sprite by name, behaviour by Type). 16 join icons x 3 damage
-    // stages in OverlayData, RA's wall layout; 48 = destroyed (cell.cpp Wall_Update).
+    // TF: TS GDI concrete wall (GAWALL). The launcher gets OVERLAY_BRICK_WALL for wall and sell behaviour and
+    // AssetName "TSWALL" for the art. OverlayData: 16 joins x 3 damage stages, 48 = destroyed (Wall_Update).
     OVERLAY_TSWALL,
-    // Tiberian Factions -- TS Nod wall (NAWALL), the same arrangement as OVERLAY_TSWALL:
-    // exported as OVERLAY_BRICK_WALL, drawn by AssetName "TSNWALL", 48 = destroyed.
+    // TF: TS Nod wall (NAWALL), arranged like OVERLAY_TSWALL: exported as OVERLAY_BRICK_WALL, drawn by
+    // AssetName "TSNWALL", 48 = destroyed.
     OVERLAY_TSNWALL,
 
     OVERLAY_COUNT,
@@ -1885,20 +1790,20 @@ typedef enum InfantryType : char
     INFANTRY_MECHANIC,
 #endif
 
-    // Tiberian Factions mod infantry ported from TD (tiberiandawn/idata.cpp).
+    // TF: TD and TS infantry.
     INFANTRY_TDE1, // TD Minigunner (E1) — basic rifleman, GDI+Nod, fires TDM16.
     INFANTRY_TDE2, // TD Grenadier (E2) — GDI-only, lobs TDGrenade (visible arc).
     INFANTRY_TDE3, // TD Rocket Soldier (E3) — GDI+Nod, fires TDDragon homing missile (anti-armor/air).
-    INFANTRY_TDE4, // TD Flamethrower (E4) — Nod-only, fires TDFlame (invisible round + directional flame jet).
-    INFANTRY_TDE5, // TD Chem Warrior (E5) — Nod-only, fires TDChem (invisible round + directional chem-spray jet).
+    INFANTRY_TDE4, // TD Flamethrower (E4) — Nod-only, fires TDFlamethrower (invisible round + directional flame jet).
+    INFANTRY_TDE5, // TD Chem Warrior (E5) — Nod-only, fires TDChemspray (invisible round + chem-spray jet).
     INFANTRY_TDE6,   // TD Engineer (E6) — no weapon; captures buildings (Infiltrate). GDI+Nod, barracks-level.
-    INFANTRY_TDRMBO, // TD Commando (RMBO) — 125-dmg sniper (one-shots infantry) + C4 building-destroy. GDI+Nod, tech-center gated.
-    INFANTRY_TSE1,   // TS Light Infantry (E1) — the TS GDI rifleman, fires TSMinigun. TS-SHP art on the E1Sequence layout (ts_pack_infantry.py).
-    INFANTRY_TSE2,   // TS Disc Thrower (E2) — lobs TSGrenade discs. TS-SHP art on the E1Sequence layout (ts_pack_infantry.py).
-    INFANTRY_TSENGINEER, // TS Engineer (ENGINEER) — unarmed; captures an enemy building outright and restores a friendly one to full strength.
-    INFANTRY_TSMEDIC,    // TS Medic (MEDIC) — heals friendly infantry with TSHeal. TS-SHP art on MedicSequence (307 poses).
-    INFANTRY_TSGHOST,    // TS Ghost Stalker (GHOST) — hero commando: TSLtRail light railgun, C4 on buildings, immune to and healed by Tiberium, one per house.
-    INFANTRY_TSJUMPJET,  // TS Jumpjet Infantry (JUMPJET) — flies on TS's jumpjet locomotor (InfantryClass::Jumpjet_AI), fires TSJumpCannon.
+    INFANTRY_TDRMBO, // TD Commando (RMBO): TDRifle sniper and C4 on buildings. GDI+Nod, tech-centre gated.
+    INFANTRY_TSE1,   // TS Light Infantry (E1): the TS GDI rifleman, fires TSMinigun.
+    INFANTRY_TSE2,   // TS Disc Thrower (E2): lobs TSGrenade discs.
+    INFANTRY_TSENGINEER, // TS Engineer: captures an enemy building outright, restores a friendly one to full strength.
+    INFANTRY_TSMEDIC,    // TS Medic: heals friendly infantry with TSHeal.
+    INFANTRY_TSGHOST,    // TS Ghost Stalker: TSLtRail railgun and C4, healed by Tiberium, one per house.
+    INFANTRY_TSJUMPJET,  // TS Jumpjet Infantry: flies (InfantryClass::Jumpjet_AI), fires TSJumpCannon.
 
     INFANTRY_COUNT,
     INFANTRY_FIRST = 0
@@ -1930,7 +1835,7 @@ typedef enum UnitType : char
     UNIT_ARTY,        // Artillery unit.
     UNIT_MRJ,         // Mobile Radar Jammer.
     UNIT_MGG,         // Mobile Gap Generator
-    UNIT_MCV,         // RA MCV "MCV" (deploys to STRUCT_CONST) — stock-campaign type; skirmish uses the faction MCVs (AMCV/SMCV) after the W2 split.
+    UNIT_MCV,         // RA MCV "MCV" (deploys to STRUCT_CONST): the campaigns' MCV; skirmish builds AMCV/SMCV.
     UNIT_V2_LAUNCHER, // V2 rocket launcher.
     UNIT_TRUCK,       // Convoy truck
 
@@ -1951,33 +1856,33 @@ typedef enum UnitType : char
 #endif
 #endif
 
-    // Tiberian Factions mod — fully-separated TD-source unit ports.
-    UNIT_TDMCV,             // TD MCV "TDMCV" (deploys to STRUCT_TDFACT) — classic shared GDI/Nod type; skirmish uses the faction MCVs (TDGMCV/TDNMCV) after the W2 split.
+    // TF: TD, TS, RA2 and C&C3 vehicles and the faction MCVs, each a type of its own.
+    UNIT_TDMCV,             // TD MCV "TDMCV" (deploys to STRUCT_TDFACT): the campaigns' MCV; skirmish: TDGMCV/TDNMCV.
     UNIT_TDHARV,            // TD Tiberium Harvester (docks at STRUCT_TDPROC).
-    UNIT_TDMTNK,            // TD Medium Tank (MTNK) — GDI-only, turret, fires TD105mm. udata.cpp:264.
-    UNIT_TDLTNK,            // TD Light Tank (LTNK) — Nod-only, turret, fires TD75mm. udata.cpp:211.
-    UNIT_TDHTNK,            // TD Mammoth Tank (HTNK) — GDI-only, dual weapon (TD120mm + TDTusk AA), gigundo. udata.cpp:317.
-    UNIT_TDFTNK,            // TD Flame Tank (FTNK) — Nod-only, turret-less, fires TDFlameTongue (directional flame jet). udata.cpp UnitFTank.
-    UNIT_TDBIKE,            // TD Recon Bike (BIKE) — Nod-only, wheeled, turret-less, fires TDDragon (reuses E3's homing rocket). udata.cpp:797.
-    UNIT_TDJEEP,            // TD Hum-vee (JEEP) — GDI-only, wheeled, MG turret, fires TDM60mg. udata.cpp:691.
-    UNIT_TDBGGY,            // TD Nod Buggy (BGGY) — Nod-only, wheeled, MG turret, fires TDM60mg. udata.cpp:744.
-    UNIT_TDAPC,             // TD APC (APC) — GDI-only (faction-canon; TD src bits permissive), tracked transport, no turret, fires TDM60mg, carries 5. udata.cpp:907.
-    UNIT_TDSTNK,            // TD Stealth Tank (STNK) — Nod-only, CLOAKABLE (RA's inherited cloak system), invisible-to-radar, turret-less, fires TDStnkDragon (2-shot). udata.cpp UnitSTank.
-    UNIT_TDMLRS,            // TD Rocket Launcher (MLRS, "Rocket Launcher") — GDI-only (EYE-gated), turret + lock-while-moving, 2-shot, fires TDMlrsRocket (BULLET_TDSSM2, range 6). Uses the MSAM sprite (TD cross-wiring). udata.cpp:854.
-    UNIT_TDMSAM,            // TD SSM Launcher (MSAM, "S.S.M. Launcher") — Nod-only, Temple-gated, turret + lock-while-moving, fires TDHonestJohn (BULLET_TDMISSILE, non-homing, range 10, fire warhead). Uses the MLRS sprite (TD cross-wiring). udata.cpp:477.
-    UNIT_TDARTY,            // TD Artillery (ARTY, "Nod Artillery") — Nod-only, no prereq (build level 6), turret-less (body aims, slow ROT 2), fires TD155mm (BULLET_TDHESHELL arcing, dmg 150). udata.cpp UnitArty.
-    UNIT_TDVICE,            // TD Visceroid (VICE) — tiberium creature, NOT buildable; spawns when infantry die in tiberium. Tracked, turret-less, squashes infantry, constant anim, WEAPON_TDCHEM spray, ARMOR_WOOD, STR 150, MISSION_HUNT. HEALS on tiberium. udata.cpp UnitVisceroid.
-    UNIT_TSHVR,             // TS-spike: Tiberian Sun Hover MLRS (HVR) — GDI, turreted missile rack, fires TSHoverMissile (TDSSM AA+AG chain). Art = voxel-rendered HD tileset (tools/ts_extract.py + vxl_render.py pipeline); no classic SHP (2TNK donor ImageData).
-    UNIT_TSTITN,            // TS Titan walker (MMCH) — GDI, turreted, fires TS120mm. Art = TS MMCH.SHP standing frames (8 body facings duplicated to 32) + 32-facing turret, one shared canvas transform (turret registration baked). Classic = transparent stub in TFASSETS.MIX.
-    UNIT_TSHMEC,            // TS Mammoth Mk. II (HMEC) — GDI, NO turret (hull-fixed guns), Primary=MechRailgun (piercing line), Secondary=MammothTusk (AA). Art = HMEC.VXL rendered in the HVA frame-0 standing pose (vxl_render.py --hva).
-    UNIT_SMCV,              // Soviet MCV (deploys to STRUCT_SFACT) — own pipeline-built art (SMCV keys); separate type so the UNIT carries the faction.
+    UNIT_TDMTNK,            // TD Medium Tank (MTNK): GDI, turret, fires TD105mm.
+    UNIT_TDLTNK,            // TD Light Tank (LTNK): Nod, turret, fires TD75mm.
+    UNIT_TDHTNK,            // TD Mammoth Tank (HTNK): GDI, TD120mm cannon and TDTusk missiles.
+    UNIT_TDFTNK,            // TD Flame Tank (FTNK): Nod, no turret, fires TDFlameTongue (directional flame jet).
+    UNIT_TDBIKE,            // TD Recon Bike (BIKE): Nod, wheeled, no turret, fires TDDragon.
+    UNIT_TDJEEP,            // TD Hum-vee (JEEP): GDI, wheeled, MG turret, fires TDM60mg.
+    UNIT_TDBGGY,            // TD Nod Buggy (BGGY): Nod, wheeled, MG turret, fires TDM60mg.
+    UNIT_TDAPC,             // TD APC (APC): GDI, tracked transport for 5, fires TDM60mg.
+    UNIT_TDSTNK,            // TD Stealth Tank (STNK): Nod, cloakable, invisible to radar, fires TDStnkDragon.
+    UNIT_TDMLRS,            // TD Rocket Launcher (MLRS): GDI, TDEYE-gated, fires TDMlrsRocket.
+    UNIT_TDMSAM,            // TD SSM Launcher (MSAM): Nod, Temple-gated, fires TDHonestJohn.
+    UNIT_TDARTY,            // TD Artillery (ARTY): Nod, no turret, fires TD155mm.
+    UNIT_TDVICE,            // TD Visceroid (VICE): unbuildable; may rise where Tiberium kills infantry. Heals in it.
+    UNIT_TSHVR,             // TS Hover MLRS (HVR): hover missile rack, fires TSHoverMissile.
+    UNIT_TSTITN,            // TS Titan (MMCH): walker, turret, fires TS120mm.
+    UNIT_TSHMEC,            // TS Mammoth Mk. II (HMEC): no turret, MechRailgun and anti-air TSMammothTusk.
+    UNIT_SMCV,              // Soviet MCV (deploys to STRUCT_SFACT), a type of its own so the unit carries the faction.
     UNIT_TDNMCV,            // Nod MCV (deploys to STRUCT_TDNFACT) — own pipeline-built art (TDNMCV keys).
     UNIT_TDGMCV,            // GDI MCV (deploys to STRUCT_TDGFACT) — sibling of UNIT_TDNMCV.
     UNIT_AMCV,              // Allied MCV (deploys to STRUCT_AFACT) — sibling of UNIT_SMCV.
-    UNIT_TSMCV,             // TS MCV "TSMCV" (deploys to STRUCT_TSFACT) — the rare-crate find that opens the ownership-gated TS tree (docs/ts-gdi-tree-plan.md). Art = TS MCV.VXL voxel render.
-    UNIT_TSHARV,            // TS Harvester (HARV) — RA-harvester mechanics docked at STRUCT_TSPROC (RA-refinery family); voxel render, 32 facings, no dump-anim frames (draw skips the dump shape calc like TDHARV). Free unit of the TS refinery.
-    UNIT_TSSMEC,            // TS Wolverine (SMECH) — light scout mech, no turret, fires AssaultCannon (instant hitscan). Art = SMECH.SHP walk frames (12x8, Titan walker pipeline); guns are in the sprite, no barrel compositing.
-    UNIT_TSSONIC,           // TS Disruptor (SONIC) — turreted sonic tank, fires SonicZap (IsSonic piercing line: railgun mechanics, green beam, no helix). Art = SONIC.VXL body 0-31 + SONICTUR.VXL turret 32-63.
+    UNIT_TSMCV,             // TS MCV "TSMCV" (deploys to STRUCT_TSFACT, the yard that opens the TS tree).
+    UNIT_TSHARV,            // TS Harvester (HARV): RA harvester mechanics; docks at STRUCT_TSPROC, which brings one.
+    UNIT_TSSMEC,            // TS Wolverine (SMECH): light scout mech, no turret, fires AssaultCannon.
+    UNIT_TSSONIC,           // TS Disruptor (SONIC): turret, fires SonicZap, a piercing sonic line.
     UNIT_TSAPC,             // TS Amphibious APC (APC) — unarmed SPEED_AMPHIBIOUS transport (TS's own terrain table; water hull frames 32-63 on water), Passengers=5, unload logic alongside UNIT_APC/UNIT_TDAPC, no door art.
     UNIT_TSMDIV,            // Mech Division (dropship-bay group order) — a purchasable TOKEN that never touches the map: Deliver_Cargo expands it into 3 Titans + 2 Wolverines at the unload beat. Cost 2800 (3400 sticker, starport discount — Luke, 2026-08-12).
     UNIT_TSSUBTANK,         // TS Devil's Tongue (SUBTANK) — subterranean flame tank; fires TDFlameTongue (TS FireballLauncher mapped onto the TD flame chain). Art = SUBTANK.VXL: 32 driving + 80 dive/emerge pitch-ladder shapes (docs/subterranean-design.md).
@@ -2034,19 +1939,16 @@ typedef enum VesselType : char
 #ifdef FIXIT_CARRIER //	checked - ajw 9/28/98
     VESSEL_CARRIER,
 #endif
-    VESSEL_TDGUNBOAT, // v4.0: TD Gunboat (GDI) — own vessel type, TD art (TDBOAT), TD missile (TDTomahawk) + DepthCharge ASW + Sensors. First TD vessel port. vdata.cpp VesselTdGunBoat.
-    VESSEL_TDLST,     // v4.0: TD Hovercraft transport (GDI+Nod shared) — own vessel type, TD art (TDLST), 5 passengers. Modeled on VESSEL_TRANSPORT. vdata.cpp VesselTdLST.
-    VESSEL_TDOBLISUB, // v4.0: Nod Obelisk Attack Sub — own vessel type, cloakable SS-like hull + the TD Obelisk laser. Temple-gated. vdata.cpp VesselTdObeliskSub.
-    VESSEL_TDNSUB,    // v4.0: Nod Submarine — own vessel type (clone of SS; NOT the SS owner-opened), own art copy, Owner=BadGuy. vdata.cpp VesselTdNodSub.
-    // v4.0 GDI surface fleet (turret-test): fully-separated CLONES of the three Allied ships, Owner=GoodGuy,
-    // built from the GDI Naval Yard (TDGYARD via the syrd-> remap). They keep IsTurretEquipped=true so they
-    // render with the native spinning turret (MGUN/SSAM/TURR drawn by name via the launcher — global, not
-    // part of the hull ZIP) — this is the path to a GDI warship whose turret spins + fires from the barrel.
-    // Own copied hull art (TDPT/TDDD/TDCA ZIPs). See docs/naval-art-3d-pipeline-handover.md.
+    VESSEL_TDGUNBOAT, // TD Gunboat "TDBOAT" (GDI): TDTomahawk and DepthCharge. vdata.cpp VesselTdGunBoat.
+    VESSEL_TDLST,     // TD Hovercraft "TDLST" (GDI+Nod): transport for 5. vdata.cpp VesselTdLST.
+    VESSEL_TDOBLISUB, // Nod Obelisk Attack Sub: cloakable, fires TDObeliskSubLaser. vdata.cpp VesselTdObeliskSub.
+    VESSEL_TDNSUB,    // Nod Submarine, a clone of SS (Owner=BadGuy). vdata.cpp VesselTdNodSub.
+    // TF: the GDI surface fleet, clones of the Allied ships built at TDGYARD. IsTurretEquipped stays true so
+    // the launcher draws and spins their turrets (MGUN, SSAM, TURR) by name.
     VESSEL_TDPT,      // GDI gunboat — clone of RA PT (MGUN turret). vdata.cpp VesselTdPT.
     VESSEL_TDDD,      // GDI destroyer — clone of RA DD (SSAM turret). vdata.cpp VesselTdDD.
     VESSEL_TDCA,      // GDI cruiser — clone of RA CA (TURR turret). vdata.cpp VesselTdCA.
-    VESSEL_TDMSUB,    // v4.0: Nod Missile Sub — clone of Soviet MSUB (SubSCUD shore bombardment), Owner=BadGuy, Temple-gated. vdata.cpp VesselTdMSub.
+    VESSEL_TDMSUB,    // Nod Missile Sub, a clone of MSUB (SubSCUD), Temple-gated. vdata.cpp VesselTdMSub.
 
     VESSEL_COUNT,
     VESSEL_FIRST = 0
@@ -2078,14 +1980,14 @@ typedef enum AircraftType : char
     AIRCRAFT_LONGBOW,   // Apache gunship.
     AIRCRAFT_HIND,      // Soviet attach helicopter.
     AIRCRAFT_TDCARGO,   // TD C-17 cargo plane (Nod airstrip vehicle delivery).
-    AIRCRAFT_TDAPACHE,  // TD Apache attack helicopter (HELI) — Nod, single rotor, chain gun (TDApacheGun), Ammo 15, helipad-built. aadata.cpp AttackHeli.
-    AIRCRAFT_TDORCA,    // TD Orca (ORCA) — GDI, NO rotor (VTOL), DRAGON missiles (TDStnkDragon), Ammo 6, helipad-built. aadata.cpp OrcaHeli.
-    AIRCRAFT_TDA10,     // v4.0: TD A-10 Warthog — GDI, fixed-wing napalm strafer, Ammo 3, airfield-built (AFLD owner-opened). DTA-style divergence (TD's A-10 was a support power). aadata.cpp TdA10.
-    AIRCRAFT_TDPARADROP, // v4.0: targetable support-drop C-17 (Nod Paratroopers delivery). Twin of TDCARGO but attackable + Passengers=5; reuses the TDC17 sprite via RA_UNITS.XML alias. aadata.cpp TDParaDropPlane.
-    AIRCRAFT_TSHUNT,     // TS Hunter Seeker droid (GHUNTER, art GGHUNT) -- the SPC_TS_HUNTSEEK payload: a VTOL kamikaze that emerges beside the Upgrade Centre, picks a random enemy and detonates on it. Unselectable, unbuildable. aadata.cpp TsHunt; flight in AircraftClass::TF_Hunter_Seeker_AI.
-    AIRCRAFT_TSORCA,     // TS Orca Fighter (ORCA): VTOL gunship, TS [Hellfire] missiles, Ammo 5, built and rearmed at the TS Helipad. aadata.cpp TsOrca.
-    AIRCRAFT_TSORCAB,    // TS Orca Bomber (ORCAB): VTOL bomber, TS [Bomb] dropped over the target, Ammo 2, needs the TS Tech Center. aadata.cpp TsOrcaB.
-    AIRCRAFT_TSCARRY,    // TS Carryall (TRNSPORT): unarmed VTOL that lifts one vehicle and sets it down where sent (AircraftClass carryall missions). aadata.cpp TsCarry.
+    AIRCRAFT_TDAPACHE,  // TD Apache (HELI): Nod helicopter, fires TDApacheGun. aadata.cpp AttackHeli.
+    AIRCRAFT_TDORCA,    // TD Orca (ORCA): GDI VTOL, fires TDStnkDragon. aadata.cpp OrcaHeli.
+    AIRCRAFT_TDA10,     // TD A-10 Warthog: GDI fixed-wing napalm strafer, built at TDGAFLD. aadata.cpp TdA10.
+    AIRCRAFT_TDPARADROP, // C-17 that drops the Nod paratroops, an attackable TDCARGO. aadata.cpp TDParaDropPlane.
+    AIRCRAFT_TSHUNT,     // TS Hunter Seeker droid (GHUNTER), the SPC_TS_HUNTSEEK kamikaze (TF_Hunter_Seeker_AI).
+    AIRCRAFT_TSORCA,     // TS Orca Fighter (ORCA): VTOL, fires TSHellfire, rearms at the TS Helipad. aadata.cpp TsOrca.
+    AIRCRAFT_TSORCAB,    // TS Orca Bomber (ORCAB): VTOL, drops TSBomb over the target. aadata.cpp TsOrcaB.
+    AIRCRAFT_TSCARRY,    // TS Carryall (TRNSPORT): unarmed VTOL that lifts and carries one vehicle. aadata.cpp TsCarry.
 
     AIRCRAFT_COUNT,
     AIRCRAFT_NONE = -1,
@@ -2906,11 +2808,8 @@ typedef enum TerrainType : char
 
     TERRAIN_MINE,
 
-    // Tiberian Factions note: the TD blossom tree is NOT a terrain type. Terrain
-    // objects can't take our custom HD art (the launcher preloads terrain textures
-    // from the base MEG and crashes on a new AssetName), so the blossom is a Neutral
-    // BUILDING instead -- STRUCT_TDBLOSSOM (bdata.cpp). Trees mutate into it in
-    // TerrainClass::AI; its spore-shed + Tiberium seeding live in BuildingClass::AI.
+    // TF: the TD blossom tree is the building STRUCT_TDBLOSSOM, not a terrain type: the launcher crashes on
+    // a terrain object with a new AssetName. Trees turn into it in TerrainClass::AI.
 
     TERRAIN_COUNT,
     TERRAIN_FIRST = 0
@@ -2942,12 +2841,8 @@ typedef enum SmudgeType : char
     SMUDGE_BIB2,
     SMUDGE_BIB3,
 
-    /*
-    **	TS concrete aprons. These are bib-family smudges covering a building's
-    **	whole plot, one frame per cell, so the apron lives on the ground layer
-    **	instead of inside the building sprite: it neither sorts against units
-    **	standing on it nor answers the launcher's sprite hit-test.
-    */
+    // TF: TS concrete aprons, bib-family smudges with one frame per plot cell, so units on an apron don't
+    // sort against it and the launcher's sprite hit-test ignores it.
     SMUDGE_TSWEAPBB,
     SMUDGE_TSPROCBB,
     SMUDGE_TSDWEAPBB,
@@ -2962,11 +2857,8 @@ typedef enum SmudgeType : char
 **	Animations are enumerated here. Animations are the high speed and
 **	short lived effects that occur with explosions and fire.
 */
-/*
-**	Underlying type widened from char when the drop-pod set pushed ANIM_COUNT
-**	past 127. Not launcher-ABI: AnimType never crosses dllinterface.h; the MP
-**	event union that carries one is same-DLL-both-sides.
-*/
+// TF: short, not char: the anim types run past 127. AnimType never crosses dllinterface.h, and the MP
+// event that carries one is read by the same DLL on both sides.
 typedef enum AnimType : short
 {
     ANIM_NONE = -1,
@@ -3019,7 +2911,7 @@ typedef enum AnimType : short
     ANIM_FLAME_SW,
     ANIM_FLAME_W,
     ANIM_FLAME_NW,
-    ANIM_CHEM_N, // TD chem-warrior spray jet (E5) -- directional muzzle anim, 8 dirs in Dir_Facing order (kept contiguous after FLAME for the One_Time donor loop).
+    ANIM_CHEM_N, // TD Chem Warrior spray jet (E5), 8 dirs; adata.cpp loops FLAME_N..CHEM_NW, so keep them contiguous.
     ANIM_CHEM_NE,
     ANIM_CHEM_E,
     ANIM_CHEM_SE,
@@ -3068,17 +2960,12 @@ typedef enum AnimType : short
     ANIM_FLAG,
     ANIM_BEACON,
 
-    // Tiberian Factions mod anims ported from TD (tiberiandawn/defines.h
-    // ANIM_*). Each is the runtime side-effect anim for a TD weapon/super.
+    // TF: anims ported from TD.
     ANIM_TD_ION_CANNON, // TD GDI Ion Cannon beam strike (TDIONSFX shape).
-    ANIM_TDFRAG2,       // TD vehicle death frag explosion (FRAG3 shape) -- TD's ANIM_FRAG2, which RA lacks (RA only has ANIM_FRAG1).
+    ANIM_TDFRAG2,       // TD vehicle death explosion (FRAG3 art), TD's ANIM_FRAG2.
 
-    // Tiberian Factions -- Flame Tank (UNIT_TDFTNK) directional muzzle jets. SEPARATE
-    // family from the Flamethrower infantry's ANIM_FLAME_* so the sprite anchor can be
-    // tuned to the tank's twin nozzles without moving the trooper's flame (they share no
-    // art now). Same 8-dir Dir_Facing order + IsFlameThrower behaviour as ANIM_FLAME_*;
-    // kept contiguous for the techno.cpp `ANIM_TDFTFLAME_N + Dir_Facing` dispatch and the
-    // adata.cpp donor-ImageData loop.
+    // TF: Flame Tank jets, apart from ANIM_FLAME_* so each art is anchored alone. Keep them contiguous:
+    // techno.cpp adds Dir_Facing to ANIM_TDFTFLAME_N and adata.cpp loops over them.
     ANIM_TDFTFLAME_N,
     ANIM_TDFTFLAME_NE,
     ANIM_TDFTFLAME_E,
@@ -3088,11 +2975,8 @@ typedef enum AnimType : short
     ANIM_TDFTFLAME_W,
     ANIM_TDFTFLAME_NW,
 
-    // Tiberian Factions -- green "Tiberium fumes" venting from a harvester docked at
-    // an RA refinery (reverse cross-dock). Reuses the existing SMOKLAND art (the LZ
-    // drop-zone smoke) so it renders in HD, but is its OWN AnimType so it does NOT
-    // trigger ANIM_LZ_SMOKE's hardcoded map-reveal (Sight_From) and gets a tuned
-    // (non-127) loop count. MUST stay in lockstep with adata.cpp Init_Heap order.
+    // TF: green Tiberium fumes over a TD harvester unloading at an RA refinery. SMOKLAND art, but its own
+    // type so it skips ANIM_LZ_SMOKE's map reveal. adata.cpp registers anims in enum order.
     ANIM_TIB_FUMES,
 
 #ifdef FIXIT_ANTS
@@ -3109,18 +2993,18 @@ typedef enum AnimType : short
     ANIM_BEACON_VIRTUAL,     // Beacon (virtual).
 #endif
 
-    ANIM_RAILFX, // TS railgun particle: small blue spark, spawned in a helix along the MechRailgun beam line (TS draws the railgun as laser line + spiraling particles; the launcher's 3-line cap forces the particles to be anims).
-    ANIM_TS_SONICWAVE, // TS Disruptor sonic wave: one soft translucent disc, spawned in a dense chain along the SonicZap line to build the band. TS draws the wave as a live screen distortion its engine generates; there is no TS art to port, so the disc sprite (TSSONICW.ZIP, scripts/ts_gen_sonicwave.py) stands in. A disc and not a band because spawned anims draw unrotated.
-    ANIM_TS_SONICPULSE, // TS Disruptor sonic pulse: RETIRED (never spawned); slot kept so the anim enum and TSSONICP tileset stay stable.
-    ANIM_TS_GUNFIRE,    // TS GUNFIRE muzzle flash (gunfire.shp, 3 frames, translucent): the Mk.II railgun's Anim= in rules.ini.
-    ANIM_TS_DIG,        // TS DIG mound (dig.shp, 37 frames): the subterranean dig-in / emerge earth burst (TS [AudioVisual] Dig=). Spawned by the tunnel cycle in UnitClass::Tunnel_AI.
-    ANIM_TS_ION_BEAM,   // TS Ion Cannon beam (IONBEAM.SHP, 15 frames, pre-tiled tall at pack time): the uplink-granted ion strike's beam. Carries the strike damage + ION1 sound in Middle(), like ANIM_TD_ION_CANNON.
-    ANIM_TS_ION_RING,   // TS Ion Cannon ground ring (RING1.SHP, 15 frames, flat): TS [General] IonBlast=RING1, spawned alongside the beam at the impact cell. Visual only.
-    ANIM_TS_DROPPOD1,   // TS drop pod husk mark 1 (DROPPOD.SHP, 8 frames, flat): TS [General] DropPod= — left at the LZ after a pod lands.
+    ANIM_RAILFX, // TS railgun particle: a small blue spark, spawned in a helix along the MechRailgun line.
+    ANIM_TS_SONICWAVE, // TS Disruptor wave: a translucent disc (TSSONICW), spawned in a chain along the SonicZap line.
+    ANIM_TS_SONICPULSE, // Unused: nothing spawns it. Its slot keeps the order adata.cpp registers anims in.
+    ANIM_TS_GUNFIRE,    // TS GUNFIRE muzzle flash: Anim= of the TS railguns and TS120mmx.
+    ANIM_TS_DIG,        // TS DIG mound: the earth burst as a subterranean vehicle digs in or emerges.
+    ANIM_TS_ION_BEAM,   // TS Ion Cannon beam (IONBEAM): deals the strike's damage in Middle(), like ANIM_TD_ION_CANNON.
+    ANIM_TS_ION_RING,   // TS Ion Cannon ground ring (RING1), spawned with the beam. Visual only.
+    ANIM_TS_DROPPOD1,   // TS drop pod husk (DROPPOD), left at the LZ after a pod lands.
     ANIM_TS_DROPPOD2,   // TS drop pod husk mark 2 (DROPPOD2.SHP, 8 frames, flat): the other DropPod= husk variant.
-    ANIM_TS_DROPEXP,    // TS drop pod touchdown puff (DROPEXP.SHP, 12 frames): TS [General] DropPodPuff= — plays over the husk at landing.
-    ANIM_TS_PODRING,    // TS drop pod atmosphere-entry flash (PODRING.SHP, 20 frames, flat): TS [General] AtmosphereEntry= — spawned at the pod's spawn point.
-    ANIM_TS_SMOKEY,     // TS SMOKEY smoke puff (SMOKEY.SHP, 11 frames): the falling pod's trail, spawned every 6 frames by the pod bullet.
+    ANIM_TS_DROPEXP,    // TS drop pod touchdown puff (DROPEXP), over the husk at landing.
+    ANIM_TS_PODRING,    // TS drop pod atmosphere-entry flash (PODRING), at the pod's spawn point.
+    ANIM_TS_SMOKEY,     // TS SMOKEY puff: the falling pod's trail, every 6 frames.
     ANIM_TS_MGUN_N,     // TS Vulcan tower muzzle flash (MGUN-N.SHP): the first of eight, one per facing in FacingType
     ANIM_TS_MGUN_NE,    // order -- Fire_At adds Dir_Facing to ANIM_TS_MGUN_N ([VulcanTower] Anim=MGUN-N..MGUN-NW).
     ANIM_TS_MGUN_E,
@@ -3139,15 +3023,15 @@ typedef enum AnimType : short
     ANIM_TS_XGRYSML2,
     ANIM_TS_EXPLOSML,
     ANIM_TS_SMOKEY2,    // TS SMOKEY2 puff: the SAM missile's trail (art.ini [DRAGON] Trailer=SMOKEY2).
-    ANIM_TS_RAILFXS,    // TS light railgun particle: small grey spark spawned in a tight helix along the Ghost Stalker's beam ([SmallRailgunPart]).
+    ANIM_TS_RAILFXS,    // TS light railgun particle: a small grey spark in a helix along the Ghost Stalker's beam.
     ANIM_TS_SBANG34,    // TS S_BANG34: the InfantryExplode burst a jumpjet makes when it is shot down.
     ANIM_TS_PULSBALL,   // TS PULSBALL: the EMP Cannon's pulse ball charging at the barrel before it fires (23 frames).
-    ANIM_TS_PULSEFX1,   // TS PULSEFX1: an E.M. Pulse impact, flat on the ground (21 frames). TS picks this or PULSEFX2 at random.
+    ANIM_TS_PULSEFX1,   // TS PULSEFX1: an E.M. Pulse impact, flat on the ground. TS picks it or PULSEFX2 at random.
     ANIM_TS_PULSEFX2,   // TS PULSEFX2: the other E.M. Pulse impact (15 frames).
-    ANIM_TS_EMPFX,      // TS EMP_FX01: the sparks over an object stunned by an E.M. Pulse (27 frames, loops until the stun ends).
+    ANIM_TS_EMPFX,      // TS EMP_FX01: sparks over an object stunned by an E.M. Pulse, looping until the stun ends.
     ANIM_TS_MEMPFX,     // TS MEMPFX: the Mobile EM-Pulse's blast, flat on the ground (12 frames).
-    ANIM_TS_FSIDLE,     // TS FSIDLE: the crackling column that flickers over a live Firestorm Wall Section (19 frames, base at its coordinate).
-    ANIM_TS_FSGRND,     // TS FSGRND: sparks where something on the ground meets a live Firestorm (19 frames, base at its coordinate).
+    ANIM_TS_FSIDLE,     // TS FSIDLE: the crackling column over a live Firestorm Wall Section, based at its coordinate.
+    ANIM_TS_FSGRND,     // TS FSGRND: sparks where something on the ground meets a live Firestorm.
     ANIM_TS_FSAIR,      // TS FSAIR: sparks where something in the air meets a live Firestorm (19 frames).
 
     ANIM_COUNT,
@@ -3496,32 +3380,31 @@ typedef enum WarheadType : char
     WARHEAD_MECHANICAL,   // repair weapon for vehicles
 #endif
 
-    // Tiberian Factions mod warheads ported from TD (tiberiandawn/defines.h
-    // WARHEAD_*). Each maps to a [Name] section in rules.ini.
+    // TF: warheads. rules.cpp registers them in this order under their rules.ini names: keep the two in step.
     WARHEAD_LASER, // 100%-vs-all-armor profile (Obelisk of Light).
-    WARHEAD_TDHE,  // TD high-explosive armor table (used by BULLET_SSM via TDTowTwo).
+    WARHEAD_TDHE,  // TD high-explosive (WARHEAD_HE) armour table.
     WARHEAD_TDPB,  // Particle beam (TD WARHEAD_PB) — Ion Cannon strike. {1.0, 1.0, 0.75, 0.75, 0.75}.
     WARHEAD_TDSA,  // TD small arms (WARHEAD_SA) — Spread 2, verses {1.0,0.5,0.5625,0.25,0.25}, no destroy.
-    WARHEAD_TDAP,  // TD armor-piercing (WARHEAD_AP) — Spread 6, verses {0.25,0.75,0.75,1.0,0.5}, destroys wall+wood (APDS / SAM / Dragon).
-    WARHEAD_TDFIRE, // TD incendiary (WARHEAD_FIRE) — Spread 8, verses {0.88,1.0,0.69,0.25,0.5}, destroys wood+tiberium not wall (Flamethrower).
-    WARHEAD_TDCHEM, // TD chem spray — HE damage table (== TDHE) but Explosion=0 (TD ClassChem impact = ANIM_NONE). Separate from TDHE so the grenadier keeps its blast.
-    WARHEAD_TDHOLLOW, // TD hollow-point (WARHEAD_HOLLOW_POINT) — Commando sniper. Spread 4, verses {1.0,0.03,0.03,0.03,0.03}: one-shots infantry, ~nil vs armor/buildings.
-    WARHEAD_TDAGT, // AGT-only warhead, fired from TDTowTwo (the GDI Advanced Guard Tower) ONLY. Verses identical to TDHE today; kept separate so the AGT can be tuned without touching the ~12 other TDHE weapons.
-    WARHEAD_RAILSHOT, // TS railgun warhead (MechRailgun ambient line damage). TS [RailShot]: Spread 1, verses 200/175/160/100/25%.
-    WARHEAD_TSFLAME, // TS [Fire] warhead for the Devil's Tongue stream: 600% none, 148% light, 59% heavy, 6% wood, 2% concrete -- fire is an anti-infantry/light-vehicle weapon in TS, near-useless on structures. Registered "TSFlame".
-    WARHEAD_TSFLAMEHIT, // Delivery warhead for a TS fire-stream burn: the TS damage arithmetic runs in BulletClass::AI, this just carries the result unscaled (100% verses, fire InfDeath). Registered "TSFlameHit".
-    WARHEAD_SONIC,    // TS sonic warhead (Disruptor SonicZap line damage). TS [SonicWarhead]: Spread 2, verses 100/100/100/80/60%, Wood=yes. Registered "SonicWarhead".
-    WARHEAD_TSSA,     // TS small-arms warhead. TS [SA]: Spread 3, verses 100/60/40/25/10%, InfDeath 1 (RA's own [SA] is 100/50/60/25/25). Registered "TSSA".
-    WARHEAD_TSRPG,    // TS RPG tower warhead. TS [RPG]: Spread 3, Wall=yes, Wood=yes, verses 30/75/90/100/70%, InfDeath 3. Registered "TSRPG".
+    WARHEAD_TDAP,  // TD armor-piercing (WARHEAD_AP) — Spread 6, verses {0.25,0.75,0.75,1.0,0.5}, destroys wall+wood.
+    WARHEAD_TDFIRE, // TD incendiary (WARHEAD_FIRE) — Spread 8, verses {0.88,1.0,0.69,0.25,0.5}, destroys wood+tiberium.
+    WARHEAD_TDCHEM, // TD chem spray: TDHE's table without the explosion, so the grenadier's TDHE keeps its blast.
+    WARHEAD_TDHOLLOW, // TD hollow-point (WARHEAD_HOLLOW_POINT), Commando: Spread 4, verses {1.0,0.03,0.03,0.03,0.03}.
+    WARHEAD_TDAGT, // The Advanced Guard Tower's warhead (TDTowTwo): a TDHE copy, apart so the tower tunes alone.
+    WARHEAD_RAILSHOT, // TS [RailShot]: the MechRailgun's line damage. Registered "RailShot".
+    WARHEAD_TSFLAME, // TS [Fire] for the Devil's Tongue stream: deadly to infantry, near useless on buildings.
+    WARHEAD_TSFLAMEHIT, // Delivers a fire-stream burn already worked out in BulletClass::AI, unscaled.
+    WARHEAD_SONIC,    // TS [SonicWarhead]: the Disruptor's SonicZap line damage. Registered "SonicWarhead".
+    WARHEAD_TSSA,     // TS [SA] small arms. Registered "TSSA".
+    WARHEAD_TSRPG,    // TS [RPG], the RPG tower's. Registered "TSRPG".
     WARHEAD_TSSAMWH,  // TS SAM warhead. TS [SAMWH]: Spread 3, 100% all, InfDeath 3. Registered "TSSAMWH".
-    WARHEAD_TSHE,     // TS high-explosive warhead. TS [HE]: Spread 4, Wall=yes, Wood=yes, verses 100/85/70/35/28%, InfDeath 2. Registered "TSHE".
-    WARHEAD_TSRAILSHOT2, // TS light railgun warhead (LtRail line damage). TS [RailShot2]: Spread 1, verses 100/130/150/110/5%, InfDeath 2. Registered "TSRailShot2".
-    WARHEAD_TSORCAAP, // TS Orca missile warhead. TS [ORCAAP]: Spread 2, verses 30/65/150/100/30%, InfDeath 3, ProneDamage 50%. Registered "TSOrcaAP".
-    WARHEAD_TSORCAHE, // TS Orca bomb warhead. TS [ORCAHE]: wide splash, verses 200/90/75/32/100%, InfDeath 2, ProneDamage 150%. Registered "TSOrcaHE".
-    WARHEAD_TSARTYHE, // TS artillery warhead. TS [ARTYHE]: Spread 6, verses 100/85/68/35/35%, InfDeath 2, ProneDamage 150%. Registered "TSArtyHE".
-    WARHEAD_TSLIMPY,  // TS Limpet warhead (Firestorm [LIMPY]): LimpetFactor 35 -- the shot attaches the drone instead of doing damage.
-    WARHEAD_R2APOCAP, // RA2 Apocalypse cannon warhead. YR [ApocAP] 11-class verses collapsed to RA's 5: 25/100/75/100/70%. Registered "R2ApocAP".
-    WARHEAD_R2COMET,  // RA2 Prism beam warhead. YR [CometWH] collapsed: 100/200/75/50/200%, a building and infantry melter. Registered "R2Comet".
+    WARHEAD_TSHE,     // TS [HE] high explosive. Registered "TSHE".
+    WARHEAD_TSRAILSHOT2, // TS [RailShot2]: the Ghost Stalker's light railgun line damage. Registered "TSRailShot2".
+    WARHEAD_TSORCAAP, // TS [ORCAAP]: the Orca Fighter's missiles. Registered "TSOrcaAP".
+    WARHEAD_TSORCAHE, // TS [ORCAHE]: the Orca Bomber's bombs. Registered "TSOrcaHE".
+    WARHEAD_TSARTYHE, // TS [ARTYHE]: the Juggernaut's shells. Registered "TSArtyHE".
+    WARHEAD_TSLIMPY,  // Firestorm [LIMPY]: the Limpet's shot, which attaches the drone instead of doing damage.
+    WARHEAD_R2APOCAP, // YR [ApocAP], the Apocalypse cannon's. Registered "R2ApocAP".
+    WARHEAD_R2COMET,  // YR [CometWH], the Prism Tank beam's. Registered "R2Comet".
 
     WARHEAD_COUNT,
     WARHEAD_FIRST = 0
@@ -3588,62 +3471,61 @@ typedef enum WeaponType : char
     WEAPON_CARRIER,
 #endif
 
-    // Tiberian Factions mod weapons ported from TD (tiberiandawn/defines.h
-    // WEAPON_*). Each maps to a [Name] section in rules.ini.
+    // TF: weapons. rules.cpp registers them in this order under their rules.ini names: keep the two in step.
     WEAPON_TOW_TWO,        // Advanced Guard Tower missile (anti-armor + AA).
-    WEAPON_TD_TURRET_GUN,  // Nod Turret cannon (TD-authentic ROF/range).
-    WEAPON_OBELISK_LASER,  // Obelisk of Light beam (data piece only; render in M5).
+    WEAPON_TD_TURRET_GUN,  // Nod Turret cannon (TD WEAPON_TURRET_GUN).
+    WEAPON_OBELISK_LASER,  // Obelisk of Light beam.
     WEAPON_TD_CHAIN_GUN,   // GDI Guard Tower chain gun (TD WEAPON_CHAIN_GUN).
     WEAPON_TDNIKE,         // TD SAM Site missile (anti-air only, fires BULLET_TDPATRIOT).
-    WEAPON_TDM16,          // TD Minigunner rifle (E1) — Dmg15/ROF20/Range2, BULLET_TDBULLET, WARHEAD_TDSA.
+    WEAPON_TDM16,          // TD Minigunner rifle (E1): BULLET_TDBULLET, WARHEAD_TDSA.
     WEAPON_TDGRENADE,      // TD Grenadier toss (E2) — Dmg50/ROF60/Range3.25, Projectile=Lobbed (RA bomb), WARHEAD_TDHE.
-    WEAPON_TDDRAGON,       // TD Rocket Soldier launcher (E3) — Dmg30/ROF60/Range4, BULLET_TDTOW, WARHEAD_TDAP, Report=BAZOOK1.
-    WEAPON_TDFLAME,        // TD Flamethrower (E4, Nod) — Dmg35/ROF50/Range2, BULLET_TDFLAME, WARHEAD_TDFIRE, Anim=FLAME-N.
-    WEAPON_TDCHEM,         // TD Chem Warrior spray (E5, Nod) — Dmg80/ROF70/Range2, BULLET_TDCHEM, WARHEAD_TDHE (bullet warhead), Report=FLAMER2, Anim=CHEM-N.
-    WEAPON_TDRIFLE,        // TD Commando sniper (RMBO) — Dmg125/ROF40/Range5.5, BULLET_TDBULLET, WARHEAD_TDHOLLOW, Report=RAMGUN2.
-    WEAPON_TD105MM,        // TD Medium Tank cannon (MTNK) — Dmg30/ROF50/Range4.75, BULLET_TDAPDS (reuse), WARHEAD_TDAP (reuse), Report=TNKFIRE4, Anim=GUNFIRE.
-    WEAPON_TD75MM,         // TD Light Tank cannon (LTNK) — Dmg25/ROF60/Range4, BULLET_TDAPDS (reuse), WARHEAD_TDAP (reuse), Report=TNKFIRE3, Anim=GUNFIRE.
-    WEAPON_TD120MM,        // TD Mammoth Tank primary cannon (HTNK) — Dmg40/ROF80/Range4.75, BULLET_TDAPDS (reuse), WARHEAD_TDAP (reuse), Report=TNKFIRE6.
-    WEAPON_TDTUSK,         // TD Mammoth Tusk AA missiles (HTNK secondary) — Dmg75/ROF80/Range5, Projectile=TDSSM (reuse, AA+AG homing), WARHEAD_TDHE, Report=ROCKET1.
-    WEAPON_TDFLAMETONGUE,  // TD Flame Tank cannon (FTNK) — Dmg50/ROF50/Range2, BULLET_TDFLAME (reuse), WARHEAD_TDFIRE (reuse), Anim=TDFLAME-N. The stronger FLAME_TONGUE (vs Flamethrower's 35).
-    WEAPON_TDM60MG,        // TD Hum-vee/Buggy MG (JEEP/BGGY) — Dmg15/ROF30/Range4, BULLET_TDBULLET (reuse TD50cal), WARHEAD_TDSA (reuse), Report=MGUN11, Anim=GUN-N. Distinct from RA-vanilla [M60mg] (ROF20/PILLBOX1/MINIGUN).
-    WEAPON_TDSTNKDRAGON,   // TD Stealth Tank launcher (STNK) — WEAPON_DRAGON + Burst=2 (TD is_twoshooter). Same TDTOW/TDAP/BAZOOK1 chain as TDDragon; separate weapon so the single-shot E3/Bike keep Burst=1.
-    WEAPON_TDMLRS,         // TD Rocket Launcher (MLRS) — Dmg75/ROF80/Range6, BULLET_TDSSM2 homing, WARHEAD_TDHE, Report=ROCKET1, Burst=2. Registered as "TDMlrsRocket" (distinct from the [TDMLRS] unit section).
-    WEAPON_TDHONESTJOHN,   // TD SSM Launcher (MSAM) — Dmg100/ROF200/Range10, BULLET_TDMISSILE (non-homing), WARHEAD_TDFIRE, Report=ROCKET1. Registered as "TDHonestJohn".
-    WEAPON_TD155MM,        // TD Artillery (ARTY) — Dmg150/ROF65/Range6, BULLET_TDHESHELL (arcing), WARHEAD_TDHE, Report=TNKFIRE2, Anim=GUNFIRE. Registered as "TD155mm".
-    WEAPON_TDAPACHEGUN,    // TD Apache chain gun (HELI) — TDChainGun + Burst=2 (TD is_twoshooter). Same TDSpreadfire/TDHE/GUN8 chain as TDChainGun; separate so the single-shot GTWR keeps Burst=1.
-    WEAPON_TDTOMAHAWK,     // v4.0: GDI Gunboat primary — TD homing missile (BULLET_TDTOW, AG-only), WARHEAD_TDAP, anti-surface/anti-shore. IsTDPort (raw Speed MPH_ROCKET + AI_TD homing). Registered "TDTomahawk".
-    WEAPON_TDOBELISKSUBLASER, // v4.0: Nod Obelisk Attack Sub — TDLaser bolt (clone of the Obelisk's TDOblsLaser, NO Charges since a vessel can't building-charge), short range + slow ROF + high dmg. Registered "TDObeliskSubLaser".
-    WEAPON_TDA10NAPALM,    // v4.0: A-10 napalm strafe — TD WEAPON_NAPALM verbatim (Dmg100/ROF20/Range4.5=0x0480, VOC_NONE), BULLET_TDNAPALM. Registered "TDA10Napalm".
-    WEAPON_TDFLAMEBUNKER,  // v4.0: Nod Flame Bunker (TDFBNK) — clone of TDFlameTongue with Range 2->4 (static defence must outrange range-3 infantry). BULLET_TDFLAME/WARHEAD_TDFIRE reused. IsTDPort (raw Speed 40). Registered "TDFlameBunker".
-    WEAPON_TSHOVERMISSILE, // TS-spike: Hover MLRS missile — TS [HoverMissile] stats (Dmg30/ROF68/Range8/Burst2) on the TDSSM AA+AG homing chain (TDTusk pattern). IsTDPort (raw Speed). Registered "TSHoverMissile".
-    WEAPON_TS120MM,        // TS Titan cannon — TS [120mm] stats (Dmg70/ROF80) on the TDAPDS chain. IsTDPort. Registered "TS120mm".
-    WEAPON_MECHRAILGUN,    // TS Mammoth Mk. II railgun — Damage=0 + AmbientDamage=200 applied along the whole line (IsRailgun path in Fire_At), instant TDLaser projectile, WARHEAD_RAILSHOT. Registered "MechRailgun".
-    WEAPON_TSMKTUSK,       // TS Mammoth Mk. II AA missiles — RA MammothTusk stats on the STRICTLY anti-air AAMissile projectile (TS tusks never fire at ground). Registered "TSMammothTusk".
-    WEAPON_ASSAULTCANNON,  // TS Wolverine assault cannon — TS [AssaultCannon] verbatim (Dmg40/ROF50/Range5, instant Invisible projectile, SA warhead). Registered "AssaultCannon".
-    WEAPON_TSFIREBALL,     // TS Devil's Tongue FireballLauncher — Damage=0 impact, the damage is the fire stream (BULLET_TSFIRE particles spawned every 4 frames for 30 frames per shot, UnitClass::Fire_Stream_AI). Registered "TSFireball".
-    WEAPON_SONICZAP,       // TS Disruptor sonic beam — IsSonic piercing line (railgun sweep mechanics, green beam, no helix) through WARHEAD_SONIC. TS per-frame wave damage translated to one AmbientDamage application per object on the line. Registered "SonicZap".
-    WEAPON_TSSUICIDE,      // TS Hunter Seeker suicide bomb (TS [SuicideBomb]) — Damage 11000, Warhead Super (100% all), Projectile Invisible. Never fired through the weapon system; TF_Hunter_Seeker_Detonate reads its Attack + Warhead. Registered "TSSuicide".
-    WEAPON_TSVULCANTOWER,  // TS component tower Vulcan cannon — TS [VulcanTower] verbatim (Dmg18/ROF26/Range6, instant Invisible projectile, TSSA warhead). Registered "TSVulcanTower".
-    WEAPON_TSRPGTOWER,     // TS component tower RPG — TS [RPGTower] verbatim (Dmg110/ROF80/Range8/MinRange2, arcing Lobbed projectile, TSRPG warhead). Registered "TSRPGTower".
-    WEAPON_TSREDEYE2,      // TS component tower SAM — TS [RedEye2] verbatim (Dmg33/ROF55/Range15, AA-only TDPatriot homing missile, TSSAMWH warhead). Registered "TSRedEye2".
-    WEAPON_TS120MMX,       // TS Mammoth Tank cannon (TS [120mmx]): Dmg50/ROF80/Burst2, on the TDAPDS instant shell like the Titan's TS120mm.
-    WEAPON_TS4TNKTUSK,     // The old TS Mammoth's own tusks: TS [MammothTusk] verbatim (Dmg40/ROF80/Range6/Speed20/Burst2, AA-only TSAAHeatSeeker, TSHE warhead).
-    WEAPON_TSMINIGUN,      // TS Light Infantry minigun: TS [Minigun] (Dmg8/ROF21/Range4, instant Invisible projectile, TSSA warhead). Registered "TSMinigun".
-    WEAPON_TSGRENADE,      // TS Disc Thrower disc: TS [Grenade] (Dmg40/ROF80/Range4.5, BULLET_TSLOBBED arc, TSHE warhead). Registered "TSGrenade".
-    WEAPON_TSHEAL,         // TS Medic heal: TS [Heal] (Dmg-50/ROF80/Range2.83, Organic warhead, HEALER1 report). Registered "TSHeal".
-    WEAPON_TSLTRAIL,       // TS Ghost Stalker light railgun: TS [LtRail] (AmbientDamage150 along the line/ROF60/Range6, orange beam, TSRailShot2 warhead, BIGGGUN1 report). Registered "TSLtRail".
-    WEAPON_TSJUMPCANNON,   // TS Jumpjet Infantry cannon: TS [JumpCannon] (Dmg15/Burst2/ROF40/Range5, TSSA warhead, JUMPJET1 report). Registered "TSJumpCannon".
-    WEAPON_TSHELLFIRE,     // TS Orca Fighter missiles: TS [Hellfire] (Dmg30/Burst2/ROF50/Range6, TSOrcaAP warhead, ORCAMIS1 report). Registered "TSHellfire".
-    WEAPON_TSBOMB,         // TS Orca Bomber bomb: TS [Bomb] (Dmg160/ROF10, TSOrcaHE warhead) dropped from over the target. Registered "TSBomb".
-    WEAPON_TSJUGG90MM,     // TS Juggernaut cannon: Firestorm [Jugg90mm] (Dmg75/Burst3/ROF150/Range18/MinimumRange5, TSArtyHE, JUGGER1 report). Registered "TSJugg90mm".
-    WEAPON_TSLIMP,         // TS Limpet Mine shot: Firestorm [LIMP] (Damage 1, ROF 80, Range 2, invisible bullet, TSLimpy, LIMPBOM1 report). Registered "TSLimpet".
-    WEAPON_R2APOCCANNON,   // RA2 Apocalypse cannon: YR [120mmx] (Dmg100/ROF80/Range5.75/Burst2, R2ApocAP). Registered "R2ApocCannon".
-    WEAPON_R2APOCTUSK,     // RA2 Apocalypse tusks: YR [MammothTusk] (Dmg50/Burst2/Range8, AA only). Registered "R2ApocTusk".
-    WEAPON_R2PRISMBEAM,    // RA2 Prism Tank beam: YR [Comet] (Dmg100/ROF100, IsPrismBeam draw + fork). Registered "R2PrismBeam".
-    WEAPON_C3MK3CANNON,    // C&C3 Mammoth twin cannon: GDIMammothTankGun (2 shots, 500 dmg each, 2 s reload) at RA scale. Registered "C3Mk3Cannon".
-    WEAPON_C3MK3PODS,      // C&C3 Mammoth rocket pods: GDIMammothTankRocketPods (4 missiles, 300 dmg each in patch 1.9, 10 s reload), AA and AG. Registered "C3Mk3Pods".
-    WEAPON_C3PREDCANNON,   // C&C3 Predator cannon: GDIPredatorTankCannon (400 dmg, 2 s reload) at RA scale. Registered "C3PredCannon".
+    WEAPON_TDDRAGON,       // TD Rocket Soldier launcher (E3): BULLET_TDTOW, WARHEAD_TDAP, Report=BAZOOK1.
+    WEAPON_TDFLAME,        // TD Flamethrower (E4, Nod): BULLET_TDFLAME, WARHEAD_TDFIRE, Anim=TDFLAME-N.
+    WEAPON_TDCHEM,         // TD Chem Warrior spray (E5, Nod): BULLET_TDCHEM, WARHEAD_TDCHEM, Anim=TDCHEM-N.
+    WEAPON_TDRIFLE,        // TD Commando sniper (RMBO): BULLET_TDBULLET, WARHEAD_TDHOLLOW, Report=RAMGUN2.
+    WEAPON_TD105MM,        // TD Medium Tank cannon (MTNK): BULLET_TDAPDS, WARHEAD_TDAP, Report=TNKFIRE4.
+    WEAPON_TD75MM,         // TD Light Tank cannon (LTNK): BULLET_TDAPDS, WARHEAD_TDAP, Report=TNKFIRE3.
+    WEAPON_TD120MM,        // TD Mammoth Tank cannon (HTNK): BULLET_TDAPDS, WARHEAD_TDAP, Report=TNKFIRE6.
+    WEAPON_TDTUSK,         // TD Mammoth Tusk missiles (HTNK secondary): TDSSM, air and ground, WARHEAD_TDHE.
+    WEAPON_TDFLAMETONGUE,  // TD Flame Tank flamer (FTNK): BULLET_TDFLAME, WARHEAD_TDFIRE.
+    WEAPON_TDM60MG,        // TD MG (JEEP, BGGY, APC): BULLET_TDBULLET, WARHEAD_TDSA, Report=MGUN11.
+    WEAPON_TDSTNKDRAGON,   // TD Stealth Tank and Orca launcher: TDDragon with Burst=2; E3 and the Bike keep one shot.
+    WEAPON_TDMLRS,         // TD Rocket Launcher (MLRS): BULLET_TDSSM2. "TDMlrsRocket": [TDMLRS] is the unit.
+    WEAPON_TDHONESTJOHN,   // TD SSM Launcher (MSAM): BULLET_TDMISSILE, non-homing. Registered "TDHonestJohn".
+    WEAPON_TD155MM,        // TD Artillery (ARTY): RA's Ballistic shell, WARHEAD_TDHE. Registered "TD155mm".
+    WEAPON_TDAPACHEGUN,    // TD Apache gun (HELI): TDChainGun with Burst=2, so the Guard Tower keeps one shot.
+    WEAPON_TDTOMAHAWK,     // TD Gunboat missile: BULLET_TDTOW, WARHEAD_TDAP. Registered "TDTomahawk".
+    WEAPON_TDOBELISKSUBLASER, // Obelisk Sub laser: TDOblsLaser without Charges. Registered "TDObeliskSubLaser".
+    WEAPON_TDA10NAPALM,    // A-10 napalm strafe, TD's WEAPON_NAPALM: BULLET_TDNAPALM. Registered "TDA10Napalm".
+    WEAPON_TDFLAMEBUNKER,  // Nod Flame Bunker flamer (TDFBNK): BULLET_TDFLAME, WARHEAD_TDFIRE.
+    WEAPON_TSHOVERMISSILE, // TS Hover MLRS missile: BULLET_TDTOW. Registered "TSHoverMissile".
+    WEAPON_TS120MM,        // TS Titan cannon (TS [120mm]) on BULLET_TDAPDS. Registered "TS120mm".
+    WEAPON_MECHRAILGUN,    // TS Mammoth Mk. II railgun: AmbientDamage along the whole line (IsRailgun).
+    WEAPON_TSMKTUSK,       // TS Mammoth Mk. II missiles on the anti-air-only AAMissile. Registered "TSMammothTusk".
+    WEAPON_ASSAULTCANNON,  // TS Wolverine cannon (TS [AssaultCannon]): instant, unseen. Registered "AssaultCannon".
+    WEAPON_TSFIREBALL,     // TS Devil's Tongue: its damage is the BULLET_TSFIRE stream (UnitClass::Fire_Stream_AI).
+    WEAPON_SONICZAP,       // TS Disruptor beam: IsSonic piercing line through WARHEAD_SONIC. Registered "SonicZap".
+    WEAPON_TSSUICIDE,      // Hunter Seeker bomb, never fired: TF_Hunter_Seeker_Detonate reads its damage and warhead.
+    WEAPON_TSVULCANTOWER,  // TS component tower Vulcan (TS [VulcanTower]). Registered "TSVulcanTower".
+    WEAPON_TSRPGTOWER,     // TS component tower RPG (TS [RPGTower]), arcing. Registered "TSRPGTower".
+    WEAPON_TSREDEYE2,      // TS component tower SAM (TS [RedEye2]), anti-air only. Registered "TSRedEye2".
+    WEAPON_TS120MMX,       // TS Mammoth Tank cannon (TS [120mmx]) on BULLET_TDAPDS. Registered "TS120mmx".
+    WEAPON_TS4TNKTUSK,     // The old TS Mammoth's tusks (TS [MammothTusk]), anti-air only. Registered "TS4TNKTusk".
+    WEAPON_TSMINIGUN,      // TS Light Infantry minigun (TS [Minigun]). Registered "TSMinigun".
+    WEAPON_TSGRENADE,      // TS Disc Thrower disc (TS [Grenade]) on BULLET_TSLOBBED. Registered "TSGrenade".
+    WEAPON_TSHEAL,         // TS Medic heal (TS [Heal]). Registered "TSHeal".
+    WEAPON_TSLTRAIL,       // TS Ghost Stalker light railgun (TS [LtRail]), damage along the line.
+    WEAPON_TSJUMPCANNON,   // TS Jumpjet Infantry cannon (TS [JumpCannon]). Registered "TSJumpCannon".
+    WEAPON_TSHELLFIRE,     // TS Orca Fighter missiles (TS [Hellfire]). Registered "TSHellfire".
+    WEAPON_TSBOMB,         // TS Orca Bomber bomb (TS [Bomb]). Registered "TSBomb".
+    WEAPON_TSJUGG90MM,     // TS Juggernaut cannon (Firestorm [Jugg90mm]). Registered "TSJugg90mm".
+    WEAPON_TSLIMP,         // TS Limpet's shot (Firestorm [LIMP]). Registered "TSLimpet".
+    WEAPON_R2APOCCANNON,   // RA2 Apocalypse cannon (YR [120mmx]). Registered "R2ApocCannon".
+    WEAPON_R2APOCTUSK,     // RA2 Apocalypse tusks (YR [MammothTusk]), anti-air only. Registered "R2ApocTusk".
+    WEAPON_R2PRISMBEAM,    // RA2 Prism Tank beam (YR [Comet]), forking onto nearby enemies. Registered "R2PrismBeam".
+    WEAPON_C3MK3CANNON,    // C&C3 Mammoth twin cannon (GDIMammothTankGun) at RA scale. Registered "C3Mk3Cannon".
+    WEAPON_C3MK3PODS,      // C&C3 Mammoth rocket pods (GDIMammothTankRocketPods), air and ground.
+    WEAPON_C3PREDCANNON,   // C&C3 Predator cannon (GDIPredatorTankCannon) at RA scale. Registered "C3PredCannon".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -4056,8 +3938,8 @@ typedef enum SpeedType : char
     SPEED_WHEEL,  // Balloon tires.
     SPEED_WINGED, // Lifter's, 'thopters, and rockets.
     SPEED_FLOAT,  // Ships.
-    SPEED_HOVER,  // Hover craft (TS-spike): amphibious ground locomotor — passable on land AND water, blocked by rock/wall. TD had this slot; RA dropped it. Appended so existing indices keep their values.
-    SPEED_AMPHIBIOUS, // TS SpeedType=Amphibious (the Amphibious APC): a tracked drive that also takes water, at TS's own per-land percentages (rules.ini Amphibious=). Same passability footprint as hover, so it shares MZONE_HOVER.
+    SPEED_HOVER,  // Hover craft: passable on land and water, blocked by rock and walls.
+    SPEED_AMPHIBIOUS, // TS Amphibious (the Amphibious APC): tracked, also takes water; shares MZONE_HOVER.
 
     SPEED_COUNT,
     SPEED_FIRST = SPEED_FOOT
@@ -4257,10 +4139,8 @@ typedef enum VocType : short
 
 #endif
 
-    // Tiberian Factions mod sounds — TD assets re-registered under TD-prefixed
-    // VOC enum values so we never alias vanilla RA Report= references. Each
-    // maps to a TD .AUD asset name in SoundEffectName[] (audio.cpp).
-    VOC_TD_ROCKET2,      // TD rocket launch (light, for TOW_TWO / TOMAHAWK / NIKE)
+    // TF: sounds. SoundEffectName[] in audio.cpp lists their samples in this order: keep the two in step.
+    VOC_TD_ROCKET2,      // TD rocket launch (light, for TOW_TWO / NIKE)
     VOC_TD_TANK4,        // TD big gun tank fire (TURRET_GUN / 120MM)
     VOC_TD_LASER,        // Obelisk humming laser beam
     VOC_TD_LASER_POWER,  // Obelisk laser warming-up sound
@@ -4275,9 +4155,8 @@ typedef enum VocType : short
     VOC_TD_BAZOOKA,      // TD Rocket Soldier launch (BAZOOK1) — WEAPON_TDDRAGON Report=
     VOC_TD_FLAMER,       // TD Flamethrower (FLAMER2) — WEAPON_TDFLAME Report= (TD VOC_FLAMER1 maps to file FLAMER2)
     VOC_TD_SNIPER,       // TD Commando silenced rifle (RAMGUN2) — WEAPON_TDRIFLE Report=
-    // TD Commando (RMBO) one-liners — single-take CMD voices (IN_NOVAR), routed via
-    // RAC/RAR_SFX_TD<NAME> in SFXEVENTSLOCALIZED.XML -> base TDC/TDR_SFX_CMD_<NAME>_EN-US.
-    // Fired by InfantryClass::Response_Select/Move/Attack for INFANTRY_TDRMBO.
+    // TF: the TD Commando's one-liners, played by InfantryClass::Response_* for INFANTRY_TDRMBO and routed
+    // through RAC/RAR_SFX_TD<NAME> in SFXEVENTSLOCALIZED.XML.
     VOC_TD_CMD_BOMBIT,   // "I've got a present for ya" (BOMBIT1)
     VOC_TD_CMD_CMON,     // "c'mon" (CMON1)
     VOC_TD_CMD_GOTIT,    // "you got it" (GOTIT1)
@@ -4296,44 +4175,45 @@ typedef enum VocType : short
     VOC_TD_XPLOBIG6,     // TD big explosion (XPLOBIG6) — ANIM_TDFRAG2 detonation sound
     VOC_TD_TANK2,        // TD sharp tank fire (TNKFIRE3) — WEAPON_TD75MM Report= (Light Tank cannon)
     VOC_TD_ROCKET1,      // TD rocket launch #1 (ROCKET1) — WEAPON_TDTUSK Report= (Mammoth Tusk AA missiles)
-    VOC_TD_MGUN11,       // TD heavy machine gun (MGUN11) — WEAPON_TDM60MG Report= (Hum-vee/Buggy); routed via RAC/RAR_SFX_MGUN11
-    VOC_TD_CLOAK,        // TD Stealth Tank cloak/decloak (TRANS1) — TD VOC_CLOAK; played by Do_Cloak/Do_Uncloak for TD-prefix units instead of RA's VOC_IRON1. Routed via RAC/RAR_SFX_TRANS1.
-    VOC_TD_TANK1,        // TD Artillery 155mm fire (TNKFIRE2) — WEAPON_TD155MM Report= (VOC_TANK1 "sharp tank fire with recoil"). Routed via RAC/RAR_SFX_TNKFIRE2.
-    VOC_TS_HOVRMIS1,     // TS Hover MLRS missile launch (HOVRMIS1, decoded from TS SOUNDS.MIX AUD) — WEAPON_TSHOVERMISSILE Report=. Routed via RAC/RAR_SFX_HOVRMIS1 + bundled TSHOVRMIS1.WAV.
-    VOC_TS_RAILUSE5,     // TS heavy mech railgun fire (RAILUSE5, decoded from TS SOUNDS.MIX AUD) — WEAPON_MECHRAILGUN Report=. Routed via RAC/RAR_SFX_RAILUSE5 → bundled TDR_SFX_DINOATK1.WAV (dormant-sample host).
-    VOC_TS_MISL1,        // TS missile launch (MISL1, TS MammothTusk Report) — WEAPON_TSMKTUSK Report=TSMISL1. Routed via RAC/RAR_SFX_TSMISL1 → bundled TDR_SFX_DINODIE1.WAV (dormant-sample host).
-    VOC_TS_120MMF,       // TS Titan 120mm cannon fire (120MMF) — WEAPON_TS120MM Report=TS120MMF. Routed via RAC/RAR_SFX_TS120MMF → bundled TDR_SFX_DINOMOUT.WAV (dormant-sample host).
-    VOC_TS_DROPDWN1,     // TS dropship landing (DROPDWN1, TS SOUND.INI "DROPSHIP LANDS") — played at the pod's touchdown on the bay deck. Routed via RAC/RAR_SFX_DROPDWN1 → bundled TDR_SFX_DINOYES.WAV (dormant-sample host).
-    VOC_TS_DROPUP1,      // TS dropship takeoff (DROPUP1, TS SOUND.INI "DROPSHIP TAKES OFF") — played as the pod lifts off the deck. Routed via RAC/RAR_SFX_DROPUP1 → bundled TDR_SFX_STRUGGLE.WAV (dormant-sample host).
-    VOC_TS_TSGUN4,       // TS Wolverine assault cannon (TSGUN4, decoded from TS SOUNDS.MIX AUD) — WEAPON_ASSAULTCANNON Report=. Routed via RAC/RAR_SFX_TSGUN4 → bundled TDR_SFX_GUN19.WAV (dormant-sample host).
-    VOC_TS_SONIC4,       // TS Disruptor sonic beam (SONIC4, decoded from TS SOUNDS.MIX AUD) — WEAPON_SONICZAP Report=. Routed via RAC/RAR_SFX_SONIC4 → bundled TDR_SFX_CRUMBLE.WAV (dormant-sample host).
-    VOC_TS_FLAMTNK1,     // TS flame tank fire (FLAMTNK1, TS FireballLauncher Report) -- routed via RAC/RAR_SFX_FLAMTNK1 -> bundled TDR_SFX_TURRFIR5.WAV (dormant-sample host).
-    VOC_TS_SUBDRIL1,     // TS subterranean dig (SUBDRIL1, TS [AudioVisual] DigSound) -- routed via RAC/RAR_SFX_SUBDRIL1 -> bundled TDR_SFX_SAMMOTR2.WAV.
-    VOC_TS_ION1,         // TS Ion Cannon strike (ION1, TS art.ini [IONBEAM] Report=) -- ANIM_TS_ION_BEAM's sound. Routed via RAC/RAR_SFX_TSION1 -> bundled TSION1.WAV under its OWN name (the novel-name path, proven 2026-08-31).
-    VOC_TD_MONEY_UP,     // TD credit tick up (TONE15) -- DLL-fired faction tick for GDI/Nod; the launcher's own cashup1 event is data-silenced.
+    VOC_TD_MGUN11,       // TD heavy machine gun (MGUN11): WEAPON_TDM60MG Report=, via RAC/RAR_SFX_MGUN11
+    VOC_TD_CLOAK,        // TD cloak and decloak (TRANS1): played by Do_Cloak/Do_Uncloak in place of VOC_IRON1.
+    VOC_TD_TANK1,        // TD Artillery fire (TNKFIRE2): WEAPON_TD155MM Report=, via RAC/RAR_SFX_TNKFIRE2.
+    VOC_TS_HOVRMIS1,     // TS Hover MLRS missile (HOVRMIS1): WEAPON_TSHOVERMISSILE Report=.
+    VOC_TS_RAILUSE5,     // TS heavy railgun (RAILUSE5): WEAPON_MECHRAILGUN Report=.
+    VOC_TS_MISL1,        // TS missile launch (MISL1): the TS tusks' Report=TSMISL1.
+    VOC_TS_120MMF,       // TS Titan cannon (120MMF): WEAPON_TS120MM Report=TS120MMF.
+    VOC_TS_DROPDWN1,     // TS dropship landing (DROPDWN1) on the bay deck.
+    VOC_TS_DROPUP1,      // TS dropship takeoff (DROPUP1) from the bay deck.
+    VOC_TS_TSGUN4,       // TS Wolverine cannon (TSGUN4): WEAPON_ASSAULTCANNON Report=.
+    VOC_TS_SONIC4,       // TS Disruptor beam (SONIC4): WEAPON_SONICZAP Report=.
+    VOC_TS_FLAMTNK1,     // TS flame tank fire (FLAMTNK1): TSFireball Report=.
+    VOC_TS_SUBDRIL1,     // TS subterranean dig (SUBDRIL1, TS DigSound).
+    VOC_TS_ION1,         // TS Ion Cannon strike (ION1): ANIM_TS_ION_BEAM's sound, bundled as TSION1.WAV.
+    VOC_TD_MONEY_UP,     // TD credit tick up (TONE15): GDI/Nod's tick, fired by the DLL; launcher cashup1 is silenced.
     VOC_TD_MONEY_DOWN,   // TD credit tick down (TONE16) -- as above.
-    VOC_DLL_MONEY_UP,    // RA credit tick up re-fired by the DLL under alias CASHUPD (stock RA?_SFX_cashup1 events are silenced; this alias points at the original sample).
+    VOC_DLL_MONEY_UP,    // RA credit tick up, fired by the DLL as CASHUPD (original sample); stock cashup1 is silenced.
     VOC_DLL_MONEY_DOWN,  // RA credit tick down re-fired by the DLL under alias CASHDND.
-    VOC_TS_GUN4,         // TS Vulcan2 report (TSGUN4) -- the drop pod's LZ strafe. Routed via RAC/RAR_SFX_TSGUN4 -> bundled TSGUN4.WAV under its OWN name (novel-name path).
-    VOC_TS_METEOR,       // TS meteor whoosh (METEOR1) -- the drop pod descent scream, fired at the LZ per pod launch. RAC/RAR_SFX_TSMETEOR -> bundled TSMETEOR.WAV.
-    VOC_TS_HUNTER2,      // TS hunter seeker detonation (HUNTER2, the SuicideBomb Report=). RAC/RAR_SFX_TSHUNTR2 -> bundled TSHUNTR2.WAV, own name.
-    VOC_TS_MONEY_UP,     // TS credit tick up (CREDUP1, TS rules [AudioVisual] CreditTicks=) -- the TS-era voice of the DLL-fired tick. RAC/RAR_SFX_TSCREDUP1 -> bundled TSCREDUP1.WAV, own name.
+    VOC_TS_GUN4,         // TS Vulcan2 report (TSGUN4): the drop pod's LZ strafe.
+    VOC_TS_METEOR,       // TS meteor whoosh (METEOR1): each drop pod's descent. Bundled TSMETEOR.WAV.
+    VOC_TS_HUNTER2,      // TS Hunter Seeker detonation (HUNTER2, TSSuicide's Report=). Bundled TSHUNTR2.WAV.
+    VOC_TS_MONEY_UP,     // TS credit tick up (CREDUP1): the DLL-fired TS-era tick. Bundled TSCREDUP1.WAV.
     VOC_TS_MONEY_DOWN,   // TS credit tick down (CREDDWN1) -- as above.
-    VOC_TS_RADAR_ON,     // TS radar activation (COMMUP1, TS rules [AudioVisual] RadarOn=). RAC/RAR_SFX_TSCOMMUP1 -> bundled TSCOMMUP1.WAV, own name.
+    VOC_TS_RADAR_ON,     // TS radar on (COMMUP1, TS RadarOn=). Bundled TSCOMMUP1.WAV.
     VOC_TS_RADAR_OFF,    // TS radar deactivation (RADARDN1, RadarOff=) -- as above.
-    VOC_TS_PLACE_BUILDING_DOWN, // TS building slam (PLACE2, TS rules [AudioVisual] BuildingSlam=/BuildingDrop=). TS buildings rise SILENTLY afterwards -- see BuildingTypeClass::Is_TS_Era.
-    VOC_TS_CHAINGN1,     // TS Vulcan tower report (CHAINGN1, [VulcanTower] Report=). RAC/RAR_SFX_TSCHAINGN1 -> bundled TSCHAINGN1.WAV, own name.
+    VOC_TS_PLACE_BUILDING_DOWN, // TS building slam (PLACE2, BuildingSlam=); TS buildings rise silently (Is_TS_Era).
+    VOC_TS_CHAINGN1,     // TS Vulcan tower report (CHAINGN1). Bundled TSCHAINGN1.WAV.
     VOC_TS_GLNCH4,       // TS RPG tower report (GLNCH4, [RPGTower] Report=) -- as above.
     VOC_TS_SAMSHOT1,     // TS SAM tower report (SAMSHOT1, [RedEye2] Report=) -- as above.
-    VOC_TS_EXPNEW13,     // TS impact report on XGRYSML1/2 and EXPLOSML (art.ini Report=EXPNEW13). RAC/RAR_SFX_TSEXPNEW13 -> bundled TSEXPNEW13.WAV, own name.
+    VOC_TS_EXPNEW13,     // TS impact report on XGRYSML1/2 and EXPLOSML (EXPNEW13). Bundled TSEXPNEW13.WAV.
     VOC_TS_EXPNEW14,     // TS impact report on S_CLSN16-58 (art.ini Report=EXPNEW14) -- as above.
-    VOC_TS_120MMX9,      // TS Mammoth Tank cannon report (120MMX9, [120mmx] Report=). RAC/RAR_SFX_TS120MMX9 -> bundled TS120MMX9.WAV, own name.
-    VOC_TS_INFGUN3,      // TS Light Infantry minigun report (INFGUN3, [Minigun] Report=). RAC/RAR_SFX_TSINFGUN3 -> bundled TSINFGUN3.WAV, own name.
-    VOC_TS_HEALER1,      // TS Medic heal report (HEALER1, [Heal] Report=). RAC/RAR_SFX_TSHEALER1 -> bundled TSHEALER1.WAV, own name.
-    VOC_TS_BIGGGUN1,     // TS Ghost Stalker railgun report (BIGGGUN1, [LtRail] Report=). RAC/RAR_SFX_TSBIGGGUN1 -> bundled TSBIGGGUN1.WAV, own name.
-    VOC_TS_JUMPJET1,     // TS Jumpjet Infantry cannon report (JUMPJET1, [JumpCannon] Report=). RAC/RAR_SFX_TSJUMPJET1 -> bundled TSJUMPJET1.WAV, own name.
+    VOC_TS_120MMX9,      // TS Mammoth Tank cannon report (120MMX9). Bundled TS120MMX9.WAV.
+    VOC_TS_INFGUN3,      // TS Light Infantry minigun report (INFGUN3). Bundled TSINFGUN3.WAV.
+    VOC_TS_HEALER1,      // TS Medic heal report (HEALER1). Bundled TSHEALER1.WAV.
+    VOC_TS_BIGGGUN1,     // TS Ghost Stalker railgun report (BIGGGUN1). Bundled TSBIGGGUN1.WAV.
+    VOC_TS_JUMPJET1,     // TS Jumpjet Infantry cannon report (JUMPJET1). Bundled TSJUMPJET1.WAV.
 
-    // TS Engineer, voice set 19 (scripts/ts_voices_build.py SINGLES): select I000/I002/I006, move I010/I016, attack I018/I016.
+    // TS Engineer, voice set 19 (scripts/ts_voices_build.py): select I000/I002/I006, move I010/I016,
+    // attack I018/I016.
     VOC_TS_19I000,
     VOC_TS_19I002,
     VOC_TS_19I006,
@@ -4359,8 +4239,8 @@ typedef enum VocType : short
     VOC_TS_14I012,
     VOC_TS_14I014,
     VOC_TS_14I016,
-    VOC_TS_EXPNEW10,     // TS small explosion (EXPNEW10, art.ini [S_BANG34] Report=): a jumpjet shot down. RAC/RAR_SFX_TSEXPNEW10 -> bundled TSEXPNEW10.WAV.
-    VOC_TS_ORCAMIS1,     // TS Orca missile launch (ORCAMIS1, [Hellfire] Report=). RAC/RAR_SFX_TSORCAMIS1 -> bundled TSORCAMIS1.WAV.
+    VOC_TS_EXPNEW10,     // TS small explosion (EXPNEW10): a jumpjet shot down. Bundled TSEXPNEW10.WAV.
+    VOC_TS_ORCAMIS1,     // TS Orca missile launch (ORCAMIS1, [Hellfire] Report=). Bundled TSORCAMIS1.WAV.
     VOC_TS_ORCAUP1,      // TS Orca take-off (ORCAUP1, AuxSound1). Bundled TSORCAUP1.WAV.
     VOC_TS_ORCADWN1,     // TS Orca landing (ORCADWN1, AuxSound2). Bundled TSORCADWN1.WAV.
     VOC_TS_30I000,       // TS voice set 30, the Orca pilot (30-I000).
@@ -4374,9 +4254,9 @@ typedef enum VocType : short
     VOC_TS_30I030,       // TS voice set 30, the Orca pilot (30-I030).
     VOC_TS_30I034,       // TS voice set 30, the Orca pilot (30-I034).
     VOC_TS_30I036,       // TS voice set 30, the Orca pilot (30-I036).
-    VOC_TS_DEPLOY,       // TS [AudioVisual] DeploySound (27-I002): the crew's "deploying" when the deploy key deploys TS units. Bundled TSDEPLOY.WAV.
+    VOC_TS_DEPLOY,       // TS deploy voice (27-I002, TS DeploySound) as the deploy key deploys a TS unit.
     VOC_TS_JUGGER1,      // TS Juggernaut cannon report (JUGGER1, Firestorm [Jugg90mm] Report=). Bundled TSJUGGER1.WAV.
-    VOC_TS_LIMPBOM1,     // TS Limpet Drone leaping onto a vehicle (LIMPBOM1, Firestorm [LIMP] Report=). Bundled TSLIMPBOM1.WAV.
+    VOC_TS_LIMPBOM1,     // TS Limpet Drone leaping onto a vehicle (LIMPBOM1, TSLimpet's Report=). TSLIMPBOM1.WAV.
     VOC_TS_LIMPQ3,       // TS Limpet Drone select chirp (LIMPQ3). Bundled TSLIMPQ3.WAV.
     VOC_TS_LIMPQ4,       // TS Limpet Drone select chirp (LIMPQ4). Bundled TSLIMPQ4.WAV.
     VOC_TS_LIMPC3,       // TS Limpet Drone move/attack chirp (LIMPC3). Bundled TSLIMPC3.WAV.
@@ -4423,7 +4303,7 @@ typedef enum VocType : short
     VOC_R2_VPRISTAB,  // Prism Tank engine start (vpristab). Bundled R2VPRISTAB.WAV.
     VOC_R2_VPRISTAC,  // Prism Tank engine start (vpristac). Bundled R2VPRISTAC.WAV.
     VOC_R2_VPRIATTA,  // Prism Tank beam (vpriatta). Bundled R2VPRIATTA.WAV.
-    VOC_TS_PLSECAN2,     // TS EMP Pulse Cannon firing the pulse ball (PLSECAN2, [EMPulseWeapon] Report=). Bundled TSPLSECAN2.WAV.
+    VOC_TS_PLSECAN2,     // TS EMP Cannon firing (PLSECAN2, [EMPulseWeapon] Report=). Bundled TSPLSECAN2.WAV.
     VOC_TS_FIRSTRM1,     // TS Firestorm burning (FIRSTRM1, the Report= of FSIDLE/FSGRND/FSAIR). Bundled TSFIRSTRM1.WAV.
     VOC_C3MSEA,    // Mammoth Mk. III select voice. Bundled C&C3 sample(s) as C3MSEA*.WAV.
     VOC_C3MSEB,    // Mammoth Mk. III select voice. Bundled C&C3 sample(s) as C3MSEB*.WAV.
@@ -4465,7 +4345,7 @@ typedef enum VocType : short
     VOC_C3PGUN,    // Predator cannon (random take). Bundled C&C3 sample(s) as C3PGUN*.WAV.
     VOC_TS_GATEDWN1, // TS gate lowering (GATEDWN1, [General] GateDown=). Bundled TSGATEDWN1.WAV.
     VOC_TS_GATEUP1,  // TS gate rising (GATEUP1, [General] GateUp=). Bundled TSGATEUP1.WAV.
-    VOC_TSLACHG2R,   // The Tesla Coil charge-up (TSLACHG2) reversed: the Tesla gate's arcs winding down. Bundled TSLACHG2R.WAV.
+    VOC_TSLACHG2R,   // The Tesla Coil charge-up (TSLACHG2) reversed: the Tesla gate's arcs winding down. TSLACHG2R.WAV.
 
     VOC_COUNT,
     VOC_FIRST = 0
@@ -4474,8 +4354,7 @@ typedef enum VocType : short
 /*
 **	EVA voices are specified by these identifiers.
 */
-// Tiberian Factions: backing type bumped char -> short so we can hold the
-// extra VOX_TD_* entries (TD EVA bulk port pushes the enum past 127).
+// TF: short, not char: the VOX_TD_* and VOX_TS_* entries take the enum past 127.
 typedef enum VoxType : short
 {
     VOX_NONE = -1,
@@ -4600,22 +4479,8 @@ typedef enum VoxType : short
     VOX_SAVE1,
     VOX_LOAD1,
 
-    // Tiberian Factions mod — TD EVA voices. Routing pattern (validated
-    // by pilot 2026-05-26): TD-prefixed engine name (e.g. "TDIONCHRG1") is
-    // sent via On_Speech; mod-side SFXEVENTSLOCALIZED.XML registers
-    // RAC_SFX_TD<NAME> / RAR_SFX_TD<NAME> -> TDC_SFX_EVA_<NAME>_EN-US.MP3 /
-    // TDR_SFX_EVA_<NAME>_EN-US.MP3 (existing assets in SFX2D_EN-US.MEG).
-    //
-    // The VOX_TD_* entries below are for TD-only events that have no RA
-    // semantic equivalent — they're invoked directly by TD-port code
-    // (e.g. TDEYE -> Speak(VOX_TD_ION_CHARGING)). Shared semantic events
-    // (CONSTRUCTION, UNIT_READY, etc.) keep their existing VOX_* slot
-    // and swap to TD via the SpeechTD[] side-conditional table in
-    // audio.cpp + dllinterface.cpp On_Speech dispatch.
-    //
-    // Per session 2026-05-26: GDI + Nod share TD EVA for now; structure
-    // leaves room for a separate Nod voice via a parallel SpeechNOD[]
-    // table when needed.
+    // TF: EVA lines with no RA counterpart, spoken directly by the TD and TS ports. Lines RA has swap to
+    // the TD or TS recording through SpeechTD[] and SpeechTS[] (audio.cpp).
     VOX_TD_DEAD_GDI,
     VOX_TD_DEAD_NOD,
     VOX_TD_DEAD_CIV,
