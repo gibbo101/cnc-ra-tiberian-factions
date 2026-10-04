@@ -6743,7 +6743,7 @@ void HouseClass::Recalc_Center(void)
         **	relates to the center of the base.
         */
         // TF: the radius is a plain mean over buildings; divided by the cost-weighted count it comes out too
-        // small for Which_Zone to admit build sites (docs/ai-placement-session-handover.md).
+        // small for Which_Zone to admit build sites (docs/ai-upgrade-plan.md).
         if (quantity > 1) {
             int radius = 0;
 

@@ -43,7 +43,7 @@ Field meanings and source:
                  our copy. TD-authentic refinery is 1000 but we stay with
                  RA values for parity with the rest of the mod's economy.)
   points       - TD-authentic RISK/RWRD value. MANDATORY or AI ignores the
-                 building (see docs/ai-targeting.md).
+                 building (see docs/td-building-separation-recipe.md).
   sight        - cell radius (TD-authentic; smaller than RA equivalents)
   adjacent     - allowed build-distance from existing base structures
   sensors      - True for buildings that act as radar (reveal terrain in fog
@@ -410,7 +410,7 @@ TDATWR = {
     "sensors":     None,
     "strength":    300,
     "armor":       "aluminum",
-    # TD-authentic TOW_TWO ported per docs/weapon-ports.md Phase W1. Single
+    # TD-authentic TOW_TWO. Single
     # missile slot, AA + AG capable via new BULLET_SSM bullet type. Replaces
     # the Hellfire/ZSU-23 dual-role interim.
     "primary":     "TDTowTwo",
@@ -421,7 +421,7 @@ TDATWR = {
     "repairable":  True,
     "bib":         False,
     "idle_anim":   None,
-    "notes":       "TD GDI Advanced Guard Tower. Logic=AGUN (anti-air gun donor). TD-authentic is dual-role anti-armor + anti-air (TurretGun + Nike). Interim: Primary=TeslaZap (ground) + Secondary inherits AGUN's ZSU-23 (AA) via Logic= alias. Weapon port is in weapon-ports.md.",
+    "notes":       "TD GDI Advanced Guard Tower. One TD TowTwo launcher (TDTowTwo) hits ground and air, as in TD.",
 }
 
 
@@ -536,7 +536,7 @@ TDGFACT = {
     "repairable":  True,
     "bib":         True,
     "idle_anim":   (0, 4, 3),
-    "notes":       "GDI Construction Yard — W2(b) faction split. Own pipeline art (TD FACT source), own type so the building carries the faction. See docs/w2b-conyard-split-postmortem.md section 5.",
+    "notes":       "GDI Construction Yard — W2(b) faction split. Own pipeline art (TD FACT source), own type so the building carries the faction. See docs/ai-upgrade-plan.md.",
 }
 
 

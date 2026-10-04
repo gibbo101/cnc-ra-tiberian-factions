@@ -7780,7 +7780,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
 #endif
 
         // TF: GDI and Nod build buildings in TD's time (cost less any unit that comes with them) and units at RA's
-        // base rate, both divided by factory count; the house bias, AI slowdown and power scaling below are skipped.
+        // base rate, divided by factory count, skipping the bias, AI slowdown and power scaling (docs/catalogue.md).
         if (hptr->ActLike == HOUSE_GOOD || hptr->ActLike == HOUSE_BAD) {
             int td_cost = Cost;
             if (What_Am_I() == RTTI_BUILDINGTYPE) {

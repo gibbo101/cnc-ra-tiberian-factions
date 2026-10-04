@@ -196,7 +196,7 @@ static VesselTypeClass const VesselTdMSub(VESSEL_TDMSUB,
 // the PT/DD. Fires TDTomahawk (a TD homing missile, BULLET_TDTOW + WARHEAD_TDAP) as its anti-surface/
 // anti-shore punch + a DepthCharge ASW secondary (the Allied Destroyer's anti-sub weapon, per Luke)
 // + Sensors so it detects/hunts Nod's cloaked subs. Art = TDBOAT (TD-Assets). Built from the
-// owner-opened Allied Shipyard. Donor ImageData = VESSEL_PT (NULL-guard). See docs/navy-4.0-design.md.
+// owner-opened Allied Shipyard. Donor ImageData = VESSEL_PT (NULL-guard). See docs/naval-and-air-units.md.
 static VesselTypeClass const VesselTdGunBoat(VESSEL_TDGUNBOAT,
                                              TXT_PT,      // Text name (placeholder -- HD name via rules.ini Name=).
                                              "TDBOAT",    // INI name (TD-prefixed; matches the TDBOAT tileset).
@@ -220,7 +220,7 @@ static VesselTypeClass const VesselTdGunBoat(VESSEL_TDGUNBOAT,
 // Tiberian Factions (v4.0) -- TD Hovercraft transport (VESSEL_TDLST), shared GDI+Nod amphibious
 // transport. Its OWN vessel type (NOT RA's LST reskinned), TD's UNIT_HOVER. Modeled on
 // VesselTransport (no turret, rotation 0 -- faces one way like the RA LST). Carries 5. Art = TDLST
-// (TD-Assets). Donor ImageData = VESSEL_TRANSPORT (NULL-guard). See docs/navy-4.0-design.md.
+// (TD-Assets). Donor ImageData = VESSEL_TRANSPORT (NULL-guard). See docs/naval-and-air-units.md.
 static VesselTypeClass const VesselTdLST(VESSEL_TDLST,
                                          TXT_TRANSPORT, // Text name (placeholder -- HD name via rules.ini Name=).
                                          "TDLST",       // INI name (TD-prefixed; matches the TDLST tileset).
@@ -242,7 +242,7 @@ static VesselTypeClass const VesselTdLST(VESSEL_TDLST,
 // damage -- "deadly but has to commit"). Temple-gated. No turret. Uses the RA MISSILE-SUB hull art
 // (TDOBLISUB.ZIP = a renamed copy of MSUB frames) -- the missile-pod deck reads as the armed laser
 // emitter (the obelisk-tip turret approach was dropped). The Obelisk laser fires from the pod area.
-// Donor ImageData = VESSEL_SS (NULL-guard fallback). See docs/navy-4.0-design.md.
+// Donor ImageData = VESSEL_SS (NULL-guard fallback). See docs/naval-and-air-units.md.
 static VesselTypeClass const VesselTdObeliskSub(VESSEL_TDOBLISUB,
                                                 TXT_SS,      // Text name (placeholder -- HD name via rules.ini Name=).
                                                 "TDOBLISUB", // INI name.
@@ -284,7 +284,7 @@ static VesselTypeClass const VesselTdNodSub(VESSEL_TDNSUB,
 // renders the native spinning turret (Draw_It draws MGUN/SSAM/TURR by name -- the turret art is a
 // global launcher resource, NOT part of the hull ZIP, so the clones get spinning turrets for free).
 // Own copied hull art (TDPT/TDDD/TDCA tilesets); donor ImageData = the RA original (NULL-guard).
-// All other params mirror the templated RA ship exactly. See docs/naval-art-3d-pipeline-handover.md.
+// All other params mirror the templated RA ship exactly. See docs/naval-and-air-units.md.
 
 // GDI Gunboat (clone of RA PT -- light, MGUN turret).
 static VesselTypeClass const VesselTdPT(VESSEL_TDPT,

@@ -427,7 +427,7 @@ static AircraftTypeClass const TdOrca(AIRCRAFT_TDORCA, // What kind of aircraft 
 // (a dedicated incendiary weapon, WARHEAD_TDFIRE + ANIM_NAPALM2) -- stats in rules.ini [TDA10].
 // Donor ImageData = AIRCRAFT_BADGER (the fixed-wing NULL-guard donor, mirrors TDCargoPlane); the
 // 96-frame TDA10 HD tileset (TD-Assets) is resolved by IniName "TDA10" via the launcher overlay,
-// Rotation=32 reading the standard TD-aircraft facings. See docs/air-additions-4.0-design.md.
+// Rotation=32 reading the standard TD-aircraft facings. See docs/naval-and-air-units.md.
 static AircraftTypeClass const TdA10(AIRCRAFT_TDA10,  // What kind of aircraft is this.
                                      TXT_YAK,         // Translated text (placeholder -- HD name via rules.ini Name=).
                                      "TDA10",         // INI name of aircraft (TD-prefixed; matches the TDA10 tileset).

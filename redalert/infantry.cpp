@@ -1388,7 +1388,7 @@ void InfantryClass::AI(void)
     }
 
     // TF: TD's Tiberium (TIB01; ore and gems stay harmless) poisons infantry every 50 frames, staggered by ID.
-    // One in a hundred it kills rises as a Visceroid of HOUSE_JP, created on demand and hostile to all.
+    // One in a hundred it kills rises as a Visceroid hostile to all (docs/tiberium-ecosystem.md).
     if (In_Which_Layer() == LAYER_GROUND && !IsInLimbo && *this != INFANTRY_TSGHOST
         && Map[Coord_Cell(Coord)].Overlay == OVERLAY_TIB01) {
         if (((Frame + ID) % 50) == 0) {

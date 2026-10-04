@@ -13,7 +13,7 @@ For a TD entity NAME (e.g. E1) and our IniName (e.g. TDE1):
   The ZIP and the cloned block land in the tree asset_packs assigns <ININAME>:
   the mod's own (RA_UNITS.XML) or an asset pack's (<PREFIX>_UNITS.XML).
   3. Wire the sidebar cameo via bundle_assets.patch_rabuildables_xml — the SAME
-     path the buildings use. Per docs/adding-td-buildings.md the <BuildIcon> just
+     path the buildings use. The <BuildIcon> just
      references a vanilla TD BuildIcon name already in the launcher PAK
      (e.g. BuildIcon_TD_Minigunner); nothing is shipped.
 

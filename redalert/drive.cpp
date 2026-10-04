@@ -2985,7 +2985,7 @@ DriveClass::TrackType const DriveClass::Track13[] = {{XYP_COORD(10, -21), (DirTy
 #endif
 
 // Track14: the TD war factory's south-west exit, a copy of the unused Track13 under #else above. RA's war factory
-// keeps EA's south Track13. See docs/adding-td-buildings.md.
+// keeps EA's south Track13. See docs/td-building-separation-recipe.md.
 DriveClass::TrackType const DriveClass::Track14[] = {
     {XYP_COORD(10, -21), (DirType)(DIR_SW - 10)}, {XYP_COORD(10, -21), (DirType)(DIR_SW - 10)},
     {XYP_COORD(10, -20), (DirType)(DIR_SW - 10)}, {XYP_COORD(10, -20), (DirType)(DIR_SW - 10)},
