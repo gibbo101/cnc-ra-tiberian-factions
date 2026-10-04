@@ -383,13 +383,8 @@ bool DriveClass::Teleport_To(CELL cell)
     Force_Track(-1, 0);
     PrimaryFacing.Set_Current(PrimaryFacing.Desired());
     Transmit_Message(RADIO_OVER_OUT);
-    /*
-    **	Attack-move (CFE port): end attack-move on teleport so the unit doesn't
-    **	drive back off to its prior destination. Unconditional for us -- the
-    **	chronotank attack-move path in TechnoClass::AI saves and restores the
-    **	state across the teleport when there's still queued movement (CFE used a
-    **	SkipNavQueueUpdate flag here instead, which we did not port).
-    */
+    // TF: teleporting ends attack-move, so the unit does not drive back to its old destination. A chronotank
+    // with movement still queued gets its attack-move back from TechnoClass::AI.
     ResetAttackMove();
     Assign_Destination(TARGET_NONE);
     Assign_Target(TARGET_NONE);
@@ -426,10 +421,6 @@ bool DriveClass::Teleport_To(CELL cell)
  *          coord -- The coordinate that the unit will end up at when the movement track       *
  *                   is completed.                                                             *
  *                                                                                             *
- *          index -- Waypoint to board the track at (default 0, the table start). Lets units   *
- *                   with different seats share one rail: the caller must place the unit ON    *
- *                   that waypoint's coordinate or playback starts with a visible snap.        *
- *                                                                                             *
  * OUTPUT:  none                                                                               *
  *                                                                                             *
  * WARNINGS:   none                                                                            *
@@ -437,6 +428,8 @@ bool DriveClass::Teleport_To(CELL cell)
  * HISTORY:                                                                                    *
  *   03/17/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
+// TF: index boards the track at that waypoint, so units on different seats can share one rail. The caller
+// places the unit on that waypoint's coordinate first.
 void DriveClass::Force_Track(int track, COORDINATE coord, int index)
 {
     assert(IsActive);
@@ -448,17 +441,8 @@ void DriveClass::Force_Track(int track, COORDINATE coord, int index)
     }
 }
 
-/***********************************************************************************************
- * DriveClass::Roll_Off_Seat -- Drives a seat-nudged unit back onto its cell centre.           *
- *                                                                                             *
- *    A unit parked (px_east, px_north) pixels off its cell centre is put on a short           *
- *    straight rail that ends exactly at the centre, keeping its current facing, so the        *
- *    hand-over to normal pathing happens from a true cell centre with no snap.                *
- *                                                                                             *
- * INPUT:   px_east, px_north -- the seat's pixel offset from the cell centre (the nudge).     *
- *                                                                                             *
- * OUTPUT:  bool; was a rail started? (false for a zero nudge -- nothing to roll off)          *
- *=============================================================================================*/
+// Puts a unit parked px_east, px_north pixels off its cell centre on a straight rail back to the centre, facing
+// held, so normal pathing takes over with no snap. False for a zero offset.
 bool DriveClass::Roll_Off_Seat(int px_east, int px_north)
 {
     assert(IsActive);
@@ -485,14 +469,8 @@ bool DriveClass::Roll_Off_Seat(int px_east, int px_north)
     return (true);
 }
 
-/***********************************************************************************************
- * DriveClass::Rail_To -- Straight runtime rail from the unit's current spot to a coordinate.  *
- *                                                                                             *
- *    Fills the ROLL_OFF_DOCK_SEAT table with a 1 px-per-waypoint line from where the unit     *
- *    stands to `dest`, holding `face`, and starts it. The war factory uses it to drive a       *
- *    vehicle from its door-mouth seat onto the exit cell with no recentring step. Given       *
- *    `from_face`, the facing turns evenly from it to `face` along the rail instead.           *
- *=============================================================================================*/
+// Puts the unit on a straight rail, 1 px per waypoint, from where it stands to dest, facing face. Given from_face,
+// the facing turns evenly from it to face along the rail. False when the unit already stands on dest.
 bool DriveClass::Rail_To(COORDINATE dest, DirType face, int from_face)
 {
     assert(IsActive);
@@ -518,12 +496,8 @@ bool DriveClass::Rail_To(COORDINATE dest, DirType face, int from_face)
     return (true);
 }
 
-/***********************************************************************************************
- * DriveClass::Roll_On_Seat -- Drives a unit from its cell centre out onto a seat.             *
- *                                                                                             *
- *    The mirror of Roll_Off_Seat: a short straight rail from the cell centre to a point       *
- *    (px_east, px_north) pixels off it, facing held, ending exactly on the seat.              *
- *=============================================================================================*/
+// The mirror of Roll_Off_Seat: a straight rail from the cell centre out to a seat px_east, px_north pixels off it,
+// facing held.
 bool DriveClass::Roll_On_Seat(int px_east, int px_north)
 {
     assert(IsActive);
@@ -731,17 +705,8 @@ void DriveClass::Assign_Destination(TARGET target)
 
     Path[0] = FACING_NONE; // Force recalculation of path.
 
-    /*
-    **	The immediate Start_Of_Move is an optimisation only — the mission AI
-    **	calls it every tick anyway. It must be DEPTH-CAPPED: Start_Of_Move runs
-    **	the give-way machinery, which Assign_Destination's OTHER units, which
-    **	re-enters here — and a packed knot of mutually-yielding vehicles (e.g.
-    **	a harvester queue jamming at a refinery) cycles that chain until the
-    **	stack overflows (two InstanceServer 0xC00000FD crashes, 2026-08-03,
-    **	both EIP in Can_Enter_Cell under Give_Way/Start_Of_Move recursion).
-    **	Past the cap the unit simply starts moving on its next tick.
-    **	Deterministic static — lockstep-safe.
-    */
+    // TF: depth-capped. Start_Of_Move can move other units, which re-enters here, and a jammed knot of vehicles
+    // would recurse until the stack overflows. Past the cap the unit starts moving on its next tick.
     static int _chain_depth = 0;
     if (!IsDriving && Mission != MISSION_UNLOAD && _chain_depth < 8) {
         _chain_depth++;
@@ -1046,23 +1011,8 @@ void DriveClass::Per_Cell_Process(PCPType why)
     FootClass::Per_Cell_Process(why);
 }
 
-/***********************************************************************************************
- * DriveClass::Find_Give_Way_Cell -- Nearest free cell to clear a head-on chokepoint deadlock. *
- *                                                                                             *
- *    Part of the v2.2.3 1-wide-bridge give-way fix. When two allied vehicles deadlock         *
- *    nose-to-nose on a chokepoint, the deterministic loser calls this to find a cell to       *
- *    divert to so the winner can pass. We only accept a genuinely FREE (MOVE_OK) cell that    *
- *    moves us AWAY from the oncoming unit -- this is what avoids the earlier reverted          *
- *    attempt's failure mode, where backing straight off the bridge rammed the unit into its   *
- *    own follower. If nothing free is found (we're boxed in), return 0 and the caller just     *
- *    holds and retries instead of churning.                                                   *
- *                                                                                             *
- * INPUT:   blocker -- the oncoming allied vehicle we are deadlocked against.                  *
- *                                                                                             *
- * OUTPUT:  A reachable free cell to divert to, or 0 if none.                                  *
- *                                                                                             *
- * WARNINGS:   Must stay deterministic (no Random_Pick) -- runs in the lockstep sim.           *
- *=============================================================================================*/
+// The nearest free cell, up to 3 cells out, that takes this vehicle further from the oncoming blocker; 0 when
+// boxed in. Runs in the lockstep sim, so no Random_Pick.
 CELL DriveClass::Find_Give_Way_Cell(TechnoClass const* blocker) const
 {
     if (blocker == NULL) {
@@ -1078,10 +1028,6 @@ CELL DriveClass::Find_Give_Way_Cell(TechnoClass const* blocker) const
 
     for (int radius = 1; radius <= GIVEWAY_MAX_RADIUS && best == 0; radius++) {
         for (FacingType face = FACING_N; face < FACING_COUNT; face++) {
-
-            /*
-            **	Walk 'radius' cells along this facing, bailing if we leave the map.
-            */
             CELL c = here;
             bool ok = true;
             for (int step = 0; step < radius; step++) {
@@ -1096,11 +1042,6 @@ CELL DriveClass::Find_Give_Way_Cell(TechnoClass const* blocker) const
                 continue;
             }
 
-            /*
-            **	Only a truly empty cell counts -- never divert onto a friendly (that is the
-            **	follower-ramming trap). And it must take us further from the oncoming unit so
-            **	we actually clear its path rather than sidestep into it.
-            */
             if (Can_Enter_Cell(c, face) != MOVE_OK) {
                 continue;
             }
@@ -1115,35 +1056,8 @@ CELL DriveClass::Find_Give_Way_Cell(TechnoClass const* blocker) const
     return (best);
 }
 
-/***********************************************************************************************
- * DriveClass::Give_Way_Decision -- How should this vehicle yield a 1-wide chokepoint?         *
- *                                                                                             *
- *    Heart of the v2.2.3 give-way fix. Looks ahead along the route to NavCom and finds the    *
- *    1-wide (terrain-pinched) corridor we are about to traverse, then decides via two layers: *
- *      1. RESERVATION (authoritative): when a vehicle commits to the corridor it stamps every  *
- *         corridor cell with its travel direction + the current Frame (CellClass::ChokeClaim*).*
- *         An oncoming vehicle that reads an ACTIVE claim in the opposing direction yields BEFORE*
- *         it enters -- corridor-wide, sticky ownership that the per-tick heuristic lacked, which*
- *         is what fixes near-simultaneous entry (both leads commit before either is the owner). *
- *         The claim ages out on its own ~TTL frames after the last unit clears (no refcount to  *
- *         miscount, no pointer to code/decode, all int -> lockstep-deterministic).             *
- *      2. LIVE-UNIT id tiebreak (pre-claim fallback): if no claim exists yet, a HIGHER-id      *
- *         oncoming allied vehicle makes the lower-id unit yield. Synced total order, so exactly *
- *         one side stamps first; the claim then reinforces the same winner.                     *
- *                                                                                             *
- *    The yield FORM depends on where we are, which is what the first (frozen-in-lane) cut got *
- *    wrong: holding only clears the winner's path if we are NOT in the winner's lane.         *
- *      - On wide ground (we have not entered the pinch): HOLD here -- waiting is harmless and  *
- *        keeps us (and the column behind us) off the bridge until the winner passes.          *
- *      - Already inside the pinch (we ARE blocking the winner): RETREAT -- back out toward our *
- *        own side so the lane frees; once we reach wide ground this flips to HOLD.             *
- *                                                                                             *
- * INPUT:   winner_out -- if non-NULL, receives the oncoming unit we are yielding to.          *
- *                                                                                             *
- * OUTPUT:  0 = proceed (no conflict), 1 = hold in place, 2 = retreat to clear the lane.       *
- *                                                                                             *
- * WARNINGS:   Must stay deterministic (no Random_Pick) -- runs in the lockstep sim.           *
- *=============================================================================================*/
+// Whether this vehicle yields a 1-wide corridor on its route: 0 proceed (and claim it), 1 hold, 2 step aside.
+// Runs in the lockstep sim, so no Random_Pick. See docs/chokepoint-reservation-design.md.
 int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
 {
     if (winner_out != NULL) {
@@ -1155,15 +1069,8 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
 
     CELL here = Coord_Cell(Center_Coord());
 
-    /*
-    **	Two distinct directions, and conflating them caused a retreat storm:
-    **	  - navcell/myface: where we are ACTUALLY heading right now (current NavCom). The corridor
-    **	    scan and narrow tests use this, so a unit mid-retreat scans toward its back-off cell and
-    **	    the retreat actually executes (instead of re-deciding "retreat" in place forever).
-    **	  - myintentface: the direction of our REAL queued order (NavQueue[0] while on a give-way
-    **	    detour). Only the opposing-direction test uses this, so a unit that has reversed to yield
-    **	    doesn't misread its own same-direction followers as oncoming traffic (the wedge bug).
-    */
+    // Scan toward NavCom but judge oncoming traffic by the queued order (my_intent). With one direction for both,
+    // a unit stepping aside reads its own followers as oncoming and the lane wedges.
     CELL navcell = As_Cell(NavCom);
     if (here == navcell) {
         return (0);
@@ -1171,36 +1078,18 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
     TARGET my_intent = Target_Legal(NavQueue[0]) ? NavQueue[0] : NavCom;
 
     const int SCAN_MAX = 28;         // scan far enough to read a claim ACROSS a long single-file lane
-    const int COMMIT_DIST = 18;      // claim the corridor from well out, so ANY owning-direction unit still
-                                     // on the lane keeps the lock alive -- the corridor stays locked to one
-                                     // direction until that WHOLE column has cleared, then hands over. This
-                                     // is the prevention that stops the other column butting in mid-column.
-    const int CHOKE_CLAIM_TTL = 75;  // claim stays active this many frames after its last assertion, so a
-                                     // lagging straggler does not drop the lock mid-column (it hands over a
-                                     // beat after the whole column clears, not between every spaced unit)
+    const int COMMIT_DIST = 18;      // a unit this many cells from the mouth starts claiming the corridor
+    const int CHOKE_CLAIM_TTL = 75;  // frames a claim stays active after its last stamp
     FacingType myface = Dir_Facing(::Direction(Cell_Coord(here), Cell_Coord(navcell)));
     FacingType myintentface = (my_intent != NavCom && Target_Legal(my_intent))
                                   ? Dir_Facing(::Direction(Cell_Coord(here), Cell_Coord(As_Cell(my_intent))))
                                   : myface;
 
-    /*
-    **	Are we ourselves standing in a 1-wide pinch right now? Decided up front because it drives
-    **	both the yield FORM (hold on open ground vs retreat from inside the lane) and whether a
-    **	rival merely poised at the far mouth can make us yield (it can't once we already own the
-    **	corridor by being inside it).
-    */
     CELL lh = Adjacent_Cell(here, (FacingType)((myface - 2) & 0x07));
     CELL rh = Adjacent_Cell(here, (FacingType)((myface + 2) & 0x07));
     bool here_narrow = (!Map.In_Radar(lh) || Can_Enter_Cell(lh) == MOVE_NO)
                        && (!Map.In_Radar(rh) || Can_Enter_Cell(rh) == MOVE_NO);
 
-    /*
-    **	Is an opposing-facing vehicle directly in the cell we are about to move into? This is the
-    **	"we are physically blocking the winner head-on" signal, used twice below: (a) the
-    **	both-leads-inside tiebreak, and (b) the yield FORM -- a unit that merely STOPS on the winner's
-    **	exit cell still blocks it, so when we are nose-to-nose with the winner we must STEP ASIDE
-    **	(retreat) to clear the lane, not just halt, even on open ground.
-    */
     CELL ahead_cell = Adjacent_Cell(here, myface);
     TechnoClass* front_unit = Map.In_Radar(ahead_cell) ? Map[ahead_cell].Cell_Techno() : NULL;
     bool head_on_ahead = false;
@@ -1215,12 +1104,6 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
         }
     }
 
-    /*
-    **	Walk the route ahead, find the 1-wide corridor we are about to traverse, and decide whether
-    **	an opposing column is laying claim to it -- crucially including rivals still on the FAR
-    **	APPROACH, so we stand down before either group reaches the bridge rather than nose-to-nose
-    **	on it. corridor_start is our distance to the near mouth; corridor_end is the far mouth.
-    */
     CELL c = here;
     int corridor_start = -1; // scan index where the narrow run begins (~ our distance to the near mouth)
     int corridor_end = -1;   // scan index of the first open cell after the narrow run (the far mouth)
@@ -1233,25 +1116,9 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
     FacingType corridor_faces[SCAN_MAX];  // the LOCAL step direction through each (handles a bent pinch)
     int corridor_count = 0;
 
-    /*
-    **	The claim direction is the TRAVERSAL direction THROUGH each pinch cell -- the local step we
-    **	take into it -- NOT the direction to our final destination. Those differ when the goal is off
-    **	the pinch axis: every unit funnelling through an N-S pinch toward a western goal has
-    **	intentface = west, so a uniform per-corridor "west" stamp would make two opposing columns
-    **	invisible to each other. Stamping the LOCAL step per cell is inherently the traversal direction
-    **	and also follows a bent corridor (a lake corner) where the flow direction changes along it.
-    */
-
     const int FAR_APPROACH = 6; // how far past the corridor to keep watching for a rival heading in
 
     for (int i = 0; i < SCAN_MAX; i++) {
-        /*
-        **	Follow the unit's ACTUAL planned path through the terrain when we have one, instead of a
-        **	straight line to the destination. A route to an off-axis goal (e.g. an inland spread
-        **	cell) often bends down a 1-wide corridor first; a straight-line scan walks diagonally
-        **	off the corridor and misses the pinch entirely. Past the end of the stored path we fall
-        **	back to the straight-line heading.
-        */
         FacingType f = (i < (int)ARRAY_SIZE(Path) && Path[i] != FACING_NONE)
                            ? Path[i]
                            : Dir_Facing(::Direction(Cell_Coord(c), Cell_Coord(navcell)));
@@ -1260,11 +1127,6 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
             break;
         }
 
-        /*
-        **	Narrow (terrain pinch) test: both cells perpendicular to travel are impassable terrain,
-        **	so two units can't pass abreast. Friendly occupancy reads MOVE_TEMP, not MOVE_NO, so
-        **	this keys on geography, not transient traffic.
-        */
         CELL lc = Adjacent_Cell(nc, (FacingType)((f - 2) & 0x07));
         CELL rc = Adjacent_Cell(nc, (FacingType)((f + 2) & 0x07));
         bool narrow = (!Map.In_Radar(lc) || Can_Enter_Cell(lc) == MOVE_NO)
@@ -1276,26 +1138,11 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
             corridor_end = i; // first open cell after the narrow run = far mouth
         }
 
-        /*
-        **	Chokepoint reservation (v2.2.3). Record each narrow cell so we can stamp our claim on the
-        **	whole corridor below, and -- crucially -- READ any existing claim here. An ACTIVE claim
-        **	(asserted within CHOKE_CLAIM_TTL frames) whose travel direction opposes ours (3-5 eighths
-        **	apart) means an oncoming column already owns the lane: we yield before we ever reach the
-        **	pinch. This is the atomic, corridor-wide, race-free ownership the per-tick live-unit
-        **	heuristic below cannot provide on near-simultaneous entry. A same-direction claim is our
-        **	own column and is ignored.
-        */
         if (narrow && corridor_count < SCAN_MAX) {
             corridor_cells[corridor_count] = nc;
             corridor_faces[corridor_count] = f; // local step direction through this pinch cell
             corridor_count++;
         }
-        /*
-        **	Read any claim on THIS cell -- the 1-wide pinch OR a reserved MOUTH cell just outside it
-        **	(stamped below). Reading the mouths is what makes an opposing column halt one cell back from
-        **	the entrance/exit instead of parking on it. Generic: a cell only carries a claim if it is a
-        **	pinch-or-mouth cell of some corridor.
-        */
         {
             CellClass const& ccell = Map[nc];
             int age = Frame - (int)ccell.ChokeClaimFrame;
@@ -1303,19 +1150,7 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
                 int cdiff = (f - (FacingType)ccell.ChokeClaimDir) & 0x07;
                 if (cdiff >= 3 && cdiff <= 5) {
                     if (here_narrow) {
-                        /*
-                        **	We are physically INSIDE the pinch and an opposing claim lies ahead. Default:
-                        **	the unit already in the lane has priority to EXIT, so push through (own_claim)
-                        **	and the opposing column -- still back at the mouth -- waits. This rescues a unit
-                        **	that nosed in before the claim went up.
-                        **
-                        **	EXCEPTION: if an opposing-facing vehicle is RIGHT IN FRONT of us, then both
-                        **	columns' LEADS are inside head-on and exactly one must give -- if both push,
-                        **	neither moves (the deadlock this exception fixes). Tiebreak by id (synced,
-                        **	total order): the HIGHER id pushes through, the LOWER id backs out one cell so
-                        **	the higher can pass, then re-enters. The cell behind the loser is normally free
-                        **	(its column funnels in from a wider mouth), so Find_Give_Way_Cell succeeds.
-                        */
+                        // Both leads head-on in the pinch: one must give or neither moves, so the lower id backs out.
                         if (head_on_ahead && As_Target() < front_unit->As_Target()) {
                             opposing_claim = true; // we lose the tiebreak -> back out so the higher id passes
                             yield_to = front_unit;
@@ -1333,26 +1168,13 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
                     }
                 }
                 if (cdiff <= 1 || cdiff == 7) {
-                    /*
-                    **	A SAME-direction claim (within 1 eighth): our own column already owns this lane.
-                    **	The claim is authoritative, so we PROCEED and must IGNORE the live-unit id-tiebreak
-                    **	below. Without this, interleaved id ranges (two groups built alternately, so a
-                    **	column's units do NOT share a contiguous id block) make the id-rule and the claim
-                    **	pick OPPOSITE winners -- the owning column's front units yield to the oncoming
-                    **	column by id while the oncoming column yields to the claim, and every unit holds =
-                    **	stalemate. Keep scanning (do not break) so the whole corridor is re-stamped below.
-                    */
+                    // Our own column's claim overrides the id tiebreak below: with interleaved ids the two pick
+                    // opposite winners and both columns hold forever.
                     own_claim = true;
                 }
             }
         }
 
-        /*
-        **	Is there an opposing allied vehicle here? "Opposing" = heading toward its own queued
-        **	destination roughly opposite ours (facing difference of 3-5 eighths, > 135 degrees). Skipped
-        **	entirely once we own an active claim on this corridor -- the claim is authoritative and the
-        **	id-tiebreak must not be allowed to contradict it (the interleaved-id stalemate).
-        */
         TechnoClass* t = own_claim ? NULL : Map[nc].Cell_Techno();
         if (t != NULL && t != this && t->What_Am_I() == RTTI_UNIT && House->Is_Ally(t)) {
             FootClass const* ft = (FootClass const*)t;
@@ -1362,27 +1184,11 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
                 int diff = (myintentface - tf) & 0x07;
                 bool opposing = (diff >= 3 && diff <= 5);
                 if (opposing && narrow) {
-                    /*
-                    **	A rival is INSIDE the corridor. We yield. When we are also inside (a head-on
-                    **	in the pinch) this means BOTH sides back out -- which proved more robust than
-                    **	"only the lower id backs out": both columns reverse together and separate,
-                    **	whereas one-sided yielding just wedges a boxed-in loser while the winner shoves.
-                    */
                     yield = true;
                     yield_to = t;
                     break;
                 }
                 if (opposing && corridor_end >= 0) {
-                    /*
-                    **	A rival is on the FAR approach, heading for the same corridor from the other
-                    **	side, and nobody is inside yet. The lower id stands down so the other side
-                    **	claims it. Id is used here ON PURPOSE rather than "who's closer": a distance
-                    **	test flaps every tick as the columns jostle (a unit yields, edges forward,
-                    **	thinks it's now closer, re-clashes, yields again -- the advance/backtrack
-                    **	churn). Ids don't change, so the owner is STABLE; and because each group's
-                    **	units share a contiguous id range, a whole column yields together. Once a
-                    **	leader actually enters, the occupancy rule above takes over.
-                    */
                     if (As_Target() < t->As_Target()) {
                         yield = true;
                         yield_to = t;
@@ -1398,18 +1204,7 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
         c = nc;
     }
 
-    /*
-    **	An ACTIVE opposing claim is authoritative -- an oncoming column owns the lane, so yield. The
-    **	live-unit test above (occupancy + stable-id tiebreak) remains as the pre-claim fallback for
-    **	the brief approach window before anyone has stamped, and for the already-working
-    **	one-column-enters-first case. Either way the FORM is the same.
-    */
     if (opposing_claim || (yield && !own_claim)) {
-        /*
-        **	If we are nose-to-nose with the winner (head_on_ahead) we are sitting on the cell it must
-        **	move into, so a plain HOLD would keep blocking it. Hand Find_Give_Way_Cell that unit so we
-        **	step aside instead. Fall back to the claim/live owner otherwise.
-        */
         if (head_on_ahead && front_unit != NULL) {
             yield_to = front_unit;
         }
@@ -1442,26 +1237,9 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
             }
         }
 #endif
-        /*
-        **	HOLD STILL while waiting: a unit yielding to a claim that is NOT physically blocking the
-        **	lane just stops and waits its turn -- no shuffling. Only STEP ASIDE (retreat) when we are
-        **	actually in the way: inside the pinch (here_narrow) or nose-to-nose with the winner
-        **	(head_on_ahead), where a plain stop would keep blocking it. Prevention (claim the whole
-        **	lane from well out) is what keeps the losing column from ever entering and getting boxed,
-        **	so the heavy whole-column cascade is no longer needed for the common case.
-        */
         return ((here_narrow || head_on_ahead) ? 2 : 1);
     }
 
-    /*
-    **	General head-on backstop (covers what the corridor reservation does not): if we are nose-to-
-    **	nose with an opposing-facing ally on OPEN ground -- the approach-funnel collision where a unit
-    **	EXITING the pinch meets one ENTERING, or any two units wanting the same cell head-on -- the
-    **	corridor logic never engages (neither is in a 1-wide cell), so without this both just ram and
-    **	MOVE_NO-lock. The lower id steps aside so the higher proceeds; strict id compare => exactly one
-    **	gives, no mutual jitter. Corridor OWNERS (own_claim) are exempt -- they hold their lane and the
-    **	opponent is the one that gives.
-    */
     if (head_on_ahead && !own_claim && front_unit != NULL && As_Target() < front_unit->As_Target()) {
         if (winner_out != NULL) {
             *winner_out = front_unit;
@@ -1495,20 +1273,8 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
         return (2); // step aside so the higher-id unit can pass, then resume our route
     }
 
-    /*
-    **	No conflict: commit. Stamp our travel direction onto every corridor cell (Frame-tagged) so an
-    **	oncoming column reads the claim and yields before it enters. Gated on COMMIT_DIST so a unit
-    **	still far from the mouth does not lock a corridor it will not reach for a while; a unit already
-    **	inside (here_narrow) always re-asserts, since it owns the lane it is traversing. Writing to the
-    **	global Map from this const method is fine -- it is shared deterministic cell state, not *this.
-    **
-    **	CROSSING GATE (v2.2.3 fix): only (re)stamp when we have actually moved into a NEW cell since our
-    **	last stamp. Start_Of_Move is called every tick while a unit is trying to advance, so a unit that
-    **	is STALLED (no path, blocked, waiting on dest contention) used to re-assert its claim every tick,
-    **	keeping it alive forever -- CHOKE_CLAIM_TTL never expired and the whole column behind it locked up
-    **	permanently. By stamping only on a real cell-crossing, a moving column keeps the lane locked (it
-    **	crosses cells well within the TTL) while a HALTED unit's claim ages out and the queue recovers.
-    */
+    // Stamp only on entering a new cell: a stalled unit re-stamping every tick keeps its claim alive forever and
+    // locks the column behind it.
     if (corridor_count > 0
         && here != LastClaimCell
         && (here_narrow || own_claim || (corridor_start >= 0 && corridor_start <= COMMIT_DIST))) {
@@ -1517,13 +1283,6 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
             Map[corridor_cells[k]].ChokeClaimFrame = (unsigned int)Frame;
             Map[corridor_cells[k]].ChokeClaimDir = (unsigned char)corridor_faces[k];
         }
-        /*
-        **	Also reserve the two MOUTH cells -- one cell before the entrance, one after the exit --
-        **	derived generically from the ends of whatever narrow run we found (any length, any shape).
-        **	Stamped with the flow direction at that end, so an opposing column reads the mouth and halts
-        **	a cell back rather than parking ON the entrance/exit and blocking it (the lead-on-the-mouth
-        **	jam). The reading loop above now consults every scanned cell, so these are honoured.
-        */
         CELL near_mouth = Adjacent_Cell(corridor_cells[0], (FacingType)((corridor_faces[0] + 4) & 0x07));
         if (Map.In_Radar(near_mouth)) {
             Map[near_mouth].ChokeClaimFrame = (unsigned int)Frame;
@@ -1564,38 +1323,8 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
     return (0);
 }
 
-/***********************************************************************************************
- * DriveClass::Infantry_Give_Way -- Make an idle foot soldier yield to us in a 1-wide pinch.   *
- *                                                                                             *
- *    The whole give-way / chokepoint-reservation system is DriveClass-only -- infantry are     *
- *    never party to it. That is fine on open ground (foot soldiers stack five-per-cell and a    *
- *    vehicle simply paths around them) but it breaks on a 1-wide terrain corridor: a single     *
- *    idle friendly infantryman standing in the pinch is a PERMANENT rock. The vehicle cannot    *
- *    pass (one cell wide, no go-around), the man never yields on his own, and vanilla's only    *
- *    response -- a polite Incoming() nudge -- is ignored by a guarding soldier or has nowhere    *
- *    to send him. Harvesters are the visible victims (unarmed, so they can't shoot their way     *
- *    out, and constant mine->refinery traffic hits every corridor) but ANY vehicle wedges.       *
- *    Confirmed live: a teal rifleman froze a column of teal harvesters until the man happened    *
- *    to be killed in combat.                                                                    *
- *                                                                                             *
- *    Fix: before we even consult the vehicle give-way decision (which would otherwise just      *
- *    HOLD us behind the man forever), if the next cell toward our goal is a geographic 1-wide    *
- *    pinch AND a friendly infantryman is standing in it, force-scatter him clear. The threat     *
- *    coord we pass is our OWN position, so Scatter biases him AWAY from us -- i.e. onward down    *
- *    the corridor toward its far mouth, where he spills out onto open ground. forced+nokidding    *
- *    moves only genuinely idle infantry (a man mid-move or mid-uninterruptible-action is left     *
- *    alone). Infantry never need to yield to each other (sub-cell stacking), so this is purely    *
- *    infantry-yields-to-vehicle. Lockstep-safe: synced Scatter, deterministic cell math.        *
- *                                                                                             *
- * INPUT:   none                                                                                *
- *                                                                                             *
- * OUTPUT:  bool; true if a friendly infantryman was shoved this tick.                          *
- *                                                                                             *
- * WARNINGS:   Gated on a geographic pinch so open-ground infantry are never disturbed.         *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   06/16/2026 : Created (Luke's "add infantry to the give-way on 1-wide corridors").          *
- *=============================================================================================*/
+// Moves friendly infantry out of the 1-wide pinch ahead of this vehicle (1), or, from the mouth, reports a friendly
+// column on foot crossing it so the vehicle waits (2). 0 when there is nothing to do.
 int DriveClass::Infantry_Give_Way(void)
 {
     if (!Target_Legal(NavCom)) {
@@ -1604,23 +1333,12 @@ int DriveClass::Infantry_Give_Way(void)
 
     CELL here = Coord_Cell(Center_Coord());
 
-    /*
-    **	Aim at the cell we are actually trying to step into: the planned path step when we have one,
-    **	else the straight-line heading to the goal. Path[0] follows a bent corridor correctly where a
-    **	straight line would walk off it.
-    */
     FacingType navface = (Path[0] != FACING_NONE) ? Path[0] : Dir_Facing(Direction(NavCom));
     CELL ahead = Adjacent_Cell(here, navface);
     if (!Map.In_Radar(ahead)) {
         return (0);
     }
 
-    /*
-    **	Geographic 1-wide test (same key as Give_Way_Decision): both cells perpendicular to travel are
-    **	impassable TERRAIN. Friendly occupancy reads MOVE_TEMP not MOVE_NO, so this keys on the map
-    **	shape, not on transient traffic -- we only ever shove a man where there is genuinely no room to
-    **	go around him.
-    */
     CELL lc = Adjacent_Cell(ahead, (FacingType)((navface - 2) & 0x07));
     CELL rc = Adjacent_Cell(ahead, (FacingType)((navface + 2) & 0x07));
     bool narrow = (!Map.In_Radar(lc) || Can_Enter_Cell(lc) == MOVE_NO)
@@ -1631,14 +1349,6 @@ int DriveClass::Infantry_Give_Way(void)
 
     const int CORRIDOR_SCAN_MAX = 8;
 
-    /*
-    **	ONE GROUP AT A TIME (reservation). Are WE already inside the pinch? If both cells perpendicular
-    **	to our travel at our OWN cell are impassable terrain, we are in the corridor and we own the lane
-    **	-- we push whatever is ahead. If we are still on open ground at the MOUTH, a friendly infantry
-    **	column already walking through the corridor owns it: butting in and scattering them is the
-    **	scramble-then-lock we saw, so instead WAIT at the mouth until the moving men have cleared, then
-    **	go. (Idle men squatting in the pinch are NOT "using" it -- they fall through to the push below.)
-    */
     CELL lh = Adjacent_Cell(here, (FacingType)((navface - 2) & 0x07));
     CELL rh = Adjacent_Cell(here, (FacingType)((navface + 2) & 0x07));
     bool here_narrow = (!Map.In_Radar(lh) || Can_Enter_Cell(lh) == MOVE_NO)
@@ -1667,11 +1377,6 @@ int DriveClass::Infantry_Give_Way(void)
         }
     }
 
-    /*
-    **	Drain the WHOLE corridor (not just the cell against our nose) by shoving every idle friendly
-    **	infantryman along the pinch ahead. The shared Drain_Infantry_Along core does the work; in
-    **	corridor mode it stops one cell past the far mouth so the column spills out single-file.
-    */
     bool shoved = Drain_Infantry_Along(here, navface, CORRIDOR_SCAN_MAX, true);
 
 #if TF_DEV_BUILD
@@ -1703,29 +1408,8 @@ int DriveClass::Infantry_Give_Way(void)
     return (shoved ? 1 : 0);
 }
 
-/***********************************************************************************************
- * DriveClass::Drain_Infantry_Along -- shove idle friendly infantry out of our way along a line.*
- *                                                                                             *
- *    The shared core of two anti-pin behaviours: the corridor give-way (Infantry_Give_Way)     *
- *    and the harvester anti-pin scatter (UnitClass::AI). It walks up to `maxcells` cells from   *
- *    `start` along `navface` and, in every cell, force-steps each idle friendly infantryman one  *
- *    cell into the FORWARD ARC away from us (straight-away or a forward diagonal, first open      *
- *    cell). A packed column drains front-first: only the man with a free cell ahead moves, the    *
- *    rest shuffle down over successive ticks. Re-issuing the order each tick can't thrash --      *
- *    we leave a man already walking away (IsDriving toward away-from-us) alone, and skip a man     *
- *    whose destination is already the chosen cell. forced+nokidding semantics: tethered or        *
- *    mid-uninterruptible men are never touched.                                                  *
- *                                                                                             *
- *    corridor_only=true  : 1-wide-pinch behaviour -- stop one cell past the far mouth (where the  *
- *                          lane opens out), so we never disturb open-ground infantry beyond it.   *
- *    corridor_only=false : open-field behaviour -- scan the full span regardless of terrain (used  *
- *                          by the pinned harvester, where the blockers sit on open ground).        *
- *                                                                                             *
- * INPUT:   start cell, heading, cell cap, corridor-vs-open mode.                                *
- * OUTPUT:  bool; true if any man was shoved this tick.                                          *
- * WARNINGS: Lockstep-safe -- synced Assign_Destination, deterministic cell math, no RNG.        *
- * HISTORY:  06/18/2026 : Extracted from Infantry_Give_Way for the harvester anti-pin reuse.     *
- *=============================================================================================*/
+// Orders each untethered friendly infantryman in the next maxcells cells along navface one cell further from
+// this vehicle, unless he is already walking away. corridor_only stops at the pinch's first open cell.
 bool DriveClass::Drain_Infantry_Along(CELL start, FacingType navface, int maxcells, bool corridor_only)
 {
     bool shoved = false;
@@ -1745,11 +1429,6 @@ bool DriveClass::Drain_Infantry_Along(CELL start, FacingType navface, int maxcel
                     CELL mcell = Coord_Cell(man->Center_Coord());
                     FacingType awayface = Dir_Facing(::Direction(Center_Coord(), man->Center_Coord()));
 
-                    /*
-                    **	Leave a man already clearing on his own (walking within an eighth of straight-away
-                    **	from us) alone rather than clip his journey to one-cell hops; push idle men and men
-                    **	walking INTO us (the dominant freeze).
-                    */
                     bool already_clearing = false;
                     if (man->IsDriving && Target_Legal(man->NavCom)) {
                         FacingType movedir = Dir_Facing(::Direction(man->Center_Coord(), As_Coord(man->NavCom)));
@@ -1757,12 +1436,6 @@ bool DriveClass::Drain_Infantry_Along(CELL start, FacingType navface, int maxcel
                         already_clearing = (d <= 1 || d == 7);
                     }
 
-                    /*
-                    **	Forward arc -- straight away, then the two forward diagonals -- first open cell. In a
-                    **	1-wide pinch the diagonals are walls (strict single-file); in the open the men fan out
-                    **	sideways and clear. Never a cell behind us. Re-issue only when his destination isn't
-                    **	already the chosen cell (no jitter).
-                    */
                     if (!already_clearing) {
                         static const int fwd_arc[3] = {0, 1, -1}; // straight, then the two forward diagonals
                         for (int k = 0; k < 3; k++) {
@@ -1784,11 +1457,6 @@ bool DriveClass::Drain_Infantry_Along(CELL start, FacingType navface, int maxcel
             occ = nextocc;
         }
 
-        /*
-        **	Corridor mode: stop once this cell is open ground (the mouth) -- we've just scattered the
-        **	lead man out of it, and beyond the pinch the man can dodge sideways on his own. Open-field
-        **	mode scans the full span (the blockers are on open ground, no mouth to stop at).
-        */
         if (corridor_only) {
             CELL lc2 = Adjacent_Cell(nc, (FacingType)((navface - 2) & 0x07));
             CELL rc2 = Adjacent_Cell(nc, (FacingType)((navface + 2) & 0x07));
@@ -1804,38 +1472,8 @@ bool DriveClass::Drain_Infantry_Along(CELL start, FacingType navface, int maxcel
     return (shoved);
 }
 
-/***********************************************************************************************
- * DriveClass::Try_Deadlock_Scatter -- Backstop scatter to break a symmetric wedge.            *
- *                                                                                             *
- *    Patient-waiting is correct for a unit queued behind a pinch that WILL clear -- but a      *
- *    SYMMETRIC deadlock the give-way resolver never matched (a clump packed at a base, a       *
- *    stationary friendly parked on our only path, two vehicles nose-to-nose that both just     *
- *    "wait") would wait FOREVER: nobody breaks the symmetry. The head-on log proves it         *
- *    (~25k MOVE_NO blocks vs ~36 resolver hits). This is the shared backstop, called from      *
- *    BOTH the no-path patient branch (Basic_Path failed) AND the execution-blocked head-on     *
- *    branch (Basic_Path succeeded but the next cell holds a friendly vehicle) -- the latter    *
- *    being the COMMON nose-to-nose case the breaker was previously blind to.                   *
- *                                                                                             *
- *    Each call counts one blocked retry cycle (StuckFrames). Once we have been wedged for      *
- *    STUCK_SCATTER_TRIES straight cycles it either SHOVES a friendly idle infantryman off our  *
- *    path-ahead (give-way is DriveClass-only, so infantry never yield on their own) or, lacking *
- *    that, force-scatters OURSELVES into a free adjacent cell and auto-resumes the original     *
- *    order via the nav queue. The neighbour scan is rotated by our unit id so two units boxed   *
- *    against each other pick DIFFERENT escape directions -- that asymmetry is what unwedges the *
- *    clump, with no RNG (lockstep-safe). StuckFrames resets to 0 the instant we advance a cell  *
- *    (the cando == MOVE_OK commit point in Start_Of_Move), so a flowing or genuinely-clearing   *
- *    queue never reaches the threshold.                                                        *
- *                                                                                             *
- * INPUT:   none (operates on this unit's state)                                                *
- *                                                                                             *
- * OUTPUT:  bool; true if a break action was taken (caller should halt this tick and re-path    *
- *                next cycle), false if still patiently waiting (caller continues as normal).    *
- *                                                                                             *
- * WARNINGS:   Lockstep-critical -- per-unit integer state and synced Scatter only, no RNG.     *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   06/16/2026 : Extracted from Start_Of_Move so both blocked branches share one backstop.     *
- *=============================================================================================*/
+// Counts one blocked cycle. After STUCK_SCATTER_TRIES in a row it scatters friendly infantry from the cell toward
+// NavCom, or else steps this vehicle to a free neighbour picked by its id; true when it acted. No Random_Pick.
 bool DriveClass::Try_Deadlock_Scatter(void)
 {
     const int STUCK_SCATTER_TRIES = 8;
@@ -1849,16 +1487,6 @@ bool DriveClass::Try_Deadlock_Scatter(void)
 
     CELL hc = Coord_Cell(Center_Coord());
 
-    /*
-    **	Infantry never yield to a blocked vehicle on their own: the give-way and head-on resolvers
-    **	are all DriveClass (RTTI_UNIT), so an idle foot soldier parked on our route just sits there
-    **	forever (the man-blocks-harvester / APC-blocked-by-E1 cases we observed). If the cell toward
-    **	our goal holds a friendly infantryman, SHOVE it aside -- a forced + nokidding Scatter, which
-    **	is deterministic (synced RNG) / lockstep-safe and only moves genuinely idle infantry (driving
-    **	and mid-uninterruptible-action soldiers are left alone). Then stay patient one cycle and
-    **	re-path the instant it clears, rather than scattering OURSELVES around a man we can simply
-    **	ask to step aside.
-    */
     FacingType navface = Dir_Facing(Direction(NavCom));
     CELL navcell = Adjacent_Cell(hc, navface);
     bool shoved = false;
@@ -1978,51 +1606,20 @@ bool DriveClass::Start_Of_Move(void)
         return (false); // Why is it calling this routine!?!
     }
 
-    /*
-    **	Give-way re-entrancy guard: the RETREAT branch below assigns a fallback destination, and
-    **	DriveClass::Assign_Destination re-enters Start_Of_Move for a stationary unit. Inside a
-    **	fully jammed pinch the nested evaluation can decide RETREAT again, and again -- unbounded
-    **	mutual recursion (observed at ~1,500 frames deep before EXCEPTION_STACK_OVERFLOW). While a
-    **	retreat assignment is on the call stack, the nested pass skips give-way evaluation and goes
-    **	straight to pathing toward the retreat cell -- which is the whole point of the retreat.
-    **	Give-way is stateless and re-decided every tick, so one skipped evaluation costs nothing.
-    **	Call-stack-scoped and the sim is single-threaded, so this is lockstep- and savegame-inert.
-    */
+    // TF: give-way in 1-wide corridors (docs/chokepoint-reservation-design.md). A retreat re-enters here through
+    // Assign_Destination; the nested pass skips give-way, or a jammed pinch recurses until the stack overflows.
     static int giveway_retreat_depth = 0;
 
-    /*
-    **	Infantry give-way (v2.2.3): clear a friendly idle foot soldier out of a 1-wide corridor cell
-    **	ahead of us, OR -- if a friendly infantry column is already traversing the pinch and we are
-    **	still at the mouth -- WAIT for them rather than butting in and scattering them (return 2). Done
-    **	FIRST, before the vehicle give-way decision below, which would otherwise HOLD us behind an idle
-    **	man indefinitely (he is invisible to the claim system, so that hold never releases).
-    */
     if (giveway_retreat_depth == 0 && Infantry_Give_Way() == 2) {
         Stop_Driver();
         return (false); // hold at the mouth; the moving column owns the corridor
     }
 
-    /*
-    **	Give-way (v2.2.3): if a higher-id allied vehicle is coming the other way through a 1-wide
-    **	stretch ahead, the lower-id unit yields until the whole oncoming column has passed, then
-    **	advances in one clean run. Stateless and re-checked each tick, so no ping-pong and no
-    **	savegame growth. HOLD if we are still on open ground (stay off the bridge); RETREAT if we
-    **	are already inside the pinch and blocking the winner's lane (back out to free it -- once
-    **	on open ground the decision flips to HOLD and we wait there).
-    */
     if (Target_Legal(NavCom) && giveway_retreat_depth == 0) {
         TechnoClass* gw_winner = NULL;
         int gw = Give_Way_Decision(&gw_winner);
         if (gw == 1) {
-            /*
-            **	OPEN-GROUND hold. Correct as a brief yield, but never defer FOREVER to a blocker that
-            **	never clears (a stalled/idle unit we keep standing down for in the open -- the harvester
-            **	frozen for 1000+ frames at the map edge). After HOLD_TIMEOUT straight open-ground holds,
-            **	stop yielding and fall through to normal pathing, which routes AROUND it (open ground has
-            **	room). Corridor holds (gw==2) are EXEMPT -- the pinch reservation must keep its turn.
-            **	HoldFrames resets the instant we are not open-ground-holding (the else branches + the
-            **	cell-advance commit), so a normal short yield never trips it.
-            */
+            // A hold gives up after HOLD_TIMEOUT calls in a row and paths around: a stalled blocker never clears.
             const int HOLD_TIMEOUT = 60;
             if (HoldFrames < 0xFFFF) {
                 HoldFrames++;
@@ -2031,7 +1628,6 @@ bool DriveClass::Start_Of_Move(void)
                 Stop_Driver();
                 return (false);
             }
-            // timed out: stop deferring, fall through and try to path past/around the stuck blocker
         } else {
             HoldFrames = 0;
         }
@@ -2110,12 +1706,8 @@ bool DriveClass::Start_Of_Move(void)
 
         if (!Basic_Path()) {
 
-            /*
-            **	No-progress bookkeeping (TF) -- exactly one update per failure; verdict
-            **	consumed by the patient-queue override further down. 60s window: vehicle
-            **	patience at a busy pinch is deliberate, and a genuinely queued column
-            **	advances a cell (resetting the window) well inside a minute.
-            */
+            // TF: one no-progress update per path failure, read by the patient queue below. Then the lower-id vehicle
+            // of a head-on pair steps aside to a free cell so the other passes, and resumes its order.
             bool tf_no_progress = TF_Path_No_Progress(TICKS_PER_MINUTE);
 
 #if TF_DEV_BUILD
@@ -2175,19 +1767,6 @@ bool DriveClass::Start_Of_Move(void)
             }
 #endif
 
-            /*
-            **	Give-way (v2.2.3): break a 1-wide head-on deadlock. Basic_Path just failed. If the
-            **	cell toward our destination is held by an ONCOMING allied vehicle (the head-on
-            **	MOVE_NO case in UnitClass::Can_Enter_Cell), the deterministic loser -- the unit with
-            **	the lower As_Target() id, which is synced so exactly one side yields and it's
-            **	lockstep-safe -- diverts to a free cell to let the winner pass, then auto-resumes its
-            **	original order via the nav queue. The winner does NOT move; it keeps retrying below
-            **	and flows through the instant the loser clears. Requiring a MOVE_OK divert cell (see
-            **	Find_Give_Way_Cell) is what keeps this from repeating the reverted back-off attempt
-            **	that rammed units into their own followers: a boxed-in loser finds nothing here and
-            **	falls through to hold/retry. Vehicles only (this is DriveClass; infantry stack
-            **	sub-cell and don't deadlock).
-            */
             if (Target_Legal(NavCom)) {
                 FacingType navface = Dir_Facing(Direction(NavCom));
                 CELL aheadcell = Adjacent_Cell(Coord_Cell(Center_Coord()), navface);
@@ -2195,12 +1774,7 @@ bool DriveClass::Start_Of_Move(void)
                     TechnoClass* blocker = Map[aheadcell].Cell_Techno();
                     if (blocker != NULL && blocker->What_Am_I() == RTTI_UNIT && House->Is_Ally(blocker)
                         && As_Target() < blocker->As_Target()) {
-                        /*
-                        **	Only give way to genuinely OPPOSING traffic, never a same-direction
-                        **	follower -- judged by each unit's queued destination, not its momentary
-                        **	heading. Same guard as Give_Way_Decision; without it a yielding unit can
-                        **	hand the lane to the unit queued right behind it and wedge the bridge.
-                        */
+                        // Opposing traffic only, by queued order: yielding to a follower wedges the lane.
                         FootClass const* bf = (FootClass const*)blocker;
                         TARGET my_intent = Target_Legal(NavQueue[0]) ? NavQueue[0] : NavCom;
                         TARGET b_intent = Target_Legal(bf->NavQueue[0]) ? bf->NavQueue[0] : bf->NavCom;
@@ -2299,25 +1873,10 @@ bool DriveClass::Start_Of_Move(void)
                 if (TryTryAgain > 0) {
                     TryTryAgain--;
                 } else {
-                    /*
-                    **	Patient queue (v2.2.3): before abandoning the move, check WHY the path failed.
-                    **	If our route ahead is blocked only by TEMPORARY traffic -- a stopped friendly
-                    **	(MOVE_TEMP, which the scatter poke above is already nudging) or oncoming allied
-                    **	traffic at a chokepoint (MOVE_NO held by an ally) -- the lane WILL clear, so we
-                    **	stay patient and keep retrying instead of giving up. Giving up here is the
-                    **	"unit drives off to a cliff-trace detour / scolds and stops" behaviour: a unit
-                    **	queued behind a busy 1-wide pinch should just wait its turn. Only a genuinely
-                    **	path-less block (permanent terrain, no traffic to explain it) still abandons.
-                    */
+                    // TF: a path blocked only by allied traffic or an active corridor claim keeps retrying instead of
+                    // abandoning, until a minute without progress (docs/path-failure-livelock-design.md).
                     bool traffic_blocked = false;
                     {
-                        /*
-                        **	Scan all 8 neighbours, not just the cell toward the goal: for an off-axis
-                        **	destination the toward-goal cell can be terrain (the lake) while the real
-                        **	obstacle -- a busy/claimed pinch -- is off to the side. We stay patient if any
-                        **	neighbour carries an ACTIVE chokepoint claim (we are queued behind a pinch that
-                        **	WILL clear) or holds a stopped friendly (MOVE_TEMP) / oncoming allied traffic.
-                        */
                         CELL hc = Coord_Cell(Center_Coord());
                         for (FacingType nf = FACING_N; nf < FACING_COUNT && !traffic_blocked; nf++) {
                             CELL ncell = Adjacent_Cell(hc, nf);
@@ -2342,16 +1901,6 @@ bool DriveClass::Start_Of_Move(void)
                             }
                         }
                     }
-                    /*
-                    **	No-progress override (Tiberian Factions). The patient queue below assumes
-                    **	traffic always clears, but a permanently boxed unit -- walled-off destination,
-                    **	or a jam with allies on every neighbour -- satisfies the traffic test on every
-                    **	cycle, so its patience resets forever and the abandon branch is unreachable.
-                    **	A full minute failing from the SAME cell is not a queue: a genuinely queued
-                    **	column advances a cell every so often, which restarts the window (as does a
-                    **	deadlock-breaker scatter). Trip = fall through to the engine's own abandon
-                    **	branch, scan-limit handling included.
-                    */
 #if TF_DEV_BUILD
                     if (tf_no_progress && traffic_blocked) {
                         static FILE* tf_noprog_log = NULL;
@@ -2379,12 +1928,6 @@ bool DriveClass::Start_Of_Move(void)
                     if (traffic_blocked && !tf_no_progress) {
                         TryTryAgain = PATH_RETRY; // wait its turn at the pinch; do not abandon
 
-                        /*
-                        **	Deadlock-breaker (v2.2.3). This is the NO-PATH wedge: Basic_Path failed and we
-                        **	are queued behind a pinch. Count the blocked cycle and let the shared backstop
-                        **	decide whether to scatter (see Try_Deadlock_Scatter for the full rationale). If
-                        **	it acts, halt this tick and re-path next cycle.
-                        */
                         if (Try_Deadlock_Scatter()) {
                             return (false);
                         }
@@ -2531,21 +2074,8 @@ bool DriveClass::Start_Of_Move(void)
 
         if (cando != MOVE_OK) {
 
-            /*
-            **	Deadlock-breaker, EXECUTION-BLOCKED head-on branch (v2.2.3). This is the common
-            **	nose-to-nose case the no-path breaker above is blind to: Basic_Path SUCCEEDED (so we
-            **	never reached the patient branch), yet we cannot step into the next cell because a
-            **	friendly vehicle holds it -- the vanilla head-on MOVE_NO (unit.cpp Can_Enter_Cell)
-            **	that A* can never escalate past. Left alone, both units retry forever (the ~25k
-            **	HEADON-block log). Funnel it through the SAME shared backstop so a sustained head-on
-            **	scatters after STUCK_SCATTER_TRIES cycles.
-            **
-            **	CRITICAL gate: only count/scatter when destcell actually holds a friendly allied
-            **	VEHICLE. A bare MOVE_NO on terrain/cliff is PERMANENT -- scattering there would just
-            **	jiggle the unit against the wall forever (a NEW bug). Cell_Techno() is NULL for
-            **	terrain, so this never fires on it. MOVE_TEMP / MOVE_MOVING_BLOCK are handled below
-            **	(they clear on their own) and are excluded by the cando == MOVE_NO test.
-            */
+            // TF: a head-on block by an allied vehicle counts toward the deadlock-breaker scatter. Only a vehicle:
+            // a bare MOVE_NO is terrain, and scattering there would jiggle the unit against it forever.
             if (cando == MOVE_NO) {
                 TechnoClass* headon = Map[destcell].Cell_Techno();
                 if (headon != NULL && headon != this && headon->What_Am_I() == RTTI_UNIT
@@ -2606,11 +2136,7 @@ bool DriveClass::Start_Of_Move(void)
             return (true);
         }
 
-        /*
-        **	We are committing to enter the next cell (cando == MOVE_OK) -- real forward progress, so
-        **	clear the deadlock-breaker counter AND the open-ground hold-timeout. Only a unit that has
-        **	made NO progress for STUCK_SCATTER_TRIES straight retry cycles ever force-scatters.
-        */
+        // TF: entering the next cell is progress, so the deadlock-breaker and hold-timeout counts restart.
         StuckFrames = 0;
         HoldFrames = 0;
 
@@ -3411,10 +2937,6 @@ DriveClass::TrackType const DriveClass::Track12[] = {{0xFF550060L, DIR_SW_X2},
 
                                                      {0x00000000L, DIR_SW}};
 
-// Track13 = pure-south WEAP exit (vanilla RA Allied War Factory's authored
-// design). Kept active so vanilla Allied AI tanks exit south as they always
-// have. TD entries use the separate SW-direction Track14 below — see
-// docs/adding-td-buildings.md gotcha #14 for the full story.
 #if (1)
 /*
 **	Drive out of weapon's factory.
@@ -3462,13 +2984,8 @@ DriveClass::TrackType const DriveClass::Track13[] = {{XYP_COORD(10, -21), (DirTy
                                                      {0x00000000L, DIR_SW}};
 #endif
 
-/*
-**  Tiberian Factions mod: Track14 = TD-authentic south-west WEAP exit.
-**  Replicates the SW Track13 above (under #if (0)) so we don't disturb
-**  vanilla Allied War Factory exit motion (Track13 stays pure-south).
-**  Used by TD-prefixed buildings (Logic=WEAP) via TrackControl[67] —
-**  OUT_OF_WEAPON_FACTORY_TD. See docs/adding-td-buildings.md gotcha #14.
-*/
+// Track14: the TD war factory's south-west exit, a copy of the unused Track13 under #else above. RA's war factory
+// keeps EA's south Track13. See docs/adding-td-buildings.md.
 DriveClass::TrackType const DriveClass::Track14[] = {
     {XYP_COORD(10, -21), (DirType)(DIR_SW - 10)}, {XYP_COORD(10, -21), (DirType)(DIR_SW - 10)},
     {XYP_COORD(10, -20), (DirType)(DIR_SW - 10)}, {XYP_COORD(10, -20), (DirType)(DIR_SW - 10)},
@@ -3483,32 +3000,8 @@ DriveClass::TrackType const DriveClass::Track14[] = {
     {XYP_COORD(2, -3), (DirType)(DIR_SW - 5)},    {XYP_COORD(1, -2), (DirType)(DIR_SW - 3)},
     {XYP_COORD(1, -1), (DirType)(DIR_SW - 1)},    {0x00000000L, DIR_SW}};
 
-/*
-**  Tiberian Factions mod: Track15-Track18 = the TS refinery's visible
-**  reverse dock (Luke's line-up-then-reverse spec, geometry calibrated
-**  2026-08-05 from a live docked frame against his approved composite).
-**  The truck drives onto the concrete plate EAST of the bay (the east
-**  apron hole cell), lines up nose-SE at its centre, then the entry track
-**  REVERSES it west into the bay mouth. Facing holds true DIR_SE the
-**  whole way so the docked sprite is the exact facing in the approved
-**  preview. The exit track drives it forward east back onto the plate.
-**
-**  First waypoint offset == line-up cell centre minus destination, so the
-**  track starts exactly where the truck stands (any start mismatch reads
-**  as a teleport -- the 2026-08-04 dead-end, re-confirmed 2026-08-05 when
-**  a destination moved without its table).
-**
-**  Option A + mirrored pivot (Luke, 2026-08-06 evening, attempt 2): the
-**  first aimed-pivot attempt shifted the parks perpendicular one way
-**  (+35,-35 toward the measured composite) and read WORSE -- Luke's eye
-**  wants the OPPOSITE side of the pure-SE diagonal. Parks are now the
-**  same 35-lepton offset mirrored: TSHARV pad+(22,92), TDHARV
-**  pad+(-8,34); reverse facings tilt the other side of SE (89/92,
-**  motion still facing+128 at every waypoint), with the same settling
-**  pivot to true SE on arrival:
-**    Track15/16 = TSHARV entry/exit  (start offsets +-(234,164), facing 89)
-**    Track17/18 = TDHARV entry/exit  (start offsets +-(264,222), facing 92)
-*/
+// Track15-18: the TS refinery's reverse dock, Track15/16 for TSHARV and Track17/18 for TDHARV. The entry track
+// backs the truck off the plate into its bay seat and the exit drives it back out; each starts where the truck stands.
 DriveClass::TrackType const DriveClass::Track15[] = {
     {0x00B600D8L, (DirType)92},
     {0x00AE00CEL, (DirType)92},
@@ -3618,35 +3111,18 @@ DriveClass::TrackType const DriveClass::Track18[] = {
 **	are they. Each track can be interpreted differently but this is controlled
 **	by the TrackControl structure elaborated elsewhere.
 */
-/*
-**  Tiberian Factions mod: Track19 = the TS war factory's authored exit glide:
-**  a straight SE shot from the bay seat to the pad-corner handover cell
-**  (the Aseprite sheet's tile 13), hull facing the line the whole way.
-**  Replaces the organic-pathing exit whose first move was the drive logic's
-**  cell-recentre leg (a visible slide). The table is GENERATED from the
-**  Aseprite SPAWN marker by scripts/wf_spawn_preview.py -- move the marker
-**  and re-run the script; never hand-edit the include.
-*/
+// Track19/20: SE exit rails from the TS war factory's default and Titan seats, generated by
+// scripts/wf_spawn_preview.py (never hand-edit the includes). Nothing drives them: the factory exits on Rail_To.
 DriveClass::TrackType const DriveClass::Track19[] = {
 #include "tsweap_exit_track.inc"
 };
 
-/*
-**  Track20 = the Titan's own rail: same tile-13 destination, its own seat
-**  (the orange SPAWN TSTITN marker). Generated alongside Track19.
-*/
 DriveClass::TrackType const DriveClass::Track20[] = {
 #include "tsweap_exit_track_titan.inc"
 };
 
-/*
-**  Track21 = the ROLL_OFF_DOCK_SEAT rail. A harvester parked on a sub-cell seat
-**  (the per-pairing dock nudge) cannot hand straight over to normal pathing: the
-**  drive logic's first move recentres it on the cell in one step, a visible slide.
-**  Roll_Off_Seat() fills this table at dock end with a 1 px-per-waypoint line from
-**  the seat back to the cell centre, facing held, then Force_Tracks it. Lockstep-safe:
-**  filled from the same dials on every machine, immediately consumed.
-*/
+// Track21 (ROLL_OFF_DOCK_SEAT) is filled at run time by Roll_Off_Seat, Roll_On_Seat and Rail_To: a straight line,
+// 1 px per waypoint, that moves a unit between an off-centre seat and a cell with no snap.
 DriveClass::TrackType DriveClass::Track21[64];
 
 DriveClass::RawTrackType const DriveClass::RawTracks[21] = {{Track1, -1, 0, -1},
@@ -3747,12 +3223,12 @@ DriveClass::TurnTrackType const DriveClass::TrackControl[75] = {
     {13, 13, DIR_SW, F_},    // Drive out of weapons factory (vanilla RA, south motion).
     {14, 14, DIR_SW, F_},    // Drive out of weapons factory (TD-authentic, south-west motion).
 
-    {15, 15, (DirType)92, F_}, // TS refinery, TSHARV: aimed reverse (mirrored side), pivot to SE.
-    {16, 16, (DirType)92, F_}, // TS refinery, TSHARV exit mirror (unused; organic pathing exits).
-    {17, 17, (DirType)94, F_}, // TS refinery, TDHARV: aimed reverse (mirrored side), pivot to SE.
-    {18, 18, (DirType)94, F_}, // TS refinery, TDHARV exit mirror (unused).
+    {15, 15, (DirType)92, F_}, // TS refinery, TSHARV: reverse into the bay seat.
+    {16, 16, (DirType)92, F_}, // TS refinery, TSHARV: drive out onto the plate.
+    {17, 17, (DirType)94, F_}, // TS refinery, TDHARV: reverse into the bay seat.
+    {18, 18, (DirType)94, F_}, // TS refinery, TDHARV: drive out onto the plate.
 
     {19, 19, DIR_SE, F_},      // TS war factory: default seat's SE exit rail to tile 13 (generated).
     {20, 20, DIR_SE, F_},      // TS war factory: the Titan's own SE exit rail to tile 13 (generated).
-    {21, 21, DIR_SW, F_}       // Roll-off from a nudged dock seat to the cell centre (runtime table).
+    {21, 21, DIR_SW, F_}       // Runtime rail filled by Roll_Off_Seat, Roll_On_Seat and Rail_To.
 };
