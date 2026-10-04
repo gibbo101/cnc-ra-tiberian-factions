@@ -20,7 +20,7 @@ launcher behaviour impossible, `launcher-render-contracts.md` before shipping ar
    the next session where to resume. When something turns out wrong, rewrite or delete the text; don't append a correction.
    The history is in git.
 4. **State decisions, not who made them or when.** No personal names, no "decided on <date>".
-5. **Links:** a doc is cited as `` `name.md` ``. No links into Claude's memory files and no star markers.
+5. **Links:** a doc is cited as `` `<name>.md` `` and must exist. No links into Claude's memory files and no star markers.
 6. **Trackers stay short.** `todo.md` stays under 300 lines: finished work is deleted once its
    lessons are in a topic doc. A fixed bug is deleted from `known-issues.md`.
 7. **Close out the docs:**

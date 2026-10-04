@@ -18,6 +18,7 @@ BANNED = [
     (re.compile(r"\bLuke\b"), "a personal name"),
 ]
 TODO_MAX_LINES = 300
+CITATION = re.compile(r"`(?:docs/)?([A-Za-z0-9_.-]+\.md)`")
 
 
 def status_line(lines):
@@ -47,6 +48,9 @@ def check(root):
             for pattern, what in BANNED:
                 if pattern.search(line):
                     failures.append((name, "line %d: %s" % (number, what)))
+            for cited in CITATION.findall(line):
+                if not (docs / cited).exists() and not (root / cited).exists():
+                    failures.append((name, "line %d: cites `%s`, which does not exist" % (number, cited)))
         if name == "todo.md" and len(lines) > TODO_MAX_LINES:
             failures.append((name, "%d lines, over %d: move finished work out" % (len(lines), TODO_MAX_LINES)))
         if name == "known-issues.md":
