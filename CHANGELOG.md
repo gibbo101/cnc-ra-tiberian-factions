@@ -2,6 +2,262 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [5.0.0] — 2026-10-04
+
+Another Tiberian faction joins the fray! A Chronosphere accident tears a hole
+in time and drags GDI out of the future. A terrible accident, or an insidious
+plot by Kane?
+
+- Tiberian Sun GDI, a fifth playable faction!
+- All-new intro movie!
+- UI overhaul!
+- Gates and walls for every side!
+- Tiberium on Red Alert's own maps!
+- AI improvements!
+
+Tiberian Sun's units, weapons and rules are ported with OpenTS, by the OpenTS
+Developers, as the reference. GPL v3.
+
+### Added
+- **Tiberian Sun GDI, a fifth playable faction.** Pick "TS GDI" in the lobby to
+  start on a Tiberian Sun MCV, build the TS tech tree from Tiberian Dawn's
+  sidebar, and hear Tiberian Sun's EVA, unit crews, credit tick, radar and
+  building sounds. The faction flies Tiberian Sun's gold eagle coin on its radar
+  crest, lobby row and cameo badges, cut from a SteamGridDB icon by hazelnut.
+  Computer players can be TS GDI too. Everything below uses Tiberian Sun's own
+  art and sound:
+  - *Base:* Construction Yard, Tiberian Power Plant (takes up to two Power
+    Turbines), Barracks, Tiberium Refinery, Silo, War Factory with its roll-up
+    bay door, Radar, Helipad, Tech Center and Service Depot, with their
+    animations and damage states.
+  - *Infantry:* Light Infantry; the Disc Thrower, whose disc skips along the
+    ground; the Engineer, who captures an enemy building at any health and
+    restores a friendly one to full; the Medic (like Tiberian Sun's, it cannot
+    heal Jumpjet Infantry); the Ghost Stalker, one at a time, with a railgun
+    that pierces a line of troops, C4 for buildings and healing in Tiberium;
+    and Jumpjet Infantry, who fly over terrain and count as air targets while
+    airborne.
+  - *Vehicles:* Harvester (it docks at any faction's refinery, and any harvester
+    docks at the TS refinery), Wolverine, Titan, Amphibious APC (it swims),
+    Hover MLRS, Disruptor (its sonic band follows the target and hurts
+    everything inside it, never Disruptors on the same side), Juggernaut
+    (long-range walking artillery that sets down to fire, on attack-move
+    too), Mammoth Mk. I
+    (Tiberian Sun's unbuildable Mammoth Tank, here behind the Tech Center) and
+    the MCV. TS buildings and vehicles leave TS Light Infantry as survivors.
+    Submarines can torpedo the Hover MLRS and the APC while they are afloat.
+  - *Aircraft:* Orca Fighter, Orca Bomber (two bombing passes per sortie) and
+    the Carryall, which lifts one of your vehicles and sets it down where you
+    send it.
+- **Dropship Bay.** TS GDI fields the Mammoth Mk. II and the Mech Division
+  (three Titans and two Wolverines at a discount) by dropship: the ship lands
+  vertically on the pad, sets the order down and lifts off again. The bay has
+  its own build queue beside the War Factory and a five-minute reload counted
+  down on the cameo. One bay per player.
+- **Upgrade Center and Tiberian Sun's superweapons.** A two-slot host that also
+  spots cloaked units nearby. Install two of its three plugs:
+  - *Ion Cannon Uplink:* the Tiberian Sun Ion Cannon, with its own beam,
+    shockwave ring, sound and timer, alongside the TD Ion Cannon if you hold
+    both.
+  - *Drop Pod Node:* five pods of Light Infantry and Disc Throwers streak down
+    on the target, strafing the landing zone.
+  - *Seeker Control:* the Hunter Seeker droid picks an enemy and destroys it.
+    One left click on the ready cameo launches it; no target is needed.
+- **Firestorm Defense.** The Firestorm Generator powers Firestorm Wall
+  Sections, flat pads anyone can cross until the field goes up. One left click
+  on the cameo raises the field and another drops it early, banking what is
+  left. While it is up, anything on a section or flying over one is destroyed,
+  your own units included, enemy shots stop at the wall, and every hit on a
+  section drains the field. A full charge holds it for about a third of its
+  charging time.
+- **EMP Cannon and Mobile EMP.** The EMP Cannon fires the E.M. Pulse: the
+  nearest powered cannon turns, charges and lobs a pulse that stuns vehicles,
+  ships and grounded aircraft for 30 seconds, shuts down buildings' weapons,
+  radar and generators, downs low-flying aircraft, destroys Limpet mines and
+  forces buried units to the surface. Power, construction and production carry
+  on. The pulse reaches 3 cells, scaled down from Tiberian Sun's to suit Red
+  Alert's maps. The Mobile EMP charges up, then deploys to stun every vehicle
+  and building within 3 cells for 10 seconds, friend and foe alike.
+- **Mobile Sensor Array, Mobile War Factory and Limpet Drone.** The Sensor
+  Array deploys to show you and your allies cloaked and underground enemies
+  within 25 cells, and the cloaked ones can then be targeted. The Mobile War
+  Factory, one at a time, unfolds into a working TS War Factory wherever you
+  need one and packs up again with the deploy key. The Limpet Drone settles
+  into a cloaked mine that latches onto the next enemy vehicle, slowing it to
+  65% and showing you what it sees until a repair bay pulls it off.
+- **Component towers and the TS Concrete Wall.** The Component Tower takes one
+  weapon, a Vulcan Cannon, RPG or SAM, each with Tiberian Sun's own sounds and
+  effects. Towers stand in wall lines (place one on your own wall section to
+  replace it) and wear new HD art with HD turrets and a door lamp that lights
+  while the base has power. TS GDI also builds sandbags and its own concrete
+  wall, redrawn in HD for Red Alert's grid.
+- **Gates for every faction.** Allies, Soviets (a Tesla gate), GDI, Nod (a laser
+  gate) and TS GDI each build an east-west and a north-south gate in HD. Your
+  units and your allies' drive straight through: the gate opens as they arrive
+  and closes once the way has been clear for a while, letting anyone through
+  while it stands open. Gates sit in wall lines, can be placed over your own
+  walls and draw 5 power; the Tesla and laser gates fall open when their base
+  is short of power.
+- **Wall lines fill themselves.** Place a wall piece in a straight line within
+  five cells of another of the same kind and the gap between fills, charged per
+  piece, as long as every cell is clear. If you can't afford the whole gap,
+  only the piece you clicked goes down. This works for every wall type and for
+  Firestorm Wall Sections.
+- **The classic Tiberian Dawn sidebar.** GDI, Nod and TS GDI play on Tiberian
+  Dawn's in-game interface: its sidebar, build tabs and tab icons, power bar,
+  credits, and sell, repair and map buttons. Every faction shows its own radar
+  crest. Allies and Soviets keep Red Alert's interface.
+- **EVA speaks for your faction.** The lines the game fires itself ("Cannot
+  deploy here", "Insufficient power", "Select target", "Repairing", "Mission
+  accomplished", "Mission failed", "Battle control terminated") play in Tiberian
+  Dawn's voice for GDI and Nod and in Tiberian Sun's for TS GDI, and keep up
+  when you switch faction without restarting the game. "Structure sold" follows
+  your faction too. Lines Tiberian Dawn or Tiberian Sun never recorded, such as
+  "Mission saved", stay silent for those factions instead of falling back to
+  Red Alert's EVA. Each faction's credit counter ticks with its own game's
+  sound.
+- **Lobby faction picker.** Every row of the faction drop-down is named for its
+  faction (GDI, Nod, TS GDI, Allies, Soviet) and shows the faction's emblem
+  instead of a country flag, and the list shows every row and Random without
+  scrolling. Map start markers and loading-screen player badges show faction
+  emblems too.
+- **LAN games match single player.** Every player in a LAN game gets their own
+  faction's crest, tab icons and EVA, their own deploy and select-all keys, and
+  one-click Firestorm and Hunter Seeker control.
+- **A Tiberian Factions front end.** The Tiberian Factions title replaces Red
+  Alert's on the main menu, loading screens and campaign select, its lettering
+  in Tiberian Sun's molten fill (set in Archivo Black, SIL Open Font License).
+  A new startup intro lands the title and six faction emblems on Hell March and
+  cuts to a Red Alert, Tiberian Dawn and Tiberian Sun FMV montage. The main
+  menu gets new key art either side of a steel menu box with green labels and
+  plays the Hell March Retaliation remix, and its confirmation boxes match. The
+  loading screen shows the faction emblem row with a sweeping glint, and the
+  skirmish and LAN lobbies, the LAN game list and the Workshop map browser take
+  the same steel and green look.
+- **Tiberium on Red Alert's official maps.** 151 of the 230 official skirmish
+  maps now mix Tiberium fields with their ore, kept fair between start
+  positions, with Tiberium-heavy, ore-heavy and even maps spread across the
+  pool. Gem fields are never converted, lobby thumbnails are repainted to match,
+  and Red Alert's snow maps get winter Tiberium. The other 79 maps stay as they
+  were.
+- **The AI builds a navy.** On maps where the water matters, the skirmish AI
+  builds a naval yard and a fleet.
+- **The AI plays TS GDI.** A computer TS GDI builds its base, Component Towers
+  with weapon plugs and Power Turbines, trains the TS infantry, flies Orcas,
+  orders from a Dropship Bay, and builds an Upgrade Center with the Ion Cannon
+  Uplink plus either the Drop Pod Node or Seeker Control (Easy AIs skip
+  superweapons). It launches its Hunter Seeker as soon as it charges.
+
+### Changed
+- **The construction yard decides the tech tree.** A faction's buildings are
+  offered only while you hold that faction's construction yard. Power plants,
+  refineries and repair bays come from any yard and satisfy each other across
+  all three eras. So the yard you hold, not the faction you picked, decides
+  what you build: deploy a TS MCV found in a crate, or capture a TS yard, and
+  the TS tree is yours whatever your side. TS cameos carry the TS GDI badge
+  once you build from more than one faction.
+- **Unit crates from every faction.** A unit crate now draws evenly from one
+  pool of every faction's vehicles, harvesters included, plus any faction's MCV
+  when bases are on. Some finds come only from crates: the Red Alert 2
+  Apocalypse and Prism Tank, the Command & Conquer 3 Mammoth Mk. III and
+  Predator, and Tiberian Sun Nod's Devil's Tongue flame tank and Subterranean
+  APC, which tunnel underground on longer trips and surface where they are
+  sent. Unit crates are now as likely as money crates (about two crates in
+  five), and the armour, firepower and speed boosts drop to about one crate in
+  35 each.
+- **Superweapons split by faction.** Nod's Paratroopers and recon flight are
+  now their own powers, separate from the Soviet drop and spy plane, each with
+  its own cameo and timer, so holding both sides' buildings gives you both.
+  Soviet Parabombs now fly in skirmish, recharging in 7 minutes like
+  Paratroopers. Superweapon cameos carry faction badges only once your powers
+  come from more than one faction, as the build tabs already did.
+- **Nod SAM Site** stays raised and keeps firing while an aircraft is in reach,
+  lowering only when the sky is clear. Tiberian Dawn's site ducked after every
+  pair of missiles and managed about a quarter of a Soviet SAM's damage. It
+  still takes half damage while lowered.
+- **AI economy and attacks.** The AI runs a stronger economy, with more
+  refineries and harvesters on Medium and Hard, and waits until its army is
+  worth committing before it attacks. The AI work in this release drew on
+  skirmish AI ideas from Bast75 and xXMini FrankiXx, and more is to come.
+
+- **Tiberian Sun, Red Alert 2 and C&C3 vehicles sit like Red Alert's own.**
+  Thirteen of them were drawn a few pixels too high: above Red Alert's tanks
+  in the same row, with their selection boxes hanging below them. Their hulls
+  are now centred on the unit the way the Remastered Collection's own vehicles
+  are, their boxes fit, and their shots still leave the barrels. Thanks to
+  DontCryJustDie for spotting it.
+
+### Removed
+- **The Tiberian Dawn map pack, for now.** The 31 converted Tiberian Dawn maps
+  and their terrain art (temperate, winter and desert) are out of the mod: they
+  raised video memory use for every player, and some of them had broken. They
+  are planned to return as a separate download. The copies earlier versions
+  installed are deleted from your custom maps when the mod loads, and Red
+  Alert's interior missions get their own floor art back.
+
+### Fixed
+- **Deploy and select-all keys for every faction.** The default deploy key
+  (backslash) now deploys or unloads every faction's MCVs, APCs, transports and
+  minelayers, and select-all (A) leaves every faction's harvesters and MCVs out
+  of the selection. This lifts the limitation listed since 4.1.0.
+- **Crashes:** a crash with more than about four mods enabled at once, which
+  overran the game's list of mod folders (found by DontCryJustDie); a crash
+  when packed traffic, such as harvesters queueing at a refinery, sent units
+  giving way to each other in a loop; a crash once a sidebar column reached 75
+  entries (columns now hold 120); and a crash when an explosive crate
+  destroyed the unit that drove onto it.
+- **LAN games with crates on.** They no longer crash, so crates no longer need
+  turning off for LAN play.
+- **Units stuck on unreachable destinations.** A unit that cannot reach where
+  it was sent no longer retries forever: infantry give up after a few seconds,
+  and vehicles stop waiting after a minute without moving.
+- **AI building placement.** The AI no longer sits on thousands of credits
+  unable to place a building. Two bugs in Westwood's original placement code
+  shrank its search to ground its base already covered and threw the building
+  away when its preferred area was full; GDI was hit hardest.
+- **AI orders survive a cash dip.** An AI building order is kept while income
+  is still coming in, instead of being scrapped the moment the money runs out.
+- **AI air power.** Allied and Soviet AIs now build a radar dome and a service
+  depot without waiting for an enemy air force, so they field aircraft of their
+  own. A-10s are no longer built at helipads, where they parked or blew up on
+  arrival, and AI planes out of ammunition find their airfield to rearm.
+- **AI fire sales.** The AI no longer sells its naval yard, tech centre or
+  repair bay at half price whenever its cash dips.
+- **AI superweapons respect stealth.** AI Ion Cannon, nuke and Parabomb strikes
+  no longer target buildings hidden by a Nod Stealth Generator.
+- **AI scouting.** Blind scouts fan out across the start positions instead of
+  all heading for one, and an AI that has found no one fires its recon powers
+  at unexplored start positions.
+- **Per-slot AI difficulty.** When the game holds a stale copy of an earlier
+  lobby that looks like the current one, the mod now tells the live one apart
+  instead of falling back to the default difficulty (the case DontCryJustDie
+  reported).
+- **Ships.** A finished ship no longer vanishes when the shipyard's exit is
+  blocked; it waits and launches once the way clears.
+- **Allied Missile Silo.** Allies can build the Missile Silo again: their own
+  Advanced Tech Center meets its prerequisite.
+- **GPS satellite in team games.** When the player who launched it loses their
+  Tech Center, the reveal it shared goes from their allies too, unless an ally
+  has a GPS of their own up.
+- **Blossom trees** can no longer be damaged, as in Tiberian Dawn. A damaged
+  one used to draw as a white square.
+- **GDI and Allied construction yards** play their crane animation when a
+  building is placed, and show their damaged art correctly.
+
+### Known limitations
+- The AI does not raise Firestorm Defense or build the EMP Cannon, Mobile EMP,
+  Mobile Sensor Array, Mobile War Factory or Limpet Drones. A computer TS GDI
+  builds no transports or navy, so it cannot ferry an army on maps split by
+  water.
+- No faction's AI builds walls or gates.
+- On maps split by water, the other factions' AIs build transports to ferry
+  their armies across, but rarely land a real force yet.
+- For a TS GDI player, move and rally markers show the Allied emblem.
+- GDI and Nod still hear Red Alert's EVA for "Unable to comply, building in
+  progress".
+- German and French players hear English voices while the mod is enabled.
+- Saved games from earlier versions of the mod will not load in 5.0.0.
+
 ## [4.2.1] — 2026-09-26
 
 ### Fixed

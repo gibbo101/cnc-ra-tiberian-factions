@@ -4001,31 +4001,65 @@ static HousesType TF_Local_ActLike(void)
 
 static void TF_Patch_ClientG_Cache(int era);
 
-static bool TF_WriteFile_Into_Process(HANDLE proc, SIZE_T dest, const char* path)
+// The whole file in a malloc'd buffer (the caller frees it), or NULL; at most 1 MB.
+static unsigned char* TF_Read_Whole_File(const char* path, long* len_out)
 {
     FILE* f = fopen(path, "rb");
     if (f == NULL) {
-        return false;
+        return NULL;
     }
     fseek(f, 0, SEEK_END);
     long len = ftell(f);
     fseek(f, 0, SEEK_SET);
-    if (len <= 0 || len > (1 << 20)) {
-        fclose(f);
-        return false;
+    unsigned char* buf = (len > 0 && len <= (1 << 20)) ? (unsigned char*)malloc(len) : NULL;
+    if (buf != NULL && fread(buf, 1, len, f) != (size_t)len) {
+        free(buf);
+        buf = NULL;
     }
-    unsigned char* buf = (unsigned char*)malloc(len);
-    if (buf == NULL) {
-        fclose(f);
-        return false;
-    }
-    bool ok = (fread(buf, 1, len, f) == (size_t)len);
     fclose(f);
-    if (ok) {
-        SIZE_T wrote = 0;
-        ok = WriteProcessMemory(proc, (LPVOID)dest, buf, len, &wrote) && wrote == (SIZE_T)len;
+    *len_out = len;
+    return buf;
+}
+
+/*
+**	Writes the correct file over a copy of the wrong one, only when every byte at dest is that
+**	copy. A needle hit can also land in a freed buffer that once held the file (Wine's CopyFile
+**	works through heap buffers) and is now partly reused; writing a whole file there overwrites
+**	the heap's own block headers. The full compare passes for the launcher's cached sample and
+**	fails for any copy something else has written into since. Both files must be the same length.
+*/
+static bool TF_Replace_File_In_Process(HANDLE proc, SIZE_T dest, const char* wrong_path, const char* correct_path)
+{
+    long wrong_len = 0;
+    long correct_len = 0;
+    unsigned char* wrong = TF_Read_Whole_File(wrong_path, &wrong_len);
+    unsigned char* correct = TF_Read_Whole_File(correct_path, &correct_len);
+    unsigned char* live = (wrong != NULL && correct != NULL && wrong_len == correct_len) ? (unsigned char*)malloc(wrong_len) : NULL;
+    bool ok = false;
+    if (live != NULL) {
+        SIZE_T got = 0;
+        if (ReadProcessMemory(proc, (LPCVOID)dest, live, wrong_len, &got) && got == (SIZE_T)wrong_len
+            && memcmp(live, wrong, wrong_len) == 0) {
+            SIZE_T wrote = 0;
+            ok = WriteProcessMemory(proc, (LPVOID)dest, correct, correct_len, &wrote) && wrote == (SIZE_T)correct_len;
+        }
     }
-    free(buf);
+    /*
+    **	This DLL also runs inside ClientG, so these buffers live in the heap the scan walks; a
+    **	freed one still holding a whole sample would be found as another cached copy next time.
+    */
+    if (live != NULL) {
+        memset(live, 0, wrong_len);
+    }
+    if (wrong != NULL) {
+        memset(wrong, 0, wrong_len);
+    }
+    if (correct != NULL) {
+        memset(correct, 0, correct_len);
+    }
+    free(live);
+    free(wrong);
+    free(correct);
     return ok;
 }
 
@@ -4084,12 +4118,14 @@ static void TF_Patch_ClientG_Cache(int era)
     **	One row per line per era we are NOT playing: hunt that era's distinctive bytes, and
     **	whatever they are found in is a cached copy of that era's payload, so the blob starts
     **	at (hit - its file offset) and our own era's file is written over it. Every era's
-    **	payload for a line is the same byte length, which is what makes the write safe.
+    **	payload for a line is the same byte length, so the write covers that copy exactly; it
+    **	goes ahead only where the whole copy is still there (TF_Replace_File_In_Process).
     */
     struct PatchRow
     {
         const unsigned char* wrong_needle;
         int wrong_fileoff;
+        const char* wrong_file;
         const char* correct_file;
     };
     int const line_count = (int)(sizeof(TF_EvaMailboxLines) / sizeof(TF_EvaMailboxLines[0]));
@@ -4102,6 +4138,7 @@ static void TF_Patch_ClientG_Cache(int era)
             }
             rows[row_count].wrong_needle = TF_EvaMailboxLines[i].era[e].needle;
             rows[row_count].wrong_fileoff = TF_EvaMailboxLines[i].era[e].fileoff;
+            rows[row_count].wrong_file = TF_EvaMailboxLines[i].era[e].file;
             rows[row_count].correct_file = TF_EvaMailboxLines[i].era[era].file;
             row_count++;
         }
@@ -4201,9 +4238,11 @@ static void TF_Patch_ClientG_Cache(int era)
                                     }
                                     SIZE_T hit = region_base + off + i;
                                     SIZE_T blob = hit - rows[r].wrong_fileoff;
+                                    char wrong_path[MAX_PATH];
                                     char path[MAX_PATH];
+                                    snprintf(wrong_path, sizeof(wrong_path), "%s\\%s", dir, rows[r].wrong_file);
                                     snprintf(path, sizeof(path), "%s\\%s", dir, rows[r].correct_file);
-                                    bool ok = TF_WriteFile_Into_Process(proc, blob, path);
+                                    bool ok = TF_Replace_File_In_Process(proc, blob, wrong_path, path);
                                     if (log) {
                                         fprintf(log, "  PATCH %s @blob %08x (hit %08x) -> %s\n",
                                                 ok ? "OK" : "FAIL", (unsigned int)blob, (unsigned int)hit,
@@ -4369,8 +4408,91 @@ static HANDLE TF_Open_ClientG(DWORD access)
     return proc;
 }
 
+struct TF_AddrRange
+{
+    SIZE_T lo;
+    SIZE_T hi;
+};
+
+struct TF_ThreadBasicInfo
+{
+    LONG ExitStatus;
+    PVOID TebBaseAddress;
+    PVOID UniqueProcess;
+    PVOID UniqueThread;
+    ULONG_PTR AffinityMask;
+    LONG Priority;
+    LONG BasePriority;
+};
+
+typedef LONG(WINAPI* TF_NtQueryInformationThread)(HANDLE, int, PVOID, ULONG, PULONG);
+
+/*
+**	The stack of every thread in the process, each from its reservation base to its top (the
+**	TEB's StackBase). Returns the count, or -1 when any thread's stack could not be read, in
+**	which case nothing in the process is known to be safe to write. A thread that exits before
+**	it can be opened has no stack left to protect.
+*/
+static int TF_Thread_Stacks(HANDLE proc, TF_AddrRange* out, int max)
+{
+    static TF_NtQueryInformationThread query =
+        (TF_NtQueryInformationThread)GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtQueryInformationThread");
+    DWORD pid = GetProcessId(proc);
+    if (query == NULL || pid == 0) {
+        return -1;
+    }
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+    if (snap == INVALID_HANDLE_VALUE) {
+        return -1;
+    }
+    int count = 0;
+    bool complete = true;
+    THREADENTRY32 te;
+    te.dwSize = sizeof(te);
+    if (Thread32First(snap, &te)) {
+        do {
+            if (te.th32OwnerProcessID != pid) {
+                continue;
+            }
+            HANDLE th = OpenThread(THREAD_QUERY_INFORMATION, FALSE, te.th32ThreadID);
+            if (th == NULL) {
+                continue;
+            }
+            TF_ThreadBasicInfo tbi;
+            DWORD tib[3] = {0, 0, 0}; // NT_TIB: ExceptionList, StackBase, StackLimit
+            MEMORY_BASIC_INFORMATION m;
+            bool ok = false;
+            if (query(th, 0, &tbi, sizeof(tbi), NULL) == 0) {
+                /*
+                **	The 32-bit TEB, or under 64-bit Windows possibly the thread's 64-bit TEB, which
+                **	has the 32-bit one two pages after it.
+                */
+                for (int t = 0; t < 2 && !ok; t++) {
+                    SIZE_T got = 0;
+                    ok = ReadProcessMemory(proc, (LPCVOID)((SIZE_T)tbi.TebBaseAddress + t * 0x2000), tib, sizeof(tib), &got)
+                         && got == sizeof(tib) && tib[2] != 0 && tib[2] < tib[1] && tib[1] - tib[2] <= (256u << 20);
+                }
+            }
+            ok = ok && VirtualQueryEx(proc, (LPCVOID)(SIZE_T)(tib[1] - 1), &m, sizeof(m)) == sizeof(m);
+            CloseHandle(th);
+            if (!ok || count == max) {
+                complete = false;
+                continue;
+            }
+            out[count].lo = (SIZE_T)m.AllocationBase;
+            out[count].hi = (SIZE_T)tib[1];
+            count++;
+        } while (Thread32Next(snap, &te));
+    }
+    CloseHandle(snap);
+    return complete ? count : -1;
+}
+
 // Full scan: walk ClientG's private writable heap, and for every record currently holding
 // either slot's stock or faction rect, remember its address and write the wanted rect.
+// Thread stacks are skipped: they hold passing copies of the rects (this DLL's own among
+// them, when it runs inside ClientG), and the write lands after the read, by when the frame
+// that held the copy may be gone and a live one stands in its place.
 static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
 {
     bool gdi = (slots[0].want == slots[0].gdi);
@@ -4394,6 +4516,15 @@ static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
     if (proc == NULL) {
         return;
     }
+    static TF_AddrRange stacks[1024];
+    int const stack_count = TF_Thread_Stacks(proc, stacks, (int)(sizeof(stacks) / sizeof(stacks[0])));
+    if (stack_count < 0) {
+        if (log) {
+            fprintf(log, "  thread stacks unreadable, scan skipped\n");
+        }
+        CloseHandle(proc);
+        return;
+    }
     const int REC = 16;
     static unsigned char scratch[1 << 20];
     const int overlap = 32;
@@ -4404,6 +4535,9 @@ static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
         SIZE_T region_size = mbi.RegionSize;
         bool writable = (mbi.State == MEM_COMMIT) && (mbi.Type == MEM_PRIVATE)
                         && (mbi.Protect == PAGE_READWRITE) && region_size <= ((SIZE_T)512 << 20);
+        for (int k = 0; writable && k < stack_count; k++) {
+            writable = (region_base + region_size <= stacks[k].lo || region_base >= stacks[k].hi);
+        }
         if (writable) {
             for (SIZE_T off = 0; off < region_size; off += (sizeof(scratch) - overlap)) {
                 SIZE_T want_bytes = region_size - off;

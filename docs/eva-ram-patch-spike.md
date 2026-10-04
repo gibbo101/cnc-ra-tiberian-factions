@@ -11,8 +11,9 @@ control-terminated), no crash.** Promoted to shipping (runs in release builds; l
 
 ## How it works
 
-The sample cache lives in **ClientG.exe**, a separate process from the DLL (which runs in
-**InstanceServerG.exe**). Same cross-process shape as the lobby resolver — reuse
+The sample cache lives in **ClientG.exe**. The DLL runs in **InstanceServerG.exe** and a
+launcher-resident copy runs inside ClientG itself, so its own heap and stacks are part of what
+the scan walks. Same cross-process shape as the lobby resolver — reuse
 `CreateToolhelp32Snapshot` → find `ClientG.exe` → `OpenProcess` → `VirtualQueryEx` walk. The
 patch adds `PROCESS_VM_WRITE | PROCESS_VM_OPERATION` and `WriteProcessMemory`. Linux-host
 `ptrace_scope` is irrelevant — these are Wine-internal APIs between the two game processes, and
@@ -20,7 +21,8 @@ patch adds `PROCESS_VM_WRITE | PROCESS_VM_OPERATION` and `WriteProcessMemory`. L
 
 At match start, for each line the DLL scans ClientG's `PAGE_READWRITE` regions for the WRONG
 faction's 20-byte needle, computes the cached blob start (`hit − needle_fileoff`), and writes the
-desired faction's payload over it. The blob is the whole WAV file (RIFF header included), so the
+desired faction's payload over it **only when every byte there is the wrong payload**
+(`TF_Replace_File_In_Process`). The blob is the whole WAV file (RIFF header included), so the
 write replaces header + data and the sample plays in the new voice.
 
 ## The findings that made it work (in the order they bit us)
@@ -51,12 +53,22 @@ write replaces header + data and the sample plays in the new voice.
 5. **A line is only cacheable after it has fired once.** BCT's first fire is at teardown, so it
    is not cached during its own match — but it persists after that first teardown, so the NEXT
    match's start-patch flips it. That is why the in-session switch works even for BCT.
+6. **Never write on a needle match alone (2026-10-04 ClientG heap crash).** The needle also turns
+   up in freed and partly reused buffers that once held the file (Wine's `CopyFile` works through
+   heap buffers, and so did the patch's own file reads). A whole-file write there covered live
+   heap block headers: after a TS GDI match then a TD match, the TD write of
+   `TF_MBX_TD_NODEPLY_R.WAV` at `0x378b9468` spanned the block at `+976` that ClientG's heap
+   tripped over on the next skirmish load. The patch now compares the whole wrong payload in
+   place before writing (a typical match start skips three or four partial copies and replaces
+   one or two whole ones), and zeroes its own file buffers before freeing them.
 
 ## Shipping notes
 
-- The patch runs in release builds and fails safe at every step (process not found, needle not
-  found, write refused) — degrading to the disk-mailbox voice (first-fire-correct, stale-on-
-  switch), never a crash. Diagnostic logging (`tf_cache_probe.log`) is `TF_DEV_BUILD`-only.
+- The patch runs in release builds and degrades to the disk-mailbox voice (first-fire-correct,
+  stale-on-switch) when the process, a needle or a whole payload is not found, or a write is
+  refused. Its writes are memory writes into a live process, so the whole-payload check (finding
+  6) is what keeps it from crashing ClientG. Diagnostic logging (`tf_cache_probe.log`) is
+  `TF_DEV_BUILD`-only: `PATCH OK` = replaced, `PATCH FAIL` = left alone.
 - Needles/offsets are regenerated whenever a payload is re-padded (the re-encode/pad changes the
   bytes). The generator picks a high-entropy 20-byte slice from the real audio (never the leading
   silence) and records its file offset.

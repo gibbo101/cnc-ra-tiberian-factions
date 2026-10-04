@@ -1,9 +1,9 @@
 {
     "name": "Tiberian Factions for Red Alert",
-    "description": "Adds GDI and Nod as new playable factions alongside Allies and Soviets.",
+    "description": "Adds GDI, Nod and Tiberian Sun GDI as playable factions alongside Allies and Soviets.",
     "author": "gibbo101",
     "load_order": 1,
-    "version_high": 4,
-    "version_low": 22,
+    "version_high": 5,
+    "version_low": 0,
     "game_type": "RA"
 }

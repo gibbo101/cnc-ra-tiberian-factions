@@ -2627,10 +2627,13 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
     /*
     **	A component tower or a gate placed onto wall segments replaces them (TS wall tower,
     **	TS gate): the overlays go before the building takes the cells, and the neighbours'
-    **	joins are recomputed once it stands (below).
+    **	joins are recomputed once it stands (below). The movement zones are rebuilt as for any
+    **	wall that goes, so a gate links the zones either side of its wall line: zones ignore
+    **	buildings, and infantry won't head for a cell outside their own zone.
     */
     bool joins_walls = (TF_Is_Wall_Tower(Class->Type) || TF_Gate_Info(Class->Type) != NULL);
     if (*this == STRUCT_TSCTWR || TF_Gate_Info(Class->Type) != NULL) {
+        bool walls_gone = false;
         short const* offset = Class->Occupy_List();
         while (offset != NULL && *offset != REFRESH_EOL) {
             CellClass& tc = Map[(CELL)(Coord_Cell(coord) + *offset++)];
@@ -2640,7 +2643,11 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
                 Detach_This_From_All(::As_Target(tc.Cell_Number()), true);
                 tc.Recalc_Attributes();
                 tc.Redraw_Objects();
+                walls_gone = true;
             }
+        }
+        if (walls_gone) {
+            Map.Zone_Reset(MZONEF_CRUSHER | MZONEF_NORMAL | MZONEF_HOVER);
         }
     }
 

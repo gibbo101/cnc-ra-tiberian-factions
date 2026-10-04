@@ -739,11 +739,6 @@ of the prerequisite loop for every game type. `MOD_DEBUG_CANBUILD.txt` is switch
 
 ## Multiplayer / LAN
 
-### LAN crashes with crates enabled
-- **Severity:** major for LAN (single-player skirmish unaffected).
-- **Status:** OPEN, uninvestigated.
-- **Workaround:** turn crates off for LAN play (per the Workshop "Known limitations"). Not yet root-caused.
-
 ---
 
 ## Resolved
@@ -751,6 +746,12 @@ of the prerequisite loop for every game type. `MOD_DEBUG_CANBUILD.txt` is switch
 - Immortal-claim whole-map gridlock — FIXED 6f35ea9 (claim-on-crossing). -->
 - Immortal-claim whole-map chokepoint gridlock — FIXED `6f35ea9` (claim-on-crossing). See
   `docs/chokepoint-reservation-design.md` CHECKPOINT 2026-06-16.
+- LAN crashes with crates enabled — FIXED for 5.0.0, confirmed 2026-10-02 (eight-player LAN games,
+  crates on, no crash). Two causes: an explosion crate destroyed the unit entering its cell, then
+  `DriveClass::Start_Of_Move` and `While_Moving` called the virtual `Set_Speed(0)` on the freed unit
+  (both now return when `IsActive` is clear, `0fe6fdea`; only the simulating host runs unit AI, which
+  fit "the host crashes"); and unit crates could loop forever looking for a vehicle a GDI, Nod or TS
+  GDI house could get (one even pool of every faction's crate vehicles, `e7769961`).
 - TD temperate coastal tiles rendered as white squares (shores/bridges) — FIXED `ede7ca1`.
   The `TDSH*`/`TDBRIDGE*` `<Tile>` blocks were missing from `RA_TERRAIN_TEMPERATE.XML` so the
   launcher couldn't resolve their AssetNames. Cause: `build_td_tiles.py` spliced the shared
@@ -763,12 +764,6 @@ of the prerequisite loop for every game type. `MOD_DEBUG_CANBUILD.txt` is switch
 ---
 
 ## Skirmish setup
-- **Candidate root cause (2026-09-16, fix deployed, awaiting a crates-on LAN):** a skirmish crash
-  with crates on was traced from its minidump to `DriveClass::Start_Of_Move`: `FootClass::Start_Driver`
-  runs `Goodie_Check` on the cell being entered, an explosion crate destroys the unit there, and the
-  stock code then calls the virtual `Set_Speed(0)` on the freed object (same gap in `While_Moving`).
-  Both failure paths now return when `IsActive` is clear. Only the simulating host runs the unit AI,
-  which fits "the host crashes". Verify with a crates-on LAN game before closing this entry.
 
 ### GDI/Nod skirmish "starting units" bonus gives RA units, not TD
 - **Severity:** minor.

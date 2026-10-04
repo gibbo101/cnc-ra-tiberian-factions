@@ -1,6 +1,6 @@
 # Tiberian Factions for Red Alert
 
-A mod for **Command & Conquer: Red Alert Remastered** that adds **GDI** and **Nod**, the two factions from *Tiberian Dawn*, as fully playable sides alongside the original Allies and Soviets. Pick any of the four in skirmish and fight them all on the same map: **Allies vs Soviets vs GDI vs Nod**.
+A mod for **Command & Conquer: Red Alert Remastered** that adds **GDI** and **Nod**, the two factions from *Tiberian Dawn*, and **GDI from *Tiberian Sun***, as fully playable sides alongside the original Allies and Soviets. Pick any of the five in skirmish and fight them all on the same map: **Allies vs Soviets vs GDI vs Nod vs Tiberian Sun GDI**.
 
 ## What this mod adds
 
@@ -20,21 +20,31 @@ GDI and Nod aren't reskins. They're complete factions with their own bases, armi
 
 **Superweapons and support powers:** GDI's **Ion Cannon** and GPS satellite; Nod's **Nuclear Strike**, Spy Plane, and Paratroopers.
 
-**Every faction keeps its own tree, and capturing changes hands.** GDI, Nod, Allies, and Soviets each build their own Construction Yard, MCV, War Factory, and Helipad. Capture a rival's yard or factory and you can build that faction's arsenal too, with badges on the cameos showing which of your factions builds what. The **Unholy Alliance** skirmish mode starts every player with all four construction yards.
+**Tiberian Sun GDI, a fifth faction.** Its own tech tree, army, and superweapons, in Tiberian Sun's own art and sound: Light Infantry, Disc Throwers, Medics, Ghost Stalkers and Jumpjet Infantry; Wolverines, Titans, the Disruptor, the Hover MLRS, the Juggernaut and the Amphibious APC; Orcas and the Carryall; the Mammoth Mk. II and the Mech Division delivered by dropship. Its Upgrade Center hosts the Tiberian Sun **Ion Cannon**, **drop pods** and the **Hunter Seeker**, alongside **Firestorm Defense**, the **EMP Cannon**, component towers with Vulcan, RPG and SAM turrets, and the Mobile War Factory, Sensor Array, EMP and Limpet Drone.
+
+**Every faction looks and sounds like itself.** GDI and Nod play on Tiberian Dawn's own HUD, and each faction has its own radar crest, sidebar tab icons, and EVA lines, in LAN games too. The lobby's faction picker shows each faction's emblem.
+
+**A new front end:** the Tiberian Factions title, main menu, intro, loading screen, and lobbies.
+
+**Walls and gates for every faction.** Each faction builds its own gate, and walls placed in a line fill the gap between them.
+
+**Every faction keeps its own tree, and capturing changes hands.** GDI, Nod, Allies, and Soviets each build their own Construction Yard, MCV, War Factory, and Helipad. Capture a rival's yard or factory and you can build that faction's arsenal too, with badges on the cameos showing which of your factions builds what. The **Unholy Alliance** skirmish mode starts every player with an Allied, Soviet, GDI, and Nod MCV.
 
 **Tiberium.** Green crystal fields alongside Red Alert's ore, worth the same to a harvester. They grow and spread, hurt infantry who walk through them, and infantry who die in them can rise again as visceroids. Blossom trees seed fresh fields around them.
 
-**A 31-map Tiberian Dawn map pack.** Every multiplayer map from Tiberian Dawn and The Covert Operations, converted across temperate, winter, and desert (a theatre Red Alert never had), with Tiberian Dawn's own terrain in full HD. Look for the `[TF]` tag under Custom Maps.
+**Tiberium on Red Alert's own maps.** 151 of the 230 official skirmish maps mix Tiberium fields with the ore, fairly for every start, with lobby thumbnails to match.
 
-**Smarter movement and economy, for all four factions.** A* pathfinding, attack-move (Shift+click), rally points, and more zoom levels, adapted from CFE Patch Redux. Harvesters dock at any faction's refinery, choose fields sensibly, and get themselves unstuck; infantry route around Tiberium and give way to vehicles in narrow passes.
+**Smarter movement and economy, for every faction.** A* pathfinding, attack-move (Shift+click), rally points, and more zoom levels, adapted from CFE Patch Redux. The deploy and select-all keys work for every faction. Harvesters dock at any faction's refinery, choose fields sensibly, and get themselves unstuck; infantry route around Tiberium and give way to vehicles in narrow passes.
 
-**Computer opponents that actually play the factions.** The GDI and Nod AI build a full base, run an economy, tech up, and field a combined-arms army of infantry, tanks, aircraft, and ships, scaling their air power and anti-air to the strongest air force in the match. Each AI takes its own Easy, Medium, or Hard setting from the lobby, shown at the start of every match. You can fill a skirmish with any mix of the four sides.
+**Crate surprises.** Unit crates draw from every faction's vehicles, and a few rare tanks turn up only in crates.
+
+**Computer opponents for every faction.** The AI builds a base, runs an economy and fields an army, with ships on water maps for GDI and Nod. Each AI takes its own Easy, Medium, or Hard setting from the lobby, shown at the start of every match. You can fill a skirmish with any mix of the five sides.
 
 **Authentic look and sound.** Tiberian Dawn unit and EVA voices, plus building and weapon sound effects including the Obelisk's charge-up and red laser and the Ion Cannon strike.
 
 ## How to play
 
-Subscribe on the Steam Workshop, then enable **"Tiberian Factions for Red Alert"** from the mod list when you launch Red Alert in C&C Remastered. Start a skirmish, and GDI and Nod will appear as selectable factions alongside Allies and Soviets, for you and for the AI.
+Subscribe on the Steam Workshop, then enable **"Tiberian Factions for Red Alert"** from the mod list when you launch Red Alert in C&C Remastered. Start a skirmish, and GDI, Nod, and TS GDI will appear as selectable factions alongside Allies and Soviets, for you and for the AI.
 
 (Alternatively, download the release zip from GitHub and extract it into `Documents/CnCRemastered/Mods/Red_Alert/`.)
 
@@ -42,22 +52,11 @@ Subscribe on the Steam Workshop, then enable **"Tiberian Factions for Red Alert"
 
 **Tiberian Factions is HD only.** Play with Remastered graphics: classic graphics mode is locked out, because the mod's new units and buildings have no classic art.
 
-## Coming in the next release
-
-- **Tiberian Sun GDI, a fifth playable faction:** its own tech tree and Tiberian Sun units, with Firestorm Defense, the EMP Cannon, the Hunter Seeker, drop pods, the Mobile War Factory, and more.
-- **Faction identity in the game's own interface:** GDI and Nod play on Tiberian Dawn's HUD, each faction gets its own radar crest, sidebar tab icons, and EVA lines (LAN games included), and the lobby's faction picker shows each faction's emblem.
-- **A new front end:** the Tiberian Factions title, main menu, intro, loading screen, and lobbies.
-- **Walls, gates, and component towers for every faction,** with HD turrets.
-- **Tiberium on the official maps:** Red Alert's own multiplayer maps with Tiberium fields alongside the ore, and lobby thumbnails to match.
-- **Deploy and select-all keys for every faction:** the deploy key works on every MCV, and select-all leaves harvesters and MCVs alone.
-- **Crate surprises:** unit crates draw from every faction's vehicles, with Command & Conquer 3 and Red Alert 2 tanks as rare finds.
-- **AI improvements** across base building, defence, and army use.
-- **Asset packs on the Steam Workshop** for other modders (see below).
-
 ## Planned
 
-- **Tiberian Sun in HD:** Tiberian Sun's buildings and units rebuilt as HD art for the Remastered look.
 - **Tiberian Sun Nod:** Nod as a playable Tiberian Sun faction.
+- **A balance pass for TS GDI and TS Nod:** 5.0.0 uses Tiberian Sun's exact values.
+- **The Tiberian Dawn maps, as a separate download:** the 31 converted Tiberian Dawn maps, with their temperate, winter, and desert terrain, are out of the mod from 5.0.0 to keep its video memory use down, and are planned to return as their own Workshop item.
 - **Smarter AI:** continued improvements to how the computer opponents build, defend, and use their armies and superweapons, including naval invasions.
 - **GDI and Nod campaigns:** story campaigns for both factions.
 - **Co-op missions:** scripted missions for two players.
@@ -65,10 +64,6 @@ Subscribe on the Steam Workshop, then enable **"Tiberian Factions for Red Alert"
 ## Compatibility
 
 This is a **DLL mod**. It replaces the game's `RedAlert.dll`, and only one DLL mod can load at a time, so it won't work alongside any other mod that ships its own DLL (for example, CFE Patch). Disable other DLL mods when running this one. Mods that only change data or art (no DLL) are generally fine.
-
-## Asset packs for modders
-
-The Tiberian Sun, Red Alert 2, and Command & Conquer 3 assets in this repository are laid out as separate packs that other mods can use, one per game and type (graphics, sound effects, EVA, voices), each ready for the Steam Workshop. See [`asset-packs/`](asset-packs/) and [`docs/asset-packs.md`](docs/asset-packs.md).
 
 ## License
 
@@ -100,7 +95,7 @@ The build stages the asset packs into the mod folder (`scripts/stage_asset_packs
 ## Credits
 
 - **EA / Petroglyph:** original Tiberian Dawn (1995) and Red Alert (1996), and the 2020 Remastered Collection.
-- **Westwood Studios / EA:** Tiberian Sun (1999) and Red Alert 2 (2000), and **EA Los Angeles:** Command & Conquer 3: Tiberium Wars (2007), whose art and audio the [asset packs](asset-packs/) carry.
+- **Westwood Studios / EA:** Tiberian Sun (1999) and Red Alert 2 (2000), and **EA Los Angeles:** Command & Conquer 3: Tiberium Wars (2007), whose art and audio the mod uses.
 - **hazelnut** ([SteamGridDB](https://www.steamgriddb.com/)): the Tiberian Sun GDI emblem on the TS GDI faction's cameo badges and faction icon.
 - **[The Assembly Armada](https://github.com/TheAssemblyArmada):** Vanilla Conquer maintainers.
 
