@@ -1637,7 +1637,7 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     **	Check to see if this owner can build the object type specified.
     */
     // TF: a construction yard grants its faction's tree to whoever holds it, so holding a yard listed in
-    // Owner= also passes. A standing TS yard passes for sandbags, whose Owner= lists no TS faction.
+    // Owner= also passes. A standing TS yard passes for sandbags even when TF_TS_GDI_FACTION is 0.
     bool yard_grants = ((own & Yard_Factions()) != 0);
     if (TF_Is_TS_Yard_Wall(type) && Has_Building_Active(STRUCT_TSFACT)) {
         yard_grants = true;
@@ -1666,8 +1666,8 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
         }
     }
 
-    // TF: in skirmish a building needs a standing yard of a faction in its Owner=, except TS-tree buildings
-    // and sandbags, which the TS yard gates. rules.ini can't say this: prerequisites are AND-only.
+    // TF: in skirmish a building needs a standing yard of a faction in its Owner=. The TS yard gates TS-tree
+    // buildings instead, and sandbags pass while one stands. rules.ini can't say this: prereqs are AND-only.
     if (type->What_Am_I() == RTTI_BUILDINGTYPE && Session.Type != GAME_NORMAL) {
         BuildingTypeClass const* btype = (BuildingTypeClass const*)type;
         if (!btype->Is_Construction_Yard()) {
