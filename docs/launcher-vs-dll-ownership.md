@@ -109,7 +109,7 @@ Everything the DLL tells the launcher flows through the single `CNC_Event_Callba
 | HUD credit/power/timer **values** | DLL supplies values; launcher renders | Values yes, rendering no | `CNCSidebarStruct` |
 | Superweapon `$cost` line suppression | Launcher (keyed on the AssetName string) | Only by choosing the AssetName | see "Superweapon $cost line" below |
 | **Superweapon targeted-vs-instant firing** | **Launcher** (compiled: the cameo left-click handler forks on the entry being a superweapon) | **Yes, by a runtime code patch of ClientG** (every player; see "Launcher-resident patches"). Data levers are dead; see below | `TF_Patch_ClientG_Click_Specials`; see below |
-| Launcher-played EVA lines (mission won/lost, select target, low power, cannot deploy, battle control terminated) | Launcher (`Faction_Event_GUI_SFX_*`) | **Yes (shipped)**, by overwriting the cached samples at match start | `eva-ram-patch-spike.md` |
+| Launcher-played EVA lines (mission won/lost, select target, low power, cannot deploy, battle control terminated, repairing, mission saved) | Launcher (`Faction_Event_GUI_SFX_*`) | **Yes (shipped)**, by overwriting the cached samples at match start | `eva-ram-patch-spike.md` |
 | Other launcher GUI stings | Launcher | No (Allied/Soviet only, see below) | strings |
 
 ---

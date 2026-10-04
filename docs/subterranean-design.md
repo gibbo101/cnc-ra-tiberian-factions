@@ -1,113 +1,57 @@
-# Subterranean units — locked design + arc tracker
+# Subterranean units
 
-> **⭐ RESUME HERE (2026-08-28 close: STAGE 2 VERIFIED, DEVIL'S TONGUE = EXACT TS
-> FLAME, joint checkpoint `dd5d65e6` on origin/subterranean rebased onto ts-units
-> `66717e43`; Deck DLL `73c3b8449d05`.)**
-> Verified by Luke in play: dig cycle end to end (under water + cliffs), Stop underground
-> (TS rule kept), owner marker + selection box, enemy AI ignores it, relit hulls, clean
-> cameos, SAPC door art, **TS fire stream "working fine", no crash** after the burn-loop
-> use-after-destroy fix. TS flame = TSFire particles (FLAMEALL 4x19), FireStreamSys stream
-> (2 per 4 frames x 30, twin prongs KEPT by Luke's preference, seats fwd 0x80 split 0x30),
-> TS [Fire] verses + TS Modify_Damage arithmetic in-bullet (48px-cell distance scale,
-> delivered via WARHEAD_TSFLAMEHIT), FLAMTNK1/SUBDRIL1 sounds on dormant hosts.
-> **SAPC VERIFIED ("pass!"):** 5 passengers load, dig, surface, unload; unload refused underground;
-> Stop with cargo surfaces nearby. **OWED (Luke, 2026-08-29): the Devil's Tongue flame-jet firing positions** -- seats are PrimaryOffset 0x80 (TS FLH 128 fwd) + 0x30 lateral split (udata.cpp), deployed in the trace build, never signed off; DESIGN (Luke, 2026-08-29): TS shows one flame from the mouth, but the FMVs show TWO jets, one from each SIDE nozzle -- we honour the FMVs: one jet per side. Measure the side-nozzle pixels on the N-facing packed frame (TSSUBTANK.ZIP frame 0, canvas 384 = 2 cells, 1.333 leptons/px; body bbox x 104-280, y 54-238 = the green nozzle bars on the left/right flanks) -> PrimaryOffset (forward) + PrimaryLateral in udata.cpp, one round. NEXT SESSION. **Still to verify:** `TunnelDigThreshold` dial. **Not done:** DIRTEXPL, save/load of the new fields, dev traces still on
-> (MOD_DEBUG_TUNNEL.txt: cycle + BURN lines).
-> **Next stages:** 3 = sensor detection DEFERRED until the Mobile Sensor Array port (todo.md),
-> 4 = EMP arc wiring `Force_Emerge`. Balance: see todo.md (TS roster pass
-> once units complete).
->
-> **The spec changed under us, for the better:** `reference/OpenTS/code/tunnel.cpp`
-> is TS's actual `TunnelLocomotionClass` (700 lines) and `unit.cpp` ~5220-5360 is
-> the real drive-vs-dig decision. Stage 2 is a PORT of those, not the from-scratch
-> design below (which survives as the locked *presentation* contract). Ground
-> truth from the source: TS digs on EVERY move order unless a short unbroken
-> surface route exists (`Is_Route_Broken`: same zone, Chebyshev < 12, trial walk
-> <= 15 steps); underground travel is a straight line at 19 leptons/tick through
-> any terrain; arrival on a blocked cell = `Nearby_Location` retarget (same zone
-> first, then any); NO legal cell anywhere = self-destruct with C4Warhead; a stop
-> order underground heads for the nearest surfaceable ground; the owner sees
-> `VISUAL_RIPPLE`, enemies `VISUAL_HIDDEN`; sensors detect at height < -20 with
-> `VOX_SUBTERRANEAN_DETECTED`; EMP (`empulse.cpp`) sweeps `LAYER_UNDERGROUND` and
-> calls `Stop_Moving` + stun.
-> **What shipped (commit `33ebd2cd`, worktree rebased onto ts-units HEAD):**
-> `UnitClass` state machine `TUNNEL_IDLE/TURNING/DIGGING_IN/TUNNELING/EMERGING/
-> ABORTING` (`unit.cpp` tail, `Tunnel_AI`); `Assign_Destination` runs
-> `Should_Dig_To` (other zone OR distance >= `[General] TunnelDigThreshold=6`,
-> adjacent never); `UnitClass::Mark` keeps `IsDown` without cell occupancy while
-> tunneling; `TechnoClass::Is_Tunneling()` folded into `Is_Cloaked` (all
-> non-ally target/visibility queries); launcher export = `Cloak=CLOAKED` +
-> `VisibleFlags` cleared for non-allies; `Take_Damage` immune unless forced;
-> `Can_Fire` = FIRE_BUSY, no scatter, no unload in the cycle; water/cliff clicks
-> are legal orders (`What_Action` -> nearest emerge cell); `Force_Emerge()` real,
-> uncalled (EMP arc). Cadence constants at the top of the block: 3 frames/step,
-> DIG at step 4, hull hidden 6 frames after the emerge mound erupts.
-> **ANIM_TS_DIG** = TSDIG.ZIP (37 tiles, `scripts/ts_pack_dig.py`, x4 on a 512
-> canvas, 64x64 stub) — custom anim types DO render (contracts §4 corrected 08-22).
-> **NEXT: Luke's Deck pass.** Checklist: (1) order a Devil's Tongue 2-5 cells
-> away -> drives; >= 6 -> turns, ladder, mound, vanishes, shimmer for the owner,
-> re-emerges facing travel direction; (2) click water / across a cliff -> digs and
-> surfaces on the nearest land; (3) Stop mid-ladder -> levels out; Stop underground
-> -> surfaces nearby; (4) enemy AI ignores it underground; (5) SAPC keeps its 5
-> passengers through a dig and unloads only after surfacing; (6) dial
-> `TunnelDigThreshold` in rules.ini (2-10 band) and the ladder cadence by eye.
-> **Not done:** dig sound (SUBDRIL1 not in CONQUER.MIX — chase in audio stage),
-> owner-side selection while underground untested, mound scale (x4) is a first
-> guess, DIRTEXPL packed nowhere yet, save/load of the new fields untested.
-> **Open decisions (Luke):** detector unit · sensed = reveal-only vs attackable.
-> **Deploy surface: the DECK** (other instance owns the desktop, agreed 08-28).
+**Status:** Reference; shipped in 5.0.0.
+**Open:** the Devil's Tongue side-nozzle jet seats (`todo.md`); save/load of the tunnel state has
+never been tested.
 
-**Origin (2026-08-13):** community challenge (Madrox8: "you're not going to fully
-recreate the subterranean feature, just workarounds" — Luke: "Challenge....accepted").
-Goal: a REAL underground subsystem in the DLL, not the air-unit/stealth workaround
-chain used on INI-only engines. Nod-faction feature; crate-spawn + dev-gated GDI
-war-factory entry for testing.
+The Devil's Tongue (`UNIT_TSSUBTANK`) and Subterranean APC (`UNIT_TSSAPC`) are Nod units in TS, so
+here they are crate-only finds (`_ts_goodies` in `cell.cpp` `Goodie_Check`, `TechLevel=-1`). They dig
+on longer trips (a port of TS's `tunnel.cpp`), a Sensor Array reveals them, and the E.M. Pulse brings
+them up at the nearest ground. Dev builds start the player with a Subterranean APC. Pairs with
+`emp-cannon-design.md`: neither shipped without the other.
 
-**Worktree:** `../tf-subterranean-worktree`, branch `subterranean` (based on
-`ts-units` @ `20350226` for the TS art pipeline). Kept separate from the GDI tree
-work per Luke.
+## What ships
 
-## Locked design (all Luke-ratified in-session)
+**The port.** `reference/OpenTS/code/tunnel.cpp` is TS's `TunnelLocomotionClass`, and OpenTS
+`unit.cpp` ~5220-5360 is TS's drive-vs-dig decision. TS digs on every move order unless a short
+unbroken surface route exists (`Is_Route_Broken`: same zone, Chebyshev < 12, trial walk ≤ 15
+steps); underground travel is a straight line at 19 leptons a tick through any terrain; arrival on a
+blocked cell retargets with `Nearby_Location` (same zone first, then any); with no legal cell
+anywhere it self-destructs; a stop order underground heads for the nearest surfaceable ground.
 
-- **First-class subsystem, not clones.** Own state machine on the unit:
-  `SURFACED → DIGGING_IN → UNDERGROUND → EMERGING`, plus `FORCE_EMERGE` (EMP).
-  Own underground tracking (optionally own occupancy), own damage gate, own
-  detection state. Nothing shared with cloak/limbo/sub systems — zero regression
-  surface on subs, harvester dock, stealth generator.
-- **Live object while under** (NOT limbo — limbo'd objects have no world presence,
-  which breaks EMP and detection). Real `Coord`, ticked straight-line movement
-  (distance/speed, no A*, no zones), pulled out of surface occupancy and normal
-  target scans, immune to all damage except whitelisted (EMP).
-- **Terrain rules:** underground travel ignores ALL terrain including water
-  (TS-authentic — Luke: diggers could cross under water, "they just couldnt
-  surface there"). The ONLY terrain rule is emerge validation: no water/rock/
-  occupied/building; normal arrival scans outward for the nearest legal cell.
-- **EMP interaction (the reason limbo died):**
-  - Force-emerge on a legal cell → surfaces + disabled for the EMP timer.
-  - Force-emerge on an unpassable cell (water, rock, under a building) →
-    **DESTROYED** (Luke: "BOOM! Destroyed" — overrode the nearest-land option).
-    Emergent counterplay: defender EMPs their own base footprint to execute
-    lurking diggers. Present as muffled underground explosion (dirt burst, no wreck).
-  - Player-ordered dig ENDING on water = the gentle case: emerge nearest legal
-    cell to the click (convenience, not punishment).
-- **Detection:** sensor-capable units set an `IsSensed` state; a sensed underground
-  unit is exported to the launcher with `Cloak=CLOAKED` → shimmer silhouette +
-  health bar + selection box for free (per-object Cloak crosses the DLL boundary,
-  `dllinterface.cpp:5553` — presentation reuse only, the wire format is fixed).
-  Undetected = not exported at all. MRJ's `IsJammer` radius scan is the skeleton
-  to crib for the sensor tick.
-- **EMP does not exist in the mod yet.** Arc order: underground system first with
-  `Force_Emerge()` as a real function nothing calls; EMP arc second (TechnoClass
-  disable timer gating fire/move/AI/production + TS EMP Pulse Cannon building
-  port); wire the warhead's underground sweep last. Neither ships to the Workshop
-  without the other — the counter must exist when the threat goes public.
+- **State machine** (`UnitClass::Tunnel_AI`, `unit.cpp`): `TUNNEL_IDLE / TURNING / DIGGING_IN /
+  TUNNELING / EMERGING / ABORTING`. `Assign_Destination` runs `Should_Dig_To` (another zone, or a
+  distance of at least `[General] TunnelDigThreshold=6`; never an adjacent cell).
+- **While underground:** `UnitClass::Mark` keeps `IsDown` without cell occupancy;
+  `TechnoClass::Is_Tunneling()` folds into `Is_Cloaked` for every non-ally query; the launcher
+  export is `Cloak=CLOAKED` with `VisibleFlags` cleared for non-allies; `Take_Damage` is immune
+  unless forced; `Can_Fire` returns FIRE_BUSY; no scatter and no unload. Water and cliff clicks
+  are legal orders (`What_Action` → the nearest emerge cell).
+- **The Subterranean APC** carries 5, digs with them, refuses to unload underground, and a stop
+  order with cargo surfaces nearby.
+- **The Devil's Tongue flame** is TS's: TSFire particles (FLAMEALL 4x19) in a FireStreamSys stream
+  (2 per 4 frames x 30), twin prongs (one jet from each side nozzle, as the FMVs show), TS's
+  `[Fire]` verses and Modify_Damage arithmetic in the bullet, delivered through
+  `WARHEAD_TSFLAMEHIT`. The jet seats are still `PrimaryOffset` 0x80 forward and 0x30 lateral
+  (`udata.cpp`) and want measuring off the side nozzles of the packed N frame.
+- **Detection:** the Mobile Sensor Array shows buried enemies in range to its owner only, as
+  ghost copies that can be seen but not attacked (`emp-cannon-design.md`).
+- **The E.M. Pulse** stuns a digger and reroutes it to the nearest emerge cell, exploding it only
+  if there is none (`Tunnel_Explode`). `UnitClass::Force_Emerge` predates that and has no callers
+  (dead code, `todo.md`).
+- Dev builds trace the dig cycle to `MOD_DEBUG_TUNNEL.txt`.
 
-## Open decisions (non-blocking)
+## Design
 
-- Detector unit: MRJ gains sensor duty for RA era + port TS Mobile Sensor Array
-  for TS era, or one shared unit. (Lean: split.)
-- Detected = reveal-only (TS-authentic, lean) vs attackable underground.
-- Water-click orders: emerge-at-nearest vs refuse at order time.
+- **A first-class subsystem, not clones:** its own state machine, underground tracking, damage gate
+  and detection state; nothing shared with the cloak, limbo or submarine systems.
+- **A live object while under, not limbo** (a limbo'd object has no world presence, which breaks
+  the EMP and detection): a real `Coord`, ticked straight-line movement with no A* and no zones,
+  out of surface occupancy and target scans.
+- **Terrain:** underground travel ignores all terrain, water included; the only rule is where it
+  may emerge (no water, rock, occupied cell or building). A dig ordered onto water emerges at the
+  nearest legal cell.
+- **Detected means seen, not attackable,** as in TS.
 
 ## TS source data (extracted from Steam TS `TIBSUN.MIX` LOCAL.MIX RULES.INI)
 
@@ -130,43 +74,35 @@ anim). `[DIG]` art: `Surface=yes`. FireballLauncher is Damage=0 + fire particles
 (ROF=50, Range=4.25, Burst=2, Warhead=Fire, Report=FLAMTNK1) — map onto our ported
 TD Flame Tank weapon chain rather than porting the particle system.
 
-## Art status (2026-08-13 — DONE, staged in session scratchpad `subterranean/`)
+## Art
 
 - `SUBTANK.VXL/HVA`, `SAPC.VXL/HVA` extracted; **both rendered clean** at the
   FLEET-STANDARD camera: `vxl_render.py --frames 32 --yaw0 90 --px-per-voxel 12
-  --elev 32` (Luke's 2026-08-04 fleet angle per `ts_pack_units_wave.py` — NOT the
-  54° spike default, which reads top-down; Luke caught a first render at 54).
+  --elev 32`, the fleet angle (54° reads top-down).
   Devil's Tongue = twin flame prongs forward; SAPC = striped drill nose.
 - `DIG.SHP` (37 frames): mound erupts → churns → collapses to a settling ring.
   ⚠ Decode anims with **remap=None** — `ts_shp.py`'s CLI hardcodes remap 16–31
-  team paint, which turned the thrown-dirt highlights fake green (Luke caught it).
+  team paint, which turned the thrown-dirt highlights fake green.
   In ANIM.PAL, 16–31 are real tan/ochre dirt tones; the anim is ALL earth (no
-  baked grass), so it sits fine on any theater. True-color frames staged in
-  `dig_frames_true/`.
+  baked grass), so it sits fine on any theater. Packed by `scripts/ts_pack_dig.py` as
+  `ANIM_TS_DIG` (TSDIG.ZIP, 37 tiles, x4 on a 512 canvas, 64x64 stub).
 - **Dive/emerge is NOT an asset — TS did it as an engine transform** (voxel
   pitched nose-down and sunk under the DIG mound; proof: the complete 282-entry
   `[Animations]` registry has only DIG + DIRTEXPL, SAPC.HVA = 1 static frame,
   and both units carry `IsTilter=yes` runtime-tilt flags). Recreated by baking
-  pitched renders — **Luke signed off the 8-direction dive/emerge motion
-  ("looks good!") 2026-08-13.** Approved ladder: dive `0/-8/-16/-24/-32/-40`,
+  pitched renders, 8 directions. The ladder: dive `0/-8/-16/-24/-32/-40`,
   emerge `+40/+32/+24/+16/+8/0`, 8 main facings (DLL snaps facing at dig start),
   ~112 total shapes — under the 128 sub-object cap. DLL adds the sink offset and
   plays DIG over the top during DIGGING_IN/EMERGING.
-  ⚠ `vxl_render.py` BUG FIXED here: `--pitch` was parsed but never forwarded to
-  `render_frame` — every CLI pitch render ever made was silently FLAT.
-  **Cherry-pick to `ts-units`** and check whether any dropship/VTOL art expected
-  a flare pitch (it came out flat if rendered via the CLI).
-- `DIRTEXPL.SHP` extracted — ready-made for the EMP-over-unpassable BOOM kill.
-- Cameos `SUBTICON.SHP`/`SAPCICON.SHP` extracted. `SUBDRIL1.AUD` NOT in
-  CONQUER.MIX — chase in a sound mix during the audio stage (MS-ADPCM re-encode
-  rule applies, see launcher-render-contracts.md).
-- Scratchpad is session-scoped: re-run the extraction (recipe above, tools/
-  ts_extract.py) if starting fresh; contact sheets `sheet_subtank/sapc/dig.png`.
+  ⚠ `vxl_render.py --pitch` was once parsed but never forwarded to `render_frame`, so every CLI
+  pitch render was flat; fixed.
+- `DIRTEXPL.SHP` is extracted but unused. Cameos `SUBTICON.SHP` / `SAPCICON.SHP`. SUBDRIL1 (dig)
+  and FLAMTNK1 (flame) ship as MS-ADPCM WAVs (`td-audio-routing-recipe.md`).
 
-## Transition choreography (Luke-approved 2026-08-13, GIF v5 — the stage-2 spec)
+## Transition choreography
 
-Dialled over five preview rounds on the Desktop GIF; encode these rules in the
-DIGGING_IN/EMERGING states, with tick counts as the tunables:
+Dialled over five preview rounds and encoded in the DIGGING_IN / EMERGING states; the tick counts
+are the tunables:
 
 - **Angle leads, sink follows.** The 5-step pitch ladder plays AT SURFACE level
   (no submergence while tilting; only a small cosmetic settle, ~0→26px at pack
@@ -181,18 +117,3 @@ DIGGING_IN/EMERGING states, with tick counts as the tunables:
   while the ladder levels off, finishing clean before the unit drives away.
 - Preview cadence (110ms GIF ticks, a starting point for engine frames):
   2 ticks per ladder step, DIG at tick 6, hidden at tick 10, DIG spans ~14.
-- Preview artifacts: `~/Desktop/subterranean-underground-cycle.gif` (full
-  cycle) and `subterranean-dive-preview.gif` (stationary close-up). Both
-  regenerate from the packed zips + scratch DIG frames; the builder scripts
-  live in the session transcript, but the rules above are the contract.
-
-## Remaining arc stages
-
-1. Pack art (`ts_pack_art.py` pattern: TGA/meta crop contract, classic stub for
-   size, +8 voxel rotation convention) + stamp `UNIT_TSSAPC`/`UNIT_TSSUBTANK`
-   through the units-wave pipeline (check `Tracked=` — 3rd-occurrence trap).
-2. Underground subsystem (state machine, layer list, linear mover, damage gate,
-   emerge validation, force-emerge, DIG anim + crate/dev-WF hookup).
-3. Sensor detection + Cloak-export render path.
-4. EMP arc (disable mechanic + Pulse Cannon port) and the force-emerge wiring.
-5. Audio (SUBDRIL1 + voices), balance pass, Nod tech-tree placement.
