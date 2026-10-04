@@ -3084,7 +3084,10 @@ ActionType AircraftClass::What_Action(ObjectClass const* target) const
     }
 
     /*
-    **	Special return to friendly repair factory action.
+    **	Special return to friendly repair factory action. ACTION_SELECT is the only owner
+    **	check here: What_Action answers it for a same-house building alone, so the
+    **	ACTION_ATTACK-only exclusion the dock overrides above use would let an unarmed
+    **	aircraft dock at an enemy repair bay.
     */
     if (House->IsPlayerControl && action == ACTION_SELECT && target->What_Am_I() == RTTI_BUILDING) {
         BuildingClass* building = (BuildingClass*)target;
