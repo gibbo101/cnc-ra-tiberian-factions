@@ -30,8 +30,7 @@ REMASTERED = Path.home() / '.steam/steam/steamapps/common/CnCRemastered'
 TS_INSTALL = Path.home() / '.local/share/Steam/steamapps/common/Command & Conquer Tiberian Sun'
 MOVIE_MEGS = {'RA': 'MOVIES_RA.MEG', 'TD': 'MOVIES_TD.MEG'}
 TS_MIXES = ('MOVIES01.MIX', 'MOVIES02.MIX', 'movies03.mix')
-MUSIC = {'RAR_MUS_HELL_MARCH.WAV': 'RAR_MUS_HELL_MARCH_pcm16.wav',
-         'RAB_MUS_HELL_MARCH_FKTS.WAV': 'RAB_MUS_HELL_MARCH_FKTS.WAV'}
+MUSIC = {'RAR_MUS_HELL_MARCH.WAV': 'RAR_MUS_HELL_MARCH_pcm16.wav'}
 
 
 def shot_movies(path):

@@ -14,7 +14,7 @@ RA/OVERRUN	270	4	Soviet tank rolls over the camera
 TD/STEALTH	640	4	Stealth Tank decloaks, base explodes
 TS/UNSTPBLE	100	4	Mammoth Mk II through a Nod base
 RA/CRONFAIL	120	4	Chronosphere overload
-TD/NOD9	1500	4	flame tanks, fireball (1080p)
+TD/SPYCRASH	300	4	a plane hits a minaret, fireball behind the dome
 TS/ORCASTRK	105	4	Orca strike
 RA/TRINITY	210	4	nuke by the Eiffel Tower
 # --- half-second cuts (1 beat) from the hit two bars into the band (36.28 s) to the next phrase (40.28 s) ---
@@ -26,3 +26,5 @@ TD/NAPALM	700	1	napalm
 TS/EMPULSE	220	1	EMP pulse
 RA/SITDUCK	900	1	battleship explodes
 TD/IONTEST	380	1	Ion Cannon test
+# --- the finale, from the phrase at 40.28 s: the flames engulf the street on the next bar (42.28 s), where Hell March starts to fade; the shot dissolves into the title over its last beat ---
+TD/NOD9	1484	7	Nod flame tanks roll in and flame the street
