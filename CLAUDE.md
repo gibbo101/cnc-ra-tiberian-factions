@@ -1,8 +1,8 @@
 # Tiberian Factions: code rules
 
 A fork of Vanilla Conquer (`upstream`) with our code interleaved into EA's and VC's. These
-rules keep ours easy to find, easy to read and easy to merge. Machine, deploy and doc-map
-notes live in the workspace `../CLAUDE.md`.
+rules keep ours easy to find, easy to read and easy to merge. Machine and deploy notes live in
+the workspace `../CLAUDE.md`.
 
 ## Ours and theirs
 - EA and VC code and comments are never edited for tidiness. Touch them only for a
@@ -61,6 +61,10 @@ notes live in the workspace `../CLAUDE.md`.
 - Probes and previews for open work go in `scripts/probes/` and are deleted when that work
   ships or the bug is fixed, like diagnostics. A probe worth keeping moves to `scripts/`,
   and a doc names it.
+
+## Docs
+`docs/README.md` is the index and the rules: a status line under every title, what ships rather
+than how it got there, no names or dated decisions. `scripts/docs_check.py` checks them.
 
 ## Review and testing
 - `tests/` holds Vanilla Conquer's renderer tests. Game logic is verified by a build and a
