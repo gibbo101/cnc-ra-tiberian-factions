@@ -172,6 +172,34 @@ The zip has `Vanilla_RA/` at its root (ModDB links to it). Then bump the local `
 
 ---
 
+## Asset packs
+
+Each `asset-packs/<Pack>/` folder is its own Workshop item (`docs/asset-packs.md`).
+
+```bash
+python3 scripts/asset_pack_docs.py       # README.md and ccmod.json per pack, from its contents
+python3 scripts/asset_pack_workshop.py   # uploads, manifests and previews (one pack: name it)
+```
+
+`asset_pack_workshop.py` stages each pack as `dist/asset-pack-uploads/<Pack>/<Pack>/` (the
+named-subfolder layout, so a pack also shows in the in-game mod list, as TD-Assets does), writes
+`tools/workshop-uploader/packs/<Pack>.json` with a BBCode description built from the pack's
+contents, and draws `tools/workshop-uploader/packs/<Pack>.jpg`. A manifest that already exists
+keeps its `publishedfileid` and `visibility`; a new one starts Private (`2`).
+
+Publish (Step 0 applies: restart Steam first):
+
+```bash
+cd tools/workshop-uploader
+dotnet run --no-build -- packs/<Pack>.json "v1.0.0: first release"
+```
+
+The first publish creates the item and writes its `publishedfileid` back into the manifest:
+commit that. Self-test on the Deck (subscribe, check the files land), then make it Public from
+the item's Owner Controls. A pack's own `ccmod.json` version follows the pack, not the mod.
+
+---
+
 ## Troubleshooting
 
 ### Hang at "preparing config" with no progress

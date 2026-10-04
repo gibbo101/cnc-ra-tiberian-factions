@@ -64,6 +64,9 @@ only the `RA_` files. A pack's XML files are what a modder copies, and what the 
   block of the same name. `check` reports without moving.
 - **After adding to a pack:** `python3 scripts/asset_pack_docs.py` refreshes its README and
   ccmod.json.
+- **Publishing:** `python3 scripts/asset_pack_workshop.py` stages each pack for upload and writes
+  its Workshop manifest and preview; the steps are in `docs/workshop-publish-runbook.md` (Asset
+  packs).
 
 ## Not yet in the packs
 
