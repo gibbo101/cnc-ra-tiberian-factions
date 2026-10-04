@@ -20,8 +20,8 @@ re-audit of `ai-improvements.md` (all statuses verified against HEAD), six targe
 agents, and the AI Boost 3.2 reference source (`reference/ai-boost2/`, GPL, licence verified).
 
 Companion docs: `ai-improvements.md` (problem inventory + re-audit banner),
-`chokepoint-reservation-design.md` (pathfinding record), `feedback-difficulty-philosophy`
-(memory: behavioural difficulty only, never stat/economy multipliers).
+`chokepoint-reservation-design.md` (pathfinding record). Difficulty stays behavioural: never stat
+or economy multipliers.
 
 ---
 
@@ -90,7 +90,7 @@ Companion docs: `ai-improvements.md` (problem inventory + re-audit banner),
 - Proactive radar (shipped f8351de) and proactive naval — but naval only after a WATER
   EVALUATION (pond → don't bother).
 - GDI/Nod early-eco fix (comm center/repair bay arrive too early; the Temple starvation bug
-  was fixed by the uniform build-choice tie-break, `d4f3da7`).
+  was fixed by starvation ageing in the build choice, `feab517`; see Phase 0 in §6).
 - Stage-aware unit values: light/fast units score as scouts early, decay as combat picks
   later; composition scored against SCOUTED enemy composition (no hardcoded faction doctrine).
 - Sea transports: AI ferries ground forces across water, smartly.
@@ -138,7 +138,7 @@ Companion docs: `ai-improvements.md` (problem inventory + re-audit banner),
 
 > **DESIGN CONSTRAINT (2026-07-18): build for N factions, not 4.** TS GDI/Nod (and a
 > possible multi-era spin-off: TD+RA+TS+RA2 = 8 factions) are design-feasible via
-> decoupled country houses — see `ts-factions-feasibility.md`. Anywhere W2 encodes
+> decoupled country houses — see `ts-gdi-faction.md`. Anywhere W2 encodes
 > "the four factions" (placeholder ActLike tables, prereq remap lists, role-flag
 > dispatch), prefer data/loop-driven over 4-way literals. The role-flag refactor in
 > finding 4 already points this way; this note makes it binding.
@@ -199,8 +199,7 @@ Happening now, in ordinary skirmish, on every capture.
 **The one rule that must hold everywhere:** role presence counts must aggregate across *all*
 lineages. Miss a single role and the AI builds one barracks per tree, because each individual
 type's count is zero. The ad-hoc sums above are the pattern to lift into a role table — which
-is the "role tag in rules.ini" the substitution comment at `house.cpp:6615` already calls the
-clean fix, and matches finding 4's role-flag refactor.
+is a role tag in rules.ini, which matches finding 4's role-flag refactor.
 
 #### Counting rules
 
@@ -260,8 +259,7 @@ price for every building; no cost/armour/firepower bias. Assign in W7.
 Our policy stays lobby difficulty + `rules.ini` dials: take AI Boost's mechanism, not its INI
 surface.
 
-**The home-faction bias is a weight, not a gate** (keeps difficulty behavioural —
-`feedback-difficulty-philosophy`). Useful emergent property: with aggregate role counting the
+**The home-faction bias is a weight, not a gate** (keeps difficulty behavioural). Useful emergent property: with aggregate role counting the
 AI fills each role *once*, and the weight decides which lineage fills it — so "GDI builds GDI
 first" falls out without an explicit phase. Cross-tree picks then appear naturally at the
 margins: second factories, defences it lacks, roles its own tree cannot fill.
@@ -276,7 +274,7 @@ margins: second factories, defences it lacks, roles its own tree cannot fill.
   refinery bug.
 
 **Build it for N lineages, not 4** (the standing constraint above). The ownership-gated TS
-tree in `ts-factions-feasibility.md` is the fifth lineage and the reason this matters: it is
+tree (`ts-gdi-tree-plan.md`) is the fifth lineage and the reason this matters: it is
 what breaks 4-way literals, and it is inert to the AI until this lands.
 
 **Internal phasing:** (a) **SHIPPED 2026-07-19 `2017ce3`** — `sidebarglyphx.cpp:474` now
@@ -294,8 +292,8 @@ entities — corrected plan, postmortem §5); (c) War Factory; (d) Helipad last
 eight faction yards and MCVs as pipeline-built types (`STRUCT_AFACT/SFACT/TDGFACT/TDNFACT`,
 `UNIT_AMCV/SMCV/TDGMCV/TDNMCV`) with `Owner=` narrowed per faction (`2090573c`); the Allied/Soviet
 war factory split (`5ffa98db`); the four-way helipad split (`3492bf1b`). Vanilla
-`FACT`/`MCV`/`TDFACT`/`TDMCV` keep their identities for stock-campaign content. The record of the
-falsified routes is `w2b-conyard-split-postmortem.md`.
+`FACT`/`MCV`/`TDFACT`/`TDMCV` keep their identities for stock-campaign content. How sidebar names
+resolve is in `faction-select-identity.md`; the tileset-key trap is `td-port-playbook.md` §3.30.
 
 > **b3 dispatches on the UNIT's TYPE.** With 4 real MCV types the
 > type itself carries the faction — an MCV built by a captured factory IS that faction's
@@ -311,19 +309,13 @@ falsified routes is `w2b-conyard-split-postmortem.md`.
 urgency", `Check_Raise_Money` tops out at MEDIUM, and `Check_Fire_Sale`'s condition requires
 already having no yard); `team.cpp:2968` unreachable (all 93 shipped maps have empty
 `[TeamTypes]`); `conquer.cpp:651` dead code (launcher owns input, `Keyboard_Process`
-commented out in dllinterface.cpp); `TF_Skirmish_Equivalent`'s missing yard case is CORRECT
-(`AI_Building` never queues a ConYard). Also **units are NOT past bit 31** — `UNIT_MCV`=11,
+commented out in dllinterface.cpp). Also **units are NOT past bit 31** — `UNIT_MCV`=11,
 `UNIT_TDMCV`=22, first overflow is `UNIT_TDSTNK`=32; only BUILDINGS overflow
 (`STRUCT_TDFACT`=102). Two real finds left open: the crate MCV is faction-blind
 (`cell.cpp:2662` + the `UNITF_MCV` test at `:2520`), and `house.cpp:8371` shifts `UScan` by
 the unit Type with NO `< 32` guard, so `UNIT_TDSTNK`..`UNIT_TSHVR` alias onto bits 0-5 —
 naively adding the guard risks a spurious defeat via the `!UScan` check, so it needs a unit
 shadow table, not a one-liner.
-
-> ℹ️ **This block was corrected 2026-07-19 (late evening).** The earlier claims — `Name=`
-> drives the sidebar label, reuse vanilla slots for the Allied pair, don't split the MCVs,
-> `UnitClass::ActLike` — were all superseded; `docs/w2b-conyard-split-postmortem.md` has the
-> falsified-theory list and the corrected plan (which the text here now reflects).
 
 **Naming spec.** Every type W2
 splits is today a SHARED entry with no per-faction name, so the split silently produces
@@ -366,6 +358,28 @@ retiring that need. Each of (b)/(c)/(d) should check whether it removes a remap 
 adding one.
 
 ### W3 — The brain: build planner + placement
+
+**Base placement, fixed in 5.0.0.** GDI held thousands of credits and could not place a refinery,
+war factory or depot (12 `PLACE-FAIL` lines, all GDI). Three defects, all EA-original:
+`Recalc_Center` divided the unweighted distance sum by the cost-weighted count, so an expensive
+base got a Radius 2-3x too small and `Which_Zone` (which rejects past `Radius*4`) shrank the build
+search to a disc the base itself filled (`6604354`); `Find_Build_Location`'s fallback returned a raw
+`CELL` where a `COORDINATE` was expected, so a full preferred zone discarded the building (broken
+since 1996 in EA's source; worth upstreaming; `eb5d6d8`); and a stalled factory scrapped its order
+instead of holding it (`265d632`). `Find_Cell_In_Zone` now also filters by its zone, so each pass of
+the try-any-zone fallback searches fresh ground. Verified: 0 `PLACE-FAIL` to F11,944, radius 850-950
+at 7 buildings. With yards far apart, each building joins the cluster of its nearest yard (weighted
+by cost) and only the heaviest cluster feeds Center, Radius and the zone ratings; a remote yard
+places its own products round itself (`TF_Find_Cell_Near_Yard` in `building.cpp`).
+- **Diagnostic:** `PLACE-FAIL <type> reason=... | rejects radar= zone= legal= prox= ok= | center=
+  radius=` in `MOD_DEBUG_AI.txt` (dev builds) names the predicate that rejected the cells.
+- **Falsified, do not re-chase:** TD buildings as invalid proximity anchors (`IsBase` defaults true
+  and they set `BaseNormal=yes`); infantry spam starving the expensive builds (the failures were
+  placement, with healthy cash); a too-small search area; the in-limbo `BQuantity` count as the
+  cause (real, `known-issues.md`, but it only decides which building thrashes).
+- **Reading trap:** `PROD start` proves only that an order began. Three wrong conclusions came from
+  reading it as completion; confirm against `CurB`, the `ROLE` counts or the screen. (`TDMTNK` is
+  the GDI Medium Tank; the Mammoth is `TDHTNK`.)
 
 **W3 economy-first, shipped in 5.0.0 (the first slice of item 1):** refinery target paced by
 sim-minutes (2 @2.5, 3 @6, 4 @10; vanilla ratio kept as a floor; HIGH while below pace),
@@ -411,8 +425,8 @@ arrive via the starvation rescue; it waits until the pieces work together.
      never built at all — fatal for GDI, whose Mammoth Tank is prereq-gated on TDFIX —
      so it was promoted. That fixed "never" and produced "immediately": HIGH outranks
      the refinery, and Nod's MEDIUM still beats a second refinery. Likely more visible
-     since the uniform top-urgency tie-break (`d4f3da7`), which lets it win cycles it
-     previously lost by scan order.
+     with starvation ageing (`feab517`), which lets a long-waiting candidate win cycles it would
+     lose by scan order.
    - **Fix direction: gate on economy, don't just lower urgency.** Dropping back to LOW
      re-breaks the Mammoth tier. Instead make eligibility conditional — require a
      refinery (ideally a war factory and/or second refinery) before the choice is
@@ -435,7 +449,9 @@ is now count AND value (8,000 credits at list cost, every tier) AND stage (a war
 exist); value ceilings 18/22/26k by tier; the floor decays only for a strangled economy.
 **W4 staging (Route B), shipped in 5.0.0:** committed ground units march to a cell nine short
 of the nearest DISCOVERED enemy building on the house's own landmass, gather (70% or four
-sim-minutes), and release together; Hard releases on the CFE attack-move with a six-minute
+sim-minutes), and release together; Hard releases on the CFE attack-move (its objective is the
+enemy building's cell, not the building, so destroying it mid-march doesn't cancel the order,
+`TF_Wave_AI`) with a six-minute
 shepherd that converts arrivals to hunt; no staging cell + Hard = attack-move from home; a
 gathering wave blocks relaunch; the ferry draft exempts wave members. Route A (TeamClass) not
 attempted. History below.
@@ -552,13 +568,32 @@ Research complete (agent report, §7). Two routes for staging-then-blob:
        could satisfy the MCV gate); they reset in `HouseClass::Init`.
      - A naval yard and its parked fleet can seal their own channel, and zones ignore buildings,
        so no zone check sees it (the open harbour-seal item in `todo.md`).
+   - **Ferry pipeline** (`TF_Ferry_AI`, `TF_Ferry_Eligible`): a Hard house never has idle teamless
+     guards (team recruitment claims every new fighter), so drafting only spares sat at roster 0;
+     hence the STAGING and DOOMED draft levels. The roster drafts nearest-first and sends draftees
+     straight to a staging cell at the water's edge (heap-order drafting, or leaving draftees in
+     place, ran the load timer out and shipped one-unit loads). PICKUP: a transport that stops
+     short (harbour mouth blocked by its own yard and fleet) gets a fresh move order after 60
+     frames and is never put into LOAD. SAIL: the drive layer waits behind any hull in the lane
+     and an enemy ship never moves aside, so a parked transport re-paths after 60 frames, with the
+     `TF_FERRY_SAIL_REPATH` distance watchdog for slower cases. UNLOAD: when `Desired_Load_Dir`
+     finds no free beach cell, one retry re-plans toward the enemy base.
+   - **Fleet size** (`TF_Naval_Fleet_Cap`) matches the strongest single enemy navy, not the sum,
+     with no margin, so two AIs settle level; the floor keeps enough ships to bombard a navy-less
+     enemy's shore, the ceiling stops a naval war eating the economy.
+   - **Fleet doctrine** (Expert_AI): blind, idle warships patrol random cells of the assessed
+     water zone (`TF_Naval_Patrol_Cell`); once the coast is known the first idle warship plants a
+     rally and the others close on it; the fleet releases as MISSION_HUNT at
+     max(3/4 of the cap, `TF_NAVAL_WAVE_MIN`) and the rally clears.
+   - **The naval yard isn't gated on finding an enemy shore:** such a gate gives factions with
+     recon specials (spy plane, recon flight) a standing naval head start.
    - **Testing:** `MOD_DEBUG_AI.txt` is written to `USERPROFILE`, which some runs resolve to
      `pfx/drive_c/users/steamuser/` rather than `Documents/CnCRemastered/`; check both. Before a
      deploy, wait for a full game exit with `pgrep 'InstanceServerG[.]exe'` (a bare
      `pgrep -f InstanceServer` matches itself). Restarting a match does not end InstanceServerG.
 3. **Superweapons for RA factions:** Iron Curtain + Chronosphere AI dispatch + AI-aware
    targeting (P3b/3c — currently reads the mouse; AI Boost has working IC/Chrono usage as
-   reference); parabomb ungate (P3d) — delivers the MISSED Soviet parabombs item from v4.0.
+   reference). Parabombs go to any house with an active real airfield (`STRUCT_AIRSTRIP`).
    - **AI builds the Missile Silo (RA nuke host):** the firing path already exists and is
      fair-fog-aware (`Special_Weapon_AI(SPC_NUCLEAR_BOMB)`, gated on active MSLO +
      IQ >= Rule.IQSuperWeapons) — the AI just never queues the host, exactly the TDTMPL
@@ -566,7 +601,9 @@ Research complete (agent report, §7). Two routes for staging-then-blob:
      Stealth Generator slot (one silo, full power + income gates). Both RA sides can build
      it: a house holding an Allied yard satisfies `[MSLO] Prerequisite=stek` with its own
      Advanced Tech Center (`Can_Build` in `house.cpp`). Still open: the AI never queues it.
-4. **Special units:** Spy/Thief/Dog AI production + usage (currently Value=0, never built);
+4. **Special units:** Spy/Thief/Dog AI production + usage (currently Value=0, never built). The
+   AI's combat pick also excludes the Limpet Drone, Mobile EM-Pulse, Mobile Sensor Array and Mobile
+   War Factory (`AI_Unit`): they are for human players and scripted events, until each has AI use;
    AI Boost engineer/spy/MAD-tank handling as reference.
 
 ### W6 — Team coordination (v1 scope, Claude's call)
@@ -597,7 +634,7 @@ decision-gated (§2.3).
 ## 4. What's already fixed (do not redo)
 Radar/tech progression (f8351de), harvester intelligence arc (threat-aware fields 2f80f76,
 load-balanced refineries 5e14772, anti-stuck watchdog, IsTiberiumShort reset), Repair Bay
-queue (TDFIX), TD Ion/Nuke auto-fire, building Points targeting values (ai-targeting.md OBE),
+queue (TDFIX), TD Ion/Nuke auto-fire, building Points targeting values (`td-building-separation-recipe.md` gotcha 12),
 A*/attack-move/chokepoint give-way/group-spread (v2.2-2.3), Session.Type sweep confirmed NO
 undiscovered high-severity gates (audit 2026-07-17).
 
@@ -621,15 +658,21 @@ undiscovered high-severity gates (audit 2026-07-17).
   ported into AI_Attack (harvesters exempt from scatter, a dock-approach hazard; defences counted
   by an armed-building scan; thresholds 80/95/100%, internal constants; unsent armed units stand
   GUARD_AREA at home; TDE6 joins RENOVATOR in the engineer hunt clause); the build-choice
-  diagnostic (TF_AI_DIAG: per-cycle candidate POOL and WIN in `MOD_DEBUG_AI.txt`); and the
-  uniform tie-break that ended the Temple starvation (`d4f3da7`): the winner had been the first
-  candidate at max urgency in scan order.
+  diagnostic (TF_AI_DIAG: per-cycle candidate POOL and WIN in `MOD_DEBUG_AI.txt`). The Temple
+  starvation (the first candidate at top urgency in scan order always won, so the Temple never did)
+  is fixed by **frame-based starvation ageing** (`feab517`, 5.0.0): the first top-urgency candidate
+  in scan order still wins, unless one at top urgency has waited at least `STARVE_FRAMES` (7500)
+  frames, when the longest-waiting wins. Measured in frames, not decision cycles: with half a dozen
+  candidates tied at MEDIUM, a cycle count let the late-scan defences jump the queue in turn. A
+  uniform random tie-break (`d4f3da7`) came first and was replaced.
 - **Phase 1, shipped in 4.1.0 (merged `e01bc35`):** W7 maps each AI's difficulty to an IQ tier
   (Easy=3, Normal=4, Hard=MaxIQ, `TF_AI_IQ_From_Difficulty`) with stat handicaps left at 1.0x and
   IQProduction lowered 5→3; W1.5 allows one AI order per factory category, ending the
   parallel-build cheat and the FactoryMax heap exhaustion; W1.2 records per-house discovery for
   AI houses (`IsDiscoveredByPlayerMask`), gates `Evaluate_Object` and `Special_Weapon_AI` on it,
-  and reveals an attacker to its victim; W1.3 sends blind hunters to probe start positions, and
+  and reveals an attacker to its victim; W1.3 sends blind hunters to probe start positions (least
+  recently probed first, so scouts sent together fan out; distance only breaks ties,
+  `TF_Scout_Destination`), and
   the Expert_AI blind-scout dispatcher keeps two scouts out while a house knows no enemy
   building (fair fog otherwise produced a four-way turtle). The client's `CNC_Set_Difficulty`
   always sends 1, so difficulty comes from the per-slot lobby read (`lobby-difficulty-ram-spike.md`)

@@ -1,5 +1,7 @@
 # Known issues
 
+**Status:** Tracker. Open bugs, and player-facing limitations a mod cannot fix.
+
 The tracker for open bugs, and for player-facing limitations a mod cannot fix, so nobody
 re-investigates them. Checked against main at the 5.0.0 release (2026-10-04).
 
@@ -43,9 +45,36 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
   gives GDI and Nod their own units, and TS GDI its vehicles, but skips infantry for TS GDI. The
   code comment says no TS infantry exists; TSE1, TSE2 and the rest do now.
 
+### TS Engineer shows the damage cursor over a healthy building
+- **Severity:** minor (the click still captures outright; only the cursor misleads).
+- `InfantryClass::What_Action` (`infantry.cpp`) picks the cursor with its own `td_single` test,
+  which counts GDI and Nod houses but not `INFANTRY_TSENGINEER`; `Per_Cell_Process`, which does the
+  capture, includes it. So a TS Engineer of any other house, TS GDI's own included, shows the damage
+  cursor over a building above the capture threshold, then captures it on arrival. Confirmed in
+  play.
+- Fix shape: add `|| *this == INFANTRY_TSENGINEER` to `What_Action`'s `td_single`.
+
+### Infantry pushed aside in a narrow pass lose their orders (suspected)
+- **Severity:** minor.
+- When a vehicle drives through a one-cell pass, `DriveClass::Drain_Infantry_Along` (`drive.cpp`)
+  gives each untethered friendly infantryman ahead a one-cell `MISSION_MOVE` out of the way, and
+  nothing restores his order. A soldier walking through the pass, or an engineer on
+  `MISSION_ENTER` heading to capture, would stop one cell aside and stay there. Not yet seen in play.
+- Fix shape: re-issue the man's mission and destination once he has stepped aside, or push only
+  men with no order of their own.
+
 ---
 
 ## Audio and launcher art
+
+### GDI and Nod players' RA special infantry answer in TD soldier voices (suspected)
+- **Severity:** cosmetic.
+- `InfantryClass::Response_Select`, `Response_Move` and `Response_Attack` (`infantry.cpp`) return
+  TD's generic lines for every infantry type when `PlayerPtr->ActLike` is GDI or Nod, before EA's
+  per-type answers for Tanya, dogs, spies, medics, thieves and Einstein. A GDI or Nod player holding
+  an Allied or Soviet yard trains those units, so they would answer as TD riflemen. Not yet seen in
+  play.
+- Fix shape: take the GDI/Nod branch only for types without their own response set.
 
 ### "Unable to comply, building in progress" plays in the RA voice for GDI, Nod and TS GDI
 - **Severity:** cosmetic. Queued as a post-release job in `todo.md`.
@@ -88,6 +117,12 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 - One LAN match settles it: either joiners hear their own faction's tick (done), or the host hears
   everyone's, which means the id is a local filter and the data-side route in
   `building-sound-routing.md` §2 is needed.
+
+### The radar on/off sting never plays with two or more humans
+- **Severity:** cosmetic.
+- The debounce in `HouseClass::AI` (`tf_radar_on`, `tf_pending`, `tf_stable`) is function-static,
+  shared by every human house. With two or more humans their states alternate, nothing holds the 8
+  frames the debounce needs, and no sting plays (it never loops). Fix shape: per-house state.
 
 ### First solo skirmish after a LAN session spawned the LAN lobby's AIs (seen once)
 - **Severity:** minor, unreproduced.

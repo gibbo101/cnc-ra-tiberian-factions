@@ -46,6 +46,12 @@ if ! python3 scripts/unit_centring.py --check > /dev/null; then
     exit 1
 fi
 
+# A release ships with its docs closed out to the rules in docs/README.md.
+if ! python3 scripts/docs_check.py >&2; then
+    echo "ERROR: the docs break the rules in docs/README.md. Fix them before packaging." >&2
+    exit 1
+fi
+
 echo "==> Release build (TF_DEV_BUILD=0 — dev cheats compiled out)"
 CMAKE_TOOLCHAIN_FILE=cmake/i686-mingw-w64-toolchain.cmake \
   VC_CXX_FLAGS="-w;-fpermissive;-DTF_DEV_BUILD=0" \

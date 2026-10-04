@@ -167,6 +167,18 @@ porting rule is "document deviations."
   boats exempt. Deliberately does *not* switch between two armed targets (avoids dithering) —
   it only breaks passive-building tunnel-vision. Verified in play.
 
+### 1.3 Attack-move special cases (`TechnoClass::AI`)
+
+- **Chrono Tank:** when charged it teleports toward `RememberedNavCom`. `Teleport_To` resets
+  attack-move, so the state is saved and restored, only while `NavQueue` still holds movement. This
+  replaces CFE's `SkipNavQueueUpdate`, which is not ported.
+- **Boats:** `AttackMoveBoatClock` is set to 180 on engaging and, for its last 90 frames, forces the
+  boat back to moving. Boats drop out-of-range targets rather than chase them (turning, jams,
+  beaching). Subs are exempt from the lock, missile subs from the give-up.
+- **Dogs and aircraft** never retarget mid-fight.
+- **Aircraft out of ammo** always abort an attack-move; CFE does so only with its Smarter-Aircraft
+  option.
+
 ## 2. QoL second wave (candidates, not yet decided)
 
 - **Q-Move Overhaul** (1.8) — queued-waypoint system rework; optional loops + aircraft q-move.

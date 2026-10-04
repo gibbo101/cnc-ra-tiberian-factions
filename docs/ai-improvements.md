@@ -10,8 +10,8 @@ compiled out), 11 (`Computer_Paranoid` gated), 12 (threat map dead in skirmish),
 recruit gated), 15 (friendly fire on buildings only), 16 (enemy fixation), 17's `IsScanLimited`,
 A-Cheat 3 (MCV deploy shoves own units), spy/thief/dog production.
 
-`ai-targeting.md` is reference only: every TD building is a first-class engine type and the
-per-building `Points=` fix is in rules.ini.
+Every TD building is a first-class engine type with its own `Points=` (`td-building-separation-recipe.md`
+gotcha 12), so the AI targets them.
 
 **Reference source: AI Boost 3.2** (Bast75 and xXMini FrankiXx, GPL v3 with EA's terms, built on
 CFE 1.8) in `reference/ai-boost2/`. It has working skirmish naval AI, Iron Curtain and

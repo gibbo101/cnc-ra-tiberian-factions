@@ -5,9 +5,18 @@ under an unrelated message). It resolved all 28
 ambiguous reproductions here (0 wrong, 0 undecided) and 46/46 in the offline harness; the
 vector-triple branch has never been needed live. Branch `U` keeps the old fail-closed fallback.
 
-Companion to `lobby-ambiguity-work-order.md` (the plan) and `lobby-difficulty-ram-spike.md`
+Companion to `lobby-difficulty-ram-spike.md`
 (the subsystem). Everything below was measured under Proton on the desktop prefix, dev DLL,
 read-only against ClientG.exe. Raw logs + analysis scripts in the session scratchpad.
+
+**Ruled out, do not re-attempt:**
+- **A content-based tiebreak**, such as "discard the candidate equal to the difficulty vector
+  applied at the previous launch". It fixes DCJD's scenario but inverts on edit-away-then-edit-back
+  (launch Hard, quit, set Easy, set back to Hard, launch: the stale copy is Easy, the live one
+  matches the last launch's Hard, so the rule picks the stale one).
+- **More corroboration fields from the roster.** Team, colour and country are the only lobby fields
+  the DLL is handed, and DCJD's scenario holds all of them constant. A complete fix has to identify
+  which copy the client is using, which is what the resolver does.
 
 ## The problem (DontCryJustDie was right)
 
@@ -74,9 +83,9 @@ survivors to agree, so it never picks a stale; the worst case is 'U' == today's 
 
 Validated across two lobby structures (3-live-1-stale in one batch; variable incl. 1-live-
 1-stale ties in others) and two distinct persistent stales. Offline analysis scripts:
-`resolver.py` (exact port of the C logic) + `verdict3.py`. This is strictly safer than today:
-today ANY disagreement → silent default; the resolver resolves DCJD's case correctly every
-observed time and only ever falls back (never a wrong pick).
+`lobby-ambiguity-data/resolver.py` (an exact port of the C logic). It is strictly safer than the
+old behaviour, where any disagreement fell back silently: the resolver settles DCJD's case every
+observed time and only ever falls back, never a wrong pick.
 
 **Compiled-C validation.** The actual C source of `TF_Resolve_Lobby_Ambiguity` was extracted
 verbatim into a standalone harness (`docs/lobby-ambiguity-data/test_resolver.c`) and run over

@@ -1,5 +1,7 @@
 # Launcher UI images: the MT_COMMANDBAR atlas
 
+**Status:** Reference. The launcher UI atlas: what it holds, editing it, growing it, shipping it.
+
 Launcher 2D UI images come from `MT_COMMANDBAR_COMMON.TGA`. The mod ships a full edited copy loose
 in `Data/ART/TEXTURES/SRGB/`, and both the shell (menu, lobby, faction picker) and the game draw it.
 Region geometry is fixed and only pixels change, though the atlas itself can grow ("Growing the
@@ -57,6 +59,16 @@ Each HUD scene picks its crest region by RA side: RA's scene draws `_ALLIES` / `
 - Flags are **per-COUNTRY**, so repainting the flag of the country a faction rides changes that faction only, and England and the USSR keep theirs. This is the clean lever for per-faction identity on the faction-select screen (`faction-select-identity.md`).
 
 ---
+
+## Dead route: a texture MEG
+
+A mod's own `Data/TEXTURES_SRGB.MEG` shadows the base 2.4 GB MEG **whole**, so it would have to carry
+all 1,358 base entries; an atlas-only MEG mounts alone and the front end loses the other 1,357
+textures. The mod loader mounts no MEG of its own: `ModManagerClass::Load_Mod` takes loose files only
+(`Data\AUDIO\`, `Data\XML\`, `Data\MAPS\`), and `Data/CONFIG.MEG` works because the generic manifest
+loader resolves each MEG path against the mod folder first. None of 96 Workshop mods surveyed ships a
+`.meg`. Loose files are the route, for the shell and the game alike. EMC is a sim-side DLL with no
+graphics imports and does nothing in ClientG.
 
 ## Two red herrings (cleared)
 

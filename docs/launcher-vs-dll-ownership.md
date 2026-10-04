@@ -1,5 +1,7 @@
 # Launcher vs DLL — the ownership map
 
+**Status:** Reference. The launcher/DLL boundary map, as of 5.0.0.
+
 The launcher/DLL boundary map: is a behaviour owned by the launcher (`ClientG.exe`) or by our
 DLL, and can a mod reach it? Check here before assuming either way. Four levers reach
 launcher-owned behaviour: CONFIG.MEG data, loose texture files, the sim's writes into ClientG
@@ -109,7 +111,7 @@ Everything the DLL tells the launcher flows through the single `CNC_Event_Callba
 | HUD credit/power/timer **values** | DLL supplies values; launcher renders | Values yes, rendering no | `CNCSidebarStruct` |
 | Superweapon `$cost` line suppression | Launcher (keyed on the AssetName string) | Only by choosing the AssetName | see "Superweapon $cost line" below |
 | **Superweapon targeted-vs-instant firing** | **Launcher** (compiled: the cameo left-click handler forks on the entry being a superweapon) | **Yes, by a runtime code patch of ClientG** (every player; see "Launcher-resident patches"). Data levers are dead; see below | `TF_Patch_ClientG_Click_Specials`; see below |
-| Launcher-played EVA lines (mission won/lost, select target, low power, cannot deploy, battle control terminated) | Launcher (`Faction_Event_GUI_SFX_*`) | **Yes (shipped)**, by overwriting the cached samples at match start | `eva-ram-patch-spike.md` |
+| Launcher-played EVA lines (mission won/lost, select target, low power, cannot deploy, battle control terminated, repairing, mission saved) | Launcher (`Faction_Event_GUI_SFX_*`) | **Yes (shipped)**, by overwriting the cached samples at match start | `eva-ram-patch-spike.md` |
 | Other launcher GUI stings | Launcher | No (Allied/Soviet only, see below) | strings |
 
 ---
@@ -131,7 +133,7 @@ NUL-terminated, always fits); write the RA prefix back for RA sides. Locate on E
 by EITHER form: after a TD-era match a slot reads as the TD string with the RA tail still behind
 its terminator (which is also what tells it from the genuine TD prefix elsewhere in the image),
 and the DLL instance does not persist between matches, so nothing can be cached. Verified both
-ways in one launch (GDI green in every state incl. placement, Allied gold; Luke: "that's a win").
+ways in one launch (GDI green in every state incl. placement, Allied gold).
 
 **Two dead detours, recorded so nobody repeats them:** (1) re-pointing the drawn UV RECORDS
 (12 crest-style slots) works but every state's record is created on demand (first hover, first
@@ -265,10 +267,9 @@ targeted-super slot in the tab; the special is never ready long enough for targe
 does not touch the real superweapon sharing that `SW_` enum value -- its own AssetName/cameo is
 untouched, and its own effect is keyed on its own `SPC_*` case, not the enum value.
 
-See `project-hunter-seeker-notarget-wall.md` (cross-session memory) for the full session log,
-traps (headless-only: pause-menu-freezes-the-poll, LAN lobby Start disabled under a mod, the
-insta-superweapon dev cheat masking the real recharge), and the verified end-to-end result
-(single click -> droid spawns -> flies to the AI -> wins, no crash).
+Verified end to end: a single click spawns the droid, which flies to the AI and wins, with no
+crash. Testing traps: the pause menu freezes the poll in a headless run, the LAN lobby's Start is
+disabled under a mod, and the instant-superweapon dev cheat masks the real recharge.
 
 ### `this == PlayerPtr` is ALWAYS TRUE inside HouseClass::AI (REMASTER_BUILD)
 `HouseClass::AI()` opens with `Logic_Switch_Player_Context(this)` under `#ifdef REMASTER_BUILD`, so

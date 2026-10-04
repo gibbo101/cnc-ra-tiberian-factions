@@ -1,9 +1,12 @@
-# GDI / Nod campaign story — "The Inheritance War" (design, 2026-06-10)
+# GDI / Nod campaign story — "The Inheritance War"
+
+**Status:** Design, not built. Not authored yet; campaign work waits behind the AI milestone
+(`todo.md`).
 
 Narrative design for the two hijacked-tab campaigns: **GDI = Aftermath tab** (9 missions,
 Allied-variant slots), **Nod = Counterstrike tab** (8 missions, Allied-CS-variant slots).
 Mechanics live in `coop-missions-design.md` (gates, ActLike houses) and
-`campaign-tabs-research.md` / [[project-missionselect-roster-poc]] (hijack delivery).
+`campaign-tabs-research.md` (hijack delivery).
 Lore researched against the EVA Database (cnc.fandom.com), 2026-06-10.
 
 ---
@@ -61,9 +64,9 @@ The two campaigns run through the same events from both sides and funnel into TD
 opening newscast. Where they contradict (the finales), the **GDI path is canon** — TD
 requires GDI's funding and Ion Cannon to survive, and the Temple rises at Sarajevo anyway.
 
-**Faction casting (engine):** player house Spain/ActLike-GDI or Turkey/ActLike-Nod;
-Allies = Greece/England/Germany houses with the vanilla RA roster; Soviets = USSR/Ukraine
-houses with the vanilla Soviet roster. Four factions coexist per `coop-missions-design.md`.
+**Faction casting (engine):** the player house is Spain (GDI) or Greece (Nod); Allies are the
+England/France/Turkey houses with the vanilla RA roster; Soviets the USSR/Ukraine houses with the
+vanilla Soviet roster (Germany is TS GDI). The factions coexist per `coop-missions-design.md`.
 GDI/Nod field our TD rosters — in-fiction, GDI's "next-generation" gear is the
 consolidated classified prototype programs of the Allies (the Mammoth lineage descends
 from RA heavy armor), and Nod's arsenal is Tiberium money spent well.
@@ -122,12 +125,11 @@ from the shadows… We estimated the Brotherhood would tire of the USSR by the e
 - **Mod features as story beats:** Tiberium ecosystem (growth/spread, infantry damage,
   visceroids, blossom trees) debuts in G1/G8/N2/N3; Ion Cannon and the Obelisk get
   scripted hero moments; RA navy appears only in Allied hands (GDI/Nod have none).
-- **Difficulty stays behavioural** per [[feedback-difficulty-philosophy]]; no stat-bias
-  villains.
+- **Difficulty stays behavioural:** no stat-bias villains.
 
 ## 6. Implementation constraints (recap — don't violate)
 
-- **Hijack only — ✅ NOW PROVEN, not just assumed (2026-07-19, desktop AND Deck).** Re-style
+- **Hijack only (proven on the desktop and the Deck).** Re-style
   existing CS/AM instances; new instances list but cannot launch (InstanceServerG resolves
   from BASE). GDI uses the 9 `Mobius_Aftermath_Allied_Map_Base` slots; Nod the 8
   `Mobius_Allied_Counterstrike_Map_Base` slots. The USSR-variant groups (9 + 8) stay in
@@ -141,18 +143,17 @@ from the shadows… We estimated the Brotherhood would tire of the USSR by the e
   comments. Mission Select display names = master-text same-length in-place — choose
   titles **no longer than the original mission's name** and pad with spaces. Map each
   title to its slot at implementation time and check lengths then.
-- **In-game briefings are free**: the engine reads campaign scenario INIs and the mod's
-  CCDATA shadows them by name (**verified in-game 2026-07-19** — `campaign-tabs-research.md`;
-  the former citation pointed at a memory deleted in the 2026-07-15 reset) — all story
-  text above fits in `[Briefing]` with no size constraint. Note the *select-screen* briefing
+- **In-game briefings are free:** the engine reads campaign scenario INIs and the mod's CCDATA
+  shadows them by name (`campaign-tabs-research.md`), so all story text above fits in
+  `[Briefing]` with no size constraint. Note the *select-screen* briefing
   panel is a separate, master-text path and still obeys the same-size rule.
-- **Theatres**: temperate + snow only (desert pending the interior-slot swap) — hence no
-  Africa missions despite Nod's canon strongholds there; revisit if desert lands.
-- **Win/lose/briefing gates**: the 4 confirmed DLL gates (house.cpp:1213/1225,
-  scenario.cpp:316/386/394) per `coop-missions-design.md`.
-- Authoring: Mobius editor, RA-format `.mpr`/INI scenarios.
+- **Theatres:** temperate and snow. HD desert works through the interior slot, but its TD terrain
+  art is parked (`theatre-desert-feasibility.md`), hence no Africa missions despite Nod's canon
+  strongholds there.
+- **Win/lose/briefing gates:** the four DLL gates in `coop-missions-design.md` §5.
+- Authoring: the native `cnc-map-editor` or the Mobius fork, RA-format `.mpr`/INI scenarios.
 
-## 7. Open questions for Luke
+## 7. Open questions
 
 1. GDI player = unnamed commander (briefed by Sheppard) vs. literally young Solomon?
 2. Mission count: lock 9/8 as above, or trim to 8/8 for symmetry?
@@ -162,13 +163,11 @@ from the shadows… We estimated the Brotherhood would tire of the USSR by the e
 
 ---
 
-## The finale — the Temporal Rift (Luke, 2026-08-04)
+## The finale — the Temporal Rift
 
 **The final mission of the campaign arc: a temporal rift opens and Tiberian
 Sun forces slip back in time — the player literally fights a future army.**
-This is the TS tree's canonical purpose (the skirmish TS-MCV crate find is
-its foreshadowing/temporal echo), and it retroactively grounds the TS
-balance stance: TS-authentic stats "a generation ahead by design" is the
+It grounds the TS stance in the fiction: TS-authentic stats "a generation ahead by design" is the
 mission's premise, not a balance problem. Lore hook available: RA already
 has Chronosphere time travel — the rift can be a Chrono experiment gone
 wrong. Mechanically all on proven ground: hijacked mission slot + CCDATA

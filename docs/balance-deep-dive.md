@@ -9,8 +9,8 @@
 - Minigunner `TDM16` range 3 and `TDE1` speed 4; Nod turret `TDTurretGun` ROF 50.
 
 The AGT keeps plain TDHE damage against heavy armour (F8 reverted, "Base defences" below). Where the
-analysis quotes older values, `rules.ini` is the truth. Companion: `balance-v1-notes.md`, the
-playtest-report log. Read both before touching a stat.
+analysis quotes older values, `rules.ini` is the truth. Log playtest balance reports here, and fix
+fidelity bugs (a stat that differs from the TD source) at once.
 
 ---
 
@@ -416,7 +416,7 @@ the data, then sets up measured iteration for the rest.
   be observable). If not, that's a prerequisite — see `ai-improvements.md`.
 - Run a batch of cross-faction skirmishes (GDI vs Soviet, Nod vs Allied, mirror
   + cross) and log who wins, when, and on what unit. Use the screenshot/Deck
-  loop. Capture reports into `balance-v1-notes.md`.
+  loop. Capture reports in this doc.
 
 ### Phase 1 — the unambiguous fix (F1), shipped in 4.0.0 as speed 5→4
 
@@ -458,7 +458,14 @@ provable from the numbers (strictly-better unit, same role, same engine).
 - **F4/F5 (cheap GDI/Nod light vehicles & arty):** likely leave as doctrine;
   only touch if Buggy/Bike/Hum-vee spam proves oppressive.
 
-### Tank pace (carry-over from `balance-v1-notes.md`)
+### Nod SAM against RA jets (playtest, after 4.0.0)
+
+Four Nod SAM sites let a MiG finish three attack runs before it died, even at ROF 20. TDSAM is tuned
+against TD's slow helicopters, and RA's MiG and Yak are fast, with stand-off missiles. Before
+tuning: compare projectile speed, ROF and range against RA's SAM and AA gun, and check whether the
+open-close animation eats the firing window (`td-sam-deep-dive.md`).
+
+### Tank pace
 
 TD tanks run at `Speed=7` (TD MPHType*100/256) vs the Allied Light's 9. TD vehicle speeds stay at
 the MPHType-derived values; at TD's true pace they'd be kited by RA

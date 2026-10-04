@@ -1,6 +1,8 @@
 # SPIKE: maps larger than 128x128 ("mega maps") in Red Alert
 
-**Status:** **CLOSED — RESOLVED NEGATIVE for the Remastered target (2026-07-18).** RA's playable ceiling of **126x126** (a 128x128 cell array minus the 1-cell border) is enforced by the **closed-source `ClientG.exe`**, not by our DLL. The engine-side change is tractable and EA already did an equivalent one; the launcher ABI is what stops it, and it cannot be recompiled. **Do not re-chase for the shipped mod.** Larger maps are genuinely reachable only on the standalone `VanillaRA` build, which bypasses the launcher and is not what we ship.
+**Status:** Reference; a dead end. Maps bigger than 128x128 (126x126 playable) are blocked by
+`ClientG.exe`, not by the DLL; only the standalone `VanillaRA` build, which bypasses the launcher
+and is not what ships, could have them.
 
 **One-line:** Can we raise `MAP_CELL_W`/`MAP_CELL_H` above 128 to ship bigger skirmish maps? No: terrain rendering is launcher-owned, and the launcher's map export buffer is a fixed 128x128 that our DLL fills but does not allocate.
 

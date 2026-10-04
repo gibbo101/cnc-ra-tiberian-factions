@@ -1,5 +1,7 @@
 # CONFIG.MEG lever audit — what the launcher's own data unblocks
 
+**Status:** Reference. Which CONFIG.MEG data levers are in use, untried, or dead.
+
 Census of CONFIG.MEG's 230 XML members for launcher levers. In use: `GameConstants_Mod.xml`
 (classic lockout, mod hotkeys, zoom), `FACTIONS.XML`, `MASTERTEXTFILE`, `MUSICEVENTS`,
 `GUITEXTURESETS` and the `.bui` screens. Untried: campaign files, team colours, cursors, lobby
@@ -23,7 +25,7 @@ paid for from padding or comment text inside the same file.
 
 ---
 
-## ⭐ Delivery: `GameConstants_Mod.xml` beats editing the member (2026-07-21)
+## Delivery: `GameConstants_Mod.xml` beats editing the member
 
 `ClientG.exe` contains the literal `\XML\GameConstants_Mod.xml` and merges that file over the
 base GameConstants. It is **additive**, so it needs no same-size juggling and no CONFIG.MEG
