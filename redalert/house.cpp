@@ -4325,30 +4325,16 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
         */
         if (b != NULL && !b->IsInLimbo && b->Strength && !Is_Ally(b)) {
 
-            /*
-            **	Fair-fog superweapon aiming: a computer house may only aim at buildings
-            **	its own house has discovered. Once seen a building stays in the mask,
-            **	so striking where a discovered structure was is remembered intel, not
-            **	an omniscience cheat.
-            */
+            // TF: in skirmish a computer house aims only at buildings it has discovered; no house aims at a
+            // cloaked building, and the E.M. Pulse only at what one of its EMP Cannons can reach.
             if (!IsHuman && Session.Type != GAME_NORMAL && !b->Is_Discovered_By_Player(this)) {
                 continue;
             }
 
-            /*
-            **	A cloaked building displaces superweapon fire the same way it
-            **	displaces direct fire: only what the firing house can currently
-            **	see may be struck. Discovery is sticky by design (intel memory);
-            **	the cloak is the live veil over it -- a stealth-generator field
-            **	protects exactly until a detector or shimmer breaks the cloak.
-            */
             if (b->Is_Cloaked(this)) {
                 continue;
             }
 
-            /*
-            **	The E.M. Pulse only reaches what an EMP Cannon of this house can hit.
-            */
             if (id == SPC_TS_EMP && TF_EMP_Launch_Site(this, Coord_Cell(b->Center_Coord())) == NULL) {
                 continue;
             }
@@ -4364,14 +4350,8 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
         CELL cell = Coord_Cell(bestptr->Center_Coord());
         Place_Special_Blast(id, cell);
     } else if (id == SPC_SPY_MISSION || id == SPC_TD_SPY_MISSION) {
-        /*
-        **	Recon powers exist to find the enemy, so a house with nothing
-        **	discovered fires them at unexplored start positions -- the same
-        **	rotation its blind ground scouts walk -- rather than never firing.
-        **	The shared rotation also stamps the probed point, so plane and
-        **	scouts naturally divide the map. Destructive specials stay
-        **	discovered-targets-only.
-        */
+        // TF: with no discovered target, recon specials probe the start position the house's blind scouts
+        // would take next, so plane and scouts share one rotation. Destructive specials never fire blind.
         CELL cell = TF_Scout_Destination(Coord_Cell(Center));
         if (cell > 0) {
             Place_Special_Blast(id, cell);
@@ -4379,12 +4359,8 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
     }
 }
 
-/***********************************************************************************************
- * HouseClass::TF_Knows_Any_Enemy_Building -- Has this house discovered any enemy structure?   *
- *                                                                                             *
- *    Feeds the scout-intensity tiers: an Easy computer house stops probing the map once it    *
- *    has found something to fight; higher tiers keep probing whenever they are blind.         *
- *=============================================================================================*/
+// True once this house has discovered a standing enemy building. Blind-scout dispatch runs until then,
+// and an Easy house's hunters stop probing start positions.
 bool HouseClass::TF_Knows_Any_Enemy_Building(void)
 {
     for (int index = 0; index < Buildings.Count(); index++) {
@@ -4397,36 +4373,14 @@ bool HouseClass::TF_Knows_Any_Enemy_Building(void)
     return (false);
 }
 
-/***********************************************************************************************
- * HouseClass::TF_Scout_Destination -- Pick a map spot worth exploring while hunting blind.    *
- *                                                                                             *
- *    Multiplayer start locations are public map knowledge (any human reads them off the       *
- *    lobby preview), so probing them is fair intel gathering rather than a cheat. Start       *
- *    points this house has not yet mapped are preferred, nearest first; once everything is    *
- *    mapped the nearest start point away from home is re-probed so a blind house keeps        *
- *    looking rather than standing down.                                                       *
- *                                                                                             *
- * INPUT:   from -- The cell the scouting unit currently occupies.                             *
- *                                                                                             *
- * OUTPUT:  Destination cell, or -1 when there is nothing sensible to probe.                   *
- *=============================================================================================*/
+// Picks the start-position waypoint a blind scout probes next: unmapped first, then least recently probed,
+// then nearest, skipping any within 12 cells of home. Returns -1 when none qualifies.
 CELL HouseClass::TF_Scout_Destination(CELL from)
 {
-    /*
-    **	Start points closer to home than this are considered our own corner of
-    **	the map and are not worth probing.
-    */
     const int TF_HOME_RADIUS_LEPTONS = CELL_LEPTON_W * 12;
 
-    /*
-    **	The frame each start point was last handed to one of this house's scouts.
-    **	Every pick stamps its waypoint and later picks prefer the least-recently
-    **	probed one, so scouts dispatched together fan out over the start points
-    **	instead of all computing the same nearest cell. Distance only breaks
-    **	ties. Kept outside the class so the savegame layout is untouched; a
-    **	stamp from a previous match reads as newer than the young frame counter
-    **	and is treated as never-probed.
-    */
+    // Probe stamps live here, not in HouseClass, so the savegame layout is untouched. A stamp later than
+    // Frame is left from an earlier match and counts as never probed.
     static long _probed[HOUSE_COUNT][26];
 
     CELL best_unmapped = -1;
@@ -4536,13 +4490,8 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
         }
         break;
 
-    /*
-    **  Tiberian Factions mod — GDI Ion Cannon discharge. Spawns
-    **  ANIM_TD_ION_CANNON directly at the targeted cell. The anim's
-    **  Middle() callback (anim.cpp) handles the 600 / WARHEAD_TDPB
-    **  Explosion_Damage at impact. No launch site / missile flight stage
-    **  — TD's Ion Cannon strikes instantly from orbit.
-    */
+    // TF: TD's Ion Cannon strikes the cell from orbit at once, with no launch site; the anim's Middle()
+    // in anim.cpp deals the damage.
     case SPC_TD_ION_CANNON:
         if (SuperWeapon[SPC_TD_ION_CANNON].Is_Ready()) {
             AnimClass* ion_anim = new AnimClass(ANIM_TD_ION_CANNON, Cell_Coord(cell), 0, 1);
@@ -4560,19 +4509,9 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
         }
         break;
 
-    /*
-    **  Tiberian Factions mod — TS Ion Cannon discharge (uplink-granted).
-    **  TS's strike pair at the targeted cell: the IONBEAM carries the same
-    **  600 / WARHEAD_TDPB damage + TS ION1 sound in its Middle() (anim.cpp,
-    **  balance identical to the TD strike), the RING1 ground flash is
-    **  visual only.
-    */
+    // TF: the nearest powered EMP Cannon in range lobs the pulse (BuildingClass::Mission_Missile). With
+    // none the order is refused and the special stays ready; EVA speaks only when power is low.
     case SPC_TS_EMP:
-        /*
-        **	The nearest powered EMP Cannon in range turns to the target, charges its
-        **	pulse ball and lobs it there (BuildingClass::Mission_Missile). With no
-        **	cannon in range the order is refused and the special stays ready.
-        */
         if (SuperWeapon[SPC_TS_EMP].Is_Ready()) {
             BuildingClass* cannon = TF_EMP_Launch_Site(this, cell);
 #if TF_DEV_BUILD
@@ -4610,10 +4549,6 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
                 fired = true;
                 what = "TS_EMP";
             } else if (this == PlayerPtr && Power_Fraction() < 1) {
-                /*
-                **	TS takes a cannon offline in low power; the announcer says why the order
-                **	went nowhere. Out of range stays silent, as TS shows it on the cursor.
-                */
                 Speak(VOX_INSUFFICIENT_POWER);
             }
             if (this == PlayerPtr) {
@@ -4623,13 +4558,9 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
         }
         break;
 
+    // TF: one order raises the Firestorm field and the next drops it; the cell is unused. The field lasts
+    // a third of the charge held, and dropping it early refunds three times what is left.
     case SPC_TS_FIRESTORM:
-        /*
-        **	One order raises the field, the next drops it (the cell is not used). The field
-        **	lasts a third of the charge it spends, TS's ChargeToDrainRatio of .333; dropped
-        **	early, what is left comes back as three times the charge and the weapon stays
-        **	usable while it charges on.
-        */
         if (SuperWeapon[SPC_TS_FIRESTORM].Is_Draining()) {
             SuperWeapon[SPC_TS_FIRESTORM].Stop_Drain(3);
             TF_Firestorm_Set(this, false);
@@ -4649,6 +4580,8 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
         }
         break;
 
+    // TF: the uplink's TS Ion Cannon. The beam's Middle() in anim.cpp deals the TD strike's damage at the
+    // cell and half to the eight around it; the RING1 flash is visual only.
     case SPC_TS_ION_CANNON:
         if (SuperWeapon[SPC_TS_ION_CANNON].Is_Ready()) {
             AnimClass* ts_ion_anim = new AnimClass(ANIM_TS_ION_BEAM, Cell_Coord(cell), 0, 1);
@@ -4670,25 +4603,10 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
         }
         break;
 
-    /*
-    **  Tiberian Factions mod — TS Drop Pod discharge. Three pods streak in
-    **  on the targeted cell (first dead-on, two scattered a cell and a half),
-    **  each a BULLET_TSPODDROP carrying one trooper. The approach direction
-    **  is sim-random per pod; the spawn point sits one drop-height back along
-    **  it so the 45-degree slide grounds exactly on the LZ, and later pods
-    **  start higher so the arrivals stagger. PODRING flashes at each pod's
-    **  apparent (north-shifted) entry point, per TS AtmosphereEntry.
-    */
+    // TF: five pods (three Light Infantry, two Disc Throwers) streak in from the east or west, the only
+    // approaches that read as a 45-degree fall, each starting higher so they land in turn.
     case SPC_TS_DROPPODS:
         if (SuperWeapon[SPC_TS_DROPPODS].Is_Ready()) {
-            /*
-            **  Approaches are EAST/WEST only: altitude draws as a north
-            **  shift, so an E/W slide plus the sinking offset reads as the
-            **  45-degree streak. A north/south approach fights the illusion
-            **  (a south-approach pod draws two drop-heights off-screen and
-            **  pops in at the last moment — seen in play, 2026-08-31).
-            **  Squad: three Light Infantry, two Disc Throwers.
-            */
             for (int pd = 0; pd < 5; pd++) {
                 CELL podcell = cell;
                 if (pd > 0) {
@@ -4729,27 +4647,14 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
         }
         break;
 
-    /*
-    **  Tiberian Factions mod -- TS Hunter Seeker (OpenTS super.cpp
-    **  SUPER_HUNTER_SEEKER): the droid emerges on clear ground beside the
-    **  Upgrade Centre carrying the Seeker Control plug, then hunts on its
-    **  own (AircraftClass::TF_Hunter_Seeker_AI). The clicked cell is
-    **  ignored -- TS fires this special with no target at all; the RA
-    **  launcher always asks for a click, so the click only releases it.
-    */
+    // TF: the Hunter Seeker (OpenTS SUPER_HUNTER_SEEKER) rises beside the Upgrade Centre carrying the
+    // Seeker Control plug and hunts on its own. TS fires it untargeted, so the click only releases it.
     case SPC_TS_HUNTSEEK:
         if (SuperWeapon[SPC_TS_HUNTSEEK].Is_Ready()) {
             BuildingClass* host = TF_House_Plug_Host(this, STRUCT_TSSEEK);
             if (host != NULL) {
                 CELL spawn = Map.Nearby_Location(Coord_Cell(host->Center_Coord()), SPEED_FOOT);
                 if (spawn > 0 && Map.In_Radar(spawn)) {
-                    /*
-                    **  The droid is an AircraftClass so it renders unit-sized (a
-                    **  bullet renders tiny in the launcher). It spawns at flight
-                    **  level beside the Upgrade Centre and never dives; its
-                    **  self-destruct runs only at the Edge_Of_World-safe point in
-                    **  AircraftClass::AI, so deleting it from its own AI is safe.
-                    */
                     AircraftClass* droid = new AircraftClass(AIRCRAFT_TSHUNT, Class->House);
                     if (droid != NULL) {
                         droid->Assign_Target(TF_Hunter_Seeker_Acquire(this));
@@ -4773,16 +4678,8 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
         }
         break;
 
-    /*
-    **  Tiberian Factions mod — Nod Nuclear Strike discharge. Finds the
-    **  firing house's TDTMPL, assigns it MISSION_MISSILE, and stashes the
-    **  target on House->NukeDest. The TDTMPL-specific branch in
-    **  BuildingClass::Mission_Missile drives the 5-frame BSTATE_ACTIVE
-    **  launch anim, spawns BULLET_NUKE_DOWN over the target, and plays
-    **  VOX_TD_NUKE_LAUNCHED. Mirrors RA's nuke launchsite pattern but with
-    **  the Temple's TD-authentic single-cycle launch (vs MSLO's 4-state
-    **  door open / hold / close machine).
-    */
+    // TF: the Temple of Nod launches at House->NukeDest like the Missile Silo; TD's single-cycle launch
+    // runs in BuildingClass::Mission_Missile.
     case SPC_TD_NUKE:
         if (SuperWeapon[SPC_TD_NUKE].Is_Ready()) {
             launchsite = Find_Building(STRUCT_TDTMPL);
@@ -4880,11 +4777,8 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 
             if (ttype != NULL) {
                 ttype->House = Class->House;
-                // Which special fired decides the delivery, not house identity, so a
-                // captured cross-era pair drops that era's troops: the TD special drops
-                // Minigunners (TDE1) from the targetable TD C-17 (TDC17P), the RA one
-                // Rifle Infantry (E1) from the Badger. Set every fire -- the @PINF team
-                // is cached and shared. Squad size = the plane's passenger capacity.
+                // TF: the special fired, not the house, picks the drop: TD's sends Minigunners in the C-17, RA's
+                // Rifle Infantry in the Badger. Set on every fire, as the @PINF team is cached and shared.
                 bool td = (id == SPC_TD_PARA_INFANTRY);
                 AircraftType para_plane = td ? AIRCRAFT_TDPARADROP : AIRCRAFT_BADGER;
                 ttype->Members[0].Class = &InfantryTypeClass::As_Reference(td ? INFANTRY_TDE1 : INFANTRY_E1);
@@ -4904,8 +4798,8 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
         }
         break;
 
-    // Both eras' recon flights fly the same U2 flyover (TD has no recon plane to
-    // port); the split exists so each airstrip's special has its own timer and badge.
+    // TF: both eras' recon specials fly the same U2 flyover (TD has no recon plane to port); the split
+    // gives each airstrip's special its own timer and badge.
     case SPC_SPY_MISSION:
     case SPC_TD_SPY_MISSION:
         if (SuperWeapon[id].Is_Ready()) {
@@ -5151,10 +5045,8 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
 {
     assert(Houses.ID(this) == ID);
 
-    /*
-    **	A finished unit from the dropship bay arrives with the TF_PLACE_BAY cell, which
-    **	names the bay's slot; it exits like any finished unit (no cell).
-    */
+    // TF: a unit finished at the dropship bay arrives with the TF_PLACE_BAY cell, naming the bay's own
+    // factory slot; it then exits like any finished unit.
     bool bay = (cell == TF_PLACE_BAY);
     if (bay) {
         cell = -1;
@@ -5182,18 +5074,14 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
                 /*
                 **	Try to find a place for the object to appear from. For helicopters, it has the
                 **	option of finding a nearby helipad if no helipads are free.
-                **	Tiberian Factions: vehicles produced at STRUCT_TDAFLD are delivered by
-                **	cargo plane — the airstrip is in radio contact with the in-flight plane,
-                **	which would normally cause Who_Can_Build_Me to reject it. Retry with
-                **	`intheory=true` (same fallback path as helicopters) so back-to-back
-                **	queue completions dispatch immediately rather than waiting for plane #1
-                **	to deliver and release the tether.
                 */
                 TechnoClass* builder = pending->Who_Can_Build_Me(false, false);
                 if (builder == NULL && pending->What_Am_I() == RTTI_AIRCRAFT
                     && !((AircraftClass*)pending)->Class->IsFixedWing) {
                     builder = pending->Who_Can_Build_Me(true, false);
                 }
+                // TF: while the house has a TD airstrip, vehicles retry in theory as helicopters do: the airstrip stays
+                // in radio contact with its cargo plane in flight, and queued deliveries must not wait for it.
                 if (builder == NULL && pending->What_Am_I() == RTTI_UNIT
                     && Get_Quantity(STRUCT_TDAFLD) > 0) {
                     builder = pending->Who_Can_Build_Me(true, false);
@@ -5211,17 +5099,8 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
                         intheory = true;
                     }
                 }
-                /*
-                **  Tiberian Factions: vehicles produced at STRUCT_TDAFLD are
-                **  delivered by cargo plane. While the previous plane is in-
-                **  flight, TDAFLD is in radio contact with it — which would
-                **  normally cause Who_Can_Build_Me to reject the building.
-                **  Setting intheory=true bypasses that radio-contact filter
-                **  so back-to-back queue completions dispatch immediately
-                **  rather than waiting for plane #1 to deliver and release
-                **  the tether. Same mechanism the engine already uses for
-                **  helicopters when their helipad is busy.
-                */
+                // TF: while the house has a TD airstrip, vehicles retry in theory as helicopters do: the airstrip stays
+                // in radio contact with its cargo plane in flight, and queued deliveries must not wait for it.
                 if (pending->What_Am_I() == RTTI_UNIT && Get_Quantity(STRUCT_TDAFLD) > 0) {
                     intheory = true;
                 }
@@ -5328,17 +5207,10 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
                 if (builder) {
 
                     builder->Transmit_Message(RADIO_HELLO, tech);
-                    // Tiberian Factions mod: TD buildings slam down with TD's
-                    // HVYDOOR1 instead of RA's PLACBLDG (mirrors the
-                    // VOC_TD_CONSTRUCTION dispatch in building.cpp). This MUST be
-                    // computed BEFORE Unlimbo: for wall types, BuildingClass::Unlimbo
-                    // converts the building to an overlay and `delete this`-es it
-                    // (then returns true) — so dereferencing `tech` afterward is a
-                    // use-after-free that CTDs on every wall placement, all factions.
+                    // TF: each era's buildings land with their own sound, and walls fill their line.
+                    // Read all three before Unlimbo: a wall deletes itself in there, so tech is freed afterwards.
                     bool td_bldg = (tech->What_Am_I() == RTTI_BUILDING
                                     && ((BuildingClass*)tech)->Class->Is_Tiberian_Era());
-                    // Read before Unlimbo for the same reason as td_bldg above: a wall
-                    // deletes itself in there, so tech cannot be touched afterwards.
                     bool ts_bldg = (tech->What_Am_I() == RTTI_BUILDING
                                     && ((BuildingClass*)tech)->Class->Is_TS_Era());
                     StructType const fill = (tech->What_Am_I() == RTTI_BUILDING
