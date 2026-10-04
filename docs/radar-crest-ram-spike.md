@@ -32,6 +32,14 @@ The DLL (in InstanceServerG) does it cross-process, same infra as the EVA patch:
 any record holding a slot's stock rect or a TD rect → `WriteProcessMemory` of the wanted rect.
 Records must be computed as **double divide then cast to float** to byte-match ClientG's copies.
 
+**The scan skips every thread stack** (`TF_Thread_Stacks`: each thread's TEB `StackBase` via
+`NtQueryInformationThread`, down to its reservation base; a 64-bit TEB under WoW64 has the 32-bit
+one at `+0x2000`). A copy of the DLL also runs inside ClientG, so the scan found its own `slots`
+locals on the game thread's stack and wrote the wanted rect there milliseconds later, into
+whatever frame stood there by then: six such writes landed in the stack of the ClientG thread
+that crashed on 2026-10-04 (the crash itself was the EVA patch, `eva-ram-patch-spike.md` finding
+6). Never write on a needle match alone: confirm the bytes are the record, and keep stacks out.
+
 ## The three findings that shaped it (in the order they bit)
 
 1. **Pixels are GPU-only after launch.** A 1.7 GB read of every readable ClientG mapping found the
