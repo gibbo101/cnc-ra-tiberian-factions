@@ -4818,7 +4818,7 @@ static int TF_Click_Special_Index(int buildable_type, int buildable_id)
  *    launcher process, across matches; an older version of it is replaced with the fork       *
  *    set back to stock while the new instructions go in.                                      *
  *=============================================================================================*/
-static void TF_Put_Rel32(unsigned char* at, SIZE_T next, SIZE_T target)
+void TF_Put_Rel32(unsigned char* at, SIZE_T next, SIZE_T target)
 {
     int rel = (int)((long long)target - (long long)next);
     memcpy(at, &rel, 4);
@@ -5194,7 +5194,7 @@ extern "C" void __cdecl TF_Launcher_Event_Hook(unsigned char* event)
     }
 }
 
-static bool TF_Write_Own_Code(SIZE_T at, const unsigned char* bytes, size_t len)
+bool TF_Write_Own_Code(SIZE_T at, const unsigned char* bytes, size_t len)
 {
     DWORD old_protect = 0;
     if (!VirtualProtect((LPVOID)at, len, PAGE_EXECUTE_READWRITE, &old_protect)) {
