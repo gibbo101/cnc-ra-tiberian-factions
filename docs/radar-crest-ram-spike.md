@@ -1,5 +1,8 @@
 # Per-faction radar crest: the RAM lever
 
+**Status:** Reference; shipped. The per-faction radar crest by RAM patch of ClientG's region
+records.
+
 The radar-slot crest (shown while the player has no radar building) follows the picked faction:
 GDI the TD eagle, Nod the TD scorpion, TS GDI its own eagle, Allied the RA chevron, Soviet the RA
 pentagon. GDI, Nod and TS GDI play on TD's HUD scene (`faction-select-identity.md`), which picks
@@ -86,7 +89,7 @@ TD's scene draws `UI_SIDEBAR_*` directly. What the crest patch still does under 
 thing: TD's scene chooses its logo by RA side, so for Nod (Allied side) the record holding the
 `UI_SIDEBAR_FACTIONLOGO_GDI` rect is re-pointed at `_NOD` (the patch's two remaining slots).
 The skin table, the under-screen/bezel/rail/plate/power-fill slots, their paint script and the
-table generator were removed the same evening (Luke's sign-off); recover them from git history
+table generator were removed; recover them from git history
 (commit 2b7947fc) if a re-skin of RA's scene is ever wanted. The record below is the method.
 
 ### The RA-scene skin (how it was done before the scene swap)
@@ -126,7 +129,7 @@ patch depends on (pristine RA crests + the DINO eagle) into a shipped atlas.
   addresses), `TF_Crest_Reverify` (cheap re-point of known addresses), `TF_Crest_Tick` (the per-frame
   driver) and `TF_Crest_Scan_Thread` (scans off the game thread).
 
-## Can the launcher HUD gain new buttons? (Luke, 2026-09-02)
+## Can the launcher HUD gain new buttons?
 
 No. This patch only changes which atlas pixels an EXISTING widget samples. The widget set — how
 many buttons, where they sit, their hit-tests and what they do — is compiled `ClientG.exe` code

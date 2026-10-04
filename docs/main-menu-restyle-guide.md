@@ -1,5 +1,8 @@
 # How to restyle the Red Alert Remastered main menu
 
+**Status:** Reference. A guide for other modders: how the mod restyles RA's main menu as plain
+data.
+
 This is how Tiberian Factions replaced Red Alert's main menu in C&C Remastered: new background
 art, a new title logo, a steel menu box with steel buttons and green labels, a reordered button
 list, and a recoloured sheen and glow. All of it is plain data. It needs no DLL, no EMC and no

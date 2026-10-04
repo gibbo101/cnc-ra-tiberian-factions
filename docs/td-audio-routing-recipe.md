@@ -1,6 +1,7 @@
 # TD audio routing recipe — playing TD .WAV assets in RA mod mode
 
-**Status:** PROVEN 2026-05-21 — Obelisk laser sound (`OBELRAY1.WAV`) plays end-to-end in our RA mod via this exact pipeline. Use this doc as the canonical reference for every TD audio asset we bring across (weapons, building construction loops, EVA voice eventually).
+**Status:** Reference. How a sound reaches the launcher from the DLL, with the Obelisk laser
+(`OBELRAY1`) as the worked example; every TD and TS sound in the mod ships this way.
 
 **TL;DR:**
 
@@ -131,7 +132,7 @@ Report=OBELRAY1     ; ← resolves to VOC_TD_LASER → RAR_SFX_OBELRAY1 alias �
 
 ---
 
-## Critical gotchas (learned the hard way 2026-05-21)
+## Critical gotchas
 
 ### Must MERGE, not REPLACE, the base XML
 
@@ -223,14 +224,27 @@ Their pattern names files with the RA prefix directly (`RAC_SFX_OBELRAY1.WAV`) r
 
 ## What this unlocks
 
-> ⭐ **2026-08-31 upgrade: sample names are FREE.** A controlled probe proved the launcher
-> resolves NOVEL sample names from loose `Data/AUDIO/` files — the old "novel names crash"
-> was a file-format confound. New audio (TS EVA, TS weapon sounds, anything) can ship under
-> its own names; no dormant-host reuse needed. The binding rule is FORMAT (MS-ADPCM WAV
-> matching the channel's shape; localized "MP3" entries actually map to ADPCM WAVs under a
-> locale dir). Canonical rules: `launcher-render-contracts.md` §dormant hosts. The alias
-> recipe in this doc remains correct for routing; only its "must reuse existing sample
-> names" assumption is obsolete.
+### Sample names and formats
+
+The launcher resolves **novel sample names** from loose `Data/AUDIO/` files, so new audio ships
+under its own names; the alias recipe above routes it. Proven on both channels: a TS EVA line on
+the localized channel, and a weapon report on the non-localized one. The rules are about format:
+1. **MS-ADPCM WAV only** (fmt tag 2). Plain PCM (tag 1) crashes ClientG with an integer
+   divide-by-zero in its ADPCM block math (ClientG+0xAB5E69). Encode SFX with
+   `ffmpeg -c:a adpcm_ms -ar 22050 -ac 1`; EVA lines are stereo at 44077 Hz
+   (`ffmpeg -ac 2 -ar 44077 -c:a adpcm_ms`, the default 1024 block align is accepted).
+2. **Localized samples live under a locale folder** (`Data/AUDIO/EN-US/`), and the XML's `.MP3`
+   extension maps to a `.WAV` member: the localized "MP3" entries are ADPCM WAVs.
+3. **A bad format fails silently or crashes.** Check a new file's md5 and fmt chunk against a base
+   sample on the same channel.
+
+Never probe audio through the launcher-fired credit tick: any loose override silences it.
+
+Six older sounds still ride **dormant hosts**, base TD samples no RA event references: `BONUS_UNLOCK`
+(hover missile), `DINOATK1` (railgun), `DINODIE1` (Mk. II tusks), `DINOMOUT` (Titan 120mm),
+`DINOYES` (dropship landing) and `STRUGGLE` (dropship takeoff). A `TD?_SFX_*` sample is a safe host
+only if no `RAC_` / `RAR_` event and no `SFX_GUI_*` event references it; GUI events fire in RA mode
+too (`SFX_GUI_Generic_Bad_Sound` plays SCOLD1).
 
 With the audio routing pipeline proven, every future TD asset port follows the same recipe:
 
@@ -243,7 +257,7 @@ The audio identity of TD becomes available in RA mode without launcher modificat
 
 ---
 
-## EVA voice (VoxType) faction routing — VALIDATED (migrated from memory 2026-07-15)
+## EVA voice (VoxType) faction routing
 44-voice catalogue, GDI+Nod share. Speak(VOX_X) -> On_Speech (dllinterface.cpp) consults `SpeechTD[]`
 (audio.cpp): if `player_ptr->ActLike == HOUSE_GOOD||HOUSE_BAD` and `SpeechTD[X]!=NULL`, send the
 TD-prefixed name (e.g. TDIONCHRG1); else Speech[X]. Launcher resolves `RAC_SFX_TD<NAME>` /

@@ -1,10 +1,10 @@
 # CONFIG.MEG mod delivery — front-end launcher data IS moddable + shippable
 
-**PROVEN on the Steam Deck, 2026-05-28.** This resolves the long-standing "distribution"
-unknown that `campaign-tabs-research.md` and `reference-config-meg-campaign-display`
-both flagged as open. It is the breakthrough that turns *all* CONFIG.MEG-resident
-front-end data from "editable only by hacking the base install" into "moddable **and**
-Workshop-distributable."
+**Status:** Reference. A mod ships its own `Data/CONFIG.MEG` and the launcher loads it over the
+base; every front-end data edit in the mod rides on it.
+
+Proven on the Steam Deck: all CONFIG.MEG-resident front-end data is moddable and ships on the
+Workshop, with no edit to the base install.
 
 ---
 

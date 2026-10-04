@@ -1,5 +1,8 @@
 # Faction-select identity in the RA lobby: the CONFIG.MEG recipe
 
+**Status:** Reference. The lobby picker's names, icons and HUD scenes, and the mod's
+`ModText.csv` names.
+
 The lobby picker, map markers and loading badges show five factions: Spain plays GDI, Greece Nod,
 Germany TS GDI, England Allies and USSR Soviet, with the other countries as duplicates. Names
 come from `scripts/loc_relabel.py` (`scripts/loc_work/mastertext.edits.txt`), entries and HUD
@@ -164,6 +167,18 @@ Full data-only "add a buildable unit + name + cameo" recipe from that sample mod
 
 The mod ships `resources/remaster_mods/Vanilla_RA/Data/ModText.csv` for its own unit and building
 names, with loose `BuildIcon_*.tga` cameos.
+
+**How a sidebar label resolves:** the launcher looks the entry's `ObjectNameTextID` up in the base
+`MASTERTEXTFILE` merged with `Data/ModText.csv`.
+- rules.ini `Name=` drives only the in-world hover tooltip, never the sidebar.
+- An ID found in neither renders raw (`TEXT_UNIT_TDGMCV`).
+- Deleting the `ObjectTypeClass` entry empties the cameo slot: the entry carries the `BuildIcon`
+  and is mandatory.
+- A mod-owned object class name does not hand naming to the DLL.
+- A pipeline-built entity's name works because the bundler's `--text-name` / `--text-desc` write its
+  `ModText.csv` row; a hand-edited `RABUILDABLES` entry with no row shows whatever its ID resolves to
+  in the base text (both MCV IDs resolve to "MCV").
+- Give an entity a faction name only together with the `Owner=` narrowing that makes it true.
 
 ---
 

@@ -64,7 +64,7 @@ There's no RA rotor-less attack aircraft to clone, but the ctor is just HIND wit
 
 ## 4. Sprite-geometry risk (the Chinook lesson)
 
-`project-chinook-pure-ra`: TD-Assets aircraft sprites can mismatch the engine's hardcoded per-type
+The Chinook showed that TD-Assets aircraft sprites can mismatch the engine's hardcoded per-type
 offsets. For these two:
 - **Apache: single rotor** = the **generic `else` branch** in `Draw_Rotors` (NOT the TRANSPORT-gated dual-rotor
   that broke the Chinook), drawn at body-centre — so it should align like RA's HIND/LONGBOW. The risk that

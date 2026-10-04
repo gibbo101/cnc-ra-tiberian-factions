@@ -123,6 +123,20 @@ superweapon payload, or dormant.
 - **`Target_Coord` anchors TSPROC (the dock-lane gap) and the tall towers (the art-spill row) to
   occupied cells,** or the Mk. II's railgun sweep could not damage them.
 
+### The Upgrade Center's superweapons
+
+- **Drop pods** (`SPC_TS_DROPPODS`): altitude draws as a northward screen shift, so only east and
+  west approaches read as a 45° fall; from the south a pod would draw two drop-heights off-screen
+  and pop in late. The spawn sits one drop-height back along the approach so the slide lands on the
+  target cell, and PODRING flashes at the shifted entry point, as TS's AtmosphereEntry does. Each
+  pod (`TSPODDROP`, `bullet.cpp`) spawns one drop-height to the side of the landing zone and falls
+  at equal horizontal and vertical speed, so it arrives as it grounds. It trails SMOKEY every 6
+  frames, drawn north by altitude; touchdown spawns the trooper, a DROPPOD1/2 husk and DROPEXP. The
+  5-minute recharge was chosen to sit between the paratroops and the Ion Cannon (not a TS value).
+- **The Hunter Seeker** (`SPC_TS_HUNTSEEK`) flies as an `AircraftClass`, not a bullet, because the
+  launcher draws bullets tiny. One left click launches it (`launcher-vs-dll-ownership.md`); only the
+  AI fires it on ready.
+
 ### Walls and component towers
 
 - A TS yard builds its own concrete wall and gates (TSWALL, TSGATEH/V) and is also granted RA's
@@ -269,7 +283,8 @@ The Hover MLRS keeps its own float.
 branch in `techno.cpp`): 19 sparks a cell, radius 15 leptons, .03 rad per lepton, ±15 lepton jitter,
 `ANIM_RAILFX` sparks from `scripts/ts_gen_railfx.py` fading blue (25,70,205) to grey over ~1 s. It
 damages units within 128 leptons of the line, any building whose cell it crosses, and the aimed
-target always. The anim heap floor is 1024 (a max-range shot lays ~150 sparks). The muzzle flash is
+target always: a building's aim cell can be an occupancy hole (the TSPROC dock lane) or walkable
+apron, which the sweep never finds. The Disruptor's aimed target rides its last disc. The anim heap floor is 1024 (a max-range shot lays ~150 sparks). The muzzle flash is
 TS's `gunfire.shp` (`ANIM_TS_GUNFIRE`, `Anim=TSGUNFIRE`). The coil lives 1.2 s; TS locks the gun
 until its ~2.4 s coil dies, and ours keeps the 1.5 s ROF instead.
 
@@ -277,7 +292,9 @@ until its ~2.4 s coil dies, and ours keeps the 1.5 s ROF instead.
 the launcher can't do, and TS ships no sonic-wave art.
 - **The band is a chain of discs** (a spawned anim draws unrotated, so a band sprite would line up
   at one angle only), `SHAPE_FADING` plus a stage-keyed scale throb (12%, period 6,
-  `TF_SONIC_*_DEFAULT` in `function.h`), 25 stages x 5 ticks, discs 32 leptons apart.
+  `TF_SONIC_*_DEFAULT` in `function.h`), 25 stages x 5 ticks, discs 32 leptons apart (at 64 the band
+  showed beads). Discs carry no owner: the launcher tints an owned anim in the house colour, which
+  turned the green band gold.
 - **The band is the weapon:** per-cell anchor discs (`AnimClass::SonicDamage`) hit every techno in
   their cell on five stages within ~1 s of the crest; the firer is exempt (`SonicFirer`), and
   Disruptors are immune to sonic damage.
@@ -362,6 +379,10 @@ A unit here is done: no open art, geometry or behaviour work.
   can't path off. Set cargo down outside the occupy list.
 - **`Begin_Production` never consults `Can_Build`:** a visible cameo is orderable, so a cap or
   cooldown that keeps its cameo must refuse inside `Begin_Production`.
+- **`Can_Build` is the sidebar's offer test** (`Update_Buildables`); a pause expressed there makes the
+  cameo vanish instead of greying, and a bay rebuilt during a pause re-offered its cargo through it,
+  so cameos never came back. Order refusal lives in `TF_Delivery_Order_Refused` (`Begin_Production`
+  and both click handlers), and the sidebar fill paints the countdown and locked dress.
 - **`CNCSidebarEntryStruct::Busy` draws nothing.** Show unavailability with `Constructing` +
   `Progress`, or an AssetName swap.
 - **Any divert that bypasses `MISSION_CONSTRUCTION` must free the builder itself** and run
@@ -446,6 +467,20 @@ A unit here is done: no open art, geometry or behaviour work.
   is out of range in another zone; a move click is pulled back into the unit's own zone
   (`Nearby_Location`); the SAM state machines take only aircraft (a jumpjet goes through the
   airborne test at `building.cpp:191`).
+- **The Disc Thrower's disc (`TS_Disc_Launch`, `TS_Disc_AI` in `bullet.cpp`).** The fire coordinate
+  carries the thrower's hand height (`VerticalOffset`) as a northward shift, so the launch moves the
+  start south by that much and launches from that height. Launch speed is
+  sqrt(range × gravity × 1.2), capped at half the distance. The lobbed solution is used only when
+  the aim point is higher than it is far; a flat answer pointing down is caught by solving again one
+  lepton further out. A first throw clears cliffs; only a disc that has already bounced is set off by
+  flying low over one. A collision near the target is moved onto the target, as TS does.
+- **The jumpjet flight model (`Jumpjet_AI`)** follows TS. It eases to half speed inside two cells of
+  its destination and 3/10 inside one; with no target its flight level drops to 3/4 over the last
+  cell. It bobs on a sine of `JUMPJET_WOBBLE` over `JUMPJET_WOBBLE_TICKS`, reset outside hover and
+  cruise. Speed follows TS's step: it gains the acceleration, sheds 1.5x, and loses a tenth below half
+  and below a quarter of flight level outside the destination cell. It flies along its turning
+  facing except while firing or drifting onto its landing spot, and reserves the closest free
+  landing spot in its cell, else in the nearest cell a soldier can stand in.
 - **`Good_Fire_Location`'s ring search starts a cell inside weapon range,** so it never runs for a
   weapon under about 3 cells (the Orca Bomber's 1.5-cell bomb). Short weapons fly straight over
   the target.
@@ -454,6 +489,10 @@ A unit here is done: no open art, geometry or behaviour work.
 - **TS barrel pitch 64 is level;** TS rests barrels level and raises them only while aiming.
 - **The landing-zone rewrite clears the Carryall's NavCom,** so the vehicle it was sent for is
   remembered separately.
+- **The Carryall's set-down (`TF_Carryall_Exchange`)** places the load at the carrier's exact
+  coordinate: snapping to the cell centre slid it most of a cell in one frame. The landed carrier is
+  lifted off the map (`MARK_UP` / `MARK_DOWN`) while the load is placed, or its own occupancy fails
+  the load's legality check and pushes the load into the next cell.
 - **A new barracks needs its own exit pixel and exit list.** TSPILE reused the RA tent's (24,47) on
   a 2x1 plot and spawned infantry a cell below the door (`ExitTsPile`).
 - **Decode TS cameos with `--no-remap`:** the house-colour remap turns palette 16-31 green.
@@ -462,7 +501,9 @@ A unit here is done: no open art, geometry or behaviour work.
 - **Firestorm assets are in `expand01.mix`:** SHPs in the inner `ECACHE01.MIX`, AUDs in
   `SOUNDS01.MIX`, voxels at the top level.
 - **Railgun colours are TS's own:** the Ghost Stalker's `SmallRailgunSys` is orange (255,128,0), the
-  Mk. II's `LargeRailgunSys` blue (25,20,255).
+  Mk. II's `LargeRailgunSys` blue (25,20,255) (OpenTS `partsys.cpp` `Railgun_AI`), each drawn as one
+  thin line in palette index 0x9F and 0x0A. The Disruptor draws no `Lines[]` beam: the launcher's
+  endpoint bursts made it read as a laser with stars on it.
 
 ---
 

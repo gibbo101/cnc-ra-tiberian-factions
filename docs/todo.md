@@ -1,5 +1,7 @@
 # To do
 
+**Status:** Tracker. Open work and the backlog.
+
 Open work and the backlog, checked against main at the 5.0.0 release (2026-10-04). Bugs and
 limitations live in `known-issues.md`. Finished work is deleted from here once its lessons are in
 a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
@@ -61,7 +63,7 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   (`subterranean-design.md`).
 - **TS infantry fire points:** the Ghost Stalker's beam starts at his chest (facing west it
   looks like his head). A table from TS's `PrimaryFireFLH` (100,0,100) projected per facing is
-  ready and waits on Luke's OK, with the question of whether Light Infantry (80,0,85), Disc
+  ready and waits on the maintainer's OK, with the question of whether Light Infantry (80,0,85), Disc
   Thrower (60,0,100) and Jumpjet (100,0,120) get theirs too.
 - **Jumpjet checks never made:** ground-only weapons refuse it; it bursts (S_BANG34) when shot
   down; its shadow.
@@ -71,8 +73,8 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 - **Drop-pod targeting:** the AI aims its pods at the enemy's most valuable building
   (`Special_Weapon_AI`), which lands infantry on the strongest point of a base.
 - **Component tower:** animations and weapon geometry for the Vulcan, RPG and SAM plugs. Confirm
-  with Luke what is still wanted now the HD tower is in.
-- **Mk. II cap:** `TF_MK2_CAP` is 1; it goes to 3 on Luke's word.
+  what is still wanted now the HD tower is in.
+- **Mk. II cap:** `TF_MK2_CAP` is 1; it goes to 3 on the maintainer's word.
 - **Dead code:** `tf_orbit.flag`; `UnitClass::Force_Emerge` (no callers); `defines.h:589`
   divides `MAP_REGION_HEIGHT` by `REGION_HEIGHT` but rounds with `REGION_WIDTH` (harmless while
   both are equal).
@@ -128,7 +130,7 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   pack only temperate. Needs the theatre-specific-art flag, a second HD set per building and the
   arctic decode (UNITSNO.PAL). Cosmetic.
 - **Decision: how RA and TD factions detect diggers.** Only the TS Sensor Array senses them; a
-  Nod digger under an Allied or GDI base is invisible. Luke leans "they can't".
+  Nod digger under an Allied or GDI base is invisible. The leaning is "they can't".
 
 ## Features and ideas
 
@@ -154,7 +156,7 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   destroyed, RA's spill Ore. Settle how much, where, and whether harvesters get TS's cargo
   scatter. The Ghost Stalker's own death spill isn't ported either.
 - **Hybrid maps: Tiberium eats Ore where fields meet.** Today neither converts the other
-  (`CellClass::Spread_Tiberium` keeps them apart). Luke decides first: the rate (only
+  (`CellClass::Spread_Tiberium` keeps them apart). To decide first: the rate (only
   full-density Tiberium, on the spread tick), whether gems are eaten, and whether a converted cell
   starts thin or keeps the Ore's value.
 - **Superweapon power pass:** after the TS Ion Cannon (600 centre + 300 x 8 ring), the other
@@ -197,7 +199,7 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   once a match, always self-recovered.
 - **Air doctrine against siege hulls** (CA/TDCA/MSUB/TDMSUB): a weighted aircraft target bias once
   intel has seen one. **Gap-generator fairness:** AI aircraft attack things under a gap field.
-  **Sub detection:** Luke's pick between B (sonar radius) and C (a detector hull).
+  **Sub detection:** a choice between B (sonar radius) and C (a detector hull).
 - **Minelayer brain:** where to lay (approaches, chokepoints, its own ring), when to reload, not
   walking its own field (W5 special units).
 - **TS GDI AI** builds no transports or navy and never uses the Firestorm or the EMP Cannon.

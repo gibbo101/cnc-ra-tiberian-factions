@@ -56,9 +56,9 @@ All in `DriveClass`. Vehicles only. Lockstep-safe (synced `As_Target()` ids, no 
   - **Occupancy rule:** an opposing allied vehicle **inside** the corridor → we yield (it owns it).
   - **Far-approach rule:** an opposing vehicle on the far approach (past `corridor_end`, up to
     `FAR_APPROACH=6` cells) with nobody inside yet → **lower id stands down** so the other claims it.
-    (Was a *distance* tiebreak — that **flapped** every tick as columns jostled, causing
-    advance/backtrack churn. Switched to **id** = stable owner. Id is fine because each group's units
-    share a contiguous id range, so a whole column yields together.)
+    (A *distance* tiebreak flapped every tick as columns jostled; the id is a stable owner. A
+    column usually shares a contiguous id range and yields together, but with interleaved ids the id
+    rule and the claim can pick opposite winners.)
   - **Opposing-direction test uses each unit's QUEUED destination (`NavQueue[0]`), not its momentary
     heading** — otherwise a unit mid-retreat reads its own same-direction followers as oncoming
     traffic (the "APC giving way to the tank behind it" wedge). The **scan direction** uses current
@@ -66,12 +66,29 @@ All in `DriveClass`. Vehicles only. Lockstep-safe (synced `As_Target()` ids, no 
     caused a 903-event retreat storm — they MUST stay separate.
   - **Form:** HOLD on open ground (`!here_narrow`) = "stop before the bridge"; RETREAT if caught
     inside the pinch (`here_narrow`) = back out via `Find_Give_Way_Cell`, then it flips to HOLD on
-    open ground.
+    open ground. A unit nose-to-nose with the winner (`head_on_ahead`) retreats even on open ground:
+    it sits on the cell the winner must move into, so holding would keep blocking it.
+  - **Claims:** a claim stamps every pinch cell and the two mouth cells, so an opposing column stops a
+    cell back instead of parking on the mouth (which is why the read loop checks every scanned
+    cell). Each cell's claim direction is the local step through the pinch, not the direction to the
+    goal, so off-axis columns see each other and a bent pinch is followed. A unit already inside the
+    pinch pushes through an opposing claim.
+  - **Open-ground backstop:** two allies nose-to-nose outside any corridor make the lower id step
+    aside (returns 2); corridor owners are exempt.
+- **`Infantry_Give_Way`** runs first, because idle men are invisible to the claims. At the mouth the
+  vehicle waits while friendly infantry are walking through the pinch (scattering a moving column
+  caused a scramble and then a lock), and pushes idle men in the pinch on. **`Drain_Infantry_Along`**
+  moves them in the forward arc only (straight away, then the two forward diagonals), skips men
+  already walking within an eighth of straight away, never reissues the same destination, and drains
+  a packed column front first.
 - **`Find_Give_Way_Cell(blocker)`** — nearest **MOVE_OK** cell that increases distance from the
-  blocker (radius ≤ 2). Requiring MOVE_OK is what stops the reverted-attempt failure of reversing into
+  blocker (radius ≤ 3). Requiring MOVE_OK is what stops the reverted-attempt failure of reversing into
   your own follower; boxed-in → returns 0 → hold.
 - **`Start_Of_Move` top:** acts on the decision (hold → Stop_Driver+return; retreat → Assign yield
-  cell + `Queue_Navigation_List(original)` to auto-resume).
+  cell + `Queue_Navigation_List(original)` to auto-resume). Past `HOLD_TIMEOUT` (60 straight holds)
+  a unit stops yielding; `HoldFrames` resets on any non-hold and on a cell advance. The patient queue
+  scans all 8 neighbours, because the cell toward an off-axis goal can be terrain while the busy
+  pinch is off to the side.
   - ⚠️ **Recursion hazard:** `DriveClass::Assign_Destination` re-enters
     `Start_Of_Move` for a stationary unit, so a RETREAT whose nested evaluation again decides
     RETREAT recursed unboundedly — `EXCEPTION_STACK_OVERFLOW` at ~1,500 frames deep in a fully

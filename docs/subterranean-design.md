@@ -30,9 +30,13 @@ anywhere it self-destructs; a stop order underground heads for the nearest surfa
 - **The Subterranean APC** carries 5, digs with them, refuses to unload underground, and a stop
   order with cargo surfaces nearby.
 - **The Devil's Tongue flame** is TS's: TSFire particles (FLAMEALL 4x19) in a FireStreamSys stream
-  (2 per 4 frames x 30), twin prongs (one jet from each side nozzle, as the FMVs show), TS's
-  `[Fire]` verses and Modify_Damage arithmetic in the bullet, delivered through
-  `WARHEAD_TSFLAMEHIT`. The jet seats are still `PrimaryOffset` 0x80 forward and 0x30 lateral
+  (2 per 4 frames x 30), twin prongs (one jet from each side nozzle, as the FMVs show), and TS's
+  `[Fire]` verses. Damage is TS's `Modify_Damage` computed in the bullet (`BulletClass::AI`): distance
+  / 10, the SpreadFactor scale at x1 for TS's 48 px cells, clamped to 16, MinDamage only inside 4.
+  It is delivered unscaled through `WARHEAD_TSFLAMEHIT`, because RA's 24 px cells would scale the
+  same formula by 400 instead of 80. A particle's state advance is sized so it reaches its target at
+  state 14 and dies five states later. A dead target falls back to `TFDwell`: `As_Coord` on a dead
+  target returns the map origin, which gave flames a map-wide lifetime. The jet seats are still `PrimaryOffset` 0x80 forward and 0x30 lateral
   (`udata.cpp`) and want measuring off the side nozzles of the packed N frame.
 - **Detection:** the Mobile Sensor Array shows buried enemies in range to its owner only, as
   ghost copies that can be seen but not attacked (`emp-cannon-design.md`).

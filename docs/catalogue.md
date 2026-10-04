@@ -81,7 +81,7 @@ Values that **must be set in rules.ini per-entry** because the Logic= alias does
 - **BaseNormal** — all 19 entries are real base structures, so `yes` across the board. (Decorative/civilian buildings would be `no`, but none of ours are.) `bdata.cpp:3717` loads from `BaseNormal=`.
 - **Owner** — TD source's HOUSEF_GOOD/HOUSEF_BAD flags mapped to our `Owner=GoodGuy,BadGuy` syntax. GoodGuy = GDI (HOUSE_GOOD), BadGuy = Nod (HOUSE_BAD).
 
-**TD weapon → RA placeholder analogs** (v0.3 — pending proper TD weapon ports; full plan in `weapon-ports.md`):
+**TD weapon → RA placeholder analogs** (v0.3 — pending proper TD weapon ports; since ported):
 
 | TD weapon | v0.3 RA placeholder | Notes |
 |---|---|---|
@@ -633,33 +633,22 @@ This is one cohesive slice — likely a 1-2 session implementation.
 
 ---
 
-## Build times (TD-authentic, v0.3.0-phase5f)
+## Build times
 
-For HOUSE_GOOD (GDI) and HOUSE_BAD (Nod) players, build time follows the
-TD-remaster tooltip formula `time_ticks = (Cost - bonus_unit_cost)`
-(15 ticks/sec; the game-speed slider scales ticks → wall-clock seconds
-at display time). The `bonus_unit_cost` subtraction mirrors TD's
-`BuildingTypeClass::Raw_Cost`:
+`TechnoTypeClass::Time_To_Build` (`techno.cpp`) gives GDI and Nod houses (`ActLike` GOOD or BAD)
+their own rules:
+- **Buildings take TD's time:** `ticks = Cost − the free unit's cost` (TD's `Raw_Cost`), at 15 ticks a
+  second, scaled by the game-speed slider. A refinery deducts its free harvester (`UNIT_HARVESTER`;
+  `UNIT_TDHARV` for TDPROC, `UNIT_TSHARV` for TSPROC), a helipad the RA Longbow. Checked against the
+  TD-remaster tooltips: Refinery 0:21, Weapons Factory 1:07, Comm Center 0:34, Advanced Power Plant
+  0:24, Power Plant 0:11, Repair Facility 0:41, all within a second.
+- **Units build at RA's base rate:** `Cost × BuildSpeedBias × TICKS_PER_MINUTE / 1000` (Cost × 0.72 in
+  our rules). TD's raw-cost ticks made them about 1.39x slower than RA units of equal cost.
+- **Extra factories divide the time,** as they do for the RA factions: by the number of factories
+  building that category (`Factory_Count`), capped at 2 when Aftermath units are on.
 
-| Building Type   | bonus_unit_cost                            |
-|-----------------|--------------------------------------------|
-| STRUCT_REFINERY | Harvester (UNIT_HARVESTER) cost            |
-| STRUCT_HELIPAD  | Longbow (AIRCRAFT_LONGBOW) cost — RA donor |
-| Other           | 0                                          |
-
-Verified 2026-05-20 against TD-remaster tooltips (Refinery 0:21, Weapons
-Factory 1:07, Comm Center 0:34, Adv Power Plant 0:24, Power Plant 0:11,
-Repair Facility 0:41). All within 1-sec display rounding.
-
-Vanilla allied/soviet houses keep RA's `Cost * 0.9 * BuildSpeedBias`
-formula so AI cadence stays unchanged. Code path:
-`redalert/techno.cpp:TechnoTypeClass::Time_To_Build`.
-
-There's also a `#if 0` dev-toggle at the same site that collapses GDI/Nod
-build time to ~1 second for fast layout iteration — flip to `#if 1` and
-rebuild.
-
-
+Every other house (Allied, Soviet, TS GDI) keeps RA's formula. In a dev build, `TF_Dev_Cheats()`
+makes a human player's builds take 15 ticks, about a second; `tf_dev_off.flag` turns it off.
 
 ---
 
@@ -813,5 +802,5 @@ ASCII shapes — `▓` = occupied cell, `░` = visual overlap, `·` = bounding 
 ## Workflow per entry
 
 1. Pick decisions for the entry (faction, donor, stats — all decided above for v0.3).
-2. Run the 6-step recipe in `docs/adding-td-buildings.md`.
+2. Run `td-building-separation-recipe.md`.
 3. Update status: 📝 → 🔨 (built, untested) → ✅ (Deck-verified).

@@ -1,5 +1,7 @@
 # .bui front-end UI modding — the ChunkFile scene-graph layer
 
+**Status:** Reference. Editing the launcher's `.bui` screens inside CONFIG.MEG.
+
 The launcher's screens are `.bui` ChunkFile scene graphs in the mod's CONFIG.MEG. The mod ships
 edits to the main menu, dialog, loading screen, lobbies, faction combo box, tactical HUD and font
 library, built by `scripts/build_config_meg.sh` through `scripts/bui_tree.py` and the
@@ -176,7 +178,7 @@ Soviets showed the wordmark (→ `_Soviet`); the scorpion never appeared (→
 - `config-meg-mod-delivery.md` — the `CONFIG.MEG` shadow delivery + the same-size rule this depends on.
 - `faction-select-identity.md` — the `FACTIONS.XML`/master-text faction-picker edits shipped alongside the `.bui` edits.
 - `launcher-vs-dll-ownership.md` — the four levers that reach launcher-owned behaviour; `.bui` is the data one.
-- `front-end-texture-meg-spike.md` — the dead texture-MEG route; front-end pixels ship as loose files.
+- `ui-atlas-modding.md` also records the dead texture-MEG route; front-end pixels ship as loose files.
 - `ui-atlas-modding.md` — the in-game atlas (loose-override) surface, distinct from `.bui`.
 - `campaign-tabs-research.md` — how campaign missions are delivered (W3).
 - Scripts: `scripts/bui_mainmenu_build.py` (worked example), `scripts/build_config_meg.sh`, `scripts/meg_pack.py`, `scripts/meg_extract.py`.

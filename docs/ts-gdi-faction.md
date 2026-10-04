@@ -22,8 +22,8 @@ decoupled. Read this before adding a sixth faction.
 
 `Is_TS_GDI(HousesType)` (defines.h) is the single predicate every side-flavoured branch asks,
 so no other file names the country. Germany was chosen because its picker row was one of the
-four Allied/Soviet duplicates — exactly the slot `project-lobby-picker-layout` earmarked for
-the first new faction — and because the launcher already knows it natively (colour, flag, start
+four Allied/Soviet duplicates, the slot set aside for the first new faction
+(`faction-select-identity.md`), and because the launcher already knows it natively (colour, flag, start
 markers, loading screens), which is what makes a fifth faction free of launcher work.
 
 **No DLL remap is needed.** GDI and Nod are remapped on receipt in `CNC_Start_Instance`
@@ -111,7 +111,7 @@ two vehicle (`.V00`/`.V02`).
 ## How it was verified (no human at the machine)
 
 The whole arc was driven headless — Xvfb + Steam under `systemd-run --user`, xdotool/scrot on
-`DISPLAY=:2` (`reference-headless-desktop-game-run`). Findings worth keeping:
+`DISPLAY=:2`. Findings worth keeping:
 
 - **Absolute pointer warps do not reach the placement cursor.** `xdotool mousemove` works for
   the HUD and for issuing orders, but the building-placement grid tracks *relative* motion only;
@@ -216,4 +216,11 @@ if it reads as quiet in play.
 The same recipe on France: `HOUSEF_TSNOD (HOUSEF_FRANCE)`, `Faction9`, the CABAL announcer from
 `SPEECH02.MIX` as one more `ERAS` entry in `scripts/eva_mailbox_build.py`, the emblem at
 `scripts/tab_emblems/tsnod.png`, and a crest (a grown atlas, or another sacrificed region). The TS
-Nod wall and gates are already in, dormant (`ts-gdi-tree-plan.md`).
+Nod wall and gates are already in, dormant (`ts-gdi-tree-plan.md`). Relabelled side names fit
+exactly: "Allies" (6 characters) → "TS GDI", and "TS Nod" likewise.
+
+**The multi-era ceiling:** the picker has 8 country slots, so TD GDI, TD Nod, RA Allies, RA Soviet,
+TS GDI, TS Nod, RA2 Allies and RA2 Soviet would fill it with no duplicates, each on a decoupled
+country house. RA2 uses TS's asset formats (voxels and TS-format SHPs), so the TS pipeline extends
+to it (the RA2 Apocalypse and Prism tanks already ride it as crate finds); its mechanics tier like
+TS's, with prism forwarding, mirage disguise and the chrono and IFV logic as the hard tail.

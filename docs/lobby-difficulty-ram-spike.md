@@ -196,7 +196,7 @@ read vs write:
   (difficulty is the proven case). Good for "the client knows X, the DLL needs X, no
   official pipe."
 - The launcher WALLS (5th faction, playable campaign, hotkey classes, front-end
-  textures — see `bui-front-end-modding.md`, `front-end-texture-meg-spike.md`) are
+  textures — see `bui-front-end-modding.md`, `ui-atlas-modding.md`) are
   limits of the client's COMPILED BEHAVIOUR, not hidden data. Reading can't change them;
   writing (`WriteProcessMemory`) can't add code paths that don't exist and is the
   fragile/AV-triggering/crash-prone route we deliberately avoid. RAM does NOT move these.

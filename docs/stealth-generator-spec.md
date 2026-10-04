@@ -13,6 +13,9 @@ frame from `LogicClass::AI`.
   (`BSIZE_21` + `List21`), `FACING_NONE` (FACING_S made attackers aim a cell south), art donor
   `STRUCT_TDSILO` (`ts-asset-import-spike.md`). Dead route: a taller custom HD dome, which no 2x1
   classic donor could anchor, so the launcher floated it above its footprint.
+- **AI superweapons:** discovery is sticky (remembered intel) and the cloak is live cover over it, so
+  a Stealth Generator field shields buildings from AI superweapons until a detector breaks the cloak
+  (`Special_Weapon_AI`).
 - **Balance:** `Strength=200`, doubled to 400 by the TD-prefix rule: an always-visible weak point
   (600 read as 1200 and took four Apaches to halve). Power −100.
 

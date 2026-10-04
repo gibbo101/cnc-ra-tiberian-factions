@@ -1,5 +1,7 @@
 # Steam Workshop publish runbook
 
+**Status:** Reference. Publishing and updating the Workshop item and the asset packs.
+
 How to publish or update `cnc-ra-tiberian-factions` on the Steam Workshop (App `1213210`).
 
 The canonical tool is our own Linux-native uploader at `tools/workshop-uploader/`. No Wine, no Windows, no Deck needed.
@@ -31,7 +33,7 @@ Don't try to skip this. The symptom is silent — no error, just an indefinite h
 
 ### 0. Get the release copy approved — BEFORE anything is published
 
-Luke reviews and OKs the full public text first: the Workshop description changelog block, the
+The maintainer reviews and OKs the full public text first: the Workshop description changelog block, the
 `CHANGELOG.md` section, and the GitHub release notes. Present the actual text, not a summary.
 
 Ask explicitly whether anything should stay **unannounced**. That is not derivable from the
@@ -57,6 +59,10 @@ main checkout is guaranteed to hold the current ones.
   `Data/ART/MOVIES/RA/REDINTRO.BK2` (the packager refuses a cut that does not match
   `scripts/intro_work/REDINTRO.md5`).
 - **Asset packs clean:** `python3 scripts/asset_packs.py check` prints nothing.
+- **Docs closed out:** for each doc changed since the last tag (`git diff --stat vX.Y.Z -- docs/`),
+  the text describes what ships and the status line names this release; finished work leaves
+  `todo.md` and fixed bugs leave `known-issues.md`. `python3 scripts/docs_check.py` must pass; the
+  packager runs it and stops on a failure (`docs/README.md` has the rules).
 
 ### 2. Build and stage the release: `./package-for-workshop.sh`
 
@@ -242,11 +248,11 @@ Visit the item URL in a browser (logged in), accept the Workshop Contributor Agr
 ## Don't-dos
 
 - Don't re-create the item shell for an existing release — `publishedfileid` is allocated once per item.
-- Don't pursue EA's `Uploader.exe` — confirmed bitrotted on Linux (Wine/Proton) AND on Luke's Windows install. Same hang as our tool was hitting pre-restart, but our tool is now easier to diagnose.
+- Don't pursue EA's `Uploader.exe` — confirmed bitrotted on Linux (Wine/Proton) AND on Windows. Same hang as our tool was hitting pre-restart, but our tool is now easier to diagnose.
 - Don't commit `tools/workshop-uploader/preview.jpg` or per-release `workshop.json` if they contain machine-absolute paths or release-specific descriptions; prefer relative paths so the JSON is portable.
 
 ---
 
 ## Historical context
 
-- 2026-05-20: First Workshop publish for this mod (v0.3.0). EA's `Uploader.exe` ruled out as bitrotted across Windows / Wine / Proton. Built our own C# uploader using `Steamworks.NET`, mirroring the SteamUGC sequence in `~/.steam/steam/steamapps/common/CnCRemastered/SOURCECODE/CnCTDRAMapEditor/Utility/SteamworksUGC.cs` (EA's MapEditor — the only working official Workshop publisher for this app). Spent 4 hours hung on the same "preparing config" symptom EA's tool produces, until a Steam restart cleared it instantly. See memory `reference-workshop-publish-path` for the full rabbit hole.
+- 2026-05-20: First Workshop publish for this mod (v0.3.0). EA's `Uploader.exe` ruled out as bitrotted across Windows / Wine / Proton. Built our own C# uploader using `Steamworks.NET`, mirroring the SteamUGC sequence in `~/.steam/steam/steamapps/common/CnCRemastered/SOURCECODE/CnCTDRAMapEditor/Utility/SteamworksUGC.cs` (EA's MapEditor — the only working official Workshop publisher for this app). The uploader hung on the same "preparing config" symptom EA's tool produces until a Steam restart cleared it, hence Step 0.

@@ -1,6 +1,7 @@
 # TD-to-RA Port Playbook
 
-**Audience:** future-self and future-claude starting a new TD-entity port. Read this *first* — it covers every dead end we hit during the TDATWR session (2026-05-22) so you don't repeat them.
+**Status:** Reference. Read it first for any TD or TS entity port: the architecture, the recipe,
+and every trap hit so far.
 
 **Scope:** porting a TD building, weapon, bullet, warhead, anim, or aircraft into our RA-based mod as a fully separated `TDxxxx` entity with TD-faithful runtime behavior and visuals.
 
@@ -9,7 +10,7 @@
 - `docs/td-building-separation-recipe.md` — building-specific separation steps
 - `docs/td-audio-routing-recipe.md` — audio MERGE pattern + SFXEVENTSNONLOCALIZED.XML
 
-## Before any code: the authenticity checklist (TD and TS ports; Luke, 2026-09-13)
+## Before any code: the authenticity checklist (TD and TS ports)
 
 The source of truth is the era's own code: the TD source for TD entities, OpenTS
 (`reference/OpenTS/code`) for TS entities. Where a behaviour is the same in both games (engineer
@@ -18,8 +19,8 @@ Disc Thrower's bouncing disc), it is ported. Reusing an RA engine path counts as
 the numbers on it are TS's.
 
 1. **Before building any port:** list each behaviour next to the TD/OpenTS function it comes
-   from. Anything without a source is a question for Luke, answered before code.
-2. **No "not modelled yet" in a commit.** An unported behaviour is a question for Luke, not a
+   from. Anything without a source is a question for the maintainer, answered before code.
+2. **No "not modelled yet" in a commit.** An unported behaviour is a question for the maintainer, not a
    to-do note.
 3. **Test the behaviour, not the picture.** A weapon is only verified once it hits a standing and
    a moving target.
@@ -62,13 +63,13 @@ Before writing any code, find and read the TD source for:
 - The type instantiation (`reference/vanilla-conquer/tiberiandawn/<x>data.cpp` — `bdata.cpp` for buildings, `bbdata.cpp` for bullets, etc.)
 - The dispatch sites in code (`reference/vanilla-conquer/tiberiandawn/<x>.cpp` — `building.cpp`, `bullet.cpp`, etc.)
 
-Per [[feedback-review-td-source-first]]: TD source is the spec. Don't reverse-engineer from RA half-implementations.
+TD source is the spec. Don't reverse-engineer from RA half-implementations.
 
-**And our own planning docs are NOT the spec.** `weapon-ports.md`, `catalogue.md`, and the manifest tables are convenience summaries that have been WRONG — `weapon-ports.md` listed E1's weapon as RIFLE (it's `WEAPON_M16`) and the Commando's as M16 (it's `WEAPON_RIFLE`, a 125-dmg `BULLET_SNIPER`). **Every entity gets a full source-driven comparison:** build its chain from `tiberiandawn/const.cpp` `Weapons[]` / `Warheads[]` + the entity's own ctor (`idata.cpp` / `udata.cpp` / `bdata.cpp`) + the `BulletTypeClass` in `bbdata.cpp`, then compare *every value* — damage, ROF, range, bullet, warhead, report, speed, ownable, stats — against the RA equivalent. "RA has a weapon/unit by that name" is **never** sufficient (TDGTWR's Vulcan, TDE1's M16-vs-M1Carbine, the Commando's RIFLE all proved it). Default to porting the TD version; reuse only a TD-ported entity you've confirmed byte-identical (TD→TD).
+**And our own planning docs are NOT the spec.** `catalogue.md` and the manifest tables are convenience summaries that have been WRONG — an old weapon table listed E1's weapon as RIFLE (it's `WEAPON_M16`) and the Commando's as M16 (it's `WEAPON_RIFLE`, a 125-dmg `BULLET_SNIPER`). **Every entity gets a full source-driven comparison:** build its chain from `tiberiandawn/const.cpp` `Weapons[]` / `Warheads[]` + the entity's own ctor (`idata.cpp` / `udata.cpp` / `bdata.cpp`) + the `BulletTypeClass` in `bbdata.cpp`, then compare *every value* — damage, ROF, range, bullet, warhead, report, speed, ownable, stats — against the RA equivalent. "RA has a weapon/unit by that name" is **never** sufficient (TDGTWR's Vulcan, TDE1's M16-vs-M1Carbine, the Commando's RIFLE all proved it). Default to porting the TD version; reuse only a TD-ported entity you've confirmed byte-identical (TD→TD).
 
 ### 2.2 — Run the chain audit (MANDATORY before any rules.ini edit)
 
-Per [[feedback-td-building-chain-audit-ritual]], dump the full chain visibly:
+Dump the full chain visibly:
 
 ```
 Chain audit — [TDXXXX]:
@@ -85,7 +86,7 @@ Any RA-vanilla section in the chain = must port (don't ship leaks).
 
 ### 2.3 — Add enum + heap registration (DLL-side)
 
-Adding a new `[TDSection]` is **never pure rules.ini**. The heap allocator silently fails for unregistered types (per [[project-mod-type-heap-sizing]]). Each new entity needs:
+Adding a new `[TDSection]` is **never pure rules.ini**. The heap allocator silently fails for unregistered types (§3.2). Each new entity needs:
 
 | Section type | Enum entry | Explicit registration |
 |---|---|---|
@@ -169,7 +170,7 @@ repack_zip_with_prefix(
 
 ### 2.7 — Apply the donor-ImageData pattern (CRITICAL for bullets/anims/aircraft)
 
-Per [[reference-mfcd-donor-imagedata-pattern]] — without this, the missile/anim/plane will be invisible even with the tileset registered correctly.
+Without this, the missile/anim/plane will be invisible even with the tileset registered correctly.
 
 In the relevant `One_Time()` after the standard SHP-loading loop, copy a vanilla donor's `ImageData` pointer:
 
@@ -208,7 +209,7 @@ For every method on the entity's class that has TD-vs-RA divergence:
 
 ### 2.9 — Audio routing (if needed)
 
-Per [[project-td-audio-routing-recipe]]: MERGE the base `SFXEVENTSNONLOCALIZED.XML`, never replace. Add VOC_TD_* enum entries. Bundle WAVs in `Data/AUDIO/`.
+`td-audio-routing-recipe.md`: MERGE the base `SFXEVENTSNONLOCALIZED.XML`, never replace. Add VOC_TD_* enum entries. Bundle WAVs in `Data/AUDIO/`.
 
 ### 2.10 — Verify with the chain-audit ritual repeated
 
@@ -253,8 +254,6 @@ if (IsTDPort) {
 
 Already implemented in `weapon.cpp:202-210`. Just flag your new TD weapon and write the raw TD-source value.
 
-See [[reference-ra-mphtype-ini-format]].
-
 ### 3.2 — Type-heap registration silently fails
 
 **Trap:** Adding `[TDxxx]` to rules.ini without adding the enum + explicit `new XxxTypeClass("TDxxx")` registration in the right `data.cpp` or `rules.cpp`.
@@ -263,8 +262,6 @@ See [[reference-ra-mphtype-ini-format]].
 
 **Fix:** §2.3 table above. Every section type needs enum entry + explicit registration.
 
-See [[project-mod-type-heap-sizing]].
-
 ### 3.3 — Donor ImageData pattern for non-building entities
 
 **Trap:** Bullets / anims / aircraft with TGA-only assets (no `.SHP` in any MIX file) have `Class->ImageData == NULL` after `One_Time` runs. `Draw_It` bails at `if (!shapeptr) return;` and the entity is invisible.
@@ -272,8 +269,6 @@ See [[project-mod-type-heap-sizing]].
 **Symptom:** entity behaves correctly (audio, damage, animation trail), but its body sprite is invisible. For bullets specifically: smoke trail visible, missile body absent.
 
 **Fix:** Copy a vanilla donor's `ImageData` pointer in `One_Time` after the loop (§2.7).
-
-See [[reference-mfcd-donor-imagedata-pattern]].
 
 ### 3.4 — Tileset XML format and location
 
@@ -324,7 +319,7 @@ See [[reference-mfcd-donor-imagedata-pattern]].
 
 **Trap:** When debugging TD-port behavior, falling back to "tune the rules.ini value harder" or "find which RA flag/scatter constant gets us close." Drift.
 
-**Fix:** Per [[feedback-no-donor-for-td-separation]] / [[feedback-td-building-chain-audit-ritual]]: when TD-port runtime behavior differs from TD, the answer is **port TD's engine code body** into a `_TD()` variant. Patching RA's native function with TD-flavored tweaks is the donor anti-pattern at the engine level.
+**Fix:** when TD-port runtime behavior differs from TD, the answer is **port TD's engine code body** into a `_TD()` variant. Patching RA's native function with TD-flavored tweaks is the donor anti-pattern at the engine level.
 
 The exception is plumbing the launcher requires (e.g. `Map.Submit` for layer system, `Height` init for flight altitude tracking). Flag those inline with comments.
 
@@ -334,15 +329,30 @@ The exception is plumbing the launcher requires (e.g. `Map.Submit` for layer sys
 
 **Symptom:** Build a TDHPAD, get the free helicopter — but the helicopter cameos never appear in the sidebar. (Or: GDI builds TDPYLE, the Allied infantry roster never unlocks. Etc.)
 
-**Fix:** Extend `HouseClass::Can_Build`'s prerequisite-equivalence block at `house.cpp:1003+`. Add a cached IniName→Type lookup for the new TD building plus a `if (t == STRUCT_VANILLA_NAME && tdNNNN_type >= 0 && Has_Building_Active(tdNNNN_type)) continue;` branch. Worked examples: STRUCT_TENT→TDPYLE, STRUCT_BARRACKS→TDHAND, STRUCT_WEAP→TDWEAP/TDAFLD, STRUCT_HELIPAD→TDHPAD, STRUCT_RADAR→TDHQ, STRUCT_REFINERY→TDPROC, STRUCT_ADVANCED_TECH→TDEYE(GDI)/TDTMPL(Nod).
+**The equivalence rules** (`HouseClass::Can_Build`, the prerequisite-equivalence block):
+- **Production tokens are faction identity.** A GDI barracks never satisfies `tent` for an Allied
+  pillbox, and an Allied war factory never satisfies `weap` for a Tesla coil. TDPYLE and TDHAND
+  satisfy each other only for entities both TD factions can build (the leak was a GDI barracks
+  unlocking the Nod helipad).
+- **Power and refinery tokens cross every era, both ways, TS included.**
+- **Repair:** the RA `fix` token accepts TDFIX and TSDEPT; nothing requires TDFIX by name; TSDEPT
+  is required by name, and only TSDEPT satisfies it.
+- **Radar and tech centres are faction tech:** no substitution either way, except that `atek`
+  accepts TDEYE or TDTMPL for TD-era types both TD factions build (TDRMBO), since a prerequisite
+  list is AND-only. A house holding an Allied yard satisfies the Missile Silo's `stek` with its own
+  Advanced Tech Center.
+- **Every new separated building that should satisfy a vanilla token** needs its own branch there
+  (a cached IniName→Type lookup and a `continue`), or the dependent type is silently unbuildable.
+- **The yard gates the tree in skirmish, in code:** it can't live in rules.ini, because the TD chain
+  roots at TDNUKE (no prerequisite) and TDNUKE/TDPROC/TDHQ/TDFIX are shared by GDI and Nod, so an
+  AND-only list can't say "GDI yard OR Nod yard" (Unholy Alliance, a yard of every faction from the
+  start, shows it). Campaigns are exempt: they own the shared `STRUCT_CONST` / `STRUCT_TDFACT` yards.
 
 **⚠️ THE TRAP WITHIN THE TRAP (cost a build cycle 2026-05-28):** Do NOT try to satisfy a prereq by shadowing the vanilla `STRUCTF_*` flag into `House->BScan`/`ActiveBScan`. The prereq check calls `Has_Building_Active(type)`, which tests **`ActiveBQuantity[type] > 0`** — a per-building-type *counter* — NOT the BScan bitmask (`house.h:1008`). So a BScan flag shadow does nothing for prerequisites. (The BScan shadow IS still required for *other* engine checks — radar activation, defeat-on-no-scans `house.cpp:1474`, GPS/superweapon gating — just not prereqs.) Prereqs need the explicit per-type remap above, full stop.
 
-**Per-faction prereqs:** map one vanilla token to BOTH faction equivalents in the same branch so each side's building satisfies it independently — e.g. `STRUCT_ADVANCED_TECH` (`atek`) is satisfied by GDI's TDEYE *or* Nod's TDTMPL (TD's `UnitMCV` requires `STRUCTF_EYE`; `atek` is the closest RA token, and TDHQ basic comm deliberately does NOT count).
+**Diagnostic:** `MOD_DEBUG_CANBUILD.txt` (written by the `Can_Build` hook for TD-prefixed and `E#` infantry entries) logs `level_ok` / `pre_ok` / `own_ok` per call. `pre=[N,…]` shows the STRUCT enum each token resolved to. Pull it from the Deck to see exactly which gate fails before changing code. (Watch the house filter — AI houses log too; match the player's house number.)
 
-**Diagnostic:** `MOD_DEBUG_CANBUILD.txt` (written by the `Can_Build` hook at `house.cpp:877+` for TD-prefixed + `E#` infantry entries) logs `level_ok` / `pre_ok` / `own_ok` per call. `pre=[N,…]` shows the STRUCT enum each token resolved to. Pull it from the Deck to see exactly which gate fails before changing code. (Watch the house filter — AI houses log too; match the player's house number.)
-
-**Why it's silent:** No engine error — `Can_Build` just returns false and the sidebar hides the cameo. This will eventually be replaced by a `BehavesLike=` rules.ini field in D2; until then, every new separated TD building that shadows a vanilla RA factory needs one entry here.
+**Why it's silent:** no engine error. `Can_Build` returns false and the sidebar hides the cameo.
 
 ### 3.11b — Audio override mechanics (mod XML vs WAV-file replacement)
 
@@ -510,7 +520,7 @@ rules.ini now holds the **verbatim TD-source STRNTH** and the engine doubles it 
 
 ### 3.24 — TD infantry are INVISIBLE without a donor-ImageData fallback (idata.cpp gap)
 
-**Trap:** §3.3 / [[reference-mfcd-donor-imagedata-pattern]] applies to **infantry too**, but `InfantryTypeClass::One_Time` (idata.cpp) shipped WITHOUT a donor fallback — unlike `aadata.cpp` (aircraft) and `udata.cpp` (units), which both have one. A TD-prefixed infantry's SHP isn't in any MIX → `MFCD::Retrieve` returns NULL → `ImageData == NULL` → `InfantryClass::Draw_It` bails at its NULL-shape guard.
+**Trap:** §3.3 applies to **infantry too**, but `InfantryTypeClass::One_Time` (idata.cpp) shipped WITHOUT a donor fallback — unlike `aadata.cpp` (aircraft) and `udata.cpp` (units), which both have one. A TD-prefixed infantry's SHP isn't in any MIX → `MFCD::Retrieve` returns NULL → `ImageData == NULL` → `InfantryClass::Draw_It` bails at its NULL-shape guard.
 
 **Symptom:** the unit **builds, is selectable, plays TD voices, and shows its sidebar cameo — but renders nothing on the map.** (Buildings don't hit this; they bypass the SHP path in Remaster. Caught on TDE1 Minigunner, 2026-05-29 — invisible until the fallback was added.)
 
@@ -556,7 +566,7 @@ The overlay then resolves the real `TDFLAME-<dir>` tile by IniName. **Generalise
 
 **(c) TD-prefix the anim names** (`FLAME-*` → `TDFLAME-*`: ctor names, `RA_VFX.XML` tiles + frame paths, bundled ZIPs, rules.ini `Anim=`). The base game ships its **own** `FLAME-N` tiles (78 refs in CONFIG.MEG); an unprefixed name resolves to the *base* def, not yours — same trap as `TDIONSFX`/`TDDRAGON`.
 
-**Process note:** this took ~6 speculative deploy cycles before a one-line diagnostic log (`Anim(raw)`, `a(dir)`, `IniName`, spawned-pointer) proved the DLL side was perfect and isolated the bug to the render path — straight to (b). Ship logging in the *first* test of any new entity (see infantry recipe; memory `feedback-logs-first-on-new-units`). Shipped E4 Flamethrower, 2026-05-29.
+**Process note:** this took ~6 speculative deploy cycles before a one-line diagnostic log (`Anim(raw)`, `a(dir)`, `IniName`, spawned-pointer) proved the DLL side was perfect and isolated the bug to the render path — straight to (b). Ship logging in the *first* test of any new entity (see the infantry recipe).
 
 **(d) Suppress the warhead impact-explosion (RA conflates what TD separates).** In **TD** the impact anim lives on the *bullet* (`ClassFlame`/`ClassChem` both = `ANIM_NONE` → spray weapons produce **no impact blast**, only the muzzle jet). In **RA** the impact anim is chosen from the *warhead* (`Combat_Anim` reads `Warhead->ExplosionSet`). So a non-`IsTDPort` spray bullet + any warhead with `Explosion=` 1–6 spawns an unwanted blast on every hit (the chem's HE blast, the flame's napalm puff). **Fix:** set the warhead's `Explosion=0` — `combat.cpp:373` returns `ANIM_NONE` for any `ExplosionSet` outside 1–6. If the warhead is **shared** (the chem's HE table is also the E2 grenadier's `TDHE`, which *wants* its grenade blast), make a **dedicated copy** (`TDChemWar` = TDHE verses/spread, `Explosion=0`); if it's already weapon-specific (`TDFire`), just zero it in place. This was latent in the E4 flamethrower too — caught when the E5 chem's bigger HE blast made it obvious.
 
@@ -601,6 +611,27 @@ if ((td_single || tech->Health_Ratio() <= EngineerCaptureLevel) && iscapturable)
 **Cause:** with `IsFalling` set, RA's `ObjectClass::AI()` integrates the fall with `Rule.Gravity`, and `BulletClass::AI_TD()`'s TD-verbatim branch integrates it again, so the bullet falls twice per frame.
 
 **Fix:** `Unlimbo_TD` leaves `IsFalling` clear for TD-port ballistic bullets, so `AI_TD` is the only integrator. Because `Limbo()` removes the bullet from the layer `In_Which_Layer()` reports (Height-based), `AI_TD` does the same `Map.Remove`/`Submit` on a layer change that the base does, or removal misses and leaves a dangling pointer. Any new arcing or dropping TD-port bullet goes through the same path (`bullet.cpp`).
+
+### 3.30 — Tileset keys are the art's published names; never rename them by find-and-replace
+
+**Symptom:** after renaming tileset `<Name>` keys (`FACT`→`AFACT`, `MCV`→`AMCV` and the like), the MCV
+was invisible at skirmish start and the construction yard invisible on deploy.
+
+**Cause:** `Graphic_Name()` must resolve to a published key; the DLL kept asking for keys that no
+longer existed.
+
+**Fix:** give an entity its own art keys through the bundlers (`bundle_ra_building.py`,
+`bundle_unit.py`), which publish the art under the new name and write matching keys. Until then, an
+explicit `Image=` points at the old keys.
+
+### 3.31 — An unknown launcher mechanism: diff a working entity, don't test one theory per launch
+
+When something works for one entity and not another (the sidebar name is the worked case,
+`faction-select-identity.md`), diff the two entities' data first: their `RABUILDABLES` text IDs
+against the decoded master text and the mod's `Data/` tree found the answer with no game launch,
+after four one-per-launch theories had failed. Check any verification against a known-positive case
+before trusting a negative: a `.LOC` decoded wholly as UTF-16 finds no key at all (keys are ASCII,
+values UTF-16; use `loc_edit.py get`), and that guaranteed zero was once recorded as proof.
 
 ---
 
@@ -704,16 +735,6 @@ Before declaring a TD-entity port "100% authentic":
 
 ## 6. Cross-reference
 
-**Memory entries (load automatically per session):**
-- [[project-td-port-architecture]] — Option A architecture, why it was chosen
-- [[feedback-td-building-chain-audit-ritual]] — mandatory output ritual before any TD change
-- [[feedback-no-donor-for-td-separation]] — no RA-implementation reuse principle
-- [[reference-ra-mphtype-ini-format]] — Speed unit conversion
-- [[reference-mfcd-donor-imagedata-pattern]] — donor ImageData for non-building TD entities
-- [[project-mod-type-heap-sizing]] — enum + heap registration requirement
-- [[project-td-audio-routing-recipe]] — SFXEVENTSNONLOCALIZED MERGE pattern
-- [[project-td-prefix-convention]] — every TD entity gets TD prefix
-
 **TD source paths (read these as the spec):**
 - `reference/vanilla-conquer/tiberiandawn/bdata.cpp` — building Class declarations
 - `reference/vanilla-conquer/tiberiandawn/bbdata.cpp` — bullet Class declarations
@@ -727,10 +748,10 @@ Before declaring a TD-entity port "100% authentic":
 - `reference/vanilla-conquer/tiberiandawn/building.cpp`, `bullet.cpp`, `techno.cpp`, etc. — dispatch site bodies to port verbatim
 
 **Working examples in our codebase:**
-- TDATWR (full port, 2026-05-22): `docs/td-atwr-deep-dive.md`
-- TDOBLI (M5 vertical slice, 2026-05-21): `docs/td-obli-verification.md`
-- TDC17 (cargo plane with donor-ImageData pattern): `aadata.cpp:442-459`
-- M3 separated buildings: `docs/building-separation-plan.md`
+- TDATWR (the first full port): `docs/td-atwr-deep-dive.md`
+- TDOBLI: `docs/td-obli-verification.md`
+- TDC17 (cargo plane with the donor-ImageData pattern): `aadata.cpp`, `docs/cargo-plane-port.md`
+- Buildings: `docs/td-building-separation-recipe.md`
 
 ---
 
@@ -745,7 +766,13 @@ Living document — keep it ahead of the implementation, not behind.
 
 ---
 
-## Traps migrated from cross-session memory (2026-07-15)
+## More traps
+
+### Trap — boarding a transport excludes only ACTION_ATTACK
+`FootClass::What_Action` returns `ACTION_NONE`, not `ACTION_SELECT`, for an allied object another
+house owns. A transport-entry check that requires `ACTION_SELECT` stops Tanya boarding an allied
+campaign evac transport, so `InfantryClass::What_Action` excludes only `ACTION_ATTACK`; `unit.cpp`
+and `aircraft.cpp` use the same exclusion.
 
 ### Trap — diagnostic fopen paths MUST use %USERPROFILE%, never hardcoded
 Resolve DLL-side log paths via `getenv("USERPROFILE")`, not `C:/Users/steamuser/...` (that only
