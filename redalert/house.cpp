@@ -4108,13 +4108,8 @@ ProdFailType HouseClass::Begin_Production(RTTIType type, int id)
 
     fptr = Fetch_Factory(type, bay);
 
-    /*
-    **	The dropship bay refuses its own orders here, the one point every
-    **	production path funnels through -- the sidebar keeps refused cameos
-    **	visible (countdown / locked art) and its legality checks are never
-    **	consulted when construction starts. The verdict is shared with the
-    **	sidebar click handlers so EVA's acknowledgment matches it.
-    */
+    // TF: capped orders and dropship bay reloads are refused here, where every player production order
+    // arrives, because Can_Build keeps offering their cameos rather than hiding them.
     if (TF_Delivery_Order_Refused(this, type, id)) {
         return (PROD_CANT);
     }
