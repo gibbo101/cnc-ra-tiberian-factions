@@ -53,6 +53,13 @@ Jumpjet Infantry; the Upgrade Center's missing RA slab. Then the LAN Limpet test
 
 ## Post-release (after the next Workshop release)
 
+- **"Unable to comply, building in progress" is still RA's voice for every faction** (Luke, heard
+  again on the 5.0.0 Windows check, 2026-10-04). The launcher plays `PROGRES1` itself, so the DLL's
+  speech routing never sees it (`known-issues.md`, 2026-09-26 entry). Route: add the line to the
+  EVA cache patch's rows (`scripts/eva_mailbox_build.py` ERAS, regenerating `tf_eva_mailbox.h`)
+  with the TD (`TDBLDG1`) and TS (`TSNOFACT1`) payloads padded to one length, plus its loose seed
+  files, then check the swap in a session that changes era between matches
+  (`eva-ram-patch-spike.md`).
 - **Light orange selection box on a limpeted unit** (Luke, 2026-09-30). TS draws a limpeted
   object's selection bracket from another frame set (OpenTS techno.cpp:1455). In the Remastered
   launcher the box is `CNC_SELECT_BOX.TGA` (white, atlas 3027,4088 128x128), tinted as it is drawn;
