@@ -1,8 +1,9 @@
 # TD Rocket Launcher (MLRS) — deep dive
 
-**Status:** research complete, **no code yet** (2026-06-01). Read alongside `td-vehicle-port-recipe.md`.
-This one needed a deep dive because TD's `UNIT_MLRS` / `UNIT_MSAM` have **cross-wired graphics** and a
-surprising tech gate. This doc untangles it and sets the port plan.
+**Status:** Reference; shipped in 1.0.0 as `UNIT_TDMLRS` (GDI, `Prerequisite=weap,TDEYE`) and
+`UNIT_TDMSAM` (Nod, behind the Temple). TD's `UNIT_MLRS` / `UNIT_MSAM` have **cross-wired graphics**
+and a surprising tech gate; this doc untangles them. TDSSM2 is an exact port of `BULLET_SSM2`. Read
+alongside `td-vehicle-port-recipe.md`.
 
 ---
 
@@ -25,7 +26,7 @@ enum names. Display names (TXT) and weapons are coherent; only the sprite assign
 | **Speed / Armor / Locomotion** | MPH_MEDIUM / ALUMINUM / TRACK | MPH_MEDIUM / ALUMINUM / TRACK |
 | **Build level** | 7 | 7 |
 
-**This doc is about the "Rocket Launcher" = `UNIT_MLRS`** (the one Luke asked for). The "S.S.M. Launcher"
+**This doc is about the "Rocket Launcher" = `UNIT_MLRS`** . The "S.S.M. Launcher"
 (`UNIT_MSAM`, Honest John, Nod) is a *separate* future port — documented here only for disambiguation.
 
 **Port identity:** our unit = `UNIT_TDMLRS`, IniName `TDMLRS`, rules.ini `Name=Rocket Launcher`, but the
@@ -46,8 +47,7 @@ SSM Launcher.
 **It's a TOP-TIER unit.** Build level 7 + `STRUCTF_EYE` means the Rocket Launcher unlocks only **after the
 Ion Cannon building** — a deliberate late-game GDI siege unit in TD. Honor it: `Prerequisite=weap,atek`
 (`weap` = GDI war factory `TDWEAP`; `atek` is satisfied by `TDEYE` via the `house.cpp` remap — and since the
-unit is GDI-only, `atek`→`TDEYE` is the effective gate). Flag for Luke: confirm we want it gated this high,
-or drop the EYE gate to make it a mid-tier unit.
+unit is GDI-only, `atek`→`TDEYE` is the effective gate). Shipped as `Prerequisite=weap,TDEYE`.
 
 ---
 
@@ -68,7 +68,7 @@ flickering flame, runs-out-of-fuel, inaccurate, translucent, `ARMING 9`, `ROT 7`
 (DRAGON sprite, homing, AA, `WARHEAD_HE`/`TDHE`, `ANIM_FRAG1`, MPH_ROCKET, inaccurate, translucent).
 - **Option A — reuse `TDSSM`** (Tusk/Guard-Tower precedent). Pro: zero new bullet surface. Con: not byte-identical
   (arm/ROT delta → the missile arms ~0.06s sooner and turns slightly slower). Borderline vs the "reuse only
-  byte-identical TD→TD" rule (`[[feedback-ra-only-when-no-alternative]]`).
+  byte-identical TD→TD" rule.
 - **Option B — port `BULLET_SSM2` as `TDSSM2`** (RECOMMENDED): a trivial clone of the `TDSSM` rules section
   with `Arm=9` / `ROT=7`. Fidelity-correct; the established convention favors porting over near-reuse. New
   `BULLET_TDSSM2` enum + `bbdata.cpp` registration + donor-ImageData (shares the `TDDRAGON` sprite, already
@@ -124,9 +124,8 @@ rules.ini `[TDMLRS]`: `Image=TDMLRS`, `ShapeSize=48,48`, `Name=Rocket Launcher`,
 
 ---
 
-## 6. Open decisions for Luke
+## 6. Decisions (as shipped)
 
-1. **Faction** — GDI-only (recommended, EYE-gated) ✔ confirm.
-2. **Tech tier** — honor TD's `STRUCTF_EYE` (Ion-Cannon-gated, very late) or drop to a lower prereq for accessibility?
-3. **Bullet** — port `TDSSM2` for exactness (recommended) vs reuse `TDSSM`.
-4. **96-frame sprite** — accept the infantry-donor-slice approach, pending the "does 64 suffice" test.
+1. **Faction:** GDI only, as TD.
+2. **Tech tier:** TD's `STRUCTF_EYE` gate, honoured (`Prerequisite=weap,TDEYE`).
+3. **Bullet:** `TDSSM2`, an exact port of `BULLET_SSM2`.

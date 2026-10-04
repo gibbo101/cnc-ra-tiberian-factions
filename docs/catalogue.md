@@ -1,292 +1,15 @@
 # Building catalogue — Tiberian Factions for Red Alert
 
-> ## STATUS — design-era catalogue (superseded; retained as reference)
->
-> **This is the design-era catalogue.** All of the GDI/Nod buildings below are now
-> **fully-separated `STRUCT_TD*` engine types** (TDNUKE/TDNUK2/TDPROC/TDPYLE/TDHAND/
-> TDWEAP/TDAFLD/TDHQ/TDEYE/TDTMPL/TDGTWR/TDATWR/TDGUN/TDSAM/TDOBLI/TDFIX/TDHPAD/
-> TDSILO/TDFACT — see `redalert/defines.h`), **not** Logic-aliased donors, and all
-> shipped in **v0.50**. The TD infantry roster has also shipped: **INFANTRY_TDE1
-> (Minigunner), TDE2 (Grenadier), TDE3 (Rocket Soldier)**. As of commit `f8351de`
-> the GDI/Nod skirmish AI builds full bases.
->
-> Consequently the **"📝 designed, not built" markers, the "Donor"/"Logic-aliased"
-> framing, and the "v0.3/v0.4" sequencing below are design-era and superseded.**
-> They are retained as the per-entry **stats / design-spec reference** (TD-authentic
-> values pulled from `tiberiandawn/bdata.cpp`), which is still useful — but for
-> *what shipped and how*, see `building-separation-plan.md`, the `td-*` deep-dives,
-> and `td-infantry-port-recipe.md`.
-
-Design spec for the new buildings we're adding via the Logic-aliased mod-building pipeline (see `docs/adding-td-buildings.md` for the per-building implementation recipe). Stats below are pulled from `tiberiandawn/bdata.cpp` — TD-authentic by default. See `docs/manifest-gaps.md` for which engine rules.ini fields the manifest emitter can/can't currently produce, and the recommended add order before the catalogue rollout broadens.
-
-## TEMPORARY DEV HACKS — remove before v1.0 / public release
-
-These are local-only diagnostics that must not ship. Each lives behind a `#if 1`
-so disabling is a one-line flip; deletion is also fine.
-
-- **Skirmish reveal-all** — `redalert/scenario.cpp` at the tail of
-  `Start_Scenario` (just before `BEnd(BENCH_SCENARIO); return (true);`).
-  Mirrors `TACTION_REVEAL_ALL` from `taction.cpp`: sets
-  `PlayerPtr->IsVisionary = true` and maps every cell to the player for any
-  non-campaign session. Added 2026-05-19 to observe 7-AI skirmish behaviour
-  during D1.2 Phase 1 validation. Turn off: flip the `#if 1` to `#if 0`, or
-  delete the whole block. Search for `TEMPORARY DEV HACK — reveal the full map`.
-
-- **`Can_Build` diagnostic logger** — `redalert/house.cpp:838-872`.
-  Writes `MOD_DEBUG_CANBUILD.txt` to the user's Documents/CnCRemastered folder
-  whenever `Can_Build` runs against an IniName starting with `TD`. Per
-  [[feedback-keep-diagnostics-until-v1]], stub the body under `if (0)` instead
-  of deleting so re-enable is a one-line flip.
-
-- **`tf_*` log files** — various `fopen` diagnostics under
-  `%USERPROFILE%/Documents/CnCRemastered/` (`tf_draw_intercept.log`,
-  `tf_mod_one_time.log`, `tf_can_build.log`, etc.). Each is per-IniName rate-
-  limited. Same retention policy as Can_Build above.
-
-- **Instant build for GDI / Nod** — `redalert/techno.cpp` in
-  `TechnoTypeClass::Time_To_Build`. Forces 15 ticks (~1 s) return for any
-  build queued by `HOUSE_GOOD` / `HOUSE_BAD` (France→GDI / USSR→Nod players
-  via the launcher swap). Vanilla houses keep their full Cost-derived build
-  times so AI cadence is unaffected. Added 2026-05-20 for catalogue rollout
-  testing. Search for `TEMPORARY DEV HACK — instant build` to remove; flip
-  `#if 1` to `#if 0` to disable without deleting.
-
-## Session pickup
-
-### End of 2026-05-20 — Pipeline rebuild + 3 buildings + GDI playable
-
-**This session's wins (uncommitted at write time; commit imminent):**
-
-- **`scripts/bundle_assets.py` (new ~280 lines)** — end-to-end asset bundler. Extracts sprite ZIPs from `TEXTURES_TD_SRGB.MEG`, repacks with TD-prefixed internal frame filenames, patches `RA_STRUCTURES.XML` tilesets (with empty `<Frame />` for MAKE shape 0), patches `RABUILDABLES.XML` for sidebar wiring. Idempotent — re-running replaces in place.
-- **`scripts/add_building.py` (extended)** — now orchestrates the full pipeline: rules.ini emit → `[NewBuildings]` reg → asset bundling. One command per building, right first time. `--skip-assets` flag for rules-only runs.
-- **`deploy.sh` (rewritten)** — `rsync -av --delete` mirror to the Deck. Drift between local and Deck is now impossible; orphan files on the Deck get cleaned automatically. Confirmation prompt on first run (skip with `--yes`).
-- **Manifest schema extended** — added `td_asset` (was `image`; semantic split: source MEG asset name vs rules.ini `Image=` value, which now uses IniName uniformly). New fields: `shape_size`, `text_id_name`, `text_id_desc`, `build_icon`.
-- **TD-prefix convention applied uniformly** — ZIP filenames, XML tileset `<Name>`, rules.ini `Image=`, internal frame filenames, and frame path prefixes all consistently TD-prefixed (`TDNUKE.ZIP` containing `tdnuke-NNNN.tga`, referenced as `<Frame>tdnuke\tdnuke-0000.tga</Frame>`). Avoids vanilla name collisions for WEAP/FIX/HPAD/SAM when we get to those.
-- **Three buildings landing right first time**: TDNUKE, TDNUK2, TDPYLE all render correctly, correct cameos, correct tooltips ("Power Plant" / "Adv Power Plant" / "Barracks"), buildup animations, idle animations.
-- **TDPYLE infantry production works** — Logic=TENT (Allied barracks, not Soviet BARR — important).
-- **Petroglyph flash on placement → fixed** — TD-source MAKE ZIPs start frames at 0001, not 0000. XML shape 0 must emit `<Frame />` (empty). Documented as gotcha #6 in `docs/adding-td-buildings.md`. Pipeline handles it via `empty_first_shape=True` on MAKE tilesets.
-- **Unit Z-order under TD buildings → fixed** — `BuildingClass::Sort_Y` in `building.cpp` now returns `Center_Coord()` for any entry with explicit `ShapeSize=` (mod entries only; vanilla untouched). TD sprites extend further south than vanilla's default offset accounts for.
-- **Owner= bulk patch** — every vanilla `Owner=allies` unit/infantry now `Owner=allies,GoodGuy`, every `Owner=soviet` now `Owner=soviet,BadGuy`. Buildings explicitly excluded. Interim until we have TD-themed infantry/vehicles; gives GDI/Nod a playable unit roster from vanilla.
-- **D1.2 Phase 1 (literal prereqs for mod IniNames) still landed** — committed earlier (`cddc856` `v0.3.0-phase4a`). TDNUK2 actually requires TDNUKE.
-
-**Working tree state at session end:**
-
-```
-Modified DLL sources:
-  redalert/bdata.cpp           — PYLE footprint preset (top-row occupy + bottom-row overlap)
-  redalert/building.cpp        — Sort_Y mod-entry fix
-  redalert/dllinterface.cpp    — diagnostic logging (TD-prefix Draw + AssetName)
-  redalert/scenario.cpp        — TEMPORARY reveal-all hack, NOT for commit
-
-New scripts:
-  scripts/bundle_assets.py
-  scripts/buildings_manifest.py  (extended)
-  scripts/add_building.py        (extended)
-
-Data:
-  resources/.../rules.ini                   — Owner bulk patch + E3 explicit + TDPYLE entries
-  resources/.../RA_STRUCTURES.XML           — 99 new TD tileset shape entries
-  resources/.../RABUILDABLES.XML            — RA_TDNUKE/TDNUK2/TDPYLE blocks
-  resources/.../STRUCTURES/{TD*}.ZIP        — 6 repacked sprite ZIPs
-
-Other:
-  deploy.sh                    — rewritten as rsync mirror
-  docs/adding-td-buildings.md  — gotchas 6-9 added
-  docs/catalogue.md            — this pickup
-```
-
-### Next session — pick up here
-
-**This session (2026-05-20, post-pipeline-rebuild) wins:**
-
-- **E3 (Rocket Soldier) now buildable for GDI.** Root cause was `aftrmath.ini` overriding rules.ini's `Owner=allies,soviet,GoodGuy,BadGuy` with its own `Owner=allies` (Aftermath expansion INI loads after rules.ini and wins per-key). Diagnostic (`MOD_DEBUG_CANBUILD.txt`) showed E3's effective `Ownable=0xFF` = `HOUSEF_ALLIES|HOUSEF_SOVIET` only. Fix: bulk-patched aftrmath.ini's 23 non-building Owner= lines following rules.ini convention. New gotcha #10 in `docs/adding-td-buildings.md`.
-
-- **Manifest schema extended**: `sensors` (bool) and `storage` (int) fields added to FIELD_SPEC. Documented in manifest.
-
-- **Full GDI building roster shipped** (12 entries total — 8 new this session): TDPROC, TDSILO, TDFIX, TDWEAP, TDHPAD, TDGTWR, TDATWR, TDEYE on top of TDNUKE/TDNUK2/TDPYLE/TDHQ. All build, all render with TD-authentic sprites, all functional on the Deck.
-
-- **TDWEAP exit deep-dive.** What looked like a simple Logic=WEAP entry turned into 5+ engine-level fixes (8 hours of investigation, six rebuilds). Documented as gotchas #11-15:
-  - **#11**: Armor parser strings — RA uses `light`/`heavy`, TD uses `aluminum`/`steel`. Manifest "aluminum"/"steel" was silently falling to `ARMOR_NONE`. Fixed in `Armor_From_Name` with aliases.
-  - **#12**: `WEAP2` two-layer compositing — `BuildingClass::Draw_It` hardcodes a second-layer draw of `"WEAP2"` for any STRUCT_WEAP. Our TD WEAP sprite is single-piece so vanilla RA's yellow roof was rendering over TD's foundation. Fix: TD entries redirect overlay to `"TDWEAP2"`; TDWEAP2.ZIP bundled from TD source.
-  - **#13**: Door-stage XML remap — RA uses 4 door stages, TD's WEAP2 has 20 frames (10 normal + 10 damaged). Tileset shapes 0-3 must map to TD frames 0,3,6,9 so the door fully opens.
-  - **#14**: **The smoking gun** — `redalert/drive.cpp:1930` has TWO `Track13[]` definitions under `#if (1) / #else`. The pure-south version is active despite `TrackControl[66]` declaring `DIR_SW` final facing. The SW Track13 in the `#else` block is dead code that matches TD's authentic SW exit. Initially flipped to `#if (0)` — caused vanilla Allied WEAP to also use SW (which is not what RA shipped). Final fix: kept Track13 as RA's pure-south, ADDED Track14 (= old #else SW version), added `OUT_OF_WEAPON_FACTORY_TD = 67` enum, added `TrackControl[67] = {14, 14, DIR_SW, F_}`. Vanilla Allied AI WEAP exit is now bit-identical to RA original (confirmed via 2026-05-20 playtest); TD entries get TD-authentic SW exit. Eight hours of "but the math says zero snap" because we kept reading the SW version while the engine ran the south one. Per-tick `Coord` diagnostic in `drive.cpp:While_Moving` finally caught it.
-  - **#15**: `Exit_Object` STRUCT_WEAP case + `Mission_Unload` interaction. Documented the door-open → Force_Track(SW Track13) → continued Assign_Destination chain. TD entries get TD-authentic SW exit; vanilla WEAP kept south-exit behaviour for Allied AI compatibility.
-
-- **1-second-build dev hack** for HOUSE_GOOD/HOUSE_BAD players. `TechnoTypeClass::Time_To_Build` returns 15 ticks for testing iteration. Documented in TEMPORARY DEV HACKS section.
-
-- **`scenario.cpp` reveal-all dev hack** preserved from earlier session (`#if 1`).
-
-**Diagnostics added this session and kept active per [[feedback-keep-diagnostics-until-v1]]:**
-- `MOD_DEBUG_CANBUILD.txt` extended with E*-prefix infantry tracking
-- `tf_exit_object.log` (Exit_Object default-case capture)
-- `tf_weap_unlimbo.log` (TDWEAP Mission_Unload Force_Track capture)
-- `tf_weap_track.log` (per-tick Coord during Track13 — voluminous; consider disabling under `#if 0` if log volume becomes a problem)
-
-### Building bugs found during 2026-05-20 playtest (deferred to separation milestones)
-
-User playtest after the GDI roster shipped surfaced these. **Both remaining
-items now defer to the building-separation work** (`docs/building-separation-plan.md`)
-rather than being patched against the Logic= alias model — targeted fixes
-would just be thrown away when the alias is removed. Numbers match the
-user's report:
-
-1. **TDPROC idle animation breaks after first harvester return.** Refinery
-   animates normally on build. When the harvester returns and docks, the
-   `IdleAnim` cycle stops and never restarts. Likely the donor's BSTATE
-   transitions (`BSTATE_ACTIVE`/`BSTATE_AUX1` siphoning cycles in TD's source
-   per `tiberiandawn/bdata.cpp:3814`) take over and our `IdleAnim*` override
-   never re-engages. Also (parked): there should be a *visible* "returning"
-   indicator on TDPROC when a harvester is on its way back, so the player
-   knows ore is incoming. **Resolution path:** building-separation **M4**
-   (Tier 3 economy buildings) — TDPROC becomes a STRUCT_TDPROC entry with
-   its own `_anims[]` including BSTATE_DOCKING from TD source. Supersedes
-   [[project-td-harvester-dock-plan]].
-
-2. **TDTMPL construction animation feels slow then pops into place.** (Raised
-   2026-05-21 — Luke not happy post v0.3.1-phase1b.) Symptom: buildup plays
-   visibly slowly, then the finished Temple sprite snaps in before the
-   animation has cycled through all frames. Root cause: phase1b hardcodes
-   `rate=2 ticks/frame` for every entry — for TDTMPL's 36-frame buildup
-   that's ~4.8s, while the engine's natural rate is
-   `(Rule.BuildupTime × TICKS_PER_MINUTE) / count` ≈ 1.5 ticks/frame
-   (~2.4s). Once the engine's timer expires it force-transitions to idle
-   regardless of animation progress. **Resolution path:** building-separation
-   **M5** (Tier 4 superweapon hosts) — STRUCT_TDTMPL owns its own buildup
-   rate via the BuildingTypeClass instance, fed from TD's authentic value
-   rather than the manifest's blanket rate=2.
-
-### TDGUN turret rotation — deferred to separation M3
-
-TDGUN fires statically instead of rotating to face targets. Symptom of
-Logic=GUN donor's `BuildingClass::Draw_It` turret-draw path not firing for
-our mod entry. **Resolution path:** building-separation **M3** (Tier 2
-defensive turrets) — TDGUN becomes STRUCT_TDGUN with its own turret-facing
-logic ported from `tiberiandawn/building.cpp` `Draw_It`.
-
-**Immediate next work — finish GDI building roster:**
-
-Remaining catalogue entries per the master flag table:
-- **TDHQ** (Communication Center) — Logic=DOME. Needs `sensors=true` field in manifest (radar). See `docs/manifest-gaps.md` Priority-2 list.
-- **TDEYE** (Advanced Comm / Ion Cannon host) — Logic=ATEK or similar. `sensors=true`. Superweapon binding TBD.
-- **TDWEAP** (Weapons Factory) — Logic=WEAP. Donor IniName collides — `Image=TDWEAP` (not `WEAP`) is critical here.
-- **TDFIX** (Repair Facility) — Logic=FIX. Same collision concern.
-- **TDGTWR** / **TDATWR** (Guard Tower / Advanced Guard Tower) — Logic=PBOX or TURR. `primary=` weapon needed.
-- **TDHPAD** (Helipad) — Logic=HPAD. Collision.
-- **TDPROC** (Refinery, shared GoodGuy,BadGuy) — Logic=PROC. Needs `storage=N` field.
-- **TDSILO** (Storage, shared) — Logic=SILO. Needs `storage=N`.
-
-**Manifest schema additions needed before that batch:**
-- `sensors` (bool) — for TDHQ, TDEYE
-- `storage` (int) — for TDPROC, TDSILO
-
-Both are simple FIELD_SPEC additions in `scripts/add_building.py`. Per `docs/manifest-gaps.md`.
-
-**TDAFLD cargo-plane delivery — RESOLVED in v0.3.1-phase2d (2026-05-21):**
-
-Final implementation diverged from the original TDWEAP-style plan. The TDWEAP template (gotchas #11-15) assumed a Track-based exit; TDAFLD instead ports TD's reinforcement-style cargo-plane delivery. The split-track / `OUT_OF_AIRSTRIP_TD` enum is **not used** — vehicles are dropped by the cargo plane onto a `Find_Exit_Cell`-picked strip-adjacent cell, not driven out along a Track. Cleaner mechanism, no door-stage XML remap needed.
-
-What landed (`docs/cargo-plane-port.md` has the canonical writeup):
-
-- New `AIRCRAFT_TDCARGO` (C-17) aircraft type ported from `tiberiandawn/aadata.cpp:218-257` CargoPlane.
-- TD's fixed-wing `Mission_Unload` state machine ported verbatim into `redalert/aircraft.cpp` (PICK_AIRSTRIP → FLY_TO_AIRSTRIP → BUG_OUT).
-- TD's `Enter_Idle_Mode` in-air cargo branch ported (auto-promotes spawned plane to MISSION_UNLOAD).
-- Vestigial `AIRCRAFT_CARGO` clause in RA's `Edge_Of_World_AI` activated with the new enum.
-- `Find_Docking_Bay` patched to recognize TDAFLD as an airstrip even though it's Logic=WEAP-aliased (Type=STRUCT_WEAP).
-- `BuildingClass::Exit_Object` STRUCT_WEAP case forks for TDAFLD IniName: spawn cargo plane at east map edge, attach produced unit, MISSION_UNLOAD, Commence. Engine drives the rest via the four dormant-mechanic activations above.
-- `[TDC17]` rules.ini section so TechnoTypeClass picks up Speed=16 (MPH_FAST). Without this the plane spawns frozen.
-- `Docking_Coord` IniName check so the plane lands at the visual middle-front of the 4×2 strip.
-
-**Watch-outs documented in `docs/cargo-plane-port.md`:**
-
-- ImageData fallback in `AircraftTypeClass::One_Time` (Badger borrow) — without this Draw_It bails on NULL ImageData.
-- `Dimensions()` branch giving TDCARGO a 256×160 bounding rect — sprite peaks at 245×156.
-- `What_Action` force-attack guard on AIRCRAFT_TDCARGO — IsLegalTarget=false alone doesn't stop ctrl-click on a landed plane.
-- NO pre-NavCom and NO pre-radio handshake from `Exit_Object` — both collide with engine side-effects (`Assign_Destination`'s Status=0 reset, `Enter_Idle_Mode`'s per-tick reassignment). Spawn lean, let PICK_AIRSTRIP own the setup.
-
-Reilsss's CnCinRA mod gave up on this and reused the GDI weapons factory for Nod — we can do better with the split-track pattern we've now proven works. Plan: when we get to Nod, replicate the TDWEAP split (Track14/Track15 + enum + Mission_Unload branch) for the airstrip.
-
-**Then Nod buildings:**
-- TDHAND (Logic=BARR — Soviet barracks), TDGUN, TDSAM, TDOBLI, TDTMPL. Bib note for TDHAND: per catalogue table it's `2×3 footprint`, needs its own `_presets[]` entry in `bdata.cpp`.
-
-**Then unit catalogue:**
-- TD-themed infantry (TDE1, TDE2, TDE3, etc.) replacing the temporary `Owner=allies,GoodGuy` patch on vanilla units. New `scripts/add_infantry.py` (or extend `add_building.py` for RTTI_INFANTRYTYPE).
-- TD-themed vehicles + aircraft similarly.
-
-**Deferred architectural items still parked:**
-- D1.2 Phase 2 — delete BScan/ActiveBScan/OldBScan, migrate all consumers. See task `#8`.
-- Classic-mode TD SHPs — bundle CONQUER.MIX assets into a mod mixfile for LAN play. See ImageData inheritance note in this file.
-- ~~HOUSE_BAD launcher swap~~ — **DONE.** Spain→HOUSE_GOOD (GDI) and Turkey→HOUSE_BAD (Nod) both wired in `dllinterface.cpp:905-910`.
-
-### End of 2026-05-19 — Pre-pipeline state (archived)
-
-**Current state (end of 2026-05-19, v0.3.0-phase3d committed — D1.1/D1.1b done, D1.2 pending fresh session):**
-
-What works end-to-end on the Deck:
-- **TDNUKE** — sidebar icon, TD sprite, 2×2 footprint, buildup → idle anim cycling, damaged auto-shift, sell/destroy spawns crew, AI targets it (Points=50), prereq chain works, **correct scale (ShapeSize=48,48)**
-- **TDNUK2** — sidebar entry, prereq gate (requires power plant), placement, AI targets it (Points=75), **correct scale matching TDNUKE (ShapeSize=48,48)** — visually verified on Deck 2026-05-19
-- `scripts/add_building.py` + `scripts/buildings_manifest.py` — manifest-driven rules.ini emission, idempotent, [NewBuildings] auto-registration. Smoke-tested on TDNUKE round-trip and TDNUK2 first generation. **Needs ShapeSize column added.**
-- Prereq parser fix: `CCINIClass::Get_Buildings` now uses `BuildingTypeClass::As_Pointer` (heap-aware) instead of `From_Name` (vanilla enum range only), so `Prerequisite=TDxxxx` actually resolves.
-- AI targeting fix: `Points=` mandatory field, all 19 entries in master table populated with TD-authentic RISK/RWRD values.
-- **ShapeSize override (v0.3.0-phase3d, commit d69d09b):** EMC-style `ShapeSize=W,H` rules.ini directive overrides the `width`/`height` passed to `DLL_Draw_Intercept`. Without it, mod-entry SHPs aren't in `REDALERT.MIX` → `Get_Build_Frame_Width` returns 0 → launcher falls back to TGA-native scale → inconsistent rendering per asset. **Mandatory for every new TD entry**, convention W=Width()×24, H=Height()×24.
-- Diagnostic infrastructure extended: `tf_draw_intercept.log` now per-IniName rate-limited (30 each) and logs `ImageData/BuildupData/CameoData` pointers; new `tf_mod_one_time.log` shows whether `MFCD::Retrieve` returned NULL for each mod entry's SHP. Confirmed `NUKE.SHP` / `NUK2.SHP` are NOT in `REDALERT.MIX` (legacy SHP path is effectively dead for mod entries — launcher uses AssetName+TGA pipeline directly).
-- Deploy target consolidated: only `Mods/Red_Alert/Vanilla_RA/` on the Deck.
-
-### What we learned this session about the launcher's render pipeline
-
-The original D1.1 plan assumed "per-entry ImageData/BuildupData load fixes the scale" — that hypothesis was **wrong**. Diagnostic confirmed:
-- After my D1.1 One_Time mod-entry loop: `ImageData=BuildupData=CameoData=NULL` (all `MFCD::Retrieve` calls returned NULL — neither `NUKE.SHP` nor `NUK2.SHP` lives in `REDALERT.MIX`).
-- At Draw_It time, `ImageData`/`BuildupData` are *somehow* non-NULL — different pointers per entry, populated by an unidentified mechanism between One_Time and first draw (not blocking, but worth investigating later).
-- `DLL_Draw_Intercept` receives `w=0 h=0` for **both** TDNUKE and TDNUK2 — same Size/W()/H()/Dim values, yet they rendered at very different scales pre-fix. So **width/height args weren't the scale driver**.
-- The launcher's actual fallback when `w=h=0`: TGA-native pixel mapping. TD-Assets's NUKE and NUK2 TGAs are similar in canvas dimensions (~256×250) and opaque-pixel ratio (~80%), but the **building's bounding box within each TGA** is bigger for NUK2 — making it render ~50% larger on screen at identical CNCObjectStruct values.
-- The fix (D1.1b): force the launcher to use **explicit dimensions** by passing non-zero w/h derived from `ShapeSize=` rather than from SHP data. Validated visually — TDNUKE and TDNUK2 now render at identical 2×2 scale.
-
-The TD-Assets workshop docs ([Steam Workshop 3003163891](https://steamcommunity.com/sharedfiles/filedetails/?id=3003163891)) confirm this is the EMC-canonical approach: *"The mod does NOT automatically scale sprites... you must set the dimensions (width, height) manually."* Example shown: `ShapeSize=48,72` for HAND (2×3 foundation). DontCryJustDie's discussion thread has authoritative shape sizes for the full TD catalogue; XCC Mixer can extract the same data from TD's `CONQUER.MIX`. Subscribed to DontCryJustDie's example mod (3003174395) for canonical rules.ini patterns when we do the catalogue rollout.
-
-### Classic graphics mode — DROPPED (HD-only)
-
-Classic mode is unsupported. It was briefly made palette-correct (the 2026-05-28
-`TFASSETS.MIX` remap — historical record in `classic-mode-palette-remap.md`), but once
-the TD theatre tilesets were added there is no classic art path for the mod's content,
-so classic renders broken. HD (the TGA tileset) is the only supported mode; do not do
-classic-mode work for new entities. See memory `feedback-classic-graphics-unsupported`.
-
-### Next session — D1.2 full BScan replace
-
-Originally scoped as half-day; grep showed actual surface is bigger (~6 files, 30+ references — `house.cpp` AI/sell/radar/save-load, `building.cpp` construction reg, `cell.cpp` crate spawning, `display.cpp` minimap, `tevent.cpp` event triggers, plus the prereq parser). Worth doing as a clean full session rather than a surgical hack.
-
-**D1.2 scope:**
-
-1. **Replace `BScan`/`ActiveBScan`/`OldBScan` 32-bit bitmasks with heap-sized counter arrays** indexed by Type (size = `BuildingTypes.Count()`).
-2. **Update every BScan consumer** to use the new array. Most callers want "do I have any of type X?" — translates to `BuildingsOwned[X] > 0`. Group queries like `BScan & (STRUCTF_REFINERY | STRUCTF_CONST)` become explicit OR checks over the relevant Type slots.
-3. **Prereq parser**: convert `Prerequisite=TDxxxx` from bitmask production to a literal `int PrerequisiteList[N]` of Type indices. `Can_Build` loops: `for each T in list: require BuildingsOwned[T] > 0`.
-4. **Save/load migration** for the new HouseClass field layout (or `#ifdef`-gate the size change until format is bumped).
-5. **Type-equality checks** (`if (building->Type == STRUCT_POWER) {...}`) — D2 territory via `BehavesLike=`, leave as-is for D1.
-
-**Files to touch (verified via grep 2026-05-19):**
-- `redalert/house.h`, `redalert/house.cpp` — HouseClass fields + all consumers
-- `redalert/building.cpp:1159-1160` — registration on construction; corresponding decrement on destroy/sell
-- `redalert/cell.cpp:2312, 2388, 2401, 2518` — crate spawning checks
-- `redalert/display.cpp:4341, 4387` — minimap state checks
-- `redalert/tevent.cpp:347, 357-358, 373, 464, 481` — event trigger predicates
-- `redalert/type.h` — TechnoTypeClass `Prerequisite` field becomes a list
-- `redalert/tdata.cpp` / `redalert/techno.cpp` — prereq parser (locate the actual function)
-
-**D1.2 success criteria:**
-- `Prerequisite=TDNUKE` literally requires TDNUKE built (not just any STRUCTF_POWER) — verify by trying to build TDNUK2 with only a vanilla POWR placed; should be blocked.
-- TDNUKE/TDNUK2 don't regress in any vanilla-coupled path (AI behaviour, sell flow, radar, crate logic).
-- Save/load round-trips cleanly.
-- All vanilla buildings still resolve their own prereqs correctly (Tech Center → ATEK presence, etc.)
-
-**D2 deliverables (parked):**
-- `BehavesLike=` rules.ini field for Type-equality special cases (Iron Curtain, MSLO, GPS, etc.)
-- `BQuantity` extension to mod heap
-- Audit and clean up the `Logic=` aliasing code in `bdata.cpp:3731-3759` (most becomes obsolete after D1.2)
-
-**Deploy target reminder:** scp to `Mods/Red_Alert/Vanilla_RA/`. Testbed folder is gone. See [[project-mod-building-pipeline]] memory for build/deploy recipe.
+**Status:** Reference. TD-source stats for the TD buildings, all separate `STRUCT_TD*` engine types.
+Values are TD-authentic, from `tiberiandawn/bdata.cpp`; live rules.ini values differ where
+`balance-deep-dive.md` moved them. `scripts/buildings_manifest.py` mirrors the flag and wiring
+tables, and wins if they drift. How the buildings were ported: `td-building-separation-recipe.md`
+and the `td-*` deep dives. The "📝" markers and "Donor" columns below are design-era: no entity
+aliases an RA donor.
 
 ---
 
-## Master flag table (TD-authentic, v0.3 source of truth)
+## Master flag table (TD-authentic)
 
 Per-building flags extracted from `tiberiandawn/bdata.cpp`. These are the values `add_building.py` reads. **IniName** is the catalogue IniName (TD-prefixed); **Image/Footprint/sprite ZIPs** keep the unprefixed TD asset names.
 
@@ -324,7 +47,7 @@ Per-building flags extracted from `tiberiandawn/bdata.cpp`. These are the values
 
 ---
 
-## Master wiring table (engine hookups, v0.3 source of truth)
+## Master wiring table (engine hookups)
 
 Values that **must be set in rules.ini per-entry** because the Logic= alias does *not* copy them from the donor (`bdata.cpp:3731-3759` lists what *is* copied — everything below isn't). Omitting any of these reproduces the same class of bug as the `Points=` issue: the building constructs but the engine treats it as a vanilla-default placeholder for the missing field.
 
@@ -936,11 +659,11 @@ There's also a `#if 0` dev-toggle at the same site that collapses GDI/Nod
 build time to ~1 second for fast layout iteration — flip to `#if 1` and
 rebuild.
 
-See [[project-td-build-time-formula]] for full derivation.
+
 
 ---
 
-## Skipped for v0.3 (revisit later)
+## Not ported
 
 - **HOSP** — Hospital. TD lvl 99 (not normally buildable). Skip.
 - **BIO** — Bio Lab. TD lvl 99 (not normally buildable). Skip.
@@ -949,11 +672,6 @@ See [[project-td-build-time-formula]] for full derivation.
 ---
 
 ## Walkthrough status
-
-> **Updated for v0.50:** every TD building below shipped as a fully-separated
-> `STRUCT_TD*` engine type — the "Donor" column is **design-era** (the entities no
-> longer alias these RA donors). The "per-faction split / v0.4" deferrals noted in
-> some cells are still accurate forward-looking notes; the **separation itself is done.**
 
 | IniName | Faction | Donor (design-era) | Stats? | Status |
 |---|---|---|---|---|
@@ -975,43 +693,9 @@ See [[project-td-build-time-formula]] for full derivation.
 | TDOBLI | Nod | TSLA | ✓ | ✅ separated + shipped (M3 Tier 2, laser-line + charge state) |
 | TDGUN | Nod | GUN | ✓ | ✅ separated + shipped (M3 Tier 2, TDTurretGun) |
 | TDSAM | Nod | SAM | ✓ | ✅ separated + shipped (M3 Tier 2, 8-state launcher 2026-05-25) |
-| TDFACT | both | FACT | ✓ | ✅ separated + shipped (per-faction split deferred post-v1) |
-| TDMCV | GoodGuy only | MCV (unit) | — | ✅ separated + shipped (Nod TDNODMCV deferred post-v1) |
+| TDFACT | both | FACT | ✓ | ✅ separated + shipped; split per faction in 4.1.0 (TDGFACT, TDNFACT) |
+| TDMCV | GoodGuy only | MCV (unit) | — | ✅ separated + shipped; split per faction in 4.1.0 (TDGMCV, TDNMCV) |
 | HOSP/BIO/ARCO | — | — | — | skip (still unbuilt) |
-
----
-
-## Design decisions log
-
-All seven of the original open questions were resolved 2026-05-19:
-
-1. ✅ **HPAD** — both factions share, Owner=GoodGuy,BadGuy.
-2. ✅ **HQ** — both factions share, Owner=GoodGuy,BadGuy.
-3. ✅ **WEAP/AFLD vehicle factory** — TD-faithful split. GDI=WEAP, Nod=AFLD, both Logic=WEAP. Nod's cargo-plane delivery is a 🚧 sub-task.
-4. ✅ **Infantry rosters** — v0.3 accepted donor rosters (GDI=Allied infantry via TENT, Nod=Soviet infantry via BARR). **Update (v0.50+):** the first TD-flavoured infantry have since shipped as their own engine types — `INFANTRY_TDE1` Minigunner, `TDE2` Grenadier, `TDE3` Rocket Soldier (not Logic-aliased; full TD weapon chains). See `td-infantry-port-recipe.md`.
-5. ✅ **Vehicle rosters** — same approach as #4. v0.3 uses WEAP donor roster; TD vehicles in v0.4. **Exception: MCV** — needed in v0.3 to pair with the TD CY.
-6. ✅ **GDI superweapon** — Ion Cannon, hosted on EYE (Logic=MSLO). Placeholder mushroom-cloud visual in v0.3; proper Ion Cannon beam in v0.4.
-7. ✅ **Walls** — reuse vanilla RA walls (SBAG/CYCL/BRIK/FENC) for v0.3.
-
-## v0.3 implementation sequence
-
-1. **GDI catalogue buildings** — NUKE, NUK2, PYLE, HQ, WEAP, FIX, GTWR, ATWR, HPAD, EYE. Pure content; use existing Logic-aliased pipeline. Helper script worth writing here.
-2. **Nod catalogue buildings + AFLD engine slice** — HAND, GUN, SAM, OBLI, TMPL, plus the AFLD air-delivery engine work (ExitList override + cargo-plane mechanic in `Exit_Object`). AFLD is the Nod vehicle factory, so it lands with the rest of Nod's tree.
-3. **TD MCV/CY pair (closing slice)** — adds Logic-aliased UnitType support, GDI/Nod MCV variants, faction-aware deploy logic, faction-specific CYs.
-4. **v0.3 release** — TD-themed bases, fully playable skirmish on the Deck, vanilla-RA art only on infantry/non-Nod vehicles. Workshop publish (or wait until v0.4).
-
-## v0.4+ roadmap (largely shipped — see note)
-
-> **Update:** the infantry line below is **partly shipped** — the first three TD
-> infantry (`INFANTRY_TDE1` Minigunner, `TDE2` Grenadier, `TDE3` Rocket Soldier)
-> are **in and Deck-verified** (full TD weapon chains, voices, cameos). See
-> `td-infantry-port-recipe.md`. The remaining items below are still future work.
-
-- TD-themed infantry per faction — **✅ ROSTER COMPLETE (2026-05-30):** Minigunner, Grenadier, Rocket Soldier, Flamethrower, Chem Warrior, Engineer (faction-conditional single/multi capture), Commando (sniper + C4 + RAMBO voices). See `td-infantry-port-recipe.md`.
-- TD-themed vehicles per faction — **✅ turreted-tank trio shipped 2026-05-30:** GDI Medium Tank (TDMTNK), NOD Light Tank (TDLTNK), GDI Mammoth Tank (TDHTNK — dual weapon + AA); **✅ NOD Flame Tank (TDFTNK — turret-less flame jet, §FLAME) 2026-05-30; ✅ NOD Recon Bike (TDBIKE — wheeled rocket scout, §BIKE; pure reuse of E3's TDDragon homing rocket) 2026-05-31.** Pipeline in `td-vehicle-port-recipe.md`. Remaining: Buggy, Stealth Tank, MLRS, APC, Artillery. (Deferred: Light Tank classic-mode rendering, post-1.0.)
-- Ion Cannon proper visual effect (engine work).
-- TD-themed walls (if v0.3's vanilla-walls compromise feels wrong).
-- TD-themed Hospital / Bio Lab if there's player demand.
 
 ---
 

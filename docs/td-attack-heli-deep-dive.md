@@ -1,7 +1,8 @@
 # TD attack helicopters — Apache (Nod) + Orca (GDI) deep dive
 
-**Status:** TD logic examined (2026-06-01), no code yet. The last two TD combat units. Read with
-`td-vehicle-port-recipe.md` and `project-chinook-pure-ra` (the aircraft-sprite-geometry caveat).
+**Status:** Reference; shipped in 1.0.0. The Apache (`TDHELI`) and Orca (`TDORCA`) reuse RA's
+`AircraftClass` attack loop. Below is the TD-source analysis; live stats are in rules.ini and
+`balance-deep-dive.md` (both at 225 HP for $1200 since 4.0.0). Read with `td-vehicle-port-recipe.md`.
 
 ---
 
@@ -81,7 +82,7 @@ HIND/(Orca has no RA equiv) while keeping the TD weapon/stats, or remap the fram
 
 ## 5. Port plan
 
-**Apache (`AIRCRAFT_TDAPACHE`, Nod) — do first (Luke):** clone RA HIND ctor (rotor, helipad-landing,
+**Apache (`AIRCRAFT_TDAPACHE`, Nod), first:** clone RA HIND ctor (rotor, helipad-landing,
 primaryoffset 0x40), IniName "TDHELI"; NEW weapon `TDApacheGun` (TDChainGun + Burst=2); HELI sprite
 (32-frame, HIND donor); `[TDHELI]` rules (Primary=TDApacheGun, Ammo=15, Str 125, Armor=heavy, Cost 1200,
 Owner=BadGuy, Prereq=hpad, TechLevel 6, Speed 16=MPH_FAST, ROT 4). Cameo BuildIcon_TD_Apache.

@@ -1,60 +1,15 @@
-# Importing TD skirmish maps into the RA mod — feasibility + plan (2026-06-03)
+# TD skirmish maps in the RA mod
 
-> **OUT OF THE MOD FROM 5.0.0 (2026-10-02).** The 31 converted maps and the TD terrain art
-> (temperate, winter, desert) were taken out of the mod: DontCryJustDie reported they raise
-> video-memory use for everyone, and some were broken. They sit in `parked/td-maps/` (its README
-> says how to bring them back) and are planned to return as their own Workshop item. `TF_TD_MAPS`
-> in `redalert/defines.h` switches the DLL side.
+**Status:** Parked. The 31 converted TD maps and the TD terrain art (temperate, winter, desert) are
+out of the mod from 5.0.0, in `parked/td-maps/` (`TF_TD_MAPS` 0 in `redalert/defines.h`): they
+raised video-memory use for everyone, and some were broken. They are planned as their own Workshop
+item; the folder's README says how to bring them back.
 
-> **PARTLY SHIPPED (v2.0.0).** The temperate/winter tiers landed — the 31-map TD
-> pack ships via `<mod>/CustomMaps/` (DLL self-installs to `Local_Custom_Maps`; see
-> [[project-td-skirmish-map-import-findings]]). The "no clean importer" framing below
-> is OBE — a transcoder pipeline did the import. **Desert/interior-slot tier: the
-> pipeline is PROVEN end-to-end in-game (2026-07-19** — `scm05ea` transcoded
-> Theater=INTERIOR, 0 unmapped, rendered full HD desert in a live skirmish; see the
-> proof banner in `theatre-desert-feasibility.md`). Remaining for the tier: batch-convert
-> the desert-matrix maps + curate interior out of the MP pool + decide shipping shape
-> (cacti/rocks still dropped — no interior terrain-object art). Body retained for the
-> per-map theatre matrix.
-
-**Status (original 2026-06-03):** feasibility research + agreed direction.
-Goal: bring Tiberian Dawn's original skirmish/multiplayer maps into our RA-based
-mod so GDI/Nod can fight on their home terrain. Complements
-`theatre-desert-feasibility.md` (the theatre lock, the decisive evidence) and
-`coop-missions-design.md` (the editor + scenario pipeline).
-
----
-
-## TL;DR
-
-- **TD map imports are possible.** A TD map becomes an RA-format map by
-  **recreating its layout in the Mobius editor** — there is no clean one-click
-  importer (different scenario format + different terrain template model).
-- **The tileset (theatre) is the gating factor, per map:**
-  - TD **temperate** maps → RA **temperate** — no engine work, recreation only.
-  - TD **winter** maps → RA **snow** — no engine work, recreation only.
-  - TD **desert** maps → need a desert theatre RA doesn't have.
-- **DECISION (Luke, 2026-06-03): add the desert theatre by REPLACING the
-  interior theatre slot.** Interior is the least-used RA theatre (indoor campaign
-  missions; effectively unused in skirmish), so spending its slot on desert is an
-  accepted trade. This is the "interior-slot hijack" from
-  `theatre-desert-feasibility.md`, now the committed approach rather than one
-  option among several.
-
----
-
-## Why there's no auto-importer
-
-- TD scenarios are a **different format** from RA `.mpr` (TD `.ini` + `.bin`
-  terrain, plus the Remaster meta files). The Mobius editor treats **TD and RA as
-  separate games** with separate tile/template sets — it won't transcode one to
-  the other.
-- The honest pipeline is **recreation**: open the TD map as reference, rebuild
-  the terrain + resource fields + start waypoints as an RA map, drop in the
-  (now-ported) TD units/structures, save as `.mpr`. Tedious but mechanical, and
-  it's a per-map content task, not an engine task.
-- Upside: our GDI/Nod rosters already exist, so the placed objects are
-  faction-correct out of the box.
+`scripts/td_map_to_ra.py` converts TD maps to RA format (temperate, winter and desert), and the DLL
+installs a mod's `CustomMaps/` triplets into `Local_Custom_Maps/` itself when `TF_TD_MAPS` is on.
+Desert maps play on the interior theatre slot (`theatre-desert-feasibility.md`); TD's cacti and
+rocks are dropped, since the interior slot has no terrain-object art. This doc keeps the per-map
+theatre matrix.
 
 ---
 
@@ -104,28 +59,3 @@ conversion is "just" content + the DLL template model.
 **Cost of the trade:** any RA map authored for the *interior* theatre would now
 render with desert tiles. In a GDI/Nod-focused skirmish/campaign mod that's a
 non-issue — interior is an indoor-campaign theatre, not a skirmish one.
-
----
-
-## Effort tiers
-
-1. **TD temperate/winter skirmish maps** — *content only.* Recreate in the
-   editor against existing RA theatres. No DLL build. Best starting point.
-2. **The desert theatre conversion** — *one-time DLL + data.* Interior→desert per
-   above; gated by the CONFIG.MEG re-skin test.
-3. **TD desert skirmish maps** — *content,* unlocked once (2) lands.
-
-Pairs naturally with `tiberium-overlay-port.md` (TD maps often want Tiberium
-fields, not Ore) and `coop-missions-design.md` (same editor + `.mpr` pipeline,
-and the same maps can later carry mission scripting).
-
----
-
-## Open items to verify when this arc starts
-
-- Whether the RA `.mpr` / `INSTANCES.XML` carries a per-map theatre/climate field
-  the editor sets, or whether theatre is implied by tileset (see
-  `theatre-desert-feasibility.md` — flagged as needing an empirical map-format
-  test).
-- Desert template ID parity between TD's set and what `IsoTileTypeClass` needs to
-  expose for the editor + engine to agree on tile vocabulary.

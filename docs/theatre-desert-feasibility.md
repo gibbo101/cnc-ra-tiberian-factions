@@ -1,31 +1,15 @@
-# Theatres & desert in RA Remastered — feasibility (mapped 2026-05-29)
+# Theatres and desert in RA Remastered
 
-> **OUT OF THE MOD FROM 5.0.0 (2026-10-02).** The 31 converted maps and the TD terrain art
-> (temperate, winter, desert) were taken out of the mod: DontCryJustDie reported they raise
-> video-memory use for everyone, and some were broken. They sit in `parked/td-maps/` (its README
-> says how to bring them back) and are planned to return as their own Workshop item. `TF_TD_MAPS`
-> in `redalert/defines.h` switches the DLL side.
+**Status:** Reference. RA has three hardcoded theatres. HD desert works by taking over the interior
+slot (proven in a live skirmish: a TD desert map converted by `scripts/td_map_to_ra.py` rendered
+sand, mesa cliffs, shores, rivers, roads and Tiberium, and the radar too). The desert templates
+(ids 541+, `cdata.cpp`) and the radar palette are in the DLL; the TD terrain art and tileset
+fragments are parked in `parked/td-maps/` from 5.0.0 (`td-skirmish-map-import.md`). Classic-mode
+desert was never built.
 
-> **✅ OPTION B PROVEN IN-GAME 2026-07-19 (overnight desktop session).** The interior-slot
-> hijack renders full HD desert in a live RA skirmish: TD `scm05ea` transcoded with
-> `td_map_to_ra.py` (Theater=INTERIOR, 0 unmapped, 73 templates via ported TD tiles),
-> dropped as a `Local_Custom_Maps/Red_Alert/` triplet, picked from the lobby Custom tab —
-> sand, mesa cliff chains, desert shores, rivers, dirt roads, Tiberium all correct
-> (screenshot `ra2-desert-ingame.png`, session scratchpad; radar/minimap desert too).
-> **The infrastructure was already fully shipped** (build_td_tiles.py Phase 6 2026-06-10:
-> desert `<Tile>` splice in `RA_TERRAIN_INTERIOR.XML`, desert-only templates ids 541+ in
-> cdata.cpp, `.INT` classic art in TFASSETS.MIX, desert radar palette) — the only missing
-> piece was a converted map. Remaining for the desert map tier: convert the desert-matrix
-> maps + curate interior out of the MP pool (step 3 below). Known cosmetic gap: TD desert
-> terrain-objects (cacti/rocks) are dropped by the transcoder (no interior art entries).
-
-Complements `config-meg-mod-delivery.md` (the data lever / "master key"),
-`launcher-vs-dll-ownership.md` (code-side boundary), `campaign-tabs-research.md`
-(`INSTANCES.XML` roster edits), `classic-mode-palette-remap.md` (classic-mode TD rendering).
-
-> **Newer HD-terrain ground truth (2026-06-09):** since this doc was written we proved out
-> the HD loose-terrain rendering path — see `td-tile-hd-loose-art-investigation.md`. Read that
-> before doing any HD-desert tileset work; it supersedes the HD-rendering assumptions here.
+Complements `config-meg-mod-delivery.md` (the data lever), `launcher-vs-dll-ownership.md` (the
+code boundary) and `campaign-tabs-research.md` (`INSTANCES.XML` roster edits). HD terrain ground
+truth is `td-tile-hd-loose-art-investigation.md`; read it before any HD tileset work.
 
 ---
 
@@ -115,35 +99,18 @@ A 4th HD theatre is code-locked, so **repurpose the least-used existing slot (in
    floor/wall templates would look wrong — desert needs sand/cliff/shore templates.)
 3. **Roster (data — proven):** hide the RA interior campaign missions via `INSTANCES.XML`
    `ShowOnMissionSelect=false`, and curate interior MP maps out of the pool. **This is what
-   makes the hijack non-breaking** (Luke's call, 2026-05-29).
+   makes the hijack non-breaking.**
 4. Author the GDI/Nod desert maps with `Theater=INTERIOR`.
 
 **Trade-off:** RA forfeits its interior theatre. Acceptable for a TD-flavoured conversion,
 and the breakage objection is removed by step 3. **Workshop-clean — no binary patch:** the
 DLL is ours; `CONFIG.MEG` + `INSTANCES.XML` ship via the master key.
 
-### ~~Cheapest validation (do first, before the DLL template port)~~ — OBE, the real thing shipped
-This proposed a texture-repoint smoke test as a go/no-go gate before investing in DLL
-template work. **Both the gate and the work it was gating are done:** the full template
-port landed 2026-06-10 (ids 541+, `.INT` classic art, radar palette) and a real converted
-TD desert map rendered correctly in-game 2026-07-19. Nothing to validate — convert a map
-and load it.
-
 ---
 
-## Bottom line for the roadmap
+## Decision
 
-**Superseded by events — desert is DONE as engine work.** This section originally called
-desert "feasible but down the road, gated behind the campaign arc". In practice the DLL +
-data work shipped quietly on 2026-06-10 with the TD tileset batch, and 2026-07-19 confirmed
-a converted TD desert map renders correctly in HD. What remains is content and curation
-(batch-convert the desert maps, keep interior maps out of the MP pool), not feasibility.
-Classic-mode desert (Option A) was never needed and stays unbuilt — classic is unsupported
-from v2.0.0 anyway.
-
-**DECISION 2026-06-03 (Luke): the chosen path is to REPLACE the interior theatre
-slot with desert** (not add a 4th theatre — impossible per the lock above).
-Interior is effectively unused in a GDI/Nod skirmish/campaign mod, so spending its
-slot on desert is an accepted trade. This makes the "interior-slot hijack" the
-committed approach. Triggered by the TD desert skirmish-map import goal — see
-`td-skirmish-map-import.md` for the per-map theatre matrix + conversion breakdown.
+The interior slot becomes desert; a fourth theatre is impossible (the lock above). Interior is
+effectively unused in skirmish, so spending its slot is an accepted trade. The engine and data work
+shipped with the TD tileset batch; the maps and terrain art are parked
+(`td-skirmish-map-import.md`, which keeps the per-map theatre matrix).

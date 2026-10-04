@@ -1,12 +1,11 @@
 # TDSAM port — TD-source-grounded deep dive
 
-> **RESOLVED — separated + shipped (v0.50).** TDSAM now runs its own code path and binds `Primary=TDNike` (→ `Projectile=TDPatriot`, `Warhead=TDAP`) in rules.ini — no RA-vanilla `[Nike]` alias. The body below is retained as TD-source reference / the plan that was executed.
+**Status:** Reference; shipped before 1.0.0. TDSAM runs its own state machine and binds
+`Primary=TDNike` (→ `Projectile=TDPatriot`, `Warhead=TDAP`).
 
-**Status:** STRUCT_TDSAM ships in M3 as a *bug-shaped* port — engine + asset work done, but every dispatch piggybacks on RA's `STRUCT_SAM` branch via `(STRUCT_SAM || STRUCT_TDSAM)` aliases, and the rules.ini binds `Primary=Nike` to RA's vanilla weapon. That violates the separation principle: TDSAM should run TD's own building/weapon/projectile code, not RA's nearest-shaped equivalent. This doc is the corrected plan — wholesale port of TD's `STRUCT_SAM`.
-
-**Session that produced it:** 2026-05-22, max-effort deep dive after Luke flagged that the current build was "rendering the RA SAM" with wrong sounds and broken open/turret animation.
-
-**Guiding principle:** the *whole point* of full STRUCT_TD-prefixed separation is that TD entities run TD's own code paths — own state machine, own render logic, own weapon, own projectile, own audio routing. No donor. No "modeled on RA's SAM." Each piece is a direct port from `reference/vanilla-conquer/tiberiandawn/`. Per [[feedback-no-donor-for-td-separation]] / [[project-building-separation-committed]] / [[project-td-prefix-convention]].
+The body is the TD-source analysis and the port plan that was carried out; live stats are in
+`rules.ini` and `balance-deep-dive.md`. TD entities run TD's own building, weapon and projectile code, ported from
+`reference/vanilla-conquer/tiberiandawn/`, never RA's nearest equivalent.
 
 ---
 
@@ -47,7 +46,7 @@ Transition logic (TD `building.cpp:4281`):
 | `SAM_LOCKING` | not yet at N | `PrimaryFacing.Set_Desired(DIR_N)` | |
 | `SAM_LOWERING` | `Fetch_Stage() >= 63` | `SAM_UNDERGROUND` | `Set_Rate(0); Set_Stage(0); return TICKS_PER_SECOND` |
 
-**Our port deviates at `SAM_FIRING2` (2026-09-12, Luke's call).** After the second shot it goes
+**Our port deviates at `SAM_FIRING2`.** After the second shot it goes
 back to `SAM_READY` while an air target remains, instead of TD's 3-second cooldown, lock and
 lower. TD's full cycle (rise ~32 ticks, two shots, 45-tick cooldown, turn, lower ~32, 15 ticks
 underground) delivered about a quarter of the Soviet SAM's damage per tick; staying up matches
@@ -88,7 +87,7 @@ TD's SAM SHP layout (verified against the 129-frame TGA tileset we already have,
 [128]   Optional bib/construction tail
 ```
 
-This is a fundamentally different frame layout from RA's SAM SHP (0-31 rotation, 32-63 damaged). Indexing TD assets with RA's `BodyShape[Dir_To_32(facing)]` will pull from the *rising* sub-sequence — partially-raised launcher pointing 5° off — which is what Luke saw as "looks like the RA SAM," but is actually frame 0-15 of a TD SHP confusingly indexed.
+This is a fundamentally different frame layout from RA's SAM SHP (0-31 rotation, 32-63 damaged). Indexing TD assets with RA's `BodyShape[Dir_To_32(facing)]` will pull from the *rising* sub-sequence — partially-raised launcher pointing 5° off — which is what read in play as "looks like the RA SAM," but is actually frame 0-15 of a TD SHP confusingly indexed.
 
 ### 3. Rotation speed (TD `building.cpp:1281-1289`)
 
@@ -157,7 +156,7 @@ TD's SAM only adds `THREAT_AREA` and `THREAT_AIR` (via `IsAntiAircraft` bullet c
 
 ## Symptoms → root cause map
 
-Mapping Luke's session report to the TD-source findings above:
+Mapping the play-test report to the TD-source findings above:
 
 | Reported symptom | Root cause | TD reference |
 |---|---|---|
@@ -435,9 +434,9 @@ Skirmish AI [doesn't build aircraft](memory:project-ai-no-aircraft-builds), so A
 3. MP lobby: one Deck Allied (Longbow + Hind harassment), other Nod (build TDSAM after TDHAND → TDHQ → tech path).
 4. Observe end-to-end cycle: TDSAM underground at idle → rises on Longbow approach → rotates to track → fires *first* missile (muzzle from raised launcher tip) → tracks for second shot → fires *second* → rotates to N → lowers → returns underground. Sound is `ROCKET2` ×2 (not `MISSILE1`).
 
-**Diagnostic instrumentation (M8):** add a `tf_tdsam_state.log` tracing `Status`/`PrimaryFacing.Current()`/`Fetch_Stage()`/`Set_Rate` per tick for any TDSAM. Writes to `$USERPROFILE/Documents/CnCRemastered/` per [[reference-diagnostic-paths]]; keep stubbed under `#if 0` post-validation per [[feedback-keep-diagnostics-until-v1]].
+**Diagnostic instrumentation (M8):** add a `tf_tdsam_state.log` tracing `Status`/`PrimaryFacing.Current()`/`Fetch_Stage()`/`Set_Rate` per tick for any TDSAM. Writes to `$USERPROFILE/Documents/CnCRemastered/`, compiled only under `TF_DEV_BUILD` while the work is open (the repo `CLAUDE.md` diagnostics rule).
 
-**Single-Deck smoke (before MP):** force-fire on a friendly aircraft (existing Luke workaround) — confirms the *rise → rotate → fire → lower* visual cycle without needing MP. Won't exercise the two-shot READY2/FIRING2 path because force-fire targets one unit at a time; that's MP-only.
+**Single-Deck smoke (before MP):** force-fire on a friendly aircraft — confirms the *rise → rotate → fire → lower* visual cycle without needing MP. Won't exercise the two-shot READY2/FIRING2 path because force-fire targets one unit at a time; that's MP-only.
 
 ---
 
@@ -460,11 +459,11 @@ Skirmish AI [doesn't build aircraft](memory:project-ai-no-aircraft-builds), so A
 
 ## Decisions
 
-- **No donor.** `ClassTdSam` flag values, `TdSamState` enum, `Mission_Attack` state machine, `Shape_Number` logic, `[TDNike]` weapon, `[TDPatriot]` projectile — every one is a wholesale port from `reference/vanilla-conquer/tiberiandawn/`. Not "modeled on RA's SAM." Per [[feedback-no-donor-for-td-separation]].
-- **Armor parity:** stay TD-authentic (200 hp / steel). Fragile-when-up is by design per [[feedback-difficulty-philosophy]]; underground half-damage gives durability where it matters. The deep-dive doc's old "decision deferred" is closed.
+- **No donor.** `ClassTdSam` flag values, `TdSamState` enum, `Mission_Attack` state machine, `Shape_Number` logic, `[TDNike]` weapon, `[TDPatriot]` projectile — every one is a wholesale port from `reference/vanilla-conquer/tiberiandawn/`. Not "modeled on RA's SAM."
+- **Armor parity:** stay TD-authentic (200 hp / steel). Fragile-when-up is by design; underground half-damage gives durability where it matters. The deep-dive doc's old "decision deferred" is closed.
 - **Two enums.** `TdSamState` is dedicated to TDSAM; RA's `SAMState` stays untouched. Both stored in the shared `Status` byte but never confused because each dispatch is guarded by `STRUCT_SAM` vs `STRUCT_TDSAM` first.
 - **Aliased exclusion sites:** acceptable to keep `STRUCT_SAM` and `STRUCT_TDSAM` in the same `!=`/`==` chain when behavior is identical AND splitting would only duplicate two lines. Document each one. The 100%-separate rule is about *distinct behavior* in distinct branches; behavioral parity in exclusion lists doesn't need duplicate code.
-- **Cargo of changes per commit:** M1 + M3 are tightly coupled (enum + Mission_Attack). M2 (Shape_Number) depends on M3 because it reads `Status`. Suggested commit shape: one PR with M1+M2+M3+M4+M5 (engine port) + one PR with M6+M7+M8 (cleanup + audio + weapon/projectile + manifest). Or one fat PR if Luke prefers — both fine.
+- **Cargo of changes per commit:** M1 + M3 are tightly coupled (enum + Mission_Attack). M2 (Shape_Number) depends on M3 because it reads `Status`. Suggested commit shape: one PR with M1+M2+M3+M4+M5 (engine port) + one PR with M6+M7+M8 (cleanup + audio + weapon/projectile + manifest).
 
 ---
 
@@ -473,7 +472,7 @@ Skirmish AI [doesn't build aircraft](memory:project-ai-no-aircraft-builds), so A
 The earlier "Phase 1-5" port plan in this file (pre-deep-dive) and the pushback-superseded version (which framed `[TDNike]` as approximating RA's `[Nike]` and described enum surgery as "extending the shared `SAMState`") are both retired. The current state:
 - **State machine**: dedicated `TdSamState` enum + wholesale port of TD's 8-state `Mission_Attack`
 - **Render**: dedicated `STRUCT_TDSAM` Shape_Number branch with Status-aware frame indexing
-- **Weapon**: dedicated `[TDNike]` rules.ini section with TD-authentic Damage=50/ROF=50/Range=7.5
+- **Weapon**: dedicated `[TDNike]` rules.ini section, TD's Damage=50/Range=7.5 with ROF 20 since 4.0.0 (`balance-deep-dive.md` F7; TD's is 50)
 - **Projectile**: dedicated `[TDPatriot]` rules.ini section with TD's `MISSILE` sprite + ROT=10 + MPH_VERY_FAST
 - **Audio**: `Report=ROCKET2` (already plumbed)
 - **Anim overlay**: `Anim=SAMFIRE` → ANIM_SAM_N → directional overlay via RA's existing `techno.cpp:3392`

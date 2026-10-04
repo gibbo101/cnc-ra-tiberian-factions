@@ -1,6 +1,12 @@
-# Mission Select / campaign tabs — how it works (SOLVED 2026-05-28)
+# Mission Select and campaign tabs
 
-The 2026-05-21 "research-only" version of this doc had four unresolved unknowns. They're now **resolved** by live testing on the Steam Deck (swapping a repacked base `CONFIG.MEG` and reading the result via screenshots). MEG extraction *and* repacking are solved; the Mission Select display pipeline is mapped.
+**Status:** Reference. No campaign ships yet (`gdi-nod-campaign-story.md`; it waits behind the AI
+milestone).
+
+Mission Select reads `INSTANCES.XML`. A campaign mission is delivered by shadowing an existing
+Counterstrike or Aftermath slot's scenario INI from the mod's `CCDATA/`, with `[Digest]` stripped
+(proven on the desktop and the Deck). Edits to the roster crash the desktop ClientG; the parked
+edits are in `scripts/build_missionselect_campaigns.py`.
 
 Tools: `scripts/meg_extract.py` (read), **`scripts/meg_pack.py`** (repack — byte-identical round-trip, no integrity check), `scripts/mix_namedb.py` (CRC→name). Format detail: `mix-file-format.md`. Launcher boundary: `launcher-vs-dll-ownership.md`.
 
@@ -39,11 +45,10 @@ The **structure files** — `RA_ALLIES.XML` (progression), `RA_ALLIES_MISSIONS.X
 - Ant tab shows **2 of 4** though all 4 are `ShowOnMissionSelect=true` ⇒ display is **progress-gated** (only unlocked missions show). A per-player completion/unlock record exists — *not* in `Player_RA_settings_1.bin` (no campaign strings); likely Steam cloud/stats.
 - Inject a brand-new instance (`Mobius_Allied_Campaign_99_Map`, Allied variant, `ShowOnMissionSelect=true`, `IsUnlockedAtStart=true`, a deliberately-foreign GDI name TextID) → **a new "Allies 99" row appeared** in the Allied tab (name fell back to a placeholder because the TD TextID doesn't resolve in RA). ⇒ **placement is data-controllable.** So the "move" you want = **add-under-target-tab + hide-original** — both halves now proven. Caveats: name needs an RA-mode string; the *bare* instance displays but its launch isn't wired (no real scenario). For the launch half of the HIJACK path (existing slot, custom scenario), see the next section.
 
-### Launch through a hijacked slot — ✅ RE-VERIFIED 2026-07-19 (desktop AND Steam Deck)
+### Launch through a hijacked slot (proven on the desktop and the Deck)
 
-**A CS/AM mission slot launches OUR scenario INI via plain CCDATA shadow-by-name. Proven
-end to end on the current v4.0.1 dev build** (overnight session 2026-07-19; Luke had
-recalled an earlier untracked test — the recollection was right, and it now has a record).
+**A CS/AM mission slot launches OUR scenario INI via plain CCDATA shadow-by-name**, proven end to
+end on a 4.0.1 dev build.
 
 **The probe:** stock `scg43ea.ini` (Aftermath Allied M1 "ITALY: Harbor Reclamation" —
 instance `Mobius_Allied_Aftermath_Campaign_43_Map`, `<Mission>43</Mission>` → filename
@@ -61,14 +66,10 @@ Stock mission cannot be won unattended in seconds → the engine read our file. 
 either surface (the `535197b` desktop crash was INSTANCES.XML roster edits, not scenario
 INIs).
 
-**Confirmed on BOTH playtest surfaces (2026-07-19):** the Linux desktop (Claude, 2 runs)
-and **Luke's Steam Deck** (Luke + son on aimee101's account) — same instant
-mission-accomplished. The Deck result is the one that counts: vanilla Proton on the real
-play hardware, so the hijack is not a desktop-prefix artefact. Deck delivery was nothing
-more than an `scp` of the INI into the mod's `CCDATA/` (local v4.1 dev mod, no relaunch
-needed — the file is read at scenario load). Probe INI removed from both machines after
-the test; copies + desktop screenshots in the session scratchpad (`campaign-probe/`,
-`ra-harbor-*.png`).
+**Confirmed on both playtest surfaces:** the Linux desktop and the Steam Deck gave the same
+instant win. The Deck result is the one that counts (vanilla Proton on the real play hardware), and
+delivery there was an `scp` of the INI into the mod's `CCDATA/`, read at scenario load with no
+relaunch.
 
 **Traps for the campaign implementation:**
 - **`[Digest]`: strip it, don't leave it stale.** `RELEASE_VERSION` is defined
@@ -108,25 +109,15 @@ Instances cluster by `Variant` (campaign base): 22 `Mobius_Allied_Campaign_Base`
 
 GDI/Nod **campaign missions are `ExternalGameID=TiberianDawn`** — TD-game instances on a TD-mode tab (`GuiLayer="TD_GDI"`). They will **not** appear in our RA mod's Mission Select. A *playable* GDI/Nod campaign in the RA mod needs **new RA-mode instances**, because the TD scenario format won't run in the RA engine.
 
-## Path to add GDI/Nod campaign sections
+## Dead route: new instances
 
-> **⚠️ SUPERSEDED 2026-07-19 — this "add new instances" route is NOT the chosen path.**
-> New instances **display but cannot launch** (`InstanceServerG` resolves the scenario from
-> the BASE install), which is why the shipped approach is the **hijack**: reuse an existing
-> Counterstrike/Aftermath slot and shadow its scenario INI from the mod's `CCDATA/`. That is
-> proven on desktop AND Deck (see the re-verification section above) and needs **no
-> `INSTANCES.XML` edit and no CONFIG.MEG repack** for the mission content itself — CONFIG.MEG
-> is only needed for cosmetics (mission titles/briefing text via same-length master-text
-> edits). Steps 2–4 below are retained as the record of the route that was mapped but not taken.
-
-1. **Author RA-format scenario maps** for the GDI/Nod missions — the real content work (still true).
-2. ~~Add `<Instance>` entries to `INSTANCES.XML`~~: `ExternalGameID=RedAlert`, `House=GDI`/`Nod` (HOUSE_GOOD/HOUSE_BAD), name/briefing TextIDs, `ShowOnMissionSelect=true`, `IsUnlockedAtStart=true` (or a `MapStageUnlock` chain). — *unnecessary under the hijack; a new instance can't launch anyway.*
-3. ~~Host them in a tab (`CampaignMapSelectMapClass`)~~ — *moot: the hijack inherits the existing slot's tab, so the "can an RA-mode mission ride a TD `GuiLayer` tab" question never has to be answered.*
-4. ~~Repack `CONFIG.MEG`~~ with `meg_pack.py` — *only for cosmetic title/briefing text, not for mission content.*
+New `<Instance>` entries in `INSTANCES.XML` display but cannot launch: `InstanceServerG` resolves
+the scenario from the base install. Hijack an existing slot instead; CONFIG.MEG is then needed only
+for cosmetic titles and briefing text (same-length master-text edits).
 
 ---
 
-## Two open issues
+## Notes
 
-1. **Distribution — RESOLVED 2026-05-28.** A mod **can** ship its own `Data/CONFIG.MEG` and the launcher loads it over the base (proven on the Deck: a `MASTERTEXTFILE` country relabel `Turkey`→`Nod` shipped in the *mod folder* showed in the skirmish lobby picker + the in-game sidebar). The base install is never touched (Steam-verify-proof, mod-scoped — only active under the mod). So front-end edits ARE Workshop-distributable: ship the full repacked CONFIG.MEG (~44 MB). Canonical: **`config-meg-mod-delivery.md`**. (The loose `Data/` overlay still can't reach front-end data — the whole-MEG ship is what works.)
+1. **Distribution:** a mod **can** ship its own `Data/CONFIG.MEG` and the launcher loads it over the base (proven on the Deck: a `MASTERTEXTFILE` country relabel `Turkey`→`Nod` shipped in the *mod folder* showed in the skirmish lobby picker + the in-game sidebar). The base install is never touched (Steam-verify-proof, mod-scoped — only active under the mod). So front-end edits ARE Workshop-distributable: ship the full repacked CONFIG.MEG (~44 MB). Canonical: **`config-meg-mod-delivery.md`**. (The loose `Data/` overlay still can't reach front-end data — the whole-MEG ship is what works.)
 2. **The RA roster-build wrinkle (native code).** Editing the RA Allied tab's `<Stages>` never moved the displayed roster — only `ShowOnMissionSelect` did. So the exact RA left-panel roster build lives in `ClientG.exe`. Irrelevant for *adding* new instances; relevant only for cleanly *relocating* existing missions between RA tabs (would need more experiments or a targeted Ghidra dive).
