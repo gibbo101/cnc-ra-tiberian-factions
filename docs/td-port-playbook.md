@@ -422,7 +422,7 @@ if (((*building == STRUCT_HELIPAD || *building == STRUCT_TDHPAD) && !air->IsFixe
 
 **Symptom:** Door animation works for the first few frames, then the top half goes white/transparent during the second half of the open animation and damaged states. Body renders fine — only the overlay breaks.
 
-**Fix:** Build the TDxxx2 XML with shape entries 1:1 to the TGA frame count, matching TD's stages parameter. For an 11-stage door with 20 TGA frames: shapes 0..9 → frames 0000..0009 (normal opening), shapes 10..19 → frames 0010..0019 (damaged variants). Replace any sample-remap from the alias era (gotcha #13 in `docs/adding-td-buildings.md`).
+**Fix:** Build the TDxxx2 XML with shape entries 1:1 to the TGA frame count, matching TD's stages parameter. For an 11-stage door with 20 TGA frames: shapes 0..9 → frames 0000..0009 (normal opening), shapes 10..19 → frames 0010..0019 (damaged variants).
 
 ### 3.16 — `Health_Ratio() < 0x0080` is broken on RA's `fixed` type
 
