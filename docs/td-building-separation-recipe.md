@@ -234,6 +234,10 @@ Full game restart on the Deck (DLL has new enum value → new save format).
     `Legal_Placement` and the placement proximity check. The placement preview also draws the bib
     row, so a 2x2 with a bib previews three rows tall: size the building from its `BSIZE_*`, not
     from the preview.
+21. **Era tests are range tests.** TD and TS buildings sit in one run of the enum ending at
+    `STRUCT_TIBERIAN_LAST` (plus the TS tree block), and `Is_Tiberian_Era` tests that range. A
+    "TD"/"TS" IniName prefix test would catch the RA Tesla Coil (`TSLA`, `known-issues.md`). A new
+    Tiberian-era building goes inside the run; move the marker if it becomes the last.
 
 ---
 

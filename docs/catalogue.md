@@ -453,7 +453,11 @@ Faction: Nod · Donor: **MSLO** (RA Missile Silo) · TD lvl 7, $3000, -150 power
 | Capturable | true |
 | Bib | yes |
 
-**Note:** TMPL fires Nod's nuclear strike in TD. MSLO is RA's Atom Bomb (functionally identical superweapon — long cooldown, launch animation, target picker). 🚧 because superweapon behaviour through Logic= aliasing isn't verified.
+**Launch** (`Mission_Missile`): `BULLET_NUKE_UP` uses `WARHEAD_NONE`, so its top-edge impact shows no
+explosion, and it launches 0xA0 north of centre: TD's roof opening is centred on the 3x3, where the
+Missile Silo's tunnel is NNE.
+
+**Note:** TMPL is `STRUCT_TDTMPL` and fires Nod's nuclear strike (`SPC_TD_NUKE`), launched like RA's Missile Silo (`House->NukeDest`).
 
 ---
 

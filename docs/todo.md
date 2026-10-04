@@ -17,6 +17,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   the 177 MB UI atlas (same size as EA's), 67 MB of movies, 51 MB of lobby thumbnails (same-size
   swaps for EA's), 49 MB of VFX, 43 MB CONFIG.MEG. Leads, cheapest first: list which cameo
   variants anything references and drop the rest (`scripts/cameo_variants_build.py` makes them);
+  `TSWEAP2.ZIP` (2.5 MB), the pre-rebuild war factory overlay, which the game never draws, can go
+  once the map editor's factory overlay (`editor_manifest.py`) and the war-factory Aseprite scripts
+  read the current layers;
   test whether the launcher takes an RLE TGA or a DXT DDS for a loose cameo; see why TSPLUG's plug
   combinations cost 91 MB. Any format change gets an in-game check of every faction's sidebar.
   It grows from here: TS Nod (21 buildings and 19 units in the HD hand-offs) and the TS HD

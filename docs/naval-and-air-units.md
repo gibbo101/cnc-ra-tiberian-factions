@@ -37,8 +37,10 @@ All granted by a host building, the Ion Cannon pattern, in `HouseClass` (`house.
 - **Parabombs** (`SPC_PARA_BOMB`): any house with an active real airstrip (`STRUCT_AIRSTRIP`).
 - **GPS** (`SPC_GPS`): the Allied tech centre, or GDI's TDEYE, which is GDI's tech-centre
   equivalent.
-- **Nod paratroops** (`SPC_TD_PARA_INFANTRY`): the Nod Airstrip plus the Hand of Nod; TD infantry
-  drop from Nod's own C17 (`AIRCRAFT_TDCARGO`).
+- **Nod paratroops** (`SPC_TD_PARA_INFANTRY`): the Nod Airstrip plus the Hand of Nod. TD
+  Minigunners drop from the targetable TD C-17 (`AIRCRAFT_TDPARADROP`, `TDC17P`), as many as it
+  carries. The special that fired decides the delivery, so a captured cross-era pair drops that
+  era's troops.
 - **Nod recon flight** (`SPC_TD_SPY_MISSION`): the Nod Airstrip; the U2 flyover on its own timer.
 
 ## Ship art from 3D models
