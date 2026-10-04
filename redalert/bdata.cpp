@@ -65,8 +65,7 @@
 #define MCW MAP_CELL_W
 
 #define XYCELL(x, y) (y * MAP_CELL_W + x)
-// TS war factory seats, GENERATED from the Aseprite spawn markers by
-// wf_spawn_preview.py -- ClassTsWeap's exit point consumes the default.
+// TS war factory door seats; ClassTsWeap and ClassTsDweap exit at TSWEAP_SEAT_MOUTH.
 #include "tsweap_exit_seats.inc"
 static short const ExitPyle[] = {XYCELL(1, 2),
                                  XYCELL(2, 2),
@@ -178,19 +177,12 @@ static short const ListWeap[] = {0, 1, 2, (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 
 static short const ListWestwood[] = {1, 2, 3, MCW + 1, MCW + 2, MCW + 3, REFRESH_EOL};
 static short const OListSAM[] = {-MCW, -(MCW - 1), REFRESH_EOL};
 
-// Tiberian Factions mod — TDHAND (Nod Hand of Nod) foundation. Copied
-// verbatim from tiberiandawn/bdata.cpp:137 (ListHand) and :157 (OListHand).
-// Building proper is 2×2 with the bottom-left corner cut (the L-shape
-// "thumb" sits at bottom-right); the bib renders in row 3 underneath,
-// making the visual placement footprint 2×3 cells. Occupy = middle row
-// both cells + bottom-right thumb (3 cells). Overlap = top row + bottom-
-// left + middle-left (the sprite extends up into row 0 but no foundation).
+// Hand of Nod foundation, TD's ListHand/OListHand: it occupies the middle row and the bottom-right thumb;
+// the art also covers the top row and the bottom-left cell.
 static short const ListHand[]  = {MCW, MCW + 1, MCW * 2 + 1, REFRESH_EOL};
 static short const OListHand[] = {0, 1, MCW * 2, MCW, REFRESH_EOL};
 
-// TDHAND exit cells — copied verbatim from tiberiandawn/bdata.cpp:77
-// (TD's ExitHand). Twelve cells fanning out around the 2×3 footprint so
-// infantry spawn on the perimeter, not inside the building.
+// Hand of Nod exit cells, TD's ExitHand: twelve cells round the 2x3 plot, so infantry appear outside it.
 static short const ExitHand[] = {
     XYCELL(2, 3),  XYCELL(1, 3),  XYCELL(0, 3),  XYCELL(2, 2),
     XYCELL(-1, 3), XYCELL(-1, 2), XYCELL(0, 0),  XYCELL(1, 0),
@@ -484,14 +476,8 @@ static BuildingTypeClass const ClassWeapon(STRUCT_WEAP,
                                            (short const*)OListWeap // OVERLAPLIST:List of overlap cell offset.
 );
 
-/*
-**  AWEAP / SWEAP (Allied / Soviet War Factories) — W2 (c) split of the shared
-**  RA War Factory, for the same reason the yards split: the BUILDING carries
-**  the faction (ActLike pinned from the narrowed Owner= at Unlimbo), so a
-**  factory built from a captured yard produces the captured faction's units —
-**  including its MCV, which is how a captured tech tree survives. Own
-**  pipeline-built art under AWEAP/SWEAP (+ AWEAP2/SWEAP2 door overlays).
-*/
+// Allied and Soviet war factories: RA's war factory split so the building carries its faction (ActLike, set
+// from Owner= at Unlimbo). One built from a captured yard produces that faction's units, its MCV included.
 static BuildingTypeClass const ClassAlliedWeapon(STRUCT_AWEAP,
                                                  TXT_NONE, // Display name (rules.ini Name= overrides).
                                                  "AWEAP",  // IniName.
@@ -699,38 +685,8 @@ static BuildingTypeClass const ClassTesla(STRUCT_TESLA,
                                           (short const*)OList12 // OVERLAPLIST:List of overlap cell offset.
 );
 
-/*
-**  Tiberian Factions mod: Nod Obelisk of Light (STRUCT_TDOBLI).
-**
-**  First fully-separated TD building (2026-05-21). All data and behavior
-**  state lives in this own BuildingTypeClass instance — no Logic= alias
-**  inheritance from any RA donor. Footprint matches TD's authentic 1x2
-**  vertical shape (BSIZE_12), same as RA Tesla Coil (which is why TSLA
-**  was the v0.3-era alias donor). Anims defaults set up by constructor
-**  are overridden via the [TDOBLI] rules.ini section's IdleAnim* /
-**  ActiveAnim* fields plus the One_Time _anims[] table below.
-**
-**  Stats (Cost, Power, Strength, etc) are read from rules.ini via
-**  Read_INI and override the constructor defaults — the constructor's
-**  job is only to wire up Type/IniName/footprint/initial-bool-flags.
-**
-**  See docs/building-separation-plan.md for the M1-M6 plan that this
-**  entry kicks off, and docs/td-building-separation-recipe.md (in
-**  progress) for the per-building recipe distilled from this work.
-*/
-/*
-**  Tiberian Factions mod — M2 Tier 1 buildings (pure data ports).
-**
-**  TDNUKE (GDI/Nod Power Plant) — modeled on ClassPower (POWR), 2x2.
-**  TDNUK2 (GDI/Nod Advanced Power Plant) — modeled on ClassPower, **2x2 not 3x3**.
-**    Vanilla RA's APWR is a 3x3 L-shape; TD's Advanced Power Plant footprint
-**    is the same 2x2 as the basic power plant. We use the POWR base instead
-**    of ClassAdvancedPower to get the correct foundation; rules.ini's
-**    Footprint=NUK2 preset confirms the 2x2 shape.
-**  TDPYLE (GDI Barracks) — modeled on ClassTent (TENT), 2x2 infantry factory.
-**    TENT's exit-coord (24,47) is fine; ExitPyle exit list is shared.
-**  TDSILO (Tiberium Silo) — modeled on ClassStorage (SILO), 2x1 footprint.
-*/
+// TD power plant, advanced power plant, barracks and silo. The advanced plant is TD's 2x2, not APWR's 3x3;
+// the barracks exits at TENT's exit point.
 static BuildingTypeClass const ClassTdNuke(STRUCT_TDNUKE,
                                            TXT_NONE,        // rules.ini Name= overrides
                                            "TDNUKE",        // IniName.
@@ -847,23 +803,8 @@ static BuildingTypeClass const ClassTdSilo(STRUCT_TDSILO,
                                            (short const*)NULL
 );
 
-/*
-**  Tiberian Factions mod — M3 Tier 2 defensive turrets.
-**
-**  TDGTWR (GDI Guard Tower) — 1x1 infantry-firing tower, no rotating
-**    turret (frame-cycle hidden). Modeled on ClassPillbox (PBOX).
-**  TDATWR (GDI Advanced Guard Tower) — 1x2 missile tower, rotating turret.
-**    Modeled on ClassAAGun (AGUN); TOW-style missiles fire on ground and
-**    air (Primary=TDTowTwo, dual-role).
-**  TDGUN (Nod Cannon Turret) — 1x1 rotating turret. Modeled on RA's
-**    ClassTurret (GUN), Primary=TDTurretGun.
-**  TDSAM (Nod SAM Site) — 1x2 rotating launcher, AA-only. Wholesale port of
-**    TD's ClassSAM: dedicated TdSamState enum + 8-state Mission_Attack +
-**    Status-aware Shape_Number + underground half-damage + [TDNike]/[TDPatriot]
-**    weapon stack. NOT modeled on RA's ClassSAM. Engine dispatch sites for
-**    STRUCT_TDSAM live in building.cpp (positive ORs split, negative
-**    exclusions aliased with explanatory comments). See docs/td-sam-deep-dive.md.
-*/
+// TD defences: Guard Tower, Advanced Guard Tower, Nod Turret and SAM Site. The SAM is a port of TD's own
+// SAM states, not RA's (docs/td-sam-deep-dive.md).
 static BuildingTypeClass const ClassTdGtwr(STRUCT_TDGTWR,
                                            TXT_NONE,
                                            "TDGTWR",
@@ -893,36 +834,31 @@ static BuildingTypeClass const ClassTdGtwr(STRUCT_TDGTWR,
                                            (short const*)NULL
 );
 
-// TDATWR is a wholesale port of TD's STRUCT_ATOWER — a 1x2 GDI defensive
-// tower with a FIXED missile rack (not a rotating turret). The launched
-// BULLET_SSM missiles home after launch; the rack itself does not pivot.
-// IsTurretEquipped=false is load-bearing: with =true the engine would
-// query 32-frame rotation shapes that TDATWR.ZIP doesn't provide, and
-// Can_Fire would gate on PrimaryFacing-vs-target match that never resolves.
-// See docs/td-atwr-deep-dive.md for the full TD-source citation.
+// GDI Advanced Guard Tower, ported from TD's ATOWER: a fixed missile rack whose missiles home after launch.
+// IsTurretEquipped stays false: the art has no rotation frames (docs/td-atwr-deep-dive.md).
 static BuildingTypeClass const ClassTdAtwr(STRUCT_TDATWR,
                                            TXT_NONE,
                                            "TDATWR",
                                            FACING_S,
                                            XYP_COORD(0, 0),
                                            REMAP_ALTERNATE,
-                                           0x0030,          // VerticalOffset — TD ClassATower Fire_Coord (was 0x0000).
-                                           0x0040,          // PrimaryOffset — TD ClassATower Fire_Coord (was 0x0000).
+                                           0x0030,          // VerticalOffset: TD ClassATower Fire_Coord.
+                                           0x0040,          // PrimaryOffset: TD ClassATower Fire_Coord.
                                            0x0000,
                                            false,
                                            false,
                                            false,
                                            false,
-                                           true,            // IsSimpleDamage — TD ClassATower (was false).
+                                           true,            // IsSimpleDamage, as TD's ClassATower.
                                            false,
                                            true,
                                            true,
                                            false,
                                            false,
-                                           false,           // IsTurretEquipped — TD ClassATower fixed missile rack (was true, load-bearing bug).
+                                           false,           // IsTurretEquipped: a fixed missile rack.
                                            true,
                                            RTTI_NONE,
-                                           DIR_N,           // Initial facing — TD ClassATower (was DIR_NE).
+                                           DIR_N,           // Initial facing, as TD's ClassATower.
                                            BSIZE_12,
                                            NULL,
                                            (short const*)List12,
@@ -987,18 +923,8 @@ static BuildingTypeClass const ClassTdSam(STRUCT_TDSAM,
                                           (short const*)OListSAM
 );
 
-/*
-**  Tiberian Factions mod — M4 Tier 3 production buildings.
-**
-**  TDHAND (Nod Hand of Nod) — infantry factory, ARMOR_WOOD, capturable.
-**    Wholesale port of TD's STRUCT_HAND per tiberiandawn/bdata.cpp:1148
-**    (ClassHand). The constructor flags match the TD source verbatim: bib,
-**    regulated animation, factory, capturable, simple damage, selectable,
-**    legal target, repairable, has crew, RTTI_INFANTRYTYPE. BSIZE_23 cell
-**    grid: building proper is 2×2 (L-shape thumb at bottom-right, bottom-
-**    left clipped) plus bib in row 3. ExitCoordinate is TD's XYP_COORD(36,
-**    63) — door at the thumb cell so infantry spawn outside the building.
-*/
+// Hand of Nod, ported from TD's ClassHand: an infantry factory on TD's 2x3 plot. Infantry leave by the door
+// at the bottom-right thumb.
 static BuildingTypeClass const ClassTdHand(STRUCT_TDHAND,
                                            TXT_NONE,           // Display name (rules.ini Name= overrides).
                                            "TDHAND",           // IniName.
@@ -1028,15 +954,8 @@ static BuildingTypeClass const ClassTdHand(STRUCT_TDHAND,
                                            (short const*)OListHand
 );
 
-/*
-**  TDHPAD (Helipad) — 2×2 aircraft factory, ARMOR_WOOD, capturable.
-**    Wholesale port of TD's STRUCT_HELIPAD per tiberiandawn/bdata.cpp:688
-**    (ClassHelipad). Factory of RTTI_AIRCRAFTTYPE; no exit cells (helicopter
-**    docks on the pad itself). TD's HELIPAD has Crew=false, Repair=true,
-**    Capturable=true. ARMOR_WOOD + Strength=400 are TD-authentic; RA's
-**    vanilla HELIPAD has Strength=800 which leaked through the Logic=HPAD
-**    alias era — corrected here.
-*/
+// TD helipads (GDI, Nod and the campaigns' shared pad), ported from TD's ClassHelipad: 2x2 aircraft
+// factories with no exit cells, since the helicopter lands on the pad.
 static BuildingTypeClass const ClassTdGdiHpad(STRUCT_TDGHPAD,
                                               TXT_NONE,           // Display name (rules.ini Name= overrides).
                                               "TDGHPAD",          // IniName.
@@ -1124,16 +1043,7 @@ static BuildingTypeClass const ClassTdHpad(STRUCT_TDHPAD,
                                            (short const*)NULL
 );
 
-/*
-**  TDFIX (Service Depot) — 3×3 vehicle/aircraft repair bay, ARMOR_WOOD,
-**    capturable. Wholesale port of TD's STRUCT_REPAIR per
-**    tiberiandawn/bdata.cpp:1250 (ClassRepair). Not a factory
-**    (ToBuild=RTTI_NONE). ListFix/OListFix file-scope arrays already
-**    exist (used by RA's ClassRepair) — the cross-shape foundation:
-**    occupy {1, MCW, MCW+1, MCW+2, MCW*2+1} = top-centre + middle row
-**    + bottom-centre. Strength=400 (TD-authentic; RA's REPAIR has 800
-**    which leaked through the Logic=FIX alias era).
-*/
+// TD Service Depot, ported from TD's ClassRepair: a 3x3 repair bay on the cross-shaped ListFix foundation.
 static BuildingTypeClass const ClassTdFix(STRUCT_TDFIX,
                                           TXT_NONE,           // Display name (rules.ini Name= overrides).
                                           "TDFIX",            // IniName.
@@ -1163,21 +1073,8 @@ static BuildingTypeClass const ClassTdFix(STRUCT_TDFIX,
                                           (short const*)OListFix
 );
 
-/*
-**  TDWEAP (Weapons Factory) — 3×3 vehicle factory, ARMOR_ALUMINUM,
-**    capturable, crewed. Wholesale port of TD's STRUCT_WEAP per
-**    tiberiandawn/bdata.cpp:265 (ClassWeapon). RTTI_UNITTYPE factory;
-**    vehicles exit SW (TD-authentic via Track14 + Exit_Coord).
-**
-**    Footprint mirrors TD source exactly (NOT RA's 3×2 WEAP shape — that
-**    leak was caught and reverted 2026-05-27): BSIZE_33 with bottom 6
-**    cells occupied (TdListWeap = rows 1+2) and top row overlap
-**    (TdOListWeap = row 0, sprite extends upward into row 0 but
-**    pathfinding treats it as walkable). TdExitWeap is TD's exit-cell
-**    preference list — vehicles emerge from the south side of row 2.
-**    Image=TDWEAP layered via launcher tileset; door overlay shape comes
-**    from TDWEAP2.ZIP (see building.cpp Draw_It overlay swap).
-*/
+// TD Weapons Factory, ported from TD's ClassWeapon on its 3x3 plot: the bottom two rows are foundation and
+// the roof overhangs the top row. Its door is the TDWEAP2 overlay (BuildingClass::Draw_It).
 static short const TdExitWeap[] = {XYCELL(-1, 3), XYCELL(0, 3), XYCELL(-1, 2),
                                    XYCELL(1, 3), XYCELL(-1, 1), XYCELL(3, 1),
                                    XYCELL(3, 2), XYCELL(3, 3), XYCELL(2, 3),
@@ -1217,23 +1114,8 @@ static BuildingTypeClass const ClassTdWeap(STRUCT_TDWEAP,
                                            (short const*)TdOListWeap
 );
 
-/*
-**  TDPROC (Tiberium Refinery) — 3×3 building, ARMOR_WOOD, capturable, crewed.
-**    Wholesale port of TD's STRUCT_REFINERY per tiberiandawn/bdata.cpp:585
-**    (ClassRefinery). Capacity=1000, Power=+10/drain=40 (TD-authentic;
-**    RA's STRUCT_REFINERY has the same baseline but rules.ini can override).
-**
-**    Footprint mirrors TD source exactly (NOT RA's STRUCT_REFINERY shape):
-**    TdListProc = {row 0 middle, row 1 entire} occupy cells.
-**    TdOListProc = {row 0 corners, row 2 entire} overlap (sprite extends
-**    here but pathfinding allows passage). RA's PROC uses List010111100 +
-**    List101000011 which is a different shape — donor parity trap per
-**    playbook §3.13.
-**
-**    Harvester dock state machine (5 BStates): IDLE 0-5 → ACTIVE 12-18
-**    (docking) → AUX1 19-23 (siphoning tiberium) → AUX2 24-29 (undocking).
-**    BSTATE_FULL 6-11 plays when Capacity is reached (flashing lights).
-*/
+// TD Tiberium Refinery, ported from TD's ClassRefinery on TD's footprint, not RA's. Its dock animation
+// states are in One_Time's _anims table.
 static short const TdListProc[] = {1, (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, REFRESH_EOL};
 static short const TdOListProc[] = {0, 2, (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, REFRESH_EOL};
 
@@ -1266,19 +1148,8 @@ static BuildingTypeClass const ClassTdProc(STRUCT_TDPROC,
                                            (short const*)TdOListProc
 );
 
-/*
-**  TDFACT (Construction Yard) — 3×2 building, ARMOR_WOOD, capturable, crewed.
-**    Wholesale port of TD's STRUCT_CONST per tiberiandawn/bdata.cpp:534
-**    (ClassConst). NOT a unit factory — RTTI_BUILDINGTYPE (produces other
-**    buildings, not vehicles). Shared by HOUSE_GOOD + HOUSE_BAD, matching
-**    TD's original (one MCV/ConYard type for both factions).
-**
-**    Footprint mirrors TD source exactly: BSIZE_32 + List32 (3×2 = 6 cells,
-**    no overlap row). RA's STRUCT_CONST is BSIZE_33 with ListFactory (3×3,
-**    9 cells) — a different shape per playbook §3.13 donor-parity trap.
-**    Worked example of why "copy donor verbatim" fails for buildings whose
-**    TD/RA donor footprints diverge.
-*/
+// TD Construction Yard, ported from TD's ClassConst on TD's 3x2 plot (RA's is 3x3). UNIT_TDMCV deploys
+// it in the campaigns; skirmish uses the faction yards TDNFACT and TDGFACT.
 static BuildingTypeClass const ClassTdFact(STRUCT_TDFACT,
                                            TXT_NONE,           // Display name (rules.ini Name= overrides).
                                            "TDFACT",           // IniName.
@@ -1308,13 +1179,8 @@ static BuildingTypeClass const ClassTdFact(STRUCT_TDFACT,
                                            (short const*)NULL  // No overlap row.
 );
 
-/*
-**  TDNFACT / TDGFACT (Nod / GDI Construction Yards) — TD drew one construction yard and both
-**  its factions used it. Each exists as its own type purely so the BUILDING can carry the
-**  faction, which is what drives the sidebar roster (Update_Buildables reads the building's
-**  ActLike) and therefore what makes a captured yard offer its original owner's tech tree.
-**  Each carries its own pipeline-built art under its IniName keys (no Image= sharing).
-*/
+// Nod and GDI construction yards: TD's one yard split so the building carries its faction. The sidebar
+// offers the tree of the building's ActLike, so a captured yard keeps offering its own faction's tree.
 static BuildingTypeClass const ClassTdNodFact(STRUCT_TDNFACT,
                                               TXT_NONE,           // Display name (rules.ini Name= overrides).
                                               "TDNFACT",          // IniName.
@@ -1373,18 +1239,8 @@ static BuildingTypeClass const ClassTdGdiFact(STRUCT_TDGFACT,
                                               (short const*)NULL  // No overlap row.
 );
 
-/* (The 4x3 TS lists are gone: the whole TS tier returned to its 3x3/2x2
-** grids — stock or TD-parity lists — when the 4x3 tier read oversized,
-** Luke 2026-08-04.) */
-
-/*
-**  TSFACT (TS Construction Yard, TS rules [GACNST]) — the gate on the ownership-gated
-**  TS GDI tree (docs/ts-gdi-tree-plan.md). Deployed only from UNIT_TSMCV (a rare crate
-**  find); never sidebar-buildable, so no cameo. 3x3 + bib = the RA conyard's exact
-**  geometry (Luke, 2026-08-04: the 4x3 tier read oversized; TS-authentic GACNST is
-**  4x3 but the yard should match the RA FACT plot). Art = TS GTCNST SHP + GTCNSTMK
-**  buildup under TSFACT tileset keys; classic dims from its own 72x72 TFASSETS stub.
-*/
+// TS Construction Yard ([GACNST]): deployed from UNIT_TSMCV, never built from the sidebar. A standing one
+// gates the TS tree (docs/ts-gdi-tree-plan.md).
 static BuildingTypeClass const ClassTsFact(STRUCT_TSFACT,
                                            TXT_NONE,           // Display name (rules.ini Name= overrides).
                                            "TSFACT",           // IniName.
@@ -1408,23 +1264,14 @@ static BuildingTypeClass const ClassTsFact(STRUCT_TSFACT,
                                            true,               // Can the building be color remapped?
                                            RTTI_BUILDINGTYPE,  // Produces buildings.
                                            DIR_N,              // Starting idle frame.
-                                           BSIZE_32,           // 3x2, TDFACT parity (2026-08-13): the art is
-                                                               // TD-conyard-sized, and the 3x3 box's empty top
-                                                               // row is what held the selection box a tile high
-                                                               // (the launcher centres boxes on this box --
-                                                               // launcher-render-contracts.md #7). MCV deploy is
-                                                               // size-generic; TDFACT proves the 3x2 round-trip.
+                                           BSIZE_32,           // 3x2 like TDFACT, the size of its art: the launcher
+                                                               // centres the selection box on this plot.
                                            NULL,               // No preferred exit cell.
                                            (short const*)List32,
                                            (short const*)NULL);
 
-/*
-**  TS GDI tree production/economy buildings (docs/ts-gdi-tree-plan.md §Stealth
-**  Recipe). Each mirrors its TD counterpart's footprint/RTTI/lists for size
-**  parity; stats live in rules.ini (TS-authentic); art = composited TS SHPs
-**  under the TS* tileset keys with classic dims donated from the TD
-**  counterpart (see _td_bdonors).
-*/
+// TS GDI tree buildings: TS stats in rules.ini, composited TS art under TS* tileset keys. One_Time's
+// _td_bdonors lends each the classic dims and construction anim of a TD counterpart.
 
 static BuildingTypeClass const ClassTsPile(STRUCT_TSPILE,
                                            TXT_NONE,
@@ -1598,10 +1445,8 @@ static BuildingTypeClass const ClassTsRadr(STRUCT_TSRADR,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,
                                            DIR_N,
-                                           BSIZE_22,           // TS-authentic 2x2 box; south row is the real footprint
-                                                               // (Luke, 2026-08-13 -- restores the pre-regression read):
-                                                               // the dish/mast tile north is art spill, walkable and
-                                                               // buildable-behind; slab bib below = 2x2 total plot.
+                                           BSIZE_22,           // 2x2 as in TS. The south row is the footprint; the
+                                                               // north row is walkable art spill.
                                            NULL,
                                            (short const*)List22_0011,
                                            (short const*)List22_1100);
@@ -1660,14 +1505,8 @@ static BuildingTypeClass const ClassTsDept(STRUCT_TSDEPT,
                                            (short const*)TsList33, // occupied, not free ground.
                                            NULL);
 
-/*
-**  TSDROP (Dropship Bay) — Westwood's cut GADROP, finished rather than invented.
-**    Modelled on ClassTsHpad, not ClassTsDept: this is a flat pad an aircraft
-**    lands on, so the helipad's sorting and landing behaviour carry over intact
-**    and the depot's docking logic is avoided entirely. Art is the depot's
-**    octagonal pad alone (shp_gtdeptbb); the gantry and its two anims are unused,
-**    so there is no active-anim entry and nothing to regulate.
-*/
+// TS Dropship Bay (Westwood's cut GADROP): a vehicle factory whose orders land by drop pod on its deck.
+// Deliberately not a helipad, which would grant a free helicopter (docs/ts-gdi-tree-plan.md).
 static BuildingTypeClass const ClassTsDrop(STRUCT_TSDROP,
                                            TXT_NONE,
                                            "TSDROP",
@@ -1676,17 +1515,13 @@ static BuildingTypeClass const ClassTsDrop(STRUCT_TSDROP,
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,
-                                           false,              // no anim to regulate (gantry dropped)
+                                           false,              // no anim to regulate
                                            false, false, false, false,
                                            true, true, false, false, false, true,
-                                           RTTI_UNITTYPE,      // Vehicle factory: the Mk2 is ordered here and delivered by dropship, the TDAFLD pattern. Deliberately NOT a helipad — outside Is_Helipad and STRUCTF_HELIPAD, either of which would grant a free helicopter and make the deck a general rearm target.
+                                           RTTI_UNITTYPE,      // Vehicle factory: orders arrive by drop pod.
                                            DIR_N,
-                                           BSIZE_32,           // The deck's own 3x2 (2026-08-13; was 3x3 incl. the
-                                                               // bib row, which held the selection box a tile south
-                                                               // of the deck -- the launcher centres boxes on this
-                                                               // box). The concrete below is the standard bib hang
-                                                               // now: same cells as before, walkable, cargo
-                                                               // disembarks ON it (war-factory exit-row pattern).
+                                           BSIZE_32,           // The deck's 3x2; the cargo disembarks across the
+                                                               // walkable bib row below.
                                            NULL,
                                            (short const*)ListWeap, // BLOCKING footprint = the deck's 3x2 = the plot.
                                            NULL);
@@ -1719,17 +1554,8 @@ static BuildingTypeClass const ClassTsTurb(STRUCT_TSTURB,
                                            (short const*)List1,
                                            (short const*)NULL);
 
-/*
-**  TSCTWR (TS GDI Component Tower, GACTWR) — the bare wall joint. No weapon,
-**    no turret; wall runs terminate into it (cell.cpp Has_TS_Wall_Tower) and it
-**    takes ONE plug (UpgradesMax=1, Init_Heap). Two-frame simple-damage art
-**    (voxel drum + feet, scripts/ts_pack_towers.py). Sensors=yes -> IsScanner.
-**    Stats in rules.ini [TSCTWR] (TS [GACTWR]: cost 200, Str 500, Power=-10, TL2).
-**  TSVULC (TS Vulcan Cannon, GAVULC) — the tower's Vulcan plug, which is ALSO the
-**    armed tower type: PowersUpBuilding=TSCTWR makes it place like a plug (green
-**    only on a bare tower), and the Unlimbo divert swaps the bare tower for this
-**    building in place. Rotating turret, TDGUN frame layout. Primary=TSVulcanTower.
-*/
+// TS Component Tower ([GACTWR]): the bare, unarmed wall joint, with one plug slot. TSVULC is both its
+// Vulcan plug and the armed tower: installing the plug swaps the bare tower for that building in place.
 static BuildingTypeClass const ClassTsCtwr(STRUCT_TSCTWR,
                                            TXT_NONE,
                                            "TSCTWR",
@@ -1841,12 +1667,8 @@ static BuildingTypeClass const ClassTsCsam(STRUCT_TSCSAM,
                                            (short const*)List1,
                                            (short const*)NULL);
 
-/*
-**  TSWALL (TS GDI Concrete Wall, GAWALL) — a wall-type building exactly like RA's
-**    BRIK: never stands on the map, placement converts it to OVERLAY_TSWALL
-**    (building.cpp Unlimbo + the placement-legality switch). Stats in rules.ini
-**    [TSWALL] (TS [GAWALL]: cost 50, TL6, Prerequisite=GAPILE, Adjacent=4).
-*/
+// TS GDI Concrete Wall ([GAWALL]): a wall type like BRIK. It never stands on the map: placing it lays
+// OVERLAY_TSWALL in the cell.
 static BuildingTypeClass const ClassTsWall(STRUCT_TSWALL,
                                            TXT_BRICK_WALL,
                                            "TSWALL",
@@ -1903,12 +1725,8 @@ static BuildingTypeClass const ClassTsNwall(STRUCT_TSNWALL,
                                             (short const*)List1,
                                             (short const*)NULL);
 
-/*
-**  TSGATEH / TSGATEV (TS GDI Gate, GAGATE_A east-west / GAGATE_B north-south) -- a real
-**    building standing in a wall line. Its owner and allies path through it; it opens as one
-**    comes up and closes once its footprint is clear (BuildingClass::Open_Gate, Gate_AI).
-**    Stats in rules.ini (TS [GAGATE_A]: cost 250, Str 350, heavy, TL6, Prerequisite=GAPILE).
-*/
+// TS GDI gates ([GAGATE_A] east-west, [GAGATE_B] north-south): buildings in a wall line that open for
+// their owner and allies and close once their footprint is clear (BuildingClass::Open_Gate, Gate_AI).
 static BuildingTypeClass const ClassTsGateH(STRUCT_TSGATEH,
                                             TXT_NONE,
                                             "TSGATEH",
@@ -2225,14 +2043,8 @@ static BuildingTypeClass const ClassTDNGATEV(STRUCT_TDNGATEV,
                                             (short const*)NULL);
 
 
-/*
-**  TSPLUG (TS GDI Upgrade Centre, GAPLUG) — the 2-slot addon HOST of the
-**    upgrade mechanic (UpgradesMax wired in Init_Heap). Physically a TSTECH
-**    twin: 3x2 plot, GTPLUG art via the Stealth Recipe. Sensors=yes in TS —
-**    IsScanner set in Init_Heap; TF_Stealth_Detector_In_Range gives scanner
-**    BUILDINGS detection at their own Sight range. Stats in rules.ini
-**    [TSPLUG] (TS [GAPLUG]: cost 1000, Str 1000, Power=-150, TL10).
-*/
+// TS Upgrade Centre ([GAPLUG]): the two-slot host for the Ion Cannon, Drop Pod and Seeker plugs, on
+// TSTECH's 3x2 plot. A scanner, as in TS: it detects cloaked units in its sight range.
 static BuildingTypeClass const ClassTsPlug(STRUCT_TSPLUG,
                                            TXT_NONE,
                                            "TSPLUG",
@@ -2251,14 +2063,8 @@ static BuildingTypeClass const ClassTsPlug(STRUCT_TSPLUG,
                                            (short const*)List32,
                                            NULL);
 
-/*
-**  TSPION (Ion Cannon Uplink, GAPLUG3) — addon plug for TSPLUG, same
-**    never-on-the-map contract as TSTURB. While installed anywhere in the
-**    house, the TS Ion Cannon special (SPC_TS_ION_CANNON, its own slot
-**    beside the TD cannon's) is granted (house.cpp Super_Weapon_Handler).
-**    Stats in rules.ini [TSPION] (TS [GAPLUG3]: cost 1500,
-**    Power=-100, TL10).
-*/
+// Ion Cannon Uplink ([GAPLUG3]): a TSPLUG plug that never stands on the map. While one is installed the
+// house has the TS Ion Cannon (SPC_TS_ION_CANNON).
 static BuildingTypeClass const ClassTsPion(STRUCT_TSPION,
                                            TXT_NONE,
                                            "TSPION",
@@ -2279,15 +2085,8 @@ static BuildingTypeClass const ClassTsPion(STRUCT_TSPION,
                                            (short const*)List1,
                                            (short const*)NULL);
 
-/*
-**  TSPODS (Drop Pod Node) — our Firestorm-style plug for TSPLUG, same
-**    never-on-the-map contract as TSPION (base TS grants drop pods by
-**    script only, so this plug is our own invention). While installed
-**    anywhere in the house, the TS Drop Pod special (SPC_TS_DROPPODS) is
-**    granted (house.cpp Super_Weapon_Handler). Stats in rules.ini
-**    [TSPODS]; art = GTPLUG_D dome ghost, cameo RAD1ICON (ART.INI
-**    [GAPLUG_D] Cameo=).
-*/
+// Drop Pod Node: our own TSPLUG plug, since TS grants drop pods only by script. It never stands on the map;
+// while one is installed the house has the TS Drop Pods (SPC_TS_DROPPODS).
 static BuildingTypeClass const ClassTsPods(STRUCT_TSPODS,
                                            TXT_NONE,
                                            "TSPODS",
@@ -2308,13 +2107,8 @@ static BuildingTypeClass const ClassTsPods(STRUCT_TSPODS,
                                            (short const*)List1,
                                            (short const*)NULL);
 
-/*
-**  TSSEEK (Seeker Control, TS GAPLUG2) — addon plug for TSPLUG, same
-**    never-on-the-map contract as TSPION. While installed anywhere in the
-**    house, the Hunter Seeker special (SPC_TS_HUNTSEEK) is granted
-**    (house.cpp Super_Weapon_Handler). Stats in rules.ini [TSSEEK]; art =
-**    GTPLUG_E node ghost, cameo RAD2ICON (ART.INI [GAPLUG_E] Cameo=).
-*/
+// Seeker Control ([GAPLUG2]): a TSPLUG plug that never stands on the map. While one is installed the house
+// has the Hunter Seeker (SPC_TS_HUNTSEEK).
 static BuildingTypeClass const ClassTsSeek(STRUCT_TSSEEK,
                                            TXT_NONE,
                                            "TSSEEK",
@@ -2335,19 +2129,8 @@ static BuildingTypeClass const ClassTsSeek(STRUCT_TSSEEK,
                                            (short const*)List1,
                                            (short const*)NULL);
 
-/*
-**  TDAFLD (Nod Airstrip) — 4×2 flat tile, ARMOR_STEEL, capturable, crewed.
-**    Wholesale port of TD's STRUCT_AIRSTRIP per tiberiandawn/bdata.cpp:841
-**    (ClassAirStrip). RTTI_UNITTYPE factory; vehicles delivered via cargo
-**    plane (AIRCRAFT_TDCARGO) using TD's Create_Special_Reinforcement
-**    pattern in Exit_Object — see building.cpp case STRUCT_TDAFLD.
-**
-**    Footprint mirrors TD source: TdList42 occupies all 8 cells of a 4×2
-**    flat foundation (no overlap row — TDAFLD is single-layer art, unlike
-**    TDWEAP's 3×3 with row-0 overhang). TdExitAirstrip is TD's 16-cell
-**    exit preference list — wraps around all 4 sides of the strip so
-**    delivered vehicles can disembark to any adjacent cell.
-*/
+// Nod Airstrip, ported from TD's ClassAirStrip: a 4x2 vehicle factory whose orders a cargo plane delivers
+// (docs/cargo-plane-port.md). TdExitAirstrip rings the strip, so vehicles can leave on any side.
 static short const TdExitAirstrip[] = {XYCELL(-1, -1), XYCELL(-1, 0), XYCELL(-1, 1), XYCELL(-1, 2),
                                        XYCELL(0, -1), XYCELL(0, 2),
                                        XYCELL(1, -1), XYCELL(1, 2),
@@ -2386,12 +2169,8 @@ static BuildingTypeClass const ClassTdAfld(STRUCT_TDAFLD,
                                            (short const*)NULL  // No overlap row.
 );
 
-// TS Limpet Mine (STRUCT_TSDLIMP), Firestorm [DLIMPET]: the Limpet Drone settled.
-// Never built from the sidebar (the drone deploys into it, and the deploy order
-// packs it back into UNIT_TSLIMP). Mine-like: driven over, cloaked (rules
-// Cloakable=yes), and its LIMP shot attaches the drone to a passing vehicle
-// instead of doing damage (TF_Limpet_Attach), after which the mine is spent.
-// Art = DLIMPET body + DLIMP_A blink (10 healthy + 10 damaged), DLIMPMK build-up.
+// TS Limpet Mine ([DLIMPET]): the Limpet Drone deployed, never built from the sidebar. Cloaked; its shot
+// attaches the drone to a passing vehicle instead of doing damage (TF_Limpet_Attach), spending the mine.
 static BuildingTypeClass const ClassTsDlimp(STRUCT_TSDLIMP,
                                             TXT_NONE,
                                             "TSDLIMP",
@@ -2448,16 +2227,7 @@ static BuildingTypeClass const ClassTsDpsa(STRUCT_TSDPSA,
                                            (short const*)List1,
                                            (short const*)NULL);
 
-/*
-**  TDHQ (Communications Center / Radar) — 2×2 radar dome, ARMOR_WOOD,
-**    capturable, crewed. Wholesale port of TD's STRUCT_RADAR per
-**    tiberiandawn/bdata.cpp:739 (ClassCommand). Not a factory
-**    (ToBuild=RTTI_NONE); provides minimap + reveals cloaked units
-**    (cloak-detection handled via the BScan STRUCTF_RADAR equivalence
-**    set in BuildingClass::Unlimbo). Sight=10 (largest in the catalogue
-**    after Comms-tier buildings). Reuses RA's ComList + OComList — same
-**    foundation pattern as TD's HQ.
-*/
+// TD Communications Center, ported from TD's ClassCommand: the 2x2 radar.
 static BuildingTypeClass const ClassTdHq(STRUCT_TDHQ,
                                          TXT_NONE,           // Display name (rules.ini Name= overrides).
                                          "TDHQ",             // IniName.
@@ -2487,15 +2257,7 @@ static BuildingTypeClass const ClassTdHq(STRUCT_TDHQ,
                                          (short const*)OComList
 );
 
-/*
-**  TDEYE (Advanced Communications Center / Eye of Kane) — 2×2, ARMOR_WOOD,
-**    non-capturable, crewed, no turret. Verbatim port of TD's STRUCT_EYE
-**    per tiberiandawn/bdata.cpp:213 (ClassEye). Not a factory
-**    (ToBuild=RTTI_NONE); hosts the Ion Cannon superweapon (wired in
-**    Phase E3 — building separation alone in Phase E1 grants no super).
-**    Starting idle frame DirType(160) matches TD source. Reuses RA's
-**    ComList/OComList for the 2x2 foundation pattern (same as TDHQ).
-*/
+// Advanced Communications Center, ported from TD's ClassEye: the 2x2 host of the Ion Cannon.
 static BuildingTypeClass const ClassTdEye(STRUCT_TDEYE,
                                           TXT_NONE,           // Display name token; rules.ini Name= overrides.
                                           "TDEYE",            // IniName.
@@ -2525,15 +2287,7 @@ static BuildingTypeClass const ClassTdEye(STRUCT_TDEYE,
                                           (short const*)OComList
 );
 
-/*
-**  TDTMPL (Temple of Nod) — 3×3, ARMOR_ALUMINUM, non-capturable, crewed,
-**  no turret. Verbatim port of TD's STRUCT_TEMPLE per
-**  tiberiandawn/bdata.cpp:162 (ClassTemple). Not a factory; hosts the
-**  Nuclear Strike superweapon (wired in Phase T2). Simple damage imagery
-**  per TD source (line 176, single damaged frame rather than per-frame
-**  damage variants). Reuses RA's List000111111 + OListTmpl — same
-**  3×3-with-top-row-overlap pattern as TD's ListTmpl/OListTmpl.
-*/
+// Temple of Nod, ported from TD's ClassTemple: the 3x3 host of the Nuclear Strike, its top row overlap only.
 static BuildingTypeClass const ClassTdTmpl(STRUCT_TDTMPL,
                                            TXT_NONE,           // Display name token; rules.ini Name= overrides.
                                            "TDTMPL",           // IniName.
@@ -2592,15 +2346,12 @@ static BuildingTypeClass const ClassObelisk(STRUCT_TDOBLI,
                                             (short const*)OList12 // OVERLAPLIST.
 );
 
-// Tiberian Factions mod: Nod Stealth Generator (STRUCT_TDSTEALTH). Reuses the RA Gap
-// Generator sprite/footprint (Image=GAP in rules.ini) but drops the gap-shroud behaviour
-// (that logic is keyed on `*this == STRUCT_GAP`, which this type never matches). Instead it
-// hosts a cloak driver that hides friendly buildings+units in radius (see
-// docs/stealth-generator-spec.md). Modeled verbatim on ClassGapGenerator.
+// Nod Stealth Generator: TS NASTLH art under TDSTEAL, on a 2x1 plot. It cloaks friendly buildings and
+// units in its radius (docs/stealth-generator-spec.md).
 static BuildingTypeClass const ClassTdStealth(STRUCT_TDSTEALTH,
                       TXT_NONE,               // Display name token; rules.ini Name= overrides.
                       "TDSTEAL",              // IniName (own TS NASTLH-derived art: TDSTEAL tileset).
-                      FACING_NONE,            // Foundation direction: NONE -> Target_Coord aims at the true center. (FACING_S, inherited from the GAP-clone era, made attackers aim one cell SOUTH -- the "tanks shoot the bib" bug on the 2x1 footprint.)
+                      FACING_NONE,            // Foundation direction: NONE, so attackers aim at the true centre.
                       XYP_COORD(0, 0),        // Exit point for produced units.
                       REMAP_ALTERNATE,        // Sidebar remap logic.
                       0x0000,                 //	Vertical offset.
@@ -2620,17 +2371,14 @@ static BuildingTypeClass const ClassTdStealth(STRUCT_TDSTEALTH,
                       true,                   // Can the building be color remapped to indicate owner?
                       RTTI_NONE,              // The object type produced at this factory.
                       DIR_N,                  // Starting idle frame to match construction.
-                      BSIZE_21,               // SIZE: 2x1 silo-style (Luke's call; TS's 3x2 felt too fat).
+                      BSIZE_21,               // SIZE: 2x1, silo-shaped.
                       NULL,                   // Preferred exit cell list.
-                      (short const*)List21,   // OCCUPYLIST: both cells of the 2x1 strip (StoreList={0} left a phantom 1x1 footprint).
+                      (short const*)List21,   // OCCUPYLIST: both cells of the 2x1 strip.
                       (short const*)NULL      // OVERLAPLIST:List of overlap cell offset.
 );
 
-// Tiberian Factions mod: Nod Flame Bunker (STRUCT_TDFBNK). A Pillbox-chassis anti-infantry
-// emplacement firing Nod's TDFire flame weapon (area splash vs swarms) -- the anti-infantry
-// counterpart to the anti-armor Turret that Nod otherwise lacked. Reuses the RA Pillbox sprite
-// (Image=PBOX in rules.ini); own STRUCT type so it doesn't re-weapon the shared Allied Pillbox.
-// Modeled verbatim on ClassPillbox.
+// Nod Flame Bunker: an anti-infantry pillbox firing a flame weapon, drawn with the RA pillbox art
+// (Image=PBOX). A type of its own, so the Allied pillbox keeps its weapon.
 static BuildingTypeClass const ClassFlameBunker(STRUCT_TDFBNK,
                                             TXT_NONE,        // Display name token; rules.ini Name= overrides.
                                             "TDFBNK",        // IniName (art aliases PBOX via Image=PBOX).
@@ -2776,12 +2524,8 @@ static BuildingTypeClass const ClassConst(STRUCT_CONST,
                                           (short const*)NULL         // OVERLAPLIST:List of overlap cell offset.
 );
 
-/*
-**  SFACT / AFACT (Soviet / Allied Construction Yards) — Red Alert drew a single construction
-**  yard because it only ever needed the owner's identity; the split exists so the BUILDING
-**  carries the faction (see the TDNFACT/TDGFACT comment for the capture rationale). Each
-**  carries its own pipeline-built art under its IniName keys (no Image= sharing).
-*/
+// Soviet and Allied construction yards: RA's one yard split so the building carries its faction, as with
+// TDNFACT and TDGFACT. Each has its own art under its IniName.
 static BuildingTypeClass const ClassSovietFact(STRUCT_SFACT,
                                                TXT_NONE,          // Display name (rules.ini Name= overrides).
                                                "SFACT",           // IniName.
@@ -2989,12 +2733,8 @@ static BuildingTypeClass const ClassHelipad(STRUCT_HELIPAD,
                                             (short const*)NULL   // OVERLAPLIST:List of overlap cell offset.
 );
 
-/*
-**  AHPAD / SHPAD (Allied / Soviet Helipads) — W2 (d) split of the shared RA
-**  helipad, completing the production-building set (yards b2/b3, war
-**  factories (c)). The building carries the faction; each pad's free
-**  helicopter and roster follow the pad's type, not the owner.
-*/
+// Allied and Soviet helipads: RA's helipad split so the building carries its faction. Each pad's free
+// helicopter and roster follow the pad's type, not its owner.
 static BuildingTypeClass const ClassAlliedHelipad(STRUCT_AHPAD,
                                                   TXT_NONE,          // Display name (rules.ini Name= overrides).
                                                   "AHPAD",           // IniName.
@@ -3201,15 +2941,13 @@ static BuildingTypeClass const ClassAirStrip(STRUCT_AIRSTRIP,
                                              (short const*)NULL    // OVERLAPLIST:List of overlap cell offset.
 );
 
-// v4.0 separated faction naval/air production buildings. Clones of the RA SYRD/SPEN/AFLD (same
-// stats + foundation), but OWN STRUCT types so each yields only its faction's roster (the proven
-// TDHPAD pattern) and gives clean capture semantics. Art = independent TD-prefixed copies of the RA
-// sprites (scripts/bundle_ra_building.py); faction-logo reskins later. Owner set in rules.ini.
+// GDI naval yard, Nod sub pen and GDI airfield: clones of RA's SYRD, SPEN and AFLD as types of their own,
+// so each offers only its faction's roster. Art: TD-prefixed copies of RA's (scripts/bundle_ra_building.py).
 // GDI Naval Yard (clone of ClassShipYard).
 static BuildingTypeClass const ClassTdGYard(
     STRUCT_TDGYARD,
     TXT_SHIP_YARD, // placeholder name (rules.ini Name= overrides).
-    "TDGYARD",     // IniName (also the Graphic_Name -> loads TDGYARD.SHP/.ZIP, its own art).
+    "TDGYARD",     // IniName, also its art's tileset key.
     FACING_NONE,
     XYP_COORD(22 + (CELL_PIXEL_W / 2), ((CELL_PIXEL_H * 2) - (CELL_PIXEL_H / 2))),
     REMAP_ALTERNATE,
@@ -3253,11 +2991,8 @@ static BuildingTypeClass const ClassTdGAfld(
     NULL,
     (short const*)List32, (short const*)NULL);
 
-// TS-spike -- Tiberian Sun GDI Power Plant (STRUCT_TSPOWR, TS rules [GAPOWR]).
-// Clone of ClassPower (same 2x2 static power building); art = the TS GTPOWR SHP
-// upscaled to an HD tileset (TSPOWR.ZIP/TSPOWRMAKE.ZIP). No classic SHP -- the
-// One_Time _td_bdonors block donors POWR's ImageData/BuildupData/construction anim.
-// Stats (Cost 300 / Power 100 / Strength 750 real, no TD-prefix doubling) in rules.ini.
+// TS GDI Power Plant ([GAPOWR]): a clone of ClassPower with HD art only, so One_Time's _td_bdonors lends
+// it POWR's classic dims and construction anim. Stats are TS's, in rules.ini.
 static BuildingTypeClass const ClassTsPowr(STRUCT_TSPOWR,
                                            TXT_POWER,       // NAME: placeholder (rules.ini Name= overrides).
                                            "TSPOWR",        // NAME: IniName (launcher tileset key).
@@ -5209,22 +4944,8 @@ void BuildingTypeClass::operator delete(void* ptr)
     BuildingTypes.Free((BuildingTypeClass*)ptr);
 }
 
-/*
-**  Dynamic constructor for mod-defined building types. Used by the [NewBuildings]
-**  index in rules.ini to register a heap entry whose only initial state is its
-**  IniName; Read_INI fills in the rest, and a Logic=<vanilla type> field aliases
-**  the runtime Type discriminant to a vanilla StructType for engine dispatch.
-**
-**  The first param (StructType) is passed both to Type and to AbstractTypeClass::ID.
-**  Vanilla entries use their StructType enum value, which equals their heap slot
-**  because Init_Heap allocates in enum order. For mod-defined entries we must use
-**  the actual heap slot we're being allocated into — not the [NewBuildings] key —
-**  because CCPtr<BuildingTypeClass>(this) stores ptr->ID and on deref returns
-**  BuildingTypes[ID]. If ID collides with a vanilla StructType, Class lookups for
-**  this instance silently resolve to the vanilla entry at that index. The slot is
-**  BuildingTypes.Count() - 1 because operator new (Alloc) has already appended us
-**  to ActivePointers by the time the init list runs.
-*/
+// Registers a mod-defined building type from [NewBuildings] by IniName; Read_INI fills in the rest. Its ID
+// must be the heap slot it lands in: CCPtr resolves by ID, so a vanilla StructType would alias that type.
 BuildingTypeClass::BuildingTypeClass(int /*btype*/, char const* ininame)
     : BuildingTypeClass(static_cast<StructType>(BuildingTypes.Count() - 1),
                         TXT_NONE,
@@ -5256,11 +4977,8 @@ BuildingTypeClass::BuildingTypeClass(int /*btype*/, char const* ininame)
 {
 }
 
-/*
-**  Name-based lookup across the full BuildingTypes heap, including mod-defined
-**  entries past STRUCT_COUNT. From_Name(char const*) only walks the vanilla
-**  enum range and therefore can't see mod-defined types.
-*/
+// Finds a building type by IniName across the whole heap, including mod-defined types past STRUCT_COUNT,
+// which From_Name does not search.
 BuildingTypeClass* BuildingTypeClass::As_Pointer(char const* name)
 {
     if (name == NULL)
@@ -5290,12 +5008,8 @@ BuildingTypeClass* BuildingTypeClass::As_Pointer(char const* name)
  *   07/06/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
 
-// Tiberian Factions -- TD blossom tree rendered as a 1x1 BUILDING (terrain objects
-// can't take custom HD art on our stack; buildings render via the loose RA_STRUCTURES
-// ZIP pipeline like every other TD building). Unselectable + not-a-legal-target +
-// insignificant; the rest of its "harmless scenery" identity (Neutral owner,
-// Unsellable, uncapturable, immune, TechLevel=-1, idle bloom anim, huge HP) is set in
-// rules.ini [TDBLOSSOM]. Art "TDBLOSSOM" = SPLIT2. Seeds Tiberium via BuildingClass::AI.
+// TD blossom tree as a 1x1 building, since terrain objects can't take custom HD art. It seeds Tiberium
+// round it (BuildingClass::AI); rules.ini [TDBLOSSOM] makes it neutral, unsellable scenery.
 static BuildingTypeClass const ClassTdBlossom(STRUCT_TDBLOSSOM,
                                               TXT_NONE,
                                               "TDBLOSSOM",
@@ -5325,37 +5039,22 @@ static BuildingTypeClass const ClassTdBlossom(STRUCT_TDBLOSSOM,
                                               (short const*)NULL
 );
 
-/***********************************************************************************************
- * BuildingTypeClass::Is_Construction_Yard -- Does this building act as a construction yard?    *
- *                                                                                              *
- *    Role test for the base-anchor structure an MCV deploys into. See the declaration in       *
- *    type.h for why STRUCT_FAKECONST is excluded.                                              *
- *=============================================================================================*/
+// True for every construction yard an MCV deploys into; the fake yard is not one (see type.h).
 bool BuildingTypeClass::Is_Construction_Yard(void) const
 {
     return (Type == STRUCT_CONST || Type == STRUCT_AFACT || Type == STRUCT_SFACT || Type == STRUCT_TDFACT
             || Type == STRUCT_TDGFACT || Type == STRUCT_TDNFACT || Type == STRUCT_TSFACT);
 }
 
-/***********************************************************************************************
- * BuildingTypeClass::Is_Helipad -- Does this building act as a rotary-wing pad/factory?        *
- *                                                                                              *
- *    Role test for the W2 (d) helipad family: the two shared legacy types plus the four        *
- *    faction pads. Fixed-wing factories (AIRSTRIP/TDAFLD/TDGAFLD) are deliberately excluded.   *
- *=============================================================================================*/
+// True for every helicopter pad: the shared, faction and TS pads. Fixed-wing factories are not pads.
 bool BuildingTypeClass::Is_Helipad(void) const
 {
     return (Type == STRUCT_HELIPAD || Type == STRUCT_TDHPAD || Type == STRUCT_AHPAD || Type == STRUCT_SHPAD
             || Type == STRUCT_TDGHPAD || Type == STRUCT_TDNHPAD || Type == STRUCT_TSHPAD);
 }
 
-/***********************************************************************************************
- * BuildingTypeClass::Is_Tiberian_Era -- Is this a TD/TS building rather than a Red Alert one?  *
- *                                                                                              *
- *    The Tiberian-era entities occupy one unbroken run of the enum, so this is a range test.   *
- *    See STRUCT_TIBERIAN_LAST in defines.h for why the block is bounded by a marker rather     *
- *    than by STRUCT_COUNT, and why an IniName test would be wrong.                             *
- *=============================================================================================*/
+// True for TD and TS buildings, and for TD and TS gates. Tested on enum runs bounded by markers, never by
+// IniName (see STRUCT_TIBERIAN_LAST in defines.h).
 bool BuildingTypeClass::Is_Tiberian_Era(void) const
 {
     TFGateInfo const* gate = TF_Gate_Info(Type);
@@ -5366,18 +5065,8 @@ bool BuildingTypeClass::Is_Tiberian_Era(void) const
            || (Type >= STRUCT_TS_TREE_FIRST && Type <= STRUCT_TS_TREE_LAST);
 }
 
-/***********************************************************************************************
- * BuildingTypeClass::Is_TS_Era -- Is this one of the Tiberian Sun structures?                  *
- *                                                                                             *
- *    Narrower than Is_Tiberian_Era, which answers "TD or TS". TS's building audio differs      *
- *    from both earlier games: it slams down with PLACE2 and then rises in SILENCE, where RA    *
- *    and TD both run a construction rumble (OpenTS: BuildingSlam is played on placement, and   *
- *    the buildup plays only a per-building AuxSound1, which no TS building defines -- it is    *
- *    an aircraft take-off/landing field).                                                      *
- *                                                                                             *
- *    Keyed on the BUILDING, not the picked faction, like the other placement sounds: a TS      *
- *    yard sounds like a TS yard whoever crated or captured it.                                 *
- *=============================================================================================*/
+// True for the TS buildings, gates included. Their placement sounds differ: a PLACE2 slam, then a silent rise
+// (OpenTS). Keyed on the building, so a TS yard sounds like one whoever holds it.
 bool BuildingTypeClass::Is_TS_Era(void) const
 {
     TFGateInfo const* gate = TF_Gate_Info(Type);
@@ -5388,24 +5077,8 @@ bool BuildingTypeClass::Is_TS_Era(void) const
            || (Type >= STRUCT_TS_TREE_FIRST && Type <= STRUCT_TS_TREE_LAST);
 }
 
-/***********************************************************************************************
- * TF_Building_Scan_Bit -- Maps a building Type to the scan-mask bit it contributes.            *
- *                                                                                              *
- *    BScan / ActiveBScan / OldBScan are 32-bit masks, so a Type can only represent itself      *
- *    while it fits below bit 31. Vanilla RA Types all do. TD-separated Types do not (they sit  *
- *    around slot 100), so each shadows onto the closest vanilla equivalent -- the bit that      *
- *    engine checks such as radar activation, MCV deploy and the defeat-on-no-scans test at      *
- *    house.cpp actually look for. A Type with no vanilla counterpart contributes nothing, and   *
- *    is reached only through the heap-sized ActiveBQuantity array (which is what Prerequisite=  *
- *    resolution uses -- see Has_Building_Active).                                              *
- *                                                                                              *
- *    STRUCT_FAKECONST deliberately contributes nothing: it is above bit 31, is not shadowed,    *
- *    and vanilla RA never gave it a scan presence either.                                      *
- *                                                                                              *
- * INPUT:   btype -- the building Type to map.                                                  *
- *                                                                                              *
- * OUTPUT:  The mask bit to OR into a house's scan fields, or 0 for none.                       *
- *=============================================================================================*/
+// The house scan-mask bit a building type sets. Types past bit 31 set their vanilla equivalent's bit, or
+// none; prerequisites count those through ActiveBQuantity (Has_Building_Active).
 long TF_Building_Scan_Bit(int btype)
 {
     if (btype >= 0 && btype < 32) {
@@ -5562,9 +5235,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassLarva2); // STRUCT_LARVA2
 #endif
 
-    // Tiberian Factions mod buildings — append after vanilla entries in
-    // exact STRUCT_TD* enum order (per the constraint at the top of this
-    // function: heap allocation block index == StructType enum value).
+    // TF: the mod's buildings, appended in StructType enum order like the rest.
     new BuildingTypeClass(ClassObelisk); // STRUCT_TDOBLI (Nod Obelisk of Light)
     new BuildingTypeClass(ClassTdNuke);  // STRUCT_TDNUKE  (Power Plant)
     new BuildingTypeClass(ClassTdNuk2);  // STRUCT_TDNUK2  (Advanced Power Plant)
@@ -5590,7 +5261,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTdGAfld);   // STRUCT_TDGAFLD  (GDI Airfield)
     new BuildingTypeClass(ClassTdStealth); // STRUCT_TDSTEALTH (Nod Stealth Generator)
     new BuildingTypeClass(ClassFlameBunker); // STRUCT_TDFBNK (Nod Flame Bunker)
-    new BuildingTypeClass(ClassTsPowr);      // STRUCT_TSPOWR (TS-spike GDI Power Plant)
+    new BuildingTypeClass(ClassTsPowr);      // STRUCT_TSPOWR (TS GDI Power Plant)
     new BuildingTypeClass(ClassTdNodFact);   // STRUCT_TDNFACT (Nod Construction Yard)
     new BuildingTypeClass(ClassTdGdiFact);   // STRUCT_TDGFACT (GDI Construction Yard)
     new BuildingTypeClass(ClassTdGdiHpad);   // STRUCT_TDGHPAD (GDI Helipad)
@@ -5644,10 +5315,8 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTDNGATEH);
     new BuildingTypeClass(ClassTDNGATEV);
 
-    /*
-    **	Addon wiring (TS PowersUpBuilding=/Upgrades=). The statics are const, so
-    **	the plug relationships are set on the heap copies once all slots exist.
-    */
+    // TF: addon wiring (TS PowersUpBuilding= and Upgrades=). The statics are const, so it is set on the heap
+    // copies.
     As_Reference(STRUCT_TSPOWR).UpgradesMax = 2;                     // TS [GAPOWR] Upgrades=2
     As_Reference(STRUCT_TSTURB).PowersUpBuilding = STRUCT_TSPOWR;    // TS [GAPOWRUP]
     As_Reference(STRUCT_TSPLUG).UpgradesMax = 2;                     // TS [GAPLUG] Upgrades=2
@@ -5734,23 +5403,12 @@ void BuildingTypeClass::One_Time(void)
 #ifdef REMASTER_BUILD
         {STRUCT_AIRSTRIP, BSTATE_IDLE, 0, 8, 3},
 #endif
-        // Tiberian Factions mod: TDOBLI 4-frame charge cycle at rate 15
-        // ticks/frame — TD-authentic OBELISK_ANIMATION_RATE per
-        // tiberiandawn/defines.h:323. Cycle plays during BSTATE_ACTIVE
-        // (target acquired + firing). Future: separate BSTATE_AUX1 for
-        // warmup-then-fire sequencing per TD's original (currently both
-        // OBELPOWR + OBELRAY1 trigger on BSTATE_ACTIVE entry).
+        // TF: the mod's buildings, TD ones on TD's own _anims timings. The Obelisk charges while it fires.
         {STRUCT_TDOBLI, BSTATE_ACTIVE, 0, 4, 15},
-        // M2 Tier 1 — values lifted verbatim from tiberiandawn/bdata.cpp _anims[].
-        // POWER + ADVANCED_POWER: 4-frame blinking-generator idle at rate 15.
-        // BARRACKS (PYLE in TD): 10-frame cycle on both IDLE and ACTIVE.
-        // STORAGE (SILO): no entry — static sprite.
         {STRUCT_TDNUKE, BSTATE_IDLE, 0, 4, 15},
         {STRUCT_TDNUK2, BSTATE_IDLE, 0, 4, 15},
         {STRUCT_TDPYLE, BSTATE_ACTIVE, 0, 10, 3},
         {STRUCT_TDPYLE, BSTATE_IDLE, 0, 10, 3},
-        // M4 Tier 3 — TDHPAD rotor-pad cycle (TD-authentic per
-        // tiberiandawn/bdata.cpp:3795-3796).
         {STRUCT_TDHPAD, BSTATE_ACTIVE, 0, 7, 4},
         {STRUCT_TDHPAD, BSTATE_IDLE, 0, 0, 0},
         {STRUCT_TDGHPAD, BSTATE_ACTIVE, 0, 7, 4},
@@ -5761,58 +5419,34 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_AHPAD, BSTATE_IDLE, 0, 0, 0},
         {STRUCT_SHPAD, BSTATE_ACTIVE, 0, 7, 4},
         {STRUCT_SHPAD, BSTATE_IDLE, 0, 0, 0},
-        // M4 Tier 3 — TDFIX repair-bay cycle (TD-authentic per
-        // tiberiandawn/bdata.cpp:3806-3807).
         {STRUCT_TDFIX, BSTATE_ACTIVE, 0, 7, 2},
         {STRUCT_TDFIX, BSTATE_IDLE, 0, 1, 0},
-        // M4 Tier 3 — TDHQ radar-dish rotation (TD-authentic per
-        // tiberiandawn/bdata.cpp:3800).
         {STRUCT_TDHQ, BSTATE_IDLE, 0, 16, 4},
-        // M4 Tier 3 — TDWEAP body is a static sprite (door animation is the
-        // TDWEAP2 overlay layered by the launcher tileset, not via _anims).
-        // Values lifted verbatim from tiberiandawn/bdata.cpp:3813-3814.
+        // TDWEAP's body is static: its door is the TDWEAP2 overlay, not an animation.
         {STRUCT_TDWEAP, BSTATE_ACTIVE, 0, 1, 0},
         {STRUCT_TDWEAP, BSTATE_IDLE, 0, 1, 0},
-        // M4 Tier 3 — TDAFLD 16-frame idle cycle (radar dish rotation on
-        // the strip). TD-authentic per tiberiandawn/bdata.cpp:3789.
+        // TDAFLD: TD's idle cycle plus RA's airstrip AUX1 cycle.
         {STRUCT_TDAFLD, BSTATE_IDLE, 0, 16, 3},
         {STRUCT_TDAFLD, BSTATE_AUX1, 0, 8, 3},
-        // M4 Tier 3 — TDFACT 20-frame deploy/active cycle + 4-frame idle.
-        // TD-authentic per tiberiandawn/bdata.cpp:3792-3793.
         {STRUCT_TDFACT, BSTATE_ACTIVE, 4, 20, 3},
         {STRUCT_TDFACT, BSTATE_IDLE, 0, 4, 3},
-        // Faction twins share their original's animation timings -- same sprite, same frames.
         {STRUCT_TDNFACT, BSTATE_ACTIVE, 4, 20, 3},
         {STRUCT_TDNFACT, BSTATE_IDLE, 0, 4, 3},
         {STRUCT_TDGFACT, BSTATE_ACTIVE, 4, 20, 3},
         {STRUCT_TDGFACT, BSTATE_IDLE, 0, 4, 3},
         {STRUCT_SFACT, BSTATE_ACTIVE, 0, 26, 3},
         {STRUCT_AFACT, BSTATE_ACTIVE, 0, 26, 3},
-        // M4 Tier 3 — TDPROC harvester dock state machine. TD-authentic per
-        // tiberiandawn/bdata.cpp:3801-3805. IDLE 0-5 normal; FULL 6-11 plays
-        // when Capacity is reached (flashing lights); ACTIVE 12-18 (docking);
-        // AUX1 19-23 (siphoning tiberium); AUX2 24-29 (undocking).
+        // TDPROC: IDLE, FULL (flashing), ACTIVE docking, AUX1 unloading, AUX2 undocking.
         {STRUCT_TDPROC, BSTATE_ACTIVE, 12, 7, 4},
         {STRUCT_TDPROC, BSTATE_AUX1, 19, 5, 4},
         {STRUCT_TDPROC, BSTATE_AUX2, 24, 6, 4},
         {STRUCT_TDPROC, BSTATE_IDLE, 0, 6, 4},
         {STRUCT_TDPROC, BSTATE_FULL, 6, 6, 4},
-        // M5 Tier 4 — TDEYE 16-frame idle cycle (TD-authentic per
-        // tiberiandawn/bdata.cpp:3794). Ion Cannon visual + super wiring
-        // lands in Phase E2/E3; this is the structural building only.
         {STRUCT_TDEYE, BSTATE_IDLE, 0, 16, 4},
-        // M5 Tier 4 — TDTMPL idle is a single static frame; BSTATE_ACTIVE
-        // is the 5-frame missile-launch sequence (roof opens, missile rises)
-        // when the Nuclear Strike fires. Values lifted verbatim from
-        // tiberiandawn/bdata.cpp:3808 + :3815.
+        // TDTMPL: a static idle; ACTIVE is the five-frame launch, the roof opening and the missile rising.
         {STRUCT_TDTMPL, BSTATE_IDLE, 0, 1, 0},
         {STRUCT_TDTMPL, BSTATE_ACTIVE, 0, 5, 1},
-        // v4.0 — GDI Airfield (clone of RA AFLD art, 16-frame rotating radar
-        // dish). Mirror STRUCT_AIRSTRIP exactly so it animates identically to
-        // the RA airfield. STRUCT_SHIP_YARD / STRUCT_SUB_PEN have NO _anims
-        // entries in RA (2-frame static buildings: healthy + damaged), so the
-        // GDI Shipyard (TDGYARD) and Nod Sub Pen (TDNPEN) correctly stay static
-        // — there is no RA animation to clone for those two.
+        // TDGAFLD mirrors AIRSTRIP. The naval yard and sub pen have no entries, like RA's.
         {STRUCT_TDGAFLD, BSTATE_IDLE, 0, 0, 0},
         {STRUCT_TDGAFLD, BSTATE_AUX1, 0, 8, 3},
 #ifdef REMASTER_BUILD
@@ -5883,29 +5517,16 @@ void BuildingTypeClass::One_Time(void)
         */
         _makepath(fullname, NULL, NULL, building.Graphic_Name(), ".SHP");
         ((void const*&)building.ImageData) = MFCD::Retrieve(fullname);
-
-        /*
-        **  Tiberian Factions mod: TFASSETS.MIX (registered in init.cpp ahead
-        **  of LOCAL.MIX) ships TD-origin SHPs renamed with TD-prefix
-        **  (TDOBLI.SHP / TDOBLIMAKE.SHP etc.) so the MFCD::Retrieve calls
-        **  above resolve them directly. No more borrowing TSLA's ImageData
-        **  pointer as a stub — classic-mode rendering now shows our actual
-        **  TD SHPs, and Remastered-mode keeps using the TGA tileset XML via
-        **  the launcher's Draw_It intercept (which keys on IniName, not on
-        **  the ImageData pointer value).
-        */
     }
 
     // Try to load weap2.shp and tesla coil's lightning shapes
     char fullname[_MAX_FNAME + _MAX_EXT];
     _makepath(fullname, NULL, NULL, (char const*)"WEAP2", ".SHP");
     WarFactoryOverlay = MFCD::Retrieve(fullname);
-    // TD's WEAP2 (door panel) packed as TDWEAP2.SHP in TFASSETS.MIX. Drawn
-    // on STRUCT_TDWEAP only; classic-mode fallback when the launcher's TGA
-    // overlay isn't used.
+    // TF: door overlays for the TD war factory (TD's WEAP2), the TS war factory and the Mobile War Factory,
+    // the TS sets sized to their buildings' stubs.
     _makepath(fullname, NULL, NULL, (char const*)"TDWEAP2", ".SHP");
     WarFactoryOverlayTd = MFCD::Retrieve(fullname);
-    // TS's bay-door overlay, sized to the war factory's own stub.
     _makepath(fullname, NULL, NULL, (char const*)"TSWEAPDR", ".SHP");
     TsWeapShutter = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"TSWEAPUD", ".SHP");
@@ -5914,7 +5535,6 @@ void BuildingTypeClass::One_Time(void)
     TsWeapFront = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"TSWEAPNU", ".SHP");
     TsWeapFrontOpen = MFCD::Retrieve(fullname);
-    // The Mobile War Factory's own set, on the same stub.
     _makepath(fullname, NULL, NULL, (char const*)"TSDWEAPDR", ".SHP");
     TsDweapShutter = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"TSDWEAPUD", ".SHP");
@@ -5941,18 +5561,8 @@ void BuildingTypeClass::One_Time(void)
             .Init_Anim(_anims[index].Stage, _anims[index].Start, _anims[index].Length, _anims[index].Rate);
     }
 
-    /*
-    **  D1 decouple — per-entry asset load for mod-defined building types
-    **  past STRUCT_COUNT. These entries were created from [NewBuildings]
-    **  during Rule.Process before One_Time ran; the vanilla loop above
-    **  skipped them, leaving ImageData=NULL (Draw_It early-returns) and
-    **  Get_Build_Frame_Width/Height(ImageData) reading donor dimensions via
-    **  the Logic= inheritance — which is what leaks APWR's 3x3 scale onto
-    **  TDNUK2's 2x2 footprint. Loading each entry's own SHP keyed by
-    **  Graphic_Name() (Image= rules.ini field, fallback IniName) gives the
-    **  launcher's CNCObjectStruct.Width/Height the right per-entry pixel
-    **  dimensions and lets Draw_It find a real shapefile.
-    */
+    // TF: types made from [NewBuildings] sit past STRUCT_COUNT, beyond the loop above, so their art loads here
+    // by Graphic_Name.
     /*
     **  Diagnostic — log what MFCD::Retrieve returns for each mod entry's
     **  asset lookups. Tells us whether NUK2.SHP / NUKEMAKE.SHP etc. are
@@ -6025,33 +5635,27 @@ void BuildingTypeClass::One_Time(void)
         }
     }
 
-    // v4.0 separated naval/air buildings (TDGYARD/TDNPEN/TDGAFLD): no classic TD*.SHP is shipped
-    // (HD-only, rendered from the bundled TD* tilesets), so the MFCD::Retrieve calls above returned
-    // NULL -> donor the RA building's ImageData/BuildupData/CameoData as the Draw_It NULL-guard.
+    // TF: HD-only buildings ship no classic SHP, so each borrows a counterpart's classic shape, cameo and
+    // construction anim. One with its own MAKE stub keeps its anim: a donor's longer count runs past its tiles.
     {
         static const struct { StructType td; StructType ra; } _td_bdonors[] = {
             {STRUCT_TDGYARD, STRUCT_SHIP_YARD},
             {STRUCT_TDNPEN, STRUCT_SUB_PEN},
             {STRUCT_TDGAFLD, STRUCT_AIRSTRIP},
-            {STRUCT_TSPOWR, STRUCT_POWER}, // TS-spike power plant (HD-only TS art)
+            {STRUCT_TSPOWR, STRUCT_POWER}, // TS power plant (HD-only art)
             {STRUCT_TDSTEALTH, STRUCT_TDSILO}, // Stealth Generator: TS NASTLH art, 2x1 silo-shaped -> TDSILO's classic dims (48x24) + its full TDSILOMAKE construction anim
-            // W2 b3 faction yards: HD-only pipeline art under their own keys
-            // (AFACT/SFACT/TDGFACT/TDNFACT), no classic SHP shipped — donor
-            // the era original's classic dims + construction anim.
+            // Faction yards, war factories and helipads borrow their era's shared building.
             {STRUCT_AFACT, STRUCT_CONST},
             {STRUCT_SFACT, STRUCT_CONST},
             {STRUCT_TDGFACT, STRUCT_TDFACT},
             {STRUCT_TDNFACT, STRUCT_TDFACT},
-            // W2 (c) faction war factories — pipeline art under AWEAP/SWEAP keys.
             {STRUCT_AWEAP, STRUCT_WEAP},
             {STRUCT_SWEAP, STRUCT_WEAP},
-            // W2 (d) faction helipads.
             {STRUCT_AHPAD, STRUCT_HELIPAD},
             {STRUCT_SHPAD, STRUCT_HELIPAD},
             {STRUCT_TDGHPAD, STRUCT_TDHPAD},
             {STRUCT_TDNHPAD, STRUCT_TDHPAD},
-            // TS tree: composited TS art under TS* keys, classic dims +
-            // construction anim from the TD counterpart (TD-parity scale).
+            // TS buildings borrow their TD counterpart.
             {STRUCT_TSFACT, STRUCT_TDFACT},
             {STRUCT_TSPILE, STRUCT_TDPYLE},
             {STRUCT_TSPROC, STRUCT_TDPROC},
@@ -6069,11 +5673,6 @@ void BuildingTypeClass::One_Time(void)
         for (int di = 0; di < (int)(sizeof(_td_bdonors) / sizeof(_td_bdonors[0])); di++) {
             BuildingTypeClass& b = As_Reference(_td_bdonors[di].td);
             BuildingTypeClass const& d = As_Reference(_td_bdonors[di].ra);
-            // A building with its OWN TFASSETS MAKE stub already got the right
-            // construction anim (count = its stub's frame count) in the main
-            // loop; the donor copy below must not clobber it, or the count
-            // plays past the building's HD tile list (TSPROC ships 19 buildup
-            // tiles, donor TDPROC counts 20 -> purple placeholder final frame).
             bool had_own_buildup = (b.BuildupData != NULL);
             if (b.ImageData == NULL)
                 ((void const*&)b.ImageData) = d.ImageData;
@@ -6082,16 +5681,6 @@ void BuildingTypeClass::One_Time(void)
             if (b.CameoData == NULL)
                 ((void const*&)b.CameoData) = d.CameoData;
 
-            // Buildup (construction-placement) animation. The STRUCT_FIRST..
-            // STRUCT_COUNT loop above only calls Init_Anim(BSTATE_CONSTRUCTION)
-            // when "<TDname>MAKE.SHP" resolves in the mixfiles — but these
-            // buildings have no classic TD*MAKE.SHP (HD-only, rendered from the
-            // bundled TD*MAKE tileset by IniName). So that loop left their
-            // Anims[BSTATE_CONSTRUCTION] at {0,0,0}, which makes the building
-            // pop in with NO assembly animation on placement. The donor's
-            // construction anim was loaded from its own (identical, cloned)
-            // MAKE art, so copy it across — the launcher then cycles the
-            // TD*MAKE-#### TGA frames as the building assembles.
             if (!had_own_buildup) {
                 b.Init_Anim(BSTATE_CONSTRUCTION,
                             d.Anims[BSTATE_CONSTRUCTION].Start,
@@ -6322,15 +5911,8 @@ void BuildingTypeClass::Init(TheaterType theater)
             }
         }
 
-        /*
-        **  Logic=-aliased mod entries (heap slots past STRUCT_COUNT) inherit
-        **  their donor's ImageData/BuildupData at Read_INI time. For donors
-        **  that are theater-specific (e.g. MSLO → TDEYE), those pointers were
-        **  NULL at Read_INI because Init(theater) hadn't run yet. Now that the
-        **  donor has just been refreshed above, re-copy the pointers to any
-        **  mod entry whose Type matches a vanilla StructType — the Logic=
-        **  block sets Type = donor->Type, so this is the alias relationship.
-        */
+        // TF: a Logic= aliased mod type copied its donor's art at Read_INI, before a theater-specific donor had
+        // loaded it, so the art and construction anim are copied again now.
         for (int sindex = STRUCT_COUNT; sindex < BuildingTypes.Count(); sindex++) {
             BuildingTypeClass const* modptr = &(*BuildingTypes.Ptr(sindex));
             if (modptr->Type >= STRUCT_FIRST && modptr->Type < STRUCT_COUNT) {
@@ -6338,12 +5920,6 @@ void BuildingTypeClass::Init(TheaterType theater)
                 if (donor->IsTheater) {
                     ((void const*&)modptr->ImageData)   = donor->ImageData;
                     ((void const*&)modptr->BuildupData) = donor->BuildupData;
-                    // Donor's Anims[BSTATE_CONSTRUCTION] was {0,1,0} at the
-                    // Read_INI alias-copy time because Init_Anim only runs
-                    // here in Init(theater) for theater-specific donors. Now
-                    // that the donor's buildup count/rate is finalized, copy
-                    // it to the mod entry so the buildup animation plays the
-                    // full frame range instead of completing in one tick.
                     modptr->Anims[BSTATE_CONSTRUCTION] = donor->Anims[BSTATE_CONSTRUCTION];
                 }
             }
@@ -6417,20 +5993,8 @@ BuildingTypeClass& BuildingTypeClass::As_Reference(StructType type)
  *=============================================================================================*/
 short const* BuildingTypeClass::Occupy_List(bool placement) const
 {
-    /*
-    **	The TS refinery and war factory both sit on a SOLID plot: the building
-    **	plus the concrete apron's east column and south row, with no holes.
-    **	Placement demands the whole apron lands on clear ground, so neither
-    **	can be sited with its concrete draped over a cliff. This is the list
-    **	the sidebar PlacementList export (the launcher's ghost grid),
-    **	Legal_Placement and placement proximity all consume, so it has to
-    **	match the building's BSIZE — a stale list here leaves the launcher
-    **	drawing the old footprint no matter what the engine believes. The
-    **	non-placement (blocking) lists keep the apron cells as walkable
-    **	holes — the refinery's dock pad and the factory's bay approach both
-    **	have to stay enterable. The art row overhanging NORTH of the plot is
-    **	not footprint (radar treatment: units walk behind the building there).
-    */
+    // TF: TS refinery and war factory placement spans their concrete aprons too, so no apron drapes over a
+    // cliff; their blocking lists leave the dock pad and the bay approach walkable.
     if (placement && Type == STRUCT_TSPROC) {
         static short const _ts_proc_place[] = {0,
                                                1,
@@ -6628,21 +6192,6 @@ bool BuildingTypeClass::Bib_And_Offset(SmudgeType& bib, CELL& cell) const
 {
     bib = SMUDGE_NONE;
 
-    /*
-    **	Tiberian Factions -- the TS concrete aprons (TSWEAP/TSPROC) are NOT
-    **	bibs any more: they never stamp into cells. The dynamic-map export
-    **	draws them straight from the owning building's geometry, so they sit
-    **	under bibs, ore and everything else instead of competing for the one
-    **	smudge slot a cell has (walk finding 2026-08-13). The offsets the
-    **	renderer uses live in its _aprons table (dllinterface.cpp).
-    */
-
-    /*
-    **	Dropship bay: with the 3x2 plot (2026-08-13) the standard hang-below
-    **	placement puts BIB2 on exactly the rows the old special case chose --
-    **	deck bottom row + the walkable concrete below -- so it takes the
-    **	generic path like everything else.
-    */
     if (IsBibbed) {
         switch (Width()) {
         case 2:
@@ -6724,12 +6273,11 @@ int BuildingTypeClass::Raw_Cost(void) const
     if (Type == STRUCT_REFINERY) {
         cost -= UnitTypeClass::As_Reference(UNIT_HARVESTER).Cost;
     }
+    // TF: the TD and TS refineries come with free harvesters of their own.
     if (Type == STRUCT_TDPROC) {
-        // TDPROC spawns UNIT_TDHARV via building.cpp's free-harvester block.
         cost -= UnitTypeClass::As_Reference(UNIT_TDHARV).Cost;
     }
     if (Type == STRUCT_TSPROC) {
-        // TSPROC spawns UNIT_TSHARV via the same free-harvester block.
         cost -= UnitTypeClass::As_Reference(UNIT_TSHARV).Cost;
     }
     return (cost);
@@ -6818,36 +6366,15 @@ bool BuildingTypeClass::Flush_For_Placement(CELL cell, HouseClass* house) const
 bool BuildingTypeClass::Read_INI(CCINIClass& ini)
 {
     if (TechnoTypeClass::Read_INI(ini)) {
-        /*
-        **  The blossom tree is immune to combat damage, as TD's is (SPLIT2/SPLIT3); its
-        **  Take_Damage refuses forced damage as well.
-        */
+        // TF: the blossom tree is immune to combat damage, as TD's is; its Take_Damage refuses forced damage too.
         if (Type == STRUCT_TDBLOSSOM) {
             IsImmune = true;
         }
 
-        /*
-        **  TD buildings carry DOUBLE their listed hit points. TD's
-        **  BuildingTypeClass ctor passes strength*2 to TechnoTypeClass
-        **  (tiberiandawn/bdata.cpp:3706) — a doubling RA's engine does not have,
-        **  and it applies to buildings only (TD units/infantry/aircraft are not
-        **  doubled). Our rules.ini holds the verbatim TD-source STRNTH, so
-        **  replicate the doubling here for TD-port buildings, identified by the
-        **  "TD" IniName-prefix convention. Scoped to BuildingTypeClass::Read_INI,
-        **  so TD units/aircraft (TDMCV/TDHARV/TDC17) correctly stay single-HP.
-        */
+        // TF: a building whose IniName starts with TD gets double its listed strength, as TD's own buildings do,
+        // and three more cells of sight, since TD's sight ranges read short at RA's scale.
         if (Name()[0] == 'T' && Name()[1] == 'D') {
             MaxStrength *= 2;
-            /*
-            **  Tiberian Factions mod — +3 sight range on every TD building. TD's
-            **  building Sight values are tuned for TD's tighter engagement
-            **  distances and read too short on RA's scale (map reveal, radar
-            **  footprint, defensive-structure acquisition). A flat +3-cell bump
-            **  brings them in line with RA expectations (playtest 2026-06-03:
-            **  +2 still read a touch short, nudged to +3). SightRange was already
-            **  parsed from rules.ini "Sight=" by the TechnoTypeClass::Read_INI
-            **  call above, so this layers on top of the per-building value.
-            */
             SightRange += 3;
         }
         Speed = ini.Get_Bool(Name(), "WaterBound", (Speed == SPEED_FLOAT)) ? SPEED_FLOAT : SPEED_NONE;
@@ -6860,15 +6387,8 @@ bool BuildingTypeClass::Read_INI(CCINIClass& ini)
         IsBase = ini.Get_Bool(Name(), "BaseNormal", IsBase);
         Power = ini.Get_Int(Name(), "Power", (Power > 0) ? Power : -Drain);
 
-        /*
-        **  Logic=<vanilla-IniName> aliases this entry's runtime Type discriminant
-        **  to a vanilla StructType. Engine dispatch (factory placement, sidebar,
-        **  AI heuristics) then treats this custom building as the vanilla type.
-        **  Also inherits the donor's physical footprint (Size + occupy/overlap
-        **  lists) so placement preview, blocking, and adjacency match the donor.
-        **  Only honoured for mod-defined entries; vanilla entries override their
-        **  own Type by re-resolving to themselves, which is harmless.
-        */
+        // TF: Logic=<IniName> makes this type behave as that building: it takes the donor's Type, footprint,
+        // exits, anims and art, and the donor's weapons unless its own section names them.
         char buffer[64];
         if (ini.Get_String(Name(), "Logic", "", buffer, sizeof(buffer)) > 0) {
             BuildingTypeClass* donor = BuildingTypeClass::As_Pointer(buffer);
@@ -6877,10 +6397,6 @@ bool BuildingTypeClass::Read_INI(CCINIClass& ini)
                 Size = donor->Size;
                 OccupyList = donor->OccupyList;
                 OverlapList = donor->OverlapList;
-                // Animation + placement state — placement validation and the
-                // buildup/idle/active visual states all key on these. Without
-                // them, Logic-aliased entries build at the wrong tick rate and
-                // Unlimbo() fails because the buildup data is NULL.
                 BuildupData = donor->BuildupData;
                 for (int s = 0; s < BSTATE_COUNT; s++) {
                     Anims[s] = donor->Anims[s];
@@ -6892,118 +6408,41 @@ bool BuildingTypeClass::Read_INI(CCINIClass& ini)
                 ToBuild = donor->ToBuild;
                 Adjacent = donor->Adjacent;
                 Capacity = donor->Capacity;
-                // ImageData is the post-buildup idle SHP. One_Time() only
-                // loads it for vanilla heap entries; mod entries past
-                // STRUCT_COUNT never get a chance, leaving ImageData=NULL and
-                // the engine drawing with width=height=0 (invisible). Inherit
-                // donor's pointer — Logic= aliases mean engine dispatch is
-                // donor-keyed anyway, so reusing the donor's image is correct.
                 ((void const*&)ImageData) = donor->ImageData;
-                // Weapon pointers — TechnoTypeClass::Read_INI runs before this
-                // block, so an explicit Primary=/Secondary= in the mod entry's
-                // INI section will already have populated these. Only fall
-                // back to the donor when the entry didn't mention the key AT
-                // ALL — Is_Present(section, key) distinguishes "absent"
-                // (inherit donor) from "present but parsed to NULL"
-                // (explicit clear, don't inherit).
-                //
-                // Without this Is_Present check, setting Primary=TowTwo
-                // overrides Primary correctly but Secondary= (unmentioned)
-                // still inherits the donor's secondary weapon — e.g. TDATWR
-                // with Logic=AGUN got AGUN's Secondary=ZSU-23 silently
-                // bound to its secondary slot, and Which_Weapon would prefer
-                // ZSU-23 over TowTwo for any AA-relevant target. Discovered
-                // 2026-05-21 via tf_primary_parse.log diagnostic; user
-                // playtest showed TDATWR firing ZSU-23 despite the parse log
-                // confirming PrimaryWeapon=TowTwo was set correctly.
                 if (PrimaryWeapon == NULL && !ini.Is_Present(Name(), "Primary")) {
                     PrimaryWeapon = donor->PrimaryWeapon;
                 }
                 if (SecondaryWeapon == NULL && !ini.Is_Present(Name(), "Secondary")) {
                     SecondaryWeapon = donor->SecondaryWeapon;
                 }
-                // Do NOT copy IsTurretEquipped from the donor. AGUN/SAM/TURR
-                // donors render turret rotation via PrimaryFacing which the
-                // engine's AI rotates toward targets — but for our TD mod
-                // entries, enabling the flag causes the firing logic to gate
-                // on PrimaryFacing.Current() == direction-to-target (which
-                // is never satisfied since nothing rotates PrimaryFacing in
-                // our setup), so the turret renders rotating-capable but
-                // never actually fires. Without the flag, Turret_Facing()
-                // falls back to Direction(TarCom) (building.cpp:2685) — the
-                // weapon fires correctly aimed at the target; the visual
-                // just doesn't rotate. Wiring proper rotation needs the
-                // turret-tracking AI tied in, deferred to the TD-specific
-                // weapons work alongside TDOBLI/TDSAM polish.
             }
         }
 
-        /*
-        **  Footprint= INI field overrides the inherited donor footprint with a
-        **  named TD-style preset. Lets a Logic-aliased building (engine behaves
-        **  like POWR) place with a different physical footprint (the actual TD
-        **  building's shape, not POWR's L-shape). Required because vanilla
-        **  RA's POWR is 2x3 with a specific OccupyList, while TD buildings have
-        **  their own footprints that don't match RA's.
-        */
+        // TF: Footprint=<preset> gives a TD building TD's own footprint and, for HAND and WEAP, TD's exits.
         static short const List_NUK2_OCCUPY[]  = {0, MAP_CELL_W, MAP_CELL_W + 1, REFRESH_EOL};
         static short const List_NUK2_OVERLAP[] = {1, REFRESH_EOL};
-        // PYLE (GDI Barracks) — 2x2 footprint matching tiberiandawn/bdata.cpp's
-        // ClassBarracks. Top-row occupy + bottom-row overlap follows TD's
-        // List22_1100 / List22_0011 pattern.
-        //
-        // NOTE on footprint vs visual: the placement preview includes the
-        // cracked-dirt bib rendered below any `Bib=yes` building (true for
-        // both vanilla RA and TD), so a 2x2 structure with a bib can *look*
-        // like a 3-row footprint. Trust the source's BSIZE_* declaration
-        // over visual impression when sizing entries; the bib is decorative.
         static short const List_PYLE_OCCUPY[]  = {0, 1, REFRESH_EOL};
         static short const List_PYLE_OVERLAP[] = {MAP_CELL_W, MAP_CELL_W + 1, REFRESH_EOL};
-        // WEAP (TD GDI Weapons Factory) — 3×3 footprint, mirroring TD's
-        // ListWeap/OListWeap in tiberiandawn/bdata.cpp:74,103. Bottom 6 cells
-        // (rows 1+2) are the physical foundation; top row (row 0) is overlap
-        // only (visual roof/walls extending up). RA's WEAP donor is 3×2 with
-        // all cells fully occupied — Logic=WEAP alone inherits that, but the
-        // TD sprite's vertical extent is 3 cells, so the foundation overflows
-        // below the cells. Override with this preset gives TD-authentic shape.
         static short const List_WEAP_OCCUPY[]  = {
             (MAP_CELL_W * 1), (MAP_CELL_W * 1) + 1, (MAP_CELL_W * 1) + 2,
             (MAP_CELL_W * 2), (MAP_CELL_W * 2) + 1, (MAP_CELL_W * 2) + 2,
             REFRESH_EOL
         };
         static short const List_WEAP_OVERLAP[] = {0, 1, 2, REFRESH_EOL};
-        // SILO (TD Ore Silo) — TD-authentic BSIZE_21 (2 wide × 1 tall),
-        // both cells occupied, no overlap. Matches tiberiandawn/bdata.cpp:682
-        // ClassStorage + StoreList = {0, 1}. With Bib=yes the placement
-        // preview shows 2×2 (top row foundation, bottom row bib decoration).
         static short const List_SILO_OCCUPY[] = {0, 1, REFRESH_EOL};
-        // HAND (TD Hand of Nod) — 2 wide × 3 tall L-shape, copied verbatim from
-        // tiberiandawn/bdata.cpp:143 (ListHand) and :163 (OListHand). Occupy
-        // covers the middle row and bottom-right "thumb"; overlap is the top
-        // row, bottom-left, and middle-left (the overlap-on-middle-left mirrors
-        // a quirk of TD's data and is harmless — occupy wins for placement).
         static short const List_HAND_OCCUPY[]  = {MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W * 2 + 1, REFRESH_EOL};
         static short const List_HAND_OVERLAP[] = {0, 1, MAP_CELL_W * 2, MAP_CELL_W, REFRESH_EOL};
-        // HAND exit cells — copied verbatim from tiberiandawn/bdata.cpp:77
-        // (TD's ExitHand). Twelve cells fanning out around the 2×3 footprint
-        // so infantry can spawn on any of the building's perimeter tiles.
         static short const Exit_HAND[] = {
             XYCELL(2, 3),  XYCELL(1, 3),  XYCELL(0, 3),  XYCELL(2, 2),
             XYCELL(-1, 3), XYCELL(-1, 2), XYCELL(0, 0),  XYCELL(1, 0),
             XYCELL(-1, 0), XYCELL(2, 0),  XYCELL(2, 1),  XYCELL(-1, 1),
             REFRESH_EOL
         };
-        // AFLD (TD Nod Airstrip) — 4 wide × 2 tall, fully occupied (no overlap).
-        // Copied verbatim from tiberiandawn/bdata.cpp:136 (List42).
         static short const List_AFLD_OCCUPY[]  = {
             0, 1, 2, 3,
             MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W + 2, MAP_CELL_W + 3,
             REFRESH_EOL
         };
-        // AFLD exit cells — copied verbatim from tiberiandawn/bdata.cpp:109
-        // (TD's ExitAirstrip). 16 cells around the 4×2 perimeter so vehicles
-        // can drive off in any direction. Order is the TD source order; first
-        // slot is the preferred exit (top-left corner outside).
         static short const Exit_AFLD[] = {
             XYCELL(-1, -1), XYCELL(-1, 0),  XYCELL(-1, 1), XYCELL(-1, 2),
             XYCELL(0, -1),  XYCELL(0, 2),
@@ -7013,21 +6452,12 @@ bool BuildingTypeClass::Read_INI(CCINIClass& ini)
             XYCELL(4, -1),  XYCELL(4, 0),   XYCELL(4, 1),  XYCELL(4, 2),
             REFRESH_EOL
         };
-        // TMPL (TD Temple of Nod) — 3 wide × 3 tall with overlap on top row,
-        // copied verbatim from tiberiandawn/bdata.cpp:144 (ListTmpl, bottom
-        // 2 rows occupied) and :164 (OListTmpl, top row overlap). Same
-        // shape pattern as TDFACT/TDWEAP construction-yard-style buildings.
         static short const List_TMPL_OCCUPY[]  = {
             MAP_CELL_W,     MAP_CELL_W + 1, MAP_CELL_W + 2,
             MAP_CELL_W * 2, MAP_CELL_W * 2 + 1, MAP_CELL_W * 2 + 2,
             REFRESH_EOL
         };
         static short const List_TMPL_OVERLAP[] = {0, 1, 2, REFRESH_EOL};
-        // WEAP exit cells — copied verbatim from tiberiandawn/bdata.cpp:89
-        // (TD's ExitWeap array). Order matters: first slot is the preferred
-        // exit cell. The commented-out cells in the TD source (row 0
-        // entries) are not included here either — TD shipped without them
-        // and so do we.
         static short const Exit_WEAP[] = {
             XYCELL(-1, 3), XYCELL(0, 3), XYCELL(-1, 2), XYCELL(1, 3),
             XYCELL(-1, 1), XYCELL(3, 1),
@@ -7040,38 +6470,19 @@ bool BuildingTypeClass::Read_INI(CCINIClass& ini)
             BSizeType   size;
             short const* occupy;
             short const* overlap;
-            short const* exit_list;   // NULL = keep donor's (Logic= alias copy)
-            COORDINATE   exit_coord;  // 0 = keep donor's
+            short const* exit_list;   // NULL = keep the current exit list
+            COORDINATE   exit_coord;  // 0 = keep the current exit point
         };
         static FootprintPreset const _presets[] = {
-            // TD building footprints — copied from tiberiandawn/bdata.cpp.
-            // Add new entries as we expand the GDI/Nod catalogue.
             {"NUKE", BSIZE_22, List_NUK2_OCCUPY, List_NUK2_OVERLAP, NULL, 0},   // shares NUK2's 2x2 L-shape
             {"NUK2", BSIZE_22, List_NUK2_OCCUPY, List_NUK2_OVERLAP, NULL, 0},
             {"EYE",  BSIZE_22, List_NUK2_OCCUPY, List_NUK2_OVERLAP, NULL, 0},   // TD ComList/OComList = NUK2 L-shape
             {"PYLE", BSIZE_22, List_PYLE_OCCUPY, List_PYLE_OVERLAP, NULL, 0},
-            // HAND: 2x3 L-shape. ExitCoordinate copied verbatim from TD's
-            // ClassHand constructor (tiberiandawn/bdata.cpp:1242) — pixel
-            // (36, 63) in a 48x72 px building footprint, placing the spawn
-            // at the bottom-right "thumb" cell where the door is. Without
-            // this override, BARR's 2x2-shaped ExitCoordinate gets inherited
-            // and infantry spawn inside the foundation.
             {"HAND", BSIZE_23, List_HAND_OCCUPY, List_HAND_OVERLAP, Exit_HAND, XYP_COORD(36, 63)},
-            // AFLD: 4x2 Nod Airstrip. Stopgap reuses WEAP donor; vehicles emerge
-            // via WEAP's TD-SW exit track (gotchas #14-15) since RA has no
-            // native airstrip mechanic. Cargo-plane choreography is a separate
-            // engine slice deferred to its own session.
             {"AFLD", BSIZE_42, List_AFLD_OCCUPY, NULL,              Exit_AFLD, 0},
             {"TMPL", BSIZE_33, List_TMPL_OCCUPY, List_TMPL_OVERLAP, NULL, 0},   // Temple of Nod, 3x3 (top row overlap)
             {"SILO", BSIZE_21, List_SILO_OCCUPY, NULL,              NULL, 0},   // 2x1 + bib (TD-authentic)
             {"HQ",   BSIZE_22, List_NUK2_OCCUPY, List_NUK2_OVERLAP, NULL, 0},   // TD ComList/OComList = NUK2 L-shape
-            // WEAP: ExitCoordinate copied verbatim from TD's ClassWeapon
-            // constructor in tiberiandawn/bdata.cpp:266 — pixel (22, 39) in
-            // a 3×3 (72×72 px) building footprint, placing the spawn at the
-            // upper-left interior near the door. If RA's pathfinder ends up
-            // snapping this to the first ExitList cell instead of animating,
-            // the fix belongs in the engine's vehicle-exit code path, not in
-            // these data values.
             {"WEAP", BSIZE_33, List_WEAP_OCCUPY, List_WEAP_OVERLAP, Exit_WEAP,
              XYP_COORD(10 + (CELL_PIXEL_W / 2),
                        ((CELL_PIXEL_H * 3) - (CELL_PIXEL_H / 2)) - 21)},
@@ -7094,18 +6505,8 @@ bool BuildingTypeClass::Read_INI(CCINIClass& ini)
             }
         }
 
-        /*
-        **  ShapeSize=W,H — EMC-style explicit pixel dimensions for the
-        **  launcher-rendered sprite. Without this, the legacy SHP path
-        **  passes width=height=0 to DLL_Draw_Intercept (because the mod
-        **  entry's SHP isn't in the mixfile registry), and the Remastered
-        **  launcher falls back to TGA-native pixel size — which varies
-        **  per asset since TD-Assets's TGAs were drawn with different
-        **  building-to-canvas ratios. Setting explicit W,H here gives the
-        **  launcher a concrete dim to scale the TGA to, normalising scale
-        **  across the catalogue. Convention: W = Width()*24, H = Height()*24
-        **  to match the legacy ICON_PIXEL_W/H tile size.
-        */
+        // TF: ShapeSize=W,H is the pixel size the launcher scales a building's HD art to (24 px a cell by
+        // convention); it also decides how the building sorts against units.
         if (ini.Get_String(Name(), "ShapeSize", "", buffer, sizeof(buffer)) > 0) {
             int sw = 0, sh = 0;
             if (sscanf(buffer, "%d,%d", &sw, &sh) == 2 && sw > 0 && sh > 0) {
@@ -7114,23 +6515,8 @@ bool BuildingTypeClass::Read_INI(CCINIClass& ini)
             }
         }
 
-        /*
-        **  Per-building per-BSTATE animation override. Two directions:
-        **  (a) TURN ON cycling — TD passive animations (e.g. NUKE blinking
-        **      generator) require Anims[BSTATE_IDLE] to cycle multiple
-        **      frames, but Logic= aliasing inherits the donor's Anims which
-        **      may be static (POWR has no idle anim entry in _anims[]).
-        **  (b) TURN OFF / CLAMP cycling — TD-Assets sprite packs sometimes
-        **      collapse N+1 SHP frames to 3 TGAs (e.g. HAND.ZIP has 1 idle
-        **      + 1 damaged + 1 destroyed = 3 frames), but the donor's anim
-        **      cycles 10. Without a clamp the engine renders frames past
-        **      the end of the TGA list, producing a sprite that flickers
-        **      between idle / damaged / destroyed / blank.
-        **  Setting IdleAnim or ActiveAnim with Count > 0 fires the override.
-        **  ActiveAnim covers the BSTATE_ACTIVE branch used while the building
-        **  is producing (matters for BARR/TENT-class entries where _anims[]
-        **  sets ACTIVE the same way as IDLE).
-        */
+        // TF: IdleAnim*, ActiveAnim* and BuildupAnim* set animation ranges from rules.ini, to cycle an anim the type
+        // lacks or to clamp one that would run past the frames its HD art ships.
         int idle_count = ini.Get_Int(Name(), "IdleAnimCount", -1);
         if (idle_count > 0) {
             int idle_start = ini.Get_Int(Name(), "IdleAnimStart", 0);
@@ -7143,18 +6529,6 @@ bool BuildingTypeClass::Read_INI(CCINIClass& ini)
             int active_rate  = ini.Get_Int(Name(), "ActiveAnimRate", 4);
             Init_Anim(BSTATE_ACTIVE, active_start, active_count, active_rate);
         }
-        // BSTATE_CONSTRUCTION (buildup) override. Required for mod entries
-        // whose TD-Assets MAKE.ZIP has a different frame count than their
-        // Logic= donor's MAKE.SHP. One_Time() can't auto-init these because
-        // MFCD::Retrieve("TDxxxxMAKE.SHP") returns NULL — the SHP isn't in
-        // REDALERT.MIX. So the donor's BSTATE_CONSTRUCTION is inherited
-        // wholesale, and if the donor has fewer MAKE frames than our actual
-        // TGA pack, the buildup plays only the early frames before snapping
-        // to idle (verified 2026-05-21 on TDTMPL: MSLO donor's ~14-frame
-        // buildup truncated our 35-frame temple assembly to just the
-        // fragment-scatter early phase). BuildupAnimRate convention: ~2
-        // ticks/frame matches Rule.BuildupTime * TICKS_PER_MINUTE / count
-        // for typical 20-35 frame MAKE packs.
         int buildup_count = ini.Get_Int(Name(), "BuildupAnimCount", -1);
         if (buildup_count > 0) {
             int buildup_start = ini.Get_Int(Name(), "BuildupAnimStart", 0);
