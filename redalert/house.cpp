@@ -4472,8 +4472,8 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
         }
         break;
 
-    // TF: the Hunter Seeker (OpenTS SUPER_HUNTER_SEEKER) rises beside the Upgrade Centre carrying the
-    // Seeker Control plug and hunts on its own. TS fires it untargeted, so the click only releases it.
+    // TF: the Hunter Seeker (OpenTS SUPER_HUNTER_SEEKER) appears at flight level beside the Upgrade Centre
+    // carrying the Seeker Control plug and hunts on its own. TS fires it untargeted, so the click only releases it.
     case SPC_TS_HUNTSEEK:
         if (SuperWeapon[SPC_TS_HUNTSEEK].Is_Ready()) {
             BuildingClass* host = TF_House_Plug_Host(this, STRUCT_TSSEEK);
