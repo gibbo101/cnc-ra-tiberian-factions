@@ -284,14 +284,12 @@ our TS sprites run to 301 px wide against RA's 228, and a fraction gave the Mk. 
 The Hover MLRS keeps its own float.
 
 **Hover MLRS (TSHVR).**
-- The rack seat is two-part (`Hover_Rack_Seat(hull, rack)` in `udata.cpp`): a projection of the mount
-  (9 px aft, deck height 4, camera vertical factor 6) plus a dialled residual (`_res`) of 2 px at
-  most. `Sonic_Turret_Seat` treats the hover deck lift as 4.5 px, not 4. Facing32 resting diagonals
-  read seat index 3/13/19/29, never 4/12/20/28 (EA's 3D Studio 45° compensation).
-- A draw-side slewed hull facing stops the mount jumping as RA pathing flicks the heading each
-  cell; the rack swings 3 directions a tick so sweeps read as rotation; the seat cancels each pod
-  frame's centroid offset so stationary spins hold within ~1 px.
-- **The 48x48 classic stub is load-bearing:** the eye-dialled seat table was tuned against it.
+- The rack's frames turn about its pivot, and `Hover_Rack_Seat(hull)` in `udata.cpp` puts the pivot
+  on the pad drawn in the hull frame, 12.54 voxels aft. The table is per hull frame drawn
+  (`BodyShape`), from the HD art's README; the rack's own facing adds nothing. The fire point uses
+  the same seat. `Sonic_Turret_Seat` does the same for the Disruptor, 11 classic px aft.
+- A draw-side slewed hull facing stops the rack jumping as RA pathing flicks the heading each
+  cell; the rack swings 3 directions a tick so sweeps read as rotation.
 
 **Mammoth Mk. II (TSHMEC) railgun.** TS has no railgun art: `[MechRailgun]` drives
 `LargeRailgunSys`, a particle system with no `Image=`. Ours is TS's helix maths (the `IsRailgun`
@@ -345,7 +343,7 @@ A unit here is done: no open art, geometry or behaviour work.
 
 | Unit | Notes |
 |---|---|
-| Hover MLRS | 32° render, two-part rack seat, Facing32 resting indices, centroid-pinned spin |
+| Hover MLRS | HD v2: rack on a pad on its back, seated per hull frame |
 | Mammoth Mk. II | railgun from TS's own particle numbers; bay-delivered, capped |
 | Titan | signed off once the fixed 6 px shadow throw replaced the width fraction |
 | Wolverine | cameo, TS firing animation, TSGUN4, canopy dot |

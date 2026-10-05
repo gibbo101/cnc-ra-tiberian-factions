@@ -344,7 +344,7 @@ highest quality the pipeline can produce.** Concretely:
   and is safe to re-run: it strips the old shadow before applying its own,
   preserves body pixels byte-for-byte, and the center-symmetric crop keeps the
   body's on-screen position invariant. Turret frames carry no shadow, which is
-  what keeps TSHVR's dialled rack seats out of its reach.
+  what keeps TSHVR's rack seat out of its reach.
 - **Baked shadows: always the offset-silhouette (`drop_shadow`), never a
   bottom-anchored shape.** Both bottom-anchored recipes tried on the Hover
   MLRS (whole-hull squash at the bbox bottom, then the Mk. II bottom-slice)

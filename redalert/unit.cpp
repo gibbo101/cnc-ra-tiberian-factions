@@ -3031,7 +3031,7 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
                     _rack_disp[rid] = (unsigned char)(_rack_disp[rid] + step);
                     hull = (DirType)_rack_disp[rid];
                 }
-                Class->Hover_Rack_Seat(hull, SecondaryFacing, xx, yy);
+                Class->Hover_Rack_Seat(hull, xx, yy);
             } else {
                 Class->Turret_Adjust(PrimaryFacing, xx, yy);
             }

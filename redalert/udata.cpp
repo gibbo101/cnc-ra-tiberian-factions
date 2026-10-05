@@ -1395,7 +1395,7 @@ UnitTypeClass* UnitTypeClass::As_Pointer(char const* name)
 }
 
 // TS Hover MLRS (UNIT_TSHVR), TS rules [HVR]: a hover tank firing TSHoverMissile from a rocket rack that
-// Hover_Rack_Seat seats per facing (docs/ts-gdi-tree-plan.md).
+// Hover_Rack_Seat seats on the pad on its back.
 static UnitTypeClass const UnitTsHvr(UNIT_TSHVR,
                                      TXT_LTANK,    // NAME: placeholder (RA has no Hover MLRS string; HD display via rules.ini Name=).
                                      "TSHVR",      // NAME: IniName.
@@ -2684,10 +2684,10 @@ void UnitTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
         y += _adjust[index].Y;
         break;
 
-    // TF: per-facing turret seats for the HD units. The draw path calls Hover_Rack_Seat itself with hull and rack
-    // facings apart; a one-facing caller here gets the rack resting on the hull line.
+    // TF: per-facing turret seats for the HD units. The draw path calls Hover_Rack_Seat itself with a slewed hull
+    // facing.
     case UNIT_TSHVR:
-        Hover_Rack_Seat(dir, dir, x, y);
+        Hover_Rack_Seat(dir, x, y);
         break;
 
     case UNIT_TSSONIC:
@@ -2709,45 +2709,32 @@ void UnitTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
     }
 }
 
-// Seats the Hover MLRS rack: its aft mount follows the hull facing and a small art residual follows the rack facing,
-// so the rack stays on its mount while the hull turns or the rack aims (docs/ts-gdi-tree-plan.md).
-void UnitTypeClass::Hover_Rack_Seat(DirType hull, DirType rack, int& x, int& y) const
+// Seats the Hover MLRS rack on the pad drawn in its hull frame, 12.54 voxels aft (classic px per hull frame, from
+// the HD art's README in resources/custom-art/ts-units-hd/tshvr/). The rack frames turn about their own pivot.
+void UnitTypeClass::Hover_Rack_Seat(DirType hull, int& x, int& y) const
 {
-    static const signed char _mount_x[32] = {0,  -2, -3, -5, -5, -7, -8, -9, -9, -8, -7,
-                                             -6, -5, -5, -3, -2, 0,  2,  3,  5,  5,  6,
-                                             7,  8,  9,  8,  8,  7,  5,  5,  3,  2};
-    static const signed char _mount_y[32] = {1,  0,  0,  -1, -1, -2, -3, -4, -6, -7, -8,
-                                             -8, -9, -9, -9, -10, -10, -9, -9, -9, -9, -8,
-                                             -8, -6, -5, -4, -3, -2, -1, -1, 0,  0};
-    static const signed char _res_x[32] = {0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0,
-                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                           0, 0, 0, 0, -1, -1, 0, 0, 0, 0};
-    static const signed char _res_y[32] = {1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-                                           0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0,
-                                           0, -1, -1, 0, 0, 0, 1, 1, 1, 1};
-    int hidx = Dir_To_32(hull);
-    int ridx = Dir_To_32(rack);
-    x += _mount_x[hidx] + _res_x[ridx];
-    y += _mount_y[hidx] + _res_y[ridx];
+    static const signed char _seat[32][2] = {
+        {0, 5},   {2, 5},   {3, 5},   {5, 4},   {6, 4},   {8, 3},   {8, 2},   {9, 1},
+        {9, 0},   {9, -1},  {9, -2},  {8, -3},  {7, -3},  {5, -4},  {4, -4},  {2, -5},
+        {0, -5},  {-2, -5}, {-3, -5}, {-5, -4}, {-6, -4}, {-8, -3}, {-8, -2}, {-9, -1},
+        {-9, 0},  {-9, 1},  {-9, 2},  {-8, 3},  {-7, 3},  {-5, 4},  {-4, 4},  {-2, 5}};
+    int f = TechnoClass::BodyShape[Dir_To_32(hull)];
+    x += _seat[f][0];
+    y += _seat[f][1];
 }
 
-// Seats the Disruptor turret 6 classic px aft of the hull centre (TS TurretOffset=-64): the Hover MLRS mount
-// projection, rescaled from 9 px aft to 6 with the mount's 4.5 px deck lift taken back out.
+// Seats the Disruptor turret 11 classic px aft along the hull, its ring touching the hull's back (classic px per
+// hull frame, from the HD art's README in resources/custom-art/ts-units-hd/tssonic/).
 void UnitTypeClass::Sonic_Turret_Seat(DirType dir, int& x, int& y) const
 {
-    enum { SONIC_SEAT_AFT_PX = 6, HOVER_MOUNT_AFT_PX = 9, SONIC_SEAT_LIFT_PX = 0 };
-    static const signed char _mount_x[32] = {0,  -2, -3, -5, -5, -7, -8, -9, -9, -8, -7,
-                                             -6, -5, -5, -3, -2, 0,  2,  3,  5,  5,  6,
-                                             7,  8,  9,  8,  8,  7,  5,  5,  3,  2};
-    static const signed char _mount_y[32] = {1,  0,  0,  -1, -1, -2, -3, -4, -6, -7, -8,
-                                             -8, -9, -9, -9, -10, -10, -9, -9, -9, -9, -8,
-                                             -8, -6, -5, -4, -3, -2, -1, -1, 0,  0};
-    int i = Dir_To_32(dir);
-    int ax = (_mount_x[i] * SONIC_SEAT_AFT_PX * 2 + (_mount_x[i] < 0 ? -HOVER_MOUNT_AFT_PX : HOVER_MOUNT_AFT_PX)) / (HOVER_MOUNT_AFT_PX * 2);
-    int ay2 = _mount_y[i] * 2 + 9;
-    int ay = (ay2 * SONIC_SEAT_AFT_PX + (ay2 < 0 ? -HOVER_MOUNT_AFT_PX : HOVER_MOUNT_AFT_PX)) / (HOVER_MOUNT_AFT_PX * 2);
-    x += ax;
-    y += ay - SONIC_SEAT_LIFT_PX;
+    static const signed char _seat[32][2] = {
+        {0, 6},    {2, 6},    {4, 5},    {6, 5},    {8, 4},    {9, 3},    {10, 2},   {11, 1},
+        {11, 0},   {11, -1},  {10, -2},  {9, -3},   {8, -4},   {6, -5},   {4, -5},   {2, -6},
+        {0, -6},   {-2, -6},  {-4, -5},  {-6, -5},  {-8, -4},  {-9, -3},  {-10, -2}, {-11, -1},
+        {-11, 0},  {-11, 1},  {-10, 2},  {-9, 3},   {-8, 4},   {-6, 5},   {-4, 5},   {-2, 6}};
+    int f = TechnoClass::BodyShape[Dir_To_32(dir)];
+    x += _seat[f][0];
+    y += _seat[f][1];
 }
 
 /***********************************************************************************************

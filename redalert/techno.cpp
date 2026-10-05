@@ -590,10 +590,11 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
     COORDINATE coord = Coord_Move(centre_art, DIR_N, tclass->VerticalOffset + Height);
     coord = Coord_Move(coord, DIR_E, tclass->HorizontalOffset);
 
-    // TF: the Hover MLRS fires from its rack, drawn aft of the hull centre: 0x60 leptons back along the body
-    // facing, about where the draw seats the rack.
+    // TF: the Hover MLRS fires from its rack, seated on screen where the draw seats it.
     if (What_Am_I() == RTTI_UNIT && ((UnitClass const*)this)->Class->Type == UNIT_TSHVR) {
-        coord = Coord_Move(coord, (DirType)(PrimaryFacing.Current() + DIR_S), 0x0060);
+        int sx = 0, sy = 0;
+        ((UnitClass const*)this)->Class->Hover_Rack_Seat(PrimaryFacing.Current(), sx, sy);
+        coord = XY_Coord(Coord_X(coord) + (sx * CELL_LEPTON_W) / 24, Coord_Y(coord) + (sy * CELL_LEPTON_H) / 24);
     }
 
     // TF: the Titan's cannon is placed per facing in the packed art, so it fires from the per-facing muzzle table
@@ -667,7 +668,7 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
         }
     }
 
-    // TF: the Disruptor's band leaves the horn on its aft-seated turret (TS [SONIC] TurretOffset=-64), worked out
+    // TF: the Disruptor's band leaves the horn on its aft-seated turret (Sonic_Turret_Seat), worked out
     // in screen pixels as the turret is drawn. PrimaryOffset and VerticalOffset are unused for it.
     if (What_Am_I() == RTTI_UNIT && ((UnitClass const*)this)->Class->Type == UNIT_TSSONIC) {
         enum { HORN_FWD_PX = 9, HORN_LIFT_PX = 11, PITCH_PCT = 61 };

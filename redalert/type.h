@@ -1124,7 +1124,7 @@ public:
 
     void Turret_Adjust(DirType dir, int& x, int& y) const;
     void Sonic_Turret_Seat(DirType dir, int& x, int& y) const;
-    void Hover_Rack_Seat(DirType hull, DirType rack, int& x, int& y) const;
+    void Hover_Rack_Seat(DirType hull, int& x, int& y) const;
 
     // True for a mobile construction vehicle of any faction: the stock-campaign pair and the five faction MCVs.
     bool Is_MCV(void) const;
