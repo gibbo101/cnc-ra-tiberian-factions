@@ -13,6 +13,9 @@ the workspace `../CLAUDE.md`.
 - A new subsystem that isn't a method of an EA class goes in its own
   `redalert/tf_<topic>.cpp` / `.h` (listed in `redalert/CMakeLists.txt`). The EA file gets
   a marked call.
+- Existing code of ours moves out only when it is being reworked anyway: a move-only commit
+  first, then the change. Hot per-frame paths (pathfinding, the map export, the draw
+  intercept) stay inline, and a file an open branch is editing waits for that branch.
 
 ## Comments (C++, rules.ini, scripts)
 - A function or method gets a comment on what it is meant to do: two lines at most.
