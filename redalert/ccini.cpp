@@ -1302,16 +1302,8 @@ bool CCINIClass::Put_TerrainType(char const* section, char const* entry, Terrain
  * HISTORY:                                                                                    *
  *   07/11/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-/*
-**	Parses a comma-separated `Prerequisite=` line into a list of BuildingTypes
-**	heap indices written to out[]. Indices may exceed STRUCT_COUNT for mod
-**	entries (TDNUKE etc.) — the 32-bit STRUCTF_* bitmask form this function
-**	used to return silently dropped those because (1L << Type) is undefined
-**	when Type >= 32. Unused slots are filled with -1.
-**
-**	If the entry is missing, out[] is left untouched (preserves caller's
-**	defaults) and the function returns false.
-*/
+// TF: fills out[] with up to max BuildingType indices, then -1, since a 32-bit mask cannot hold types
+// numbered 32 and up. A missing or empty entry leaves out[] untouched and returns false.
 bool CCINIClass::Get_Buildings(char const* section, char const* entry, int* out, int max) const
 {
     char buffer[128];

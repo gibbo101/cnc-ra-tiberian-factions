@@ -1,15 +1,23 @@
-# Per-faction radar crest — SOLVED (2026-09-02)
+# Per-faction radar crest: the RAM lever
 
-The in-game radar-slot crest (shown while the player has no radar building) now follows the
-picked faction: **GDI → TD eagle, Nod → TD scorpion, Allied → RA chevron, Soviet → RA pentagon**. Backdrop follows too (TD plate for GDI/Nod, see below). Verified
-in play across four skirmishes in ONE session (Nod, GDI, Allied, Soviet) with no relaunch; both
-switch directions confirmed in the log. Ships in release builds; logging is `TF_DEV_BUILD`-only.
-Code: `TF_Crest_*` in `redalert/dllinterface.cpp` (`TF_Crest_Tick` driven per frame from
-`CNC_Advance_Instance`; `TF_Patch_ClientG_Crest` at match start only resets the scan window).
+**Status:** Reference; shipped. The per-faction radar crest by RAM patch of ClientG's region
+records.
 
-This reopens and closes the 2026-07-20 wall ("crest is side-keyed in `ClientG.exe`, not moddable"):
-that finding was right on the DATA side and wrong on the RAM side, exactly like the EVA lines
-(`eva-ram-patch-spike.md`).
+The radar-slot crest (shown while the player has no radar building) follows the picked faction:
+GDI the TD eagle, Nod the TD scorpion, TS GDI its own eagle, Allied the RA chevron, Soviet the RA
+pentagon. GDI, Nod and TS GDI play on TD's HUD scene (`faction-select-identity.md`), which picks
+its logo by RA side, so the DLL re-points ClientG's two cached TD-logo records at the faction's
+rect; Allied and Soviet draw RA's stock crests. It reaches every player: on the host the sim's DLL
+patches ClientG across processes, and each launcher's startup-load copy of the DLL patches it for
+its own player (`launcher-vs-dll-ownership.md`, "Launcher-resident patches").
+
+Code: `TF_Crest_*` in `redalert/dllinterface.cpp`. `TF_Crest_Tick` runs every frame from
+`CNC_Advance_Instance`: it re-points known records every fifth frame and requests full heap scans
+on a worker thread (`TF_Crest_Scan_Thread`) at widening gaps over the first ~15 s of a match.
+Logging is `TF_DEV_BUILD`-only.
+
+The crest is side-keyed in ClientG's data, a wall that held on the data side and fell on the RAM
+side, as the EVA lines did (`eva-ram-patch-spike.md`).
 
 ## The mechanism (what actually works)
 
@@ -21,12 +29,14 @@ float v0, u0, wn, hn;   // y/H, x/W, w/W, h/H of the region in MT_COMMANDBAR_COM
 
 The crest quad samples straight from this record every frame (the per-frame vertex buffers carry
 the same UVs). ALLIES = `{1706/6716, 5698/6871, 794/6871, 713/6716}`. There is a persistent
-master copy plus a per-match copy cloned from it (typically 2 records per slot, 4 total). Both
+master copy plus a per-match copy cloned from it (typically 2 records per slot, 4 total). The scans
+stop after the start-of-match burst, because records made later in a match are cloned from the
+master the scan already patched. Both
 TD crests already ship inside the atlas as the never-referenced `UI_SIDEBAR_FACTIONLOGO_GDI`
 (1,1875,718,706) and `_NOD` (3778,2221,660,660) regions. **Re-pointing the ALLIES record's 16
 bytes at the GDI or NOD rect swaps the drawn crest instantly** — no pixel data, no new art.
 
-The DLL (in InstanceServerG) does it cross-process, same infra as the EVA patch:
+The sim's DLL does it cross-process, the same way as the EVA patch (a launcher's own copy of the DLL runs the same scan for its own player):
 `CreateToolhelp32Snapshot` → `ClientG.exe` → `OpenProcess(VM_READ|VM_WRITE|VM_OPERATION)` →
 `VirtualQueryEx` over `MEM_PRIVATE`/`PAGE_READWRITE` regions → 4-byte-aligned needle search for
 any record holding a slot's stock rect or a TD rect → `WriteProcessMemory` of the wanted rect.
@@ -81,7 +91,7 @@ TD's scene draws `UI_SIDEBAR_*` directly. What the crest patch still does under 
 thing: TD's scene chooses its logo by RA side, so for Nod (Allied side) the record holding the
 `UI_SIDEBAR_FACTIONLOGO_GDI` rect is re-pointed at `_NOD` (the patch's two remaining slots).
 The skin table, the under-screen/bezel/rail/plate/power-fill slots, their paint script and the
-table generator were removed the same evening (Luke's sign-off); recover them from git history
+table generator were removed; recover them from git history
 (commit 2b7947fc) if a re-skin of RA's scene is ever wanted. The record below is the method.
 
 ### The RA-scene skin (how it was done before the scene swap)
@@ -118,10 +128,10 @@ patch depends on (pristine RA crests + the DINO eagle) into a shipped atlas.
 - `scripts/crest_atlas_paint.py` — restores the pristine RA crests into a shipped atlas.
 - `TF_Crest_*` in `dllinterface.cpp` — the shipped patch: `TF_Crest_Slots` (what each slot should
   show per faction), `TF_Crest_Full_Scan` (heap walk with a first-word filter, remembers record
-  addresses), `TF_Crest_Reverify` (per-frame cheap re-point of known addresses), `TF_Crest_Tick`
-  (6-frame cadence for the first 450 frames of each match).
+  addresses), `TF_Crest_Reverify` (cheap re-point of known addresses), `TF_Crest_Tick` (the per-frame
+  driver) and `TF_Crest_Scan_Thread` (scans off the game thread).
 
-## Can the launcher HUD gain new buttons? (Luke, 2026-09-02)
+## Can the launcher HUD gain new buttons?
 
 No. This patch only changes which atlas pixels an EXISTING widget samples. The widget set — how
 many buttons, where they sit, their hit-tests and what they do — is compiled `ClientG.exe` code
@@ -131,16 +141,11 @@ means re-skinning and re-arranging RA's widgets, not adding to them.
 
 ## Open / follow-ups
 
-- **Allied and Soviet crests RESTORED (same day):** the shipped atlas had the C&C logo painted
-  into both RA crest regions ("one logo for all"); the pristine 794x713 Allied chevron / Soviet
-  pentagon were byte-copied back from `scripts/cameo_work/MT_COMMANDBAR_COMMON.TGA` (the base
-  atlas) into `resources/.../MT_COMMANDBAR_COMMON.TGA` and the prefix copy (md5 `33780c7a…`),
-  and `scripts/frontend_atlas_build.py` no longer repaints them (`apply_crest = False`).
-  Verified in play: Allied → chevron, Soviet → pentagon. Also learned: **Soviet countries draw
-  the SOVIET slot** (unpatched record), so the routing is GDI/Nod/Allied → ALLIES, Soviet → SOVIET.
-  All four factions now show their own crest with the TD pair re-pointed and the RA pair stock.
-- LAN joiners get their crest too (2026-09-30): the launcher-resident copy of the DLL runs this
-  patch for its own player (`launcher-vs-dll-ownership.md`, "Launcher-resident patches").
+- Allied and Soviet draw the pristine RA crests in the shipped atlas; `scripts/frontend_atlas_build.py`
+  leaves those regions alone (`apply_crest = False`). Soviet countries draw the SOVIET slot.
+- TS GDI's eagle is painted over `UI_OBSERVER_MAP_BG` (TD-mode observer art an RA-mode match
+  never draws), because the atlas had no free region (`scripts/crest_atlas_paint.py`). The atlas
+  can grow instead (`ui-atlas-modding.md`, "Growing the atlas").
 - Live-testing tool: with the game running headless, `/proc/<ClientG pid>/mem` is read/write
   from Bash (same uid), so a hypothesis costs one Python write + one screenshot, no DLL rebuild.
   That is how findings 1 and 3 were established in minutes.

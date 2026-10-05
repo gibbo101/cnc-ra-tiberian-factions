@@ -332,9 +332,9 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
     ResultType res = RESULT_NONE;
 
     /*
-    **	Prone infantry take the warhead's prone share of the damage (TS ProneDamage), or the
-    **	rules' global share from a warhead without one.
+    **	Prone infantry take only half damage, but never below one damage point.
     */
+    // TF: a warhead's own prone share (TS ProneDamage) replaces the rules' global ProneDamageBias.
     if (IsProne && damage > 0) {
         WarheadTypeClass const* whead = WarheadTypeClass::As_Pointer(warhead);
         damage = damage * ((whead != NULL && whead->HasProneDamage) ? whead->ProneDamage : Rule.ProneDamageBias);
@@ -374,11 +374,7 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
         Assign_Mission(MISSION_GUARD);
         Commence();
 
-        /*
-        **	A Tiberium-healing soldier spews Tiberium into its own cell and the four beside it
-        **	when it dies (TS TechnoClass::Take_Damage), each patch a young growth or a little
-        **	more where Tiberium already lies.
-        */
+        // TF: a dying Ghost Stalker spews Tiberium into its cell and the four beside it (TS TechnoClass::Take_Damage).
         if (*this == INFANTRY_TSGHOST) {
             static FacingType const _spew[] = {FACING_N, FACING_E, FACING_S, FACING_W};
             CellClass* center = &Map[Coord_Cell(Center_Coord())];
@@ -398,10 +394,8 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
             }
         }
 
-        /*
-        **	A jumpjet shot down in the air just bursts (TS [General] InfantryExplode=S_BANG34),
-        **	drawn where it was flying: screen-up is map-north, so north by its height.
-        */
+        // TF: a jumpjet shot down in the air bursts (TS InfantryExplode=S_BANG34) where it flew, drawn north by its
+        // height since screen-up is map-north.
         if (Is_Airborne_Jumpjet()) {
             new AnimClass(ANIM_TS_SBANG34, Coord_Move(Coord, DIR_N, Height));
             delete this;
@@ -527,10 +521,8 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
  *=============================================================================================*/
 int InfantryClass::Shape_Number(WindowNumberType window) const
 {
-    /*
-    **	An airborne jumpjet draws TS's flight poses (JumpjetSequence), six frames per facing:
-    **	FireFly (388) while shooting, Fly (292) at speed, Hover (340) otherwise.
-    */
+    // TF: an airborne jumpjet draws TS's flight poses (JumpjetSequence), six frames per facing: FireFly (388)
+    // while shooting, Fly (292) at speed, Hover (340) otherwise.
     if (Is_Airborne_Jumpjet()) {
         int facing = HumanShape[Dir_To_32(PrimaryFacing.Current())] * 6;
         if (IsFiring) {
@@ -638,15 +630,8 @@ void InfantryClass::Draw_It(int x, int y, WindowNumberType window) const
     y += 4;
     x -= 2;
 
-    /*
-    **	An airborne jumpjet's body is lifted by its height (Techno_Draw_Object does the lift).
-    **	Its shadow is the same frame darkened on the ground beneath it, as TS draws an airborne
-    **	infantry's (SHAPE_DARKEN); the helicopter shadow flags make the renderer draw it as a
-    **	shadow. The launcher places the selection box and health bar on the FIRST shape drawn,
-    **	so in the virtual window the body goes first and the shadow follows as its sub-object,
-    **	as a helicopter draws; the classic renderer wants the shadow underneath, so it draws it
-    **	first.
-    */
+    // TF: an airborne jumpjet draws lifted by its height, its shadow a darkened copy on the ground. The launcher
+    // boxes the first shape drawn, so the virtual window draws the body first; the classic renderer, the shadow.
     if (Is_Airborne_Jumpjet()) {
         int lift = Lepton_To_Pixel(Height);
         int body = Shape_Number(window);
@@ -725,9 +710,7 @@ void InfantryClass::Per_Cell_Process(PCPType why)
                 tech = cellptr->Cell_Techno();
             }
             if (tech != NULL && (tech->As_Target() == NavCom || tech->As_Target() == TarCom)) {
-                // Tiberian Factions: TDE6 (GDI/Nod engineer) and the TS Engineer share RA's
-                // engineer capture/renovate execution path. Single-vs-multi capture is
-                // decided by the gate below (td_single).
+                // TF: the TD and TS engineers enter buildings through RA's engineer path (docs/td-port-playbook.md).
                 if (*this == INFANTRY_RENOVATOR || *this == INFANTRY_TDE6 || *this == INFANTRY_TSENGINEER) {
 
                     /*
@@ -741,9 +724,7 @@ void InfantryClass::Per_Cell_Process(PCPType why)
 #else
                     if (tech->House->Is_Ally(House)) {
 #endif
-                        // Tiberian Factions: TD engineers (TDE6) are capture-only — no
-                        // friendly mega-repair (TD-authentic). RA's RENOVATOR and the TS
-                        // Engineer restore a friendly building to full strength.
+                        // TF: the TD engineer only captures; RA's and the TS engineer also restore a friendly building.
                         if (*this == INFANTRY_RENOVATOR || *this == INFANTRY_TSENGINEER) {
                             if (tech->Trigger.Is_Valid()) {
                                 tech->Trigger->Spring(TEVENT_PLAYER_ENTERED, this);
@@ -755,13 +736,8 @@ void InfantryClass::Per_Cell_Process(PCPType why)
                         if (tech->What_Am_I() == RTTI_BUILDING) {
                             iscapturable = tech->Can_Capture();
                         }
-                        // Tiberian Factions: TD-faction engineers (GDI/Nod, ActLike
-                        // GOOD/BAD) capture a building outright in a single use, like TD
-                        // — ignore the health gate. Allied/Soviet engineers keep RA's
-                        // Aftermath multi-engineer capture (damage to ConditionRed, then
-                        // the next engineer takes it). Gate is on the engineer's owner,
-                        // except the TS Engineer, which always captures outright (TS
-                        // EngineerCaptureLevel=1).
+                        // TF: a GDI or Nod house's engineers and the TS Engineer capture outright, whatever the health;
+                        // Allied and Soviet engineers keep RA's multi-engineer capture.
                         bool td_single = (House->ActLike == HOUSE_GOOD || House->ActLike == HOUSE_BAD
                                           || *this == INFANTRY_TSENGINEER);
 #ifdef FIXIT_ENGINEER //	checked - ajw 9/28/98
@@ -1399,24 +1375,8 @@ void InfantryClass::AI(void)
         return;
     }
 
-    /*
-    **	Tiberian Factions -- Tiberium poisons infantry. Classic Tiberian Dawn
-    **	behaviour, absent from Red Alert (ore is harmless) AND from the released
-    **	EA Remastered source, so we recreate it to the well-known design: any
-    **	infantry standing or walking on a TD Tiberium cell loses a little health
-    **	on a slow cadence (~1s, staggered per unit so a squad doesn't tick in
-    **	lockstep). The check is the TIB01 overlay specifically, NOT
-    **	LAND_TIBERIUM -- RA's Ore and Gems are engine-Tiberium too and must stay
-    **	harmless (first-playtest bug: ore fields poisoned infantry). The
-    **	Harvester and the unit-type Visceroid are inherently immune because this
-    **	only hooks infantry. Tunable: the cadence mask and the damage value.
-    */
-    /*
-    **	The Ghost Stalker is TiberiumProof and TiberiumHeal: Tiberium never hurts it, and
-    **	while it stands in Tiberium below full health it regains a point every 0.6 seconds
-    **	(TS [General] TiberiumHeal=.010 minutes, 9 ticks), snapping to full once past the
-    **	green threshold as TS does.
-    */
+    // TF: the Ghost Stalker heals in Tiberium (TS TiberiumHeal=.010 minutes): a point every 9 frames below green
+    // health, snapping to full once past it. Tiberium never hurts him.
     if (*this == INFANTRY_TSGHOST && In_Which_Layer() == LAYER_GROUND && !IsInLimbo
         && Map[Coord_Cell(Coord)].Overlay == OVERLAY_TIB01 && Strength > 0
         && Health_Ratio() < Rule.ConditionGreen && ((Frame + ID) % 9) == 0) {
@@ -1427,14 +1387,11 @@ void InfantryClass::AI(void)
         Mark(MARK_CHANGE);
     }
 
+    // TF: TD's Tiberium (TIB01; ore and gems stay harmless) poisons infantry every 50 frames, staggered by ID.
+    // One in a hundred it kills rises as a Visceroid hostile to all (docs/tiberium-ecosystem.md).
     if (In_Which_Layer() == LAYER_GROUND && !IsInLimbo && *this != INFANTRY_TSGHOST
         && Map[Coord_Cell(Coord)].Overlay == OVERLAY_TIB01) {
-        if (((Frame + ID) % 50) == 0) { // TD-calibrated: ~28 tiles to kill a minigunner
-            // Magnitude isn't in the released EA source, so these are the tuning
-            // dials, calibrated against the real TD game where a minigunner
-            // survives ~28 tiles of Tiberium. Tiles-survived scales as
-            // interval/damage; our first pass (every 16 frames, dmg 2) killed in
-            // ~9 tiles, so every 50 frames at dmg 2 (~3.1x gentler) ~= 28 tiles.
+        if (((Frame + ID) % 50) == 0) {
             CELL deathcell = Coord_Cell(Coord);
             int damage = 2;
             ResultType res = Take_Damage(damage, 0, WARHEAD_SA, NULL, false);
@@ -1454,24 +1411,15 @@ void InfantryClass::AI(void)
             }
 #endif
             if (res == RESULT_DESTROYED) {
-                // Tiberian Factions -- classic TD: ~1% of infantry that die IN
-                // Tiberium mutate into a Visceroid. (Was 100% during testing.)
                 if (Random_Pick(0, 99) != 0) {
                     return;
                 }
-                // Hostile-to-all: like TD, Visceroids belong to HOUSE_JP (the
-                // "creatures" house), at war with everyone. RA skirmish only
-                // creates the playing houses via GlyphX_Assign_Houses, so JP
-                // doesn't exist -- create it on first spawn and put it at war
-                // with every active house (Make_Enemy is mutual via the loop).
-                // Players can't control it (not their house) AND will auto-target
-                // it (not their ally), unlike NEUTRAL which every house allies.
                 HouseClass* jp = HouseClass::As_Pointer(HOUSE_JP);
                 if (jp == NULL) {
                     jp = new HouseClass(HOUSE_JP);
                     if (jp != NULL) {
                         jp->IsActive = true;
-                        jp->Make_Ally(HOUSE_JP); // don't attack other Visceroids
+                        jp->Make_Ally(HOUSE_JP);
                         for (HousesType h = HOUSE_FIRST; h < HOUSE_COUNT; h++) {
                             if (h == HOUSE_JP) {
                                 continue;
@@ -1490,16 +1438,9 @@ void InfantryClass::AI(void)
                 bool alloc = (vice != NULL);
                 bool placed = false;
                 if (vice != NULL) {
-                    // The dying infantry still occupies the death cell (it lingers
-                    // in a death animation -- the log showed active=1 at res=4), so
-                    // a direct Unlimbo there fails. Scan_Place_Object finds the
-                    // nearest free cell and places the Visceroid there instead.
+                    // The dying soldier still holds its cell, so Unlimbo there fails; use the nearest free cell.
                     placed = Scan_Place_Object(vice, deathcell) != 0;
                     if (placed) {
-                        // Scan_Place_Object only unlimboes the unit; without an
-                        // explicit mission it idles and merely scatters a tile now
-                        // and then. Kick it into HUNT so it actively roams toward
-                        // and attacks targets (it's HOUSE_JP, hostile to all).
                         vice->Assign_Mission(MISSION_HUNT);
                         vice->Commence();
                     } else {
@@ -1684,10 +1625,8 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType) const
                 return (MOVE_NO);
             }
 
-            /*
-            **	Gate: its owner and allies path through it shut or open (it opens as they reach it,
-            **	TF_Gate_Lets_Through); anyone else only while it stands open.
-            */
+            // TF: allies path through a gate shut or open (TF_Gate_Lets_Through opens it as they reach it); anyone else
+            // only while it stands open.
             if (obj->What_Am_I() == RTTI_BUILDING && TF_Gate_Info(((BuildingClass*)obj)->Class->Type) != NULL
                 && (((BuildingClass*)obj)->House->Is_Ally(House) || ((BuildingClass*)obj)->Is_Gate_Open())) {
                 obj = obj->Next;
@@ -2044,10 +1983,8 @@ FireErrorType InfantryClass::Can_Fire(TARGET target, int which) const
  *=============================================================================================*/
 COORDINATE InfantryClass::Fire_Coord(int which) const
 {
-    /*
-    **	The Ghost Stalker's railgun leaves the barrel as drawn on each facing, standing and
-    **	prone (muzzle table measured off the TS fire frames by scripts/ts_ghost_fire_points.py).
-    */
+    // TF: the Ghost Stalker's railgun leaves the barrel as drawn on each facing, standing and prone (muzzle table
+    // from scripts/ts_ghost_fire_points.py).
     if (*this == INFANTRY_TSGHOST) {
         short const* muzzle = _tsghost_muzzle[IsProne ? 1 : 0][HumanShape[Dir_To_32(PrimaryFacing.Current())]];
         COORDINATE center = Center_Coord();
@@ -2147,13 +2084,8 @@ void InfantryClass::Enter_Idle_Mode(bool)
             }
         }
     }
-    /*
-    **	Attack-move (CFE port): infantry settle into GUARD at the end of an idle
-    **	transition, so the Mission_Move reset path never runs for them -- hence
-    **	this hack. Fall out of attack-move if we forgot the destination, arrived
-    **	(or got close), or can no longer reach it (zone check stands in for CFE's
-    **	Find_Path_AStar until the A* port lands); otherwise resume moving.
-    */
+    // TF: attack-move (CFE port). Infantry idle into GUARD without passing Mission_Move's reset, so here they drop
+    // attack-move once the destination is lost, reached or out of their zone, and otherwise move on.
     if ((order == MISSION_GUARD) && AttackMove) {
         if (!Target_Legal(RememberedNavCom) || (Distance(RememberedNavCom) < Rule.CloseEnoughDistance)
             || !Is_In_Same_Zone(As_Cell(RememberedNavCom))) {
@@ -2298,9 +2230,7 @@ void InfantryClass::Scatter(COORDINATE threat, bool forced, bool nokidding)
     assert(Infantry.ID(this) == ID);
     assert(IsActive);
 
-    /*
-    **	An airborne jumpjet has no ground path to scatter along.
-    */
+    // TF: an airborne jumpjet has no ground path to scatter along.
     if (Is_Airborne_Jumpjet()) {
         return;
     }
@@ -2628,10 +2558,7 @@ bool InfantryClass::Limbo(void)
     if (!IsInLimbo) {
         Stop_Driver();
 
-        /*
-        **	An airborne jumpjet holds no sub-cell spot of its own, only the one it reserved to
-        **	land on.
-        */
+        // TF: an airborne jumpjet holds no sub-cell spot of its own, only the one it reserved to land on.
         if (Is_Airborne_Jumpjet()) {
             if (JumpjetLanding != 0) {
                 Clear_Occupy_Bit(JumpjetLanding);
@@ -2811,9 +2738,9 @@ TARGET InfantryClass::Greatest_Threat(ThreatType threat) const
     }
 
     /*
-    **	Human controlled infantry don't automatically fire upon buildings --
-    **	except in attack-move mode, where buildings are fair game (CFE port).
+    **	Human controlled infantry don't automatically fire upon buildings.
     */
+    // TF: except on attack-move (CFE port), where buildings are fair game.
     if (Is_Weapon_Equipped() && House->IsHuman && !AttackMove) {
         threat = threat & ~THREAT_BUILDINGS;
     }
@@ -2871,15 +2798,13 @@ void InfantryClass::Response_Select(void)
         Sound_Effect(response, fixed(1), ID + 1);
 
     } else {
-        // Tiberian Factions: TD Commando (TDRMBO) speaks its iconic RAMBO one-liners,
-        // checked before the generic GDI/Nod intercept so it gets its own voice set.
-        // Single-take CMD voices (IN_NOVAR) -> RAC/RAR_SFX_TD<NAME>. Select = ready/ack.
+        // TF: TD Commando (TDRMBO) RAMBO one-liners, ahead of the GDI/Nod voices below. Select = ready/ack.
         if (*this == INFANTRY_TDRMBO) {
             static VocType _cmd_select[] = {VOC_TD_CMD_YO, VOC_TD_CMD_YES, VOC_TD_CMD_YEAH, VOC_TD_CMD_ONIT};
             Sound_Effect(_cmd_select[Sim_Random_Pick(0, ARRAY_SIZE(_cmd_select) - 1)], fixed(1), ID + 1);
             return;
         }
-        // Tiberian Factions: the TS Engineer, Medic and Ghost Stalker answer in the voice sets
+        // TF: the TS Engineer, Medic and Ghost Stalker answer in the voice sets
         // TS gives them (19, 20 and 14), whoever owns them. Select = each set's VoiceSelect.
         if (*this == INFANTRY_TSENGINEER) {
             static VocType _v[] = {VOC_TS_19I000, VOC_TS_19I002, VOC_TS_19I006};
@@ -2896,10 +2821,7 @@ void InfantryClass::Response_Select(void)
             Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
             return;
         }
-        // Tiberian Factions: GDI/Nod (HOUSE_GOOD/HOUSE_BAD) generic infantry use
-        // the TD passive select voices ("yes sir / reporting / awaiting orders /
-        // ready"). Special RA units (Tanya, dog, ...) aren't in their roster, so
-        // a blanket faction check here is safe. Order voices: Response_Move/Attack.
+        // TF: a GDI or Nod player's infantry answer with TD's passive select voices.
         if (PlayerPtr->ActLike == HOUSE_GOOD || PlayerPtr->ActLike == HOUSE_BAD) {
             static VocType _td_select[] = {VOC_YESSIR, VOC_REPORT, VOC_AWAIT, VOC_READY};
             Sound_Effect(_td_select[Sim_Random_Pick(0, ARRAY_SIZE(_td_select) - 1)],
@@ -3031,14 +2953,14 @@ void InfantryClass::Response_Move(void)
         Sound_Effect(response, fixed(1), ID + 1);
 
     } else {
-        // Tiberian Factions: TD Commando (TDRMBO) RAMBO one-liners — move = confirmations.
+        // TF: TD Commando (TDRMBO) RAMBO one-liners — move = confirmations.
         if (*this == INFANTRY_TDRMBO) {
             static VocType _cmd_move[] = {VOC_TD_CMD_GOTIT, VOC_TD_CMD_NOPROB, VOC_TD_CMD_KEEPEM,
                                           VOC_TD_CMD_CMON, VOC_TD_CMD_LEFTY};
             Sound_Effect(_cmd_move[Sim_Random_Pick(0, ARRAY_SIZE(_cmd_move) - 1)], fixed(1), ID + 1);
             return;
         }
-        // Tiberian Factions: TS Engineer / Medic / Ghost Stalker move = each set's VoiceMove.
+        // TF: TS Engineer / Medic / Ghost Stalker move = each set's VoiceMove.
         if (*this == INFANTRY_TSENGINEER) {
             static VocType _v[] = {VOC_TS_19I010, VOC_TS_19I016};
             Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
@@ -3054,8 +2976,7 @@ void InfantryClass::Response_Move(void)
             Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
             return;
         }
-        // Tiberian Factions: GDI/Nod move-order voices (active confirmations,
-        // including "movin' out"). See Response_Select for rationale.
+        // TF: GDI/Nod move-order voices (active confirmations, including "movin' out").
         if (PlayerPtr->ActLike == HOUSE_GOOD || PlayerPtr->ActLike == HOUSE_BAD) {
             static VocType _td_move[] = {VOC_ACKNOWL, VOC_AFFIRM, VOC_RIGHT_AWAY,
                                          VOC_ROGER, VOC_UGOTIT, VOC_NO_PROB, VOC_TD_MOVEOUT};
@@ -3194,14 +3115,14 @@ void InfantryClass::Response_Attack(void)
         Sound_Effect(response, fixed(1), ID + 1);
 
     } else {
-        // Tiberian Factions: TD Commando (TDRMBO) RAMBO one-liners — attack = aggressive.
+        // TF: TD Commando (TDRMBO) RAMBO one-liners — attack = aggressive.
         if (*this == INFANTRY_TDRMBO) {
             static VocType _cmd_attack[] = {VOC_TD_CMD_ROCK, VOC_TD_CMD_BOMBIT, VOC_TD_CMD_YELL,
                                             VOC_TD_CMD_LAUGH, VOC_TD_CMD_TUFF};
             Sound_Effect(_cmd_attack[Sim_Random_Pick(0, ARRAY_SIZE(_cmd_attack) - 1)], fixed(1), ID + 1);
             return;
         }
-        // Tiberian Factions: TS Engineer / Medic / Ghost Stalker attack = each set's VoiceAttack.
+        // TF: TS Engineer / Medic / Ghost Stalker attack = each set's VoiceAttack.
         if (*this == INFANTRY_TSENGINEER) {
             static VocType _v[] = {VOC_TS_19I018, VOC_TS_19I016};
             Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
@@ -3217,8 +3138,7 @@ void InfantryClass::Response_Attack(void)
             Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
             return;
         }
-        // Tiberian Factions: GDI/Nod attack-order voices (active confirmations,
-        // no "movin' out"). See Response_Select for rationale.
+        // TF: GDI/Nod attack-order voices (active confirmations, no "movin' out").
         if (PlayerPtr->ActLike == HOUSE_GOOD || PlayerPtr->ActLike == HOUSE_BAD) {
             static VocType _td_attack[] = {VOC_ACKNOWL, VOC_AFFIRM, VOC_RIGHT_AWAY,
                                            VOC_ROGER, VOC_UGOTIT, VOC_NO_PROB};
@@ -3358,9 +3278,7 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
         BuildingClass const* bldg = (BuildingClass*)object;
         if (bldg->Class->IsRepairable) {
             if (House->Is_Ally(bldg)) {
-                // Tiberian Factions: RA's RENOVATOR and the TS Engineer mega-repair friendly
-                // buildings; TD engineers (TDE6) are capture-only. Fall through to the default
-                // action for a TDE6 over a friendly building (no repair cursor).
+                // TF: the TD engineer only captures, so over a friendly building it keeps the default action.
                 if (*this == INFANTRY_RENOVATOR || *this == INFANTRY_TSENGINEER) {
                     if (bldg->Health_Ratio() == 1) {
                         return (ACTION_NO_GREPAIR);
@@ -3370,9 +3288,7 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
             } else {
 
                 if (bldg->Can_Capture()) {
-                    // Tiberian Factions: TD-faction engineers (GDI/Nod) always show the
-                    // capture cursor — they take a building in one use. Allied/Soviet keep
-                    // the health-gated capture-vs-damage cursor (multi-engineer).
+                    // TF: a GDI or Nod house's engineers capture in one use, so they always show the capture cursor.
                     bool td_single = (House->ActLike == HOUSE_GOOD || House->ActLike == HOUSE_BAD);
 #ifdef FIXIT_ENGINEER //	checked - ajw 9/28/98
                     if (td_single || bldg->Health_Ratio() <= EngineerCaptureLevel) {
@@ -3421,7 +3337,7 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
             }
 #endif
             if (!object->Is_Techno() || !((TechnoClass*)object)->Techno_Type_Class()->Max_Passengers()) {
-                // Attack-move (CFE port): treat attack-move the same as move here.
+                // TF: attack-move (CFE port) is treated the same as move here.
                 if (action == ACTION_GUARD_AREA || action == ACTION_MOVE || action == ACTION_ATTACKMOVE) {
                     return (action);
                 }
@@ -3474,10 +3390,7 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
         StructType blah = *((BuildingClass*)object);
         if (blah == STRUCT_AVMINE || blah == STRUCT_APMINE || blah == STRUCT_TSDLIMP
             || ((BuildingClass*)object)->Is_Open_Firestorm_Section()) {
-            /*
-            **	Attack-move (CFE port): needed here so we can attack-move onto cells
-            **	the InfantryClass level makes movable (e.g. landmines).
-            */
+            // TF: attack-move (CFE port) onto cells only infantry may move onto, such as mines.
             if (Is_Owned_By_Player() && Techno_Type_Class()->PrimaryWeapon != NULL
                 && DLL_Export_Get_Input_Key_State(KN_LSHIFT)) {
                 return (ACTION_ATTACKMOVE);
@@ -3487,9 +3400,7 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
         }
     }
 
-    /*
-    **	A click on a gate the soldier may pass through is a move order onto it.
-    */
+    // TF: a click on a gate the soldier may pass through is a move order onto it.
     if ((action == ACTION_NONE || action == ACTION_SELECT) && object->What_Am_I() == RTTI_BUILDING
         && TF_Gate_Info(((BuildingClass*)object)->Class->Type) != NULL && House->Is_Ally(object)) {
         return (ACTION_MOVE);
@@ -3504,17 +3415,6 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
 
     /*
     **	Check to see if it can enter a transporter.
-    **	Tiberian Factions: exclude ONLY action == ACTION_ATTACK so Ctrl-force-fire
-    **	on the player's own building/transport is preserved instead of being
-    **	demoted to ACTION_ENTER (or ACTION_NO_ENTER -- the red-circle cursor when
-    **	RADIO_CAN_LOAD returns NEGATIVE for buildings like TDFIX). The earlier
-    **	`action == ACTION_SELECT` form was too strict: FootClass::What_Action
-    **	returns ACTION_SELECT for a SAME-house techno but ACTION_NONE for an
-    **	ALLIED (different-house) one, so it silently blocked the enter cursor for
-    **	e.g. Tanya boarding a campaign evac transport owned by an allied house
-    **	(the mission Chinook is HOUSE_GOOD, the player is Greece). Excluding just
-    **	ACTION_ATTACK keeps the force-fire fix and restores vanilla enter for every
-    **	other hover state. Mirrors unit.cpp + aircraft.cpp.
     */
 #if 0 // TF ENTERCHK -- why does a transport refuse a passenger (Tanya evac diag). Flip to TF_DEV_BUILD to re-enable.
     if (object != NULL && object->Is_Techno() && object->What_Am_I() == RTTI_AIRCRAFT && Is_Owned_By_Player()) {
@@ -3538,6 +3438,7 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
         }
     }
 #endif
+    // TF: a force-fire on an allied transport or building stays a force-fire, never an enter order.
     if (House->Is_Ally(object) && House->IsPlayerControl && action != ACTION_ATTACK && object->Is_Techno()) {
 #ifdef FIXIT_CARRIER //	checked - ajw 9/28/98
         if (object->What_Am_I() != RTTI_VESSEL || *(VesselClass*)object != VESSEL_CARRIER) {
@@ -3851,7 +3752,7 @@ ActionType InfantryClass::What_Action(CELL cell) const
     /*
     **	Demolitioners may destroy a bridge
     */
-    // Attack-move (CFE port): demolitioners can attack-move on the way to a bridge.
+    // TF: demolitioners can attack-move (CFE port) on the way to a bridge.
     if (Class->IsBomber && (action == ACTION_MOVE || action == ACTION_ATTACKMOVE) && !Special.IsCaptureTheFlag) {
         switch (Map[cell].TType) {
         case TEMPLATE_BRIDGE1:
@@ -4494,13 +4395,8 @@ void InfantryClass::Doing_AI(void)
     }
 }
 
-/*
-**	Should this jumpjet fly to the target rather than walk (TS InfantryClass::Should_JumpJet_Fly)?
-**	One already in the air stays in the air. On the ground it flies to a destination it cannot
-**	walk to. Otherwise it walks to a neighbouring cell, flies twelve or more cells or off the
-**	visible map, and in between flies only when the walk is longer than fifteen steps or no
-**	walk exists (TS Test_Cell_Walk).
-*/
+// Whether the jumpjet flies to a target rather than walks (TS Should_JumpJet_Fly). It always flies once airborne,
+// walks a cell or less, and flies 12+ cells, off the map, or where the walk is missing or over 15 steps.
 bool InfantryClass::Jumpjet_Should_Fly(TARGET target) const
 {
     if (Is_Airborne_Jumpjet()) {
@@ -4525,16 +4421,13 @@ bool InfantryClass::Jumpjet_Should_Fly(TARGET target) const
     return (walk == 0 || walk > 15);
 }
 
-/*
-**	Sets the jumpjet's height and slides it a distance along a heading. MARK_UP before and
-**	MARK_DOWN after keep its cell registration right (FootClass::Mark only touches the cell
-**	lists in the ground layer); its map-layer registration moves with it when the height
-**	crosses between the ground and top layers; and it looks about whenever it enters a new
-**	cell, as walking infantry do.
-*/
+// Sets the jumpjet's height and slides it a distance along a heading, keeping its cell and layer registration;
+// it looks about on entering a new cell, as walking infantry do.
 void InfantryClass::Jumpjet_Move(int height, int distance, DirType heading)
 {
     CELL oldcell = Coord_Cell(Coord);
+    // Height changes only between MARK_UP and MARK_DOWN (FootClass::Mark touches cell lists only in the ground
+    // layer), and a layer change re-submits it, or the map keeps stale cell and layer entries.
     Mark(MARK_UP);
     LayerType layer = In_Which_Layer();
     Height = height;
@@ -4554,22 +4447,8 @@ void InfantryClass::Jumpjet_Move(int height, int distance, DirType heading)
     }
 }
 
-/*
-**	TS's jumpjet locomotor (OpenTS jumpjet.cpp), run in place of infantry movement while the
-**	jumpjet is in the air or about to take off. Returns whether it handled movement this tick.
-**
-**	Grounded: a move it would rather fly than walk lifts it off, giving up its sub-cell spot.
-**	Ascending: it climbs to cruise height, setting off once a quarter of the way up.
-**	Hovering: it holds station while it has a target, sets off when given somewhere else to be,
-**	and otherwise comes down. Cruising: it flies at its destination, easing to half speed inside
-**	two cells and to three tenths inside one; on arrival it hovers if it has a target and comes
-**	down if not. Descending: it reserves a free spot beneath it, drifts over it and settles,
-**	becoming ordinary infantry again; a destination a cell or more away sends it back up. While
-**	hovering or cruising it bobs about its flight level, which drops to three quarters of cruise
-**	height over the last cell when it has no target. Speed follows TS's step (see below), and
-**	it flies along its own turning facing, curving round to its heading, except while firing
-**	and while drifting onto its landing spot.
-*/
+// TS's jumpjet locomotor (OpenTS jumpjet.cpp), run in place of infantry movement while the jumpjet flies or takes
+// off: climb, hover, cruise, descend and land. Returns whether it handled movement this tick.
 bool InfantryClass::Jumpjet_AI(void)
 {
 #if TF_DEV_BUILD
@@ -4649,10 +4528,6 @@ bool InfantryClass::Jumpjet_AI(void)
             break;
         }
 
-        /*
-        **	Reserve the spot to come down on: the closest free one in this cell, or in the
-        **	nearest cell a soldier can stand in when this one is taken or impassable.
-        */
         if (JumpjetLanding == 0) {
             CELL cell = Coord_Cell(Coord);
             COORDINATE spot = (Can_Enter_Cell(cell) == MOVE_OK) ? Map[cell].Closest_Free_Spot(Coord) : 0;
@@ -4676,9 +4551,6 @@ bool InfantryClass::Jumpjet_AI(void)
         }
         height = max(height - (int)JUMPJET_CLIMB, 0);
 
-        /*
-        **	Touch down on the reserved spot and rejoin the ground as ordinary infantry.
-        */
         if (height == 0 && dist <= 8) {
             JumpjetSpeed = 0;
             Mark(MARK_UP);
@@ -4717,11 +4589,6 @@ bool InfantryClass::Jumpjet_AI(void)
     }
 #endif
 
-    /*
-    **	The hover bob (TS Movement_AI): the height eases toward the flight level plus a sine of the
-    **	wobble deviation, one cycle every JUMPJET_WOBBLE_TICKS, and the cycle starts over whenever
-    **	it stops hovering or cruising.
-    */
     if (JumpjetState == JJ_HOVERING || JumpjetState == JJ_CRUISING) {
         JumpjetWobble++;
         int bob = level + (int)(sin(JumpjetWobble * (2.0 * 3.14159265) / JUMPJET_WOBBLE_TICKS) * JUMPJET_WOBBLE);
@@ -4730,12 +4597,6 @@ bool InfantryClass::Jumpjet_AI(void)
         JumpjetWobble = 0;
     }
 
-    /*
-    **	TS's speed step: under the speed it wants it gains the acceleration, up to its top
-    **	speed, and over it it sheds one and a half times that, down to a stop; both can happen in
-    **	one tick. Outside the destination cell and still low on its climb, it loses a tenth of its
-    **	speed below half its flight level and another tenth below a quarter.
-    */
     if (want > JumpjetSpeed) {
         JumpjetSpeed = min((int)JumpjetSpeed + (int)JUMPJET_ACCEL, (int)JUMPJET_MAX_SPEED);
     }
@@ -4793,10 +4654,7 @@ void InfantryClass::Movement_AI(void)
         Enter_Idle_Mode();
     }
 
-    /*
-    **	A jumpjet's flight takes over its movement while it is in the air, or once it has been
-    **	sent somewhere it would rather fly than walk.
-    */
+    // TF: a jumpjet's flight takes over its movement while airborne, or once sent where it would rather fly.
     if (Is_Jumpjet() && Jumpjet_AI()) {
         return;
     }
@@ -4880,10 +4738,7 @@ void InfantryClass::Movement_AI(void)
                     }
                     if (!Basic_Path()) {
 
-                        /*
-                        **	No-progress bookkeeping (TF) -- exactly one update per failure.
-                        **	The verdict is used further down in more than one branch.
-                        */
+                        // TF: the no-progress verdict, taken once per path failure and shared by the branches below.
                         bool tf_no_progress = TF_Path_No_Progress(TICKS_PER_SECOND * 8);
 
                         /*
@@ -4893,15 +4748,8 @@ void InfantryClass::Movement_AI(void)
                         **	assign a new one.
                         */
                         if (!House->IsHuman && Mission == MISSION_HUNT) {
-                            /*
-                            **	TF: this abort re-picks on the very next hunt scan, and with
-                            **	every reachable target gone the scan keeps handing back
-                            **	unreachable prey -- a full-rate repath storm (measured in the
-                            **	hundreds per unit per match). Once the unit is provably stuck,
-                            **	throttle the re-pick with the engine's own scan limiter: the
-                            **	next scan considers only in-range targets, and lifts itself
-                            **	when it finds none (FootClass::Greatest_Threat).
-                            */
+                            // TF: a provably stuck hunter is scan-limited, so its next pick is a target in range
+                            // (FootClass::Greatest_Threat lifts the limit when it finds none).
                             if (tf_no_progress) {
                                 IsScanLimited = true;
                                 if (Team.Is_Valid()) {
@@ -4957,17 +4805,8 @@ void InfantryClass::Movement_AI(void)
                                         Assign_Target(TARGET_NONE);
                                     }
 
-                                    /*
-                                    **	No-progress abort (Tiberian Factions). The zone test above
-                                    **	misses two whole families of doomed destination: anything
-                                    **	walled off by buildings (zones ignore buildings, so it reads
-                                    **	"same zone" while being unreachable) and a destination equal
-                                    **	to our own cell (always its own zone). Both retry forever at
-                                    **	~4 attempts/second. If paths have been failing from this cell
-                                    **	for a sustained window, no zone argument can save the order --
-                                    **	drop it. Keep a target we can already shoot from here;
-                                    **	movement is not needed to be useful.
-                                    */
+                                    // TF: give up an order whose paths keep failing from this cell, which the zone test
+                                    // misses (docs/path-failure-livelock-design.md); a target out of range goes too.
                                     if (Target_Legal(NavCom) && tf_no_progress) {
 #if TF_DEV_BUILD
                                         {
@@ -4995,11 +4834,6 @@ void InfantryClass::Movement_AI(void)
 #endif
                                         Assign_Destination(TARGET_NONE);
                                         if (Target_Legal(TarCom) && !In_Range(TarCom)) {
-                                            /*
-                                            **	Same scan-limit throttle as the vehicle abandon
-                                            **	branch: stop the next target scan from handing
-                                            **	back the unreachable prey we just gave up on.
-                                            */
                                             IsScanLimited = true;
                                             if (Team.Is_Valid()) {
                                                 Team->Scan_Limit();
@@ -5024,10 +4858,7 @@ void InfantryClass::Movement_AI(void)
                 COORDINATE acoord = Adjacent_Cell(Coord, Path[0]);
                 CELL acell = Coord_Cell(acoord);
 
-                /*
-                **	A friendly gate ahead opens as the soldier reaches it; he holds, keeping his
-                **	path, until the door is fully up.
-                */
+                // TF: a friendly gate ahead opens as the soldier reaches it; he holds his path until the door is up.
                 if (Can_Enter_Cell(acell) == MOVE_OK && !TF_Gate_Lets_Through(this, acell)) {
                     Stop_Driver();
 

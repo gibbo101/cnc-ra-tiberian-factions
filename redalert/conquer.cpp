@@ -2807,13 +2807,8 @@ void CC_Draw_Shape(const ObjectClass* object,
     CC_Draw_Shape(shapefile, shapenum, x, y, window, flags, fadingdata, ghostdata, rotation);
 }
 
-/*
-**  Tiberian Factions mod: line-draw routing. Ported from TD
-**  (tiberiandawn/conquer.cpp:2602-2611). In Remastered mode, hands off
-**  the line geometry to the launcher via DLL_Draw_Line_Intercept (which
-**  appends to the current draw-object's Lines[] array). In classic mode,
-**  draws directly to the LogicPage. Used by the Obelisk laser-beam render.
-*/
+// Draws a line, through the launcher (DLL_Draw_Line_Intercept) in Remastered or onto LogicPage in classic. Ported
+// from TD's conquer.cpp; the laser beams draw with it.
 extern void DLL_Draw_Line_Intercept(int x, int y, int x1, int y1, unsigned char color, int frame);
 
 void CC_Draw_Line(int x, int y, int x1, int y1, unsigned char color, int frame, WindowNumberType window)

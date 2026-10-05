@@ -270,10 +270,8 @@ public:
                                    const char* shape_file_name = NULL,
                                    char override_owner = HOUSE_NONE);
     static void DLL_Draw_Pip_Intercept(const ObjectClass* object, int pip);
-    // Tiberian Factions mod: ported from tiberiandawn/dllinterface.cpp. RA's
-    // DLL didn't expose line drawing to the launcher (only TD did), but the
-    // launcher's CNCObjectStruct already has Lines[]/NumLines fields. Needed
-    // for the TD Obelisk laser-beam render (techno.cpp BULLET_LASER branch).
+    // TF: line drawing, ported from TD's DLL: the launcher reads CNCObjectStruct's Lines[] for RA too. Beam
+    // weapons such as the Obelisk's laser draw through it.
     static void DLL_Draw_Line_Intercept(int x, int y, int x1, int y1, unsigned char color, int frame);
     static bool Place(uint64 player_id, int buildable_type, int buildable_id, short cell_x, short cell_y);
     static bool Cancel_Placement(uint64 player_id, int buildable_type, int buildable_id);
@@ -511,69 +509,40 @@ int MPlayerStartLocations[MAX_PLAYERS];
 extern FILE* TF_AI_Diag_File(void);
 #endif
 
-// Tiberian Factions -- number of human players in the current match, set by
-// CNC_Set_Multiplayer_Data. Used to keep AI difficulty deterministic in
-// multiplayer: with 2+ humans every peer must derive the same AI IQ or the
-// lockstep sim desyncs, so the per-machine difficulty lever (tf_ai_difficulty.txt)
-// is ignored and all peers fall to the built-in default. See
-// docs/lobby-difficulty-ram-spike.md (host-broadcast design supersedes this guard).
+// Human players in this match, set by CNC_Set_Multiplayer_Data. The ambiguity resolver sizes the lobby array
+// by it and finds the array's base by it, as human records precede the AI ones.
 int TF_HumanPlayerCount = 1;
 
-// Tiberian Factions -- lobby AI slot number per multiplayer house (index =
-// house - HOUSE_MULTI1, value = n from the client's "AIPLAYERn" slot name,
-// 0 = none). The house-assign loop replaces the AI houses' IniName with the
-// "Computer" display name, so the slot key is captured here before it is lost;
-// the per-slot difficulty read in CNC_Set_Difficulty keys off it.
+// Lobby AI slot n (from "AIPLAYERn") per multiplayer house, index house - HOUSE_MULTI1, 0 = none. Captured in
+// GlyphX_Assign_Houses before IniName becomes "Computer"; the per-slot difficulty keys off it.
 static int TF_AILobbySlotByHouse[MAX_PLAYERS];
 
-// Per-slot lobby AI difficulty RAM scan (see the block above CNC_Set_Difficulty).
+// Per-slot lobby AI difficulty: ClientG's AIPLAYERn record layout (docs/lobby-difficulty-ram-spike.md).
 #define TF_LOBBY_MAX_AI_SLOTS 16
 #define TF_LOBBY_RECORD_STRIDE 0xA8
-/*
-**	+0x50 is the slot's TEAM (DontCryJustDie, 2026-07-22): 0-7 for a real team, 8 for
-**	"random". It is not a slot index and never was -- that misreading is what made the
-**	first record of every array fail a `< 1` floor. Range-checked only; the roster's own
-**	Team values are not a safe equality test because a random pick resolves before we
-**	see it.
-*/
+// +0x50 is the team: 0-7, or 8 for a random pick. Range-checked only.
 #define TF_LOBBY_OFF_TEAM 0x50
 #define TF_LOBBY_MAX_TEAM 8
 #define TF_LOBBY_OFF_DIFF 0x64
-/*
-**	+0x68 is the slot's COLOUR, not a second copy of the slot index (DontCryJustDie,
-**	2026-07-21): changing an AI's lobby colour breaks a `slot == slot2` match while a
-**	colour-range test keeps working. Default lobbies hand out colours in slot order,
-**	which is why the two were indistinguishable at first and why reads failed once
-**	anyone touched a colour. It doubles as the liveness key -- CNC_Set_Multiplayer_Data
-**	gives us this match's colours, so only the array carrying them is the live one.
-*/
+// +0x68 is the lobby colour, which ties a record array to this match.
 #define TF_LOBBY_OFF_COLOR 0x68
 #define TF_LOBBY_MAX_COLORS 8
 
-/*
-**	+0x54 is the AI's house / ActLike in the CLIENT's numbering, which in RA is our
-**	HousesType plus 2 (DontCryJustDie, 2026-07-22); 42 means the lobby pick was "random".
-**	Confirmed against both logged samples: an all-Soviet lobby read 4,4,4 (HOUSE_USSR) and
-**	a GDI/Nod/Allied lobby read 2,9,3 (Spain/Turkey/Greece, our two hijacked country slots
-**	plus Greece). That makes it a second liveness key alongside colour -- a stale array from
-**	a lobby whose colours happened to match is still rejected if its factions do not.
-*/
+// +0x54 is the AI's country in the client's numbering, HousesType + 2, or 42 for a random pick.
 #define TF_LOBBY_OFF_HOUSE 0x54
 #define TF_LOBBY_HOUSE_BIAS 2
 #define TF_LOBBY_HOUSE_RANDOM 42
 
-// Bit n set = the current lobby contains an AI named AIPLAYERn (client AI numbering
-// persists across lobbies, so n rarely starts at 1 after a session's first lobby).
-// Captured at CNC_Set_Multiplayer_Data; anchors the per-slot difficulty RAM scan.
+// Bit n set = this lobby has an AI named AIPLAYERn; the client's AI numbering runs on across lobbies. Captured
+// at CNC_Set_Multiplayer_Data; anchors the lobby scan.
 static unsigned TF_LobbyAIRosterMask = 0;
 
 // Lobby colour per AI slot for the CURRENT match, captured alongside the roster mask.
 // -1 = unknown, in which case the scan falls back to a plain range check.
 static int TF_LobbyAIColorBySlot[TF_LOBBY_MAX_AI_SLOTS + 1];
 
-// Lobby country per AI slot for the CURRENT match, captured alongside the colour and
-// BEFORE the Spain/Turkey hijack rewrites it, so it can be checked against the client's
-// own +0x54 numbering. -1 = unknown, in which case that gate is skipped.
+// Lobby country per AI slot for the current match, taken before the Spain/Greece hijack rewrites it, to check
+// against the record's +0x54. -1 = unknown, which skips that gate.
 static int TF_LobbyAIHouseBySlot[TF_LOBBY_MAX_AI_SLOTS + 1];
 
 // Diagnostic: the raw +0x54 field of the last validated record per slot, logged so the
@@ -589,21 +558,8 @@ static int TF_LobbyProbeTag = 0;
 static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot); // fwd decl for the early probe
 #endif
 
-/*
-**	Deferred re-scan state. The client tears down and rebuilds its AIPLAYERn records
-**	as a match launches, so a scan can land in a window where they are absent or only
-**	half-rewritten -- the read then finds nothing, or finds a fresh array that
-**	disagrees with a surviving stale one, and reports failure. The values are correct
-**	and unanimous either side of that window, so a failed read is retried on a later
-**	frame rather than abandoned to the global tier.
-**
-**	A re-scan is only trusted once two consecutive scans agree: the rebuild passes
-**	through half-written states that are briefly self-consistent (a lobby set to
-**	Easy/Medium/Hard/Medium was observed reading Easy/Medium/Medium/Medium mid-write),
-**	and settled values never change again for the life of the match. The last attempt
-**	accepts an unconfirmed read rather than discarding it -- an unconfirmed read is
-**	still better evidence of the player's choice than the default tier.
-*/
+// Deferred re-scan state: the match-start read can land while the client rebuilds its records, so a failed
+// read is retried (TF_Lobby_Difficulty_Retry, docs/lobby-difficulty-ram-spike.md).
 #define TF_LOBBY_RETRY_ATTEMPTS 4
 #define TF_LOBBY_RETRY_FRAME_GAP 90
 static DiffType TFLobbyGlobalDiff = DIFF_HARD;
@@ -986,14 +942,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
 
     Special.IsShadowGrow = game_options.MPlayerShadowRegrow;
 
-    // The lobby's Capture the Flag GAME TYPE carries Unholy Alliance (relabelled in
-    // MASTERTEXTFILE). A game type rather than a checkbox because the Mode list is
-    // exclusive: the mode cannot be chosen alongside a bases-off game and then sit there
-    // doing nothing, which a checkbox could -- the launcher only greys out options it was
-    // compiled to know about, and it has no reason to grey ours.
-    //
-    // The flag game is switched off wholesale rather than gated at each of its call
-    // sites, so no flag spots, flag attachment or truck spawns can half-run underneath.
+    // TF: the lobby's Capture the Flag game type is Unholy Alliance (scripts/loc_work/mastertext.edits.txt). The
+    // flag game itself is switched off whole, so none of its parts half-run.
     TF_UnholyAlliance = game_options.CaptureTheFlag;
     Special.IsCaptureTheFlag = false;
 
@@ -1043,18 +993,13 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
     for (int i = 0; i < num_players; i++) {
         CNCPlayerInfoStruct& player_info = player_list[i];
 
-        // Roster mask for the RAM scan: which AIPLAYERn names this lobby actually
-        // contains (client AI numbering persists across lobbies, so n rarely starts
-        // at 1 after the first lobby of a session).
+        // TF: note this lobby's AIPLAYERn names, colours and countries for the difficulty scan, the country before
+        // the Spain/Greece hijack below, as the client's records hold the country as picked.
         if (player_info.IsAI) {
             int roster_n = 0;
             if (sscanf(player_info.Name, "AIPLAYER%d", &roster_n) == 1 && roster_n >= 1
                 && roster_n <= TF_LOBBY_MAX_AI_SLOTS) {
                 TF_LobbyAIRosterMask |= (1u << roster_n);
-                // The client's record for this AI carries its lobby colour and country, so
-                // the values we are handed here identify which resident array belongs to
-                // THIS match. The country must be read before the hijack below rewrites
-                // Spain/Turkey, because the client's record holds the country as picked.
                 TF_LobbyAIColorBySlot[roster_n] = player_info.ColorIndex;
                 TF_LobbyAIHouseBySlot[roster_n] = player_info.House;
             }
@@ -1064,15 +1009,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
         strncpy(who->Name, player_info.Name, MPLAYER_NAME_MAX);
         who->Name[MPLAYER_NAME_MAX - 1] = 0; // Make sure it's terminated
 
-        // Tiberian Factions mod: hijack two of the RA country slots so the closed-source
-        // Remastered country picker can route to HOUSE_GOOD / HOUSE_BAD. The picker lists
-        // countries in enum order and that order is launcher-owned, so the slots are chosen
-        // for where they sit in the list: Spain (first row) is GDI, Greece (second row) is
-        // Nod, then USSR and England read as the Soviet and Allied entries, and the
-        // remaining countries are duplicates wearing the same crests (Luke, 2026-09-02).
-        // Both hijacked countries are Allied-side to the launcher, which is what Nod needs
-        // (it draws the ALLIES HUD slot). Cosmetic relabels live in the mod's string-table
-        // overrides (scripts/loc_work/mastertext.edits.txt).
+        // TF: the lobby's Spain row plays GDI and its Greece row Nod; the launcher orders the rows by country enum
+        // (docs/faction-select-identity.md).
         if (player_info.House == HOUSE_SPAIN) {
             player_info.House = HOUSE_GOOD;
         }
@@ -1493,9 +1431,8 @@ void GlyphX_Assign_Houses(void)
                 }
             }
             strncpy(housep->IniName, Text_String(TXT_COMPUTER), HOUSE_NAME_MAX);
-            // Lobby AI difficulty (stored in Scen.CDifficulty by CNC_Set_Difficulty)
-            // drives the IQ tier; stat handicaps stay at 1.0x. CNC_Set_Difficulty
-            // also retro-applies in case the client sends difficulty after start.
+            // TF: a provisional IQ tier from the last global difficulty; CNC_Set_Difficulty re-tiers each AI from
+            // its lobby slot.
             housep->IQ = TF_AI_IQ_From_Difficulty(Scen.CDifficulty);
             // housep->Control.TechLevel = _build_tech[BuildLevel];
         } else {
@@ -1657,8 +1594,6 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance(int scenario_in
  * History: 1/7/2019 5:20PM - ST
  **************************************************************************************************/
 static void TF_Mailbox_Write_EVA_Voice(void);
-// The crest patch ships in release builds (its call sites below are unguarded), so its
-// declarations must not sit behind TF_DEV_BUILD -- only the two probes are dev-only.
 static void TF_Patch_ClientG_Crest(void);
 static void TF_Patch_ClientG_Click_Specials(void);
 static void TF_Tell_Launchers_Start(void);
@@ -2135,28 +2070,14 @@ bool Debug_Write_Shape(const char* file_name, void const* shapefile, int shapenu
 // the difficulty code below, driven per-frame from CNC_Advance_Instance.
 static void TF_Lobby_Difficulty_Retry();
 
-/*
-**	Tiberian Factions -- the deploy key, owned by the DLL.
-**
-**	The launcher's COMMAND_CNC_DEPLOY_SELECTED_MCV only acts on a unit whose exported
-**	names are exactly "MCV" (ClientG compares an interned name id), so every faction MCV,
-**	APC, transport and minelayer lost its key. Instead of teaching the launcher, the DLL
-**	reads the keyboard itself: both processes share one Wine/Windows session, so
-**	GetAsyncKeyState sees the key from InstanceServerG. Each fresh press asks every
-**	selected object for its own self-action and acts only on ACTION_SELF -- the same rule
-**	as a self-click, so MCVs deploy, APCs / transports / Chinooks unload, minelayers lay,
-**	and anything deployable added later is covered. The key is the launcher's own default
-**	deploy binding (backslash, VK_OEM_5), so the stock MCV and every faction unit share it.
-*/
+// The deploy key, read by the DLL: the launcher's own deploy command acts only on a unit named "MCV"
+// (docs/launcher-vs-dll-ownership.md).
 bool TF_DeployKeyBatch = false; // set while the deploy key runs its selected-object loop (techno.cpp What_Action)
 
+// Runs the self-action of every selected object answering ACTION_SELF, voices held (TS units say one
+// "deploying"). Once per press per house: on the host a press also arrives as its launcher's deploy command.
 static int TF_Self_Action_Selected(void)
 {
-    /*
-    **	On the host one press arrives twice, from the keyboard read and from its own launcher's
-    **	deploy command (TF_Patch_Click_Specials_In); it counts once per house, so a Mobile War
-    **	Factory that has just deployed is not packed straight back up.
-    */
     static long last_press[HOUSE_COUNT];
     if (PlayerPtr != NULL) {
         long& last = last_press[PlayerPtr->Class->House];
@@ -2168,10 +2089,6 @@ static int TF_Self_Action_Selected(void)
 
     int acted = 0;
     bool ts_unit = false;
-    /*
-    **	Every selected object deploys together with its own voice held, and TS units answer
-    **	with the crew's single "deploying" (TS's DeploySound), as TS's deploy key does.
-    */
     TF_DeployKeyBatch = true;
     AllowVoice = false;
     for (int index = 0; index < CurrentObject.Count(); index++) {
@@ -2180,10 +2097,6 @@ static int TF_Self_Action_Selected(void)
             continue;
         }
         ActionType answer = object->What_Action(object);
-        /*
-        **	A deployed Mobile War Factory answers a self-click as a factory (make it primary),
-        **	so its pack-up is the deploy key's alone, and only while its bay is empty.
-        */
         if (object->What_Am_I() == RTTI_BUILDING && *(BuildingClass*)object == STRUCT_TSDWEAP
             && ((BuildingClass*)object)->BState != BSTATE_CONSTRUCTION && !((BuildingClass*)object)->In_Radio_Contact()) {
             answer = ACTION_SELF;
@@ -2236,6 +2149,8 @@ static void TF_Sidebar_Log(const char* fmt, ...)
 #endif
 }
 
+// Per frame: runs the deploy key on a fresh press of backslash, and holds an 'A' press for ten frames, since
+// the launcher's select-all reaches CNC_Select_Object a frame or two after the key goes down.
 static void TF_Deploy_Key_Tick(void)
 {
     static bool _was_down = false;
@@ -2292,20 +2207,13 @@ static void TF_Deploy_Key_Tick(void)
     }
     _was_down = down;
 
-    // The launcher's select-all reaches CNC_Select_Object a frame or two after the key
-    // goes down, so remember a press briefly rather than requiring the key to still be held.
     if ((GetAsyncKeyState('A') & 0x8000) != 0 && PlayerPtr != NULL) {
         TF_SelectAllLatchUntil[PlayerPtr->Class->House] = (long)Frame + 10;
     }
 }
 
-/*
-**	Select-all ('A') is launcher-driven: ClientG picks the objects and hands them to
-**	CNC_Select_Object one by one, excluding only the stock harvester and MCV by name id, so
-**	every faction harvester and MCV leaked into the army selection. For a moment after a
-**	house's select-all order (its launcher's mod command 2, or on the host its own 'A' key),
-**	the DLL applies the engine's own band-select rule to what that house's launcher hands over.
-*/
+// For a moment after a house's select-all order (its launcher's mod command 2, or the host's 'A' key), drops
+// the harvesters and MCVs its launcher hands over; the launcher itself leaves out only the stock pair.
 static bool TF_Select_All_Excludes(ObjectClass* object)
 {
     long const until = (PlayerPtr != NULL) ? TF_SelectAllLatchUntil[PlayerPtr->Class->House] : 0;
@@ -2316,9 +2224,8 @@ static bool TF_Select_All_Excludes(ObjectClass* object)
            && (((UnitClass*)object)->Class->IsToHarvest || ((UnitClass*)object)->Class->Is_MCV());
 }
 
-// Player-facing announcements of the tier each AI actually got, queued at
-// difficulty-set time (client not rendering yet) and flushed from
-// CNC_Advance_Instance once the match is on screen.
+// The on-screen difficulty announcements, queued when the tiers are applied and shown from CNC_Advance_Instance
+// once the match renders.
 static char TFHelloPending[MAX_PLAYERS][128];
 static int TFHelloPendingCount = 0;
 
@@ -2395,29 +2302,20 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
         DLLExportClass::Set_Player_Context(DLLExportClass::GlyphxPlayerIDs[0]);
     }
 
-    // Re-read the lobby's per-slot AI difficulties if the match-start read failed.
-    // Runs before the HELLO flush so a successful re-scan's announcements reach the
-    // screen on the same frame they are queued.
+    // TF: per-frame mod work. The lobby re-scan runs before the announcement flush so its results show this frame;
+    // announcements wait for frame 30, as messages sent before the match renders are dropped.
     TF_Lobby_Difficulty_Retry();
 
-    // Keep the per-faction radar crest pointed at the picked side's crest (RAM patch).
     TF_Crest_Tick();
 
-    // Tell every player's launcher which house its player is (TF_Tell_Launchers).
     TF_Tell_Launchers_Tick();
 
-    // The deploy key, read straight from the keyboard (see TF_Deploy_Key_Tick).
     TF_Deploy_Key_Tick();
 
-    // Sensor Array sightings: "cloaked unit detected" / "subterranean unit detected".
     TF_Sensor_Tick();
 
-    // Dev: the Sensor Array test's Sub APC digging under the player's base.
     TF_Dev_Tunneller_Tick();
 
-
-    // Flush the queued difficulty announcements once the match is actually
-    // rendering (messages sent at difficulty-set time are dropped).
     if (TFHelloPendingCount > 0 && Frame >= 30) {
         for (int hello_index = 0; hello_index < TFHelloPendingCount; hello_index++) {
             On_Message(TFHelloPending[hello_index], 30.0f, -1);
@@ -2694,37 +2592,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save,
     return result;
 }
 
-/*
-**	---------------- Per-slot lobby AI difficulty (client-process read) ----------------
-**
-**	The GlyphX client never passes the lobby's per-slot Easy/Medium/Hard picks into the
-**	DLL: CNC_Set_Difficulty receives one global value (always 1 in skirmish) and the
-**	player-info structs carry no difficulty field. The picker state does live in the
-**	client process's heap for the whole match, one record per AI slot:
-**
-**	    +0x00  ASCII "AIPLAYERn\0"  (the same name the AI house gets as IniName)
-**	    +0x50  int32 slot index, ZERO-based (AIPLAYER1 reads 0)
-**	    +0x54  int32 house / faction, client numbering
-**	    +0x64  int32 difficulty     1=Easy 2=Medium 3=Hard
-**	    +0x68  int32 lobby colour   0-7
-**	    record stride 0xA8, slots ascending from AIPLAYER1
-**
-**	The array is located by signature scan over the client's private writable memory --
-**	heap addresses differ every run, only the record shape is stable. The scan is
-**	read-only, runs once per match start, and any failure (no client process, no
-**	validated array, conflicting candidates) leaves the caller on the global
-**	difficulty source. Full design: docs/lobby-difficulty-ram-spike.md.
-*/
+// Per-slot lobby AI difficulty, read from ClientG's AIPLAYERn records: the client passes the DLL no per-slot
+// value. Read-only; a failed read leaves the global tier (docs/lobby-difficulty-ram-spike.md).
 
-/*
-**	Validates a prospective record array (`len` bytes already read into `rec`) and fills
-**	diff_by_n[] keyed by each record's own AIPLAYERn number. Records must be exactly
-**	"AIPLAYER<n>" at the record stride with strictly ascending n and an in-range
-**	difficulty. The +0x50/+0x68 slot ints are only checked for self-consistency: with
-**	persistent AI names it is unproven whether they renumber positionally, so name n is
-**	the key. Returns validated record count; found_mask gets
-**	bit n per validated record.
-*/
 #if TF_DEV_BUILD // TF_AI_DIAG -- raw record dump.
 /*
 **	Per-scan budget for the raw record dump below. Every candidate the signature scan
@@ -2760,6 +2630,8 @@ static void TF_Log_Lobby_Record(int k, int n, int team, int diff, int color, int
 }
 #endif
 
+// Validates the records in rec, stopping at the first bad one: fills diff_by_n[] by AIPLAYERn number and
+// found_mask with bit n, and returns the count. Gates: docs/lobby-difficulty-ram-spike.md.
 static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* diff_by_n, unsigned* found_mask)
 {
     int count = 0;
@@ -2796,11 +2668,6 @@ static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* 
         memcpy(&color, r + TF_LOBBY_OFF_COLOR, sizeof(color));
         int rec_house = 0;
         memcpy(&rec_house, r + TF_LOBBY_OFF_HOUSE, sizeof(rec_house));
-        // Range checks only, and only on fields whose meaning is established. An equality
-        // test against an assumed field is what broke this read twice; identity comes from
-        // the roster-corroborated gates below. Team counts from ZERO and reaches 8 for a
-        // random pick, so any floor above 0 rejects the first record of an array and, since
-        // validation stops at the first bad record, discards the whole array with it.
         if (team < 0 || team > TF_LOBBY_MAX_TEAM || diff < 1 || diff > 3 || color < 0
             || color >= TF_LOBBY_MAX_COLORS) {
 #if TF_DEV_BUILD
@@ -2808,19 +2675,12 @@ static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* 
 #endif
             break;
         }
-        // Colour is what ties an array to THIS match rather than a lobby that has been
-        // and gone, so where the roster gave us a colour for this slot it must agree.
         if (TF_LobbyAIColorBySlot[n] >= 0 && TF_LobbyAIColorBySlot[n] != color) {
 #if TF_DEV_BUILD
             TF_Log_Lobby_Record(k, n, team, diff, color, rec_house, "REJECT colour-mismatch");
 #endif
             break;
         }
-        // Country is the second liveness key: a stale array whose colours happen to match
-        // this match's is still rejected if its factions do not. Skipped when the pick was
-        // random (the client resolves that before handing us the roster, so the record and
-        // the roster legitimately disagree) or when the value is outside RA's range, so an
-        // unexpected encoding degrades to the colour-only gate rather than failing the read.
         if (TF_LobbyAIHouseBySlot[n] >= 0 && rec_house != TF_LOBBY_HOUSE_RANDOM
             && rec_house >= TF_LOBBY_HOUSE_BIAS
             && rec_house <= TF_LOBBY_HOUSE_BIAS + (int)HOUSE_TURKEY
@@ -2843,19 +2703,8 @@ static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* 
     return count;
 }
 
-/*
-**	Registry of every validated FULL-ROSTER candidate a scan finds, with enough raw
-**	context to tell the live array from stale copies:
-**	  refeq  -- how many aligned 32-bit pointers in the client's writable memory point
-**	            AT this candidate's base. The live array is referenced by the client
-**	            code that reads it; stale copies are orphaned.
-**	  refwin -- pointers into a window around the record. A stale copy was the ACTIVE
-**	            match's array moments ago and still carries its leftover references, so
-**	            a HIGH refwin means stale and the LOW cluster is the freshly-made live
-**	            array. A freshness signal, not a popularity one.
-**	The raw record bytes (rec2/pre) are kept for the dev-build forensic dump only; the
-**	resolver itself reads none of them (docs/lobby-ambiguity-findings.md, Route A dead).
-*/
+// Every validated full-roster array a scan finds, for the ambiguity resolver (docs/lobby-ambiguity-findings.md).
+// pre, rec2 and the region fields feed only the dev-build log.
 #define TF_LOBBY_MAX_CANDIDATES 24
 #define TF_LOBBY_PRE_BYTES 32
 struct TF_LobbyCandRec {
@@ -2873,14 +2722,8 @@ static TF_LobbyCandRec TF_LobbyCands[TF_LOBBY_MAX_CANDIDATES];
 static int TF_LobbyCandN = 0;
 static DWORD TF_LobbyScanPid = 0; // pid of the process currently being scanned
 
-// Route B: count aligned 32-bit words in `pid`'s writable private memory that equal
-// the half-open window [lo, hi). The client process is 32-bit, so a genuine pointer
-// is a 4-byte aligned word. A pointer to the array lands near the anchor record but
-// not necessarily ON it -- human player records precede AIPLAYER1, so the array base
-// sits some strides before the anchor. Widening to a window catches that reference.
-// When hit_addrs is given, the address of each matching word is recorded (up to
-// max_hits) so the caller can inspect the referrer's neighbours; counting continues
-// past the cap. Returns -1 if the process can't be opened.
+// Counts the aligned 32-bit words in pid's private writable memory that fall in [lo, hi), recording up to
+// max_hits of their addresses in hit_addrs. Returns -1 if the process cannot be opened.
 static int TF_Count_Referrers(DWORD pid, SIZE_T lo, SIZE_T hi, unsigned char* scratch, SIZE_T scratch_size,
                               SIZE_T* hit_addrs = NULL, int max_hits = 0, int* hit_count = NULL)
 {
@@ -2929,16 +2772,8 @@ static int TF_Count_Referrers(DWORD pid, SIZE_T lo, SIZE_T hi, unsigned char* sc
     return refs;
 }
 
-/*
-**	Route B upgrade (DontCryJustDie, 2026-07-25): the client's stable referrers to the
-**	LIVE array are vector triples -- at referrer address R, [R] is the begin pointer,
-**	[R+4] the end pointer, [R+8] the capacity pointer, and (end - begin) / 168 is the
-**	number of players in the match. They point at the ARRAY BASE (the first HUMAN
-**	record), which sits TF_HumanPlayerCount strides before the AIPLAYER anchor. A raw
-**	value hit is a coincidence-prone integer match; a hit whose neighbours form a
-**	triple sized to this match's roster is a structural identification of the live
-**	array, and no stale copy can carry one.
-*/
+// A vector triple: a referrer to the live lobby array holds its begin, end and capacity pointers, and
+// (end - begin) / 0xA8 is the match's player count. A stale copy carries none.
 #define TF_LOBBY_MAX_TRIPLES 8
 struct TF_VecTriple {
     SIZE_T ref;              // address of the begin-pointer word inside the client
@@ -2949,9 +2784,8 @@ struct TF_VecTriple {
     bool ok;                 // structurally valid AND sized to this match's roster
 };
 
-// Reads the 12 bytes at `ref` and judges them as a vector triple over `base`.
-// Fills `out` with whatever was read (for the forensic log) even on a reject;
-// returns out->ok. `expected_players` = humans + roster AIs for THIS match.
+// Reads the 12 bytes at ref as a vector triple over base, filling out even on a reject. True when the triple
+// begins at base and spans expected_players records.
 static bool TF_Read_Vector_Triple(HANDLE proc, SIZE_T ref, SIZE_T base, int expected_players, TF_VecTriple* out)
 {
     out->ref = ref;
@@ -2991,30 +2825,11 @@ static bool TF_Cand_Same_Vec(int a, int b, unsigned roster)
     return true;
 }
 
-/*
-**	Ambiguity resolver (docs/lobby-ambiguity-findings.md). The client's heap can hold a
-**	stale copy of the lobby array that agrees with the live one on colour and country --
-**	so corroboration passes and the difficulty read is ambiguous. Given the candidates
-**	that disagree, decide which one is LIVE, or report undecided.
-**	Branches, in order (each requires its survivors to agree, so a stale is never picked
-**	over a live one; worst case 'U' == the fail-closed fallback this replaced):
-**	  V  vector triple   -- a referrer at the candidate's array base whose begin/end/
-**	                        capacity neighbours form a vector sized to this match's
-**	                        roster. Structural identification, not a value coincidence;
-**	                        a stale copy can never carry one.
-**	  R  exact referrer  -- the client keeps one pointer to the LIVE array's base;
-**	                        a unique difficulty among refeq>0 candidates is live.
-**	  F  freshness       -- a stale copy is a previously-ACTIVE array carrying many more
-**	                        neighbourhood pointers (refwin) than a freshly-made live one;
-**	                        the low-refwin cluster is live.
-**	  M  strict majority -- plurality difficulty vector (no other vector ties it).
-**	  U  undecided       -- caller fails closed.
-**	Returns the branch letter; fills out[] (roster slots) when decided.
-*/
+// Picks the live one of disagreeing candidates: vector triple (V), exact referrer (R), freshness (F), strict
+// majority (M), else 'U' and the caller fails closed. Fills out[] (docs/lobby-ambiguity-findings.md).
 static char TF_Resolve_Lobby_Ambiguity(const int* vecref, const int* refeq, const int* refwin,
                                        int ncand, unsigned roster, int* out)
 {
-    // 1. validated vector triple at the array base
     int vrep = -1;
     bool vconflict = false;
     for (int c = 0; c < ncand; c++) {
@@ -3031,7 +2846,6 @@ static char TF_Resolve_Lobby_Ambiguity(const int* vecref, const int* refeq, cons
         return 'V';
     }
 
-    // 2. exact referrer
     int rep = -1;
     bool conflict = false;
     for (int c = 0; c < ncand; c++) {
@@ -3048,7 +2862,6 @@ static char TF_Resolve_Lobby_Ambiguity(const int* vecref, const int* refeq, cons
         return 'R';
     }
 
-    // 3. freshness cluster (low refwin = freshly allocated = live)
     int minrw = 0x7fffffff;
     for (int c = 0; c < ncand; c++) if (refwin[c] < minrw) minrw = refwin[c];
     int thresh = minrw * 4 + 2;
@@ -3068,7 +2881,6 @@ static char TF_Resolve_Lobby_Ambiguity(const int* vecref, const int* refeq, cons
         return 'F';
     }
 
-    // 4. strict majority
     int bestc = -1, bestn = 0;
     for (int c = 0; c < ncand; c++) {
         int cnt = 0;
@@ -3091,11 +2903,8 @@ static char TF_Resolve_Lobby_Ambiguity(const int* vecref, const int* refeq, cons
     return 'U';
 }
 
-/*
-**	Scans one process's private writable regions for the record array. Every validated
-**	candidate must agree; disagreement flags the whole read as ambiguous (memory can
-**	hold stale copies of lobby data -- agreement is the safety condition).
-*/
+// Scans one ClientG's private writable memory for full-roster record arrays, registering each for the resolver;
+// best takes the first one's difficulties and ambiguous is set when a later one disagrees on a roster slot.
 static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
                                                  int* best,
                                                  int* best_count,
@@ -3103,9 +2912,6 @@ static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
                                                  unsigned char* scratch,
                                                  SIZE_T scratch_size)
 {
-    // Anchor on the current roster's lowest-numbered AI name: an array holding the
-    // roster can start there, or hold it mid-array (a stale wider array from an
-    // earlier lobby edit) -- both produce a signature hit and get validated.
     unsigned roster = TF_LobbyAIRosterMask;
     if (roster == 0) {
         return;
@@ -3141,8 +2947,6 @@ static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
                     if (memcmp(scratch + i, sig, sig_len) != 0) {
                         continue;
                     }
-                    // Candidate hit: re-read the full prospective array straight from
-                    // the process so validation never depends on chunk boundaries.
                     unsigned char rec[TF_LOBBY_MAX_AI_SLOTS * TF_LOBBY_RECORD_STRIDE];
                     SIZE_T rec_got = 0;
                     ReadProcessMemory(proc, (LPCVOID)(region_base + off + i), rec, sizeof(rec), &rec_got);
@@ -3158,8 +2962,6 @@ static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
                     if (cand_count <= 0) {
                         continue;
                     }
-                    // A voting candidate must cover the whole roster; partial or stale
-                    // fragments are logged above but don't participate.
                     if ((cand_mask & TF_LobbyAIRosterMask) != TF_LobbyAIRosterMask) {
 #if TF_DEV_BUILD
                         TF_Log_Lobby_Record(-1,
@@ -3172,8 +2974,6 @@ static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
 #endif
                         continue;
                     }
-                    // Register the candidate: the resolver needs its address and vector,
-                    // the raw bytes ride along for the dev-build forensic dump.
                     if (TF_LobbyCandN < TF_LOBBY_MAX_CANDIDATES) {
                         TF_LobbyCandRec& c = TF_LobbyCands[TF_LobbyCandN++];
                         c.pid = TF_LobbyScanPid;
@@ -3196,8 +2996,6 @@ static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
                             }
                         }
                     }
-                    // Agreement is judged on the roster's slots only -- non-roster
-                    // leftovers in a wider array carry no signal.
                     if (*best_count == 0) {
                         memcpy(best, cand, (TF_LOBBY_MAX_AI_SLOTS + 1) * sizeof(int));
                         *best_count = cand_count;
@@ -3219,19 +3017,15 @@ static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
     }
 }
 
-/*
-**	Reads the lobby's per-slot AI difficulties out of the client process(es). Fills
-**	diff_by_slot[1..TF_LOBBY_MAX_AI_SLOTS] (1=Easy 2=Medium 3=Hard, 0=unknown) and
-**	returns the number of slots read; 0 = scan failed, caller stays on the global
-**	difficulty source. Read-only against the target process.
-*/
+// Reads the lobby's per-slot AI difficulties from ClientG into diff_by_slot[] (1 Easy, 2 Medium, 3 Hard,
+// 0 none). Returns the roster slots read; 0 = failed, and the caller keeps the global tier.
 static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
 {
     int best[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
     int best_count = 0;
     bool ambiguous = false;
 
-    // 1 MB scan chunk; static so repeated match starts reuse one allocation.
+    // Static: a 1 MB buffer would overflow the game's 1 MB thread stack.
     static unsigned char scratch[1 << 20];
 
 #if TF_DEV_BUILD
@@ -3285,14 +3079,6 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
     }
 #endif
 
-    /*
-    **	Resolve an ambiguous read rather than abandoning it. A stale copy that agrees
-    **	with the live one on colour and country passes corroboration, so agreement
-    **	alone cannot settle which array is current -- and abandoning the read applies
-    **	the default difficulty, which is exactly wrong for the player who just lowered
-    **	it between matches. Identify the live copy from its referrer profile instead;
-    **	an undecided verdict still falls back.
-    */
     static int cand_vecref[TF_LOBBY_MAX_CANDIDATES];
     static int cand_refeq[TF_LOBBY_MAX_CANDIDATES];
     static int cand_refwin[TF_LOBBY_MAX_CANDIDATES];
@@ -3309,9 +3095,6 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
         cand_ntrip[a] = 0;
     }
     if (ambiguous && TF_LobbyCandN > 0) {
-        // The live array's referrers are vector triples over its BASE (the first
-        // human record, TF_HumanPlayerCount strides before the AIPLAYER anchor),
-        // sized humans + roster AIs. See TF_Read_Vector_Triple.
         int roster_ais = 0;
         for (int n = 1; n <= TF_LOBBY_MAX_AI_SLOTS; n++) {
             if (TF_LobbyAIRosterMask & (1u << n)) {
@@ -3321,10 +3104,6 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
         int expected_players = TF_HumanPlayerCount + roster_ais;
         for (int a = 0; a < TF_LobbyCandN; a++) {
             TF_LobbyCandRec& c = TF_LobbyCands[a];
-            // vecref = referrers at the array base whose neighbours validate as a
-            // vector triple. refeq = pointers landing exactly ON the anchor record.
-            // refwin = pointers into a window running from 4 records before the
-            // anchor through the roster.
             SIZE_T back = (SIZE_T)TF_HumanPlayerCount * TF_LOBBY_RECORD_STRIDE;
             cand_vecref[a] = 0;
             if (c.address > back) {
@@ -3456,11 +3235,8 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
     return roster_read;
 }
 
-/*
-**	Applies a difficulty set to every AI house: per-slot where the lobby read supplied
-**	a tier for that house's slot, the global tier otherwise. Safe to call again later
-**	in a match -- houses are simply re-tiered, which is what the deferred re-scan does.
-*/
+// Sets each AI house's IQ from its lobby slot's difficulty, else the global tier, and queues the on-screen
+// announcements. Safe to call again mid-match: the deferred re-scan re-tiers the houses this way.
 static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff, int slots_read, bool is_retry)
 {
     Scen.CDifficulty = global_diff;
@@ -3470,11 +3246,6 @@ static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff,
     for (int index = 0; index < Houses.Count(); index++) {
         HouseClass* housep = Houses.Ptr(index);
         if (housep != NULL && housep->IsActive && !housep->IsHuman && housep->Class->House >= HOUSE_MULTI1) {
-            // Each AI house's lobby slot number was captured at house-assign time
-            // (TF_AILobbySlotByHouse -- IniName itself is renamed to "Computer"),
-            // keying it to the client's per-slot record regardless of the
-            // color-order house assignment. Houses without a slot record use the
-            // global tier.
             DiffType house_diff = global_diff;
             bool per_slot = false;
             int house_index = (int)housep->Class->House - (int)HOUSE_MULTI1;
@@ -3522,8 +3293,6 @@ static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff,
                 }
             }
 #endif
-            // On-screen readout of each AI's applied tier, so a fallback to the
-            // global difficulty is visible to the player rather than silent.
             if (TFHelloPendingCount < ARRAY_SIZE(TFHelloPending)) {
                 const char* mode_nice =
                     (house_diff == DIFF_EASY) ? "Easy" : (house_diff == DIFF_HARD) ? "Hard" : "Medium";
@@ -3565,12 +3334,8 @@ static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff,
 #endif
 }
 
-/*
-**	Runs a deferred re-scan when the match-start read failed. Called every frame;
-**	does nothing unless a retry is owed and its frame has arrived. A successful
-**	re-scan re-tiers the AI houses and disarms; running out of attempts leaves the
-**	houses on the global tier, which is the shipped fallback behaviour.
-*/
+// Called every frame: runs an owed lobby re-scan, TF_LOBBY_RETRY_FRAME_GAP frames apart. A read is applied
+// once two in a row agree, or on the last attempt; running out leaves the global tier.
 static void TF_Lobby_Difficulty_Retry()
 {
     if (TFLobbyRetriesLeft <= 0 || Frame < TFLobbyRetryFrame) {
@@ -3615,30 +3380,11 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
         return;
     }
 
-    /*
-    **	Skirmish/multiplayer: the GlyphX client always sends 1 (Normal) here no
-    **	matter what the lobby slots or the campaign difficulty option are set to --
-    **	per-AI difficulty only ever existed client-side. The player's real choice
-    **	therefore comes from an optional settings file, re-read at every match
-    **	start so it can be changed between matches without restarting the game:
-    **
-    **	  Documents/CnCRemastered/tf_ai_difficulty.txt   containing one word:
-    **	  easy | normal | hard        (also accepts 0 | 1 | 2)
-    **
-    **	No file means hard -- the strength skirmish AIs shipped with (MaxIQ);
-    **	the file only ever opts the AI downward. The selected tier is stored for
-    **	houses created later and retro-applied to AI houses that already exist
-    **	(the client may call this either side of match start). IQ is the only
-    **	thing that changes -- combat and economy handicaps are untouched at
-    **	every difficulty.
-    */
+    // TF: skirmish and LAN AI difficulty, per lobby slot from ClientG, else tf_ai_difficulty.txt, else Hard. Only
+    // the host simulates, so nothing needs syncing (docs/lobby-difficulty-ram-spike.md).
     DiffType diff = DIFF_HARD;
     char tf_diff_source = 'd'; // d=default, f=file
 
-    // Global difficulty fallback, used when the per-slot lobby read is unavailable.
-    // Honoured in multiplayer as well as solo: only the host simulates a LAN match,
-    // so the host's flag file is the only one that can reach the simulation and there
-    // is no second peer to disagree with it.
     {
         const char* up = getenv("USERPROFILE");
         char p[600];
@@ -3662,15 +3408,6 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
         }
     }
 
-    // Per-slot difficulty read from the client process, overriding the global
-    // source house-by-house. Applies in solo and multiplayer alike.
-    //
-    // No cross-peer agreement is needed. Mods load in LAN games only, and a LAN
-    // match runs a single simulation, hosted by the machine that owns the lobby --
-    // a joiner's client renders streamed state and never executes this DLL at all.
-    // So whenever this code runs it is running on the host, reading the host's own
-    // live lobby, which is by definition the authoritative one. There is no second
-    // sim to diverge from and therefore nothing to broadcast or reconcile.
     int slot_diff[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
     int slots_read = TF_Read_Lobby_AI_Difficulties(slot_diff);
 
@@ -3681,8 +3418,6 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
 
     TF_Apply_AI_Difficulties(diff, slot_diff, slots_read, false);
 
-    // A failed read here is usually the client rebuilding its records as the match
-    // launches rather than a lobby with nothing to read, so arm a deferred re-scan.
     if (slots_read <= 0 && TF_LobbyAIRosterMask != 0) {
         TFLobbyRetriesLeft = TF_LOBBY_RETRY_ATTEMPTS;
         TFLobbyRetryFrame = Frame + TF_LOBBY_RETRY_FRAME_GAP;
@@ -3941,43 +3676,10 @@ void DLLExportClass::Shutdown(void)
  *
  * History: 2/20/2020 2:03PM - ST
  **************************************************************************************************/
-/*
-** Tiberian Factions -- self-install bundled custom maps. A Workshop mod
-** cannot ship files into the user's Documents, and the official skirmish
-** list cannot take new maps (InstanceServerG resolves instances from BASE
-** data; slot-hijacking was rejected over the wrong lobby thumbnail). So
-** bundled map triplets (mpr+tga+json, synthetic UGC names) ship in
-** <mod>/CustomMaps/ and are copied into Local_Custom_Maps/Red_Alert/ when
-** the launcher registers the mod's CCDATA path -- they then appear in the
-** lobby's CUSTOM list with OUR preview art. Existing copies are overwritten
-** (bundled maps stay in sync with the mod version); other filenames are
-** never touched. The maps themselves are vanilla-safe via the [TFTDTiles]
-** side-channel (display.cpp), so they degrade gracefully if the mod is
-** later disabled. With TF_TD_MAPS at 0 nothing is copied and the installed
-** copies are deleted instead.
-*/
-/*
-** Tiberian Factions -- era-voice mailbox for the launcher's self-fired EVA
-** lines. "Cannot deploy here" (the placement-reject click is swallowed
-** client-side) and "battle control terminated" (fired during teardown) never
-** pass through On_Speech, so they cannot be faction-routed at dispatch. Their
-** samples, however, resolve from loose files under <mod>\Data\AUDIO\EN-US\,
-** so whenever a match starts the DLL copies the era-correct recording over
-** those sample names: the launcher stays faction-blind yet speaks the picked
-** side's voice. TD-era sides (ActLike GDI/Nod) get the TD lines, everyone
-** else the RA originals. The shipped TF_MBX_* files carry both sets of bytes;
-** the destination names are only ever created by this write, so a fresh
-** install falls back to the base MEG's RA samples until the first match. In
-** LAN games only the host machine runs the DLL: clients keep the RA voice for
-** these two lines (same limit as the faction credit tick).
-*/
 static char TF_ModRootPath[MAX_PATH]; // "<mod>\" incl. trailing separator
 
-/*
-**	The house the local player picked. In the simulation that is the local human house; in a
-**	launcher (where TF_Launcher_Resident_Install keeps a copy of this DLL) it is what the host
-**	last told that launcher, HOUSE_NONE until then.
-*/
+// The local player's side: in the simulation, the local human house's ActLike; in a launcher, the side the
+// host last sent it (TF_Tell_Launchers), HOUSE_NONE until then.
 static bool TF_InLauncher = false;
 static volatile LONG TF_LauncherActLike = HOUSE_NONE;
 
@@ -4021,13 +3723,8 @@ static unsigned char* TF_Read_Whole_File(const char* path, long* len_out)
     return buf;
 }
 
-/*
-**	Writes the correct file over a copy of the wrong one, only when every byte at dest is that
-**	copy. A needle hit can also land in a freed buffer that once held the file (Wine's CopyFile
-**	works through heap buffers) and is now partly reused; writing a whole file there overwrites
-**	the heap's own block headers. The full compare passes for the launcher's cached sample and
-**	fails for any copy something else has written into since. Both files must be the same length.
-*/
+// Writes correct_path's bytes over a copy of wrong_path at dest, only when the files are one length and every
+// byte there is that copy: a needle can also hit a freed, reused heap buffer, where a write corrupts the heap.
 static bool TF_Replace_File_In_Process(HANDLE proc, SIZE_T dest, const char* wrong_path, const char* correct_path)
 {
     long wrong_len = 0;
@@ -4063,11 +3760,7 @@ static bool TF_Replace_File_In_Process(HANDLE proc, SIZE_T dest, const char* wro
     return ok;
 }
 
-/*
-**	Which announcer a house hears. The generated table carries one payload per era for
-**	every launcher-fired line, so adding TS Nod's CABAL or RA2's announcers is a row in
-**	scripts/eva_mailbox_build.py's ERAS plus its recordings -- not another branch here.
-*/
+// The EVA era a side hears: a payload column of TF_EvaMailboxLines, generated by scripts/eva_mailbox_build.py.
 static int TF_Eva_Era(HousesType act_like)
 {
     if (Is_TS_GDI(act_like)) {
@@ -4079,6 +3772,8 @@ static int TF_Eva_Era(HousesType act_like)
     return TF_EVA_ERA_RA;
 }
 
+// Copies the local side's era recordings over the launcher-fired EVA samples in <mod>\Data\AUDIO\EN-US and
+// over ClientG's cached copies, so the launcher speaks the picked side's voice (docs/eva-ram-patch-spike.md).
 static void TF_Mailbox_Write_EVA_Voice(void)
 {
     if (TF_ModRootPath[0] == 0) {
@@ -4101,11 +3796,11 @@ static void TF_Mailbox_Write_EVA_Voice(void)
         CopyFileA(src, dst, FALSE);
     }
 
-    // Also overwrite any already-cached copy in ClientG's memory, so an in-session faction
-    // switch corrects lines heard (and cached) before the switch (docs/eva-ram-patch-spike.md).
     TF_Patch_ClientG_Cache(era);
 }
 
+// Finds each cached copy of another era's EVA payload in ClientG and writes ours over it where the whole copy
+// is still there. A line's payloads are all one length, so the write covers the copy exactly.
 static void TF_Patch_ClientG_Cache(int era)
 {
     if (TF_ModRootPath[0] == 0) {
@@ -4114,13 +3809,6 @@ static void TF_Patch_ClientG_Cache(int era)
     char dir[MAX_PATH];
     snprintf(dir, sizeof(dir), "%sData\\AUDIO\\EN-US", TF_ModRootPath);
 
-    /*
-    **	One row per line per era we are NOT playing: hunt that era's distinctive bytes, and
-    **	whatever they are found in is a cached copy of that era's payload, so the blob starts
-    **	at (hit - its file offset) and our own era's file is written over it. Every era's
-    **	payload for a line is the same byte length, so the write covers that copy exactly; it
-    **	goes ahead only where the whole copy is still there (TF_Replace_File_In_Process).
-    */
     struct PatchRow
     {
         const unsigned char* wrong_needle;
@@ -4144,11 +3832,6 @@ static void TF_Patch_ClientG_Cache(int era)
         }
     }
 
-    /*
-    **	Bucket the needles by their first byte. The heap walk below is the expensive part and
-    **	it used to be re-scanned once per row, which was tolerable at two eras and would not be
-    **	at six: this keeps the per-byte cost at roughly one compare however many eras exist.
-    */
     int bucket_start[257];
     int bucket_rows[(sizeof(TF_EvaMailboxLines) / sizeof(TF_EvaMailboxLines[0])) * TF_EVA_ERA_COUNT];
     {
@@ -4269,30 +3952,17 @@ static void TF_Patch_ClientG_Cache(int era)
     }
 }
 
-/*
-** Tiberian Factions -- per-faction radar crest (docs/radar-crest-ram-spike.md).
-** GDI and Nod load TD's HUD scene (FACTIONS.XML scene lists, scripts/factions_build.py),
-** which draws the TD logo regions directly but picks between them by RA side: Allied ->
-** UI_SIDEBAR_FACTIONLOGO_GDI, Soviet -> _NOD. Nod is an Allied-side country, so it would
-** draw the eagle. ClientG keeps one small cached record per referenced atlas region -- four
-** floats {v0, u0, w/W, h/H} of MT_COMMANDBAR_COMMON.TGA -- in writable heap, sampled every
-** frame; re-pointing the eagle record at the scorpion rect swaps the drawn crest with no
-** pixel data (the atlas lives only on the GPU after launch). The record is created lazily on
-** the first radar draw and a fresh per-match copy appears each match, so the patch is driven
-** per-frame for a short window from CNC_Advance_Instance (TF_Crest_Tick). RA sides load RA's
-** scene, whose crests are side-correct already; for them every slot wants its stock rect.
-*/
+// Per-faction radar crest: sides on TD's HUD scene, which picks its crest by RA side, get theirs by re-pointing
+// ClientG's cached atlas-region records (docs/radar-crest-ram-spike.md).
 struct TF_AtlasRect
 {
     int x, y, w, h;
 };
 
+// ClientG's cached UV record for an atlas rect, computed as ClientG does so the bytes match its copies. nudge
+// moves u0 a sub-pixel per slot, so slots sharing a target each restore to their own stock rect.
 static void TF_Atlas_UV_Record(const TF_AtlasRect& r, float out[4], int nudge = 0)
 {
-    // Same arithmetic the launcher used to build the record (double divide, cast to float),
-    // so the bytes match its cached copies exactly. A rect we WRITE carries a per-slot
-    // sub-pixel nudge on u0 (nudge * 0.007 px; invisible) so two slots that share a target
-    // still leave distinguishable records and each restores to its own stock rect.
     const double W = 6871.0, H = 6716.0; // MT_COMMANDBAR_COMMON.TGA
     out[0] = (float)(r.y / H);
     out[1] = (float)(r.x / W + nudge * 1e-6);
@@ -4311,11 +3981,8 @@ struct TF_CrestSlot
 
 #define TF_CREST_SLOTS 2 // the TD GDI logo record, the TD NOD logo record
 
-// Session-persistent list of ClientG addresses that hold a radar-crest UV record, so the
-// per-frame driver can cheaply re-point them without re-scanning ClientG's whole heap. The
-// record is created lazily (first radar draw), a few frames after match start, and a fresh
-// per-match copy appears each match -- so a full scan runs for a short window each match and
-// discovered addresses are re-verified every frame.
+// ClientG addresses found holding a crest record, re-pointed by TF_Crest_Reverify without a heap scan. Each
+// match makes a fresh record, so each match also runs a burst of full scans (TF_Crest_Tick).
 static SIZE_T TF_CrestAddr[512];
 static volatile int TF_CrestAddrCount = 0; // appended by the scan thread, read by the per-frame re-verify
 static int TF_CrestMatchStartFrame = -100000;
@@ -4350,13 +4017,7 @@ static bool TF_Crest_Slots(TF_CrestSlot slots[TF_CREST_SLOTS])
 
     static const TF_AtlasRect TD_LOGO_GDI = {1, 1875, 718, 706};    // UI_SIDEBAR_FACTIONLOGO_GDI
     static const TF_AtlasRect TD_LOGO_NOD = {3778, 2221, 660, 660}; // UI_SIDEBAR_FACTIONLOGO_NOD
-    /*
-    **	Tiberian Sun GDI's own eagle. The atlas has no room left for a fifth crest, so it is
-    **	painted over UI_OBSERVER_MAP_BG -- TD-mode observer art an RA-mode match never draws
-    **	(scripts/crest_atlas_paint.py). The window is shorter than the region so the emblem
-    **	clears the label the launcher writes across the foot of the crest.
-    */
-    static const TF_AtlasRect TS_LOGO_GDI = {4220, 2883, 434, 400};
+    static const TF_AtlasRect TS_LOGO_GDI = {4220, 2883, 434, 400}; // painted over UI_OBSERVER_MAP_BG
     TF_Atlas_UV_Record(TD_LOGO_GDI, slots[0].stock);
     TF_Atlas_UV_Record(TD_LOGO_GDI, slots[0].gdi, 1);
     TF_Atlas_UV_Record(TD_LOGO_NOD, slots[0].nod, 1);
@@ -4376,8 +4037,6 @@ static bool TF_Crest_Slots(TF_CrestSlot slots[TF_CREST_SLOTS])
 // Open ClientG.exe with the access this patch needs. Returns NULL if not found.
 static HANDLE TF_Open_ClientG(DWORD access)
 {
-    // The launcher's pid never changes for the life of this instance, so the process walk
-    // runs once; callers open a fresh handle per use (this is called every frame).
     static DWORD cached_pid = 0;
     if (cached_pid != 0) {
         HANDLE proc = OpenProcess(access, FALSE, cached_pid);
@@ -4427,12 +4086,8 @@ struct TF_ThreadBasicInfo
 
 typedef LONG(WINAPI* TF_NtQueryInformationThread)(HANDLE, int, PVOID, ULONG, PULONG);
 
-/*
-**	The stack of every thread in the process, each from its reservation base to its top (the
-**	TEB's StackBase). Returns the count, or -1 when any thread's stack could not be read, in
-**	which case nothing in the process is known to be safe to write. A thread that exits before
-**	it can be opened has no stack left to protect.
-*/
+// Fills out with every thread's stack in proc, reservation base to TEB StackBase. Returns the count, or -1
+// when a stack could not be read or out is full: then no write to the process is known to be safe.
 static int TF_Thread_Stacks(HANDLE proc, TF_AddrRange* out, int max)
 {
     static TF_NtQueryInformationThread query =
@@ -4463,10 +4118,6 @@ static int TF_Thread_Stacks(HANDLE proc, TF_AddrRange* out, int max)
             MEMORY_BASIC_INFORMATION m;
             bool ok = false;
             if (query(th, 0, &tbi, sizeof(tbi), NULL) == 0) {
-                /*
-                **	The 32-bit TEB, or under 64-bit Windows possibly the thread's 64-bit TEB, which
-                **	has the 32-bit one two pages after it.
-                */
                 for (int t = 0; t < 2 && !ok; t++) {
                     SIZE_T got = 0;
                     ok = ReadProcessMemory(proc, (LPCVOID)((SIZE_T)tbi.TebBaseAddress + t * 0x2000), tib, sizeof(tib), &got)
@@ -4488,18 +4139,13 @@ static int TF_Thread_Stacks(HANDLE proc, TF_AddrRange* out, int max)
     return complete ? count : -1;
 }
 
-// Full scan: walk ClientG's private writable heap, and for every record currently holding
-// either slot's stock or faction rect, remember its address and write the wanted rect.
-// Thread stacks are skipped: they hold passing copies of the rects (this DLL's own among
-// them, when it runs inside ClientG), and the write lands after the read, by when the frame
-// that held the copy may be gone and a live one stands in its place.
+// Walks ClientG's private writable heap, remembering every crest record and writing it the wanted rect.
+// Thread stacks are skipped: a rect copy found there may be gone by the write, which then hits a live frame.
 static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
 {
     bool gdi = (slots[0].want == slots[0].gdi);
     bool nod = (slots[0].want == slots[0].nod);
     bool tsgdi = (slots[0].want == slots[0].tsgdi);
-    // First-dword filter: a record's leading float (v0) must be one of ours before the
-    // 16-byte compares run, so the slots cost one bit test per 4-byte position.
     static unsigned char bloom[8192];
     memset(bloom, 0, sizeof(bloom));
     for (int s = 0; s < TF_CREST_SLOTS; s++) {
@@ -4556,9 +4202,6 @@ static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
                     if (!(bloom[lkey >> 3] & (1 << (lkey & 7)))) {
                         continue;
                     }
-                    // A record is one of ours if it holds a slot's stock rect, or a faction
-                    // rect a previous match wrote. Paired slots share their faction rects, so
-                    // such a hit is attributed to the first of the pair; the write is the same.
                     int slot = -1;
                     const char* was = NULL;
                     for (int s = 0; s < TF_CREST_SLOTS && slot < 0; s++) {
@@ -4644,17 +4287,8 @@ static void TF_Crest_Reverify(void)
     CloseHandle(proc);
 }
 
-// Reset the per-match window so the driver rescans for this match's freshly-created record.
-/*
-**  The sidebar build tab icons are the one HUD element the launcher names in CODE rather
-**  than in the scene file: it appends the state to a per-game prefix baked into ClientG
-**  ("UI_RA_Sidebar_TabIcon_Structure_" in RA mode, "UI_Sidebar_TabIcon_Structure_" in TD
-**  mode) and looks the region up by that name. So GDI/Nod, on TD's scene, still got RA's
-**  gold 130x64 icons squashed into TD's 100x60 tab widgets, in every state. Rewriting the
-**  four RA prefixes inside ClientG's image to the TD ones at match start makes the launcher
-**  itself look up TD's icons for every state, placement included; RA sides get the RA
-**  prefixes restored. The TD prefix is shorter, so the write always fits.
-*/
+// Rewrites ClientG's four RA sidebar tab-icon name prefixes to TD's for a player on TD's HUD scene, or back
+// to RA's, so the launcher looks up that scene's own tab icons (docs/launcher-vs-dll-ownership.md).
 static void TF_Patch_ClientG_Tab_Prefix(bool td_era)
 {
     static const char* const _ra[4] = {"UI_RA_Sidebar_TabIcon_Structure_",
@@ -4665,10 +4299,8 @@ static void TF_Patch_ClientG_Tab_Prefix(bool td_era)
                                        "UI_Sidebar_TabIcon_Infantry_",
                                        "UI_Sidebar_TabIcon_Vehicles_",
                                        "UI_Sidebar_TabIcon_Supers_"};
-    // Located on every call: a slot reads as the RA string, or (after a TD-era match, the DLL
-    // instance having been recycled since) as the shorter TD string with the RA string's
-    // tail still behind its terminator -- which is also what tells it apart from the genuine
-    // TD prefix elsewhere in the image.
+    // A patched slot holds the TD string with the RA string's tail behind its terminator. Matching that, never
+    // the bare TD string, keeps the genuine TD prefix elsewhere in the image from being overwritten.
     SIZE_T where[4] = {0, 0, 0, 0};
     unsigned char patched[4][48];
     size_t patched_len[4];
@@ -4784,11 +4416,8 @@ static void TF_Patch_ClientG_Tab_Prefix(bool td_era)
     CloseHandle(proc);
 }
 
-/*
-**	Superweapons whose cameo acts on one left click, with no targeting cursor: the Firestorm
-**	(on/off) and the Hunter Seeker (launch). The launcher patch below sends their clicks to the
-**	DLL as build requests, and CNC_Handle_Sidebar_Request turns those into the order.
-*/
+// Superweapons whose cameo acts on one left click with no targeting cursor: the Firestorm toggles, the
+// Hunter Seeker launches. The launcher patch sends their clicks to CNC_Handle_Sidebar_Request as build requests.
 static SpecialWeaponType const TF_ClickSpecials[] = {SPC_TS_FIRESTORM, SPC_TS_HUNTSEEK};
 
 static int TF_Click_Special_Index(int buildable_type, int buildable_id)
@@ -4834,12 +4463,8 @@ static const char* TF_Patch_Click_Specials_In(HANDLE proc)
     static const SIZE_T CAVE = 0x1BE91A0;
     static const unsigned char stock[12] = {0x8B, 0x4E, 0x20, 0x83, 0xF9, 0x0B, 0x0F, 0x85, 0x92, 0x01, 0x00, 0x00};
 
-    /*
-    **	mov ecx,[esi+20h] / cmp ecx,SPECIAL / jne OTHER_TYPES      -- the original fork
-    **	cmp [esi+18h],RTTI_SPECIAL / jne SUPER_PATH                 -- entry's BuildableType
-    **	cmp [esi+1Ch],<id> / je BUILD_SEND                          -- entry's BuildableID, per special
-    **	jmp SUPER_PATH
-    */
+    // Cave: the original fork; jne SUPER_PATH unless [esi+18h] (BuildableType) is RTTI_SPECIAL; per special,
+    // je BUILD_SEND when [esi+1Ch] (BuildableID) is its id; then jmp SUPER_PATH.
     enum { HEAD = 22, PER_SPECIAL = 10, TAIL = 5, CAVE_MAX = HEAD + PER_SPECIAL * 8 + TAIL };
     unsigned char cave[CAVE_MAX] = {0x8B, 0x4E, 0x20, 0x83, 0xF9, 0x0B, 0x0F, 0x85, 0, 0, 0, 0,
                                     0x83, 0x7E, 0x18, (unsigned char)RTTI_SPECIAL, 0x0F, 0x85, 0, 0, 0, 0};
@@ -4937,12 +4562,8 @@ static void TF_Patch_ClientG_Click_Specials(void)
     CloseHandle(proc);
 }
 
-/*
-**	The launcher loads this DLL briefly at its own startup, on every machine with the mod,
-**	LAN joiners included, whose simulations never load it. When that load is in ClientG.exe,
-**	the patch goes into the launcher from inside; it stays after the DLL is unloaded, since
-**	every byte of it lives in ClientG's own image.
-*/
+// ClientG loads this DLL briefly at its own startup on every machine, LAN joiners included. That load patches
+// the launcher from inside: click specials, event hook and keys (docs/launcher-vs-dll-ownership.md).
 static const char* TF_Launcher_Resident_Install(void);
 static const char* TF_Patch_Launcher_Keys_In(void);
 
@@ -4984,11 +4605,8 @@ static void TF_Patch_ClientG_Crest(void)
 #endif
 }
 
-// The full scan reads the launcher's whole heap (hundreds of MB across processes), which
-// stalled the game for its duration when it ran on the game thread. It runs on a worker
-// thread instead, one at a time, from a private copy of the slot table taken on the game
-// thread; a request that arrives while a scan is still running is dropped (the next
-// scheduled one covers it).
+// Full scans run on a worker thread, one at a time, from a copy of the slot table: each reads hundreds of MB
+// of the launcher's heap and would stall the game thread. A request made while one runs is dropped.
 static TF_CrestSlot TF_CrestScanSlots[TF_CREST_SLOTS];
 static volatile LONG TF_CrestScanBusy = 0;
 
@@ -5026,14 +4644,8 @@ static void TF_Crest_Request_Scan(void)
     }
     for (int s = 0; s < TF_CREST_SLOTS; s++) {
         TF_CrestScanSlots[s] = slots[s];
-        /*
-        **	`want` points into its own slot; re-aim it at the copy. EVERY variant needs a
-        **	case here: a missing one does not fail loudly, it silently falls through to
-        **	stock, and the scan then spends the whole burst writing the WRONG crest while
-        **	the per-frame re-verify writes the right one -- which reads in game as the
-        **	crest flickering for the first ten seconds of a match. TS GDI was omitted here
-        **	when the fourth variant was added.
-        */
+        // `want` points into its own slot; re-aim it at the copy. Every crest variant needs a case here, or the
+        // scan writes stock while the re-verify writes the faction rect (docs/ts-gdi-faction.md).
         TF_CrestScanSlots[s].want = (slots[s].want == slots[s].gdi)     ? TF_CrestScanSlots[s].gdi
                                     : (slots[s].want == slots[s].nod)   ? TF_CrestScanSlots[s].nod
                                     : (slots[s].want == slots[s].tsgdi) ? TF_CrestScanSlots[s].tsgdi
@@ -5047,20 +4659,13 @@ static void TF_Crest_Request_Scan(void)
     CloseHandle(thread);
 }
 
-// Driven every frame from CNC_Advance_Instance. Cheaply re-points known records each frame,
-// and requests a full heap scan at widening intervals over the first ~15 seconds of each
-// match to discover the record ClientG creates lazily on the first radar draw. On a fresh
-// launch the first scan sees nothing and the second or third catches the record; in later
-// matches the first scan finds everything and the rest confirm it.
+// Every fifth frame re-points the known crest records; at widening gaps over a match's opening, requests a
+// heap scan for the record ClientG creates on its first radar draw (docs/radar-crest-ram-spike.md).
 static void TF_Crest_Tick(void)
 {
-    // 169 cross-process reads per pass; every fifth frame keeps the self-heal invisible
-    // and the cost off the frame budget.
     if (((int)Frame % 5) == 0) {
         TF_Crest_Reverify();
     }
-    // The burst covers records that existed before the atlas table was patched; records
-    // created later in the match are born from the patched table and need no scan.
     static const int _scan_at[] = {0, 6, 12, 24, 48, 96, 192, 384};
     const int count = (int)(sizeof(_scan_at) / sizeof(_scan_at[0]));
     int since = (int)Frame - TF_CrestMatchStartFrame;
@@ -5070,22 +4675,8 @@ static void TF_Crest_Tick(void)
     }
 }
 
-/***********************************************************************************************
- * Launcher-resident faction patches: the crest, tab icons and EVA lines for every player.     *
- *                                                                                             *
- *    Only the host simulates a LAN game, so the host's DLL can patch only the host's          *
- *    launcher. Every launcher loads this DLL at its own startup, though                       *
- *    (TF_Patch_Launcher_At_Load), so there the DLL pins itself and hooks the launcher's       *
- *    plugin event dispatcher (IncomingExternalGamePluginEventClass::Execute, 0x783B60, at     *
- *    its type switch 0x783B82). At match start the host sends each human player a direct      *
- *    message "@@TFL:<GlyphX id, 16 hex digits>:<house>" (TF_Tell_Launchers). The hook keeps   *
- *    every such message off the screen (message kind at +0x19C set past the four the          *
- *    launcher shows) and, when the id is this launcher's own player (cached by the launcher   *
- *    at 0x1FB6D48, flagged at 0x1FB6D40), hands the house to a worker thread. The thread      *
- *    runs the patches the host runs for itself, inside this launcher: the EVA mailbox and     *
- *    cache, the tab icons and the crest, then the crest upkeep at 15 ticks a second. The heap *
- *    scans never run on the launcher's own thread.                                            *
- *=============================================================================================*/
+// Launcher-resident patches: each launcher's copy of the DLL hooks ClientG's event dispatcher. When the host's @@TFL
+// message names its player's house, it patches the crest, tab icons and EVA (docs/launcher-vs-dll-ownership.md).
 static volatile LONG TF_LauncherRequest = 0;
 static HANDLE TF_LauncherWake = NULL;
 
@@ -5112,13 +4703,10 @@ static void TF_Launcher_Log(const char* fmt, ...)
 #endif
 }
 
+// Runs the patches the host runs for itself, in this launcher, each time the event hook wakes it; then keeps
+// the crest up for three minutes at 15 ticks a second, through the scan burst and the match opening.
 static DWORD WINAPI TF_Launcher_Resident_Thread(LPVOID)
 {
-    /*
-    **	Three minutes of crest upkeep after each message covers the scan burst and the
-    **	re-verify self-heal through a match's opening; records born later come from the
-    **	patched atlas table and need none.
-    */
     int ticks_left = 0;
     for (;;) {
         WaitForSingleObject(TF_LauncherWake, (ticks_left > 0) ? 1000 / 15 : INFINITE);
@@ -5273,18 +4861,8 @@ static const char* TF_Launcher_Resident_Install(void)
     return "dispatcher hooked";
 }
 
-/*
-**	Runs in the launcher's own process at the DLL's startup load: routes the deploy and
-**	select-all keys through the launcher's mod commands, so they reach the host for every
-**	player. The launcher's tactical command dispatcher (0x168A1B0) jumps through a table at
-**	0x168AD74 for commands 0x1006 on; three of its slots are re-pointed:
-**	  deploy 0x1020 -> a stub that becomes mod command 1 (0x1032) and joins the mod-command
-**	    send; the host deploys that player's selection (TF_Self_Action_Selected), where the
-**	    launcher's own deploy only acted on units named "MCV".
-**	  select all on screen 0x101B / in world 0x101A -> a stub that first runs the dispatcher on
-**	    the same command re-numbered as mod command 2 (0x1033), so the host hears the order
-**	    before the objects arrive (TF_Select_All_Excludes), then the stock handler.
-*/
+// In ClientG at the DLL's startup load: deploy becomes mod command 1 and select-all sends mod command 2
+// before its stock handler, so both reach the host for every player (docs/launcher-vs-dll-ownership.md).
 static const char* TF_Patch_Launcher_Keys_In(void)
 {
     static const SIZE_T DISPATCH = 0x168A1B0;
@@ -5344,11 +4922,8 @@ static const char* TF_Patch_Launcher_Keys_In(void)
     return "keys routed through mod commands";
 }
 
-/*
-**	Host side: tells every human player's launcher which house its player is, at match start
-**	and twice more while joiners finish loading. The launcher-resident hook acts on the
-**	message addressed to its own player and hides them all.
-*/
+// Host side: at match start and twice more while joiners load, tells each human player's launcher which
+// house its player is. The launcher-resident hook acts on its own player's message and hides them all.
 static int TF_TellLaunchersStart = -100000;
 static int TF_TellLaunchersNext = 0;
 
@@ -5578,6 +5153,8 @@ static void TF_Probe_ClientG_Crest(void)
 }
 #endif // TF_DEV_BUILD
 
+// Copies <mod>/CustomMaps/ into Local_Custom_Maps/Red_Alert/ once the mod's CCDATA path registers (a Workshop mod
+// cannot ship into Documents); with TF_TD_MAPS at 0 it deletes those copies.
 static void TF_Install_Bundled_Maps(const char* mod_path)
 {
     static bool _installed = false;
@@ -5612,11 +5189,6 @@ static void TF_Install_Bundled_Maps(const char* mod_path)
     CreateDirectoryA(dst_dir, NULL);
 
 #if !TF_TD_MAPS
-    /*
-    ** The converted TD maps are not part of this build: remove the copies an
-    ** earlier version installed, by their exact synthetic names (map 1..31,
-    ** each an mpr+tga+json triplet).
-    */
     static char const* const exts[] = {"MPR", "TGA", "JSON"};
     for (int map = 1; map <= 0x1F; map++) {
         for (int e = 0; e < (int)(sizeof(exts) / sizeof(exts[0])); e++) {
@@ -5861,19 +5433,9 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
         new_event.SoundEffect.SoundEffectPriority = SoundEffectName[sound_effect_index].Priority;
         new_event.SoundEffect.SoundEffectContext = SoundEffectName[sound_effect_index].Where;
 
-        // Tiberian Factions: per-faction radar SFX dispatch. The launcher's
-        // own _SFX_RADARON2 / _SFX_RADARDN1 auto-fire is muted by silent-stub
-        // WAVs shipped at RAC/RAR_SFX_RADARON2/RADARDN1.WAV; the DLL fire
-        // path in radar.cpp is re-enabled and arrives here. Allied/Soviet
-        // route to RAORADON/RAORADOF (preserved original RA radar audio);
-        // GDI/Nod route to TFRADRON/TFRADROF (TD Comm Center / Power Down).
-        // Mirrors the SpeechTD[] pattern in On_Speech.
+        // TF: radar on/off plays each era's own pair: TD's for GDI and Nod, TS's for TS GDI, RA's for the rest.
+        // The launcher's own auto-fire of the stock pair is silenced by stub WAVs (docs/building-sound-routing.md).
         if (sound_effect_index == VOC_RADAR_ON || sound_effect_index == VOC_RADAR_OFF) {
-            /*
-            ** TS GDI has its own pair (TS rules [AudioVisual] RadarOn=COMMUP1 /
-            ** RadarOff=RADARDN1); it was borrowing TD's Comm Center audio while those
-            ** were unported, which is audibly the wrong era.
-            */
             bool ts_faction = (player_ptr != NULL && Is_TS_GDI(player_ptr->ActLike));
             bool td_faction = (player_ptr != NULL
                                && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD));
@@ -5935,24 +5497,11 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
         }
 #endif
 
-        // Tiberian Factions: per-faction unit-voice dispatch. GDI/Nod (ActLike
-        // HOUSE_GOOD/HOUSE_BAD) get TD unit acknowledgments; Allied/Soviet keep
-        // RA's voices (.V0x infantry / .R0x). Mirrors the radar/EVA SpeechTD
-        // pattern. Voice events are registered in SFXEVENTSLOCALIZED.XML as
-        // RAC_/RAR_SFX_TD<NAME>.V0x -> base TDC_/TDR_SFX_UNT_<NAME>.V0x assets
-        // (infantry fire .V01/.V03 direct takes; vehicles fire .V00/.V02 radio
-        // takes via negative variation). Credit-tick routing was reverted (the
-        // launcher owns the tick and the WAV stub didn't silence it).
+        // TF: GDI, Nod and TS GDI answer in their own era's unit voices (docs/ts-gdi-faction.md): infantry on
+        // the .V01/.V03 takes, vehicles (negative variation) on the .V00/.V02 radio takes.
         if (player_ptr != NULL
             && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD
                 || Is_TS_GDI(player_ptr->ActLike))) {
-            /*
-            ** Tiberian Sun GDI answers in its own crews' voices. TS keys these to
-            ** numbered voice sets rather than named events (set 15 = the GDI
-            ** rifleman, set 25 = the GDI vehicle crew); scripts/ts_voices_build.py
-            ** lands them under our own event names in the same four-extension
-            ** shape the TD set uses, so only the base name changes here.
-            */
             bool const ts_voice = Is_TS_GDI(player_ptr->ActLike);
             const char* td_base = NULL;
             switch (sound_effect_index) {
@@ -5993,10 +5542,6 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
                 }
             }
             if (td_base != NULL) {
-                // Infantry fire with positive variation (ID+1) -> direct .V01/.V03
-                // takes. Vehicles fire with NEGATIVE variation -> the radio-filtered
-                // .V00/.V02 "vehicle response table" takes (TD ext convention,
-                // tiberiandawn/audio.cpp). Never the .R0x Soviet ext.
                 const char* vext;
                 if (variation < 0) {
                     vext = (ABS(variation) % 2) ? ".V00" : ".V02";
@@ -6065,11 +5610,8 @@ void DLLExportClass::On_Speech(const HouseClass* player_ptr, int speech_index)
     }
 
     if (speech_index >= VOX_FIRST && speech_index < VOX_COUNT) {
-        // Tiberian Factions mod: side-conditional TD EVA dispatch. GDI/Nod
-        // players get the TD voice variant (registered in mod-side
-        // SFXEVENTSLOCALIZED.XML as RAC_SFX_TD<NAME> / RAR_SFX_TD<NAME>).
-        // Allied/Soviet keep RA's Speech[]. A NULL SpeechTD[] slot is
-        // silence for GDI/Nod. Future per-side Nod voice would branch here.
+        // TF: TD and TS GDI houses hear their own era's EVA (SpeechTD, SpeechTS), or nothing for a line that era
+        // never recorded; RA houses hear Speech[], or SpeechRAO's audible name for a stub-silenced line.
         Init_SpeechTD();
         Init_SpeechTS();
         Init_SpeechRAO();
@@ -6078,11 +5620,6 @@ void DLLExportClass::On_Speech(const HouseClass* player_ptr, int speech_index)
         bool td_era = (player_ptr != NULL
                        && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD));
         if (ts_era) {
-            /*
-            ** Tiberian Sun GDI hears its own announcer or nothing at all -- the
-            ** same rule the TD sides follow one line below. Borrowing TD's EVA
-            ** for the lines TS never recorded would swap voices mid-match.
-            */
             if (SpeechTS[speech_index] == NULL) {
                 return;
             }
@@ -6090,11 +5627,6 @@ void DLLExportClass::On_Speech(const HouseClass* player_ptr, int speech_index)
         } else if (td_era && SpeechTD[speech_index] != NULL) {
             name = SpeechTD[speech_index];
         } else if (td_era && strncmp(name, "TD", 2) != 0) {
-            /*
-            ** A TD-era house never hears the RA announcer: a line TD has no
-            ** recording of (sonar pulse, chronosphere, crate upgrades...) is
-            ** dropped rather than spoken in the wrong voice.
-            */
             return;
         } else if (SpeechRAO[speech_index] != NULL) {
             name = SpeechRAO[speech_index];
@@ -6530,14 +6062,8 @@ void DLLExportClass::On_Multiplayer_Game_Over(void)
 
     GameOver = true;
 
-    /*
-    **  No DLL-spoken endgame EVA: the launcher drops speech events dispatched
-    **  in the game-over window (TDACCOM1/TDFAIL1/RAOLOST1 all logged going
-    **  out and inaudible, while every mid-game dispatch plays). The
-    **  "Mission accomplished"/"Your mission has failed" lines are instead
-    **  faction-voiced through the era mailbox (TF_Mailbox_Write_EVA_Voice),
-    **  which the launcher's own auto-fire plays.
-    */
+    // TF: no endgame EVA is spoken from here: the launcher drops speech sent in the game-over window, so the
+    // era mailbox (TF_Mailbox_Write_EVA_Voice) voices those lines (docs/known-issues.md).
 
     EventCallbackStruct event;
 
@@ -6990,13 +6516,8 @@ void DLL_Draw_Pip_Intercept(const ObjectClass* object, int pip)
     DLLExportClass::DLL_Draw_Pip_Intercept(object, pip);
 }
 
-/*
-**  Tiberian Factions mod: line-draw boundary, ported verbatim from TD's
-**  dllinterface.cpp (tiberiandawn/dllinterface.cpp:2994-2996, 3336-3350).
-**  The launcher's CNCObjectStruct already has Lines[]/NumLines fields
-**  populated for rendering — TD's DLL just exposed this; we now do the
-**  same in RA's DLL. Used by the Obelisk laser-beam render.
-*/
+// TD's line-draw hook, ported: CC_Draw_Line hands each line here for the launcher to draw with the current
+// object (beams such as the Obelisk's laser).
 void DLL_Draw_Line_Intercept(int x, int y, int x1, int y1, unsigned char color, int frame)
 {
     DLLExportClass::DLL_Draw_Line_Intercept(x, y, x1, y1, color, frame);
@@ -7014,23 +6535,9 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                                         const char* shape_file_name,
                                         char override_owner)
 {
-    /*
-    **  ShapeSize override — for mod-defined buildings whose donor SHP
-    **  doesn't exist in the legacy mixfile registry, Get_Build_Frame_Width
-    **  returns 0,0 and the launcher falls back to TGA-native pixel size
-    **  (which differs per asset). If the BTC has ShapeSize= set in
-    **  rules.ini, replace width/height before they go into CNCObjectStruct
-    **  so the launcher scales the TGA to those explicit dimensions
-    **  instead. EMC-equivalent path — see TD-Assets workshop docs.
-    */
+    // TF: a building with ShapeSize= draws at that size, since without a classic SHP the launcher sizes it by
+    // its TGA. Rally-point dots (DOT*) drawn for the building keep their own size.
     if (object != NULL && object->What_Am_I() == RTTI_BUILDING) {
-        /*
-        **  TF: rally point markers are drawn attributed to the factory
-        **  building but are NOT the building's own art — the ShapeSize
-        **  override must not inflate them to building dimensions (GDI/Nod
-        **  TD buildings set ShapeSize; RA buildings don't, which made the
-        **  dots building-sized for TD factories only).
-        */
         bool is_rally_marker = (shape_file_name != NULL && strncmp(shape_file_name, "DOT", 3) == 0);
         BuildingTypeClass const* btc_for_size = (BuildingTypeClass const*)&object->Class_Of();
         if (!is_rally_marker && btc_for_size->ShapeWidth > 0 && btc_for_size->ShapeHeight > 0) {
@@ -7039,11 +6546,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         }
     }
 
-    /*
-    **	The Hunter Seeker droid draws off this width/height (a bullet's default is
-    **	tiny). Size it up here -- this is the launcher's actual draw box and it
-    **	reloads per match. Tune TF_HUNTER_DRAW_SIZE by eye.
-    */
+    // TF: a BULLET_TSHUNTER draws at TF_HUNTER_DRAW_SIZE; a bullet's own draw box is tiny.
     if (object != NULL && object->What_Am_I() == RTTI_BULLET
         && ((BulletTypeClass const&)object->Class_Of()).Type == BULLET_TSHUNTER) {
         width = TF_HUNTER_DRAW_SIZE;
@@ -7161,14 +6664,6 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         new_object.SortOrder = ObjectList->Objects[TotalObjectCount].SortOrder + CurrentDrawCount;
     }
 
-
-    /*
-    **  The lamp layer rides one sort notch (8 leptons) above the door
-    **  overlay: it is the near face again, at the building's idle phase,
-    **  and must cover the overlay's frozen phase-0 lamps while staying a
-    **  face -- everything the overlay covers, it covers.
-    */
-
     strncpy(new_object.TypeName, object->Class_Of().IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
 
     if (shape_file_name != NULL) {
@@ -7177,17 +6672,8 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         strncpy(new_object.AssetName, object->Class_Of().Graphic_Name(), CNC_OBJECT_ASSET_NAME_LENGTH);
     }
 
-    /*
-    **  TSTITN frame registration sits +11.8 classic px south of its true
-    **  position (every other unit is within +/-2.4 -- known-issues item 13):
-    **  the engine stands the Titan AT the war-factory door / repair pad /
-    **  park spot and the sprite draws half a cell south of it. Bias the DRAW
-    **  RECT north to re-seat the art on the unit's real coord -- render-only.
-    **  Keyed on the FINAL AssetName: units reach this export with a NULL
-    **  shape_file_name (the name comes from Graphic_Name()), so a
-    **  shape_file_name check never fires for the hull -- the 2026-08-16
-    **  first cut of this bias was dead code.
-    */
+    // TF: the Titan's frames register half a cell south of its coord, so its draw rect moves 12 px north.
+    // Keyed on the final AssetName: a unit's hull reaches here with no shape_file_name.
     if (strncmp(new_object.AssetName, "TSTITN", 6) == 0) {
         new_object.PositionY -= 12;
     }
@@ -7239,29 +6725,11 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, (LEPTON)(short)-384)) >> 3);
     }
 
-    /*
-    **  A unit riding a TS war-factory exit rail keeps sorting UNDER the
-    **  hangar overlay for the whole glide: its own key crosses the overlay's
-    **  (Sort_Y +128) mid-rail while the sprite still overlaps opaque roof
-    **  pixels, popping the unit over the hangar for the tail of the exit.
-    **  The factory stamps the clamp when it assigns the rail; the clamp only
-    **  ever lowers the key, and applies to the base draw alone so sub-object
-    **  draws keep their +n layering above the hull within the headroom the
-    **  clamp leaves under the overlay. Normal sort resumes at track end,
-    **  where the handover cell is clear of the hangar art.
-    */
+    // TF: the TS war factory exit-rail sort clamp, applied to a unit's base draw. Nothing assigns TsExitSortClamp,
+    // so it never applies (docs/ts-gdi-tree-plan.md).
     if (object->What_Am_I() == RTTI_UNIT && CurrentDrawCount == 0) {
         DriveClass const* drive = (DriveClass const*)object;
         if (drive->On_TS_Exit_Track() && drive->TsExitSortClamp != 0) {
-            /*
-            **  The clamp exists to keep an emerging hull under the ROOF, and
-            **  the wide hulls on the default rail overlap the east wing to
-            **  the last waypoint. The Titan does not: tall and narrow, it
-            **  clears the roof as soon as its feet pass the bay mouth, and
-            **  from there the door column must fall BEHIND its torso -- so
-            **  its rail releases the clamp 32 leptons south of the mouth
-            **  line (clamp coord +64 = the overlay key, +32 margin).
-            */
             bool release = drive->On_TS_Titan_Exit_Track()
                            && Coord_Y(object->Sort_Y()) > Coord_Y(drive->TsExitSortClamp) + 96;
             if (!release) {
@@ -7405,14 +6873,8 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             }
 #endif
 
-            // Tiberian Factions: never append the "MAKE" buildup-anim suffix for
-            // wall buildings. Walls have no <NAME>MAKE asset, so a wall enumerated
-            // to the launcher while in BSTATE_CONSTRUCTION (e.g. the placement
-            // preview) resolves to a non-existent "SBAGMAKE"/"CYCLMAKE"/etc. and
-            // NULL-derefs the launcher's asset lookup (CTD on wall placement).
-            // Vanilla RA never hit this: its walls were Allied/Soviet-only and
-            // converted to overlays before enumeration. Re-enabling walls for
-            // GDI/Nod (and widening SBAG/BRIK ownership) exposed the latent trap.
+            // TF: walls never take the MAKE suffix. No wall has a <name>MAKE asset, and the launcher crashes looking
+            // one up for a wall in BSTATE_CONSTRUCTION, such as the placement preview.
             if (building->BState == BSTATE_CONSTRUCTION && !building->Class->IsWall) {
                 strncat(new_object.AssetName, "MAKE", CNC_OBJECT_ASSET_NAME_LENGTH);
             }
@@ -7483,11 +6945,8 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         new_object.FlashingFlags = 0;
         new_object.Cloak = (CurrentDrawCount > 0) ? root_object.Cloak : UNCLOAKED;
 
-        /*
-        **  Sonic band draw levers (see TF_Sonic_Cloak_Mode_Refresh): the shipped
-        **  look is fading plus a stage-keyed scale throb; dev flag can swap in
-        **  the other launcher levers per shot. Scoped to the wave anim.
-        */
+        // TF: the Disruptor's sonic band takes its launcher draw levers from TF_SonicCloakMode and
+        // TF_SonicFxMode (scenario.cpp): fading plus a scale throb unless a dev-build flag picks others.
         if (object != NULL && object->What_Am_I() == RTTI_ANIM
             && (((AnimTypeClass const&)object->Class_Of()).Type == ANIM_TS_SONICWAVE
                 || ((AnimTypeClass const&)object->Class_Of()).Type == ANIM_TS_SONICPULSE)) {
@@ -7519,7 +6978,6 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 new_object.Cloak = CLOAKED;
                 break;
             case 4:
-                // Decloak as the crest arrives, recloak as the band fades.
                 if (stage < AnimClass::SONIC_LEAD_STAGES) {
                     new_object.Cloak = UNCLOAKED;
                 } else if (stage < AnimClass::SONIC_LEAD_STAGES + 4) {
@@ -7546,7 +7004,6 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 new_object.DrawFlags |= SHAPE_FADING;
             }
             if (TF_SonicFxMode & 8) {
-                // Throb: a cosine of the disc's stage, amplitude and period from the flag.
                 double phase = (2.0 * 3.14159265) * (double)stage / (double)TF_SonicThrobPeriod;
                 int amp = (0x0100 * TF_SonicThrobAmp) / 100;
                 new_object.Scale = 0x0100 + (int)((double)amp * cos(phase));
@@ -7577,26 +7034,14 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         new_object.CellY = (CurrentDrawCount > 0) ? root_object.CellY : Cell_Y(cell);
         new_object.CenterCoordX = Coord_X(object->Center_Coord());
         new_object.CenterCoordY = Coord_Y(object->Center_Coord());
-        /*
-        **  An airborne jumpjet is drawn lifted by its height, and its exported centre rises
-        **  with it so the health bar sits over the body rather than over the shadow.
-        */
+        // TF: an airborne jumpjet is drawn lifted by its height, and its exported centre rises with it so the
+        // health bar sits over the body rather than over the shadow.
         if (object->What_Am_I() == RTTI_INFANTRY && ((InfantryClass const*)object)->Is_Airborne_Jumpjet()) {
             new_object.CenterCoordY -= object->Height;
         }
-        /*
-        **  TF: flat TS buildings (side-on iso art, ~0.7 h/w) sit in the SOUTH
-        **  of their square plot, so a plot-centred selection box rides over
-        **  empty ground to the north. Bias the exported centre south onto the
-        **  art's visual centre; render/UI-only — the game-side Center_Coord
-        **  (targeting, pathing, dock geometry) is untouched. 1 classic px =
-        **  256/24 leptons. Conyard art 48cl in the 72cl plot -> +12cl; WF
-        **  51cl tucked 3 into the slab -> +14cl; barracks 32cl in 48 -> +8cl.
-        */
+        // TF: BULLET_TSHUNTER renders from its DimensionX/Y box, whose 10x10 bullet default draws it tiny.
         if (object->What_Am_I() == RTTI_BULLET
             && ((BulletTypeClass const&)object->Class_Of()).Type == BULLET_TSHUNTER) {
-            // The Hunter Seeker droid renders from its DimensionX/Y box (the
-            // bullet default 10x10 draws it tiny). Size it up.
             dimx = 46;
             dimy = 46;
         }
@@ -7628,7 +7073,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 // canvas px = 96x49 classic. Position is launcher-owned on
                 // BOTH axes (six falsified probes; CenterCoordX was the
                 // sixth) -- size is the only dial.
-                dimx = 80; // 08-28 rebuild: body 76x56 classic on the 5x3 plot (position is launcher-owned)
+                dimx = 80; // body 76x56 classic px on the 5x3 plot
                 dimy = 58;
                 break;
             case STRUCT_TSPILE:
@@ -7727,9 +7172,8 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
 
             int full_name = techno_object->Full_Name();
             if (full_name < 0) {
-                // Tiberian Factions: OverrideDisplayName is a raw char* the
-                // launcher feeds straight to std::string — a NULL here is an
-                // instant CTD. Only override when Text_String actually resolved.
+                // TF: the launcher copies OverrideDisplayName straight into a std::string, so a NULL crashes it:
+                // override only when Text_String resolved.
                 const char* override_name = Text_String(full_name);
                 if (override_name != NULL) {
                     new_object.OverrideDisplayName = override_name;
@@ -7802,12 +7246,8 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             new_object.Cloak = techno_object->Cloak;
             new_object.SpiedByFlags = techno_object->Spied_By();
 
-            /*
-            **	TF subterranean: while underground the vehicle exports as CLOAKED so its
-            **	owner (and allies) see the shimmer silhouette, and it is hidden outright from
-            **	every house that is not allied -- the same per-house mask the invisible
-            **	objects use. Sensor detection will later widen the visible set.
-            */
+            // TF: a tunnelling unit exports CLOAKED, the shimmer its owner and allies see, and is hidden from every
+            // other house; a Sensor Array shows it to its own owner as a ghost (docs/subterranean-design.md).
             const bool tf_tunneling = techno_object->Is_Tunneling();
             if (tf_tunneling) {
                 new_object.Cloak = CLOAKED;
@@ -7843,14 +7283,8 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             if (strncmp(new_object.AssetName, "MINE", CNC_OBJECT_ASSET_NAME_LENGTH) == 0) {
                 strncpy(new_object.AssetName, "OREMINE", CNC_OBJECT_ASSET_NAME_LENGTH);
             }
-            /*
-            ** Tiberian Factions -- converted TD WINTER maps live in the
-            ** TEMPERATE theatre, so trees would render with green summer art.
-            ** Swap the exported name to the TDW* tileset entries (loose
-            ** RA_TERRAIN_TEMPERATE.XML, frames point at the base MEG's snow
-            ** theatre textures -- scripts/build_winter_trees.py). Same
-            ** mechanism as the vanilla MINE -> OREMINE rename above.
-            */
+            // TF: on a converted TD winter map (temperate theatre) trees export as their TDW* snow entries, as MINE
+            // does above (scripts/build_winter_trees.py).
             if (TF_TDWinterMap
                 && new_object.AssetName[0] == 'T'
                 && (isdigit((unsigned char)new_object.AssetName[1])
@@ -7949,12 +7383,8 @@ void DLLExportClass::DLL_Draw_Pip_Intercept(const ObjectClass* object, int pip)
     }
 }
 
-/*
-**  Tiberian Factions mod: ported verbatim from TD (tiberiandawn/
-**  dllinterface.cpp:3336-3350). Appends a line segment onto the
-**  per-object CNCObjectLineStruct array that the launcher reads each
-**  frame. Each call adds one line; the laser-beam render adds 3.
-*/
+// Appends one line segment to the current object's line list, which the launcher draws each frame.
+// Ported from TD's DLL_Draw_Line_Intercept.
 void DLLExportClass::DLL_Draw_Line_Intercept(int x, int y, int x1, int y1, unsigned char color, int frame)
 {
     CNCObjectStruct& root_object = ObjectList->Objects[TotalObjectCount];
@@ -7982,14 +7412,8 @@ void DLLExportClass::DLL_Draw_Line_Intercept(int x, int y, int x1, int y1, unsig
  *
  * History: 1/29/2019 11:37AM - ST
  **************************************************************************************************/
-/*
-**	Sensor Array ghosts. A cloaked or buried object inside an enemy house's Sensor Array
-**	(TF_Is_Sensed) is shown to that house see-through: the object's draw entries are exported
-**	once more, uncloaked, translucent and visible to the sensing house alone. The copies keep the
-**	object's owner, so they wear its colour and show as its dot on the radar; they cannot be
-**	selected, and carry IDs clear of the real objects'. The object itself stays cloaked, and
-**	every other house sees it exactly as before.
-*/
+// Exports a cloaked or buried object again, uncloaked and translucent, to each enemy house whose Sensor
+// Array covers it (TF_Is_Sensed). The copies keep the owner's colour, can't be selected and use spare IDs.
 void DLLExportClass::Add_Sensor_Ghosts(ObjectClass const* object, unsigned int buffer_size)
 {
     enum
@@ -8476,32 +7900,14 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Input(InputRequestEnum 
         Keyboard->MouseQX = x1;
         Keyboard->MouseQY = y1;
 
-        /*
-        **	Mod command 1 -- the deploy key. It owns the binding the launcher's
-        **	COMMAND_CNC_DEPLOY_SELECTED_MCV used to hold, because that command cannot reach
-        **	our faction MCV types, which is why the deploy hotkey went missing for all four
-        **	factions.
-        **
-        **	Deliberately generic rather than MCV-specific: every selected object is asked
-        **	for its own self-action and acted on only if the answer is ACTION_SELF, which
-        **	is the same question a self-click asks. So MCVs deploy, APCs, transports and
-        **	Chinooks unload, and anything deployable added later is covered without
-        **	touching this code. The rule also excludes what it should -- infantry answer
-        **	ACTION_NONE, factories with siblings answer ACTION_TOGGLE_PRIMARY, and an MCV
-        **	that cannot fit its yard where it stands answers ACTION_NO_DEPLOY.
-        **
-        **	The action is issued through the ordinary queued mission path, so multiplayer
-        **	stays in step.
-        */
-        /*
-        **	Mod command 2 -- a select-all order. Every launcher sends it just before its own
-        **	select-all hands the objects over (TF_Patch_Launcher_Keys_In), so that house's
-        **	selection gets the harvester and MCV filter (TF_Select_All_Excludes).
-        */
+        // TF: mod command 2 comes just before a launcher's select-all hands its objects over, so that house's
+        // selection skips harvesters and MCVs (TF_Select_All_Excludes).
         if (input_event == INPUT_REQUEST_MOD_GAME_COMMAND_2_AT_POSITION && PlayerPtr != NULL) {
             TF_SelectAllLatchUntil[PlayerPtr->Class->House] = (long)Frame + 10;
         }
 
+        // TF: mod command 1 is the deploy key: each selected object whose self-click answer is ACTION_SELF
+        // acts on it, through the queued mission path so multiplayer stays in step (TF_Self_Action_Selected).
         if (input_event == INPUT_REQUEST_MOD_GAME_COMMAND_1_AT_POSITION) {
             int deployed = TF_Self_Action_Selected();
 
@@ -8647,11 +8053,6 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Sidebar_Request(Sidebar
                                                                          short cell_x,
                                                                          short cell_y)
 {
-    // Diagnostic hook removed 2026-05-18. To re-enable, fprintf at function
-    // entry to log every sidebar request (type/buildable_type/buildable_id/cell).
-    // SidebarRequestEnum values: 0=START_CONSTRUCTION 1=MULTI 2=HOLD 3=CANCEL_C
-    // 4=START_PLACEMENT 5=PLACE 6=CANCEL_PLACE. The buildable_id is the heap
-    // index of the BuildingType / UnitType / etc.
     if (!DLLExportClass::Set_Player_Context(player_id)) {
         return;
     }
@@ -8660,12 +8061,8 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Sidebar_Request(Sidebar
                    (int)request_type, buildable_type, buildable_id, (int)cell_x, (int)cell_y,
                    (PlayerPtr != NULL) ? (int)PlayerPtr->Class->House : -1);
 
-    /*
-    **	A left click on a click special's cameo arrives as a build request
-    **	(TF_Patch_ClientG_Click_Specials) and gives its order: the Firestorm goes on or off, the
-    **	Hunter Seeker launches. Clicks on one cameo closer together than a third of a second count
-    **	once, so a double click cannot raise and drop the field in one go.
-    */
+    // TF: a left click on a click special's cameo arrives as a build request: the Firestorm goes on or off,
+    // the Hunter Seeker launches. Clicks on one cameo within a third of a second count as one.
     int click_special = TF_Click_Special_Index(buildable_type, buildable_id);
     if (click_special >= 0) {
         if (request_type == SIDEBAR_REQUEST_START_CONSTRUCTION || request_type == SIDEBAR_REQUEST_START_CONSTRUCTION_MULTI) {
@@ -8782,33 +8179,16 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_ControlGroup_Request(Co
     }
 }
 
-/*
-** Tiberian Factions -- conditional faction badging of sidebar cameos.
-**
-** The badged cameos carry the emblem of every faction that owns the entry.
-** That only tells the player anything once they hold production from more
-** than one faction, which in practice means they have captured a rival
-** construction yard. In an ordinary single-faction match every badge says the
-** same thing, so the sidebar asks the launcher for the unbadged cameo instead.
-**
-** RABUILDABLES.XML carries a sibling ObjectTypeClass per buildable whose
-** BuildIcon is the pristine, emblem-free art (generated by
-** scripts/cameo_variants_build.py). Switching between the two is a matter of
-** which key this DLL writes into CNCSidebarEntryStruct::AssetName, which the
-** launcher resolves on every sidebar refresh.
-*/
-/*
-** Collapse an Ownable house bitmask down to the four faction bits the cameo
-** badges are keyed on. This is the ONLY definition of that mapping: the badge
-** art is baked from a dump of this function (scripts/cameo_badge_build.py), so
-** baked combinations and runtime lookups cannot drift apart.
-*/
+// Sidebar cameo badges: a buildable's AssetName gets a _<digit> suffix naming which of the player's factions
+// make it, and RABUILDABLES.XML carries a variant per suffix (scripts/cameo_variants_build.py).
 #define TF_FACTION_ALLIES 0x1
 #define TF_FACTION_SOVIET 0x2
 #define TF_FACTION_GDI    0x4
 #define TF_FACTION_NOD    0x8
 #define TF_FACTION_TSGDI  0x10 /* the TS tree; badge digit 'G' */
 
+// Maps an Owner= house mask to the RA and TD faction bits. The badge art is baked from TF_Dump_Faction_Masks'
+// output (scripts/cameo_badge_build.py), so a change here needs the art rebuilt.
 static int TF_Faction_Mask_From_Ownable(int ownable)
 {
     int mask = 0;
@@ -8827,25 +8207,14 @@ static int TF_Faction_Mask_From_Ownable(int ownable)
     return mask;
 }
 
-/*
-** The faction an entry is badged as. TS-tree types are Owner= every side (the
-** yard is the gate), so their Ownable says nothing about faction; they are the
-** TS GDI faction, one emblem, and the badge rule is otherwise the same as for
-** the four RA/TD factions (Luke, 2026-08-30).
-*/
+// The faction bits an entry is badged with: the TS bit for TS-tree types, its Owner= factions otherwise, plus
+// the TS bit for sandbags, which a TS yard builds.
 static int TF_Entry_Faction_Mask(TechnoTypeClass const* type)
 {
     if (type != NULL && TF_Is_TS_Tree_Type(type)) {
         return TF_FACTION_TSGDI;
     }
     int mask = TF_Faction_Mask_From_Ownable(type != NULL ? type->Get_Ownable() : 0);
-    /*
-    ** The badge says which of the player's CONSTRUCTION YARDS can build the entry,
-    ** not which faction the player picked. A TS yard builds sandbags, so they carry
-    ** the TS emblem alongside whichever other yards can build them -- exactly as
-    ** HouseClass::Can_Build lets a TS yard unlock them. Their Owner= list never
-    ** mentions the TS tree, so the bit has to be added here.
-    */
     if (TF_Is_TS_Yard_Wall(type)) {
         mask |= TF_FACTION_TSGDI;
     }
@@ -8907,15 +8276,8 @@ static void TF_Dump_Faction_Masks(void)
 }
 #endif
 
-/*
-** Per production category, the set of the player's own factions that can make
-** that category -- i.e. which faction production buildings the player holds.
-** A shared infantry cameo should carry the emblems of the factions whose
-** BARRACKS the player owns, a shared vehicle the factions whose WAR FACTORIES
-** they own, and so on; buildings key on construction yards. Each factory
-** declares the category it produces via ToBuild, so this needs no per-type
-** table: OR each owned factory's faction bits into its category's slot.
-*/
+// Per production category, the faction bits of the player's factories that make it: barracks for infantry,
+// war factories for vehicles, yards for buildings. TS-tree factories count as the TS faction.
 struct TF_ProducerMasks
 {
     int by_rtti[RTTI_COUNT];
@@ -8936,12 +8298,6 @@ static TF_ProducerMasks TF_Compute_Producer_Masks(HouseClass const* house)
         if (building == NULL || building->IsInLimbo || building->House != house) {
             continue;
         }
-        /*
-        ** TS-tree factories are Owner= all four sides, so their Ownable would
-        ** claim the player produces from every faction at once. They are the
-        ** TS GDI faction: the TS yard, barracks, war factory, helipad and bay
-        ** each contribute that one bit to their category.
-        */
         RTTIType makes = building->Class->ToBuild;
         if (makes > RTTI_NONE && makes < RTTI_COUNT) {
             bool const ts = (building->Class->Type == STRUCT_TSFACT
@@ -8952,15 +8308,8 @@ static TF_ProducerMasks TF_Compute_Producer_Masks(HouseClass const* house)
     return masks;
 }
 
-/*
-** Rewrite a sidebar entry's asset key to the faction-badge variant the launcher
-** should show. The badge set is the player's producing factions for this
-** category (held) intersected with the factions that own the entry -- so it
-** answers "which of my factions makes this". Emblems appear only when the
-** player produces this category from two or more factions; below that the plain
-** _0 cameo is used. Superweapons resolve through a different path and are left
-** untouched.
-*/
+// Appends _<badge> to a sidebar asset key, one base-32 digit: the entry's factions among those the player
+// makes its category from, or 0 when the player makes that category from fewer than two factions.
 static void TF_Apply_Cameo_Badge(char* asset_name, int entry_owner_mask, int held_mask)
 {
     if (asset_name == NULL || asset_name[0] == '\0') {
@@ -8987,13 +8336,8 @@ static void TF_Apply_Cameo_Badge(char* asset_name, int entry_owner_mask, int hel
     }
 }
 
-/*
-** The faction a special's cameo is badged with in a mixed-faction game,
-** resolved from the buildings that grant it -- the specials-column analogue of
-** "which of my factions makes this". Shared hosts resolve to a concrete side:
-** the missile silo to the house's own side when it is an owner (a foreign
-** capturer shows both), GPS to whichever comm-tech centre the house holds.
-*/
+// The faction bits a special is badged with, from the buildings that grant it. The missile silo takes the
+// house's own RA side (both for anyone else), GPS whichever tech centre the house holds.
 static int TF_Special_Display_Mask(SpecialWeaponType id, HouseClass* house)
 {
     switch (id) {
@@ -9042,13 +8386,8 @@ static int TF_Special_Display_Mask(SpecialWeaponType id, HouseClass* house)
     }
 }
 
-/*
-** Rewrite a special's asset key to its faction-badge variant, mirroring
-** TF_Apply_Cameo_Badge for buildables: pristine cameos while every special the
-** house holds comes from one faction, badges once the specials span two or
-** more. The key swaps the "SW_" prefix for "S<hex>_", staying inside
-** AssetName[16], and the launcher resolves it to the baked variant entry.
-*/
+// Rewrites a special's "SW_" key to "S<digit>_" once the house's specials span two or more factions. The
+// digit is base-32, as for buildables, and the key keeps its length to fit AssetName.
 static void TF_Apply_Special_Badge(char* asset_name, SpecialWeaponType id, HouseClass* house)
 {
     if (asset_name == NULL || strncmp(asset_name, "SW_", 3) != 0 || house == NULL) {
@@ -9078,10 +8417,6 @@ static void TF_Apply_Special_Badge(char* asset_name, SpecialWeaponType id, House
     char rest[CNC_OBJECT_ASSET_NAME_LENGTH];
     strncpy(rest, asset_name + 3, sizeof(rest) - 1);
     rest[sizeof(rest) - 1] = '\0';
-    /*
-    **	Base-32 badge digit, matching the buildable badge (TS alone = 'G');
-    **	the old "%X" truncated the 0x10 TS bit to "S0_", a dead key.
-    */
     snprintf(asset_name, CNC_OBJECT_ASSET_NAME_LENGTH, "S%c_%s",
              "0123456789ABCDEFGHIJKLMNOPQRSTUV"[badge & 0x1F], rest);
 }
@@ -9113,11 +8448,7 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
 
     int entry_index = 0;
 
-    /*
-    ** Faction emblems on the cameos only earn their place once the player owns
-    ** construction yards of two or more different factions. Evaluated once per
-    ** refresh rather than per entry.
-    */
+    // TF: the player's producing factions per category, for the cameo badges.
     TF_ProducerMasks const producer_masks = TF_Compute_Producer_Masks(PlayerPtr);
 
 #if TF_DEV_BUILD
@@ -9273,13 +8604,12 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                     break;
 
                 case RTTI_UNITTYPE:
-                    // The dropship bay's deliveries keep their own slot, busy only while the bay builds.
+                    // TF: the dropship bay's deliveries keep their own slot, busy only while the bay builds.
                     isbusy = ((tech != NULL && TF_Bay_Order(RTTI_UNITTYPE, tech->ID)) ? PlayerPtr->DropFactory
                                                                                     : PlayerPtr->UnitFactory)
                              != -1;
                     isbusy |= Units.Avail() <= 0;
-                    // Mk. II delivery cooldown: the cameo waits it out greyed rather
-                    // than leaving the sidebar (Recalc keeps the entry alive).
+                    // TF: through the bay's delivery cooldown the Mk. II entry stays listed, marked busy.
                     isbusy |= (tech != NULL && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC
                                && PlayerPtr->TFDropBayTimer != 0);
                     sidebar_entry.Type = UNIT_TYPE;
@@ -9320,10 +8650,7 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                     break;
                 }
 
-                /*
-                ** Badge the cameo with the player's producing factions for this
-                ** category. Superweapons keep their own AssetName.
-                */
+                // TF: badge the cameo with the player's producing factions for its category; specials are badged above.
                 if (super_weapon == nullptr && tech != NULL) {
                     RTTIType const category = Map.Column[c].Buildables[b].BuildableType;
                     int held = (category > RTTI_NONE && category < RTTI_COUNT)
@@ -9356,17 +8683,8 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                     sidebar_entry.Busy = isbusy;
                     sidebar_entry.PlacementListLength = 0;
 
-                    /*
-                    ** Dropship delivery cooldown: the cameo becomes a live countdown.
-                    ** There is no text channel to the client (Busy draws nothing, and
-                    ** a fake Constructing state reads as a build and miscounts queue
-                    ** clicks -- Luke, 2026-08-12), but AssetName is re-read every
-                    ** refresh, so the remaining time is baked art: one dimmed cameo
-                    ** per second, "5:00" down to "0:01", swapped in by name here.
-                    ** Applies to every unit the bay delivers; the countdown art is
-                    ** baked per unit by scripts/ts_mk2_cooldown_cameos.py (IniName
-                    ** must stay <= 9 chars for the _CDnnn key to fit AssetName).
-                    */
+                    // TF: the launcher has no text channel to a cameo, so the bay's cooldown and the unit caps swap in
+                    // baked art by key: a per-second countdown (_CDnnn), or locked (_LK), which outranks the countdown.
                     if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
                         && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech)
                         && PlayerPtr->TFDropBayTimer != 0) {
@@ -9379,30 +8697,18 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                                  "%s_CD%03d", tech->IniName, (int)secs);
                     }
 
-                    /*
-                    ** At the Mk. II field cap the cameo reads LOCKED (dimmed, red X;
-                    ** baked by scripts/ts_mk2_cooldown_cameos.py). The cap outranks
-                    ** the reload countdown: only losing the fielded Mk. II reopens
-                    ** the order, so a time-remaining readout would be a lie.
-                    */
                     if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
                         && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC && TF_Mk2_At_Cap(PlayerPtr)) {
                         snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
                                  "%s_LK", tech->IniName);
                     }
 
-                    /*
-                    ** A living Ghost Stalker locks its cameo the same way (one per house).
-                    */
                     if (tech != NULL && sidebar_entry.Type == INFANTRY_TYPE
                         && ((InfantryTypeClass const*)tech)->Type == INFANTRY_TSGHOST && TF_Ghost_At_Cap(PlayerPtr)) {
                         snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
                                  "%s_LK", tech->IniName);
                     }
 
-                    /*
-                    ** So does a Mobile War Factory while the house fields one.
-                    */
                     if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
                         && ((UnitTypeClass const*)tech)->Type == UNIT_TSMWAR && TF_Mwar_At_Cap(PlayerPtr)) {
                         snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
@@ -9426,7 +8732,7 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                                 if (tech) {
                                     BuildingTypeClass* building_type = (BuildingTypeClass*)tech;
                                     short const* occupy_list = building_type->Occupy_List(true);
-                                    // Ghost = the ground rows only: headroom rows are
+                                    // TF: the placement ghost is the ground rows only: headroom rows are
                                     // dropped and the rest re-based on the ghost's top row.
                                     int ghost_shift = building_type->Placement_Ghost_Rows_Above() * MAP_CELL_W;
                                     if (occupy_list) {
@@ -9515,13 +8821,12 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                         break;
 
                     case RTTI_UNITTYPE:
-                        // The dropship bay's deliveries keep their own slot (see the single-player path).
+                        // TF: the dropship bay's deliveries keep their own slot, as on the single-player path.
                         isbusy = ((tech != NULL && TF_Bay_Order(RTTI_UNITTYPE, tech->ID)) ? PlayerPtr->DropFactory
                                                                                         : PlayerPtr->UnitFactory)
                                  != -1;
                         isbusy |= Units.Avail() <= 0;
-                        // Mk. II delivery cooldown: greyed, not gone (matches the
-                        // single-player path above).
+                        // TF: the Mk. II entry is busy through the bay's cooldown, as on the single-player path.
                         isbusy |= (tech != NULL && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC
                                    && PlayerPtr->TFDropBayTimer != 0);
                         sidebar_entry.Type = UNIT_TYPE;
@@ -9562,9 +8867,7 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                         break;
                     }
 
-                    /*
-                    ** See the matching badge on the single-player path above.
-                    */
+                    // TF: the cameo badge, as on the single-player path.
                     if (super_weapon == nullptr && tech != NULL) {
                         RTTIType const category = context_sidebar->Column[c].Buildables[b].BuildableType;
                         int held = (category > RTTI_NONE && category < RTTI_COUNT)
@@ -9598,10 +8901,7 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                         sidebar_entry.Busy = isbusy;
                         sidebar_entry.PlacementListLength = 0;
 
-                        /*
-                        ** Dropship delivery cooldown countdown cameo -- matches the
-                        ** single-player path above.
-                        */
+                        // TF: the countdown and locked cameo keys, as on the single-player path.
                         if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
                             && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech)
                             && PlayerPtr->TFDropBayTimer != 0) {
@@ -9614,28 +8914,18 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                                      "%s_CD%03d", tech->IniName, (int)secs);
                         }
 
-                        /*
-                        ** Mk. II field-cap LOCKED cameo -- matches the single-player
-                        ** path above (cap outranks the reload countdown).
-                        */
                         if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
                             && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC && TF_Mk2_At_Cap(PlayerPtr)) {
                             snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
                                      "%s_LK", tech->IniName);
                         }
 
-                        /*
-                        ** Ghost Stalker cap LOCKED cameo -- matches the single-player path above.
-                        */
                         if (tech != NULL && sidebar_entry.Type == INFANTRY_TYPE
                             && ((InfantryTypeClass const*)tech)->Type == INFANTRY_TSGHOST && TF_Ghost_At_Cap(PlayerPtr)) {
                             snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
                                      "%s_LK", tech->IniName);
                         }
 
-                        /*
-                        ** So does a Mobile War Factory while the house fields one.
-                        */
                         if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
                             && ((UnitTypeClass const*)tech)->Type == UNIT_TSMWAR && TF_Mwar_At_Cap(PlayerPtr)) {
                             snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
@@ -9660,8 +8950,8 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                                     if (tech) {
                                         BuildingTypeClass* building_type = (BuildingTypeClass*)tech;
                                         short const* occupy_list = building_type->Occupy_List(true);
-                                        // Ghost = the ground rows only: headroom rows are dropped and
-                                        // the rest re-based on the ghost's top row.
+                                        // TF: the placement ghost is the ground rows only: headroom rows
+                                        // are dropped and the rest re-based on the ghost's top row.
                                         int ghost_shift = building_type->Placement_Ghost_Rows_Above() * MAP_CELL_W;
                                         if (occupy_list) {
                                             while (*occupy_list != REFRESH_EOL
@@ -9815,93 +9105,66 @@ void DLLExportClass::Convert_Special_Weapon_Type(SpecialWeaponType weapon_type,
         }
         break;
     case SPC_TD_ION_CANNON:
-        // Tiberian Factions mod — route GDI Ion Cannon to the launcher's
-        // existing TD-side SW_ION_CANNON cameo + targeting cursor.
-        // Diagnostic 2026-05-26 confirmed launcher's $0-vs-no-cost display
-        // is keyed on SuperWeaponType — SW_NUKE/CHRONO/etc. are whitelisted
-        // for cost-suppression in RA context, SW_ION_CANNON is not. Cost
-        // override applied downstream (sidebar entry fill) to compensate.
+        // TF: the GDI Ion Cannon uses the launcher's TD-side Ion Cannon cameo and targeting cursor.
         dll_weapon_type = SW_ION_CANNON;
         if (weapon_name != NULL) {
             strncpy(weapon_name, "SW_IonCannon", 16);
         }
         break;
     case SPC_TS_ION_CANNON:
-        // Tiberian Factions mod — the uplink-granted TS Ion Cannon: same
-        // launcher-side SW_ION_CANNON plumbing (cursor, cost handling) as
-        // the TD cannon, but AssetName "SW_TSIon" resolves the TS satellite
-        // cameo entry (RA_SW_TSION in RABUILDABLES.XML).
+        // TF: the TS Ion Cannon uses the same Ion Cannon plumbing; "SW_TSIon" names its own cameo entry.
         dll_weapon_type = SW_ION_CANNON;
         if (weapon_name != NULL) {
             strncpy(weapon_name, "SW_TSIon", 16);
         }
         break;
     case SPC_TS_FIRESTORM:
-        // Tiberian Factions mod — the Firestorm Defense: the Ion Cannon's targeting plumbing
-        // (click anywhere raises the field); AssetName "SW_TSFire" resolves TS's FSTDICON cameo
-        // entry (RA_SW_TSFIRE in RABUILDABLES.XML).
+        // TF: the Firestorm Defense takes an Ion Cannon slot in the tab and turns on or off with one click on
+        // its cameo; "SW_TSFire" names its own cameo entry.
         dll_weapon_type = SW_ION_CANNON;
         if (weapon_name != NULL) {
             strncpy(weapon_name, "SW_TSFire", 16);
         }
         break;
     case SPC_TS_EMP:
-        // Tiberian Factions mod — the EMP Cannon's E.M. Pulse: the Ion Cannon's
-        // targeting plumbing (cursor, cost handling); AssetName "SW_TSEmp" resolves
-        // the TS PULSICON cameo entry (RA_SW_TSEMP in RABUILDABLES.XML).
+        // TF: the EMP Cannon's pulse uses the Ion Cannon's targeting; "SW_TSEmp" names its own cameo entry.
         dll_weapon_type = SW_ION_CANNON;
         if (weapon_name != NULL) {
             strncpy(weapon_name, "SW_TSEmp", 16);
         }
         break;
     case SPC_TS_DROPPODS:
-        // Tiberian Factions mod — TS Drop Pod reinforcements: paratroop-class
-        // launcher plumbing (SW_PARA_INFANTRY is cost-suppression whitelisted),
-        // AssetName "SW_TSPods" resolves the TS PODSICON cameo entry.
+        // TF: TS drop pods use the paratroopers' plumbing; "SW_TSPods" names their own cameo entry.
         dll_weapon_type = SW_PARA_INFANTRY;
         if (weapon_name != NULL) {
             strncpy(weapon_name, "SW_TSPods", 16);
         }
         break;
     case SPC_TS_HUNTSEEK:
-        // Tiberian Factions mod -- TS Hunter Seeker. SW_SONAR_PULSE gives the launcher plumbing
-        // (a real super slot in the tab). The special launches itself the tick it is charged
-        // (HouseClass::Super_Weapon_Handler), so the launcher's targeting is never used and
-        // the cameo is a countdown. AssetName "SW_TSHunt" resolves the Hunter Seeker cameo (RA_SW_TSHUNT /
-        // BuildIcon_SW_TSHUNT in RABUILDABLES.XML) -- distinct from the real Sonar Pulse, which
-        // keeps its own "SW_SonarPulse" cameo. SonarPulse's ping is DLL-side (keyed on
-        // SPC_SONAR_PULSE), so routing here does not trigger it.
+        // TF: the Hunter Seeker takes a Sonar Pulse slot; the sonar ping keys on SPC_SONAR_PULSE, so it stays silent.
+        // A player launches it with one click on its cameo, and a computer house launches it once charged.
         dll_weapon_type = SW_SONAR_PULSE;
         if (weapon_name != NULL) {
             strncpy(weapon_name, "SW_TSHunt", 16);
         }
         break;
     case SPC_TD_NUKE:
-        // Tiberian Factions mod — route Nod Nuclear Strike to SW_NUKE.
-        // SW_NUKE is on the RA launcher's no-$0 cost-suppression whitelist
-        // and shares the mushroom-cloud cameo art with RA's Soviet nuke
-        // (Petroglyph reused TD's ATOMSFX asset). AssetName "SW_TDNuke"
-        // points at RA_SW_TDNUKE in RABUILDABLES.XML so the tooltip text
-        // is Nod-specific ("Nuclear Strike") rather than the Soviet
-        // "Atomic Bomb" label that RA_SW_NUKE carries.
+        // TF: the Nod Nuclear Strike uses the nuke's plumbing; "SW_TDNuke" names its own cameo entry, so its
+        // tooltip reads Nuclear Strike rather than the Soviet Atomic Bomb.
         dll_weapon_type = SW_NUKE;
         if (weapon_name != NULL) {
             strncpy(weapon_name, "SW_TDNuke", 16);
         }
         break;
     case SPC_TD_PARA_INFANTRY:
-        // Tiberian Factions mod — Nod paratroops share the launcher's
-        // SW_PARA_INFANTRY plumbing (cursor, cost suppression) but carry
-        // their own AssetName so RA_SW_TDPARAINF in RABUILDABLES.XML can
-        // give them a Nod-badged cameo and TD-specific tooltip text.
+        // TF: Nod paratroopers use the paratroopers' plumbing; "SW_TDParaInf" names their Nod cameo entry.
         dll_weapon_type = SW_PARA_INFANTRY;
         if (weapon_name != NULL) {
             strncpy(weapon_name, "SW_TDParaInf", 16);
         }
         break;
     case SPC_TD_SPY_MISSION:
-        // Tiberian Factions mod — the Nod recon flight rides SW_SPY_MISSION
-        // plumbing with its own AssetName for the Nod-badged cameo + text.
+        // TF: the Nod recon flight uses the spy plane's plumbing; "SW_TDSpyPlane" names its Nod cameo entry.
         dll_weapon_type = SW_SPY_MISSION;
         if (weapon_name != NULL) {
             strncpy(weapon_name, "SW_TDSpyPlane", 16);
@@ -10022,10 +9285,8 @@ void DLLExportClass::Calculate_Placement_Distances(BuildingTypeClass* placement_
                     }
                 }
             }
-            /*
-            **	Firestorm Wall Sections also reach out from the player's own sections, the way walls
-            **	reach out from walls; nothing else may use a section for its reach.
-            */
+            // TF: Firestorm Wall Sections also reach out from the player's own sections, as walls reach from
+            // walls; nothing else may use a section for its reach.
             bool section_chain = (placement_type->Type == STRUCT_TSFSDF && base != NULL && *base == STRUCT_TSFSDF
                                   && base->House->Class->House == PlayerPtr->Class->House);
             if ((base && base->House->Class->House == PlayerPtr->Class->House && base->Class->IsBase)
@@ -10140,11 +9401,8 @@ bool DLLExportClass::Get_Placement_State(uint64 player_id, unsigned char* buffer
             bool clear = cellptr->Is_Clear_To_Build(PlacementType[CurrentLocalPlayerIndex]->Speed)
                          || cellptr->Takes_Building_On_Wall(PlacementType[CurrentLocalPlayerIndex]);
 
-            /*
-            **	Addon plugs (TS PowersUpBuilding) place ONTO a host building, so the
-            **	usual clear-ground test is inverted: legal exactly on the cells of a
-            **	host the player can still upgrade, illegal everywhere else.
-            */
+            // TF: an addon plug places onto a host building, so the clear-ground test is inverted: legal exactly
+            // on the cells of a host the player can still upgrade.
             if (PlacementType[CurrentLocalPlayerIndex]->PowersUpBuilding != STRUCT_NONE) {
                 BuildingClass* host = cellptr->Cell_Building();
                 bool upgradable =
@@ -10174,18 +9432,13 @@ bool DLLExportClass::Passes_Proximity_Check(CELL cell_in,
     **	cells to these are of friendly persuasion, then consider the proximity check to
     **	have been a success.
     */
-    /*
-    **	cell_in is the ghost's top-left. A tall TS building's placement list starts
-    **	with headroom rows above the ghost; only the ghost's own rows count, at their
-    **	true cells, so reach is measured from the ground the player sees.
-    */
+    // TF: cell_in is the ghost's top-left. A tall TS building's headroom rows above the ghost are skipped, so
+    // reach is measured from the ground the player sees.
     int headroom = placement_type->Placement_Ghost_Rows_Above() * MAP_CELL_W;
     short const* occupy_list = placement_type->Occupy_List(true);
 
-    /*
-    **	A component tower or gate onto wall segments: in reach when it covers one of the
-    **	player's own, never onto anyone else's.
-    */
+    // TF: a component tower or gate placed onto wall segments is in reach on the player's own walls, never
+    // on anyone else's.
     bool own_wall = false;
     for (short const* w = occupy_list; *w != REFRESH_EOL; w++) {
         if (*w < headroom) {
@@ -10388,10 +9641,6 @@ bool DLLExportClass::Construction_Action(SidebarRequestEnum construction_action,
                                         } else {
 
                                             BuildingClass* builder = pending->Who_Can_Build_Me(false, false);
-                                            // Diagnostic hook removed 2026-05-18 (GAME_NORMAL path mirror
-                                            // of the GLYPHX path diagnostic in Get_Pending_Placement_Object).
-                                            // To re-enable, fprintf pending.Class.IniName/Type + builder
-                                            // + Manual_Place return value to MOD_DEBUG.txt here.
                                             if (!builder) {
                                                 OutList.Add(EventClass(
                                                     EventClass::ABANDON, (RTTIType)buildable_type, buildable_id));
@@ -10448,11 +9697,8 @@ bool DLLExportClass::Construction_Action(SidebarRequestEnum construction_action,
                                 break;
 
                             default:
-                                /*
-                                **	An order Begin_Production is about to refuse (bay reloading,
-                                **	Mk. II cap) gets a scold, not a "Building" acknowledgment --
-                                **	EVA speaks to the verdict, not the click.
-                                */
+                                // TF: an order Begin_Production will refuse (bay reloading, or the Mk. II,
+                                // Ghost Stalker or Mobile War Factory cap) gets a scold, not "Building".
                                 if (TF_Delivery_Order_Refused(
                                         PlayerPtr, (RTTIType)buildable_type, buildable_id)) {
                                     On_Speech(PlayerPtr, VOX_NO_FACTORY); // "Cannot comply"
@@ -10673,8 +9919,9 @@ bool DLLExportClass::MP_Construction_Action(SidebarRequestEnum construction_acti
 
                             default:
                                 /*
-                                **	Refused-order EVA gate -- matches the single-player path above.
+                                **
                                 */
+                                // TF: refused orders get a scold, as on the single-player path.
                                 if (TF_Delivery_Order_Refused(
                                         PlayerPtr, (RTTIType)buildable_type, buildable_id)) {
                                     On_Speech(PlayerPtr, VOX_NO_FACTORY); // "Cannot comply"
@@ -10831,8 +10078,7 @@ bool DLLExportClass::Place(uint64 player_id, int buildable_type, int buildable_i
             }
 
             CELL cell = (CELL)(map_cell_x + cell_x) + ((map_cell_y + cell_y) << _map_width_shift_bits);
-            // The launcher sends the ghost's top-left; the plot origin sits
-            // any headroom rows above it.
+            // TF: the launcher sends the ghost's top-left; the plot origin sits any headroom rows above it.
             cell = (CELL)(cell - building_type->Placement_Ghost_Rows_Above() * MAP_CELL_W);
 
 #if TF_DEV_BUILD
@@ -11064,13 +10310,6 @@ BuildingClass* DLLExportClass::Get_Pending_Placement_Object(uint64 player_id, in
                                             // Map.IsTargettingMode = true;
                                         } else {
                                             BuildingClass* builder = pending->Who_Can_Build_Me(false, false);
-                                            // Diagnostic hook removed 2026-05-18. To re-enable, fprintf to
-                                            // MOD_DEBUG.txt here for: pending.Class pointer + IniName + Type +
-                                            // Ownable, builder pointer, full BuildingTypes heap tail (last 5),
-                                            // and (if builder==NULL) every Building instance candidate with
-                                            // house/ActLike/ToBuild + match flags. Critical for diagnosing
-                                            // Who_Can_Build_Me failures (CCPtr ID resolution, Ownable mismatch,
-                                            // ActLike remap issues).
                                             if (!builder) {
                                                 OutList.Add(
                                                     EventClass(EventClass::ABANDON, buildable_type, buildable_id));
@@ -11478,11 +10717,8 @@ bool DLLExportClass::Get_Player_Info_State(uint64 player_id, unsigned char* buff
         int index = 0;
         for (int y = top; y <= bottom; ++y) {
             for (int x = left; x <= right; ++x, ++index) {
-                /*
-                **	A cloaked enemy the player's Sensor Array shows (TF_Is_Sensed) is drawn as a
-                **	ghost the launcher does not treat as a target, so the cell carries the action
-                **	against that enemy instead of the action against the ground.
-                */
+                // TF: a cloaked enemy the player's Sensor Array shows is a ghost the launcher won't target, so the
+                // cell carries the action against that enemy rather than the ground.
                 ObjectClass* sensed = NULL;
                 for (ObjectClass* o = Map[XY_Cell(x, y)].Cell_Occupier(); o != NULL; o = o->Next) {
                     if (o->Is_Techno() && ((TechnoClass*)o)->Cloak == CLOAKED && !((TechnoClass*)o)->House->Is_Ally(PlayerPtr)
@@ -11593,8 +10829,7 @@ bool DLLExportClass::Get_Dynamic_Map_State(uint64 player_id, unsigned char* buff
             CELL cell = XY_Cell(map_cell_x + x, map_cell_y + y);
             COORDINATE coord = Cell_Coord(cell) & 0xFF00FF00;
 
-            // Tiberian Factions -- TD-template cells emit one extra synthesized
-            // terrain entry (see Cell_Class_Draw_It), so reserve 3 for those.
+            // TF: a TD-template cell emits one extra synthesized entry (Cell_Class_Draw_It), so it reserves 3.
             bool td_tile = Map[cell].TType >= TEMPLATE_TDSH1 && Map[cell].TType < TEMPLATE_COUNT;
             memory_needed += sizeof(CNCDynamicMapEntryStruct) * (td_tile ? 3 : 2);
             if (memory_needed >= buffer_size) {
@@ -11673,44 +10908,16 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
 
     CELL cell = cell_ptr->Cell_Number();
 
-    /*
-    ** Tiberian Factions -- TD-ported terrain templates (TEMPLATE_TDSH1 and up,
-    ** placed by converted TD maps) render through the dynamic-map path: the
-    ** launcher's template atlas is base-MEG-only (an unknown template
-    ** AssetName NULL-crashes at render, RVA 0x56A539), but dynamic-map entries
-    ** resolve AssetName + ShapeIndex through loose mod art -- the TIB01
-    ** pipeline, render-proven for TDSH1 (2026-06-09 spike). Get_Template_Info
-    ** reports these cells to the launcher as CLEAR; here the cell's real TD
-    ** tile draws on top: AssetName = template IniName, ShapeIndex = the cell's
-    ** icon (one <Tile> Shape per icon in the loose tileset XML, art in
-    ** TD<NAME>.ZIP). Listed before any smudge/overlay entry so resources and
-    ** craters on a TD tile draw above the ground art. Engine-side state
-    ** (land-type, pathing, classic render) keeps the real template via its
-    ** .tem in TFASSETS.MIX.
-    */
+    // TF: a TD template cell goes to the launcher as CLEAR and its tile is drawn here as a dynamic entry: an
+    // unknown template name crashes the launcher's renderer (docs/td-tile-hd-loose-art-investigation.md).
     if (cell_ptr->TType >= TEMPLATE_TDSH1 && cell_ptr->TType < TEMPLATE_COUNT
         && cell_ptr->Overlay == OVERLAY_NONE && cell_ptr->Smudge == SMUDGE_NONE) {
-        /*
-        ** ^ Overlay/Smudge cells get NO ground entry -- FINAL architecture
-        ** after a long saga: ANY two dynamic entries on one cell z-fight
-        ** (unstable launcher-side ordering; layer flags, pixel biases and
-        ** CellY sort biases all failed to stabilise it -- the "flickering
-        ** tiberium"). One dynamic sprite per contested cell is deterministic
-        ** forever. The static layer beneath shows the VANILLA TWIN template
-        ** (Get_Template_Info), so roads/rivers stay continuous under
-        ** spreading tiberium; the residual is a tone seam on clear ground
-        ** (RA clear vs TD winter clear) -- known cosmetic.
-        */
         const TemplateTypeClass& td_type = TemplateTypeClass::As_Reference(cell_ptr->TType);
 
         CNCDynamicMapEntryStruct& td_entry = dynamic_map->Entries[entry_index++];
 
         strncpy(td_entry.AssetName, td_type.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
         td_entry.AssetName[CNC_OBJECT_ASSET_NAME_LENGTH - 1] = 0;
-        // The launcher draws the sprite by AssetName (TIB01 precedent) but keys
-        // radar pips off the vanilla resource Type range -- GOLD1 here painted
-        // shore cells as ore on radar. V12 (haystack farmland) is in-range,
-        // decorative, and pip-free.
         td_entry.Type = (short)OVERLAY_V12;
         td_entry.Owner = (char)cell_ptr->Owner;
         td_entry.DrawFlags = SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST;
@@ -11720,17 +10927,6 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
         td_entry.Height = CELL_PIXEL_H;
         td_entry.CellX = Cell_X(cell);
         td_entry.CellY = Cell_Y(cell);
-        // Water/shore animation: the launcher cycles <Frames> only for atlas
-        // templates, never for dynamic-map entries, so anim frames are
-        // flattened into shapes by build_td_tiles.py (Shape = icon * n + frame)
-        // and cycled here by varying ShapeIndex over time -- the FLAGFLY
-        // pattern. n is PER TEMPLATE (TF_TdTileAnimShapes, generated): 1 for
-        // fully-static templates so their ShapeIndex stays CONSTANT (a value
-        // that churns -- even between aliased identical frames -- makes the
-        // launcher re-create the sprite each cycle, which z-pops above the
-        // cell's overlay entry: the winter "flickering tiberium"); 8 = TD's
-        // HD anim length; 4 for templates whose flattened index would
-        // overflow the u8 ShapeIndex (desert rv20/21, icons to 47).
         enum
         {
             TD_TILE_ANIM_RATE = 2 // game frames per animation frame
@@ -11739,11 +10935,6 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
         const int td_anim_shapes = TF_TdTileAnimShapes[cell_ptr->TType - TEMPLATE_TDSH1];
         td_entry.ShapeIndex = (unsigned char)(cell_ptr->TIcon * td_anim_shapes
                                               + (Frame / TD_TILE_ANIM_RATE) % td_anim_shapes);
-        // OVERLAY layer (NOT smudge: the launcher skips smudge-layer entries
-        // on building-occupied cells -- ground-as-smudge left white RA static
-        // showing through under/around buildings, 2026-06-10 bib report).
-        // The same-cell z-tie against a tiberium/resource overlay entry is
-        // broken by the +1 PositionY bias on the overlay entry below.
         td_entry.IsSmudge = false;
         td_entry.IsOverlay = true;
         td_entry.IsResource = false;
@@ -11752,20 +10943,8 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
         td_entry.IsFlag = false;
     }
 
-    /*
-    ** Tiberian Factions -- the TS concrete apron, drawn from the OWNING
-    ** BUILDING's geometry rather than from map state. It was stamped into
-    ** cells as a bib-family smudge, but one cell holds one smudge, so the
-    ** pad and a neighbour's bib could only ever eat each other (walk
-    ** finding 2026-08-13: the pad goes UNDER everything, never competes).
-    ** Building-derived, bibs stamp freely over its cells and render on top
-    ** (this entry precedes the smudge entry below), ore draws over it (it
-    ** precedes the overlay entry too), nothing can erase the concrete, and
-    ** it leaves with its building. Entry shape stays the TD-template ground
-    ** entry -- overlay layer, theatre shape, centred on the cell -- the one
-    ** entry shape in this engine proven to draw beneath units. A cloaked
-    ** owner (Stealth Generator field) hides its apron with it.
-    */
+    // TF: TS aprons are drawn from their standing building, not map state, ahead of the smudge and overlay
+    // entries so bibs and ore draw over them; a hidden building hides its apron (docs/ts-gdi-tree-plan.md).
     {
         static const struct
         {
@@ -11805,8 +10984,6 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
 
                     strncpy(apron_entry.AssetName, apron_type.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
                     apron_entry.AssetName[CNC_OBJECT_ASSET_NAME_LENGTH - 1] = 0;
-                    // Pip-free decorative type: the launcher paints radar pips
-                    // from the vanilla resource Type range regardless of flags.
                     apron_entry.Type = (short)OVERLAY_V12;
                     apron_entry.Owner = (char)apron_owner->Owner();
                     apron_entry.DrawFlags = SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST;
@@ -11861,40 +11038,21 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
     }
 
     /*
-    **	Redraw any smudge. Apron-type smudges are excluded: they no longer
-    **	stamp at all, and any stale cell from an older map state must not go
-    **	out as a smudge entry (the launcher has no such smudge asset).
+    **	Redraw any smudge.
     */
+    // TF: apron smudges never go out as smudge entries: the launcher has no smudge asset by that name.
     if (cell_ptr->Smudge != SMUDGE_NONE && !Is_TS_Apron_Smudge(cell_ptr->Smudge)) {
         // SmudgeTypeClass::As_Reference(Smudge).Draw_It(x, y, SmudgeData);
 
         const SmudgeTypeClass& smudge_type = SmudgeTypeClass::As_Reference(cell_ptr->Smudge);
 
-        /*
-        ** Tiberian Factions -- hide a building's bib while the building is cloaked and
-        ** hidden from the local player (the Nod Stealth Generator field). Bibs are stamped
-        ** into cells independent of the building sprite, so without this they stay on the
-        ** ground and betray a cloaked base to the enemy. The covering building is resolved
-        ** exactly: SmudgeData encodes this cell's position within the bib (col + row*Width),
-        ** and the bib's top row is the building's bottom foundation row, column-aligned
-        ** (Bib_And_Offset). Every top-row column is probed because foundations can have
-        ** occupy-list holes (refinery dock, hand of Nod) -- a single straight-north probe
-        ** can miss the building and leave its bib floating on the enemy's screen.
-        ** Owner-side keeps the bib: the building renders as shadowy, not VISUAL_HIDDEN,
-        ** so this guard only trips for a viewer who cannot see it.
-        */
+        // TF: a bib whose building the local player can't see (a Stealth Generator field) is not drawn, so it
+        // can't betray a cloaked base; the smudge stays and still blocks placement (docs/stealth-generator-spec.md).
         bool tf_hide_bib = false;
         if (smudge_type.IsBib && smudge_type.Width > 0) {
             int tf_col = cell_ptr->SmudgeData % smudge_type.Width;
             int tf_row = cell_ptr->SmudgeData / smudge_type.Width;
             int tf_top_left = (int)cell - tf_col - tf_row * MAP_CELL_W;
-            /*
-            **	The bib's top row coincides with the owner's bottom foundation row, but
-            **	that row can be entirely occupy-free (TDPROC's bottom row is overlap-only),
-            **	so the probe walks north through the candidate foundation rows and resolves
-            **	at the first row holding any building. Column-by-column within a row because
-            **	foundations also have per-cell holes (refinery dock, hand of Nod).
-            */
             BuildingClass* tf_owner = NULL;
             int tf_owner_row = -1;
             for (int tf_r = 0; tf_r < 4 && tf_owner == NULL; tf_r++) {
@@ -11990,16 +11148,6 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             CNCDynamicMapEntryStruct& smudge_entry = dynamic_map->Entries[entry_index++];
 
             strncpy(smudge_entry.AssetName, smudge_type.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
-            /*
-            ** Tiberian Factions -- bibs render RA's NATIVE per-theatre art on
-            ** TD ground: winter maps live in the TEMPERATE slot (TD winter is
-            ** icy-temperate; RA's brown temperate bib matches), and desert
-            ** maps live in the sacrificed INTERIOR slot whose BIB*.INT art is
-            ** path-shadowed with TD desert bib pixels (the radar-palette
-            ** mechanism, build_desert_radar_palette.py). The earlier per-cell
-            ** BIB->TDBIB AssetName rewrite is retired: dynamic bib entries
-            ** layer unreliably against the synthesized ground entry.
-            */
             smudge_entry.Type = (short)cell_ptr->Smudge;
             smudge_entry.Owner = (char)cell_ptr->Owner;
             smudge_entry.DrawFlags = SHAPE_WIN_REL; // Looks like smudges are drawn top left
@@ -12041,23 +11189,8 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             }
 
             strncpy(overlay_entry.AssetName, overlay_type.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
-            // Tiberian Factions -- the launcher's minimap keys resource pips off
-            // the vanilla resource Type range (GOLD1..GEMS4), ignoring our
-            // IsResource flag, so a new type (TIB01) never pips on radar. Present
-            // TIB01 to the launcher AS Gold for the overlay-model/radar Type while
-            // keeping AssetName="TIB01" so the on-map sprite still draws the green
-            // tiberium tile. Harvest/economy are unaffected (all DLL-side; the real
-            // cell Overlay stays OVERLAY_TIB01). EXPERIMENT: if the launcher prefers
-            // Type over AssetName for resource sprites this regresses the render to
-            // gold; revert if so.
-            // GEMS3 (not GOLD1): radar pip art is per-TYPE -- ore GOLD1..4 = four
-            // gold density shades, gems GEMS1..4 = teal/magenta/GREEN/red. GEMS3
-            // pips tiberium GREEN with no art override and leaves real gems (other
-            // maps' placed GEMS types) untouched. Verified from the RADARMAP
-            // tileset + pip TGA colors, 2026-06-09.
-            // TSWALL likewise presents as BRIK for the launcher's wall/sell semantics
-            // (IsSellable below keys on the vanilla wall Type range) while its own
-            // AssetName picks the TSWALL tileset.
+            // TF: Tiberium goes out as GEMS3, whose radar pip is green, and TS walls as BRIK for the launcher's
+            // wall and sell rules. AssetName still draws their own art, and the cell keeps its real overlay.
             overlay_entry.Type = (cell_ptr->Overlay == OVERLAY_TIB01)
                                      ? (short)OVERLAY_GEMS3
                                      : (cell_ptr->Overlay == OVERLAY_TSWALL || cell_ptr->Overlay == OVERLAY_TSNWALL)
@@ -12068,12 +11201,6 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
                 SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST; // Looks like overlays are drawn centered and translucent
             overlay_entry.PositionX = xpixel + (CELL_PIXEL_W >> 1);
             overlay_entry.PositionY = ypixel + (CELL_PIXEL_H >> 1);
-            /*
-            ** Tiberian Factions -- no PositionY bias needed against the TD
-            ** ground entry: overlay cells never get one (suppressed above;
-            ** the launcher's cell-keyed entry sort made same-cell ties
-            ** unstable and a pixel bias couldn't break them).
-            */
             overlay_entry.Width = Get_Build_Frame_Width(overlay_type.Get_Image_Data());
             overlay_entry.Height = Get_Build_Frame_Height(overlay_type.Get_Image_Data());
             overlay_entry.CellX = Cell_X(cell);
@@ -12081,13 +11208,8 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             overlay_entry.ShapeIndex = cell_ptr->OverlayData;
             overlay_entry.IsSmudge = false;
             overlay_entry.IsOverlay = true;
-            // Tiberian Factions -- OVERLAY_TIB01 now lives at the END of the overlay
-            // enum (so vanilla overlays keep their stock indices for campaign maps),
-            // so it is no longer contiguous with the ore/gems block. Test the vanilla
-            // resource range plus TIB01 explicitly. Note: TIB01 is exported to the
-            // launcher AS OVERLAY_GEMS3 above, so overlay_entry.Type never actually
-            // equals OVERLAY_TIB01 here -- the explicit term is kept for correctness
-            // in case that export remap changes.
+            // TF: OVERLAY_TIB01 lies outside the vanilla ore and gem range. Its entry already goes out as
+            // GEMS3, so this test only matters if that remap changes.
             overlay_entry.IsResource =
                 (overlay_entry.Type >= OVERLAY_GOLD1 && overlay_entry.Type <= OVERLAY_GEMS4)
                 || overlay_entry.Type == OVERLAY_TIB01;
@@ -13275,22 +12397,8 @@ void DLLExportClass::Team_Units_Formation_Toggle_On(uint64 player_id)
     }
 }
 
-
-/*
-**	Tiberian Factions -- fire a house's credit tick AT THAT HOUSE.
-**
-**	The stock tick events are data-silenced and the DLL fires the era-correct one from the
-**	roll itself, which works for whoever is at the keyboard. In a LAN game that is only ever
-**	the host: a joiner has no game DLL mapped at all (reference-lan-mp-host-only-sim), so it
-**	can run nothing of ours. The host does simulate the joiner's house, though, and the sound
-**	callback carries a per-player id -- EA's own beacon addresses allies exactly this way
-**	(see CNC_Handle_Beacon_Request below) -- so the tick can be sent to the player whose
-**	credits actually moved rather than to whoever is local.
-**
-**	Whether the launcher forwards a remotely-addressed sound to that player's shell is
-**	launcher-internal and untested; if it does not, the host hears the other players' ticks
-**	and this needs the data-side flank instead (docs/building-sound-routing.md).
-*/
+// Plays a house's era-correct credit tick to that house's player. In a LAN game only the host simulates,
+// so a joiner's tick is addressed to it by player id (docs/known-issues.md).
 void TF_Fire_Credit_Tick(HouseClass* house, bool is_up)
 {
     if (house == NULL) {
@@ -13922,17 +13030,9 @@ bool DLLExportClass::Legacy_Render_Enabled(void)
         return num_humans < 2;
     }
 
-    // Tiberian Factions mod: classic graphics mode is DROPPED. Once the TD
-    // theatre tilesets were added there is no classic art path for the mod's
-    // content, so classic renders broken (missing/incorrect terrain + units).
-    // HD is the only supported mode. We cannot cleanly lock the classic toggle
-    // out from the mod side: the launcher's spacebar toggle is independent of
-    // this function (it ignores our INPUTTRANSLATORCONFIGURATIONS.XML for that
-    // binding), and returning false here only black-screens the toggled-to
-    // state instead of disabling it. The launcher's own clean lockout applies
-    // to network games only (see Legacy_Render_Enabled's GAME_GLYPHX_MULTIPLAYER
-    // num_humans<2 branch), which we can't spoof for a local skirmish/campaign.
-    // So we leave this true and accept the toggle exposes an unsupported mode.
+    // return false;
+    // TF: CNCDisableLegacyGraphicsOption in Data/XML/GameConstants_Mod.xml removes classic mode. False here
+    // would only blank the classic page, never the launcher's toggle (docs/launcher-vs-dll-ownership.md).
     return true;
 }
 

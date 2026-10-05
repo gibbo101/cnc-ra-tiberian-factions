@@ -361,14 +361,8 @@ static UnitTypeClass const UnitMCV(UNIT_MCV,
                                    MISSION_HUNT     // ORDERS:		Default order to give new unit.
 );
 
-/*
-**  TDHARV (Tiberian Factions Tiberium Harvester) — verbatim port of TD's
-**  UNIT_HARVESTER (tiberiandawn/udata.cpp:585). Behavior identical to
-**  RA's UnitHarvester (same IsToHarvest, MISSION_HARVEST default, etc).
-**  Only difference is the sprite — TDHARV uses TD's bulkier "Harvy"
-**  art. Shared by GDI + Nod (matches TD original). Spawned as the free
-**  unit from STRUCT_TDPROC.
-*/
+// TD Harvester (UNIT_TDHARV), ported from TD's UNIT_HARVESTER with TD's art. Shared by GDI and Nod; STRUCT_TDPROC
+// delivers one free.
 static UnitTypeClass const UnitTdHarv(UNIT_TDHARV,
                                       TXT_HARVESTER,   // NAME:			Text name.
                                       "TDHARV",        // NAME:			IniName.
@@ -398,17 +392,8 @@ static UnitTypeClass const UnitTdHarv(UNIT_TDHARV,
                                       MISSION_HARVEST  // ORDERS:		Default order.
 );
 
-/*
-**  TDMCV (Tiberian Factions Mobile Construction Vehicle) — verbatim port
-**  of TD's UNIT_MCV (tiberiandawn/udata.cpp:638 UnitMCV). RA's UnitTypeClass
-**  ctor has 21 params vs TD's 27 (RA elides build_level/cost/strength/armor/
-**  weapons/ownable — those come from rules.ini). Field values mirror RA's
-**  UnitMCV with one philosophical difference: TDMCV is conceptually shared
-**  by HOUSE_GOOD + HOUSE_BAD (matching TD original — both factions use the
-**  same MCV sprite), but the rules.ini [TDMCV] Owner= field controls
-**  ownability at runtime. Deploy creates STRUCT_TDFACT (not STRUCT_CONST)
-**  — see UnitClass::Try_To_Deploy per-type extension.
-*/
+// TD MCV (UNIT_TDMCV), ported from TD's UNIT_MCV and shared by GDI and Nod; it deploys STRUCT_TDFACT. The stock
+// campaigns build it, skirmish builds the faction MCVs instead.
 static UnitTypeClass const UnitTdMcv(UNIT_TDMCV,
                                      TXT_MCV,         // NAME:			Text name of this unit type.
                                      "TDMCV",         // NAME:			IniName.
@@ -438,21 +423,14 @@ static UnitTypeClass const UnitTdMcv(UNIT_TDMCV,
                                      MISSION_HUNT     // ORDERS:		Default order to give new unit.
 );
 
-// Tiberian Factions -- TD Medium Tank (UNIT_TDMTNK), ported from TD's UNIT_MTANK
-// (tiberiandawn/udata.cpp:264). GDI-only (TD MTANK = HOUSEF_GOOD). Flags mapped
-// from TD source: combat turret, crusher (squashes infantry), gigundo, crate-goodie;
-// explosion ANIM_FRAG2; 32 rotation stages; turret-center-offset 0 (TD value).
-// Gameplay stats (Strength 400/Sight 3/Cost 800/Armor steel/Speed=MPH_MEDIUM/dmg30/
-// ROF50/range4.75) all come from rules.ini [TDMTNK]/[TD105mm], TD-source-derived.
-// The vertical/weapon RENDER offsets are RA-only ctor fields (no TD equivalent) --
-// a pixel-calibration of the muzzle flash against the TD MTNK turret sprite; started
-// from RA's same-size 2TNK and tuned in-game. Fires WEAPON_TD105MM (BULLET_TDAPDS).
+// TD Medium Tank (UNIT_TDMTNK), ported from TD's UNIT_MTANK; GDI only. The render offsets start from RA's 2TNK; stats
+// come from rules.ini [TDMTNK] and [TD105mm].
 static UnitTypeClass const UnitTdMtnk(UNIT_TDMTNK,
                                       TXT_MTANK2,   // NAME: (RA "Medium Tank"; HD display via rules.ini Name=).
                                       "TDMTNK",     // NAME: IniName.
                                       ANIM_TDFRAG2, // EXPLOSION: TD vehicle frag explosion (ported TD ANIM_FRAG2 -> TDFRAG3 / FRAG3 art).
                                       REMAP_NORMAL, // Sidebar remap logic.
-                                      0x0030,       // Vertical offset (render calibration, ref 2TNK -- tune to TD sprite).
+                                      0x0030,       // Vertical offset (render calibration, ref 2TNK).
                                       0x00C0,       // Primary weapon offset along turret centerline (render calibration).
                                       0x0000,       // Primary weapon lateral offset.
                                       0x0000,       // Secondary weapon offset (no secondary weapon).
@@ -476,19 +454,14 @@ static UnitTypeClass const UnitTdMtnk(UNIT_TDMTNK,
                                       MISSION_HUNT  // ORDERS: Default order (TD MTANK default).
 );
 
-// Tiberian Factions -- TD Light Tank (UNIT_TDLTNK), ported from TD's UNIT_LTANK
-// (tiberiandawn/udata.cpp:211). NOD-ONLY (TD LTANK = HOUSEF_BAD). Nod's mainline
-// tank -- like the GDI Medium Tank but smaller (NOT gigundo) and cheaper. Explosion
-// ANIM_FRAG1, which RA has natively (no FRAG port needed, unlike the MTANK). Gameplay
-// stats (Strength 300/Sight 3/Cost 600/Speed=MPH_MEDIUM/dmg25/ROF60/range4) come from
-// rules.ini [TDLTNK]/[TD75mm], TD-source-derived. Render geometry from RA's same-size
-// 1TNK light tank (vert 0x0020, tune to TD sprite). Fires WEAPON_TD75MM (BULLET_TDAPDS).
+// TD Light Tank (UNIT_TDLTNK), ported from TD's UNIT_LTANK: Nod's mainline tank, smaller and cheaper than GDI's
+// Medium Tank. The render offsets start from RA's 1TNK; stats come from rules.ini [TDLTNK] and [TD75mm].
 static UnitTypeClass const UnitTdLtnk(UNIT_TDLTNK,
                                       TXT_LTANK,    // NAME: (RA "Light Tank"; HD display via rules.ini Name=).
                                       "TDLTNK",     // NAME: IniName.
                                       ANIM_FRAG1,   // EXPLOSION: TD LTANK death (ANIM_FRAG1 -- RA has it).
                                       REMAP_NORMAL, // Sidebar remap logic.
-                                      0x0020,       // Vertical offset (render calibration, ref RA 1TNK -- tune to TD sprite).
+                                      0x0020,       // Vertical offset (render calibration, ref RA 1TNK).
                                       0x00C0,       // Primary weapon offset along turret centerline (render calibration).
                                       0x0000,       // Primary weapon lateral offset.
                                       0x0000,       // Secondary weapon offset (no secondary weapon).
@@ -512,21 +485,14 @@ static UnitTypeClass const UnitTdLtnk(UNIT_TDLTNK,
                                       MISSION_HUNT  // ORDERS: Default order (TD LTANK default).
 );
 
-// Tiberian Factions -- TD Mammoth Tank (UNIT_TDHTNK), ported from TD's UNIT_HTANK
-// (tiberiandawn/udata.cpp:317). GDI-ONLY (TD HTANK = HOUSEF_GOOD). The iconic GDI
-// heavy: DUAL weapon -- primary TD120mm cannon (anti-ground) + secondary TDTusk AA
-// missiles (TDSSM, AA+AG homing). Gigundo, Strength 600, Cost 1500. Explosion
-// ANIM_ART_EXP1 (RA has it natively). Stats from rules.ini [TDHTNK]/[TD120mm]/[TDTusk];
-// Speed=6 = MPH_MEDIUM_SLOW (MaxSpeed/2). Dual-weapon render geometry from RA's own
-// Mammoth 4TNK (primary 0x00C0/0x0028, secondary 0x0008/0x0040 lateral barrels).
-// TD's "fires multiple shots" (the double-tap) is replicated via Burst=2 on the
-// weapons (rules.ini), since RA has no unit-level two-shooter flag -- same as [TDTowTwo].
+// TD Mammoth Tank (UNIT_TDHTNK), ported from TD's UNIT_HTANK; GDI only. A 120mm cannon and Tusk AA missiles, both
+// Burst=2 in rules.ini for TD's double shot, on RA's 4TNK barrel offsets.
 static UnitTypeClass const UnitTdHtnk(UNIT_TDHTNK,
                                       TXT_HTANK,    // NAME: (RA "Mammoth Tank"; HD display via rules.ini Name=).
                                       "TDHTNK",     // NAME: IniName.
                                       ANIM_ART_EXP1,// EXPLOSION: TD HTANK death (ANIM_ART_EXP1 -- RA has it).
                                       REMAP_NORMAL, // Sidebar remap logic.
-                                      0x0020,       // Vertical offset (render calibration, ref RA 4TNK -- tune to TD sprite).
+                                      0x0020,       // Vertical offset (render calibration, ref RA 4TNK).
                                       0x00C0,       // Primary weapon offset along turret centerline.
                                       0x0028,       // Primary weapon lateral offset (left barrel).
                                       0x0008,       // Secondary weapon offset along turret centerline.
@@ -550,29 +516,17 @@ static UnitTypeClass const UnitTdHtnk(UNIT_TDHTNK,
                                       MISSION_HUNT  // ORDERS: Default order (TD HTANK default).
 );
 
-// Tiberian Factions -- TD Flame Tank (UNIT_TDFTNK), ported from TD's UNIT_FTANK
-// (tiberiandawn/udata.cpp UnitFTank). NOD-ONLY (faction choice, like the Light Tank;
-// TD FTANK source ownable includes GOOD|BAD but we assign it to Nod). Turret-LESS
-// (is_turret_equipped=false): the weapon is a directional flame jet drawn as an 8-dir
-// muzzle anim (ANIM_FLAME_N) in TechnoClass::Fire_At -- same mechanism as the E4
-// Flamethrower. No rotating turret, but the muzzle POSITION still comes from Fire_Coord's
-// PrimaryOffset/PrimaryLateral = TD FTANK's turret.cpp geometry (0x30 fwd + ±0x20 split),
-// so the twin jets seat on the front nozzles. Fires WEAPON_TDFLAMETONGUE
-// (the stronger FLAME_TONGUE: Dmg50 vs the Flamethrower's 35). is_crusher (squashes
-// infantry). TD's "fires two shots in quick succession" double-jet is replicated via
-// Burst=2 on the weapon (rules.ini), as RA has no unit-level two-shooter flag. Explosion
-// ANIM_NAPALM3 (RA has it -- a large napalm burst, fitting). Internal name = TXT_LTANK
-// (RA has no Flame Tank string); the real "Flame Tank" display comes from rules.ini Name=.
-// Stats (Strength 300, Cost 800, Speed=9 = MPH_MEDIUM/2, ROT 5) from rules.ini [TDFTNK].
+// TD Flame Tank (UNIT_TDFTNK), ported from TD's UNIT_FTANK; Nod only. Turret-less: [TDFlameTongue] is Burst=2, and
+// IsSecondShot alternates its jets between the two front nozzles.
 static UnitTypeClass const UnitTdFtnk(UNIT_TDFTNK,
                                       TXT_LTANK,    // NAME: (RA has no "Flame Tank"; HD display via rules.ini Name=).
                                       "TDFTNK",     // NAME: IniName.
                                       ANIM_NAPALM3, // EXPLOSION: TD FTANK death (ANIM_NAPALM3 -- RA has it).
                                       REMAP_NORMAL, // Sidebar remap logic.
-                                      0x0000,       // Vertical offset = 0 (TD FTANK has no DIR_N pre-move; turret.cpp omits the perspective raise -- the jet sits at hull level).
-                                      0x0030,       // Primary weapon offset = TD FTANK dist=0x30 (forward along body; turret.cpp:430). Carries the twin jets OUT to the front nozzles -- do NOT zero it (forward offset != lateral; zeroing it drops the jets back onto the hull center).
-                                      0x0020,       // Primary weapon lateral = TD FTANK 0x20 (the ±E/W nozzle split; IsSecondShot picks side, turret.cpp:431-435).
-                                      0x0030,       // Secondary weapon offset (unused: Burst=2 keeps which=0; mirror primary for safety).
+                                      0x0000,       // Vertical offset = 0 (the jets sit at hull level, as in TD).
+                                      0x0030,       // Primary weapon offset = TD FTANK 0x30, out to the front nozzles.
+                                      0x0020,       // Primary lateral = TD FTANK 0x20; IsSecondShot picks the side.
+                                      0x0030,       // Secondary weapon offset (unused; mirrors primary).
                                       0x0020,       // Secondary weapon lateral (unused; mirror primary).
                                       true,         // Can this be a goodie surprise from a crate? (TD: yes)
                                       false,        // Always use the given name for the vehicle?
@@ -593,20 +547,8 @@ static UnitTypeClass const UnitTdFtnk(UNIT_TDFTNK,
                                       MISSION_HUNT  // ORDERS: Default order (TD FTANK default).
 );
 
-// Tiberian Factions -- TD Recon Bike (UNIT_TDBIKE), ported from TD's UNIT_BIKE
-// (tiberiandawn/udata.cpp:797 UnitBike). NOD-ONLY (TD BIKE ownable = HOUSEF_BAD|MULTI|JP).
-// Wheeled (SPEED_WHEEL -- so NO Tracked= in rules.ini, the authentic 60%/40% terrain mod) and
-// turret-LESS, a fast light scout. Fires WEAPON_DRAGON -- which we ALREADY ship as [TDDragon]
-// (the E3 Rocket Soldier's launcher: the BULLET_TDTOW homing rocket + WARHEAD_TDAP + Report
-// BAZOOK1). So this port REUSES the whole E3 weapon chain verbatim -- zero new weapon/bullet/
-// warhead/sound. Explosion ANIM_FRAG1 is TD-authentic (TD's BIKE uses FRAG1, NOT the tank
-// FRAG2 -- RA has FRAG1 natively, so no §FRAG anim port). NOT a crusher (TD BIKE squash=false,
-// a light bike can't squash) and NOT gigundo. All-zero weapon offsets follow RA's own wheeled-
-// rocket V2 Launcher (UnitV2Launcher above): the rocket launches from the hull, there's no
-// turret geometry to screenshot-tune. Stats (Strength 160, Cost 500, Speed=16 = MPH_FAST via
-// round(40*100/256), ROT 10, Armor wood, TechLevel 2, Sight 2) all come from rules.ini [TDBIKE].
-// Internal name TXT_LTANK is a never-shown placeholder (RA has no Recon Bike string, same as the
-// Flame Tank); the real "Recon Bike" display name comes from rules.ini Name=.
+// TD Recon Bike (UNIT_TDBIKE), ported from TD's UNIT_BIKE; Nod only. A wheeled, turret-less scout firing [TDDragon],
+// the E3's rocket, from the hull. Stats come from rules.ini [TDBIKE].
 static UnitTypeClass const UnitTdBike(UNIT_TDBIKE,
                                       TXT_LTANK,    // NAME: (RA has no "Recon Bike"; HD display via rules.ini Name=).
                                       "TDBIKE",     // NAME: IniName.
@@ -636,19 +578,8 @@ static UnitTypeClass const UnitTdBike(UNIT_TDBIKE,
                                       MISSION_HUNT  // ORDERS: Default order (TD BIKE default).
 );
 
-// Tiberian Factions -- TD Hum-vee (UNIT_TDJEEP), ported from TD's UNIT_JEEP
-// (tiberiandawn/udata.cpp:691 UnitJeep). GDI-ONLY (TD JEEP ownable = HOUSEF_GOOD | MULTI | JP).
-// Wheeled (SPEED_WHEEL -- no Tracked=) light recon car with a small MG TURRET
-// (is_turret_equipped=true, unlike the Recon Bike). Fires TDM60mg -- the TD WEAPON_M60MG port
-// (BULLET_TD50cal invisible round + WARHEAD_TDSA + Report MGUN11 + directional Anim=GUN-N). The
-// turret geometry mirrors RA's OWN small MG car, the Ranger (UnitJeep below): vert 0x30, primary
-// 0x30 forward / 0 lateral -- so the muzzle flash seats on the turret barrel with no screenshot
-// tuning. NOT a crusher (TD JEEP squash=false) and not gigundo. ANIM_FRAG1 death (TD-authentic --
-// RA has it). TD JEEP "lays tracks while moving" (tire marks) has no RA UnitTypeClass param and
-// is dropped (cosmetic; it's SPEED_WHEEL so leaves no RA tracks regardless). Internal name TXT_JEEP
-// is a placeholder (= RA's "Ranger"); the real "Hum-vee" display comes from rules.ini Name=.
-// Stats (Strength 150, Cost 400, Speed=12 = MPH_MEDIUM_FAST, ROT 10, Armor light, TechLevel 2) all
-// from rules.ini [TDJEEP].
+// TD Hum-vee (UNIT_TDJEEP), ported from TD's UNIT_JEEP; GDI only. A wheeled scout with a small MG turret seated like
+// RA's Ranger (Turret_Adjust); fires TDM60mg. Stats come from rules.ini [TDJEEP].
 static UnitTypeClass const UnitTdJeep(UNIT_TDJEEP,
                                       TXT_JEEP,     // NAME: placeholder (= "Ranger"; HD display via rules.ini Name=).
                                       "TDJEEP",     // NAME: IniName.
@@ -665,7 +596,7 @@ static UnitTypeClass const UnitTdJeep(UNIT_TDJEEP,
                                       false,        // Does this unit harvest Tiberium?
                                       false,        // Is invisible to radar?
                                       false,        // Is it insignificant (won't be announced)?
-                                      true,         // Is it equipped with a combat turret? (TD JEEP: YES -- small MG turret; Luke confirmed vs TD it rotates, keep visible.)
+                                      true,         // Is it equipped with a combat turret? (TD JEEP: yes, MG turret)
                                       false,        // Does it have a rotating radar dish?
                                       false,        // Is there an associated firing animation?
                                       false,        // Must the turret be in a locked down position while moving?
@@ -678,14 +609,8 @@ static UnitTypeClass const UnitTdJeep(UNIT_TDJEEP,
                                       MISSION_HUNT  // ORDERS: Default order (TD JEEP default).
 );
 
-// Tiberian Factions -- TD Nod Buggy (UNIT_TDBGGY), ported from TD's UNIT_BUGGY
-// (tiberiandawn/udata.cpp:744 UnitBuggy). NOD-ONLY (TD BGGY ownable = HOUSEF_BAD | MULTI | JP). The
-// Nod mirror of the GDI Hum-vee: structurally IDENTICAL ctor (same MG turret, same RA-Ranger
-// geometry, same TDM60mg, same ANIM_FRAG1, not crusher/gigundo) -- the only TD-source ctor
-// difference is "lays tracks while moving" (Buggy=false vs Jeep=true), which has no RA param, so the
-// two ctors are identical here. All the stat differences (Strength 140, Cost 300, TechLevel 4 vs the
-// Jeep's 150/400/2) live in rules.ini [TDBGGY]. Internal name TXT_JEEP placeholder; real "Nod Buggy"
-// from rules.ini Name=.
+// TD Nod Buggy (UNIT_TDBGGY), ported from TD's UNIT_BUGGY; Nod only. It shares the Hum-vee's ctor values; its
+// differences live in rules.ini [TDBGGY].
 static UnitTypeClass const UnitTdBggy(UNIT_TDBGGY,
                                       TXT_JEEP,     // NAME: placeholder (HD display via rules.ini Name="Nod Buggy").
                                       "TDBGGY",     // NAME: IniName.
@@ -702,7 +627,7 @@ static UnitTypeClass const UnitTdBggy(UNIT_TDBGGY,
                                       false,        // Does this unit harvest Tiberium?
                                       false,        // Is invisible to radar?
                                       false,        // Is it insignificant (won't be announced)?
-                                      true,         // Is it equipped with a combat turret? (TD BGGY: YES -- small MG turret; Luke confirmed vs TD it rotates, keep visible.)
+                                      true,         // Is it equipped with a combat turret? (TD BGGY: yes, MG turret)
                                       false,        // Does it have a rotating radar dish?
                                       false,        // Is there an associated firing animation?
                                       false,        // Must the turret be in a locked down position while moving?
@@ -715,18 +640,8 @@ static UnitTypeClass const UnitTdBggy(UNIT_TDBGGY,
                                       MISSION_HUNT  // ORDERS: Default order (TD BGGY default).
 );
 
-// Tiberian Factions -- TD APC (UNIT_TDAPC), ported from TD's UNIT_APC
-// (tiberiandawn/udata.cpp:907 UnitAPC). GDI-ONLY by faction-canon: TD source sets BOTH
-// HOUSEF_GOOD and HOUSEF_BAD (a permissive TD-multiplayer quirk), but the APC is iconically
-// GDI in TD gameplay (Nod's mobility roles are the Buggy/Bike/Stealth Tank), so Owner=GoodGuy
-// in rules.ini -- consistent with the Medium-Tank(GDI)/Light-Tank(Nod) faction split.
-// Tracked transport (SPEED_TRACK), NO turret, can squash infantry, fires TDM60mg (the TD M60
-// MG, shared with the Hum-vee/Buggy). Carries 5 (rules.ini Passengers=). Structurally identical
-// to RA's own UnitAPC ctor EXCEPT the explosion: TD's APC = ANIM_FRAG2 -> our ported
-// ANIM_TDFRAG2 (RA's APC uses ANIM_FRAG1). Transport door-load/unload + AI auto-load are gated
-// on the hardcoded UNIT_APC type in unit.cpp/infantry.cpp -- UNIT_TDAPC is added at each of
-// those sites (the §3.27 inert-new-type fix) or it would build but never load passengers.
-// All stats (Strength 200, Cost 700, TechLevel 4, Speed, Points) live in rules.ini [TDAPC].
+// TD APC (UNIT_TDAPC), ported from TD's UNIT_APC; GDI only by rules.ini Owner=. A turret-less transport for 5 firing
+// TDM60mg; it joins the UNIT_APC transport sites (docs/td-vehicle-port-recipe.md).
 static UnitTypeClass const UnitTdApc(UNIT_TDAPC,
                                      TXT_APC,      // NAME: placeholder (= "APC"; HD display via rules.ini Name=).
                                      "TDAPC",      // NAME: IniName.
@@ -756,19 +671,8 @@ static UnitTypeClass const UnitTdApc(UNIT_TDAPC,
                                      MISSION_HUNT  // ORDERS: Default order (TD APC default = MISSION_HUNT).
 );
 
-// Tiberian Factions -- TD Stealth Tank (UNIT_TDSTNK), ported from TD's UNIT_STANK
-// (tiberiandawn/udata.cpp UnitSTank). NOD-ONLY (TD STANK ownable = HOUSEF_BAD). The iconic
-// Nod cloaking unit. CLOAKING is pure rules.ini (Cloakable=yes) -- RA inherited TD's entire
-// cloak system verbatim (TechnoClass::Cloaking_AI / Do_Cloak / Do_Uncloak / the IsScanner
-// adjacency-reveal), so NO engine port is needed for the cloak; it decloaks on firing and
-// shimmers near an enemy Sensors=yes building (TD-canon defenses). Detection wiring is left at
-// the current vanilla state per Luke (2026-06-01) -- not adding Sensors= to the GDI/Nod defenses
-// in this pass. Fires TDStnkDragon = TD WEAPON_DRAGON (reused TDTOW homing missile + TDAP) with
-// Burst=2 (TD is_twoshooter -- a SEPARATE weapon so the single-shot E3/Bike that share TDDragon
-// stay Burst=1). Turret-less (the launcher fires from the hull, all-zero offsets like the Bike /
-// V2 Launcher). INVISIBLE-TO-RADAR (ctor param true -- TD STANK doesn't show on the minimap).
-// Explosion ANIM_TDFRAG2 (TD STANK = ANIM_FRAG2, same as the tanks). All stats (Strength 110,
-// Cost 900, TechLevel 5, Speed 12) in rules.ini [TDSTNK].
+// TD Stealth Tank (UNIT_TDSTNK), ported from TD's UNIT_STANK; Nod only and hidden from radar. Cloaks through rules.ini
+// Cloakable=; fires TDStnkDragon, a Burst=2 copy of [TDDragon] so the E3 and Bike keep single shots.
 static UnitTypeClass const UnitTdStnk(UNIT_TDSTNK,
                                       TXT_LTANK,    // NAME: placeholder (RA has no Stealth Tank string; HD display via rules.ini Name="Stealth Tank").
                                       "TDSTNK",     // NAME: IniName.
@@ -798,23 +702,15 @@ static UnitTypeClass const UnitTdStnk(UNIT_TDSTNK,
                                       MISSION_HUNT  // ORDERS: Default order (TD STANK default = MISSION_HUNT).
 );
 
-// Tiberian Factions -- TD Rocket Launcher (UNIT_TDMLRS), ported from TD's UNIT_MLRS
-// (tiberiandawn/udata.cpp:854 UnitMLRS, TXT_MLRS = "Rocket Launcher"). GDI-only: TD source sets
-// both ownable bits but the prerequisite is STRUCTF_EYE (the GDI Ion-Cannon comm centre), so only
-// GDI can build it -> Owner=GoodGuy, a top-tier post-Ion-Cannon siege unit (build level 7).
-// TD SOURCE CROSS-WIRING (see docs/td-mlrs-deep-dive.md): UNIT_MLRS renders with the "MSAM" sprite
-// (and UNIT_MSAM, the S.S.M. Launcher, renders with "MLRS") -- so this unit bundles the MSAM asset
-// despite the TDMLRS IniName. Turreted, with the turret LOCKED forward while moving (TD is_lockturret),
-// 2-shooter (Burst=2 on the weapon), tracked. Fires TDMlrsRocket (BULLET_TDSSM2, a long-range homing
-// rocket). Death ANIM_ART_EXP1 (TD MLRS = ANIM_ART_EXP1; RA has it natively, no FRAG port). Default
-// order MISSION_GUARD (TD MLRS, not HUNT). Stats in rules.ini [TDMLRS]/[TDMlrsRocket]/[TDSSM2].
+// TD Rocket Launcher (UNIT_TDMLRS), ported from TD's UNIT_MLRS; GDI only, behind the Eye. TD draws UNIT_MLRS with the
+// MSAM sprite and UNIT_MSAM with MLRS, so this unit carries the MSAM art (docs/td-mlrs-deep-dive.md).
 static UnitTypeClass const UnitTdMlrs(UNIT_TDMLRS,
                                       TXT_LTANK,     // NAME: placeholder (RA has no "Rocket Launcher" string; HD display via rules.ini Name=).
                                       "TDMLRS",      // NAME: IniName (sprite bundled from the MSAM asset -- TD cross-wiring).
                                       ANIM_ART_EXP1, // EXPLOSION: TD MLRS death (ANIM_ART_EXP1 -- RA has it natively).
                                       REMAP_NORMAL,  // Sidebar remap logic.
-                                      0x0010,        // Vertical offset (render calibration -- small lift; tune to the MSAM launcher).
-                                      0x0000,        // Primary weapon offset along turret centerline (was 0x00C0 = the MTANK gun barrel, far too forward for a rear launcher; spawn at the launcher, screenshot-tune).
+                                      0x0010,        // Vertical offset (small lift for the rear launcher).
+                                      0x0000,        // Primary weapon offset along turret centerline (rear launcher).
                                       0x0000,        // Primary weapon lateral offset.
                                       0x0000,        // Secondary weapon offset (no secondary weapon).
                                       0x0000,        // Secondary weapon lateral offset.
@@ -837,23 +733,15 @@ static UnitTypeClass const UnitTdMlrs(UNIT_TDMLRS,
                                       MISSION_GUARD  // ORDERS: Default order (TD MLRS default = MISSION_GUARD).
 );
 
-// Tiberian Factions -- TD SSM Launcher (UNIT_TDMSAM), ported from TD's UNIT_MSAM
-// (tiberiandawn/udata.cpp:477 UnitSAM, TXT_MSAM = "S.S.M. Launcher"). NOD-ONLY (HOUSEF_BAD).
-// TD SOURCE CROSS-WIRING (docs/td-mlrs-deep-dive.md): UNIT_MSAM renders with the "MLRS" sprite
-// (and UNIT_MLRS, the Rocket Launcher, renders with "MSAM") -- so this unit bundles the MLRS
-// asset despite the TDMSAM IniName. Turreted, turret LOCKED forward while moving (body rotates
-// to fire; the on-stop settle is the same TD-authentic lock-turret transition as the MLRS).
-// NOT a two-shooter (single big rocket). Fires TDHonestJohn (BULLET_TDMISSILE -- a fast,
-// NON-homing, accurate, long-range (10) napalm rocket with its own TDMISSILE sprite). Death
-// ANIM_TDFRAG2. Temple-gated for Nod (Prerequisite=weap,atek -- atek=TDTMPL; mirrors the GDI
-// MLRS gated on the Ion Cannon/Eye). Stats in rules.ini [TDMSAM]/[TDHonestJohn]/[TDMissile].
+// TD SSM Launcher (UNIT_TDMSAM), ported from TD's UNIT_MSAM; Nod only, behind the Temple. It carries the MLRS art
+// (docs/td-mlrs-deep-dive.md) and fires TDHonestJohn, a single long-range napalm rocket.
 static UnitTypeClass const UnitTdMsam(UNIT_TDMSAM,
                                       TXT_LTANK,     // NAME: placeholder (RA has no "SSM Launcher" string; HD display via rules.ini Name=).
                                       "TDMSAM",      // NAME: IniName (sprite bundled from the MLRS asset -- TD cross-wiring).
                                       ANIM_TDFRAG2,  // EXPLOSION: TD MSAM death (TD ctor = ANIM_FRAG2 -> our ported ANIM_TDFRAG2).
                                       REMAP_NORMAL,  // Sidebar remap logic.
-                                      0x0010,        // Vertical offset (small lift; same family as the MLRS launcher, screenshot-tune).
-                                      0x0000,        // Primary weapon offset (rear launcher -- spawn at the launcher, not far forward; screenshot-tune).
+                                      0x0010,        // Vertical offset (small lift, as the MLRS).
+                                      0x0000,        // Primary weapon offset (rear launcher).
                                       0x0000,        // Primary weapon lateral offset.
                                       0x0000,        // Secondary weapon offset (no secondary weapon).
                                       0x0000,        // Secondary weapon lateral offset.
@@ -876,22 +764,15 @@ static UnitTypeClass const UnitTdMsam(UNIT_TDMSAM,
                                       MISSION_HUNT   // ORDERS: Default order (TD MSAM default = MISSION_HUNT).
 );
 
-// Tiberian Factions -- TD Artillery (UNIT_TDARTY), ported from TD's UNIT_ARTY
-// (tiberiandawn/udata.cpp UnitArty, TXT_ARTY = "Artillery"). NOD-ONLY (HOUSEF_BAD). Named
-// "Nod Artillery" (rules.ini) to disambiguate from RA's own [ARTY] "Artillery". TURRET-LESS
-// (the body aims; very slow ROT 2). No building prereq beyond the war factory (TD STRUCTF_NONE,
-// build level 6). Cheap (450) and fragile (75 HP) but high damage (150) -- a glass-cannon
-// bombardment unit. Fires TD155mm (BULLET_TDHESHELL -- an ARCING, faceless 155mm HE shell that
-// reuses the 120MM sprite, WARHEAD_TDHE, ANIM_ART_EXP1 impact). Death ANIM_ART_EXP1 (RA-native).
-// Turret-less gun offsets follow the Bike pattern (small forward muzzle; screenshot-tune).
-// Stats in rules.ini [TDARTY]/[TD155mm]/[TDHEShell].
+// TD Artillery (UNIT_TDARTY), ported from TD's UNIT_ARTY; Nod only, named Nod Artillery in rules.ini. Turret-less, the
+// body aims; fires TD155mm, an arcing HE shell.
 static UnitTypeClass const UnitTdArty(UNIT_TDARTY,
                                       TXT_LTANK,     // NAME: placeholder (RA's "Artillery" is its own unit; HD display via rules.ini Name=).
                                       "TDARTY",      // NAME: IniName.
                                       ANIM_ART_EXP1, // EXPLOSION: TD ARTY death (ANIM_ART_EXP1 -- RA-native).
                                       REMAP_NORMAL,  // Sidebar remap logic.
-                                      0x0010,        // Vertical offset (small; turret-less gun, screenshot-tune).
-                                      0x0050,        // Primary weapon offset along body centerline (forward barrel muzzle; screenshot-tune).
+                                      0x0010,        // Vertical offset (small; turret-less gun).
+                                      0x0050,        // Primary weapon offset along body centerline (barrel muzzle).
                                       0x0000,        // Primary weapon lateral offset.
                                       0x0000,        // Secondary weapon offset (no secondary weapon).
                                       0x0000,        // Secondary weapon lateral offset.
@@ -914,16 +795,8 @@ static UnitTypeClass const UnitTdArty(UNIT_TDARTY,
                                       MISSION_HUNT   // ORDERS: Default order (TD ARTY default = MISSION_HUNT).
 );
 
-// Tiberian Factions -- TD Visceroid (UNIT_TDVICE), ported from TD's UNIT_VICE
-// (tiberiandawn/udata.cpp UnitVisceroid, TXT_VISCEROID "Visceroid"). NOT a buildable
-// faction unit -- it is a Tiberium creature that SPAWNS when an infantry dies in Tiberium
-// (see the infantry.cpp tiberium-death hook). Tracked, turret-LESS, squashes infantry,
-// INVISIBLE to radar, INSIGNIFICANT (no "unit lost" announce), CONSTANT ANIMATION (a writhing
-// blob), MISSION_HUNT (mindlessly attacks everything nearby). Fires WEAPON_TDCHEM -- we already
-// ship [TDChemspray] (the E5 Chem Warrior spray), so the visceroid reuses that whole weapon
-// chain. HEALS while on a Tiberium cell (unit.cpp AI hook, mirroring TD UNIT.CPP:434). Stats
-// (Strength 150, Cost 800, Sight 4, ARMOR_WOOD, MPH_MEDIUM, ROT 5) live in rules.ini [TDVICE].
-// Death ANIM_NAPALM2 (TD-authentic).
+// TD Visceroid (UNIT_TDVICE), ported from TD's UNIT_VICE. Never built: it spawns when infantry die in Tiberium
+// (infantry.cpp), heals while on Tiberium (unit.cpp) and fires [TDChemspray].
 static UnitTypeClass const UnitTdVice(UNIT_TDVICE,
                                       TXT_LTANK,    // NAME: placeholder (RA has no "Visceroid"; HD display via rules.ini Name=).
                                       "TDVICE",     // NAME: IniName.
@@ -1473,14 +1346,8 @@ void UnitTypeClass::operator delete(void* pointer)
     UnitTypes.Free((UnitTypeClass*)pointer);
 }
 
-/*
-**  Dynamic constructor for mod-defined unit types. Used by the [NewUnits]
-**  index in rules.ini — counterpart to BuildingTypeClass's 2-arg constructor
-**  at bdata.cpp:2846. Same trick: the heap slot we're being allocated into
-**  is Count() - 1 because operator new has already appended us by the time
-**  this init list runs. Logic=<vanilla-IniName> in Read_INI then aliases
-**  Type + IsXxx flags + ImageData to a vanilla donor.
-*/
+// Builds a [NewUnits] entry in the heap slot operator new has just appended (Count() - 1); Read_INI's Logic= then
+// makes it act as a vanilla unit type.
 UnitTypeClass::UnitTypeClass(int /*utype*/, char const* ininame)
     : UnitTypeClass(static_cast<UnitType>(UnitTypes.Count() - 1),
                     TXT_NONE,
@@ -1512,11 +1379,7 @@ UnitTypeClass::UnitTypeClass(int /*utype*/, char const* ininame)
 {
 }
 
-/*
-**  Name-based lookup across the full UnitTypes heap, including mod entries
-**  past UNIT_COUNT. From_Name only walks the vanilla enum range and can't
-**  see [NewUnits] entries. Mirrors BuildingTypeClass::As_Pointer.
-*/
+// Finds a unit type by IniName across the whole heap, [NewUnits] entries included; From_Name stops at UNIT_COUNT.
 UnitTypeClass* UnitTypeClass::As_Pointer(char const* name)
 {
     if (name == NULL) {
@@ -1531,13 +1394,8 @@ UnitTypeClass* UnitTypeClass::As_Pointer(char const* name)
     return NULL;
 }
 
-// TS-spike -- Tiberian Sun Hover MLRS (UNIT_TSHVR), TS rules [HVR]. GDI-only.
-// Turreted (the rotating missile rack; TS Turret=yes) but light: NOT a crusher,
-// NOT gigundo. Explosion ANIM_FRAG1 (light-vehicle death, RA-native). Render
-// geometry starts from the 2TNK reference (vert 0x0030, primary 0x00C0) -- tune
-// against the voxel-rendered sprite by screenshot. Art is the first voxel-rendered
-// HD tileset (TSHVR.ZIP, 32 body + 32 turret frames); no classic SHP exists, so
-// One_Time donors 2TNK's ImageData. Fires WEAPON_TSHOVERMISSILE (TDSSM AA+AG chain).
+// TS Hover MLRS (UNIT_TSHVR), TS rules [HVR]: a hover tank firing TSHoverMissile from a rocket rack that
+// Hover_Rack_Seat seats per facing (docs/ts-gdi-tree-plan.md).
 static UnitTypeClass const UnitTsHvr(UNIT_TSHVR,
                                      TXT_LTANK,    // NAME: placeholder (RA has no Hover MLRS string; HD display via rules.ini Name=).
                                      "TSHVR",      // NAME: IniName.
@@ -1567,13 +1425,8 @@ static UnitTypeClass const UnitTsHvr(UNIT_TSHVR,
                                      MISSION_HUNT  // ORDERS: Default order.
 );
 
-// TS Titan walker (UNIT_TSTITN), TS rules [MMCH]. GDI-only, turreted (TS
-// Turret=yes), Crusher=yes, fires TS120mm. Art = TS MMCH.SHP: 8 body facings
-// (first frame of each 15-frame walk cycle) duplicated to 32 shapes + the
-// 32-facing turret run, packed by scripts/ts_pack_walkers.py with ONE shared
-// source-canvas transform — the turret mount position is baked into the TS
-// frames, so the turret needs NO Turret_Adjust seat (draw both centered).
-// Classic = transparent 48x48 stub in TFASSETS.MIX (TSTITN.SHP).
+// TS Titan walker (UNIT_TSTITN), TS rules [MMCH], firing TS120mm. The turret mount is baked into the packed frames
+// (scripts/ts_pack_walkers.py), so the turret draws centred with no Turret_Adjust seat.
 static UnitTypeClass const UnitTsTitn(UNIT_TSTITN,
                                       TXT_LTANK,    // NAME: placeholder (HD display via rules.ini Name=).
                                       "TSTITN",     // NAME: IniName.
@@ -1671,13 +1524,8 @@ static UnitTypeClass const UnitTsLimp(UNIT_TSLIMP,
                                       MISSION_GUARD // ORDERS: Default order.
 );
 
-// TS Mammoth Mk. II (UNIT_TSHMEC), TS rules [HMEC]. GDI-only, NO rotating
-// turret (the twin railguns are hull-fixed — the walker turns to fire, which
-// is also what makes the railgun line-shot read correctly). Primary =
-// MechRailgun (piercing line), Secondary = MammothTusk (RA-native AA missiles,
-// same weapon the RA 4TNK carries). Art = HMEC.VXL rendered in the HVA
-// frame-0 standing pose (13 sections placed by their animation matrices —
-// scripts/vxl_render.py --hva). Classic = transparent 56x56 stub (TSHMEC.SHP).
+// TS Mammoth Mk. II walker (UNIT_TSHMEC), TS rules [HMEC]: hull-fixed twin railguns, so the walker turns to fire,
+// and TSMammothTusk AA missiles.
 static UnitTypeClass const UnitTsHmec(UNIT_TSHMEC,
                                       TXT_HTANK,    // NAME: placeholder (HD display via rules.ini Name=).
                                       "TSHMEC",     // NAME: IniName.
@@ -1697,7 +1545,7 @@ static UnitTypeClass const UnitTsHmec(UNIT_TSHMEC,
                                       false,        // Is it equipped with a combat turret? (hull-fixed guns)
                                       false,        // Does it have a rotating radar dish?
                                       false,        // Is there an associated firing animation?
-                                      true,         // Must the turret be in a locked down position while moving? (REQUIRED for hull-fixed shooters: the FIRE_FACING handler only turns the BODY when this is set — ARTY/V2 convention; without it the unit "aims" its nonexistent turret forever and never fires)
+                                      true,         // Turret lock: FIRE_FACING turns the body to aim hull-fixed guns.
                                       true,         // Is this a gigundo-rotund-enormous unit? (4TNK-class hulk)
                                       false,        // Does the unit have a constant animation?
                                       false,        // Is the unit capable of jamming radar?
@@ -1707,14 +1555,8 @@ static UnitTypeClass const UnitTsHmec(UNIT_TSHMEC,
                                       MISSION_HUNT  // ORDERS: Default order.
 );
 
-// TS Harvester (UNIT_TSHARV), TS rules [HARV]. RA-harvester mechanics
-// (IsToHarvest + MISSION_HARVEST; capacity = Rule.BailCount, which matches
-// TS Storage=28 exactly) docked at STRUCT_TSPROC — the TS refinery is an
-// RA-refinery clone, so TSHARV joins every UNIT_HARVESTER dispatch site.
-// TS: Strength=1000, Armor=heavy, TechLevel=1, Sight=4, Speed=5, Cost=1400,
-// Points=55, Crusher=yes, Crewed=yes, SelfHealing=yes. Art = HARV.VXL voxel
-// render, 32 facings, NO dump-anim frames — the draw path skips the dump
-// shape calc like UNIT_TDHARV.
+// TS Harvester (UNIT_TSHARV), TS rules [HARV], with RA harvester mechanics. Its voxel art has no load or dump frames,
+// so the draw path skips both.
 static UnitTypeClass const UnitTsHarv(UNIT_TSHARV,
                                       TXT_HARVESTER, // NAME: placeholder (HD display via rules.ini Name=).
                                       "TSHARV",      // NAME: IniName.
@@ -1744,12 +1586,8 @@ static UnitTypeClass const UnitTsHarv(UNIT_TSHARV,
                                       MISSION_HARVEST // ORDERS: Default order.
 );
 
-// TS Wolverine (UNIT_TSSMEC), TS rules [SMECH]. Light scout mech, no turret
-// (guns are drawn in the SHP frames), fires AssaultCannon (instant hitscan).
-// TS: Strength=175, Armor=light, TechLevel=2, Sight=6, Speed=7, Cost=500,
-// Points=25, ROT=5. Art = SMECH.SHP walk frames (12 steps x 8 facings, the
-// Titan walker layout; rules.ini WalkFrames=12 WalkFacings=8). Classic =
-// transparent stub in TFASSETS.MIX.
+// TS Wolverine (UNIT_TSSMEC), TS rules [SMECH]: a light walker whose hull-fixed guns are drawn in its walk frames;
+// fires AssaultCannon, an instant hit.
 static UnitTypeClass const UnitTsSmec(UNIT_TSSMEC,
                                       TXT_LTANK,    // NAME: placeholder (HD display via rules.ini Name=).
                                       "TSSMEC",     // NAME: IniName.
@@ -1779,18 +1617,15 @@ static UnitTypeClass const UnitTsSmec(UNIT_TSSMEC,
                                       MISSION_HUNT  // ORDERS: Default order.
 );
 
-// TS Disruptor (UNIT_TSSONIC), TS rules [SONIC]. Turreted sonic tank (TS
-// Turret=yes; SONICTUR.VXL), fires SonicZap — the IsSonic piercing line
-// (railgun damage sweep, green beam, no spark helix) through WARHEAD_SONIC.
-// TS: Strength=500, Armor=heavy, TechLevel=9, Sight=7, Speed=4, Cost=1300,
-// Points=25, ROT=4, Crusher=yes. Art = SONIC.VXL body 0-31 + turret 32-63.
+// TS Disruptor (UNIT_TSSONIC), TS rules [SONIC]: a sonic tank whose turret sits aft of the hull centre
+// (Sonic_Turret_Seat). It fires SonicZap, the IsSonic piercing line.
 static UnitTypeClass const UnitTsSonic(UNIT_TSSONIC,
                                        TXT_HTANK,    // NAME: placeholder (HD display via rules.ini Name=).
                                        "TSSONIC",    // NAME: IniName.
                                        ANIM_FBALL1,  // EXPLOSION: big fireball.
                                        REMAP_NORMAL, // Sidebar remap logic.
-                                       0x0030,       // Vertical offset: UNUSED for this unit -- Fire_Coord builds the muzzle from the turret seat (see there).
-                                       0x0050,       // Primary weapon offset: UNUSED for this unit (same).
+                                       0x0030,       // Vertical offset (Fire_Coord ignores it for this unit).
+                                       0x0050,       // Primary weapon offset (Fire_Coord ignores it for this unit).
                                        0x0000,       // Primary weapon lateral offset (centerline emitter).
                                        0x0000,       // Secondary weapon offset (no secondary).
                                        0x0000,       // Secondary weapon lateral offset.
@@ -1809,16 +1644,12 @@ static UnitTypeClass const UnitTsSonic(UNIT_TSSONIC,
                                        false,        // Is the unit capable of jamming radar?
                                        false,        // Is the unit a mobile gap generator?
                                        32,           // Rotation stages.
-                                       0,            // Turret center offset along body centerline (TS art TurretOffset=-64 is baked centered; the field is unused by the RA draw path).
+                                       0,            // Turret center offset (unused; see Sonic_Turret_Seat).
                                        MISSION_HUNT  // ORDERS: Default order.
 );
 
-// The old TS Mammoth Tank (UNIT_TS4TNK), TS rules [4TNK] (TechLevel -1 in TS, crate-only;
-// buildable here). Turreted twin 120mmx cannon + MammothTusk AA missiles, self-healing
-// (rules.ini). TS: Strength=600, Armor=heavy, Sight=6, Speed=4, Cost=1700, Points=60,
-// ROT=5, Crusher=yes, CrateGoodie=yes. Art = 4TNK.VXL hull 0-31 + 4TNKTUR with 4TNKBARL
-// turret 32-63; no TurretOffset in TS art, so hull and turret share the voxel origin.
-// Weapon offsets start from the TD Mammoth's twin-barrel geometry.
+// TS Mammoth Tank (UNIT_TS4TNK), TS rules [4TNK], shown as Mammoth Mk. I: twin 120mm cannon and TS4TNKTusk AA
+// missiles. TS art gives no TurretOffset, so hull and turret share the voxel origin.
 static UnitTypeClass const UnitTs4tnk(UNIT_TS4TNK,
                                       TXT_HTANK,    // NAME: placeholder (HD display via rules.ini Name=).
                                       "TS4TNK",     // NAME: IniName.
@@ -1848,11 +1679,8 @@ static UnitTypeClass const UnitTs4tnk(UNIT_TS4TNK,
                                       MISSION_HUNT  // ORDERS: Default order.
 );
 
-// RA2 Apocalypse (UNIT_R2APOC), Yuri's Revenge rules [APOC] (art [MTNK]). An easter egg found only
-// in crates. Turreted twin 120mm cannon + Mammoth
-// Tusk AA missiles, self-healing (rules.ini). YR: Strength=800, Armor=heavy, Sight=6, Speed=4,
-// Cost=1750, Points=60, ROT=5, Crusher=yes, CrateGoodie=yes. Fire points come from the generated
-// r2tanks_muzzle.h (techno.cpp Fire_Coord); the offsets here only seed the classic path.
+// RA2 Apocalypse (UNIT_R2APOC), Yuri's Revenge rules [APOC]; found only in crates. Its fire points come from the
+// generated r2tanks_muzzle.h (techno.cpp Fire_Coord).
 static UnitTypeClass const UnitR2Apoc(UNIT_R2APOC,
                                       TXT_HTANK,    // NAME: placeholder (HD display via rules.ini Name=).
                                       "R2APOC",     // NAME: IniName.
@@ -1882,9 +1710,8 @@ static UnitTypeClass const UnitR2Apoc(UNIT_R2APOC,
                                       MISSION_HUNT  // ORDERS: Default order.
 );
 
-// RA2 Prism Tank (UNIT_R2PRIS), Yuri's Revenge rules [SREF]. The Apocalypse's easter-egg twin.
-// Turreted prism beam that forks onto nearby enemies (techno.cpp IsPrismBeam). YR: Strength=150,
-// Armor=light, Sight=8, Speed=4, Cost=1200, Points=50, ROT=5, Crusher=yes, CrateGoodie=yes.
+// RA2 Prism Tank (UNIT_R2PRIS), Yuri's Revenge rules [SREF]; found only in crates. Its prism beam forks onto nearby
+// enemies (techno.cpp IsPrismBeam).
 static UnitTypeClass const UnitR2Pris(UNIT_R2PRIS,
                                       TXT_MTANK,    // NAME: placeholder (HD display via rules.ini Name=).
                                       "R2PRIS",     // NAME: IniName.
@@ -1914,10 +1741,8 @@ static UnitTypeClass const UnitR2Pris(UNIT_R2PRIS,
                                       MISSION_HUNT  // ORDERS: Default order.
 );
 
-// C&C3 Mammoth Tank "Mk. III" (UNIT_C3MK3), Tiberium Wars GDIMammoth. Found only in unit crates, by any
-// faction (rules.ini TechLevel=-1, cell.cpp). Turreted twin cannon + AA/AG rocket pods. The body tileset rolls its
-// treads through the walker gait (rules.ini WalkFrames=3); the turret seat and every fire point come
-// from the generated c3tanks.h (Turret_Adjust, techno.cpp Fire_Coord).
+// C&C3 Mammoth Tank Mk. III (UNIT_C3MK3), Tiberium Wars GDIMammoth; found only in unit crates, by any faction. Its
+// turret seat and fire points come from the generated c3tanks.h (Turret_Adjust, techno.cpp Fire_Coord).
 static UnitTypeClass const UnitC3Mk3(UNIT_C3MK3,
                                      TXT_HTANK,    // NAME: placeholder (HD display via rules.ini Name=).
                                      "C3MK3",      // NAME: IniName.
@@ -1947,9 +1772,8 @@ static UnitTypeClass const UnitC3Mk3(UNIT_C3MK3,
                                      MISSION_HUNT  // ORDERS: Default order.
 );
 
-// C&C3 Predator Tank (UNIT_C3PRED), Tiberium Wars GDIPredator. Found only in unit crates, by any
-// faction (rules.ini TechLevel=-1, cell.cpp).
-// Same tileset layout and generated seat/fire tables as UNIT_C3MK3; its turret sits aft of the hull centre.
+// C&C3 Predator Tank (UNIT_C3PRED), Tiberium Wars GDIPredator; found only in unit crates, by any faction. Same
+// generated seat and fire tables as UNIT_C3MK3; its turret sits aft of the hull centre.
 static UnitTypeClass const UnitC3Pred(UNIT_C3PRED,
                                       TXT_MTANK,    // NAME: placeholder (HD display via rules.ini Name=).
                                       "C3PRED",     // NAME: IniName.
@@ -1979,10 +1803,8 @@ static UnitTypeClass const UnitC3Pred(UNIT_C3PRED,
                                       MISSION_HUNT  // ORDERS: Default order.
 );
 
-// TS Mobile EM-Pulse (UNIT_TSMEMP), Firestorm rules [MOBILEMP]. No weapon: it charges while it can
-// move and deploys to set off a small E.M. Pulse round itself (UnitClass::EMP_Blast). FS:
-// Strength=800, Armor=heavy, TechLevel=6, Sight=6, Speed=7, Cost=1000, Points=60, ROT=5,
-// Crusher=yes, CrateGoodie=yes, MaxCharge=1800. Art = M_EMP.VXL voxel render, 32 facings.
+// TS Mobile EM-Pulse (UNIT_TSMEMP), Firestorm rules [MOBILEMP]: unarmed. It charges while not stunned and deploys to
+// set off a small E.M. Pulse itself (UnitClass::EMP_Blast).
 static UnitTypeClass const UnitTsMemp(UNIT_TSMEMP,
                                       TXT_APC,      // NAME: placeholder (HD display via rules.ini Name=).
                                       "TSMEMP",     // NAME: IniName.
@@ -2045,9 +1867,8 @@ static UnitTypeClass const UnitTsLpst(UNIT_TSLPST,
                                       MISSION_GUARD // ORDERS: Default order.
 );
 
-// TS Mobile War Factory (UNIT_TSMWAR), Firestorm rules [MOBWARG]. No weapon; one at a time.
-// FS: Strength=800, Armor=heavy, TechLevel=10, Sight=6, Speed=3, Cost=1800, Points=60, ROT=5,
-// Crusher=yes, BuildLimit=1. Art = MWAR_NOD.VXL voxel render, 32 facings.
+// TS Mobile War Factory (UNIT_TSMWAR), Firestorm rules [MOBWARG]: unarmed, it deploys into STRUCT_TSDWEAP. One per
+// house, deployed or not (TF_Mwar_At_Cap).
 static UnitTypeClass const UnitTsMwar(UNIT_TSMWAR,
                                       TXT_APC,      // NAME: placeholder (HD display via rules.ini Name=).
                                       "TSMWAR",     // NAME: IniName.
@@ -2077,12 +1898,8 @@ static UnitTypeClass const UnitTsMwar(UNIT_TSMWAR,
                                       MISSION_GUARD // ORDERS: Default order.
 );
 
-// TS Amphibious APC (UNIT_TSAPC), TS rules [APC]. Unarmed hover transport —
-// SPEED_HOVER stands in for the TS amphibious float (plan-approved deviation),
-// so it crosses water like the Hover MLRS. Passengers=5 via rules.ini; door
-// logic joins the UNIT_APC/UNIT_TDAPC sites. TS: Strength=200, Armor=heavy,
-// TechLevel=6, Sight=5, Speed=8, Cost=800, Points=25, ROT=5, Crusher=yes.
-// Art = APC.VXL voxel render, 32 facings.
+// TS Amphibious APC (UNIT_TSAPC), TS rules [APC]: an unarmed transport for 5 on SPEED_AMPHIBIOUS (rules.ini
+// Amphibious=), a tracked drive that also crosses water. It joins the UNIT_APC unload sites.
 static UnitTypeClass const UnitTsApc(UNIT_TSAPC,
                                      TXT_APC,      // NAME: placeholder (HD display via rules.ini Name=).
                                      "TSAPC",      // NAME: IniName.
@@ -2112,11 +1929,8 @@ static UnitTypeClass const UnitTsApc(UNIT_TSAPC,
                                      MISSION_HUNT  // ORDERS: Default order.
 );
 
-// Mech Division (UNIT_TSMDIV) — a purchasable TOKEN, not a unit: it exists to
-// be ordered at the dropship bay and is expanded by BulletClass::Deliver_Cargo
-// into 3 Titans + 2 Wolverines at the unload beat. It never unlimbos onto the
-// map in normal play (the destructor backstop expands it too), so its combat
-// stats are inert placeholders and its classic art is a token stub.
+// Mech Division (UNIT_TSMDIV): a token ordered at the dropship bay, never a unit on the map. The dropship turns it
+// into 3 Titans and 2 Wolverines (bullet.cpp _mech_division), so its stats are inert placeholders.
 static UnitTypeClass const UnitTsMdiv(UNIT_TSMDIV,
                                       TXT_HTANK,    // NAME: placeholder (HD display via rules.ini Name=).
                                       "TSMDIV",     // NAME: IniName.
@@ -2146,23 +1960,15 @@ static UnitTypeClass const UnitTsMdiv(UNIT_TSMDIV,
                                       MISSION_GUARD // ORDERS: unused.
 );
 
-// TS Devil's Tongue (UNIT_TSSUBTANK), TS rules [SUBTANK]. Subterranean flame
-// tank — the underground state machine lives on UnitClass (docs/
-// subterranean-design.md); as a surface vehicle it is a tracked, turret-less
-// flamethrower. TS's FireballLauncher (Damage=0 + fire particles) maps onto our
-// TDFlameTongue chain: same twin-prong nozzle geometry as the TD Flame Tank
-// (0x30 forward + ±0x20 lateral split, Burst=2 picks the side), directional
-// TDFLAME-N muzzle jet, ANIM_NAPALM3 death. TS: Strength=300, Armor=light,
-// TechLevel=7, Sight=5, Speed=5, Cost=750, ROT=6, Crusher=yes, CrateGoodie=yes.
-// (TS NoMovingFire is not modelled — RA has no unit-level flag for it.)
-// Art = SUBTANK.VXL: shapes 0-31 driving, 32-71 dive, 72-111 emerge ladder.
+// TS Devil's Tongue (UNIT_TSSUBTANK), TS rules [SUBTANK]: a subterranean flame tank, found only in crates
+// (docs/subterranean-design.md). It fires TSFireball, Burst=2 alternating between twin nozzles.
 static UnitTypeClass const UnitTsSubTank(UNIT_TSSUBTANK,
                                          TXT_LTANK,    // NAME: placeholder (HD display via rules.ini Name=).
                                          "TSSUBTANK",  // NAME: IniName.
                                          ANIM_NAPALM3, // EXPLOSION: napalm burst (flame-carrier death).
                                          REMAP_NORMAL, // Sidebar remap logic.
                                          0x0000,       // Vertical offset.
-                                         0x0080,       // Primary weapon offset = TS PrimaryFireFLH forward 128 (art.ini [SUBTANK]); TD FTANK nozzle geometry).
+                                         0x0080,       // Primary weapon offset = TS PrimaryFireFLH forward 128.
                                          0x0030,       // Primary weapon lateral (±E/W prong split, widened so E/W-facing jets read as two; TS itself fires from the centre).
                                          0x0080,       // Secondary weapon offset (mirror primary).
                                          0x0030,       // Secondary weapon lateral (mirror primary).
@@ -2185,12 +1991,8 @@ static UnitTypeClass const UnitTsSubTank(UNIT_TSSUBTANK,
                                          MISSION_HUNT  // ORDERS: Default order.
 );
 
-// TS Subterranean APC (UNIT_TSSAPC), TS rules [SAPC]. Unarmed underground
-// transport (docs/subterranean-design.md) — as a surface vehicle a tracked
-// Passengers=5 carrier joining the UNIT_APC/UNIT_TDAPC/UNIT_TSAPC door sites.
-// TS: Strength=175, Armor=heavy, TechLevel=6, Sight=5, Speed=5, Cost=800,
-// ROT=5, Crusher=yes, CrateGoodie=yes, PipScale=Passengers.
-// Art = SAPC.VXL (striped drill nose), same 112-shape layout as TSSUBTANK.
+// TS Subterranean APC (UNIT_TSSAPC), TS rules [SAPC]: an unarmed underground transport for 5, found only in crates
+// (docs/subterranean-design.md). It joins the UNIT_APC unload sites.
 static UnitTypeClass const UnitTsSapc(UNIT_TSSAPC,
                                       TXT_APC,      // NAME: placeholder (HD display via rules.ini Name=).
                                       "TSSAPC",     // NAME: IniName.
@@ -2220,13 +2022,8 @@ static UnitTypeClass const UnitTsSapc(UNIT_TSSAPC,
                                       MISSION_HUNT  // ORDERS: Default order.
 );
 
-/*
-**  AMCV/SMCV (Allied/Soviet MCVs) and TDGMCV/TDNMCV (GDI/Nod MCVs) — the four faction MCVs.
-**  Each exists as its own type so the MCV carries the faction it will deploy into: an MCV
-**  built from a captured enemy factory is that faction's MCV, and deploys that faction's
-**  construction yard, which is what carries a captured tech tree forward. Each carries its
-**  own pipeline-built art under its IniName keys (no Image= sharing).
-*/
+// The four faction MCVs (AMCV, SMCV, TDGMCV, TDNMCV). Each deploys its own faction's yard (unit.cpp
+// MCV_Deploy_Building), and the yard grants that faction's tree to whoever holds it.
 static UnitTypeClass const UnitSovietMcv(UNIT_SMCV,
                                          TXT_MCV,         // NAME:			Text name of this unit type.
                                          "SMCV",          // NAME:			IniName.
@@ -2343,13 +2140,8 @@ static UnitTypeClass const UnitAlliedMcv(UNIT_AMCV,
                                          MISSION_HUNT     // ORDERS:		Default order to give new unit.
 );
 
-/*
-**  TSMCV (TS MCV, TS rules [MCV]) — deploys STRUCT_TSFACT, the gate on the
-**  ownership-gated TS tree (docs/ts-gdi-tree-plan.md). Reaches play as a rare
-**  unit-crate find (cell.cpp, random path only — never the comeback path); also
-**  buildable inside an established TS tree. Art = TS MCV.VXL voxel render under
-**  TSMCV tileset keys; classic dims from the RA MCV donor.
-*/
+// TS MCV (UNIT_TSMCV), TS rules [MCV]: deploys STRUCT_TSFACT, the yard that gates the TS tree. It comes from unit
+// crates, as TS GDI's comeback MCV, or from a TS war factory behind a TS tech centre.
 static UnitTypeClass const UnitTsMcv(UNIT_TSMCV,
                                      TXT_MCV,         // NAME:			Text name of this unit type.
                                      "TSMCV",         // NAME:			IniName.
@@ -2379,12 +2171,7 @@ static UnitTypeClass const UnitTsMcv(UNIT_TSMCV,
                                      MISSION_HUNT     // ORDERS:		Default order to give new unit.
 );
 
-/***********************************************************************************************
- * UnitTypeClass::Is_MCV -- Is this unit a mobile construction vehicle of any faction?          *
- *                                                                                              *
- *    Role test mirroring BuildingTypeClass::Is_Construction_Yard. Covers the stock-campaign    *
- *    pair (MCV / TDMCV) and the four faction MCVs the W2 split created.                        *
- *=============================================================================================*/
+// True for a mobile construction vehicle of any faction: the stock-campaign pair and the five faction MCVs.
 bool UnitTypeClass::Is_MCV(void) const
 {
     return (Type == UNIT_MCV || Type == UNIT_AMCV || Type == UNIT_SMCV || Type == UNIT_TDMCV
@@ -2441,7 +2228,8 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitPhase);     //	UNIT_PHASETRANSPORT
 #endif
 #endif
-    // Tiberian Factions mod — fully-separated TD-source unit ports.
+    // TF: the mod's unit types. Each must sit in the heap slot equal to its UnitType value (As_Reference indexes the
+    // heap), so they follow the enum's order and new types go at the end.
     new UnitTypeClass(UnitTdMcv);     // UNIT_TDMCV
     new UnitTypeClass(UnitTdHarv);    // UNIT_TDHARV
     new UnitTypeClass(UnitTdMtnk);    // UNIT_TDMTNK
@@ -2457,7 +2245,7 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTdMsam);    // UNIT_TDMSAM
     new UnitTypeClass(UnitTdArty);    // UNIT_TDARTY
     new UnitTypeClass(UnitTdVice);    // UNIT_TDVICE
-    new UnitTypeClass(UnitTsHvr);     // UNIT_TSHVR (TS-spike Hover MLRS)
+    new UnitTypeClass(UnitTsHvr);     // UNIT_TSHVR (TS Hover MLRS)
     new UnitTypeClass(UnitTsTitn);    // UNIT_TSTITN (TS Titan walker)
     new UnitTypeClass(UnitTsHmec);    // UNIT_TSHMEC (TS Mammoth Mk. II)
     new UnitTypeClass(UnitSovietMcv); // UNIT_SMCV  (Soviet MCV)
@@ -2468,8 +2256,6 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTsHarv);    // UNIT_TSHARV (TS Harvester)
     new UnitTypeClass(UnitTsSmec);    // UNIT_TSSMEC (TS Wolverine)
     new UnitTypeClass(UnitTsSonic);   // UNIT_TSSONIC (TS Disruptor)
-    // Heap slot index must equal the Type enum value (As_Reference indexes the
-    // heap directly) -- register strictly in enum order, append new types HERE.
     new UnitTypeClass(UnitTsApc);     // UNIT_TSAPC (TS Amphibious APC)
     new UnitTypeClass(UnitTsMdiv);    // UNIT_TSMDIV (Mech Division token)
     new UnitTypeClass(UnitTsSubTank); // UNIT_TSSUBTANK (Devil's Tongue)
@@ -2644,12 +2430,8 @@ void UnitTypeClass::One_Time(void)
         ((int&)uclass.MaxSize) = max(largest, 8);
     }
 
-    // HD-only units (no classic SHP in any MIX): a NULL ImageData makes
-    // Draw_It bail with width=height=0, so donor a same-size vanilla unit's
-    // pointer; the launcher then renders the real frames by IniName from
-    // RA_UNITS.XML (the same NULL-guard pattern as bdata's _td_bdonors block).
-    // TSHVR = TS-spike voxel art; the four W2 b3 faction MCVs carry pipeline
-    // art under their own keys (AMCV/SMCV/TDGMCV/TDNMCV).
+    // TF: HD-only units have no classic SHP: Draw_It bails on a NULL ImageData, and MaxSize stays at its floor of 8.
+    // They take a same-size vanilla unit's shapes and size; the launcher draws their real art by IniName.
     {
         static const struct { UnitType hd; UnitType donor; } _hd_udonors[] = {
             {UNIT_TSHVR, UNIT_MTANK2},
@@ -2667,9 +2449,6 @@ void UnitTypeClass::One_Time(void)
             if (u.ImageData == NULL) {
                 ((void const*&)u.ImageData) = d.ImageData;
             }
-            // The frame loop above floored MaxSize at 8 (no readable frames),
-            // which shrinks the selection box to a sliver — take the donor's
-            // real dimensions (rules.ini ShapeSize=, parsed later, still wins).
             if (u.MaxSize <= 8) {
                 ((int&)u.MaxSize) = d.MaxSize;
             }
@@ -2781,16 +2560,8 @@ UnitTypeClass& UnitTypeClass::As_Reference(UnitType type)
  *=============================================================================================*/
 void UnitTypeClass::Dimensions(int& width, int& height) const
 {
-    /*
-    **	Tiberian Factions -- the HD voxel and walker units size their selection boxes the way
-    **	EA's own vehicles are boxed: the box is centred on the unit, as is a vehicle's hull
-    **	(scripts/unit_centring.py), so the box is as wide as the art and twice as tall as the
-    **	art reaches above the unit's centre (or below it, when that is further): the health
-    **	bar sits on the box's top edge and must clear the whole unit, masts and antennas
-    **	included. Values are the median over each unit's facings, in classic pixels, with
-    **	turrets at their draw seats (Hover_Rack_Seat, Sonic_Turret_Seat) and the Titan's
-    **	12 px draw lift applied; unit_centring.py prints them for the vehicles it centres.
-    */
+    // TF: HD units' boxes in classic px, as wide as the art and twice its reach from the unit's centre so the health
+    // bar clears the unit; scripts/unit_centring.py prints them for the vehicles it centres.
     static const struct {
         UnitType type;
         short width;
@@ -2898,31 +2669,24 @@ void UnitTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
     int index = 0;
     switch (Type) {
     case UNIT_JEEP:
-    // Tiberian Factions: the TD Hum-vee/Buggy are small MG cars like RA's Ranger
-    // (UNIT_JEEP) -- seat their turret with the same upward nudge so it sits on
-    // the hull instead of the body centre. Tune the delta by screenshot if the
-    // TD sprite's turret pivot differs from the Ranger's.
+    // TF: the TD Hum-vee and Buggy are small MG cars like the Ranger; their turrets take the same lift.
     case UNIT_TDJEEP:
     case UNIT_TDBGGY:
         y -= 4;
         break;
 
     case UNIT_MGG:
-    // Tiberian Factions: the _adjust table above is the ORIGINAL TD MLRS/MSAM turret-offset
-    // (see this function's header comment) -- it seats a rear-mounted launcher onto the chassis
-    // per facing. Our TD Rocket Launcher uses the MSAM sprite, so it wants exactly this table;
-    // without it the launcher draws at the body centre (too far forward). Tune by screenshot if
-    // the HD sprite's pivot differs from the classic offsets.
+    // TF: the TD Rocket Launcher and SSM Launcher seat their rear-mounted launchers by this per-facing table.
     case UNIT_TDMLRS:
-    case UNIT_TDMSAM: // TD SSM Launcher uses the MLRS sprite -- also a rear-mounted launcher; same offset table.
+    case UNIT_TDMSAM:
         index = Dir_To_32(dir);
         x += _adjust[index].X;
         y += _adjust[index].Y;
         break;
 
+    // TF: per-facing turret seats for the HD units. The draw path calls Hover_Rack_Seat itself with hull and rack
+    // facings apart; a one-facing caller here gets the rack resting on the hull line.
     case UNIT_TSHVR:
-        // Single-dir callers (fire coord etc.) treat the rack as resting on the
-        // hull line; the draw path passes hull and rack facings separately.
         Hover_Rack_Seat(dir, dir, x, y);
         break;
 
@@ -2945,29 +2709,10 @@ void UnitTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
     }
 }
 
-/***********************************************************************************************
- * UnitTypeClass::Hover_Rack_Seat -- TSHVR rocket-rack draw seat, hull and rack facings apart. *
- *                                                                                             *
- *    The rack rides a fixed aft mount, so its screen POSITION follows the HULL facing (the    *
- *    projected mount ellipse), while a small per-frame art-anchoring residual follows the     *
- *    RACK facing (the frame actually drawn). At rest the two indices agree and the sum        *
- *    reproduces the dialled seat exactly; mid-turn or while aiming, the rack stays planted    *
- *    on its mount with the correct tilt instead of orbiting off the deck.                     *
- *                                                                                             *
- *    Mount = aft distance 9, deck height 4, camera vertical factor 6 (2026-08-19 dial;       *
- *    residual = Luke's dialled seat minus that projection, never more than 2 px).            *
- *    Anchor placement rides EA's Facing32 quantisation: its 3D-Studio 45-degree              *
- *    compensation puts a RESTING exact-diagonal heading in idx 3/13/19/29 (never             *
- *    4/12/20/28), so dialled diagonal seats live in BOTH that index and its mid-turn         *
- *    neighbour. Cardinals rest on 0/8/16/24 exactly.                                         *
- *=============================================================================================*/
+// Seats the Hover MLRS rack: its aft mount follows the hull facing and a small art residual follows the rack facing,
+// so the rack stays on its mount while the hull turns or the rack aims (docs/ts-gdi-tree-plan.md).
 void UnitTypeClass::Hover_Rack_Seat(DirType hull, DirType rack, int& x, int& y) const
 {
-    // Mount = dialled seat minus the rack part; rack part (_res) cancels each
-    // pod frame's content-centroid offset within its crop, so a stationary
-    // spin keeps the rack's mass pinned to one screen coordinate (within the
-    // 1-px integer floor). mount[i] + res[i] reproduces the dialled seat at
-    // every rest facing exactly.
     static const signed char _mount_x[32] = {0,  -2, -3, -5, -5, -7, -8, -9, -9, -8, -7,
                                              -6, -5, -5, -3, -2, 0,  2,  3,  5,  5,  6,
                                              7,  8,  9,  8,  8,  7,  5,  5,  3,  2};
@@ -2986,19 +2731,11 @@ void UnitTypeClass::Hover_Rack_Seat(DirType hull, DirType rack, int& x, int& y) 
     y += _mount_y[hidx] + _res_y[ridx];
 }
 
-/***********************************************************************************************
- * UnitTypeClass::Sonic_Turret_Seat -- TS Disruptor turret seat, aft of the hull centre.       *
- *                                                                                             *
- *    TS art.ini [SONIC] TurretOffset=-64: the turret pivots a quarter cell behind the hull    *
- *    centre, 6 classic px at our scale. The screen position of that aft point per hull        *
- *    facing is the Hover MLRS rack mount (the play-dialled projection: camera pitch and        *
- *    EA's Facing32 diagonal quirks included) rescaled from its 9 px aft to 6, with the rack's *
- *    deck lift removed and the Disruptor's own lift dialled separately.                       *
- *=============================================================================================*/
+// Seats the Disruptor turret 6 classic px aft of the hull centre (TS TurretOffset=-64): the Hover MLRS mount
+// projection, rescaled from 9 px aft to 6 with the mount's 4.5 px deck lift taken back out.
 void UnitTypeClass::Sonic_Turret_Seat(DirType dir, int& x, int& y) const
 {
     enum { SONIC_SEAT_AFT_PX = 6, HOVER_MOUNT_AFT_PX = 9, SONIC_SEAT_LIFT_PX = 0 };
-    // The hover mount, with its 4.5 px deck lift folded back out (its y is aft*cos - 4.5).
     static const signed char _mount_x[32] = {0,  -2, -3, -5, -5, -7, -8, -9, -9, -8, -7,
                                              -6, -5, -5, -3, -2, 0,  2,  3,  5,  5,  6,
                                              7,  8,  9,  8,  8,  7,  5,  5,  3,  2};
@@ -3007,7 +2744,7 @@ void UnitTypeClass::Sonic_Turret_Seat(DirType dir, int& x, int& y) const
                                              -8, -6, -5, -4, -3, -2, -1, -1, 0,  0};
     int i = Dir_To_32(dir);
     int ax = (_mount_x[i] * SONIC_SEAT_AFT_PX * 2 + (_mount_x[i] < 0 ? -HOVER_MOUNT_AFT_PX : HOVER_MOUNT_AFT_PX)) / (HOVER_MOUNT_AFT_PX * 2);
-    int ay2 = _mount_y[i] * 2 + 9; // (y + 4.5) * 2, the pure aft projection doubled
+    int ay2 = _mount_y[i] * 2 + 9;
     int ay = (ay2 * SONIC_SEAT_AFT_PX + (ay2 < 0 ? -HOVER_MOUNT_AFT_PX : HOVER_MOUNT_AFT_PX)) / (HOVER_MOUNT_AFT_PX * 2);
     x += ax;
     y += ay - SONIC_SEAT_LIFT_PX;
@@ -3040,8 +2777,7 @@ bool UnitTypeClass::Read_INI(CCINIClass& ini)
         FiringFrames = ini.Get_Int(IniName, "FiringFrames", FiringFrames);
         WalkRate = max(1, ini.Get_Int(IniName, "WalkRate", WalkRate));
         Speed = ini.Get_Bool(IniName, "Tracked", (Speed == SPEED_TRACK)) ? SPEED_TRACK : SPEED_WHEEL;
-        // TS-spike: Hover=yes overrides the binary Tracked choice with the amphibious
-        // hover locomotor (land + water passability from the ground table's Hover= row).
+        // TF: Amphibious= and Hover= replace the Tracked choice with TS's locomotors, which also cross water.
         if (ini.Get_Bool(IniName, "Amphibious", (Speed == SPEED_AMPHIBIOUS))) {
             Speed = SPEED_AMPHIBIOUS; // TS SpeedType=Amphibious
         }
@@ -3049,15 +2785,8 @@ bool UnitTypeClass::Read_INI(CCINIClass& ini)
             Speed = SPEED_HOVER;
         }
 
-        /*
-        **  Logic=<vanilla-IniName> aliases this entry's runtime Type discriminant
-        **  to a vanilla UnitType. Engine dispatch (Mission_Unload's `case UNIT_MCV`,
-        **  Try_To_Deploy's `*this == UNIT_MCV`, AI ownership scans, etc.) then
-        **  treats this custom unit as the vanilla type. Mirrors the building-side
-        **  alias at bdata.cpp:3847. ImageData inheritance is critical for mod
-        **  entries — One_Time only loads SHPs for vanilla heap slots, so without
-        **  copying the donor's pointer the launcher renders width=height=0.
-        */
+        // TF: Logic=<vanilla IniName> runs this entry as that unit type, borrowing its flags and the art One_Time loads
+        // only for vanilla slots. Primary= and Secondary= in the entry's own section win over the donor's.
         char buffer[64];
         if (ini.Get_String(IniName, "Logic", "", buffer, sizeof(buffer)) > 0) {
             UnitTypeClass* donor = UnitTypeClass::As_Pointer(buffer);
@@ -3080,10 +2809,6 @@ bool UnitTypeClass::Read_INI(CCINIClass& ini)
                 MaxSize = donor->MaxSize;
                 Speed = donor->Speed;
                 ((void const*&)ImageData) = donor->ImageData;
-                // Weapon fall-through follows the bdata.cpp pattern: explicit
-                // Primary=/Secondary= in this entry's INI section ran during
-                // TechnoTypeClass::Read_INI above and already populated these
-                // pointers if set. Only fall back to donor when omitted.
                 if (PrimaryWeapon == NULL) {
                     PrimaryWeapon = donor->PrimaryWeapon;
                 }

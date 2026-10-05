@@ -66,14 +66,6 @@
 #include "carry.h"
 #include "common/framelimit.h"
 
-/***********************************************************************************************
- * TF_Dev_Cheats -- Runtime gate for the local dev cheats (instant-build, reveal-all).         *
- *                                                                                             *
- * In a dev build (TF_DEV_BUILD==1) the cheats default ON; dropping the file                    *
- * Documents/CnCRemastered/tf_dev_off.flag turns them OFF (read once on first call, so set it   *
- * before launching the game). In a release build this is hard-false and the cheat call sites   *
- * are compiled out entirely. Path resolves under the Proton prefix via USERPROFILE.            *
- *=============================================================================================*/
 /*
 **  Sonic band draw levers. The shipped look is SHAPE_FADING plus a scale throb of
 **  12% over a 6-stage cosine (play-picked 2026-08-26); tank-end discs are further
@@ -132,11 +124,8 @@ void TF_Sonic_Cloak_Mode_Refresh(void)
 #endif
 }
 
-/*
-**	Map reveal on its own. Documents/CnCRemastered/tf_dev_reveal.flag keeps the
-**	full-map cheat while tf_dev_off.flag has switched every other cheat off, so
-**	a fair AI test can still be watched from above. Read once, like the others.
-*/
+// True when the dev cheats are on or Documents/CnCRemastered/tf_dev_reveal.flag exists (read once),
+// so the map can be revealed for an AI test with every other cheat off.
 bool TF_Dev_Reveal(void)
 {
 #if TF_DEV_BUILD
@@ -165,11 +154,8 @@ bool TF_Dev_Reveal(void)
 #endif
 }
 
-/*
-**	Sensor Array test: an enemy Sub APC that digs back and forth between two cells under the
-**	player's base. TF_Dev_Tunneller registers it; TF_Dev_Tunneller_Tick (every frame) sends it
-**	to the far end whenever it has been idle for ten seconds.
-*/
+// Dev harness: TF_Dev_Tunneller registers an enemy Sub APC, and TF_Dev_Tunneller_Tick (every frame)
+// sends it to the far one of two cells under the player's base after ten idle seconds.
 static TARGET TFDevTunneller = TARGET_NONE;
 static CELL TFDevTunnelEnds[2] = {0, 0};
 
@@ -209,12 +195,14 @@ void TF_Dev_Tunneller_Tick(void)
 #endif
 }
 
+// Gates the dev cheats: true in a dev build unless Documents/CnCRemastered/tf_dev_off.flag exists
+// (read once, at first call). Always false in a release build.
 bool TF_Dev_Cheats(void)
 {
 #if TF_DEV_BUILD
     static int cached = -1;
     if (cached < 0) {
-        cached = 1; // default ON in dev builds
+        cached = 1;
         const char* h = getenv("USERPROFILE");
         if (h == NULL)
             h = getenv("HOME");
@@ -223,7 +211,7 @@ bool TF_Dev_Cheats(void)
             snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_dev_off.flag", h);
             FILE* f = fopen(p, "r");
             if (f != NULL) {
-                cached = 0; // off-flag present -> cheats disabled
+                cached = 0;
                 fclose(f);
             }
         }
@@ -234,24 +222,14 @@ bool TF_Dev_Cheats(void)
 #endif
 }
 
-/***********************************************************************************************
- * TF_Dev_Rich_Start -- Is the mega-credits dev lever switched on?                             *
- *                                                                                             *
- *    Grants the human player 1,000,000 credits at scenario start (skirmish only). Prices,     *
- *    refunds and sidebar quotes stay authentic, so full-price mechanics that key off what     *
- *    was PAID keep working -- the flat-$1 predecessor silently failed the refinery's          *
- *    free-harvester gate, which compares PurchasePrice against Raw_Cost.                      *
- *                                                                                             *
- *    OPT-IN, unlike TF_Dev_Cheats: create Documents/CnCRemastered/tf_cheap.flag to arm it,     *
- *    delete the file to disarm without a rebuild. It defaults OFF so an armed prefix can       *
- *    never masquerade as a balance-observation run. Read once and cached, like TF_Dev_Cheats. *
- *=============================================================================================*/
+// Opt-in dev lever, off by default: true when Documents/CnCRemastered/tf_cheap.flag exists (read once).
+// Read_Scenario then starts the human player with 1,000,000 credits.
 bool TF_Dev_Rich_Start(void)
 {
 #if TF_DEV_BUILD
     static int cached = -1;
     if (cached < 0) {
-        cached = 0; // default OFF -- this one has to be asked for
+        cached = 0;
         const char* h = getenv("USERPROFILE");
         if (h == NULL)
             h = getenv("HOME");
@@ -787,12 +765,8 @@ bool Read_Scenario(char* name)
     }
     ScenarioInit--;
 
-    /*
-    **  TF DEV TOGGLE — reveal-all-map: reveals the full map to the player at
-    **  scenario start (skirmish only) to observe AI behaviour during testing.
-    **  Mirrors the TACTION_REVEAL_ALL trigger. Compiled out of release builds
-    **  (TF_DEV_BUILD); runtime-gated by TF_Dev_Cheats() in dev builds.
-    */
+    // TF: dev cheats outside the campaigns: the map reveal (TF_Dev_Reveal) and the human player's starting
+    // credits (a million from TF_Dev_Rich_Start, 100,000 from TF_Dev_Cheats). Release builds compile them out.
 #if TF_DEV_BUILD
     if (TF_Dev_Reveal() && Session.Type != GAME_NORMAL && PlayerPtr != NULL && !PlayerPtr->IsVisionary) {
         PlayerPtr->IsVisionary = true;
@@ -801,19 +775,10 @@ bool Read_Scenario(char* name)
         }
     }
 
-    /*
-    **  TF DEV TOGGLE -- mega credits: the human player starts a skirmish with a
-    **  war chest instead of discounted prices (see TF_Dev_Rich_Start above).
-    **  AI houses are untouched.
-    */
     if (TF_Dev_Rich_Start() && Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
         PlayerPtr->Refund_Money(1000000);
     }
 
-    /*
-    **  Dev builds start the human player 100,000 credits up, with the other dev cheats
-    **  (tf_dev_off.flag switches it off along with them). AI houses are untouched.
-    */
     if (TF_Dev_Cheats() && Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
         PlayerPtr->Refund_Money(100000);
     }
@@ -3742,23 +3707,8 @@ static void Reserve_Unit()
 
 static void Create_Units(bool official)
 {
-    /*
-    **  Tiberian Factions: GdiType/NodType columns added so GDI (ActLike
-    **  HOUSE_GOOD) and Nod (ActLike HOUSE_BAD) start with their own TD units
-    **  instead of falling through to the RA Allied roster. The unit picks are
-    **  lifted from TD's own multiplayer Create_Units table (TD INI.CPP), mapped
-    **  to our STRUCT/UNIT_TD* ports and our per-faction ownership (MLRS=GDI,
-    **  SSM/Arty/Bike/Buggy/Flame/Stealth=Nod). Distributed across RA's four
-    **  tech-gated rows; Ally/Soviet columns are unchanged.
-    */
-    /*
-    **  The TsGdiType column is the fifth faction's roster (Tiberian Sun GDI, the
-    **  GERMANY house): Titan and Wolverine as the mainline pair, the amphibious
-    **  APC in the transport row, the Hover MLRS as the fire-support row, and the
-    **  Disruptor at the top. The Mammoth Mk. II is deliberately absent -- it
-    **  arrives by dropship in this mod, and a free one at match start would be a
-    **  different game.
-    */
+    // TF: the GDI and Nod columns follow TD's own Create_Units table, spread over RA's four rows. TS GDI's
+    // column leaves out the Mammoth Mk. II, which arrives by dropship.
     static struct
     {
         int MinLevel;
@@ -3794,11 +3744,7 @@ static void Create_Units(bool official)
     static int num_units[ARRAY_SIZE(utable)]; // # of each type of unit to create
     int tot_units;                            // total # units to create
 
-    /*
-    **  Tiberian Factions: Gdi/Nod infantry columns, from TD INI.CPP
-    **  Create_Units. GDI: rifleman -> grenadier -> rocket; Nod: rifleman ->
-    **  rocket -> flamethrower (TDE4 is Nod-only). Ally/Soviet unchanged.
-    */
+    // TF: the GDI and Nod columns follow TD's own Create_Units infantry table.
     static struct
     {
         int MinLevel;
@@ -3983,21 +3929,8 @@ static void Create_Units(bool official)
     int numtaken = 0;
 
 #ifdef REMASTER_BUILD
-    /*
-    **	Tiberian Factions fix 2026-06-07: reserve every house's explicitly chosen
-    **	StartLocationOverride BEFORE handing out random / furthest-distance spots
-    **	to houses left unpicked in the lobby. The assignment loop below marks
-    **	waypoints taken in house-iteration order, and its first unpicked house
-    **	takes a purely random waypoint (Random_Pick, which does NOT consult
-    **	taken[]). So when an unpicked AI is iterated before a house that DID choose
-    **	a spot, the AI could land on the exact cell the other house reserved and
-    **	two players spawned on the same location. Intermittent -- it depends on
-    **	which MULTI slot the human lands in. Pre-marking the chosen spots and
-    **	seeding numtaken with their count forces every unpicked house down the
-    **	furthest-distance branch, which already respects taken[]. (Not
-    **	faction-specific: surfaced while playing GDI, but the cause is slot
-    **	ordering, not HOUSE_GOOD / HOUSE_BAD.)
-    */
+    // TF: reserve every lobby-chosen start first. With numtaken above zero, unpicked houses take the
+    // furthest-distance pick, which skips taken spots; the random first pick does not.
     for (HousesType house = HOUSE_MULTI1; house < (HOUSE_MULTI1 + Session.MaxPlayers); house++) {
         HouseClass* reserve = HouseClass::As_Pointer(house);
         if (reserve != NULL && reserve->StartLocationOverride >= 0
@@ -4025,17 +3958,8 @@ static void Create_Units(bool official)
         **	wapoint from the existing houses.
         */
 #ifdef REMASTER_BUILD
-        // Tiberian Factions fix 2026-05-29: honor this house's
-        // StartLocationOverride whenever it is a valid index into the loaded
-        // waypoints, rather than gating on the global UseGlyphXStartLocations
-        // flag. That flag is computed in GlyphX_Assign_Houses, which runs in
-        // Read_Scenario_INI *before* Map.Read_INI loads the scenario waypoints
-        // (Scen.Waypoint[] is all -1 at that point), so it was always left
-        // false -- every skirmish/MP game then fell through to the random /
-        // furthest-distance assignment and ignored the lobby-selected start
-        // spots (positions visibly shuffled during the loading screen). The
-        // per-house override values arrive correctly from the launcher; we just
-        // have to trust them here, where the waypoints are finally available.
+        // TF: trust each house's StartLocationOverride when it indexes a loaded waypoint. EA's flag can't say:
+        // GlyphX_Assign_Houses sets UseGlyphXStartLocations before the waypoints load, so it is always false.
         bool tf_use_override =
             (hptr->StartLocationOverride >= 0 && hptr->StartLocationOverride < num_waypts);
         if (!tf_use_override) {
@@ -4106,9 +4030,7 @@ static void Create_Units(bool official)
             ** ST - 1/8/2020 3:39PM
             */
             centroid = waypts[hptr->StartLocationOverride];
-            // Mark this spot taken so any house that DOES fall through to the
-            // random/distance path (mixed explicit + random lobbies) won't
-            // collide with an explicitly-chosen position.
+            // TF: mark the chosen spot taken, so no house left to the furthest-distance pick lands on it.
             taken[hptr->StartLocationOverride] = true;
             numtaken++;
         }
@@ -4157,16 +4079,11 @@ static void Create_Units(bool official)
             */
             scaleval = 1;
             Reserve_Unit();
-            /*
-            **  W2 b3: each faction spawns its OWN MCV type — the type carries
-            **  the faction, so deploy lineage is automatic. Faction check uses
-            **  hptr->ActLike (not Class->House) so multiplayer/skirmish slot
-            **  identity doesn't matter — the launcher's France→HOUSE_GOOD /
-            **  Spain/Turkey→HOUSE_BAD swap sets ActLike correctly.
-            */
+            // TF: each faction starts on its own MCV, chosen by ActLike (Class->House is only the lobby slot).
+            // Spain and Greece picks arrive as HOUSE_GOOD and HOUSE_BAD (GDI, Nod); Germany is TS GDI.
             UnitType mcv_type = UNIT_AMCV;
             switch (hptr->ActLike) {
-            case HOUSE_GERMANY: // Tiberian Sun GDI -- the fifth faction starts on its own yard
+            case HOUSE_GERMANY:
                 mcv_type = UNIT_TSMCV;
                 break;
             case HOUSE_GOOD:
@@ -4227,11 +4144,7 @@ static void Create_Units(bool official)
                     hptr->Flag_Attach((UnitClass*)obj, true);
                 }
             }
-            /*
-            **	Unholy Alliance (lobby game type): every house -- human and AI alike --
-            **	also gets one MCV of each OTHER faction, so all four tech trees are
-            **	available from the start.
-            */
+            // TF: Unholy Alliance gives every house, human or AI, the Allied, Soviet, GDI and Nod MCVs it lacks.
             if (TF_UnholyAlliance) {
                 static const UnitType _all_mcvs[] = {UNIT_AMCV, UNIT_SMCV, UNIT_TDGMCV, UNIT_TDNMCV};
                 for (int m = 0; m < (int)ARRAY_SIZE(_all_mcvs); m++) {
@@ -4279,12 +4192,9 @@ static void Create_Units(bool official)
             for (j = 0; j < num_units[i] * scaleval; j++) {
 
                 /*
-                **	Pick the starting-unit pair for this house's faction.
-                **	Tiberian Factions: GDI (HOUSE_GOOD) / Nod (HOUSE_BAD) draw
-                **	from the TD rosters; Allies/Soviet keep RA vanilla. (Before
-                **	this, GDI+Nod fell through the "not USSR/UKRAINE" test and
-                **	were handed RA Allied tanks/jeeps -- the bug being fixed.)
+                **	Create an Ally unit
                 */
+                // TF: each faction takes its starting pair from its own utable column.
                 const UnitType* upair;
                 HousesType const uside = hptr->ActLike;
                 if (Is_TS_GDI(uside)) {
@@ -4331,16 +4241,11 @@ static void Create_Units(bool official)
             for (j = 0; j < num_infantry[i] * scaleval; j++) {
 
                 /*
-                **	Pick the starting infantry for this house's faction.
-                **	Tiberian Factions: GDI/Nod use the TD infantry roster;
-                **	Allies/Soviet keep RA vanilla. (Note: Unlimbo calls
-                **	Enter_Idle_Mode(), which assigns the infantry to HUNT; we must
-                **	use Set_Mission() to override this state.)
-                **
-                **	Tiberian Sun GDI starts with NO infantry at all (Luke, 2026-09-05).
-                **	TS infantry is a later wave of the TS content work, and borrowing
-                **	TD's riflemen in the meantime puts the wrong era on the field.
+                **	Create Ally infantry (Note: Unlimbo calls Enter_Idle_Mode(), which
+                **	assigns the infantry to HUNT; we must use Set_Mission() to override
+                **	this state.)
                 */
+                // TF: each faction takes its starting infantry from its own itable column. TS GDI starts with none.
                 int icount;
                 InfantryType itype;
                 HousesType const iside = hptr->ActLike;

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Read the skirmish lobby's per-slot AI difficulty out of ClientG.exe RAM (Linux dev).
 
-This is the host-side PoC that proved per-slot difficulty is recoverable (2026-07-18).
+This is the host-side PoC that proved per-slot difficulty is recoverable.
 The DLL will do the equivalent read in-process (InstanceServerG -> ClientG via
-ReadProcessMemory) in phase A; this script is the reference + a live sanity check.
+ReadProcessMemory); this script is the reference + a live sanity check.
 Design + full context: docs/lobby-difficulty-ram-spike.md.
 
 Usage:

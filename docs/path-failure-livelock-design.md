@@ -1,62 +1,39 @@
-# Path-failure livelock — root cause & design (2026-07-19)
+# Path-failure livelock
 
-**Status (2026-08-01): FIX IMPLEMENTED — no-progress detector in both give-up branches
-(`FootClass::TF_Path_No_Progress`), verification in progress.** Root cause was CONFIRMED from
-live logs + source 2026-07-19. One earlier fix attempt CRASHED the game and was reverted (see
-"Failed attempt" below — read it before touching this code).
+**Status:** Reference; closed in 5.0.0.
 
-**The 2026-08-01 DOCKLANDS stack-overflow crash was NOT this bug.** The strong test's
-`EXCEPTION_STACK_OVERFLOW` was initially pinned on the livelock's legacy-fallback retry storm;
-walking the minidump disproved that (the legacy pathfinder is iterative). The real defect was
-unbounded mutual recursion in the v2.2.3 give-way RETREAT: `Start_Of_Move` → gw==2 →
-`Assign_Destination(back)` → nested `Start_Of_Move` (the engine re-enters it for a stationary
-unit) → RETREAT again, ~1,500 frames deep in the dump. Fixed the same day with a call-stack
-re-entrancy guard in `Start_Of_Move` (`giveway_retreat_depth`): while a retreat assignment is on
-the stack, the nested pass skips give-way evaluation and paths straight to the retreat cell.
-The livelock still FED that crash (the retry storm piles units into the jammed pinch), so the
-detector below is congestion relief for it as well as the livelock cure.
+A unit that keeps failing to path from the same cell gives up: infantry after 8 s, vehicles after
+a minute, both handled by the caller (`FootClass::TF_Path_No_Progress`). A re-entrancy guard on
+the give-way retreat (`giveway_retreat_depth` in `DriveClass::Start_Of_Move`) ended the Docklands
+stack overflow. Units with no ground route still produce a retry storm; not measured since the
+ferry shipped. Read "Failed attempt" below before touching this code.
 
-## Implemented fix (2026-08-01)
+## The shipped fix
 
-Exactly the recommended shape below. `FootClass` tracks the failing (current cell, `NavCom`)
-pair plus the frame it started failing (`TF_NoProgSrc/Dst/Frame`, reset on any successful path,
-any movement, or any new destination — savegame-breaking growth, accepted):
+**The no-progress detector, keyed on the source cell.** `FootClass` keeps the cell a unit has been
+failing from and when that started (`TF_NoProgSrc`, `TF_NoProgStart`, `TF_NoProgLast`).
+`TF_Path_No_Progress(window)` is called once per `Basic_Path` failure and returns true once
+failures from the same cell have run for `window` frames with no gap over 5 s. Any movement or a
+successful path starts a fresh window, so a queued column that advances one cell never trips.
 
-- **Infantry** (`infantry.cpp` give-up branch, entered every post-exhaustion failure): after
-  **8 s** of zero progress on the same pair, abort `NavCom` regardless of zone; also drop a
-  `TarCom` we cannot reach AND cannot already shoot (`!In_Range`). A target in range is kept —
-  movement is not needed to be useful.
-- **Vehicles** (`drive.cpp` give-up branch): the patient queue keeps priority, but after
-  **60 s** at the SAME cell pursuing the SAME destination the "queued behind traffic" reading is
-  falsified and the engine's own abandon branch runs (scan-limit handling included). A genuinely
-  queued column advances a cell now and then, restarting the window, as does a deadlock-breaker
-  scatter.
-- Both aborts are **caller-side** — never from inside `Basic_Path()` (see the failed attempt).
-- `TF_DEV_BUILD` diag: `NOPROG abort (inf|veh): unit=... src=... dst=... stuck=...f` in
-  `tf_astar.log`.
+- **Why the source cell and not the (source, destination) pair:** a stuck AI unit's destination
+  rotates (hunt logic re-picks among unreachable targets every few attempts), so a pair-keyed
+  window never accumulated; the first version fired zero times against a 200k-fallback storm.
+- **Infantry** (`infantry.cpp` give-up branch, 8 s): abort `NavCom` regardless of zone and drop a
+  `TarCom` it can neither reach nor already shoot; an AI hunter is also scan-limited
+  (`IsScanLimited`), so its next pick is an in-range target.
+- **Vehicles** (`drive.cpp` give-up branch, 60 s): the patient queue keeps priority, but a unit
+  still at the same cell after a minute runs the engine's own abandon branch.
+- Both aborts are **caller-side**, never from inside `Basic_Path()` (see the failed attempt).
+- `TF_DEV_BUILD` diag: `NOPROG abort (inf|veh)` lines in `tf_astar.log`.
 
-Open-question answers: N is a frame window, not a retry count (cadence-independent); the patient
-queue is distinguished from permanent boxing by *zero cell movement for a full minute*; scope is
-both infantry and vehicles; a tripped unit goes idle and its mission/team logic re-tasks it
-(the AI hunt path already had its own abort).
+**The Docklands stack overflow was a different bug.** Its `EXCEPTION_STACK_OVERFLOW` was unbounded
+recursion in the give-way RETREAT: `Start_Of_Move` → gw==2 → `Assign_Destination(back)` → nested
+`Start_Of_Move` → RETREAT again, ~1,500 frames deep. While a retreat assignment is on the stack,
+the nested pass now skips give-way and paths straight to the retreat cell. The livelock fed it by
+piling units into the jammed pinch.
 
-## Live finding (2026-08-01 verification run): pair-keying is blind to TARGET ROTATION
-
-First fixed-build DOCKLANDS run (4 AIs vs isolated human): recursion guard HELD far past the
-crash point, but `NOPROG abort` fired **zero** times against a 200k+ fallback storm. The live
-tuple stream shows why — the dominant livelock is not one frozen (src,dst) pair but a
-**rotation**: a wedged 3TNK cycles dst=(121,37) → (113,91) → (112,58) every 4-8 attempts (hunt
-logic re-picks among unreachable targets, each re-pick resets the pair window). Even the
-self-cell TDE6 runs are interleaved (runs of ~5). The design doc's "598x same tuple" figures
-were per-match TOTALS, not consecutive runs — the pair-keyed window can essentially never trip
-on AI units. (It may still catch human-ordered units, which don't rotate targets.)
-
-**Iteration 2 (shipped same day):** key on the SOURCE CELL only — a unit accumulating
-Basic_Path failures from the same cell for a sustained window is stuck regardless of which
-doomed destination the mission logic is currently offering. On trip: abort destination AND
-apply the engine's own scan-limit throttle (`IsScanLimited` / `Team->Scan_Limit()`).
-
-## FINAL VERDICT (2026-08-01, live Luke-played Docklands match) — workstream CLOSED
+## Verdict (live Docklands match, 2026-08-01)
 
 - **The crash is fixed and verified** (the recursion guard; F51,760 and F40,300+ matches, no
   artifacts, under storms up to 427k fallbacks).
@@ -69,11 +46,22 @@ apply the engine's own scan-limit throttle (`IsScanLimited` / `Team->Scan_Limit(
   already-expired window every few frames (same unit logged `stuck=9796f` and climbing).
   The units mass on the shore because they genuinely have no ground route to the enemy —
   the correct cure is GIVING THEM A ROUTE (naval transports, `ai-upgrade-plan.md`), not
-  ever-cleverer surrender. Luke's call, 2026-08-01: park this until the AI can use naval.
+  ever-cleverer surrender. Parked until the AI can use naval transports (shipped in 5.0.0;
+  the storm has not been re-measured since).
   The storm's costs after the crash fix are CPU + dev-log volume only.
 
 Sibling doc: `harvester-recovery-design.md`. Same underlying engine truth (movement zones
 ignore buildings), same recommended shape of cure (a no-progress detector, not a zone fix).
+
+## Porting TS's pathfinder: no (coach-day dive, 2026-09-11)
+
+TS's hierarchical A* (`reference/OpenTS`) would not fix what is left. Ours already has the heap
+and the 4096-node cap, which never tripped live (`captrips=0`). TS's zones also ignore ordinary
+buildings (only walls, the Firestorm and laser fences block them), so a walled destination stays
+invisible to it too. A headless AI-vs-AI Docklands run counted 27,861 real-destination fallbacks,
+the Titans, Wolverines and Disruptors of the unreachable-target storm above, and 1,352 self-cell
+(`src==dst`) searches from the Amphibious APC (TSAPC). The APC's self-cell searches are the
+cheap targeted fix still open.
 
 ---
 
@@ -184,47 +172,6 @@ destination caller-side, where the engine already does it.**
 Part 1 was shipped on its own afterwards, on the theory that it was the safe half doing the
 real work. It is **not**: `self-cell` came back at **790** (vs 706 before). The degenerate
 destination does not originate from `Nearby_Location`. Guard reverted; do not re-try it.
-
----
-
-## Recommended shape of the fix (implemented 2026-08-01 as described — see top of doc)
-
-**A no-progress detector, not a zone test.** If a unit fails to path from the same cell to the
-same destination N consecutive times, abort the destination regardless of zone.
-
-Rationale:
-- It targets the actual invariant that is broken (no progress), rather than a proxy (zone
-  identity) that is known to be wrong because zones ignore buildings.
-- It is the same pattern already shipped and proven in `harvester-recovery-design.md`, where
-  the zone-recompute "proper fix" was explicitly rejected for the same reason.
-- It cannot be fooled by the self-cell case, which no zone comparison can ever catch.
-
-Sketch (caller-side, both `infantry.cpp` and `drive.cpp` give-up paths):
-- track last-failed `(src, dst)` and a consecutive-failure count on the unit;
-- on N consecutive identical failures, `Assign_Destination(TARGET_NONE)` in the caller;
-- reset the counter on any successful path or any new destination.
-
-### Open questions to settle BEFORE writing code
-
-1. **What is N?** Too low and units abandon orders that were merely delayed by traffic that
-   would have cleared — the exact regression the v2.2.3 patient-queue work exists to prevent
-   (`drive.cpp:2180`). Too high and the livelock persists. `TryTryAgain` is already 10.
-2. **Does this conflict with the patient queue?** That logic deliberately waits forever at a
-   pinch. A no-progress detector must distinguish "queued behind traffic that will clear" from
-   "boxed in permanently" — the patient queue currently assumes the former always.
-3. **Scope: infantry only, or vehicles too?** The measured livelocks are all infantry
-   (`TDE1`/`TDE2`/`TDE6`), but `drive.cpp:2180` has the same defect. Fixing only what is
-   measured is defensible for a first pass.
-4. **What should a unit that gives up actually do?** Clearing `NavCom` leaves it idle. For an
-   AI engineer mid-capture that may be worse than useless — it should probably re-task. Out of
-   scope for the livelock fix itself, but it decides whether this is a win in AI terms.
-
-### Risk
-
-`FootClass` / `DriveClass` / `InfantryClass` movement is used by **every ground unit, human and
-AI**. Today's crash came from a four-line change in this area. Any fix here wants a design
-review, a single-surface deploy (desktop first, never both at once), and a full match before it
-is trusted.
 
 ---
 

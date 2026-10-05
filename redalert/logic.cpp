@@ -392,10 +392,8 @@ void LogicClass::AI(void)
     }
     HouseClass::Recalc_Attributes();
 
-    /*
-    **	Tiberian Factions: drive the Nod Stealth Generator cloak field once per frame,
-    **	after all per-object AI (so it wins the last word on each covered object's cloak).
-    */
+    // TF: the Nod Stealth Generator field runs after all per-object AI, so it has the last word on each covered
+    // object's cloak.
     BuildingClass::Process_Stealth_Generators();
 
     /*

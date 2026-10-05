@@ -4,8 +4,8 @@ Desert radar palette (Tiberian Factions mod).
 
 TD desert maps live in RA's INTERIOR theatre slot. The launcher's radar (and
 the static ground under our dynamic TD tiles) renders the per-cell stand-in
-templates reported by CellClass::Get_Template_Info -- and the 2026-06-10 W1
-spike PROVED the radar samples loose path-shadowed pixels (Reilsss mechanism,
+templates reported by CellClass::Get_Template_Info -- and the radar samples
+loose path-shadowed pixels (Reilsss mechanism,
 no EMC). Interior has no outdoor templates to stand in with, so we sacrifice
 interior art (nothing multiplayer uses interior; only stock-campaign indoor
 missions + the final ant mission render with it):

@@ -80,7 +80,7 @@ for reg, logo in flagmap.items():
     prev.append((reg, c))
     print("flag:", reg, c, "<-", os.path.basename(logo))
 
-# --- Map-select start-position markers (2026-06-07) -------------------------
+# --- Map-select start-position markers ------------------------------------
 # The skirmish lobby pins a faction marker to each chosen start position on the
 # map preview, drawn from the UI_MAPSELECT_FACTION_NN region set (separate from
 # the RA_UI_FLAG_ICON_<country> regions above). The launcher indexes that marker
@@ -111,7 +111,7 @@ for src, dst in mapselect_copy:
     place(dc, img)
     print("mapselect:", src, "->", dst, dc)
 
-# --- Mission-select campaign tabs (2026-06-07) ------------------------------
+# --- Mission-select campaign tabs ------------------------------------------
 # RA mission-select has 6 tabs: Allied, Soviet, Counterstrike(CS), Aftermath,
 # Ant, Custom. Repurpose the unused-by-this-mod CS (tab 3) and Aftermath (tab 4)
 # as GDI and Nod -> the row reads Allies / Soviets / GDI / Nod. Keep the native
@@ -122,9 +122,8 @@ for src, dst in mapselect_copy:
 # Soviet, AFTERMATH(tab3), CS(tab4) -> GDI on AFTERMATH, Nod on CS, so the row
 # reads Allies / Soviets / GDI / Nod. Composited over the native RA silver
 # frame; the emblems are larger than the old symbols so they fully cover them.
-# PARKED 2026-06-07: the Mission Select page is restored to stock until the
-# campaign-roster work can be tested properly on the Steam Deck (the roster edits
-# crash the desktop launcher -- see memory project-missionselect-roster-poc).
+# PARKED: the Mission Select page is restored to stock until the campaign-roster work can be tested
+# properly on the Steam Deck (the roster edits crash the desktop launcher).
 # Flip this to True to re-apply the GDI/Nod campaign-tab emblems. The art + logic
 # below are preserved intact so it's a one-line re-enable.
 ENABLE_MISSIONSELECT_TABS = False

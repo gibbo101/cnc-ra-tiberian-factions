@@ -1,12 +1,11 @@
 # TDATWR port — TD-source-grounded deep dive
 
-> **RESOLVED — separated + shipped (v0.50).** TDATWR now runs its own `ClassTdAtwr` code path and binds `Primary=TDTowTwo` in rules.ini — wholesale TD port, no RA `ClassAAGun` shaping. The body below is retained as TD-source reference / the plan that was executed.
+**Status:** Reference; shipped before 1.0.0. TDATWR runs its own `ClassTdAtwr` path and binds
+`Primary=TDTowTwo`, a wholesale port of TD's `STRUCT_ATOWER`.
 
-**Status:** STRUCT_TDATWR shipped in M3 Tier 2 separation but is functionally incomplete. The current `ClassTdAtwr` was copy-shaped from RA's `ClassAAGun` — that mismatch is the source of every visible bug. This doc replaces the donor-shaped port with a wholesale port of TD's `STRUCT_ATOWER`.
-
-**Session that produced it:** 2026-05-22, max-effort deep dive paired with `td-sam-deep-dive.md`.
-
-**Guiding principle (this session's pushback from Luke):** the *whole point* of full STRUCT_TD-prefixed separation is that TD entities run TD's own building, weapon, and projectile code paths — not RA's nearest-shaped equivalent dressed up to look TD. No donor. No "modeled on PBOX." Port wholesale from `reference/vanilla-conquer/tiberiandawn/`. Per [[feedback-no-donor-for-td-separation]] / [[project-building-separation-committed]].
+The body is the TD-source analysis and the port plan that was carried out; live stats are in
+`rules.ini` and `balance-deep-dive.md`. TD entities run TD's own building, weapon and projectile code, ported from
+`reference/vanilla-conquer/tiberiandawn/`, never RA's nearest equivalent.
 
 ---
 
@@ -385,10 +384,10 @@ MP smoke (deferred — pair with SAM testing on 2-Deck setup): Longbow approach 
 
 ## Decisions
 
-- **No donor.** `ClassTdAtwr` constructor args are set from TD source values, not copied from RA's AGUN/PBOX/anything. Per [[feedback-no-donor-for-td-separation]] / [[project-building-separation-committed]].
+- **No donor.** `ClassTdAtwr` constructor args are set from TD source values, not copied from RA's AGUN/PBOX/anything.
 - **`[TDTowTwo]` stays the TD weapon port.** Not aliased to RA's vanilla `[TowTwo]` (which doesn't exist; RA's TOW equivalents are different).
 - **`[TDSSM]` stays the TD projectile port.** Not aliased to RA's `[AAMissile]` (TD's BULLET_SAM uses MPH_VERY_FAST + ROT=10, BULLET_SSM uses MPH_ROCKET + ROT=5 — different missiles).
-- **Crew-spawn south-offset aliased between TDATWR and TDOBLI.** Both TD buildings need the same south-offset rule. The alias here is two TD entities sharing identical behavior, not TD borrowing from RA — that's the legitimate aliasing pattern per [[project-building-separation-committed]].
+- **Crew-spawn south-offset aliased between TDATWR and TDOBLI.** Both TD buildings need the same south-offset rule. The alias here is two TD entities sharing identical behavior, not TD borrowing from RA — the legitimate aliasing pattern.
 
 ---
 
@@ -404,7 +403,7 @@ Both PRs are TDATWR-only; don't pull TDSAM into this commit cargo.
 
 ## Session 2026-05-22 — TDATWR full TD port (Option A architecture)
 
-The 2026-05-22 session expanded scope from the M1-M7 polish into a **complete TD-port of TDATWR's runtime behavior** per the Option A architecture committed in [[project-td-port-architecture]] (shared class shells, separated `_TD()` code paths gated by `IsTDPort` flag).
+The 2026-05-22 session expanded scope from the M1-M7 polish into a **complete TD-port of TDATWR's runtime behavior** per the Option A architecture (`td-port-playbook.md`: shared class shells, separated `_TD()` code paths gated by `IsTDPort` flag).
 
 ### What got built
 
@@ -438,7 +437,7 @@ The 2026-05-22 session expanded scope from the M1-M7 polish into a **complete TD
 
 **Diagnosed via** `tf_tdport_bullet.log` (per-frame TDSSM flight trace) showing `MaxSpeed=153` at SPAWN and bullets reaching `dist=82` from target at frame 6 while still arming. Fix: `IsTDPort` flag on WeaponTypeClass + raw-int Speed parse → `Speed=60` stays as raw 60 → missile flies at TD-authentic speed → proximity fuse triggers near target (24-89 lepton scatter, all hits).
 
-This conversion catch is captured in [[reference-ra-mphtype-ini-format]].
+This conversion is trap 3.1 in `td-port-playbook.md`.
 
 ### TDDRAGON asset port
 
@@ -464,15 +463,14 @@ if (tdssm.ImageData == NULL) {
 // + TDLaser, TDAPDS
 ```
 
-Captured in [[reference-mfcd-donor-imagedata-pattern]] — applies to every new TD-prefixed bullet/anim/aircraft.
+This is the donor-ImageData pattern (`td-port-playbook.md` §2.7), needed by every new TD-prefixed bullet, anim and aircraft.
 
 ### Two-shooter salvo verification
 
-Diagnostic logs confirmed `Burst=2` on `[TDTowTwo]` produces 2 missiles per engagement via RA's `Is_Two_Shooter()` derivation (`PrimaryWeapon->Burst > 1`) + `IsSecondShot` toggle. Salvo timing is ~3-frame gap intra-salvo vs TD's 9 (RA's `Rearm_Delay` returns 3 for short delay; TD's returns 9). Functionally correct, slightly tighter cadence than TD.
+Diagnostic logs confirmed `Burst=2` on `[TDTowTwo]` produces 2 missiles per engagement via RA's `Is_Two_Shooter()` derivation (`PrimaryWeapon->Burst > 1`) + `IsSecondShot` toggle. Salvo timing is TD's: `TechnoClass::Rearm_Delay` returns 9 within a salvo and ROF+3 between salvos for TD-port weapons.
 
-### What's still gap
+### Not checked against TD
 
-- **`Rearm_Delay` TD-port** — for fully TD-authentic salvo cadence (9 frames between salvo shots, ROF+3 between salvos). Belongs in cargo E full implementation.
 - **`TechnoClass::Fire_At` TD-port** — for any TD-vs-RA divergence in the fire-bullet creation path. Cargo E full.
 - **`BuildingClass::Mission_Attack` sweep** — verify TD parity in mission state machine. Cargo F.
 
@@ -486,7 +484,7 @@ Diagnostic logs confirmed `Burst=2` on `[TDTowTwo]` produces 2 missiles per enga
 - Close-range targeting works (walls take damage at 1-cell range)
 - Missile damage application at 24-89 lepton scatter (TD-Inaccurate-true scatter, well-within explosion radius)
 
-### Diagnostic logging (to remove)
+### Diagnostic logging
 
-Per-frame TDSSM/TDLaser/TDAPDS flight trace is currently active in `BulletClass::Unlimbo_TD` and `AI_TD`, writing to `tf_tdport_bullet.log`. Per [[feedback-keep-diagnostics-until-v1]], stub under `#if 0` after final verification rather than deleting — one-line re-enable for future debug.
+A per-frame TDSSM/TDLaser/TDAPDS flight trace in `BulletClass::Unlimbo_TD` and `AI_TD` writes `tf_tdport_bullet.log`; it is compiled out (`TF_TDPORT_LOG_ENABLED` under `#if 0` in `bullet.cpp`).
 

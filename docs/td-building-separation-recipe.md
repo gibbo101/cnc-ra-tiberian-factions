@@ -1,16 +1,14 @@
 # TD building separation recipe — STRUCT_TDxxxx per-building port
 
-**Status:** **VALIDATED 2026-05-21** via TDOBLI; **M3 Tier 2 + M4 Tier 3 production buildings shipped 2026-05-27** (TDWEAP, TDAFLD with multi-plane convoy). Use this doc as the canonical reference for every subsequent STRUCT_TDxxxx port.
+**Status:** Reference. The canonical recipe for porting a TD building as its own `STRUCT_TDxxxx`
+engine type; every TD building ships this way. Production buildings also need the traps in
+`td-port-playbook.md` §3.13–§3.19.
 
-**TDWEAP/TDAFLD-discovered gotchas added to `docs/td-port-playbook.md` §3.13–§3.19** — read those before starting any production-building port. The recipe steps below assume a turret/static building; production buildings (factories, airstrips) layer on the new traps.
-
-**Recipe scope:** taking a TD-themed mod entry from the v0.3-era Logic=alias model (where it rides on a vanilla RA donor type) to a fully-separated `STRUCT_TDxxxx` heap entry with its own `BuildingTypeClass`, own `_anims[]`, own assets, own behavior. Zero engine-time inheritance from vanilla RA donors; vanilla code paths never reach the TD entity.
+**Recipe scope:** porting a TD building as a fully separated `STRUCT_TDxxxx` heap entry with its own `BuildingTypeClass`, own `_anims[]`, own assets, own behavior. Zero engine-time inheritance from vanilla RA donors; vanilla code paths never reach the TD entity.
 
 Companion docs:
-- `docs/building-separation-plan.md` — the M1-M6 milestone plan this recipe operates inside
-- `docs/td-audio-routing-recipe.md` — the SFXEvent alias recipe for TD sounds (referenced step 5)
-- `docs/cargo-plane-port.md` — TDAFLD reference (shipped pre-separation; will be migrated)
-- `docs/adding-td-buildings.md` — the alias-mode recipe being superseded by this one
+- `docs/td-audio-routing-recipe.md` — the SFXEvent alias recipe for TD sounds (step 5)
+- `docs/cargo-plane-port.md` — the TDAFLD cargo-plane delivery
 
 ---
 
@@ -83,7 +81,7 @@ Enum order must match the order in `Init_Heap()` (step 3) because the heap-alloc
 Copy the donor's constructor verbatim, then change:
 - `STRUCT_TESLA` → `STRUCT_TD<NEW>`
 - `TXT_TESLA` → `TXT_NONE` (rules.ini `Name=` overrides)
-- `"TSLA"` → `"TD<NEW>"` (IniName — per `[[project-td-prefix-convention]]`)
+- `"TSLA"` → `"TD<NEW>"` (IniName — the TD prefix, gotcha 10)
 
 **⚠️ BEFORE COPYING VERBATIM: run the donor parity check (playbook §3.13).** RA's donor and TD's source can have **different `BSIZE_*` + footprint arrays** even when they're conceptually the same building (TDWEAP hit this — RA BSIZE_32 vs TD BSIZE_33 with row-0 overlap). If they differ, define `TdList<N>`/`TdOList<N>`/`TdExitList<N>` arrays locally mirroring TD source verbatim, and use TD's `BSIZE_*` value.
 
@@ -218,18 +216,35 @@ Full game restart on the Deck (DLL has new enum value → new save format).
 
 7. **TD's `IsCharging/IsCharged` flags exist in `tiberiandawn/building.h` but aren't driven by TD's source** (no Charging_AI in TD). The flags are vestigial in TD; RA's Charging_AI drives them. We use RA's mechanism because it works correctly with the BSTATE_ACTIVE animation, same outcome as TD-source behavior would produce if implemented.
 
-8. **Classic mode is DROPPED (HD-only) and is now LOCKED OUT — `CNCDisableLegacyGraphicsOption`, proven in-game 2026-07-21.** EA shipped a mod-facing switch for exactly this in `GAMECONSTANTS.XML` ("Community-requested Mod option so that players can't access legacy graphics"); set it `True` and the option leaves the menu and the spacebar toggle stops working. We ship it via the same channel as the pixel-perfect zoom factors, in `scripts/gameconstants_build.py`. Every *DLL-side* route to this is still dead (the launcher ignores our `INPUTTRANSLATORCONFIGURATIONS.XML` for that binding, `Legacy_Render_Enabled` false only black-screens the toggled-to state, the spacebar never reaches the DLL, and the built-in `GAME_GLYPHX_MULTIPLAYER` lockout is network-only) — the win was on the launcher-DATA side of the boundary all along. See `launcher-vs-dll-ownership.md`.
+8. **Classic mode is unsupported and locked out** by `CNCDisableLegacyGraphicsOption` in `Data/XML/GameConstants_Mod.xml`; new entities need no classic art (`launcher-vs-dll-ownership.md`).
 
 9. **Save format**: new STRUCT_TDxxxx enum values change `sizeof(BuildingTypeClass)` array indices. Mid-campaign saves from a previous build will not load. We're not shipping campaigns yet so blast radius is skirmish-only, but worth flagging for any future campaign work.
 
+10. **IniName collisions break an entry silently.** Registration creates a type only when `As_Pointer(name)` is NULL, so an IniName matching a vanilla building (HPAD, GUN, SAM, AFLD, WEAP, FIX, PROC, SILO, FACT) overrides the vanilla one instead. INI sections share one namespace too: `NUKE` is a vanilla warhead, so a building named NUKE reads the warhead's fields and never builds. Prefix every TD IniName with `TD`; `Image=` and the ZIPs keep TD's own names.
+11. **The damaged shape is derived from the animation count.** At `ConditionYellow`, `Shape_Number()` shifts by the largest `Start + Count` across IDLE/ACTIVE/AUX1/AUX2: shape 1 for a static building, shape N for an N-frame idle. Lay frames out 0..N-1 healthy, N..2N-1 damaged.
+12. **`Points=` is mandatory, or the AI ignores the building.** `Read_INI` sets Risk = Reward = Points; without it `TechnoClass::Value()` is 0 and `Evaluate_Object` rejects the building, so enemies walk past it and the AI never targets it. Use TD's RISK/RWRD value (`catalogue.md`'s flag table).
+13. **A MAKE tileset's shape 0 must be `<Frame />`.** TD's MAKE ZIPs start at frame 0001; pointing shape 0 at a missing 0000 flashes the missing-asset placeholder for a frame on placement.
+14. **The launcher picks the ZIP from the frame path's first segment,** not the tileset `<Name>`: `<Frame>tdpyle\tdpyle-0000.tga</Frame>` opens `TDPYLE.ZIP` and looks for `tdpyle-0000.tga` inside. The ZIP name, the first segment and the internal filenames must all match.
+15. **`Owner=` needs `GoodGuy` / `BadGuy` explicitly.** HOUSE_GOOD and HOUSE_BAD are detached from `HOUSEF_ALLIES` / `HOUSEF_SOVIET`, so `Owner=allies` grants GDI nothing.
+16. **`aftrmath.ini` overrides `rules.ini`,** field by field, `Owner=` included; patch both (E3 once stayed unbuildable for GDI because aftrmath.ini's `[E3] Owner=allies` won).
+17. **`ShapeSize=` must match the footprint at 24 px a cell:** 1x1 `24,24`, 2x1 `48,24`, 1x2 `24,48`, 2x2 `48,48`, 3x2 `72,48`, 3x3 `72,72`, 4x2 `96,48`. The wrong ratio stretches the sprite into the wrong box (TDFACT shipped as `72,72` on a 3x2 and bulged off its pad). Count the cells in the `List**` array.
+18. **RA's `Track13` is overridden to pure south** (`drive.cpp`, the `#if (1)` block), against `TrackControl`'s declared `DIR_SW` final facing. TD-style vehicle factories exit on `Track14` (the SW variant, `OUT_OF_WEAPON_FACTORY_TD`), forced from `BuildingClass::Mission_Unload` with the destination at `Adjacent_Cell(Center_Coord(), FACING_SW)` so the track starts exactly at the spawn; a follow-up `Assign_Destination` keeps the unit moving after the track ends. `Exit_Object`'s `STRUCT_WEAP` case (spawn at `Exit_Coord()`, `RADIO_TETHER`, the building on `MISSION_UNLOAD`) is the model for any new vehicle factory.
+19. **Separating a shared RA production building:** never owner-open the RA one (`naval-and-air-units.md`). Copy its art into `TD*`-named files (`scripts/bundle_ra_building.py`), never share frames. The engine hardcodes `STRUCT_SHIP_YARD` / `SUB_PEN` / `AIRSTRIP` in about 30 sites (vessel exit, dock, repair, fixed-wing landing, the `STRUCTF_AIRSTRIP` BScan flag); add the new type to each that applies (`TDAFLD` is the airstrip precedent). Units keep the RA prerequisite token (`syrd`, `spen`, `afld`) plus a `Can_Build` equivalence, because `BuildingTypeClass::From_Name` resolves only below `STRUCT_COUNT`, so a `tdgyard` token silently fails.
+20. **`Occupy_List` must match the `BSIZE_*`.** It feeds the launcher's ghost placement grid,
+    `Legal_Placement` and the placement proximity check. The placement preview also draws the bib
+    row, so a 2x2 with a bib previews three rows tall: size the building from its `BSIZE_*`, not
+    from the preview.
+21. **Era tests are range tests.** TD and TS buildings sit in one run of the enum ending at
+    `STRUCT_TIBERIAN_LAST` (plus the TS tree block), and `Is_Tiberian_Era` tests that range. A
+    "TD"/"TS" IniName prefix test would catch the RA Tesla Coil (`TSLA`, `known-issues.md`). A new
+    Tiberian-era building goes inside the run; move the marker if it becomes the last.
+
 ---
 
-## What this recipe doesn't cover yet
+## Related recipes
 
-These come up when the catalogue extends past TDOBLI:
-
-- **Unit types (TD harvester, MCV, C-17, infantry, vehicles)** — same separation philosophy, parallel recipe needed for `UnitTypeClass` / `InfantryTypeClass` / `AircraftTypeClass`. Will fork a sibling recipe doc when unit work starts.
-- **HouseClass build orders** — RA's AI base-build sequences are STRUCT_*-indexed. Adding STRUCT_TDxxxx entries needs parallel AI sequences for HOUSE_GOOD / HOUSE_BAD. Covered in `docs/building-separation-plan.md §3.1 H2`.
-- **EVA voice routing** — faction-aware VoxType (parallel to VocType). Defer to dedicated work after first wave of buildings.
-- **Format80 codec + palette remap** — historical (`scripts/shptools.py` + `build_tfassets.sh`, see `classic-mode-palette-remap.md`). Was done for classic mode, now moot: classic dropped (HD-only) once the TD tilesets landed.
-- **Classic-mode TFASSETS.MIX append mode** — `mix_tools.py pack` currently rebuilds; future `--append` would add per-building incrementally.
+- Units: `td-infantry-port-recipe.md`, `td-vehicle-port-recipe.md`; aircraft and bullets in
+  `td-port-playbook.md` (§2.7, the donor-ImageData pattern).
+- The AI's build choices for a new building: `ai-upgrade-plan.md` (W2, the faction yards and
+  `Can_Build`).
+- EVA lines: `td-audio-routing-recipe.md` (EVA voice faction routing).

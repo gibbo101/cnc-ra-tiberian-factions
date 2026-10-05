@@ -58,12 +58,8 @@ public:
     void Forced_Charge(bool player = false);
     void Cap_Recharge(int frames);
 
-    /*
-    **	Charge-drain (TS's Firestorm): the charge held is spent over `frames` while the effect
-    **	runs, the sidebar clock running back down. When the drain runs out or is ended, the
-    **	weapon charges again from zero; when the player stops it early, what is left comes back
-    **	as charge and the weapon stays usable while it charges on to full.
-    */
+    // TF: charge-drain (TS Firestorm): the held charge is spent over `frames` while the effect runs. A drain that
+    // runs out or is ended recharges from zero; one stopped early refunds the rest (docs/firestorm-design.md).
     bool Start_Drain(int frames);
     void End_Drain(bool player = false);
     void Stop_Drain(int ratio);

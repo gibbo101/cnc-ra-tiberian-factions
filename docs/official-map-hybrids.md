@@ -1,11 +1,14 @@
 # Official-map Tiberium/Ore hybrids
 
+**Status:** Reference; shipped in 5.0.0. The official skirmish maps as Tiberium/Ore hybrids, the
+builder, and its rules.
+
 The official RA skirmish maps are replaced in place by Tiberium/Ore hybrids: chosen ore fields
 become Tiberium, and the ore mine feeding each one becomes a TD blossom tree. The map's lobby
 thumbnail is repainted to match. The stock map name, lobby entry and start positions stay as
 they are.
 
-**Proven in play 2026-09-14** on Luke's Deck: Keep off the Grass against a Medium AI showed the
+**Proven in play** on the Deck: Keep off the Grass against a Medium AI showed the
 East field as Tiberium with the blossom tree standing in it, and the home Ore and centre gems
 untouched. The same night the lobby showed the repainted thumbnail, so a loose DDS does
 override an official map's preview.
@@ -34,7 +37,7 @@ override an official map's preview.
   start waypoints. It names no file, so the builder finds a map's key by matching its bounds and
   starts (Keep off the Grass = `_5_`, Docklands = `_111_`).
 - A DDS of the same name loose under the mod's `Data/ART/TEXTURES/SRGB/` overrides the stock one;
-  the front end reads loose overrides (`front-end-texture-meg-spike.md`).
+  the front end reads loose overrides (`ui-atlas-modding.md`).
 
 ### Snow maps need snow Tiberium art
 
@@ -73,7 +76,7 @@ python3 scripts/official_map_hybrid.py scm05ea.ini            # rebuild one
 A plain list names ore-mine cells. A dict can also name `"fields"`: any one cell inside an
 Ore field, which turns that whole field to Tiberium with no blossom.
 
-**Gem rules (Luke, 2026-09-14).** Gems never get touched, and a field with any Gems in it stays
+**Gem rules.** Gems never get touched, and a field with any Gems in it stays
 exactly as it is, so only pure-Ore fields turn to Tiberium. The builder refuses an entry that
 names a field holding Gems. The one exception is Docklands, whose entry sets
 `"take_gems": True` so its west bank turns over whole, mixed Ore/Gem fields included; even
@@ -151,10 +154,10 @@ python3 scripts/official_map_hybrid.py        # build the plan plus HYBRIDS
    mines within reach) plus the start waypoints. Map names are in `map-edits/_official_map_list.ini`
    (the classic set); the full 230 extract with
    `cnc-map-editor` `OfficialMaps.Extract` to `cnc-map-editor/artifacts/test-output/official/`.
-   A render annotated with a cell grid, the starts and the mines makes the choice quick (see
-   the session scratch recipe: `cncmap render`, crop to the bounds, draw the grid).
+   A render annotated with a cell grid, the starts and the mines makes the choice quick
+   (`cncmap render`, crop to the bounds, draw the grid).
 2. **Choose the mix.** The Tiberium/Ore split varies from map to map on purpose: some maps near
-   50/50, some Tiberium-heavy, some Ore-heavy (Luke, 2026-09-14). No map has to be even. What
+   50/50, some Tiberium-heavy, some Ore-heavy. No map has to be even. What
    stays fair is each start's access: on a mirrored map, convert fields in mirrored pairs so
    every start gets the same deal. Only pure-Ore fields are candidates (`gems 0` in the survey).
    Fields the map joins together count as one: North By Northwest's centre has its East gem

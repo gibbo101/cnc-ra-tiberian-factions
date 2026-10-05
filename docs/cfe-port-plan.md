@@ -1,5 +1,11 @@
 # CFE Patch Redux port plan
 
+**Status:** Reference. The first wave shipped in 2.1.0 to 2.4.0: pixel-perfect zoom, rally points,
+harvester queue-jump and optimisation, smarter repair bay, attack-move, A*, infantry Tiberium
+aversion. Smarter SAMs and harvester self-repair shipped in 2.4.0; line-fill walls shipped in 5.0.0
+as our own build.
+**Open:** the second wave (§2) and the bugfix inventory (§3) are candidates.
+
 Plan for adopting QoL features and bugfixes from **CFE Patch Redux** by ChthonVII.
 
 - **Source of truth:** `reference/cfe-patch-redux/` — clone of
@@ -33,22 +39,18 @@ Plan for adopting QoL features and bugfixes from **CFE Patch Redux** by ChthonVI
 
 ---
 
-## 1. QoL first wave (DECIDED 2026-06-11 — this is the work queue)
+## 1. QoL first wave (shipped)
 
 | # | Feature | CFE INI key (locator) | Size | Notes for our port |
 |---|---|---|---|---|
-| 0 | **Pixel-Perfect Zoom** | none (static; data-only) | TINY | **PRIORITY 1 (Luke, 2026-06-11).** No DLL code: loose `Data/XML/GAMECONSTANTS.XML` in the mod folder, `<CNCZoomFactors network="client" overwrite="true">` block — 11 factors 0.246875–1.975 (vanilla: 8 factors 1.0–2.0, so this also zooms OUT further). CFE commit `ea2dde5`. Port = extract BASE GAMECONSTANTS.XML from our install, swap in the zoom block only, ship in our `Data/XML/`. Bonus intel: same file carries `CNCTDTheaterTilesets` (theatre→tileset map, relevant to desert) + many other mod-reachable client constants. |
+| 0 | **Pixel-Perfect Zoom** | none (static; data-only) | TINY | No DLL code: loose `Data/XML/GAMECONSTANTS.XML` in the mod folder, `<CNCZoomFactors network="client" overwrite="true">` block — 11 factors 0.246875–1.975 (vanilla: 8 factors 1.0–2.0, so this also zooms OUT further). CFE commit `ea2dde5`. Port = extract BASE GAMECONSTANTS.XML from our install, swap in the zoom block only, ship in our `Data/XML/`. Bonus intel: same file carries `CNCTDTheaterTilesets` (theatre→tileset map, relevant to desert) + many other mod-reachable client constants. |
 | 1 | **A\* Pathing** | `ASTAR_PATHING` | LARGE | Replaces "crash and turn" pathfinder. **Stage 1 of the two-stage pathfinding plan — see §1.1.** Foundation for #6. 1.8 fixed a crash on paths >200 cells — take the fixed version. Touches core movement; needs the biggest playtest soak. |
-| 2 | **Attack-Move** (Shift+Click) | `ATTACK_MOVE` | ✅ CODE-COMPLETE 2026-06-13 (in playtest) | Post-1.7 LAN-safe rework, hard-enabled, all special cases (aircraft RTB on empty ammo, boats brief-attack, minelayers, chronotanks). Hard-enabled q-attack-move rides VANILLA's queue (CFE's queue rewrite NOT taken — fallback if flaky: stop converting ATTACKMOVE→QATTACKMOVE). One build fix: `AircraftClass::IsLanding/IsTakingOff` made public. **One deliberate deviation from CFE — see §1.2 (passive-building targeting).** |
-| 3 | **Rally Points** | `RALLY_POINTS` | ✅ DONE 2026-06-11 | Desktop-verified all factions. Incl. v1.9 long-line crash fix + two improvements over CFE: rally to "unplaceable" cells (their Can_Enter_Cell placement-legality dead zones near cliffs/shore/ore) and DOTGDI/DOTNOD faction end-dots. Found + fixed our DLL_Draw_Intercept ShapeSize-override trap (building-attributed named draws inflate to building size for TD buildings). Repair-bay rally (FIX/TDFIX) deferred to #6 as CFE gates it on Smarter Repair Bay exit logic. |
+| 2 | **Attack-Move** (Shift+Click) | `ATTACK_MOVE` | ✅ shipped | Post-1.7 LAN-safe rework, hard-enabled, all special cases (aircraft RTB on empty ammo, boats brief-attack, minelayers, chronotanks). Hard-enabled q-attack-move rides VANILLA's queue (CFE's queue rewrite NOT taken — fallback if flaky: stop converting ATTACKMOVE→QATTACKMOVE). One build fix: `AircraftClass::IsLanding/IsTakingOff` made public. **One deliberate deviation from CFE — see §1.2 (passive-building targeting).** |
+| 3 | **Rally Points** | `RALLY_POINTS` | ✅ shipped | Desktop-verified all factions. Incl. v1.9 long-line crash fix + two improvements over CFE: rally to "unplaceable" cells (their Can_Enter_Cell placement-legality dead zones near cliffs/shore/ore) and DOTGDI/DOTNOD faction end-dots. Found + fixed our DLL_Draw_Intercept ShapeSize-override trap (building-attributed named draws inflate to building size for TD buildings). Repair-bay rally (FIX/TDFIX) deferred to #6 as CFE gates it on Smarter Repair Bay exit logic. |
 | 4 | **Harvester Queue Jumping** | `HARV_QUEUE_JUMP` | SMALL | Independent toggle in CFE; works with #5. Verify against our TDPROC/TDHARV Limbo+Attach dock plumbing — our harvester counting bug (docked harvesters leave UQuantity) is exactly the kind of state this code reads. |
 | 5 | **Harvester Optimization** | `HARV_OPTIMIZATION` | SMALL | Nearest-refinery with per-inbound-harvester distance penalty. CFE's recommended choice over the older Load Balancing (which auto-disables when both are on — we just don't port Load Balancing). Same TDPROC caveat as #4. |
 | 6 | **Smarter Repair Bay** | `SMARTER_REPAIR_BAY` | MEDIUM | Queue for occupied bay + fixed RA bay rally + exit logic. Includes their fix for units ignoring collision on the bay. Must cover STRUCT_TDFIX alongside RA's FIX. |
-| 7 | **Infantry Tiberium Aversion** | `TIB_AVERSION` (TD side) | ✅ CODE-COMPLETE 2026-06-16 (awaiting playtest) | Ported into our A* (`FootClass::Find_Path_AStar`, findpath.cpp): +`TIB_AVERSION_COST`=2 cells per Tiberium cell, gated on `What_Am_I()==RTTI_INFANTRY`. **Two deliberate RA deviations from CFE:** (1) keyed on `Overlay==OVERLAY_TIB01` NOT `Land_Type()==LAND_TIBERIUM` — in RA, Ore/Gems share LAND_TIBERIUM but are harmless, so the land-type test would repel infantry from ore (same lesson as the infantry.cpp damage hook); (2) NO chem-warrior (E5) exemption — unlike TD/CFE, OUR Tiberium damages ALL infantry, so all infantry avoid it (aversion tracks damage). Finite penalty = infantry still cross a wide field with no detour. **This completes the CFE first wave.** |
-
-Suggested order: 0 first (decided priority 1), then 3 → 4+5 → 6 (independent,
-small-to-medium, immediately felt) while reading in for 1; then 1, then 2, then 7. A* and
-Attack-Move are the two rewrites; everything else is bounded.
+| 7 | **Infantry Tiberium Aversion** | `TIB_AVERSION` (TD side) | ✅ shipped | Ported into our A* (`FootClass::Find_Path_AStar`, findpath.cpp): +`TIB_AVERSION_COST`=2 cells per Tiberium cell, gated on `What_Am_I()==RTTI_INFANTRY`. **Two deliberate RA deviations from CFE:** (1) keyed on `Overlay==OVERLAY_TIB01` NOT `Land_Type()==LAND_TIBERIUM` — in RA, Ore/Gems share LAND_TIBERIUM but are harmless, so the land-type test would repel infantry from ore (same lesson as the infantry.cpp damage hook); (2) NO chem-warrior (E5) exemption — unlike TD/CFE, OUR Tiberium damages ALL infantry, so all infantry avoid it (aversion tracks damage). Finite penalty = infantry still cross a wide field with no detour. **This completes the CFE first wave.** |
 
 ### 1.1 Pathfinding strategy (DECIDED 2026-06-11: A* first, refine later)
 
@@ -112,79 +114,20 @@ playtests on a snow map produced the concrete spec for stage 2:
 - **Test cases** from the playtest: the contended cells `(30,32)` and `(111,88)` on the snow map;
   watch the tally drop and the per-cell fallback concentration disappear.
 
-**STATUS: destination spread (mechanism 1) SHIPPED v2.2.2 (2026-06-14), Luke-verified** ("much
-better", tight same-zone clump, fallback ~26%→~12%). Code: `FootClass::Find_Spread_Cell`
+**Destination spread (mechanism 1) shipped in 2.2.2**, verified in play (a tight same-zone clump,
+fallback ~26%→~12%). Code: `FootClass::Find_Spread_Cell`
 (findpath.cpp, zone-gated to the clicked cell's `Zones[MZone]`) + `do_spread` gate in
 `DisplayClass::Mouse_Left_Release` (display.cpp). The reservation-table idea in point 2 above was
 SUPERSEDED by the playtest — see §1.1.1 for what the chokepoint problem actually is.
 
-### 1.1.1 ⭐ NEXT SESSION START HERE — v2.2.3 chokepoint give-way → targeted reservation
+### 1.1.1 Chokepoints (shipped in 2.3.0)
 
-> **⭐ 2026-06-16 — read the `CHECKPOINT 2026-06-16` block at the TOP of
-> `docs/chokepoint-reservation-design.md` FIRST.** The reservation is built, the immortal-claim
-> regression is fixed and **committed (`6f35ea9`, local only)**, a deadlock-breaker + infantry-shove are
-> in too. **Next task = the breaker is in the wrong branch** (no-path vs execution-blocked head-on) —
-> full fix plan + 2 test specimens in that checkpoint. Harvester logic, the Recon-Bike fire-arc bug, and
-> a harvester economy-balance idea were spun off to their own workstreams. Everything below this line is
-> superseded history.
->
-> **SUPERSEDED 2026-06-15 — read `docs/chokepoint-reservation-design.md` FIRST.** The "patient queue"
-> framing below was wrong (the jam is a bidirectional head-on `MOVE_NO` deadlock on a 1-wide pinch,
-> not a give-up-instead-of-waiting case). We built a full heuristic vehicle give-way (12 builds,
-> uncommitted in `redalert/drive.cpp`): it makes the 1-wide bridge *clean when one column claims the
-> pinch first* but *stuck on near-simultaneous entry* (boxed-column reversal — the ceiling of a
-> stateless approach). **NEXT JOB (decided with Luke): a targeted CHOKEPOINT RESERVATION** (explicit,
-> atomic, sticky corridor claim — NOT a full WHCA\* space-time grid; MP determinism is not the blocker).
-> Full journey, code map, reservation design, and the MP-desync checklist are in
-> `docs/chokepoint-reservation-design.md`. The text below is kept for history only.
+Give-way, corridor claims and the deadlock-breaker scatter: `chokepoint-reservation-design.md`.
+**Dead route:** a cooperative yield that backs a unit away from its blocker reverses it into the
+unit behind it, because the common jam is a same-direction single-file queue
+(`DriveClass::Try_Cooperative_Yield`, reverted, never committed).
 
-**Goal:** make a group cross a 1-tile land bridge / narrow pass by **queuing and waiting their turn**,
-instead of giving up and jamming. This is the remaining half of A* stage 2 (the "Known issues" line
-in the 2.2.2 changelog + Workshop "Planned → cooperative traffic handling").
-
-**⚠ DO NOT retry the cooperative-YIELD / back-off approach.** It was built this session
-(`DriveClass::Try_Cooperative_Yield`) and FAILED Luke's solo test + regressed the common case, so it
-was reverted (never committed). Wrong model: it assumed a head-on standoff, but the real jam is a
-**same-direction single-file queue** — backing a unit "away from the blocker" reverses it into the
-unit behind it (log proof: APC at (126,52) backed off to (126,53) = where 1TNK sat → churn). Also do
-NOT port OpenRA's reservation grid (engine-hostile; the engine already reserves cells via occupation
-bits — that's WHY bridge cells read `MOVE_TEMP`). OpenRA is a behaviour reference only.
-
-**ROOT CAUSE (confirmed from tf_astar.log + code read):** units near a friendly-blocked chokepoint
-*abandon the move* instead of *waiting*. Two engine mechanisms cause it:
-1. `FootClass::Basic_Path` / the path-retry loop at **foot.cpp ~388-417**: for a human unit within
-   `Rule.CloseEnoughDistance` of its destination it caps `maxtype` at `MOVE_DESTROYABLE` (enum 3),
-   which is BELOW `MOVE_TEMP` (enum 4 = "friendly occupies this cell"). So the escalation never tries
-   the threshold that would route through a friendly → no path. (This cap is the deliberate "don't
-   shove through your own ranks to sit on an exact cell" rule.) MoveType enum: OK=0 CLOAK=1
-   MOVING_BLOCK=2 DESTROYABLE=3 TEMP=4 NO=5. (The "10" seen elsewhere is the COST weight, not the enum.)
-2. `Find_Path_AStar` close-impassable bail (**findpath.cpp ~555**): if the dest is impassable at the
-   given threshold AND within 3 cells → `return 0` (give up).
-   Then `DriveClass::Start_Of_Move` no-path branch (**drive.cpp ~982-1058**) runs `TryTryAgain` down
-   and finally `Assign_Destination(TARGET_NONE)` + `VOC_SCOLD` = the unit drops its order.
-   **Spread amplifies this** by packing the whole group's destinations right at the choke, so every
-   follower is "close to its (blocked) destination" at once.
-
-**FIRST INVESTIGATION STEP next session:** confirm WHICH of the two mechanisms actually fires for the
-stuck units. Re-run the 1-tile-bridge solo test on the desktop (TF_DEV_BUILD diagnostic is in the
-tree — re-enable/rebuild dev), then for a stuck unit (e.g. the repeated `FALLBACK ... dst=(...)`
-lines) check: is its `Distance(NavCom) < Rule.CloseEnoughDistance` (→ mechanism 1, the maxtype cap),
-or is it the ≤3-cell close-impassable bail (mechanism 2)? Add a one-line diagnostic in the no-path
-branch logging `Distance(NavCom)`, `Rule.CloseEnoughDistance`, and `maxtype` for the stuck unit.
-
-**FIX HYPOTHESIS (validate before coding):** when a unit's path fails and its ONLY obstacle is a
-temporary friendly (`MOVE_TEMP`) on the route, it should HOLD position and retry next tick (wait its
-turn) rather than abandon the order. Likely a narrow change: don't drop to `TARGET_NONE` / don't cap
-`maxtype` below `MOVE_TEMP` in the specific case where the blocking cell(s) are friendly movers (not
-terrain, not enemies, not a permanently-parked unit). Must stay multiplayer-deterministic and must
-NOT regress the "stop politely near a crowded destination" behaviour the cap was protecting — so gate
-the change tightly on "blocker is a friendly that is itself moving / will clear."
-
-**TEST:** the 1-tile bridge, group crossing one way AND a second group crossing back (both
-directions). Want: units file across one at a time and all arrive; tf_astar.log fallback storm on the
-bridge cells gone. Ships as **v2.2.3** (patch). Then: infantry Tiberium aversion (needs A* + OVERLAY_TIB01).
-
-### 1.2 Attack-move deviation from CFE: passive-building targeting (Luke, 2026-06-13)
+### 1.2 Attack-move deviation from CFE: passive-building targeting
 
 **Deliberate one-feature departure from CFE attack-move behaviour.** Logged here because the
 porting rule is "document deviations."
@@ -196,7 +139,7 @@ porting rule is "document deviations."
   gun towers — they carry weapons) but drives straight past *passive* buildings (power,
   refinery, barracks, factory, con yard). Verified: CFE's `Evaluate_Object` is byte-identical
   to ours here — no attack-move special-casing.
-- **What Luke wanted:** classic-C&C / StarCraft a-move — attack-move shells *everything* in
+- **The goal:** classic-C&C / StarCraft a-move — attack-move shells *everything* in
   range, **but** prioritises armed threats so a tank engages the Tesla coil rather than
   plinking a kennel while the coil kills it.
 - **Our implementation (techno.cpp):**
@@ -214,16 +157,36 @@ porting rule is "document deviations."
   additive boost, and a multiplier large enough to fix that overflows the 32-bit score. Two
   passes sidestep both. Gated entirely on `AttackMove`, so plain Guard behaviour is untouched
   (guarding units still ignore passive buildings, as vanilla intends).
-- **Threat response (added same day, after Luke saw tanks tunnel-vision a building while a
-  Tesla coil / enemy units chewed them up):** the two-pass priority above only applied at
+- **Threat response (tanks were seen tunnel-visioning a building while a Tesla coil or enemy
+  units chewed them up):** the two-pass priority above only applied at
   *initial* acquisition — once locked on an in-range passive building, nothing re-evaluated.
   Added a block to the `TechnoClass::AI` attack-move retarget: each tick, if the current
   target is a weaponless building, run an armed-only `Greatest_Threat(THREAT_RANGE)` scan and,
   if anything armed is in range, disengage and switch to it. Fires only when there's a real
   threat to switch to (never swaps one passive building for another); aircraft + move-locked
   boats exempt. Deliberately does *not* switch between two armed targets (avoids dithering) —
-  it only breaks passive-building tunnel-vision. **Luke-verified "attack move is great"
-  2026-06-13.**
+  it only breaks passive-building tunnel-vision. Verified in play.
+
+### 1.3 Repair-bay exits and the minelayer
+
+- **`DoSmarterRunAway`** picks the cell a repaired unit leaves to. The RA repair pad is a plus
+  shape, so its cardinal exits are two cells out; the TS Service Depot is solid, so every exit is two
+  cells out and never through the gantry. Units on the chosen cell and just beyond are asked to
+  scatter, because the movement code treats the leaving unit as close enough and won't move them.
+- **`MinelayerFindSpot`** tests cells with `Can_Enter_Cell` plus "no building", which lets a
+  minelayer avoid cloaked enemy mines: a small information leak that came with the port.
+
+### 1.4 Attack-move special cases (`TechnoClass::AI`)
+
+- **Chrono Tank:** when charged it teleports toward `RememberedNavCom`. `Teleport_To` resets
+  attack-move, so the state is saved and restored, only while `NavQueue` still holds movement. This
+  replaces CFE's `SkipNavQueueUpdate`, which is not ported.
+- **Boats:** `AttackMoveBoatClock` is set to 180 on engaging and, for its last 90 frames, forces the
+  boat back to moving. Boats drop out-of-range targets rather than chase them (turning, jams,
+  beaching). Subs are exempt from the lock, missile subs from the give-up.
+- **Dogs and aircraft** never retarget mid-fight.
+- **Aircraft out of ammo** always abort an attack-move; CFE does so only with its Smarter-Aircraft
+  option.
 
 ## 2. QoL second wave (candidates, not yet decided)
 
@@ -271,7 +234,7 @@ Crashes / UB:
 - [ ] Crash loading custom map with invalid mission string in INI (UB in stricmp)
 - [ ] Crash when infantry move into a building during their death animation
 - [ ] Crash when a unit death animation overlaps a building (missing IsActive)
-- [ ] Sidebar off-by-one crash (EA repo issue #105)
+- [x] Sidebar off-by-one crash (EA repo issue #105): fixed in 5.0.0 (`cf8ad1f6`)
 - [ ] Multiple MAD Tanks detonating on same/consecutive ticks
 - [ ] Chain lightning: MISSION_NONE segfault + force-fired-at-ground misbehavior
 - [ ] Building placement map-wrapping bug
@@ -283,8 +246,8 @@ Multiplayer correctness (matters for LAN play with the kids, and any future MP s
 - [ ] MP sound routing — "HUGE number" of sounds playing for wrong player / not playing for
       right player
 - [ ] Unit flash effect shown to wrong players
-- [ ] Per-house "discovered" flag system overhaul — fixes shroud-reveal from under-shroud
-      fire; foundational for shroud-respecting AI (ties into our AI roadmap)
+- [x] Per-house "discovered" flag system overhaul: done our own way in 4.1.0, the per-house intel
+      layer for fair-fog AI (`8e25a32`, `ai-upgrade-plan.md` W1.2)
 - [ ] Hand/Barracks/Factory/Airstrip wrongly flagged "captured" when built in MP → reduced
       crew spawns
 
@@ -320,8 +283,8 @@ Gameplay logic:
 - [ ] Crate outcomes that may kill the opener postponed past the AI loop (use-after-free +
       permanently-reserved cell). TD-only, author-flagged "needs ported to RA".
 - [ ] Search-range fix excluding pre-placed/CPU units until activated. TD-only, same flag.
-- [ ] MCV preserves ActLike/capture state across undeploy→redeploy — touches our shared
-      UNIT_TDMCV/STRUCT_TDFACT; cross-check [[project-mcv-conyard-sharing]] guard.
+- [x] MCV preserves ActLike/capture state across undeploy→redeploy: moot, every faction's MCV and
+      yard are their own types, so the type carries the faction.
 
 ### 3.6 TD-side CFE fixes that land on OUR content (we have these systems in RA)
 
@@ -338,11 +301,10 @@ Gameplay logic:
 CFE gates everything behind `CFEPATCHREDUX_RA.INI`. Our policy:
 
 - **Pure QoL / pure bugfix:** hard-enable, no toggle. Fewer codepaths, less drift.
-- **Gameplay-affecting fixes (§3.4):** decide per-item with Luke; if adopted, they're just ON
+- **Gameplay-affecting fixes (§3.4):** decide per item; if adopted, they're just ON
   and documented in the CHANGELOG (we don't ship a user-facing settings file).
-- Dev-time toggles, if needed during bring-up, follow our `#if 0` diagnostic convention
-  ([[feedback-keep-diagnostics-until-v1]]) and Luke owns flipping them
-  ([[feedback-never-touch-dev-toggles]]).
+- Dev-time toggles, if needed during bring-up, sit behind `TF_DEV_BUILD` or `#if 0` and are never
+  flipped without a deliberate decision.
 
 ## 5. Explicitly out of scope (balance/flavor — conflicts with TD-authentic rule)
 
@@ -353,7 +315,7 @@ Jozef's Silver Funpark, Red USSR Flag art, Megamap/8-player (TD-side), Building 
 Announcements (TD), GDI9 Fix / MP Preplaced Unit Order / Disable MP Neutral Attacks
 (TD campaign/MP-map specifics), Dr. Moebius idle quote.
 
-Revisit any of these only at Luke's direction, most plausibly during the post-2.0 balance
+Revisit any of these only as a deliberate decision, most plausibly during a balance
 pass (veterancy) or the campaign arc (mission-side fixes).
 
 ## 6. Credits / attribution to carry

@@ -1,8 +1,14 @@
 # .bui front-end UI modding — the ChunkFile scene-graph layer
 
-**Status:** Format fully reverse-engineered + **production-proven** (2026-07-11). The launcher's front-end screens are `.bui` files inside the mod-shippable `CONFIG.MEG`; a mod can edit them and ClientG renders the change. We **already ship one** (the main-menu reorder — see `scripts/bui_mainmenu_build.py`), which is the live proof the whole pipeline works. This doc is the canonical format + capability reference; it consolidates the existing main-menu pipeline with a systematic RE of the format and a map of what the layer can and cannot unlock.
+**Status:** Reference. Editing the launcher's `.bui` screens inside CONFIG.MEG.
 
-**One-line:** `.bui` = a Petroglyph **ChunkFile** container (`CH` magic + zlib) wrapping a tag-based UI scene graph. It is **data**, delivered via the proven `CONFIG.MEG` shadow — so it is entirely independent of the DLL/process boundary (see `launcher-vs-dll-ownership.md` / [[spike-launcher-process-model]]; our sim DLL never touches it — `ClientG.exe` reads the modded MEG at front-end load).
+The launcher's screens are `.bui` ChunkFile scene graphs in the mod's CONFIG.MEG. The mod ships
+edits to the main menu, dialog, loading screen, lobbies, faction combo box, tactical HUD and font
+library, built by `scripts/build_config_meg.sh` through `scripts/bui_tree.py` and the
+`scripts/bui_*_build.py` builders. Edits reshape, retint, retexture or extend existing widgets
+within the member's size; they cannot add options or behaviour ClientG has no code for.
+
+**One-line:** `.bui` = a Petroglyph **ChunkFile** container (`CH` magic + zlib) wrapping a tag-based UI scene graph. It is **data**, delivered through the `CONFIG.MEG` shadow and read by `ClientG.exe` at load, so the sim never touches it (`launcher-vs-dll-ownership.md`).
 
 ---
 
@@ -10,7 +16,7 @@
 
 - **YES — cosmetic reshape of EXISTING widgets** on any front-end/HUD screen: reposition, resize, hide/show, retint, retexture and restyle text (strings may change length), plus nodes the launcher already reads (effects, font styles). Whole front-end screens can be swapped for TD's through `FACTIONS.XML` (2026-10-01 section). **Proven on both surfaces:** the front-end (main-menu reorder ships in production) **and** the in-game HUD (Deck-confirmed 2026-07-11 — a hide edit on `RA_TACTICAL_UI.BUI`'s Soviet faction-logo rect removed that logo live in a skirmish).
 - **NO — adding new options or behaviour.** The things we'd *want* to add are code-populated from compiled C++ enums/type-managers in `ClientG.exe`, not from `.bui` data. (Payload growth itself is fine while it recompresses under the file's size.)
-- Treat this as a **polish / faction-identity** capability, not a feature unlock. It does **not** revive the 5th-faction or playable-GDI/Nod-campaign goals — those stay dead on engine walls.
+- Treat this as a **polish / faction-identity** capability, not a feature unlock. Factions and campaigns came by other routes (`ts-gdi-faction.md`, `campaign-tabs-research.md`).
 
 ---
 
@@ -88,11 +94,11 @@ Always edit from the **pristine base** member and re-derive offsets against expe
 
 | Wall | Verdict | Why |
 |---|---|---|
-| **W1 Allied/Soviet picker emblems** | **PARTIAL / weak** | Can retexture existing combo/listbox widgets and repoint `FACTIONS.XML SmallIconName` at **already-preloaded** regions. Cannot supply **new emblem pixels** (front-end custom textures resolved-negative — `front-end-texture-meg-spike.md`). "Add a hidden widget to force-preload `UI_SIDEBAR_FACTIONLOGO_*` then repoint" needs payload growth → blocked by same-size rule + startup-crash risk. |
-| **W2 genuine 5th faction slot** | **DEAD** | `FactionType` is a compiled C++ enum in ClientG; the faction listbox is code-populated keyed by it. No data/`.bui`/script can mint an enum value. **Still true, and sidestepped rather than broken (2026-09-05): TS GDI is a fifth faction with no new slot — it reuses the Germany country slot and decouples that house DLL-side, so the launcher's enum is untouched. See `ts-gdi-faction.md`. A *genuine* new slot remains dead; the 8 slots are the hard ceiling, 5 now spoken for.** |
-| **W3 campaign / map-select UI** | **PARTIAL (cosmetic only)** | Can restyle/reposition/retexture `CNC_MAPSELECT` / `RA_CAMPAIGN_SELECT`. The real prize — a selectable, *playable* GDI/Nod campaign — is DEAD on a separate wall: missions are `ExternalGameID=TiberianDawn` and the roster comes from compiled `TypeManager<CampaignMapSelectMapClass>`. `.bui` only restyles the screen. See `campaign-tabs-research.md`. |
-| **W4 in-game tactical HUD** | **SOLVED 2026-09-02 by data: `FACTIONS.XML` scene lists — GDI/Nod load TD's `Tactical_UI.bui`, RA sides keep `RA_Tactical_UI.bui` with the side label hidden (`faction-select-identity.md`). Per-faction logos in the RA scene were the DLL RAM patch (`radar-crest-ram-spike.md`)** | Cosmetic edits (reposition/retint/hide/retexture) of existing HUD widgets are real and shippable, and structural widget insertion now works too (format cracked — see the RESOLVED NEGATIVE section). But **per-faction GDI/Nod crests are engine-walled**: ClientG's compiled mapping sends all RA Allied-side countries (incl. our GDI=Spain, Nod=Turkey) to `SideBar_FactionLogo_Allies` and Soviet-side to `_Soviet`; `_GDI`/`_NOD` are TD-mode-only lookups. HUD identity via `.bui` is limited to **side-level or mod-wide** styling. Builder: `scripts/bui_work/faction_logos_build.py`. |
-| **W5 `a` / `/` select-all/deploy hotkey classification** | **SOLVED 2026-09-02 on the DLL side, not via BUI** (`launcher-vs-dll-ownership.md`: the DLL polls the key itself and vetoes the launcher's select-all hand-over) | Hardcoded in ClientG (`RTSInputManagerClass`, registered-type identity); not expressed in any `.bui` or shipped script. Per-frame export spoofs already Deck-proven no-op. |
+| **W1 picker emblems** | **Solved, not by `.bui`** | `FACTIONS.XML` `SmallIconName` can point only at preloaded regions, and the loose atlas repaints their pixels (`faction-select-identity.md`, `ui-atlas-modding.md`). |
+| **W2 genuine new faction slot** | **DEAD** | `FactionType` is a compiled C++ enum in ClientG; the faction listbox is code-populated keyed by it. No data, `.bui` or script can mint an enum value. TS GDI is a fifth faction without one: it reuses the Germany country slot and decouples that house DLL-side (`ts-gdi-faction.md`). The 8 country slots are the ceiling. |
+| **W3 campaign / map-select UI** | **Cosmetic only** | `.bui` can restyle, reposition and retexture `CNC_MAPSELECT` / `RA_CAMPAIGN_SELECT`; the roster comes from compiled `TypeManager<CampaignMapSelectMapClass>` and `INSTANCES.XML`. Campaign missions are delivered by hijacking an existing Counterstrike or Aftermath slot (`campaign-tabs-research.md`). |
+| **W4 in-game tactical HUD** | **Solved by data** | `FACTIONS.XML` scene lists: GDI, Nod and TS GDI load TD's `Tactical_UI.bui`, RA sides keep `RA_Tactical_UI.bui` with the side label hidden (`hud_label_hide_build.py`, `faction-select-identity.md`). Cosmetic edits and structural widget insertion both work, but in RA's scene ClientG maps every Allied-side country to `SideBar_FactionLogo_Allies` and every Soviet-side one to `_Soviet`, so per-faction crests there need the RAM patch, not `.bui` (below). |
+| **W5 `a` / `/` select-all/deploy classification** | **Solved on the DLL side, not via `.bui`** | Hardcoded in ClientG (`RTSInputManagerClass`, registered-type identity); the DLL reads the keys and filters the select-all hand-over (`launcher-vs-dll-ownership.md`). |
 
 **The line to remember:** reshaping, retexturing and recolouring existing widgets, and adding nodes the launcher already reads (effects, font styles), is reachable; new options or behaviour the launcher has no code for is not.
 
@@ -129,41 +135,25 @@ Petroglyph's 9-Bit Armies GUI editor (`ModTools/GUIEditor` on the M.2:
 - **Recompress overflow** — if `len(comp) > original_csize` you cannot pad down; rework/shrink the edit. Thin budgets on small files.
 - **Structural corruption** — unbalanced/over-deep chunks trip ChunkFile's depth/close guards → load abort. Don't restructure; edit in place.
 - **Safe envelope** = edits through `scripts/bui_tree.py` (or in-place float and flag overwrites at verified `02 10`/`03 10` tags): string leaves may change length, leaves may be added to a container (its count follows), and the result must recompress under the base's size. Texture-set names are micro-chunks inside a header leaf (`0f <size> <u16 len>`); `replace_texture_set` rewrites one and its leaf's size.
-- **Residual uncertainty (now small):** the main-menu artifact proves pad-tolerance + same-size-safety **for a `.bui`**, so the earlier "Deck-unconfirmed" caveats are largely retired. What remains unproven is that *other* screens (HUD/map-select) render correctly in-context after a same-size edit — mechanically identical to the proven case, but not yet observed.
+- Same-size edits are proven in play on the main menu, dialog box, loading screen, lobbies, faction combo box, font library and tactical HUD.
 
 ---
 
-## Cheapest way to prove W4 (HUD) generalizes
+## Per-faction logos in RA's HUD scene: not reachable by `.bui`. Do not re-chase.
 
-The main-menu case already proves the pipeline. To confirm it extends to the in-game HUD, a **ready-to-run probe is built and validated**: `scripts/bui_work/hud_probe_build.py` produces `scripts/bui_work/CONFIG.hud-probe.MEG` (a copy of the mod's `CONFIG.MEG` with one same-length swap in `RA_TACTICAL_UI.BUI`: `ui_sidebar_factionlogo_allies` → `ui_sidebar_factionlogo_soviet`, equal length = zero size risk). It self-validates the whole round-trip (member size unchanged, payload length unchanged, MEG size unchanged, swap applied). To run the probe:
-
-1. `python3 scripts/bui_work/hud_probe_build.py`  → regenerates + validates the probe MEG (44 MB, gitignored).
-2. `scp` it to the Deck mod folder's `Data/CONFIG.MEG` (deploy command is in the script's docstring).
-3. Launch a skirmish **as GDI** (an Allied-based faction) and look at the sidebar crest.
-
-Interpretation: crest shows the Soviet/Nod logo = **W4 proven end-to-end**. No change = wrong member/delivery. Boot crash = size drift (shouldn't happen for a same-length edit). Recovery: redeploy the mod's unmodified `CONFIG.MEG` (command in the docstring). **The base install is never touched.** This is a probe, not a feature — revert after observing.
-
----
-
-## Per-faction HUD logos — RESOLVED NEGATIVE (2026-07-12). Do not re-chase.
-
-**Verdict: per-faction sidebar crests for GDI/Nod are engine-walled in RA mode.**
-ClientG's compiled FactionType→logo-widget mapping collapses ALL RA countries to
-the two side widgets — `SideBar_FactionLogo_Allies` for Allied-side countries
-(incl. Spain = our GDI and Turkey = our Nod) and `_Soviet` for Soviet-side. The
-`_GDI`/`_NOD` widget names (present in ClientG, exact-match verified by strings)
-are only queried for the TD FactionTypes (Faction1/Faction2), which the RA lobby
-can never produce (the W2 wall). The mod's shipped all-factions
-"COMMAND & CONQUER" wordmark is the correct end state.
+**ClientG never queries `SideBar_FactionLogo_GDI` / `_NOD` in RA's scene.** Its compiled
+FactionType→logo-widget mapping collapses every RA country to the two side widgets:
+`SideBar_FactionLogo_Allies` for Allied-side countries (Spain, Greece and Germany included) and
+`_Soviet` for Soviet-side. The `_GDI`/`_NOD` names are looked up only for the TD FactionTypes
+(Faction1/Faction2), which the RA lobby can never produce (W2). Per-faction crests come from TD's
+scene plus the RAM patch instead (`radar-crest-ram-spike.md`).
 
 **Discriminator probe that proved it (Linux, 2026-07-12):** `_Allies` widget
 retextured to the GDI eagle; structurally-valid `_GDI`/`_NOD` widgets inserted
 (cracked format, unique instance IDs — see below) pointing at the Nod scorpion.
 Result: GDI, Nod, AND Allies all showed the eagle (→ all resolve to `_Allies`);
 Soviets showed the wordmark (→ `_Soviet`); the scorpion never appeared (→
-`_GDI`/`_NOD` never queried). This also retro-explains the 2026-07-11 "hide
-`_Allies` changed nothing" puzzle only partially — those offsets were misaligned
-mid-node (see next section); trust only the 2026-07-12 probe.
+`_GDI`/`_NOD` never queried).
 
 **What the chase yielded anyway (both real capabilities):**
 1. **The chunk grammar is fully cracked** — `node = [u32 id][u32 spec]`, spec
@@ -173,8 +163,7 @@ mid-node (see next section); trust only the 2026-07-12 probe.
    `C id=1 cnt=2` subtrees; each widget's first micro-chunk (`01 04 <u32>`) is a
    per-instance unique ID (serialized pointers — monotonic in file order, no
    cross-references in the payload).
-2. **Structural widget insertion WORKS** (revising this doc's earlier "cannot
-   add widgets" claim): copy a complete element subtree, rewrite its string
+2. **Structural widget insertion works:** copy a complete element subtree, rewrite its string
    leaves (u32 size + u16 len prefixes), give it a fresh unique ID, insert as a
    sibling, and bump the direct parent's child count — the tree parses and the
    HUD renders normally with the extra widgets present (Linux-verified; they
@@ -184,29 +173,12 @@ mid-node (see next section); trust only the 2026-07-12 probe.
    the ENGINE use new widgets it has no compiled lookup for — walls W2/W5
    unchanged.
 
-## Per-faction HUD logos — the original structural-add WIP (2026-07-11, superseded by the above)
-
-**Goal:** 4 distinct radar-splash logos, one per faction (Allied / GDI / Nod / Soviet). This is the frontier case — it needs a **structural add** (new widgets), not just in-place edits.
-
-**What we discovered:**
-- ClientG selects the sidebar logo by widget **name**, keyed on the compiled `FactionType` enum, and looks for **five** names: `SideBar_FactionLogo_{GDI,NOD,Allies,Soviet,DINO}`. `RA_TACTICAL_UI.BUI` only *defines* `_Allies` and `_Soviet`, so GDI/Nod fall back to the generic "COMMAND & CONQUER" wordmark. **The engine has GDI/Nod logo slots that were never populated.**
-- The **real emblems already ship** in the mod's in-game atlas: regions `ui_sidebar_factionlogo_gdi` (gold eagle) and `_nod` (red scorpion), untouched from base TD art. New widgets just point at them (tint 1,1,1,1) → authentic art, no new pixels. (Only the Allies/Soviet atlas regions were overwritten by the mod with the wordmark.)
-- `.bui` string property layout: `[u32 fieldsize = len+2][u16 len][ascii]`. Widget header = `26 10` + 16 zero bytes + `2b 01 01` + `2c 01 01` + `05 00 00 00` (05 = property count). No per-widget total-size field. Duplicating a widget block is well-defined; the `26 10` headers are identical between widgets (no unique per-widget ID → no collision).
-
-**The attempt (`scripts/bui_work/faction_logos_build.py`):** duplicate the `_Allies` block twice → `_GDI`/`_NOD` pointing at the real emblems, retint `_Allies` blue / `_Soviet` orange, insert the 2 blocks (+602 B) before the `RadarMap` widget. Builds cleanly, fits the budget (10725 ≤ 11071), MEG size preserved.
-
-**The failure (Deck-tested, GDI):** the **entire in-game sidebar disappeared** — the tactical view rendered full-screen with no sidebar. **No crash** (graceful degrade). Diagnosis: a **parent chunk bounds its children by a size/count field**; inserting 602 bytes without updating it made ChunkFile mis-parse the rest of `Side_Bar_Group` and drop it.
-
-**The one missing piece for next session:** find the parent chunk enclosing the faction-logo group (candidates: `Side_Bar_Group` @864, `AspectRatio_Group`, `Tactical_UI`) and update its **size and child-count** field(s) by the inserted byte count (+2 children), then re-test. Once the sidebar renders, we also confirm the **faction→widget mapping** (open puzzle: an earlier hide-test showed the `_Soviet` edit affected only Soviet, but the `_Allies` edit affected *nothing* — so it's unconfirmed that the mod's Allies faction resolves to `_Allies`, or GDI/Nod to `_GDI`/`_NOD`). Resolve that via the DLL `FactionType`/`FACTIONS.XML` mapping. The RE workflow (`bui-add-faction-logos`) was rate-limited mid-run — its `chunkfile-insertion-format` and `faction-to-widget-mapping` agents should be re-run first (subagent session limit reset ~21:30 Europe/London on 2026-07-11).
-
-**Confirmed en route:** in-place retints and hide edits on the HUD render live (this is how W4 was proven); structural insertion is safe to iterate (fails graceful, no crash); recovery = restore the mod's `CONFIG.MEG`.
-
 ## Related docs
 
 - `config-meg-mod-delivery.md` — the `CONFIG.MEG` shadow delivery + the same-size rule this depends on.
 - `faction-select-identity.md` — the `FACTIONS.XML`/master-text faction-picker edits shipped alongside the `.bui` edits.
-- `launcher-vs-dll-ownership.md` / [[spike-launcher-process-model]] — why this is a data avenue and the DLL can't reach the front-end.
-- `front-end-texture-meg-spike.md` — why new front-end *pixels* aren't deliverable (bounds W1).
+- `launcher-vs-dll-ownership.md` — the four levers that reach launcher-owned behaviour; `.bui` is the data one.
+- `ui-atlas-modding.md` also records the dead texture-MEG route; front-end pixels ship as loose files.
 - `ui-atlas-modding.md` — the in-game atlas (loose-override) surface, distinct from `.bui`.
-- `campaign-tabs-research.md` — why W3's playable-campaign prize is engine-walled.
+- `campaign-tabs-research.md` — how campaign missions are delivered (W3).
 - Scripts: `scripts/bui_mainmenu_build.py` (worked example), `scripts/build_config_meg.sh`, `scripts/meg_pack.py`, `scripts/meg_extract.py`.

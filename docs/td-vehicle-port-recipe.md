@@ -1,5 +1,7 @@
 # TD Vehicle Port Recipe
 
+**Status:** Reference. The pipeline for porting a TD vehicle; every TD vehicle ships this way.
+
 **Worked example (shipped 2026-05-30):** `UNIT_TDMTNK` — **GDI Medium Tank**, the first combat vehicle. Establishes the vehicle pipeline the way TDE1 established infantry and TDATWR established buildings. (TDMCV + TDHARV were ported earlier in the building-separation arc but are turret-less utility units; the Medium Tank is the first turreted combat vehicle.)
 
 **Read first:** `docs/td-port-playbook.md` (architecture + traps) and `docs/td-infantry-port-recipe.md` (the bundling pipeline this shares). This doc is the vehicle-specific companion.
@@ -10,7 +12,7 @@
 
 1. **Source files:** `tiberiandawn/udata.cpp` (the `UnitTypeClass` ctor — speed/armor/strength/turret/squash/explosion), `const.cpp` `Weapons[]`/`Warheads[]`, `bbdata.cpp` the bullet. **The catalogue/our docs are NOT the spec** (playbook §2.1): the Medium Tank fires `WEAPON_105MM`, not 90mm.
 2. **RA's `UnitTypeClass` ctor has RA-only geometry fields TD lacks** (the legitimate "schema bridge" exception): `RemapType`, `verticaloffset`, `primaryoffset`/`primarylateral`, `secondaryoffset`/`secondarylateral`, `rotation` (32), `is_jammer`/`is_gapper`. Map TD's flags by **meaning** (turret/crusher/gigundo/goodie); for the **weapon-offset geometry** (where the muzzle flash draws on the turret) there is **no TD value** — start from a same-size RA tank (`2TNK` for a medium tank: vert `0x0030`, primary `0x00C0`) and **tune by screenshot** until the flash sits on the TD gun barrel. `toffset` (turret-center) IS a TD field — use TD's value (0).
-3. **`Speed` in rules.ini = `round(MPHType × 100 / 256)`**, NOT RA's tank's value and **NOT `MPHType ÷ 2`** (the ÷2 form was wrong — see ⚠️ below). TD gives an `MPHType` constant; the rules.ini `Speed=` is a **1–100 percentage** that the engine scales back to the 0–255 `MaxSpeed` via `_Scale_To_256` (`MaxSpeed = Speed × 256 / 100`). So invert it: `MPH_MEDIUM = 18` → `round(18 × 100 / 256)` = **`Speed=7`**; the shipped `[TDMCV]` (`MPH_MEDIUM_SLOW` = 12) → `round(12 × 100 / 256)` = `Speed=5`; the harvester (`MPH_MEDIUM` raw 18, but capped) ships `Speed=5`. **Do NOT copy RA's same-role tank `Speed=8`** — derive from the TD `MPH_*` constant, every time. (Luke caught both the RA-copy and the ÷2 errors.)
+3. **`Speed` in rules.ini = `round(MPHType × 100 / 256)`**, NOT RA's tank's value and **NOT `MPHType ÷ 2`** (the ÷2 form was wrong — see ⚠️ below). TD gives an `MPHType` constant; the rules.ini `Speed=` is a **1–100 percentage** that the engine scales back to the 0–255 `MaxSpeed` via `_Scale_To_256` (`MaxSpeed = Speed × 256 / 100`). So invert it: `MPH_MEDIUM = 18` → `round(18 × 100 / 256)` = **`Speed=7`**; the shipped `[TDMCV]` (`MPH_MEDIUM_SLOW` = 12) → `round(12 × 100 / 256)` = `Speed=5`; the harvester (`MPH_MEDIUM` raw 18, but capped) ships `Speed=5`. **Do NOT copy RA's same-role tank `Speed=8`** — derive from the TD `MPH_*` constant, every time.
 
    > ⚠️ **The ÷2 convention this doc originally taught was wrong** (corrected commit `187fd66`, 2026-05-31). `Speed = MPHType / 2` ran **every one of the 13 TD ground units ~28% too fast**. A Light-vs-Flame playtest race exposed it. All units were recomputed to `round(MPHType × 100 / 256)` (e.g. `MPH_MEDIUM` tanks `9 → 7`, harvester `10 → 5`) and the `// Speed=N` comments in `defines.h` were corrected to match. Use the ×100/256 form.
 4. **Rendering = classic SHP (TFASSETS.MIX) + HD tileset (RA_UNITS.XML)** — both, unlike infantry (which use a donor-ImageData). `UnitTypeClass::One_Time` loads `<Image>.SHP` for `ImageData`; a TD-prefixed unit needs `TD<NAME>.SHP` packed into `TFASSETS.MIX` (add to `build_tfassets.sh`, source `<NAME>.SHP` from `CONQUER.MIX`). `ShapeSize=48,48` in rules.ini sets `MaxSize`. The HD tileset (`bundle_unit.py`) renders the Remaster.
@@ -157,11 +159,8 @@ The GDI APC (`UNIT_TDAPC`, TD `UnitAPC` udata.cpp:907) is the first **transport*
   draw the door frames as a "turret." Tileset donor = the APC's own 38-frame block (no slicing).
 - **`Crewed=no`** (TD source "crew inside? false") — the 5 passengers spill on death, no extra survivor; the
   §traps Crew_Type trap doesn't apply.
-- **Deploy/unload keyboard shortcut is dead** (playbook §3.23) — the GlyphX hotkey only knows vanilla enum
-  values, so it no-ops for `UNIT_TDAPC` (same as TDMCV deploy). The **mouse** unload (click loaded APC on
-  itself) works fully. Don't re-chase the STOCK key per-unit — but a MOD-DEFINED hotkey is available
-  (`config-meg-lever-audit.md` Tier 1: the chain is mod-data end to end, only our DLL handler is missing;
-  queued in `todo.md`). Until that ships, tell the player to use the mouse.
+- **Deploy/unload key:** works for any unit whose self-click deploys or unloads (playbook §3.23); the
+  DLL reads the key and runs the self-action, so a new transport needs no key work.
 
 > ⚠️ **`build_tfassets.sh` must run BEFORE the DLL build, or the deploy ships a stale MIX** (cost a cycle on
 > the APC, 2026-06-01). The DLL build's POST_BUILD stages `resources/` → `build/`; if you rebuild
@@ -212,8 +211,7 @@ base `TDC/TDR_SFX_TRANS1.WAV` (`SFXEVENTSNONLOCALIZED.XML`, BAZOOK1 pattern, no 
 
 **(e) Other STANK specifics.** Turret-less (all-zero weapon offsets, like the Bike); **invisible-to-radar**
 (ctor param `true` — doesn't show on the minimap); `ANIM_TDFRAG2` death; `Prerequisite=weap,dome` (Nod
-airstrip + radar, matching TD's `STRUCTF_RADAR`); Speed 12 (`MPH_MEDIUM_FAST`, = Hum-vee/Buggy — TD-authentic;
-Luke felt it slightly fast → logged for the v1.0 balance pass, not patched).
+airstrip + radar, matching TD's `STRUCTF_RADAR`); Speed 12 (`MPH_MEDIUM_FAST`, = Hum-vee/Buggy — TD-authentic, kept).
 
 **Compile traps hit:** `TXT_STANK` doesn't exist in RA → use the `TXT_LTANK` placeholder (real name from
 rules.ini `Name=`); `Techno_Type_Class()` returns a **pointer** not a reference → `->IniName`.
@@ -225,11 +223,11 @@ Tank (`TDHTNK` — dual weapon + AA, §DUAL); Nod Flame Tank (`TDFTNK` — turre
 Nod Recon Bike (`TDBIKE` — wheeled rocket scout, §BIKE — pure E3-TDDragon reuse); GDI Hum-vee (`TDJEEP`)
 + Nod Buggy (`TDBGGY` — wheeled MG turret); GDI APC (`TDAPC` — tracked transport, §APC);
 **Nod Stealth Tank (`TDSTNK` — cloaking, §STEALTH).**
-Naming convention (Luke): faction-prefix any TD unit colliding with an RA name. **Next:** MLRS / Artillery /
-SSM Launcher (MSAM) — each needs a new ballistic/rocket weapon port. Aircraft (Orca / Apache / Chinook) are a
-separate arc (helipad + the TDCARGO aircraft plumbing already proven).
+Naming convention: faction-prefix any TD unit whose name collides with an RA one. The MLRS, Artillery and
+SSM Launcher followed with their own weapon ports (`td-mlrs-deep-dive.md`), and the aircraft on the helipad
+and the TDCARGO plumbing.
 
-> **deploy.sh gotcha (hit 2026-05-30):** `deploy.sh` `rm -rf`s `build/remaster/Vanilla_RA/` then runs the
+> **deploy.sh gotcha:** `deploy.sh` `rm -rf`s `build/remaster/Vanilla_RA/` then runs the
 > workflow, but the repackage is a **RedAlert POST_BUILD step** (`redalert/CMakeLists.txt:213`) that only
 > fires when the DLL *relinks*. If ninja sees the DLL up-to-date (e.g. you already built manually),
 > POST_BUILD is skipped and `Vanilla_RA/` is never recreated → deploy aborts "RedAlert.dll not found".

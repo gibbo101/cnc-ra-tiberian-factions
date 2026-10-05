@@ -277,14 +277,8 @@ static OverlayTypeClass const Gems4(OVERLAY_GEMS4, // Overlay type number.
                                     false,         // Is this a wall type?
                                     false          // Is this a crate?
 );
-// Tiberian Factions -- TD-style harvestable Tiberium. Modeled on Gold (same
-// LAND_TIBERIUM + IsTiberium=true => harvested & credited generically), but a
-// single visual type whose 12 density frames live in one cross-theatre SHP
-// (TIB01.SHP), so "Theater specific art?" = false (TD Tiberium looks the same
-// in every theatre). Value is routed to the Ore path in unit.cpp / cell.cpp.
-// Grows + spreads like Gold (added to Can_Tiberium_Grow/Spread; Spread_Tiberium
-// emits TIB01 from a TIB01 source). Display name reuses TXT_GOLD for now
-// (overlays aren't selectable; cosmetic only).
+// TD Tiberium (OVERLAY_TIB01): harvested and banked as Ore, growing and spreading like Gold, from one cross-theatre
+// TIB01.SHP of 12 density frames. It reuses TXT_GOLD, as overlays are never selected (docs/tiberium-ecosystem.md).
 static OverlayTypeClass const Tib01(OVERLAY_TIB01, // Overlay type number.
                                     "TIB01",       // INI name of overlay.
                                     TXT_GOLD,      // Full name of overlay.
@@ -302,10 +296,8 @@ static OverlayTypeClass const Tib01(OVERLAY_TIB01, // Overlay type number.
                                     false          // Is this a crate?
 );
 
-// Tiberian Factions -- TS GDI concrete wall (TS [GAWALL]: Strength=150, Armor=concrete,
-// High=yes). Modelled on Brick: 3 damage levels x 50 points = TS's 150 HP, stops low
-// bullets, targetable, not crushable, cross-theatre art (TSWALL.SHP classic stub /
-// TSWALL.ZIP HD). Display name reuses TXT_BRICK_WALL (overlays are never selected).
+// TS GDI concrete wall (OVERLAY_TSWALL), TS [GAWALL] Strength=150: built like Brick, 3 damage levels of 50 points,
+// cross-theatre art. It reuses TXT_BRICK_WALL, as overlays are never selected.
 static OverlayTypeClass const Tswall(OVERLAY_TSWALL, // Overlay type number.
                                      "TSWALL",       // INI name of overlay.
                                      TXT_BRICK_WALL, // Full name of overlay.
@@ -322,13 +314,13 @@ static OverlayTypeClass const Tswall(OVERLAY_TSWALL, // Overlay type number.
                                      true,           // Is this a wall type?
                                      false           // Is this a crate?
 );
-// Tiberian Factions -- TS Nod wall (TS [NAWALL]: the same stats as GAWALL). Built like Tswall.
+// TS Nod wall (OVERLAY_TSNWALL), TS [NAWALL]: the same stats as GAWALL. Built like Tswall.
 static OverlayTypeClass const Tsnwall(OVERLAY_TSNWALL, // Overlay type number.
                                       "TSNWALL",       // INI name of overlay.
                                       TXT_BRICK_WALL,  // Full name of overlay.
                                       LAND_WALL,       // What kind of ground is it?
                                       3,               // If this is a wall, how many damage levels?
-                                      50,              // If this is a wall, how many damage points can it take per level?
+                                      50,              // If a wall, how many damage points can it take per level?
                                       true,            // Visible on the radar map?
                                       false,           // Is it a wooden overlay (affected by fire)?
                                       true,            // Targetable as a destroyable overlay?
@@ -659,11 +651,10 @@ void OverlayTypeClass::Init_Heap(void)
     new OverlayTypeClass(SteelCrate); // OVERLAY_STEEL_CRATE
     new OverlayTypeClass(Fence);      // OVERLAY_FENCE
     new OverlayTypeClass(WaterCrate); // OVERLAY_WATER_CRATE
-    // OVERLAY_TIB01 is last in the enum (see defines.h) -- keep this submission
-    // last so the positional heap (As_Reference = OverlayTypes.Ptr(type)) matches.
-    new OverlayTypeClass(Tib01);      // OVERLAY_TIB01 (Tiberian Factions)
-    new OverlayTypeClass(Tswall);     // OVERLAY_TSWALL (Tiberian Factions, TS GDI wall)
-    new OverlayTypeClass(Tsnwall);    // OVERLAY_TSNWALL (Tiberian Factions, TS Nod wall)
+    // TF: ours are last in the enum and register last, in its order: As_Reference indexes the heap by type.
+    new OverlayTypeClass(Tib01);      // OVERLAY_TIB01
+    new OverlayTypeClass(Tswall);     // OVERLAY_TSWALL (TS GDI wall)
+    new OverlayTypeClass(Tsnwall);    // OVERLAY_TSNWALL (TS Nod wall)
 }
 
 /***********************************************************************************************
@@ -932,20 +923,11 @@ void OverlayTypeClass::Init(TheaterType theater)
             }
             overlay.ImageData = MFCD::Retrieve(fullname);
 
-            // Tiberian Factions -- TIB01 ships HD-only for now: its art is keyed
-            // by IniName in the launcher tileset, and there is no classic
-            // TIB01.SHP yet, so MFCD::Retrieve returns NULL. Both the launcher
-            // overlay export (dllinterface.cpp ~7102) and classic Draw_It skip an
-            // overlay whose ImageData is NULL, so nothing renders even though the
-            // cell harvests fine. Donate Gold's classic image data (identical
-            // 12-frame density layout) so the NULL guard passes; the launcher
-            // then draws the real TIB01 frames by AssetName, and classic mode
-            // shows ore-coloured Tiberium until a real TIB01.SHP is added.
+            // TF: an overlay with no classic art is skipped by both draws, so a missing TIB01.SHP or TS wall stub in
+            // TFASSETS.MIX borrows Gold's or Brick's frames; the launcher still draws the real art by AssetName.
             if (index == OVERLAY_TIB01 && overlay.ImageData == NULL) {
                 overlay.ImageData = As_Reference(OVERLAY_GOLD1).Get_Image_Data();
             }
-            // TSWALL ships a classic stub in TFASSETS.MIX; if it is ever missing,
-            // borrow BRIK's frames so the NULL guards pass and the HD art still draws.
             if ((index == OVERLAY_TSWALL || index == OVERLAY_TSNWALL) && overlay.ImageData == NULL) {
                 overlay.ImageData = As_Reference(OVERLAY_BRICK_WALL).Get_Image_Data();
             }

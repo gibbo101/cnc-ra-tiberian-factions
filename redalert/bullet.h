@@ -61,23 +61,13 @@ private:
     FacingClass PrimaryFacing;
 
 public:
-    /*
-    **	TSDROPPOD delivery sequencing: the pod flies a VTOL profile -- straight
-    **	down over the deck, a beat on the ground while the cargo rolls out,
-    **	straight up and away. Stage 0 = descending, 1 = on the deck (TFDwell
-    **	frames remaining), 2 = departing. TFUnloaded counts group members
-    **	already disembarked, so the paced unload and the destructor backstop
-    **	can never double-deliver. Zero and unused for every other bullet type.
-    */
+    // TF: TSDROPPOD delivery: TFStage 0 descending, 1 on the deck (TFDwell frames left), 2 departing. TFUnloaded
+    // stops the paced unload and the destructor delivering a member twice. TSFIRE and TSPODDROP count here too.
     int TFStage;
     int TFDwell;
     int TFUnloaded;
-    /*
-    **	TSPODDROP: the house the pod's trooper belongs to (the pod has no
-    **	Payback techno — the granting plug never exists on the map), and the
-    **	compass direction the pod slides in from. HOUSE_NONE / DIR_N and
-    **	unused for every other bullet type.
-    */
+    // TF: TSPODDROP: the trooper's house (the pod has no Payback techno, as the granting plug never stands on
+    // the map), the direction the pod slides in from, and the trooper's type.
     HousesType TFPodHouse;
     DirType TFPodApproach;
     InfantryType TFPodType;
@@ -86,12 +76,8 @@ public:
     **	Zero and unused for every other bullet type.
     */
     int TFBounces;
-    /*
-    **	TSLOBBED: the disc flies on TS's own ballistic step, so it carries a velocity in
-    **	leptons per frame and a position to fractions of a lepton (X and Y across the map, Z
-    **	above the ground); Coord and Height are the whole-lepton parts. Zero and unused for
-    **	every other bullet type.
-    */
+    // TF: TSLOBBED flies TS's ballistic step: a velocity in leptons a frame and a position to fractions of a
+    // lepton (Z above the ground); Coord and Height are the whole-lepton parts.
     double TFVelX;
     double TFVelY;
     double TFVelZ;
@@ -101,17 +87,10 @@ public:
     enum
     {
         TF_POD_CEILING = 1280,       // spawn altitude in leptons (5 cells of descent)
-        TF_POD_DEPART_CEILING = 2560, // the climb-out runs twice as high before the ship vanishes (Luke, 2026-08-13)
+        TF_POD_DEPART_CEILING = 2560, // the climb-out runs twice as high before the ship vanishes
 
-        /*
-        **	TSPODDROP (the infantry drop pod, TS RULES.INI ground truth):
-        **	DropPodHeight=2000 leptons of altitude; DropPodSpeed=75 along the
-        **	0.79-rad slope splits ~53/53 leptons per frame horizontal/vertical
-        **	(cos/sin 0.79), a ~38-frame fall. Strafe damage deviates from TS
-        **	(Vulcan2 50, doubled): halved after play — five pods' combined
-        **	bursts were one-shotting power plants and barracks (Luke,
-        **	2026-08-31). The SA warhead keeps the ring lethal to infantry.
-        */
+        // TSPODDROP, from TS's rules: DropPodHeight=2000, and DropPodSpeed=75 down the 0.79-rad slope makes
+        // ~53 leptons a frame each way, a ~38-frame fall.
         TF_POD_DROP_HEIGHT = 2000,
         TF_POD_FALL_SPEED = 53,
         TF_POD_STRAFE_DAMAGE = 25
@@ -177,13 +156,7 @@ public:
     virtual bool Mark(MarkType mark = MARK_CHANGE);
     virtual void AI(void);
 
-    /*
-    **  Tiberian Factions mod: verbatim TD ports of BulletClass::Unlimbo and
-    **  BulletClass::AI, used when Class->IsTDPort is true. Per
-    **  [[project-td-port-architecture]] (Option A). TD source:
-    **  reference/vanilla-conquer/tiberiandawn/bullet.cpp:631 (Unlimbo) and
-    **  :293 (AI).
-    */
+    // TF: TD's BulletClass::Unlimbo and AI, ported for the TD-ported bullets (Class->IsTDPort).
     bool Unlimbo_TD(COORDINATE coord, DirType dir);
     void AI_TD(void);
     virtual short const* Occupy_List(bool = false) const;

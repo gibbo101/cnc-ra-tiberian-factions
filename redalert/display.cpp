@@ -86,7 +86,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
-#include "lcwstraw.h" // Tiberian Factions: [TFTDTiles] side-channel decode in Read_INI
+#include "lcwstraw.h" // TF: [TFTDTiles] side-channel decode in Read_INI
 #include "vortex.h"
 #include "xpipe.h"
 #include "common/fading.h"
@@ -669,10 +669,8 @@ void DisplayClass::Set_Cursor_Shape(short const* list)
  *   06/07/1994 JLB : Handles concrete check.                                                  *
  *   10/11/1994 BWG : Added IsProximate check for ore refineries                               *
  *=============================================================================================*/
-/*
-**	Firestorm Wall Sections chain from one another the way walls do; nothing else may use a section
-**	to extend the base (TS BaseNormal=no).
-*/
+// Firestorm Wall Sections chain from one another the way walls do; nothing else may use a section
+// to extend the base (TS BaseNormal=no).
 static bool TF_Section_Chains_To(BuildingTypeClass const* building, TechnoClass const* neighbour, HousesType house)
 {
     return (building->Type == STRUCT_TSFSDF && neighbour != NULL && neighbour->What_Am_I() == RTTI_BUILDING
@@ -711,17 +709,10 @@ bool DisplayClass::Passes_Proximity_Check(ObjectTypeClass const* object,
 
     BuildingTypeClass const* building = (BuildingTypeClass const*)object;
 
-    /*
-    **	A tall TS building's placement list starts with headroom rows above the ground
-    **	it stands on. trycell is the plot origin, so those rows sit above the ghost the
-    **	player sees; they do not count towards proximity.
-    */
+    // TF: a tall TS building's headroom rows, above the ghost the player sees, don't count for proximity. A tower
+    // or gate placed onto wall segments is in reach on the house's own walls and refused on anyone else's.
     int headroom = building->Placement_Ghost_Rows_Above() * MAP_CELL_W;
 
-    /*
-    **	A component tower or gate placed onto wall segments is in reach when it covers one of
-    **	the house's own, and never onto anyone else's.
-    */
     int own_walls = 0;
     for (ptr = list; *ptr != REFRESH_EOL; ptr++) {
         if (*ptr < headroom) {
@@ -2882,8 +2873,7 @@ bool DisplayClass::Good_Reinforcement_Cell(CELL outcell, CELL incell, SpeedType 
  *=============================================================================================*/
 static bool should_exclude_from_selection(ObjectClass* obj)
 {
-    // Every MCV (stock or faction) is excluded from band/select-all, like the
-    // harvesters (IsToHarvest covers RA + TD both).
+    // TF: every MCV type, stock or faction, is left out of a mixed band selection like the harvesters.
     return (obj->What_Am_I() == RTTI_UNIT)
            && (((UnitClass*)obj)->Class->IsToHarvest || ((UnitClass*)obj)->Class->Is_MCV());
 }
@@ -2932,10 +2922,8 @@ void DisplayClass::Select_These(COORDINATE coord1, COORDINATE coord2, bool addit
         **	Only try to select objects that are allowed to be selected, and are within the bounding box.
         */
         HouseClass* hptr = HouseClass::As_Pointer(obj->Owner());
-        /*
-        **	Buildings never join a drag selection, except the TS ones a vehicle deploys into (the
-        **	Sensor Array and Limpet Mine), which select like the vehicles they pack back into.
-        */
+        // TF: buildings never join a drag selection, except the TS ones a vehicle deploys into (Sensor Array,
+        // Limpet Mine), which select like the vehicles they pack back into.
         bool deployed_vehicle = obj->What_Am_I() == RTTI_BUILDING
                                 && (*(BuildingClass*)obj == STRUCT_TSDPSA || *(BuildingClass*)obj == STRUCT_TSDLIMP);
         if (obj->Class_Of().IsSelectable && (obj->What_Am_I() != RTTI_BUILDING || deployed_vehicle)
@@ -2979,10 +2967,7 @@ void DisplayClass::Select_These(COORDINATE coord1, COORDINATE coord2, bool addit
         }
     }
 
-    /*
-    **	Select any airborne jumpjets within the bounding box. Those in the top layer are off the
-    **	ground list; they are measured where they are drawn, lifted by their height.
-    */
+    // TF: airborne jumpjets are off the ground layer; select them where they are drawn, lifted by their height.
     for (int inf_index = 0; inf_index < Infantry.Count(); inf_index++) {
         InfantryClass* inf = Infantry.Ptr(inf_index);
         if (!inf->IsActive || inf->IsInLimbo || !inf->Is_Airborne_Jumpjet() || inf->In_Which_Layer() == LAYER_GROUND) {
@@ -3254,21 +3239,14 @@ int DisplayClass::TacticalClass::Action(unsigned flags, KeyNumType& key)
                 action = ACTION_NUKE_BOMB;
             }
 
-            // Tiberian Factions mod — reuse ACTION_NUKE_BOMB for the Ion
-            // Cannon's targeting cursor. The launcher's TD Ion Cannon
-            // converging-arrows reticle would require launcher source
-            // changes; ACTION_NUKE_BOMB is the closest cursor we can
-            // reach from the mod side (crosshair-style targeting). If we
-            // ever land launcher-side hooks, this becomes ACTION_TD_ION_CANNON.
+            // TF: RA's action set has no Ion Cannon, drop pod, EMP or Firestorm cursor, so those superweapons and the
+            // Nod nuke target with RA's nuke cursor.
             if (Map.IsTargettingMode == SPC_TD_ION_CANNON || Map.IsTargettingMode == SPC_TS_ION_CANNON
                 || Map.IsTargettingMode == SPC_TS_DROPPODS || Map.IsTargettingMode == SPC_TS_EMP
                 || Map.IsTargettingMode == SPC_TS_FIRESTORM) {
                 action = ACTION_NUKE_BOMB;
             }
 
-            // Tiberian Factions mod — Nod Nuclear Strike uses RA's nuke
-            // crosshair (same SW_NUKE / ACTION_NUKE_BOMB cursor as the
-            // Soviet nuke). TD canon.
             if (Map.IsTargettingMode == SPC_TD_NUKE) {
                 action = ACTION_NUKE_BOMB;
             }
@@ -3735,7 +3713,7 @@ void DisplayClass::Mouse_Left_Up(CELL cell, bool shadow, ObjectClass* object, Ac
             Set_Default_Mouse(MOUSE_CAN_SELECT, wsmall);
             break;
 
-        case ACTION_ATTACKMOVE: // Attack-move (CFE port) -- same cursor as move
+        case ACTION_ATTACKMOVE: // Attack-move (CFE port)
         case ACTION_MOVE:
             Set_Default_Mouse(MOUSE_CAN_MOVE, wsmall);
             break;
@@ -4107,15 +4085,8 @@ void DisplayClass::Mouse_Left_Release(CELL cell, int x, int y, ObjectClass* obje
                     }
                 }
 
-                /*
-                ** A* stage 2 (Tiberian Factions): destination spread. For an
-                ** ordinary (non-formation) ground move of 2+ foot units, fan them
-                ** across distinct nearby cells instead of sending all of them to
-                ** the identical clicked cell. All-on-one-cell is what makes A* bail
-                ** on the close-occupied destination and jitter (the 1-wide jam).
-                ** Formation moves keep their Adjust_Dest offsets; a single-unit
-                ** move keeps the exact clicked cell (vanilla).
-                */
+                // TF: a plain move of two or more foot units gives each a distinct cell near the click instead of
+                // one shared cell (docs/cfe-port-plan.md). Formation moves still use Adjust_Dest.
                 const int SPREAD_MAX_RADIUS = 8;
                 DynamicVectorClass<CELL> spread_claimed;
                 bool do_spread = false;
@@ -4152,11 +4123,7 @@ void DisplayClass::Mouse_Left_Release(CELL cell, int x, int y, ObjectClass* obje
                             if (FormMove && foot->Group != 255) {
                                 newmove = foot->Adjust_Dest(cell);
                             } else if (do_spread) {
-                                /*
-                                ** A* stage 2 (TF): give this unit a distinct free
-                                ** cell near the click. Falls back to the raw click
-                                ** if the surrounding area is full.
-                                */
+                                // TF: a distinct free cell near the click, or the click itself when none is free.
                                 CELL spread = foot->Find_Spread_Cell(cell, SPREAD_MAX_RADIUS, spread_claimed);
                                 if (spread != 0) {
                                     newmove = spread;
@@ -4974,15 +4941,8 @@ void DisplayClass::Read_INI(CCINIClass& ini)
     BufferStraw bstraw(_staging_buffer, len);
     Map.Read_Binary(bstraw);
 
-    /*
-    **	Tiberian Factions -- [TFTDTiles] side-channel. Converted TD maps keep
-    **	their [MapPack] vanilla-safe (TD-ported template ids 401+ would index
-    **	past a VANILLA DLL's template heap and crash, and self-installed
-    **	custom maps outlive the mod being enabled). The real TD tile cells
-    **	ride here in the same encoding as a format-3 MapPack: 16384 u16
-    **	TTypes then 16384 u8 TIcons, LCW-block-framed; TType 0xFFFF = no
-    **	override. Vanilla ignores the unknown section entirely.
-    */
+    // TF: converted TD maps carry their TD tiles in [TFTDTiles] (MapPack's encoding, TType 0xFFFF = no override),
+    // laid over the vanilla-safe [MapPack]; scripts/td_map_to_ra.py writes it.
     static char const* const TFTDTILES = "TFTDTiles";
     TF_TDWinterMap = false;
     len = TF_TD_MAPS ? ini.Get_UUBlock(TFTDTILES, _staging_buffer, sizeof(_staging_buffer)) : 0;

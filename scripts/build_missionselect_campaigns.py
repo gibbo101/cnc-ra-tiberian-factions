@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-PARKED 2026-06-07 — saved for the future Steam Deck testing session.
+PARKED: saved for a future Steam Deck testing session.
 
 Repurpose the RA Mission Select page into 4 custom-campaign tabs
 (Allies / Soviets / GDI / Nod). This script captures the two CONFIG.MEG edits we

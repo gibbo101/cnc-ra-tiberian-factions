@@ -1,5 +1,7 @@
 # Steam Workshop publish runbook
 
+**Status:** Reference. Publishing and updating the Workshop item and the asset packs.
+
 How to publish or update `cnc-ra-tiberian-factions` on the Steam Workshop (App `1213210`).
 
 The canonical tool is our own Linux-native uploader at `tools/workshop-uploader/`. No Wine, no Windows, no Deck needed.
@@ -31,7 +33,7 @@ Don't try to skip this. The symptom is silent — no error, just an indefinite h
 
 ### 0. Get the release copy approved — BEFORE anything is published
 
-Luke reviews and OKs the full public text first: the Workshop description changelog block, the
+The maintainer reviews and OKs the full public text first: the Workshop description changelog block, the
 `CHANGELOG.md` section, and the GitHub release notes. Present the actual text, not a summary.
 
 Ask explicitly whether anything should stay **unannounced**. That is not derivable from the
@@ -57,6 +59,13 @@ main checkout is guaranteed to hold the current ones.
   `Data/ART/MOVIES/RA/REDINTRO.BK2` (the packager refuses a cut that does not match
   `scripts/intro_work/REDINTRO.md5`).
 - **Asset packs clean:** `python3 scripts/asset_packs.py check` prints nothing.
+- **Saves:** any enum growth since the last release (a new type, `MZONE_HOVER`, a widened
+  `StructType` or `AnimType`) or a grown class (`BuildingClass::RallyPoint`; VC dropped CFE's
+  padding) breaks saves made on an older build. That is accepted.
+- **Docs closed out:** for each doc changed since the last tag (`git diff --stat vX.Y.Z -- docs/`),
+  the text describes what ships and the status line names this release; finished work leaves
+  `todo.md` and fixed bugs leave `known-issues.md`. `python3 scripts/docs_check.py` must pass; the
+  packager runs it and stops on a failure (`docs/README.md` has the rules).
 
 ### 2. Build and stage the release: `./package-for-workshop.sh`
 
@@ -172,6 +181,34 @@ The zip has `Vanilla_RA/` at its root (ModDB links to it). Then bump the local `
 
 ---
 
+## Asset packs
+
+Each `asset-packs/<Pack>/` folder is its own Workshop item (`docs/asset-packs.md`).
+
+```bash
+python3 scripts/asset_pack_docs.py       # README.md and ccmod.json per pack, from its contents
+python3 scripts/asset_pack_workshop.py   # uploads, manifests and previews (one pack: name it)
+```
+
+`asset_pack_workshop.py` stages each pack as `dist/asset-pack-uploads/<Pack>/<Pack>/` (the
+named-subfolder layout, so a pack also shows in the in-game mod list, as TD-Assets does), writes
+`tools/workshop-uploader/packs/<Pack>.json` with a BBCode description built from the pack's
+contents, and draws `tools/workshop-uploader/packs/<Pack>.jpg`. A manifest that already exists
+keeps its `publishedfileid` and `visibility`; a new one starts Private (`2`).
+
+Publish (Step 0 applies: restart Steam first):
+
+```bash
+cd tools/workshop-uploader
+dotnet run --no-build -- packs/<Pack>.json "v1.0.0: first release"
+```
+
+The first publish creates the item and writes its `publishedfileid` back into the manifest:
+commit that. Self-test on the Deck (subscribe, check the files land), then make it Public from
+the item's Owner Controls. A pack's own `ccmod.json` version follows the pack, not the mod.
+
+---
+
 ## Troubleshooting
 
 ### Hang at "preparing config" with no progress
@@ -194,14 +231,31 @@ Visit the item URL in a browser (logged in), accept the Workshop Contributor Agr
 
 ---
 
+## Player crash reports
+
+- **Ask for `<game install>/log/CrashLog.txt`.** It has one line per crash naming the faulting
+  process and address, which separates the renderer (`ClientG.exe`) from the sim
+  (`InstanceServerG.exe`).
+- **A ClientG crash can still be ours.** The DLL imports no d3d11, dxgi or gdi32, so it cannot
+  reach the GPU, but it patches ClientG's memory and code, and mod data has crashed ClientG
+  before: a wrong-size CONFIG.MEG member, an unreadable WAV, and the EVA cache patch writing over
+  heap headers on skirmish load (fixed in 5.0.0). "Video Card Driver Crash Detected!" and
+  `DXGI_ERROR_DEVICE_REMOVED` are EA's own dialog text, so a player quoting them has lost the
+  D3D11 device; that alone does not clear the mod.
+- **There is no graphics or VRAM setting to offer.** `GAMECONSTANTS.XML` has none, and the
+  mod's UI atlas is the same size as EA's (about 184 MB).
+- **Workshop comments are capped at 1,000 characters.** Draft replies to fit.
+
+---
+
 ## Don't-dos
 
 - Don't re-create the item shell for an existing release — `publishedfileid` is allocated once per item.
-- Don't pursue EA's `Uploader.exe` — confirmed bitrotted on Linux (Wine/Proton) AND on Luke's Windows install. Same hang as our tool was hitting pre-restart, but our tool is now easier to diagnose.
+- Don't pursue EA's `Uploader.exe` — confirmed bitrotted on Linux (Wine/Proton) AND on Windows. Same hang as our tool was hitting pre-restart, but our tool is now easier to diagnose.
 - Don't commit `tools/workshop-uploader/preview.jpg` or per-release `workshop.json` if they contain machine-absolute paths or release-specific descriptions; prefer relative paths so the JSON is portable.
 
 ---
 
 ## Historical context
 
-- 2026-05-20: First Workshop publish for this mod (v0.3.0). EA's `Uploader.exe` ruled out as bitrotted across Windows / Wine / Proton. Built our own C# uploader using `Steamworks.NET`, mirroring the SteamUGC sequence in `~/.steam/steam/steamapps/common/CnCRemastered/SOURCECODE/CnCTDRAMapEditor/Utility/SteamworksUGC.cs` (EA's MapEditor — the only working official Workshop publisher for this app). Spent 4 hours hung on the same "preparing config" symptom EA's tool produces, until a Steam restart cleared it instantly. See memory `reference-workshop-publish-path` for the full rabbit hole.
+- 2026-05-20: First Workshop publish for this mod (v0.3.0). EA's `Uploader.exe` ruled out as bitrotted across Windows / Wine / Proton. Built our own C# uploader using `Steamworks.NET`, mirroring the SteamUGC sequence in `~/.steam/steam/steamapps/common/CnCRemastered/SOURCECODE/CnCTDRAMapEditor/Utility/SteamworksUGC.cs` (EA's MapEditor — the only working official Workshop publisher for this app). The uploader hung on the same "preparing config" symptom EA's tool produces until a Steam restart cleared it, hence Step 0.

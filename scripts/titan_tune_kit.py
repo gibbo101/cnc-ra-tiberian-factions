@@ -70,7 +70,7 @@ for i, lab in enumerate(names):
     torso = crisp(Image.open(f"{ART}/shp_mmch/frame-{120 + (32 - s) % 32:04d}.png").convert("RGBA"))
     torso.save(f"{TMP}/{lab}-torso.png")
     layer = Image.new("RGBA", (CANVAS_T, CANVAS_T), (0, 0, 0, 0))
-    if True:  # always draggable — even facings the PACKER suppresses (N family): the kit must let Luke place them
+    if True:  # always draggable, even facings the PACKER suppresses (N family): the kit must allow placing them
         bar = Image.open(f"{ART}/ts30_titanbarl/frame-{s:04d}.png").convert("RGBA")
         bar = bar.resize((round(bar.width * BARL_SCALE), round(bar.height * BARL_SCALE)), Image.LANCZOS)
         theta = math.radians(s * 11.25)

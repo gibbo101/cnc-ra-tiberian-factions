@@ -296,11 +296,8 @@ void Explosion_Damage(COORDINATE coord, int strength, TechnoClass* source, Warhe
     }
 }
 
-/*
-**	A Tiberian Sun warhead picks its impact from its own AnimList in 25-point damage bands,
-**	as TS does: the first entry covers 1-24 points, the second 25-49, and the last covers
-**	everything above its own band.
-*/
+// A TS warhead's impact from its AnimList in 25-point damage bands, as TS does: 1-24 points take the first entry,
+// 25-49 the second, and the last entry covers everything above its own band.
 static AnimType TF_TS_Anim_Band(AnimType const* list, int count, int damage)
 {
     return (list[min(damage / 25, count - 1)]);
@@ -337,10 +334,8 @@ AnimType Combat_Anim(int damage, WarheadType warhead, LandType land)
         return (ANIM_NONE);
     }
 
-    /*
-    **	Tiberian Factions -- the Apocalypse's shells burst like the Mammoth Tank's 40-damage
-    **	120mm: the explosion size follows damage, and its 100 would pick the large fireball.
-    */
+    // TF: the Apocalypse's shells burst like the Mammoth Tank's 40-damage 120mm: explosion size follows damage, and
+    // its 100 would pick the large fireball.
     if (warhead == WARHEAD_R2APOCAP) {
         damage = min(damage, 40);
     }
@@ -405,10 +400,8 @@ AnimType Combat_Anim(int damage, WarheadType warhead, LandType land)
             return (_waterlist[(ARRAY_SIZE(_waterlist) - 1) * fixed(min(damage, 150), 150)]);
         return (_firelist[(ARRAY_SIZE(_firelist) - 1) * fixed(min(damage, 150), 150)]);
 
-    /*
-    **	Tiberian Sun warhead AnimLists, explosion sets 20-22: [SA], [RPG] and [SAMWH].
-    **	[RPG] is Conventional=yes, so a blast on water takes the splash instead.
-    */
+    // TF: TS warhead AnimLists, explosion sets 20-22: [SA], [RPG] and [SAMWH]. [RPG] is Conventional=yes, so a blast
+    // on water takes the splash instead.
     case 20:
         return (ANIM_TS_PIFFPIFF);
 

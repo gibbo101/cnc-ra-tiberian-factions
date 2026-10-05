@@ -79,11 +79,8 @@ struct TFGateInfo
 };
 TFGateInfo const* TF_Gate_Info(StructType t);
 
-/*
-**	The walls that join a component tower or a gate: RA's concrete wall and the TS GDI
-**	and Nod walls. They run into the tower's couplings and the gate's end pieces, and a
-**	bare tower or a gate may be placed onto its owner's segments, replacing them.
-*/
+// The walls that join component towers and gates: RA's concrete wall and the TS GDI and Nod walls. A bare
+// tower or a gate may be placed onto its owner's segments, replacing them.
 inline bool TF_Is_Tower_Joint_Wall(OverlayType o)
 {
     return (o == OVERLAY_BRICK_WALL || o == OVERLAY_TSWALL || o == OVERLAY_TSNWALL);
@@ -268,15 +265,8 @@ public:
         unsigned char Composite;
     } Flag;
 
-    /*
-    **	Chokepoint reservation (TF v2.2.3). When a vehicle commits to a 1-wide terrain pinch it
-    **	stamps the corridor cells with the current Frame and its coarse travel facing. An opposing
-    **	vehicle reading an ACTIVE claim (Frame - ChokeClaimFrame <= TTL) in the opposite direction
-    **	holds on open ground instead of jamming nose-to-nose. The claim is re-asserted every cell-
-    **	crossing while the column traverses and ages out on its own once the lane clears -- no
-    **	refcount to miscount, no pointer to code, all int (lockstep-deterministic). See
-    **	DriveClass::Give_Way_Decision and docs/chokepoint-reservation-design.md.
-    */
+    // TF: chokepoint claim. A vehicle entering a 1-wide pinch stamps its cells with Frame and its travel facing,
+    // and an opposing vehicle that reads a live claim holds outside (docs/chokepoint-reservation-design.md).
     unsigned int ChokeClaimFrame; // Frame of the last claim assertion (0 = never claimed).
     unsigned char ChokeClaimDir;  // FacingType (0-7) of the claiming column's travel direction.
 

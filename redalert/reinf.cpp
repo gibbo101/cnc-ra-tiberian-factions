@@ -465,25 +465,8 @@ bool Do_Reinforcements(TeamTypeClass const* teamtype)
             desiredfacing = Random_Pick(DIR_N, DIR_MAX);
         }
 
-        /*
-        **  TD-source AIRCRAFT_CARGO east-edge override (tiberiandawn/reinf.cpp:
-        **  345-385). When a cargo plane reinforces to deliver a vehicle to
-        **  STRUCT_AIRSTRIP, TD overrides the house's default edge: the plane
-        **  spawns at the EAST map edge aligned to the airstrip's docking-coord
-        **  Y, then flies straight west. Without this, RA's Do_Reinforcements
-        **  uses house->Control.Edge (defaults SOURCE_NORTH) and the plane
-        **  arrives from the wrong direction. Ported here for AIRCRAFT_TDCARGO
-        **  + STRUCT_TDAFLD since RA's reinf.cpp lacked the AIRCRAFT_CARGO
-        **  branch entirely.
-        **
-        **  Two-step building lookup so back-to-back deliveries work:
-        **  1. Find_Docking_Bay(STRUCT_TDAFLD, false) — preferred (free strip).
-        **  2. Iterate Buildings list directly — fallback when the strip is
-        **     busy with a prior plane. We need the spawn coord regardless of
-        **     dock availability; PICK_AIRSTRIP then circles until the strip
-        **     frees. Without the fallback, the plane spawns at the default
-        **     house edge (north for Nod) and arrives from the wrong direction.
-        */
+        // TF: the TD cargo plane enters at the east edge level with its airstrip's dock and flies west, as in TD.
+        // A busy strip still sets the course, and the plane circles until it frees (docs/cargo-plane-port.md).
         COORDINATE override_coord = 0;
         DirType override_facing = desiredfacing;
         bool use_override = false;

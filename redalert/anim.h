@@ -152,43 +152,27 @@ public:
     */
     HousesType OwnerHouse;
 
-    /*
-    **	Tiberian Factions: the Disruptor's sonic band is the weapon, not a
-    **	decoration. One disc per cell along the shot (the "anchor") carries
-    **	SonicDamage, and deals it to whatever techno occupies its cell on every
-    **	SONIC_DAMAGE_PERIOD-th stage from the first visible one until the fade
-    **	begins -- the whole time the band lies on a cell, as TS's per-frame
-    **	wave damage. A target that sits through a full pass takes the weapon's
-    **	AmbientDamage in total; one that leaves, or a band cut short, deals
-    **	less. SonicVictim is the aimed-at object, hit by the disc nearest it:
-    **	that disc cannot stand in the target's own cell.
-    **	Zero SonicDamage = a purely cosmetic disc.
-    */
+    // TF: a Disruptor's sonic band is a chain of these discs, and the band is the weapon: each cell's anchor
+    // disc hits the technos in its cell every SONIC_DAMAGE_PERIOD stages until the fade.
     enum
     {
         SONIC_LEAD_STAGES = 5,   // fully transparent lead-in (the outward sweep)
         SONIC_FALL_STAGES = 2,   // the art's fade-out stages (ts_gen_sonicwave.py FALL_STAGES)
         SONIC_TETHER_RANGE = 2172, // leptons: TS keeps the wave tethered within 6 diagonal cells
-        SONIC_SPACING = 32,      // leptons between discs along the beam (6-7 deep overlap builds the band)
-        SONIC_DAMAGE_PERIOD = 2, // stages between hits (4 let a tank drive into its own wave)
+        SONIC_SPACING = 32,      // leptons between discs along the beam
+        SONIC_DAMAGE_PERIOD = 2, // stages between hits
     };
     static int Sonic_Damage_Hits(void); // hits an anchor disc lands over a full band pass
-    int SonicDamage;
-    TARGET SonicVictim;
+    int SonicDamage;   // damage per hit; 0 = a cosmetic disc
+    TARGET SonicVictim; // the aimed-at object: the band's last disc hits it wherever it stands
     TARGET SonicFirer; // never damaged by its own band
     HousesType SonicHouse; // the firer's house: Disruptors of this house are immune (TS TypeImmune)
     DirType SonicDir;  // beam direction firer->target, for a rotated export
     int SonicT;        // this disc's place on the muzzle->target line, 0-256; -1 once the band is cut loose
     TARGET SonicTether; // what the band was fired at: the firer must keep aiming at it or the band retracts
 
-    /*
-    **	Tiberian Factions: a TS railgun spark (ANIM_RAILFX, ANIM_TS_RAILFXS) is a moving
-    **	particle (OpenTS ParticleClass, BEHAVIOR_RAILGUN). RailPos is its position in
-    **	leptons with Z above the ground, RailDir the unit direction it drifts along at
-    **	RailSpeed leptons a frame, RailBlend how far its colour has blended toward the second
-    **	colour of its list (0 to 1, advancing RailFade a frame), and RailLife the frames it has
-    **	left. Unused by every other anim.
-    */
+    // TF: a TS railgun spark (ANIM_RAILFX, ANIM_TS_RAILFXS) moves as an OpenTS BEHAVIOR_RAILGUN particle.
+    // RailPos is in leptons with Z above the ground; RailBlend runs 0 to 1 toward its second colour.
     float RailPos[3];
     float RailDir[3];
     float RailSpeed;

@@ -203,9 +203,7 @@ bool WeaponTypeClass::Read_INI(CCINIClass& ini)
         IsSupressed = ini.Get_Bool(Name(), "Supress", IsSupressed);
         Burst = ini.Get_Int(Name(), "Burst", Burst);
         Attack = ini.Get_Int(Name(), "Damage", Attack);
-        // Tiberian Factions mod: TD-ported weapons read `Speed=` as raw MPHType
-        // (TD source convention, 0-255) instead of RA's 0-100 percentage.
-        // Per [[reference-ra-mphtype-ini-format]] / [[project-td-port-architecture]].
+        // TF: a TD-ported weapon reads Speed= as TD's raw MPHType (0-255), not RA's percentage.
         if (IsTDPort) {
             MaxSpeed = (MPHType)ini.Get_Int(Name(), "Speed", (int)MaxSpeed);
         } else {
@@ -303,15 +301,7 @@ ArmorType Armor_From_Name(char const* name)
         }
     }
 
-    /*
-    **  Tiberian Factions mod: accept TD's internal enum names as aliases for
-    **  RA's `light` / `heavy` strings (ArmorName[] entries 2 and 3). The TD
-    **  source code uses ARMOR_ALUMINUM / ARMOR_STEEL constants; reusing those
-    **  names in the manifest reads more naturally than the RA equivalents.
-    **  Without this alias the parser silently returned ARMOR_NONE for every
-    **  TD entry with armor="aluminum" or "steel" — discovered 2026-05-20 via
-    **  comparison with Reilsss's CnCinRA mod.
-    */
+    // TF: TD's armour names, aluminum and steel, stand for RA's light and heavy.
     if (stricmp(name, "aluminum") == 0) {
         return (ARMOR_ALUMINUM);
     }

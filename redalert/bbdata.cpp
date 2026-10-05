@@ -182,12 +182,7 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("NukeUp");       //	BULLET_NUKE_UP
     new BulletTypeClass("NukeDown");     //	BULLET_NUKE_DOWN
 
-    // Tiberian Factions mod bullets — keep in enum order (BulletType.h
-    // additions appended after BULLET_NUKE_DOWN). Per project convention,
-    // all TD-ported entities get a "TD" prefix in their IniName so they
-    // can be visually identified in rules.ini regardless of name collision
-    // with vanilla RA (e.g. "Laser" → "TDLaser" so it's clear at a glance
-    // that this is the TD Obelisk beam, not a hypothetical RA laser).
+    // TF: mod bullets, in BulletType order (defines.h): the heap index is the type. TD ports carry a TD prefix.
     new BulletTypeClass("TDSSM");         //	BULLET_SSM (TD TOW/TOMAHAWK)
     new BulletTypeClass("TDLaser");       //	BULLET_LASER (TD Obelisk beam)
     new BulletTypeClass("TDAPDS");        //	BULLET_TDAPDS (TD Nod Turret 120mm shell)
@@ -203,7 +198,7 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TSFire");        //	BULLET_TSFIRE (TS fire-stream particle, FLAMEALL sprite)
     new BulletTypeClass("TSDropPod");     //	BULLET_TSDROPPOD (dropship bay delivery — falls like NukeDown, sets its cargo down, does no damage)
     new BulletTypeClass("TSPodDrop");     //	BULLET_TSPODDROP (infantry drop pod — angled descent strafing the LZ, spawns its trooper + husk on touchdown)
-    new BulletTypeClass("TSHUNT");        //	BULLET_TSHUNTER (Hunter Seeker droid — homing kamikaze; draws the TSHUNT 8-frame spin, detonation is code)
+    new BulletTypeClass("TSHUNT");        //	BULLET_TSHUNTER (unused: the Hunter Seeker is AIRCRAFT_TSHUNT)
     new BulletTypeClass("TSLobbed2");     //	BULLET_TSLOBBED2 (TS RPG tower canister — accurate high arc, TSCANIST tumble)
     new BulletTypeClass("TSAAHeatSeeker"); //	BULLET_TSAAHEATSEEKER (TS SAM tower and Mk. I missile — RA's MISSILE art on RA's homing path)
     new BulletTypeClass("TSLobbed");      //	BULLET_TSLOBBED (TS Disc Thrower disc — accurate arc, TSDISCUS spin)
@@ -213,11 +208,7 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TSBallistic2");  // BULLET_TSBALLISTIC2 (Firestorm [Ballistic2] -- the Juggernaut's arcing shell)
     new BulletTypeClass("TSPulsBall");    // BULLET_TSPULSBALL (TS [PulsPr] -- the EMP Cannon's lobbed pulse ball)
 
-    // Tiberian Factions mod: mark every TD-ported bullet so BulletClass::AI /
-    // Unlimbo dispatch to the verbatim TD code path. Per
-    // [[project-td-port-architecture]] (Option A). Cannot be set via rules.ini —
-    // IsTDPort is an engine-level dispatch gate, not a tunable field.
-    //
+    // TF: TD-ported bullets run TD's own AI and Unlimbo; the flag is set here, as rules.ini cannot set it.
     BulletTypes.Ptr((int)BULLET_SSM)->IsTDPort = true;
     BulletTypes.Ptr((int)BULLET_LASER)->IsTDPort = true;
     BulletTypes.Ptr((int)BULLET_TDAPDS)->IsTDPort = true;
@@ -271,20 +262,8 @@ void BulletTypeClass::One_Time(void)
         }
     }
 
-    /*
-    **	Tiberian Factions mod: mod-entry ImageData fallback for TD-ported bullets.
-    **	TDSSM/TDLaser/TDAPDS have no legacy SHP in any MIX file — only TGA
-    **	tilesets bundled in resources/.../VFX/<Name>.ZIP and registered in
-    **	RA_VFX.XML. MFCD::Retrieve above returned NULL so BulletClass::Draw_It
-    **	would bail at its `if (!shapeptr) return;` guard, leaving the missile
-    **	body invisible while the smoke trail still renders. Same fix as
-    **	aadata.cpp:442-459 (AIRCRAFT_TDCARGO/TDC17): copy a vanilla donor's
-    **	ImageData pointer — the launcher's CC_Draw_Shape overlay resolves the
-    **	actual TDDRAGON sprite via the RA_VFX.XML tileset by name, regardless
-    **	of which pointer was supplied as the placeholder.
-    **	Donor: BULLET_HEAT_SEEKER (RA's DRAGON-image missile) — closest
-    **	visible homing-missile in the vanilla heap.
-    */
+    // TF: bullets drawn only from an HD tileset have no SHP, and Draw_It skips a NULL ImageData, so they borrow
+    // the Heat Seeker's as a placeholder; the launcher draws their own art by name.
     BulletTypeClass const& donor = As_Reference(BULLET_HEAT_SEEKER);
     BulletTypeClass& tdssm = As_Reference(BULLET_SSM);
     if (tdssm.ImageData == NULL) {
@@ -298,43 +277,43 @@ void BulletTypeClass::One_Time(void)
     if (tdapds.ImageData == NULL) {
         ((void const*&)tdapds.ImageData) = donor.ImageData;
     }
-    BulletTypeClass& tdtow = As_Reference(BULLET_TDTOW);  // TD Rocket Soldier missile (E3) -- shares RA HeatSeeker's DRAGON sprite.
+    BulletTypeClass& tdtow = As_Reference(BULLET_TDTOW);
     if (tdtow.ImageData == NULL) {
         ((void const*&)tdtow.ImageData) = donor.ImageData;
     }
-    BulletTypeClass& tdssm2 = As_Reference(BULLET_TDSSM2);  // TD Rocket Launcher missile (MLRS) -- shares the TDDRAGON sprite (Image=TDDRAGON in rules.ini).
+    BulletTypeClass& tdssm2 = As_Reference(BULLET_TDSSM2);
     if (tdssm2.ImageData == NULL) {
         ((void const*&)tdssm2.ImageData) = donor.ImageData;
     }
-    BulletTypeClass& tdmissile = As_Reference(BULLET_TDMISSILE);  // TD SSM Launcher Honest John -- own TDMISSILE sprite (RA_VFX.XML); donor passes Draw_It's NULL guard.
+    BulletTypeClass& tdmissile = As_Reference(BULLET_TDMISSILE);
     if (tdmissile.ImageData == NULL) {
         ((void const*&)tdmissile.ImageData) = donor.ImageData;
     }
-    BulletTypeClass& tsdroppod = As_Reference(BULLET_TSDROPPOD);  // Dropship delivery -- own TSDSHP sprite (RA_VFX.XML, the TS Dropship voxel); donor passes Draw_It's NULL guard.
+    BulletTypeClass& tsdroppod = As_Reference(BULLET_TSDROPPOD);
     if (tsdroppod.ImageData == NULL) {
         ((void const*&)tsdroppod.ImageData) = donor.ImageData;
     }
-    BulletTypeClass& tspoddrop = As_Reference(BULLET_TSPODDROP);  // Infantry drop pod -- own TSPODBLT sprite (RA_VFX.XML, the DROPPOD body); donor passes Draw_It's NULL guard.
+    BulletTypeClass& tspoddrop = As_Reference(BULLET_TSPODDROP);
     if (tspoddrop.ImageData == NULL) {
         ((void const*&)tspoddrop.ImageData) = donor.ImageData;
     }
-    BulletTypeClass& tshunter = As_Reference(BULLET_TSHUNTER);  // Hunter Seeker droid -- draws the TSHUNT tileset by name; donor passes Draw_It's NULL guard.
+    BulletTypeClass& tshunter = As_Reference(BULLET_TSHUNTER);
     if (tshunter.ImageData == NULL) {
         ((void const*&)tshunter.ImageData) = donor.ImageData;
     }
-    BulletTypeClass& tslobbed2 = As_Reference(BULLET_TSLOBBED2);  // RPG tower canister -- own TSCANIST sprite (RA_VFX.XML); donor passes Draw_It's NULL guard.
+    BulletTypeClass& tslobbed2 = As_Reference(BULLET_TSLOBBED2);
     if (tslobbed2.ImageData == NULL) {
         ((void const*&)tslobbed2.ImageData) = donor.ImageData;
     }
-    BulletTypeClass& tsheatseeker = As_Reference(BULLET_TSAAHEATSEEKER);  // SAM tower and Mk. I missile -- draws RA's MISSILE; donor passes Draw_It's NULL guard.
+    BulletTypeClass& tsheatseeker = As_Reference(BULLET_TSAAHEATSEEKER);
     if (tsheatseeker.ImageData == NULL) {
         ((void const*&)tsheatseeker.ImageData) = donor.ImageData;
     }
-    BulletTypeClass& tslobbed = As_Reference(BULLET_TSLOBBED);  // Disc Thrower disc -- own TSDISCUS sprite (RA_VFX.XML); donor passes Draw_It's NULL guard.
+    BulletTypeClass& tslobbed = As_Reference(BULLET_TSLOBBED);
     if (tslobbed.ImageData == NULL) {
         ((void const*&)tslobbed.ImageData) = donor.ImageData;
     }
-    BulletTypeClass& tspulsball = As_Reference(BULLET_TSPULSBALL);  // EMP pulse ball -- own TSPULSBL sprite (RA_VFX.XML); donor passes Draw_It's NULL guard.
+    BulletTypeClass& tspulsball = As_Reference(BULLET_TSPULSBALL);
     if (tspulsball.ImageData == NULL) {
         ((void const*&)tspulsball.ImageData) = donor.ImageData;
     }
@@ -400,10 +379,7 @@ bool BulletTypeClass::Read_INI(CCINIClass& ini)
         IsFaceless = !ini.Get_Bool(Name(), "Rotates", !IsFaceless);
         IsTranslucent = ini.Get_Bool(Name(), "Translucent", IsTranslucent);
         IsGigundo = ini.Get_Bool(Name(), "Gigundo", IsGigundo);
-        // Tiberian Factions mod: TD-port-specific fields. Per
-        // [[project-td-port-architecture]]. IsTDPort gates TD code-path dispatch;
-        // IsHoming/ClassWarhead/ImpactAnim/BulletRange mirror TD's BulletTypeClass
-        // fields that don't exist in vanilla RA's BulletTypeClass.
+        // TF: TD's class-level bullet fields, which RA's BulletTypeClass lacks.
         IsHoming = ini.Get_Bool(Name(), "Homing", IsHoming);
         ClassWarhead = ini.Get_WarheadType(Name(), "Warhead", ClassWarhead);
         ImpactAnim = ini.Get_AnimType(Name(), "ImpactAnim", ImpactAnim);

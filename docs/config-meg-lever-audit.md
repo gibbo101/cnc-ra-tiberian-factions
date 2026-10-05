@@ -1,8 +1,12 @@
 # CONFIG.MEG lever audit — what the launcher's own data unblocks
 
-**Written 2026-07-21.** Prompted by the classic-graphics lockout: a wall we had spent four
-DLL-side attempts on turned out to be one `GAMECONSTANTS.XML` constant EA shipped for mods in
-2020. This is the sweep that asks what else is sitting in launcher data that we wrote off.
+**Status:** Reference. Which CONFIG.MEG data levers are in use, untried, or dead.
+
+Census of CONFIG.MEG's 230 XML members for launcher levers. In use: `GameConstants_Mod.xml`
+(classic lockout, mod hotkeys, zoom), `FACTIONS.XML`, `MASTERTEXTFILE`, `MUSICEVENTS`,
+`GUITEXTURESETS` and the `.bui` screens. Untried: campaign files, team colours, cursors, lobby
+value lists, the bonus gallery, slash commands. The sweep started when the classic-graphics
+lockout, after four DLL-side attempts, turned out to be one constant EA shipped for mods.
 
 **Standing rule this establishes:** a wall proven on the *code* side is not proven on the *data*
 side. Before declaring a launcher behaviour impossible, grep CONFIG.MEG.
@@ -21,7 +25,7 @@ paid for from padding or comment text inside the same file.
 
 ---
 
-## ⭐ Delivery: `GameConstants_Mod.xml` beats editing the member (2026-07-21)
+## Delivery: `GameConstants_Mod.xml` beats editing the member
 
 `ClientG.exe` contains the literal `\XML\GameConstants_Mod.xml` and merges that file over the
 base GameConstants. It is **additive**, so it needs no same-size juggling and no CONFIG.MEG
@@ -36,13 +40,13 @@ that cost the faction names earlier the same day.
 
 **It is the only `_Mod` overlay.** No `InputTranslatorConfigurations_Mod.xml` exists in the
 binary, which is the independent confirmation that mod hotkey *bindings* cannot be shipped and
-must be bound by the player. See `todo.md`.
+must be bound by the player (Tier 1 item 1 below).
 
 ## Tier 1 — actionable levers
 
-### 1. Mod hotkey commands (chain complete; SUPERSEDED 2026-09-02 for deploy — the DLL polls the key directly, see launcher-vs-dll-ownership.md)
+### 1. Mod hotkey commands (in use)
 
-EA built a mod hotkey path and left the hook in our own source. We have never connected it:
+EA built a mod hotkey path and left the hook in our own source:
 
 1. **`GAMECONSTANTS.XML`** — `CNCEnableModHotKeyGameCommands`, commented *"Community-requested
    Mod option so that players can have customized mod hotkey commands"*.
@@ -55,13 +59,26 @@ EA built a mod hotkey path and left the hook in our own source. We have never co
    `// TBD: For our ever-awesome Community Modders!` with a suggested
    `PlayerPtr->Handle_Mod_Game_Command(cell, index)`.
 
-So the launcher will deliver four modder-defined keypresses **with a map cell**; only our handler
-is missing. **First target: the MCV deploy hotkey**, currently a shipped known limitation.
+So the launcher delivers four modder-defined keypresses **with a map cell**.
 
-**Test the binding half first.** Our edits to `INPUTTRANSLATORCONFIGURATIONS.XML` have never been
-proven to take effect — the one attempt rebound the classic-mode spacebar and failed, which is
-consistent with that key being client-hardcoded but is not evidence either way. Bind one key, log
-from the DLL case, confirm arrival, then build.
+**What ships:** `CNCEnableModHotKeyGameCommands` is on in `GameConstants_Mod.xml`, and the handler
+in `dllinterface.cpp` (`INPUT_REQUEST_MOD_GAME_COMMAND_1..4_AT_POSITION`) uses two of them. Mod
+Command 1 runs each selected object's self-action (MCVs deploy, transports unload), as an
+optional player-bound alias: the deploy key itself is read straight from the keyboard
+(`launcher-vs-dll-ownership.md`). Mod Command 2 is sent by the patched launcher key code just
+before its own select-all (`TF_Patch_Launcher_Keys_In`), so the DLL can filter harvesters and
+MCVs out of the selection.
+
+**A mod cannot ship a default binding (2026-07-21 to 07-23).** Four attempts all left Mod
+Command 1 unbound: the binding in `INPUTTRANSLATORCONFIGURATIONS.XML` inside the mod's
+CONFIG.MEG; the same file loose in `Data/XML/`; Options > Controls "Restore Defaults"; and a
+freshly created profile. Our unbind of the launcher's own deploy command was ignored too, so
+the client reads none of that file. Kushan's PPM guide (2020) describes player-bound mod
+commands as the intended flow. The settings-file route is not worth taking either:
+`userdata/<id>/1213210/remote/Player_RA_settings_1.bin` is a ChunkFile with a nested `CH`+zlib
+chunk inside, each layer with a header hash that matches no standard algorithm; a first binding
+inserts 64 bytes, so the same-size trick does not apply; and the file is global RA settings,
+Steam Cloud synced and kept after unsubscribe, so it is the wrong file for a mod to write.
 
 ### 2. Campaigns are a faction-bound data layer
 
@@ -88,18 +105,16 @@ as client-side entry points.
 reads like one. `FACTIONS.XML` defines exactly 11 faction objects: `Faction1` = TD GDI (icon
 `_00`), `Faction2` = TD Nod (`_01`), `Faction3`–`Faction10` = the eight RA countries (flag icons
 `_03`–`_10`), plus `Faction_Funpark`. So `Faction6` is an ordinary RA country slot that the Ant
-campaign declares itself against — the same mechanism our GDI and Nod use, riding `Faction3` and
-`Faction10` with their icons repointed to `_00`/`_01`. The binding is one-directional
+campaign declares itself against, the same mechanism our factions use: GDI rides `Faction3`
+(Spain), Nod `Faction4` (Greece) and TS GDI `Faction8` (Germany). The binding is one-directional
 (campaign names a faction), and none of the faction entries carry buildable structure or unit
 lists — those are all empty, because the tech trees live in our DLL.
 
-**Two things follow.** First, if we ever repoint `ANT.XML`, bind it to `Faction3` or `Faction10`
-so a GDI/Nod campaign sits on the GDI/Nod faction slot instead of a leftover country. Second,
-`Faction_Funpark` is an eleventh entry with a **non-numeric name**, which means the faction table
-is a data list rather than a fixed `Faction1..10` enum. That is the only crack in the 5th-faction
-wall this file offers, and it is a small one: it concerns the *launcher's* faction table, while
-the real blocker is the DLL's hardcoded `HOUSE_*` enum (workspace CLAUDE.md, "houses are
-hardcoded") plus the lobby picker's fixed slot count (`bui-front-end-modding.md`, W2 DEAD).
+**Two things follow.** First, if we ever repoint `ANT.XML`, bind it to `Faction3` or `Faction4`
+so a GDI or Nod campaign sits on that faction's slot instead of a leftover country. Second,
+`Faction_Funpark` is an eleventh entry with a **non-numeric name**, so the launcher's faction
+table is a data list rather than a fixed `Faction1..10` enum. New factions did not need it: TS GDI
+rides an existing country slot (`ts-gdi-faction.md`).
 **`<CoopCampaignType>` is a cut feature, not a lever.** Every faction carries the field, empty,
 as a sibling of `<CampaignType>`. `ClientG.exe` has the whole co-op campaign implementation
 compiled in (`CoopCampaignMenuImplementationClass`, `Button_CoopCampaign`,

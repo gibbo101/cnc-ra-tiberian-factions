@@ -85,13 +85,8 @@ public:
     */
     unsigned IsOnShortTrack : 1;
 
-    /*
-    **	While this unit rides a TS war-factory exit rail, the render export
-    **	clamps its sort key to this coordinate so the hangar overlay keeps
-    **	drawing over it for the whole glide. Zero = no clamp. Stamped by the
-    **	factory when it assigns the rail; consulted only while an exit track
-    **	is running, so it never needs clearing.
-    */
+    // TF: sort-key clamp for a unit on a TS war-factory exit rail, 0 = none. Nothing sets it or drives those
+    // rails: the factory exits on Rail_To.
     COORDINATE TsExitSortClamp;
 
     /*---------------------------------------------------------------------
@@ -112,7 +107,7 @@ public:
     virtual void Response_Attack(void);
     virtual void Scatter(COORDINATE threat, bool forced = false, bool nokidding = false);
     bool Drain_Infantry_Along(CELL start, FacingType navface, int maxcells, bool corridor_only); // shared idle-infantry shove (give-way + harvester anti-pin)
-    bool Try_Deadlock_Scatter(void);                                // v2.2.3 backstop scatter when wedged (also harvester watchdog)
+    bool Try_Deadlock_Scatter(void);                                // scatter when wedged (also the harvester watchdog)
     virtual bool Limbo(void);
     void Do_Turn(DirType dir);
     virtual void Overrun_Square(CELL, bool = true){};
@@ -157,9 +152,9 @@ public:
         OUT_OF_REFINERY_SE,        // TS refinery, TSHARV: drive forward east out onto the plate.
         BACKUP_INTO_REFINERY_SE_TD, // TS refinery, TDHARV variant (deeper bay seat).
         OUT_OF_REFINERY_SE_TD,     // TS refinery, TDHARV variant.
-        OUT_OF_WEAPON_FACTORY_TS,      // TS war factory: default seat's exit rail (generated table).
-        OUT_OF_WEAPON_FACTORY_TS_TITAN, // TS war factory: the Titan's own seat/rail (generated table).
-        ROLL_OFF_DOCK_SEAT             // Runtime rail: a nudged dock seat rolls back to its cell centre before pathing.
+        OUT_OF_WEAPON_FACTORY_TS,      // TS war factory default seat's rail (generated table); never driven.
+        OUT_OF_WEAPON_FACTORY_TS_TITAN, // TS war factory Titan seat's rail (generated table); never driven.
+        ROLL_OFF_DOCK_SEAT             // Runtime straight rail between an off-centre seat and a cell (Track21).
     };
 
     /****************************************************************************
@@ -214,36 +209,16 @@ private:
     int TrackNumber;
     int TrackIndex;
 
-    /*
-    **	v2.2.3 chokepoint: the cell from which we last stamped a ChokeClaim. The claim is re-asserted
-    **	ONLY when we have actually crossed into a NEW cell, so a STOPPED/stalled unit stops refreshing
-    **	its claim and it ages out (via CHOKE_CLAIM_TTL) instead of being kept alive every tick. Without
-    **	this, one frozen unit (e.g. a harvester stalled on dest contention) holds the whole lane hostage
-    **	forever and the queue behind it locks up permanently. mutable: written from the const
-    **	Give_Way_Decision; still lockstep-safe (per-unit, computed identically on every client). -1 =
-    **	never stamped. (init in ctor only -- savegame load copies raw data before placement-new.)
-    */
+    // TF: the cell this unit last stamped a ChokeClaim from, -1 = never. It re-stamps only on entering a new cell,
+    // so a stalled unit's claim ages out. mutable: the const Give_Way_Decision writes it.
     mutable CELL LastClaimCell;
 
-    /*
-    **	v2.2.3 deadlock-breaker: consecutive path-retry cycles spent patient-waiting (blocked by
-    **	traffic, unable to advance toward NavCom). When it exceeds STUCK_SCATTER_TRIES the unit forces
-    **	a scatter into any free adjacent cell to break a SYMMETRIC deadlock the give-way resolver never
-    **	matched (clumps packed at a base, a stationary friendly parked on our only path, two units
-    **	nose-to-nose that both just "wait"), then re-paths to its original goal. Reset to 0 the instant
-    **	it advances a cell, so a normally-flowing or genuinely-clearing queue never trips it. Plain int,
-    **	no RNG, per-unit -> lockstep-safe. (init in ctor only; savegame load copies raw data.)
-    */
+    // TF: blocked path cycles in a row; Try_Deadlock_Scatter breaks a deadlock when it reaches its limit. Reset
+    // on entering a new cell.
     unsigned short StuckFrames;
 
-    /*
-    **	v2.2.3 open-ground hold-timeout: consecutive ticks spent in an OPEN-GROUND give-way HOLD
-    **	(Give_Way_Decision == 1 -- not in a pinch, not head-on). A normal yield clears in well under a
-    **	second; a count that climbs into the tens of ticks means we are deferring forever to a blocker
-    **	that never moves (a stalled/idle unit out in the open). Past HOLD_TIMEOUT we stop yielding and
-    **	let normal pathing route AROUND it (there is room on open ground). Corridor holds are exempt.
-    **	Reset the instant we are not open-ground-holding. Per-unit int, no RNG -> lockstep-safe.
-    */
+    // TF: give-way holds in a row outside a pinch; past HOLD_TIMEOUT the unit paths around the blocker. Reset
+    // on entering a new cell or when not holding.
     unsigned short HoldFrames;
 
     /*---------------------------------------------------------------------
@@ -252,9 +227,9 @@ private:
     virtual void Fixup_Path(PathType* path);
     bool While_Moving(void);
     bool Start_Of_Move(void);
-    CELL Find_Give_Way_Cell(TechnoClass const* blocker) const;      // v2.2.3 chokepoint give-way
-    int Give_Way_Decision(TechnoClass** winner_out) const;          // v2.2.3: 0 proceed, 1 hold, 2 retreat
-    int Infantry_Give_Way(void);                                    // v2.2.3: 0 none, 1 shoved man(men), 2 wait at mouth
+    CELL Find_Give_Way_Cell(TechnoClass const* blocker) const;      // chokepoint give-way
+    int Give_Way_Decision(TechnoClass** winner_out) const;          // 0 proceed, 1 hold, 2 retreat
+    int Infantry_Give_Way(void);                                    // 0 none, 1 shoved man(men), 2 wait at mouth
     void Lay_Track(void);
     COORDINATE Smooth_Turn(COORDINATE adj, DirType& dir);
 
@@ -268,7 +243,7 @@ private:
     static TrackType const Track18[];
     static TrackType const Track19[];
     static TrackType const Track20[];
-    static TrackType Track21[64]; // ROLL_OFF_DOCK_SEAT, filled per use by Roll_Off_Seat() / Rail_To().
+    static TrackType Track21[64]; // ROLL_OFF_DOCK_SEAT, filled per use by Roll_Off_Seat, Roll_On_Seat and Rail_To.
     static TrackType const Track12[];
     static TrackType const Track11[];
     static TrackType const Track10[];

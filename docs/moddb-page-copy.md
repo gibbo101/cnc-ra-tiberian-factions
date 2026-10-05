@@ -1,11 +1,12 @@
 # ModDB page copy (current: v5.0.0)
 
-**Live page: https://www.moddb.com/mods/tiberian-factions-for-red-alert**
-(ModDB serves 403 to automated fetches, so the page state cannot be checked from here. Luke is
-the only one who can see what is currently published.)
+**Status:** Reference. The ModDB page text for the current release, 5.0.0.
 
-Paste-ready content for the mod's ModDB page. Luke does everything in-browser; this doc holds
-every field's content so page day is copy-paste only. Updated per release.
+**Live page: https://www.moddb.com/mods/tiberian-factions-for-red-alert**
+(ModDB serves 403 to automated fetches, so the live page can only be checked in a browser.)
+
+Paste-ready content for the mod's ModDB page, which is edited by hand in the browser; this doc
+holds every field's content so page day is copy-paste only. Updated per release.
 
 **Style rule:** no em dashes anywhere in user-facing copy (colons, commas, hyphens instead).
 
@@ -14,7 +15,7 @@ the A* pathfinding internals (engine jargon that means nothing to a player). The
 walkers were a crate easter egg until 5.0.0; they are now TS GDI's own army and are announced as
 such. The crate-only finds are an easter egg: the store pages (Workshop and ModDB) never mention them,
 not even as rare tanks. The repo (changelog, README) may name them. Keep it that way on future
-releases unless Luke says otherwise.
+releases.
 
 ---
 
@@ -196,7 +197,7 @@ Mammoth Mk. II and the Mech Division from orbit.</p>
 sections, and one click raises a field that destroys whatever crosses it, your own units
 included, and stops enemy shots, for as long as its charge lasts. The EMP Cannon's pulse freezes
 vehicles and silences buildings where it lands. The Upgrade Center takes an Ion Cannon uplink, a drop pod node and the Hunter
-Seeker, which launches itself at the enemy when it is ready. The Mobile War Factory deploys
+Seeker: one click sends the droid to hunt down an enemy. The Mobile War Factory deploys
 into a working war factory, the Mobile Sensor Array shows cloaked enemies, and component
 towers take Vulcan, RPG or SAM upgrades.</p>
 
@@ -276,7 +277,7 @@ Soviet base with the Tesla gate. Not captured: an EMP pulse.
 media only takes YouTube links). The 1080p MP4 for ModDB is rendered from the intro pipeline's own
 frames and music (`intro_cut.py ... frames`, then H.264 CRF 16 + AAC), not decoded from the Bink.
 
-## Per-release update checklist (Luke in browser)
+## Per-release update checklist (in the browser)
 
 1. Edit the mod page: replace the description, refresh the limitations list.
 2. Post the release article (Articles > Add Article, category News).

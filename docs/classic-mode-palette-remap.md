@@ -1,18 +1,10 @@
 # Classic-mode palette remap (TD sprites + Obelisk laser)
 
-> ⚠️ **HISTORICAL — classic graphics mode is DROPPED.** Once the TD theatre tilesets
-> were added there is no classic art path for the mod's content, so classic renders
-> broken and is unsupported (HD-only). The SHP palette-remap described below no longer
-> ships/matters for new work — do **not** palette-remap or ship classic SHPs for new
-> entities. **Exception that is still live:** the Obelisk-laser index fix (§ below,
-> `techno.cpp` `0x7D/0x7F → 0xD8/0xE6`) also feeds the **HD** launcher line-intercept
-> (both modes draw the beam through RA's palette), so that one value is still needed.
-> Kept as a record of the technique + the LUT + the laser fix. See memory
-> `feedback-classic-graphics-unsupported`.
-
-**Status (historical): SOLVED and shipped 2026-05-28**, later dropped when the TD
-tilesets landed. It fixed the classic-graphics-mode palette mismatch that earlier notes
-called "deferred", "~95% right", or unavoidable.
+**Status:** Reference. Classic graphics mode is unsupported: the mod's TD and TS content has no
+classic art, so `GameConstants_Mod.xml` locks the mode out. `scripts/build_tfassets.sh` still
+palette-remaps each TD SHP it packs into TFASSETS.MIX; that needs no attention, and new entities
+need no classic SHPs. The Obelisk beam indices (`techno.cpp`, `0x7D/0x7F → 0xD8/0xE6`) also colour
+the HD beam and must stay.
 
 ## The problem
 

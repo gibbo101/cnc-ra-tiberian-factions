@@ -143,13 +143,8 @@ public:
     unsigned IsCharging : 1;
     unsigned IsCharged : 1;
 
-    /*
-    **	TS refinery event layers. The chimney fireball is a one-shot burst
-    **	(TsFlameStage 0..19 while playing, -1 idle) separated by a random pause
-    **	(TsFlameTimer ticks), as TS's NAREFN_B RandomLoopDelay. The dock lid
-    **	plays forward when a harvester seats and in reverse when it leaves:
-    **	TsLidPhase 0 shut (not drawn), 1 opening, 2 open (not drawn), 3 closing.
-    */
+    // TF: TS refinery layers. Chimney fireball: TsFlameStage 0..19 playing or -1 idle, TsFlameTimer the random
+    // pause between bursts. Dock lid: TsLidPhase 0 shut, 1 opening, 2 open, 3 closing (off: TS_LID_ENABLED).
     signed char TsFlameStage;
     unsigned char TsFlameTick;
     short TsFlameTimer;
@@ -157,12 +152,8 @@ public:
     unsigned char TsLidStage;
     unsigned char TsLidTick;
 
-    /*
-    **	TS building addons (TS Upgrades). Plugs installed into this building,
-    **	newest last; UpgradeLevel doubles as the cursor into the list. Installed
-    **	plugs add their type's Power to Power_Output and refund on sale. Only
-    **	meaningful on types with a nonzero UpgradesMax.
-    */
+    // TF: TS addon plugs installed in this building, newest last, UpgradeLevel of them. They add their power to
+    // Power_Output and refund on sale.
     unsigned char UpgradeLevel;
     StructType UpgradeTypes[3];
 
@@ -242,12 +233,8 @@ public:
     */
     CDTimerClass<FrameTimerClass> PlacementDelay;
 
-    /*
-    **	TF: rally points (ported from CFE Patch Redux, GPL v3). Where units
-    **	produced by this factory are sent on exit. TARGET_NONE when unset.
-    **	NOTE: grows the class — breaks savegame compatibility with builds
-    **	that lack it (VC dropped the save/load padding CFE stole bytes from).
-    */
+    // TF: rally point (CFE Patch Redux port, GPL v3): where this factory sends the units it produces;
+    // TARGET_NONE when unset.
     TARGET RallyPoint;
 
     /*---------------------------------------------------------------------
@@ -310,10 +297,8 @@ public:
     virtual ActionType What_Action(CELL cell) const;
     virtual void Assign_Destination(TARGET target);
 
-    /*
-    **	A deployed TS building (Limpet Mine, Sensor Array) given a move order packs back into
-    **	its vehicle and the vehicle leaves for this cell. No other building keeps a destination.
-    */
+    // TF: a deployed TS building (Limpet Mine, Sensor Array, Mobile War Factory) given a move order packs into
+    // its vehicle, which then leaves for this cell. No other building keeps a destination.
     TARGET TFPackNav;
 
     /*
@@ -412,18 +397,18 @@ public:
     virtual void Sell_Back(int control);
     virtual RadioMessageType Receive_Message(RadioClass* from, RadioMessageType message, int& param);
     virtual void AI(void);
-    // Tiberian Factions: Nod Stealth Generator cloak driver, run once per frame (LogicClass::AI).
+    // TF: Nod Stealth Generator cloak driver, run once per frame (LogicClass::AI).
     static void Process_Stealth_Generators(void);
     virtual void Assign_Target(TARGET target);
     virtual bool Toggle_Primary(void);
     bool Flush_For_Placement(TechnoClass* techno, CELL cell);
 
     virtual int Mission_Unload(void);
-    int Mission_Unload_TD(void); // Verbatim port of TD's BuildingClass::Mission_Unload (STRUCT_WEAP path) for STRUCT_TDWEAP. Dispatched from Mission_Unload(). 100% TD logic — no RA leakage.
+    int Mission_Unload_TD(void); // TD's BuildingClass::Mission_Unload, ported for STRUCT_TDWEAP.
     virtual int Mission_Repair(void);
     virtual int Mission_Attack(void);
     virtual int Mission_Harvest(void);
-    int Mission_Harvest_TD(void); // Verbatim port of TD's BuildingClass::Mission_Harvest (STRUCT_REFINERY path) for STRUCT_TDPROC. ACTIVE → AUX1 → AUX2 BState cycle + bail-by-bail Offload_Tiberium_Bail.
+    int Mission_Harvest_TD(void); // TD's BuildingClass::Mission_Harvest, ported for STRUCT_TDPROC.
     virtual int Mission_Guard(void);
     virtual int Mission_Construction(void);
     virtual int Mission_Deconstruction(void);

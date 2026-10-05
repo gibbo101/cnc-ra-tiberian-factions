@@ -172,9 +172,7 @@ static VesselTypeClass const VesselCarrier(VESSEL_CARRIER,
 );
 #endif
 
-// Nod Missile Sub (VESSEL_TDMSUB) -- clone of the Soviet MSUB (Aftermath), Nod's shore-bombardment
-// sub (SubSCUD), Temple-gated, from the Nod Sub Pen. Own art copy (tdmsub tileset). "Nod navy =
-// the Soviet one" (Luke 2026-07-03). All params mirror VesselMissileSubmarine exactly.
+// Nod Missile Sub (VESSEL_TDMSUB): VesselMissileSubmarine's twin with its own art.
 static VesselTypeClass const VesselTdMSub(VESSEL_TDMSUB,
                                           TXT_MISSILESUB, // Text name (placeholder -- HD name via rules.ini Name=).
                                           "TDMSUB",       // INI name (own art: tdmsub frames).
@@ -191,12 +189,8 @@ static VesselTypeClass const VesselTdMSub(VESSEL_TDMSUB,
                                           14              // Turret center offset.
 );
 
-// Tiberian Factions (v4.0) -- TD Gunboat (VESSEL_TDGUNBOAT), GDI surface combatant. Its OWN vessel
-// type (NOT RA's PT/DD reskinned), ported from TD's scripted-only UNIT_GUNBOAT. Turret-equipped like
-// the PT/DD. Fires TDTomahawk (a TD homing missile, BULLET_TDTOW + WARHEAD_TDAP) as its anti-surface/
-// anti-shore punch + a DepthCharge ASW secondary (the Allied Destroyer's anti-sub weapon, per Luke)
-// + Sensors so it detects/hunts Nod's cloaked subs. Art = TDBOAT (TD-Assets). Built from the
-// owner-opened Allied Shipyard. Donor ImageData = VESSEL_PT (NULL-guard). See docs/navy-4.0-design.md.
+// TD Gunboat (VESSEL_TDGUNBOAT), dormant: TD's scripted gunboat as a GDI warship with an SSAM turret firing
+// Tomahawks, plus depth charges and Sensors against subs. See docs/naval-and-air-units.md.
 static VesselTypeClass const VesselTdGunBoat(VESSEL_TDGUNBOAT,
                                              TXT_PT,      // Text name (placeholder -- HD name via rules.ini Name=).
                                              "TDBOAT",    // INI name (TD-prefixed; matches the TDBOAT tileset).
@@ -208,19 +202,13 @@ static VesselTypeClass const VesselTdGunBoat(VESSEL_TDGUNBOAT,
                                              0x0000,      // Secondary weapon lateral offset.
                                              false,       // Only has eight facings?
                                              true,        // Always use the given name?
-                                             true,        // Combat turret equipped? ON (Luke,
-                                                          //   2026-07-03): wears the RA SSAM missile
-                                                          //   box (Draw_It), seated on the dot-marked
-                                                          //   foredeck mount, firing TDTomahawk.
+                                             true,        // Combat turret equipped? Yes -- the RA SSAM box.
                                              8,           // Rotation stages.
-                                             14           // Turret center offset (overridden by the
-                                                          //   explicit VESSEL_TDGUNBOAT Turret_Adjust case).
+                                             14           // Turret center offset (Turret_Adjust seats this turret).
 );
 
-// Tiberian Factions (v4.0) -- TD Hovercraft transport (VESSEL_TDLST), shared GDI+Nod amphibious
-// transport. Its OWN vessel type (NOT RA's LST reskinned), TD's UNIT_HOVER. Modeled on
-// VesselTransport (no turret, rotation 0 -- faces one way like the RA LST). Carries 5. Art = TDLST
-// (TD-Assets). Donor ImageData = VESSEL_TRANSPORT (NULL-guard). See docs/navy-4.0-design.md.
+// TD Hovercraft (VESSEL_TDLST), dormant: a GDI and Nod transport on VesselTransport's parameters.
+// See docs/naval-and-air-units.md.
 static VesselTypeClass const VesselTdLST(VESSEL_TDLST,
                                          TXT_TRANSPORT, // Text name (placeholder -- HD name via rules.ini Name=).
                                          "TDLST",       // INI name (TD-prefixed; matches the TDLST tileset).
@@ -237,12 +225,8 @@ static VesselTypeClass const VesselTdLST(VESSEL_TDLST,
                                          0              // Turret center offset.
 );
 
-// Tiberian Factions (v4.0) -- Nod Obelisk Attack Sub (VESSEL_TDOBLISUB). Its OWN vessel type: a
-// cloakable sub that surfaces and fires the TD Obelisk laser (close-range, slow ROF, high per-shot
-// damage -- "deadly but has to commit"). Temple-gated. No turret. Uses the RA MISSILE-SUB hull art
-// (TDOBLISUB.ZIP = a renamed copy of MSUB frames) -- the missile-pod deck reads as the armed laser
-// emitter (the obelisk-tip turret approach was dropped). The Obelisk laser fires from the pod area.
-// Donor ImageData = VESSEL_SS (NULL-guard fallback). See docs/navy-4.0-design.md.
+// Nod Obelisk Sub (VESSEL_TDOBLISUB), dormant: a cloaking sub with its own art that surfaces to fire an
+// Obelisk laser. See docs/naval-and-air-units.md.
 static VesselTypeClass const VesselTdObeliskSub(VESSEL_TDOBLISUB,
                                                 TXT_SS,      // Text name (placeholder -- HD name via rules.ini Name=).
                                                 "TDOBLISUB", // INI name.
@@ -259,10 +243,7 @@ static VesselTypeClass const VesselTdObeliskSub(VESSEL_TDOBLISUB,
                                                 14           // Turret center offset.
 );
 
-// Tiberian Factions (v4.0) -- Nod Submarine (VESSEL_TDNSUB). Its OWN vessel type (clone of the
-// Soviet SS, NOT the SS owner-opened), so it has its own art copy and is independently reskinnable.
-// Same hull/weapon as the Soviet sub (TorpTube, cloakable) per the accepted RA-sub-hull decision;
-// Nod's distinction is the Obelisk Sub. Owner=BadGuy (rules.ini). Donor ImageData = VESSEL_SS.
+// Nod Submarine (VESSEL_TDNSUB): the Soviet submarine's twin with its own art, so it reskins apart from the SS.
 static VesselTypeClass const VesselTdNodSub(VESSEL_TDNSUB,
                                             TXT_SS,      // Text name (placeholder -- HD name via rules.ini Name=).
                                             "TDNSUB",    // INI name (own art: tdnsub frames).
@@ -279,16 +260,12 @@ static VesselTypeClass const VesselTdNodSub(VESSEL_TDNSUB,
                                             14           // Turret center offset.
 );
 
-// Tiberian Factions (v4.0) -- GDI surface fleet: fully-separated CLONES of the three Allied ships
-// (PT/DD/CA), Owner=GoodGuy, built from the GDI Naval Yard. KEEP IsTurretEquipped=true so each
-// renders the native spinning turret (Draw_It draws MGUN/SSAM/TURR by name -- the turret art is a
-// global launcher resource, NOT part of the hull ZIP, so the clones get spinning turrets for free).
-// Own copied hull art (TDPT/TDDD/TDCA tilesets); donor ImageData = the RA original (NULL-guard).
-// All other params mirror the templated RA ship exactly. See docs/naval-art-3d-pipeline-handover.md.
+// GDI surface fleet: the Allied PT, DD and CA as GDI types with their own hull art. Their turrets are the
+// launcher's global MGUN, SSAM and TURR art, which Draw_It draws by name.
 
 // GDI Gunboat (clone of RA PT -- light, MGUN turret).
 static VesselTypeClass const VesselTdPT(VESSEL_TDPT,
-                                        TXT_PT,      // Text name (placeholder -- real name via ModText.csv later).
+                                        TXT_PT,      // Text name (placeholder -- HD name via rules.ini Name=).
                                         "TDPT",      // INI name (own art: tdpt frames).
                                         ANIM_FBALL1, // Explosion when destroyed.
                                         0x0000,      // Vertical offset.
@@ -305,7 +282,7 @@ static VesselTypeClass const VesselTdPT(VESSEL_TDPT,
 
 // GDI Destroyer (clone of RA DD -- medium, SSAM turret).
 static VesselTypeClass const VesselTdDD(VESSEL_TDDD,
-                                        TXT_DD,      // Text name (placeholder -- real name via ModText.csv later).
+                                        TXT_DD,      // Text name (placeholder -- HD name via rules.ini Name=).
                                         "TDDD",      // INI name (own art: tddd frames).
                                         ANIM_FBALL1, // Explosion when destroyed.
                                         0x0000,      // Vertical offset.
@@ -322,7 +299,7 @@ static VesselTypeClass const VesselTdDD(VESSEL_TDDD,
 
 // GDI Cruiser (clone of RA CA -- heavy, TURR twin-gun turret).
 static VesselTypeClass const VesselTdCA(VESSEL_TDCA,
-                                        TXT_CA,      // Text name (placeholder -- real name via ModText.csv later).
+                                        TXT_CA,      // Text name (placeholder -- HD name via rules.ini Name=).
                                         "TDCA",      // INI name (own art: tdca frames).
                                         ANIM_FBALL1, // Explosion when destroyed.
                                         0x0000,      // Vertical offset.
@@ -728,9 +705,8 @@ void VesselTypeClass::One_Time(void)
         ((int&)uclass.MaxSize) = 26;
     }
 
-    // TD Gunboat (VESSEL_TDGUNBOAT): TGA-only TD art (TDBOAT) -> NULL ImageData from the loop above.
-    // Donor = VESSEL_PT (RA's gunboat hull) so Draw_It doesn't bail; the launcher overlay resolves
-    // the real "TDBOAT" sprite by IniName. CameoData falls back to PT's until the cameo is bundled.
+    // TF: the mod's vessels have HD art only, so their classic shapes and cameos load NULL. Each borrows its RA
+    // original's so Draw_It doesn't bail and the ship stays visible (docs/td-port-playbook.md).
     VesselTypeClass& tdboat = As_Reference(VESSEL_TDGUNBOAT);
     if (tdboat.ImageData == NULL) {
         ((void const*&)tdboat.ImageData) = As_Reference(VESSEL_PT).ImageData;
@@ -739,7 +715,6 @@ void VesselTypeClass::One_Time(void)
         ((void const*&)tdboat.CameoData) = As_Reference(VESSEL_PT).CameoData;
     }
 
-    // TD Hovercraft (VESSEL_TDLST): TGA-only TD art -> NULL ImageData. Donor = VESSEL_TRANSPORT.
     VesselTypeClass& tdlst = As_Reference(VESSEL_TDLST);
     if (tdlst.ImageData == NULL) {
         ((void const*&)tdlst.ImageData) = As_Reference(VESSEL_TRANSPORT).ImageData;
@@ -748,9 +723,6 @@ void VesselTypeClass::One_Time(void)
         ((void const*&)tdlst.CameoData) = As_Reference(VESSEL_TRANSPORT).CameoData;
     }
 
-    // Nod Obelisk Sub (VESSEL_TDOBLISUB): reuses the RA submarine art -> donor = VESSEL_SS for BOTH
-    // ImageData and the launcher overlay (its RA_UNITS.XML tileset is cloned from SS, pointing at the
-    // ss\ frames, so it renders as the sub hull). CameoData from SS too.
     VesselTypeClass& tdoblisub = As_Reference(VESSEL_TDOBLISUB);
     if (tdoblisub.ImageData == NULL) {
         ((void const*&)tdoblisub.ImageData) = As_Reference(VESSEL_SS).ImageData;
@@ -759,7 +731,6 @@ void VesselTypeClass::One_Time(void)
         ((void const*&)tdoblisub.CameoData) = As_Reference(VESSEL_SS).CameoData;
     }
 
-    // Nod Submarine (VESSEL_TDNSUB): own art copy (tdnsub tileset); SS donor = NULL-guard only.
     VesselTypeClass& tdnsub = As_Reference(VESSEL_TDNSUB);
     if (tdnsub.ImageData == NULL) {
         ((void const*&)tdnsub.ImageData) = As_Reference(VESSEL_SS).ImageData;
@@ -768,9 +739,6 @@ void VesselTypeClass::One_Time(void)
         ((void const*&)tdnsub.CameoData) = As_Reference(VESSEL_SS).CameoData;
     }
 
-    // GDI surface fleet clones (VESSEL_TDPT/TDDD/TDCA): own HD hull tilesets (tdpt/tddd/tdca frames,
-    // TGA-only -> NULL ImageData from the loop). Donor ImageData/CameoData = the RA original each clones
-    // (PT/DD/CA) so Draw_It doesn't bail; the launcher overlay resolves the real cloned hull by IniName.
     VesselTypeClass& tdpt = As_Reference(VESSEL_TDPT);
     if (tdpt.ImageData == NULL) {
         ((void const*&)tdpt.ImageData) = As_Reference(VESSEL_PT).ImageData;
@@ -793,7 +761,6 @@ void VesselTypeClass::One_Time(void)
         ((void const*&)tdca.CameoData) = As_Reference(VESSEL_CA).CameoData;
     }
 
-    // Nod Missile Sub (VESSEL_TDMSUB): own art copy (tdmsub tileset); MSUB donor = NULL-guard only.
     VesselTypeClass& tdmsub = As_Reference(VESSEL_TDMSUB);
     if (tdmsub.ImageData == NULL) {
         ((void const*&)tdmsub.ImageData) = As_Reference(VESSEL_MISSILESUB).ImageData;
@@ -803,9 +770,6 @@ void VesselTypeClass::One_Time(void)
     }
 
 #ifdef FIXIT_CARRIER
-    // v4.0: GDI Helicarrier made buildable (rules.ini [CARR] Owner=GoodGuy). Its HD hull art exists
-    // (base CARR.ZIP + CARR tileset in RA_STRUCTURES.XML) so ImageData normally loads; NULL-guard the
-    // cameo against the launcher's NULL-OverrideDisplayName CTD class (donor = CA) just in case.
     VesselTypeClass& carr = As_Reference(VESSEL_CARRIER);
     if (carr.CameoData == NULL) {
         ((void const*&)carr.CameoData) = As_Reference(VESSEL_CA).CameoData;
@@ -838,9 +802,7 @@ void VesselTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
     short yy = y;
 
     switch (Type) {
-    // VESSEL_TDGUNBOAT: the gun sits on the foredeck, ahead of the bridge. Per-facing seat
-    // table baked from Luke's dot marks on the hull renders (scripts/bake_turret_seats.py,
-    // 2026-07-03): mount orbit fitted from N/NE/E marks, render px -> pack 0.652 -> classic px.
+    // TF: the TD Gunboat's foredeck turret seat per facing, baked by scripts/bake_turret_seats.py.
     case VESSEL_TDGUNBOAT: {
         static const signed char _tdboat_seat[16][2] = {
             {0, -9},  {4, -8},   {8, -6},   {11, -3},  {12, 1},   {11, 5},  {8, 8},   {5, 10},
@@ -852,7 +814,7 @@ void VesselTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
         break;
     }
 
-    case VESSEL_TDCA: // = CA (native turrets, native seats -- Luke 2026-07-03)
+    case VESSEL_TDCA: // = CA
     case VESSEL_CA:
         Normal_Move_Point(xx, yy, dir, 22);
         x = xx;
@@ -867,8 +829,7 @@ void VesselTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
         y = yy + 1;
         break;
 
-    // TDDD wears the DD's SSAM turret but at Luke's dot-marked FORE mount ("keep the TDDD
-    // mount position", 2026-07-03) -- not the vanilla DD's aft seat. TDPT/TDCA = RA originals.
+    // TF: the GDI destroyer seats the DD's SSAM turret on its foredeck, not at the DD's aft mount.
     case VESSEL_TDDD: {
         static const signed char _tddd_seat[16][2] = {
             {0, -10},  {6, -10},  {10, -8},  {13, -5},  {14, -3},  {13, 3},  {10, 2},  {6, 8},

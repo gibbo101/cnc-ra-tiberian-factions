@@ -2,7 +2,7 @@
 """Install the hand-made cameos over the packer-generated ones.
 
 resources/custom-cameos/<IconName>.png is the canonical art for any BuildIcon
-a human has drawn (Luke's compositions on the reconstructed TS scene
+a human has drawn (compositions on the reconstructed TS scene
 background). The TS packers also generate some of these names from game
 assets; they check this directory first, and this script re-asserts every
 override in one pass — run it after any packer that touches SRGB, and before

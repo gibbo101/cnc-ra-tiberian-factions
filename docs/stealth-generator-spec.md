@@ -1,24 +1,23 @@
-# Nod Stealth Generator — locked design + implementation plan
+# Nod Stealth Generator
 
-**Status: SHIPPED & on `main` (driver rewritten per the locked design).**
-The cloak driver (`BuildingClass::Process_Stealth_Generators` / `TF_Stealth_Drive`, building.cpp)
-is committed and deployed. Behaviour follows the locked design below.
+**Status:** Reference; shipped in 4.0.0, TS art in 4.1.0.
 
-**Art: reverted to the RA Gap Generator sprite (2026-07-15).** A custom HD platform-dome art
-(TDSTEAL.ZIP/TDSTEALMAKE.ZIP) was tried and dropped: the art stood taller than any 2×1 classic
-donor could anchor, so the launcher floated the sprite above its footprint and weapons fired on
-the base cell one below the visible dome. `ShapeSize` correction over-/under-sized it, so the
-building was reverted to `Image=GAP` (native 1×2 footprint, self-anchoring, known-good). The
-cloak field keys on `STRUCT_TDSTEALTH`, not the art, so field behaviour is unchanged. Commit
-`91b88be`.
+`STRUCT_TDSTEALTH` (`[TDSTEAL]`, behind the Temple of Nod) cloaks friendly buildings and units
+within 10 cells (`TF_STEALTH_RADIUS_CELLS` in `building.cpp`). Detectors (`IsScanner`) within 3
+cells reveal them, armed defences ambush, and bibs hide at render time. The TS Mobile Sensor Array
+also shows cloaked units to its owner (`emp-cannon-design.md`). The driver is
+`BuildingClass::Process_Stealth_Generators` / `TF_Stealth_Drive` (`building.cpp`), called once a
+frame from `LogicClass::AI`.
 
-**Balance: 400 effective HP** — `Strength=200` in rules.ini, doubled to 400 by the TD-prefix
-rule (`BuildingClass::Read_INI`); power-plant/defensive tier, matching the "always-visible weak
-point that collapses the field" intent. (Earlier `Strength=600` read as 1200 in-game because of
-the doubling — far too tanky.)
-
-A Nod building (STRUCT_TDSTEALTH) that reuses the RA **Gap Generator (GAP)** sprite and
-cloaks a friendly area, defeated by bringing stealth-detector units into it.
+- **Art:** TS's NASTLH, upscaled hq4x (`TDSTEAL.ZIP`, `TDSTEALMAKE.ZIP`), on a **2x1 footprint**
+  (`BSIZE_21` + `List21`), `FACING_NONE` (FACING_S made attackers aim a cell south), art donor
+  `STRUCT_TDSILO` (`ts-asset-import-spike.md`). Dead route: a taller custom HD dome, which no 2x1
+  classic donor could anchor, so the launcher floated it above its footprint.
+- **AI superweapons:** discovery is sticky (remembered intel) and the cloak is live cover over it, so
+  a Stealth Generator field shields buildings from AI superweapons until a detector breaks the cloak
+  (`Special_Weapon_AI`).
+- **Balance:** `Strength=200`, doubled to 400 by the TD-prefix rule: an always-visible weak point
+  (600 read as 1200 and took four Apaches to halve). Power −100.
 
 ---
 
@@ -46,7 +45,7 @@ cloaks a friendly area, defeated by bringing stealth-detector units into it.
 
 ---
 
-## Engine facts (established this session — build the implementation on these)
+## Engine facts
 
 - **`IsCloakable` must be wired on buildings.** RA never cloaked a building, so `BuildingClass`
   never copied its type's `Cloakable` flag to the instance (units/infantry/vessels do). The one
@@ -103,16 +102,14 @@ cloaks a friendly area, defeated by bringing stealth-detector units into it.
   it. Momentary, on-theme, harmless — NOT the detector reveal, and explains a screenshot where units
   "seemed to detect" the base by walking into it.
 
-- **Art/sidebar (DONE, keep):** `Image=GAP` renders the on-map HD sprite for free (no tileset alias).
-  Only the sidebar CAMEO + NAME key on IniName: `RABUILDABLES.XML` `ObjectTypeClass Name="RA_TDSTEAL"`
-  reuses `BuildIcon_RA_GapGenerator`; `ModText.csv` (UTF-16LE) rows `TEXT_STRUCTURE_TDSTEAL`/`_DESC`.
+- **Sidebar:** the cameo and name key on IniName (`RA_TDSTEAL` in `RABUILDABLES.XML`, ModText rows
+  `TEXT_STRUCTURE_TDSTEAL` / `_DESC`).
 
 ---
 
-## Implementation plan (next session)
+## The driver
 
-Rewrite `BuildingClass::Process_Stealth_Generators()` (building.cpp), called once/frame from
-`LogicClass::AI` (already wired). New model — driver does the minimum, `Cloaking_AI` does the rest:
+The driver does the minimum and `Cloaking_AI` does the rest:
 
 1. **Gather** active, powered, non-limbo `STRUCT_TDSTEALTH` generators (coord + house).
    Power gate: `House->Power_Fraction() >= 1` (low power drops the gen → restore).
@@ -129,13 +126,13 @@ Rewrite `BuildingClass::Process_Stealth_Generators()` (building.cpp), called onc
    `Cloaking_AI`/`CloakDelay` when the detector leaves).
 4. **Armed-building ambush** (#11): for each cloaked driver **building** with a weapon and a legal
    in-range target → `Do_Uncloak()` (so it can fire); re-cloaks after threat clears.
-5. **Bib hide** (#6): while a building is cloaked, suppress/redraw its bib cells; restore on uncloak.
+5. **Bib hide** (#6): at render time (see "Building bibs" below).
 6. **Owner warp render** (#7): `Visual_Character` owner-side branch → warped stage instead of
    `VISUAL_SHADOWY`; tune in-game.
-7. **Data**: `[TDSTEAL]` Power `-100`; `[MRJ]` (Radar Jammer) `Sensors=yes`; give the generator its
-   **own radius** (~5–6 cells) rather than `Rule.GapShroudRadius` (10 cells read as huge in playtest).
+7. **Data:** `[TDSTEAL]` Power −100; `[MRJ]` (Radar Jammer) `Sensors=yes`. The radius is the
+   driver's own `TF_STEALTH_RADIUS_CELLS` = 10, not `Rule.GapShroudRadius`.
 
-### AI (2026-07-15)
+### AI
 - **Nod AI build rule — DONE.** A `STRUCT_TDSTEALTH` slot mirrors the `STRUCT_GAP` block
   (house.cpp, `ActLike==HOUSE_BAD`, gated on full power + income); `Can_Build` enforces the
   `TDTMPL` prerequisite, so the AI builds the Stealth Generator organically after the Temple of
@@ -143,21 +140,11 @@ Rewrite `BuildingClass::Process_Stealth_Generators()` (building.cpp), called onc
 - **`TF_DEV` force-spawn — REMOVED.** The dev crutch that pre-placed `TDNUK2` + `TDSTEALTH` for
   every Nod AI at scenario start is gone now that the AI builds it organically.
 
-### Verify in playtest (each is a distinct path)
-Cloak settles to warped look (owner) / invisible (enemy); enemy AI still attacks (units path in and
-detectors reveal); each teardown path restores (low power, destroyed, **sold**, leave-radius); armed
-buildings ambush-fire; bibs vanish; Stealth Tank untouched; no flicker; cloaked units fire and deal
-damage.
-
-Build/deploy recipe: standard Linux mingw cross-build; on launcher-data-only edits
-`rsync -a resources/remaster_mods/Vanilla_RA/ build/remaster/Vanilla_RA/` (no `--delete`) before
-deploy (see CLAUDE.md build/deploy sections).
-
 ---
 
-## Fixed bugs
+## Traps (fixed)
 
-### Helipad + helicopter stayed UN-stealthed in the field — FIXED 2026-07-15
+### A helipad and its helicopter never cloaked
 
 Two causes, both in the driver (`TF_Stealth_Drive`, building.cpp):
 
@@ -170,7 +157,7 @@ Two causes, both in the driver (`TF_Stealth_Drive`, building.cpp):
 2. **Helicopter itself never cloaked** — the cover pass only iterated Buildings + Units + Infantry.
    **Fix:** added an `Aircraft` pass in `Process_Stealth_Generators`.
 
-### Whole base stayed stealthed after the generator was destroyed — FIXED 2026-07-15
+### The whole base stayed cloaked after the generator died
 
 Killing the generator left previously-cloaked buildings cloaked forever (newly-built ones correctly
 stayed visible). Cause: the restore pass was gated by a single `_had_generators` latch that let it
@@ -180,10 +167,9 @@ reset, and `Cloaking_AI` re-cloaked it. **Fix:** `TF_Stealth_Drive` now returns 
 is still driver-cloaked, and `Process_Stealth_Generators` keeps the restore pass running (via
 `_restore_pending`) until a full pass finds nothing left to restore.
 
-### Building bibs (#6) — DONE via render-time hide, not cell-redraw
+### Building bibs (#6): hidden at render time, never removed
 
-The plan above (#6, "suppress/redraw the bib cells… restore on uncloak") was **not** the shipped
-approach — it turned out to be actively harmful. A `TF_Sync_Bib` implementation that `Disown`ed the
+Removing the bib is harmful: a `TF_Sync_Bib` implementation that `Disown`ed the
 bib `SmudgeClass` was tried and **removed**: a bib smudge also blocks placement
 (`CellClass::Is_Clear_To_Build`, cell.cpp:494), so clearing it let the (blind) enemy build into a
 cloaked base's bib strip. The correct mechanism already existed in the Remaster draw path
@@ -192,17 +178,10 @@ cloaked base's bib strip. The correct mechanism already existed in the Remaster 
 `VISUAL_HIDDEN` — transparent to the enemy, bib still shown to the owner. This is the canonical
 approach; don't reintroduce smudge removal.
 
-**Covering-building resolution hardened 2026-07-18 (`58ae18f`), first AI-built generator in the
-wild:** the original this-cell-or-one-north probe missed TD foundations — TDPROC's entire bottom
+**Covering-building resolution (`58ae18f`):** the original this-cell-or-one-north probe missed TD foundations — TDPROC's entire bottom
 row is overlap-only (`TdOListProc`), so cloaked TD refineries kept floating bibs. The probe now
 reconstructs the bib rectangle from `SmudgeData` (col + row·Width; top row is the owner's bottom
 foundation row, column-aligned per `Bib_And_Offset`) and walks north through candidate foundation
 rows, resolving at the first row holding any building, probing every column per row (per-cell
 holes: dock notch, hand of Nod). `TF_BIB_DIAG` (dev builds) logs any bib that still draws with
 what it resolved to.
-
-## Balance
-
-**Effective HP = 400** (`Strength=200`, doubled by the TD-prefix rule). Set 2026-07-15 after a
-playtest showed 4 Apaches only halving it — the old `Strength=600` was silently doubled to 1200,
-far too tanky for the "always-visible weak point." Power-plant/defensive tier now.

@@ -271,23 +271,12 @@ bool TerrainClass::Mark(MarkType mark)
     return (false);
 }
 
-/***********************************************************************************************
- * TerrainClass::Get_Image_Data -- Shape data for this tree; snowy on TD winter maps.          *
- *                                                                                             *
- *    Tiberian Factions -- converted TD WINTER maps run in the TEMPERATE theatre (the TDW*     *
- *    template family), so the type's ImageData is the green summer tree. When the winter      *
- *    flag is set (TF_TDWinterMap, display.cpp), return TD's own snowy shape instead:          *
- *    TDW<name>.TEM packed into TFASSETS.MIX by scripts/build_tfassets.sh from WINTER.MIX.     *
- *    TFASSETS.MIX is cached for the life of the process (init.cpp), so the lazy per-type      *
- *    pointer cache below never goes stale. Missing entries fall through to the temperate      *
- *    art (best-effort, same policy as the TFASSETS load itself). HD mode gets the same        *
- *    swap via the exported AssetName in dllinterface.cpp.                                     *
- *                                                                                             *
- * OUTPUT:  Pointer to the shape data to render this terrain object with.                      *
- *=============================================================================================*/
+// The shape for this tree: on a TD winter map (TF_TDWinterMap), TD's snowy TDW<name>.TEM from TFASSETS.MIX,
+// else the type's own. HD gets the same swap through the exported AssetName (dllinterface.cpp).
 void const* TerrainClass::Get_Image_Data(void) const
 {
     if (TF_TDWinterMap) {
+        // The cached pointers stay valid only because TFASSETS.MIX stays cached for the whole process (init.cpp).
         static void const* _winter_image[TERRAIN_COUNT];
         static bool _winter_tried[TERRAIN_COUNT];
         TerrainType type = Class->Type;
@@ -532,19 +521,8 @@ void TerrainClass::AI(void)
         Map[::As_Cell(As_Target())].Spread_Tiberium(true);
     }
 
-    /*
-    **	Tiberian Factions -- a normal tree or clump that becomes mostly surrounded by
-    **	Tiberium blooms into a TD blossom tree (which then seeds more Tiberium itself,
-    **	closing the ecosystem loop). The blossom is a Neutral BUILDING
-    **	(STRUCT_TDBLOSSOM) rather than a terrain object, because terrain can't take our
-    **	custom HD art; the building's AI owns the spore-shed animation + Tiberium
-    **	seeding. The neighbour check is the TIB01 overlay specifically, NOT
-    **	LAND_TIBERIUM -- RA's Ore and Gems are engine-Tiberium too and must not
-    **	bloom trees (first-playtest bug: ore fields spawned blossom trees). We
-    **	free this tree first, then place the building on the same cell (pointer
-    **	ctor avoids the delegating-ctor IsActive=0 bug). Checked on the
-    **	GrowthRate cadence.
-    */
+    // TF: a tree mostly ringed by Tiberium (TIB01 only, never ore or gems) turns into a TD blossom tree, a neutral
+    // building so it can take HD art. The tree frees its cell before the blossom is placed there.
     if ((Class->Type >= TERRAIN_TREE1 && Class->Type <= TERRAIN_CLUMP5)
         && (Frame % (Rule.GrowthRate * TICKS_PER_MINUTE)) == 0) {
         CELL center = ::As_Cell(As_Target());

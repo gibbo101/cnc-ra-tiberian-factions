@@ -1,6 +1,8 @@
 # SPIKE: maps larger than 128x128 ("mega maps") in Red Alert
 
-**Status:** **CLOSED — RESOLVED NEGATIVE for the Remastered target (2026-07-18).** RA's playable ceiling of **126x126** (a 128x128 cell array minus the 1-cell border) is enforced by the **closed-source `ClientG.exe`**, not by our DLL. The engine-side change is tractable and EA already did an equivalent one; the launcher ABI is what stops it, and it cannot be recompiled. **Do not re-chase for the shipped mod.** Larger maps are genuinely reachable only on the standalone `VanillaRA` build, which bypasses the launcher and is not what we ship.
+**Status:** Reference; a dead end. Maps bigger than 128x128 (126x126 playable) are blocked by
+`ClientG.exe`, not by the DLL; only the standalone `VanillaRA` build, which bypasses the launcher
+and is not what ships, could have them.
 
 **One-line:** Can we raise `MAP_CELL_W`/`MAP_CELL_H` above 128 to ship bigger skirmish maps? No: terrain rendering is launcher-owned, and the launcher's map export buffer is a fixed 128x128 that our DLL fills but does not allocate.
 
@@ -154,7 +156,7 @@ Two caveats if it is ever used:
 
 Both are live on the current 128x128 build.
 
-1. **A\* has an O(n^2) insert and no expansion cap** — `findpath.cpp:715` uses `open_list.insert(std::lower_bound(...))` into a `std::vector` (sorted-vector priority queue, linear insertion). Worse, there is **no node-expansion budget**: a *failed* search against an unreachable destination exhausts the entire reachable component. At 128x128 that is <=16K nodes with per-node `unordered_map` allocation — a long-range failed path can stall a frame. Recommend a real binary heap plus an explicit expansion budget with fallback. Relevant to the AI milestone.
+1. **Fixed since:** A\* now uses a binary heap and stops at `ASTAR_MAX_EXPANSIONS` (4096); the original finding follows. **A\* had an O(n^2) insert and no expansion cap** — `findpath.cpp:715` uses `open_list.insert(std::lower_bound(...))` into a `std::vector` (sorted-vector priority queue, linear insertion). Worse, there is **no node-expansion budget**: a *failed* search against an unreachable destination exhausts the entire reachable component. At 128x128 that is <=16K nodes with per-node `unordered_map` allocation — a long-range failed path can stall a frame. Recommend a real binary heap plus an explicit expansion budget with fallback. Relevant to the AI milestone.
 2. **`defines.h:589` copy-paste typo** — `MAP_REGION_HEIGHT` uses `REGION_WIDTH` in its rounding term instead of `REGION_HEIGHT`. Harmless while both are 4; a landmine if regions ever go non-square.
 
 ---

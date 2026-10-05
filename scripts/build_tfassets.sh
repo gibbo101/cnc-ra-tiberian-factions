@@ -83,7 +83,7 @@ ENTRIES=(
     "FACTMAKE.SHP:TDFACTMAKE.SHP"
     "MCV.SHP:TDMCV.SHP"
     "HARV.SHP:TDHARV.SHP"
-    # Combat vehicle arc (2026-05-30): GDI Medium Tank (classic SHP for One_Time
+    # Combat vehicle arc: GDI Medium Tank (classic SHP for One_Time
     # ImageData + classic-mode render; HD art is the bundled TDMTNK tileset).
     "MTNK.SHP:TDMTNK.SHP"
     "LTNK.SHP:TDLTNK.SHP"
@@ -313,11 +313,10 @@ PACK_ARGS+=("$TMPDIR/tssapc_stub.shp:TSSAPC.SHP")
 # TS-tree buildings with TS-authentic footprints (docs/ts-gdi-tree-plan.md):
 # classic stubs declare each one's canvas dims (dims x5.33 = HD canvas); the
 # MAKE stubs carry the construction frame count the HD buildup zips ship.
-# Size pass 2026-08-03: the launcher maps the canvas onto the stub box
+# Size pass: the launcher maps the canvas onto the stub box
 # CENTERED on the BSIZE box, so stub height beyond the box splits into equal
 # art halos above and below it. (Selection boxes come from the FOUNDATION,
-# not the stub — bdata Dimensions(), foundation−20%; the old stub-hug rule
-# was a misread.)
+# not the stub — bdata Dimensions(), foundation−20%.)
 # ts_stub emits a TS building's stub after checking its dimensions against the
 # canvas ts_pack_tree.py actually packed. The launcher scales a building's
 # canvas onto its stub box, so a canvas that grows without the stub growing to

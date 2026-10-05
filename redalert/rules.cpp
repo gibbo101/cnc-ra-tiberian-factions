@@ -137,8 +137,7 @@ RulesClass::RulesClass(void)
     , ParaBombTechLevel(10)
     , MaxIQ(5)
     , IQSuperWeapons(4)
-    // Base production must be reachable by every difficulty tier (Easy AI = IQ 3);
-    // the vanilla 5 only worked because all AIs ran at MaxIQ.
+    // TF: every difficulty tier must base-build, and the Easy AI runs at IQ 3.
     , IQProduction(3)
     , IQGuardArea(4)
     , IQRepairSell(3)
@@ -648,10 +647,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WarheadTypeClass("Mechanical");
 #endif
 
-    // Tiberian Factions mod warheads — keep in enum order (WarheadType
-    // additions appended after WARHEAD_MECHANICAL). Per project convention,
-    // TD-ported entities get a "TD" prefix in their IniName for visual
-    // identification in rules.ini (see [[project-td-prefix-convention]]).
+    // TF: mod warheads. Trap: keep them in WarheadType enum order; the enum value is the heap index.
     new WarheadTypeClass("TDLaser"); // WARHEAD_LASER (Obelisk 100%-vs-all)
     new WarheadTypeClass("TDHE");    // WARHEAD_TDHE (TD high-explosive armor table)
     new WarheadTypeClass("TDPB");    // WARHEAD_TDPB (TD particle beam — Ion Cannon)
@@ -660,7 +656,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WarheadTypeClass("TDFire");   // WARHEAD_TDFIRE (TD incendiary — Flamethrower E4)
     new WarheadTypeClass("TDChemWar"); // WARHEAD_TDCHEM (TD chem spray — HE table + Explosion=0; E5)
     new WarheadTypeClass("TDHollow");  // WARHEAD_TDHOLLOW (TD hollow-point — Commando sniper; anti-infantry)
-    new WarheadTypeClass("TDAGT");     // WARHEAD_TDAGT (v4.0 F8 — AGT-only TDHE clone, vs-heavy 25->50; fires from TDTowTwo only)
+    new WarheadTypeClass("TDAGT");     // WARHEAD_TDAGT (TDHE clone so the Advanced Guard Tower tunes alone)
     new WarheadTypeClass("RailShot");  // WARHEAD_RAILSHOT (TS MechRailgun line damage — TS [RailShot] verses)
     new WarheadTypeClass("TSFlame");      // WARHEAD_TSFLAME (TS [Fire] verses for the Devil's Tongue stream)
     new WarheadTypeClass("TSFlameHit");   // WARHEAD_TSFLAMEHIT (pre-scaled TS fire burn delivery)
@@ -668,12 +664,12 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WarheadTypeClass("TSSA");         // WARHEAD_TSSA (TS [SA] small arms -- TS verses, the tower Vulcan's warhead)
     new WarheadTypeClass("TSRPG");        // WARHEAD_TSRPG (TS [RPG] -- the tower RPG's warhead)
     new WarheadTypeClass("TSSAMWH");      // WARHEAD_TSSAMWH (TS [SAMWH] -- the tower SAM's warhead)
-    new WarheadTypeClass("TSHE");         // WARHEAD_TSHE (TS [HE] -- the old TS Mammoth's tusk warhead)
+    new WarheadTypeClass("TSHE");         // WARHEAD_TSHE (TS [HE] -- the Disc Thrower's disc)
     new WarheadTypeClass("TSRailShot2");  // WARHEAD_TSRAILSHOT2 (TS [RailShot2] -- the Ghost Stalker's light railgun)
     new WarheadTypeClass("TSOrcaAP");     // WARHEAD_TSORCAAP (TS [ORCAAP] -- the Orca Fighter's missiles)
     new WarheadTypeClass("TSOrcaHE");     // WARHEAD_TSORCAHE (TS [ORCAHE] -- the Orca Bomber's bombs)
-    new WarheadTypeClass("TSArtyHE");
-    new WarheadTypeClass("TSLimpy");      // WARHEAD_TSLIMPY (Firestorm [LIMPY] -- the Limpet Drone attaches)     // WARHEAD_TSARTYHE (TS [ARTYHE] -- the Juggernaut's shells)
+    new WarheadTypeClass("TSArtyHE");     // WARHEAD_TSARTYHE (TS [ARTYHE] -- the Juggernaut's shells)
+    new WarheadTypeClass("TSLimpy");      // WARHEAD_TSLIMPY (Firestorm [LIMPY] -- the Limpet Drone attaches)
     new WarheadTypeClass("R2ApocAP");     // WARHEAD_R2APOCAP (YR [ApocAP] -- the Apocalypse cannon)
     new WarheadTypeClass("R2Comet");      // WARHEAD_R2COMET (YR [CometWH] -- the Prism Tank beam)
 
@@ -730,10 +726,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("AirAssault");
 #endif
 
-    // Tiberian Factions mod weapons — keep in enum order (WeaponType
-    // additions appended after WEAPON_CARRIER). Per project convention,
-    // TD-ported entities get a "TD" prefix in their IniName for visual
-    // identification in rules.ini (see [[project-td-prefix-convention]]).
+    // TF: mod weapons. Trap: keep them in WeaponType enum order; the enum value is the heap index.
     new WeaponTypeClass("TDTowTwo");     // WEAPON_TOW_TWO (Advanced Guard Tower)
     new WeaponTypeClass("TDTurretGun");  // WEAPON_TD_TURRET_GUN (Nod Turret)
     new WeaponTypeClass("TDOblsLaser");  // WEAPON_OBELISK_LASER (Obelisk of Light)
@@ -754,25 +747,25 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TDStnkDragon"); // WEAPON_TDSTNKDRAGON (TD Stealth Tank STNK; IsTDPort -- TDDragon + Burst=2)
     new WeaponTypeClass("TDMlrsRocket"); // WEAPON_TDMLRS (TD Rocket Launcher MLRS; IsTDPort -- fires BULLET_TDSSM2, Burst=2)
     new WeaponTypeClass("TDHonestJohn"); // WEAPON_TDHONESTJOHN (TD SSM Launcher MSAM; IsTDPort -- fires BULLET_TDMISSILE, non-homing)
-    new WeaponTypeClass("TD155mm");      // WEAPON_TD155MM (TD Artillery ARTY; IsTDPort -- fires BULLET_TDHESHELL, arcing)
+    new WeaponTypeClass("TD155mm");      // WEAPON_TD155MM (TD Artillery ARTY; IsTDPort -- fires RA's arcing Ballistic)
     new WeaponTypeClass("TDApacheGun");  // WEAPON_TDAPACHEGUN (TD Apache HELI; non-IsTDPort like TDChainGun -- + Burst=2)
-    new WeaponTypeClass("TDTomahawk");   // WEAPON_TDTOMAHAWK (v4.0 GDI Gunboat primary -- TD homing missile, BULLET_TDTOW)
-    new WeaponTypeClass("TDObeliskSubLaser"); // WEAPON_TDOBELISKSUBLASER (v4.0 Nod Obelisk Sub laser -- clone of TDOblsLaser, tunable independently)
-    new WeaponTypeClass("TDA10Napalm");  // WEAPON_TDA10NAPALM (v4.0 A-10 strafe -- TD WEAPON_NAPALM verbatim, BULLET_TDNAPALM)
-    new WeaponTypeClass("TDFlameBunker"); // WEAPON_TDFLAMEBUNKER (v4.0 Nod Flame Bunker TDFBNK -- TDFlameTongue clone, Range 4; IsTDPort raw Speed)
-    new WeaponTypeClass("TSHoverMissile"); // WEAPON_TSHOVERMISSILE (TS-spike Hover MLRS -- TS [HoverMissile] stats on the TDSSM homing chain)
+    new WeaponTypeClass("TDTomahawk");   // WEAPON_TDTOMAHAWK (GDI Gunboat primary -- TD homing missile, BULLET_TDTOW)
+    new WeaponTypeClass("TDObeliskSubLaser"); // WEAPON_TDOBELISKSUBLASER (Nod Obelisk Sub -- a TDOblsLaser clone)
+    new WeaponTypeClass("TDA10Napalm");  // WEAPON_TDA10NAPALM (A-10 strafe -- TD WEAPON_NAPALM, BULLET_TDNAPALM)
+    new WeaponTypeClass("TDFlameBunker"); // WEAPON_TDFLAMEBUNKER (Nod Flame Bunker -- TDFlameTongue at Range 4)
+    new WeaponTypeClass("TSHoverMissile"); // WEAPON_TSHOVERMISSILE (TS Hover MLRS -- TS [HoverMissile] on TDTOW)
     new WeaponTypeClass("TS120mm");        // WEAPON_TS120MM (TS Titan cannon -- TS [120mm] stats on the TDAPDS chain)
     new WeaponTypeClass("MechRailgun");    // WEAPON_MECHRAILGUN (TS Mammoth Mk. II railgun -- IsRailgun piercing line, instant TDLaser projectile)
-    new WeaponTypeClass("TSMammothTusk");  // WEAPON_TSMKTUSK (TS Mk. II AA missiles -- MammothTusk stats on the AA-only AAMissile projectile)
+    new WeaponTypeClass("TSMammothTusk");  // WEAPON_TSMKTUSK (TS Mk. II AA missiles -- a SAM profile, AA only)
     new WeaponTypeClass("AssaultCannon");  // WEAPON_ASSAULTCANNON (TS Wolverine -- TS [AssaultCannon] verbatim, instant Invisible/SA chain)
     new WeaponTypeClass("TSFireball");     // WEAPON_TSFIREBALL (TS Devil's Tongue -- fire-stream particles, UnitClass::Fire_Stream_AI)
     new WeaponTypeClass("SonicZap");       // WEAPON_SONICZAP (TS Disruptor -- IsSonic piercing line through WARHEAD_SONIC)
     new WeaponTypeClass("TSSuicide");      // WEAPON_TSSUICIDE (TS Hunter Seeker suicide bomb -- read by TF_Hunter_Seeker_Detonate, never fired)
     new WeaponTypeClass("TSVulcanTower");  // WEAPON_TSVULCANTOWER (TS component tower Vulcan -- TS [VulcanTower] verbatim)
     new WeaponTypeClass("TSRPGTower");     // WEAPON_TSRPGTOWER (TS component tower RPG -- TS [RPGTower] verbatim)
-    new WeaponTypeClass("TSRedEye2");      // WEAPON_TSREDEYE2 (TS component tower SAM -- TS [RedEye2] verbatim)
+    new WeaponTypeClass("TSRedEye2");      // WEAPON_TSREDEYE2 (TS component tower SAM -- TS [RedEye2], retuned for RA)
     new WeaponTypeClass("TS120mmx");       // WEAPON_TS120MMX (TS Mammoth Tank cannon -- TS [120mmx] on the TDAPDS instant shell)
-    new WeaponTypeClass("TS4TNKTusk");     // WEAPON_TS4TNKTUSK (the old TS Mammoth's tusks -- TS [MammothTusk] verbatim)
+    new WeaponTypeClass("TS4TNKTusk");     // WEAPON_TS4TNKTUSK (Mammoth Mk. I tusks -- TS [MammothTusk], retuned)
     new WeaponTypeClass("TSMinigun");      // WEAPON_TSMINIGUN (TS Light Infantry -- TS [Minigun] verbatim)
     new WeaponTypeClass("TSGrenade");      // WEAPON_TSGRENADE (TS Disc Thrower -- TS [Grenade] with Firestorm's ROF)
     new WeaponTypeClass("TSHeal");         // WEAPON_TSHEAL (TS Medic -- TS [Heal] verbatim)
@@ -780,8 +773,8 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TSJumpCannon");   // WEAPON_TSJUMPCANNON (TS Jumpjet Infantry -- TS [JumpCannon])
     new WeaponTypeClass("TSHellfire");     // WEAPON_TSHELLFIRE (TS Orca Fighter -- TS [Hellfire])
     new WeaponTypeClass("TSBomb");         // WEAPON_TSBOMB (TS Orca Bomber -- TS [Bomb])
-    new WeaponTypeClass("TSJugg90mm");
-    new WeaponTypeClass("TSLimpet");       // WEAPON_TSLIMP (TS Limpet Mine -- Firestorm [LIMP]; not "TSLimp": INI sections are case-blind and the drone is [TSLIMP])     // WEAPON_TSJUGG90MM (TS Juggernaut -- Firestorm [Jugg90mm])
+    new WeaponTypeClass("TSJugg90mm");     // WEAPON_TSJUGG90MM (TS Juggernaut -- Firestorm [Jugg90mm])
+    new WeaponTypeClass("TSLimpet");       // WEAPON_TSLIMP (Firestorm [LIMP]; "TSLimp" would be the drone's [TSLIMP])
     new WeaponTypeClass("R2ApocCannon");   // WEAPON_R2APOCCANNON (YR [120mmx] -- the Apocalypse cannon)
     new WeaponTypeClass("R2ApocTusk");     // WEAPON_R2APOCTUSK (YR [MammothTusk] -- the Apocalypse tusks)
     new WeaponTypeClass("R2PrismBeam");    // WEAPON_R2PRISMBEAM (YR [Comet] -- the Prism Tank beam)
@@ -789,78 +782,27 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("C3Mk3Pods");      // WEAPON_C3MK3PODS (C&C3 GDIMammothTankRocketPods)
     new WeaponTypeClass("C3PredCannon");   // WEAPON_C3PREDCANNON (C&C3 GDIPredatorTankCannon)
 
-    // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
-    // parses Speed= as raw MPHType (TD source convention) instead of RA's
-    // 0-100 percentage. Per [[project-td-port-architecture]] (Option A).
-    // Without this flag, Speed=100 parses as 100% → MPH_LIGHT_SPEED → the
-    // Unlimbo_TD speed swap on line 1022 forces MPH_IMMOBILE → the bullet
-    // sits at the launcher, fuse expires, and the AA-distance damage branch
-    // (bullet.cpp:1268, Distance(TarCom) < 0x80) is skipped → 0 damage and
-    // the impact anim plays on top of the firer instead of on the target.
+    // TF: TD-port weapons read Speed= as TD's raw MPHType and fire at TD's cadence (docs/td-port-playbook.md).
+    // Unflagged, Speed=100 reads as light speed, which a visible TD bullet treats as immobile.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDTowTwo"))->IsTDPort = true;
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDNike"))->IsTDPort = true;
-    // TDM16 (Minigunner): IsTDPort gives TD's single-shooter cadence — IsSecondShot
-    // stays true for a 1-shot weapon, so Rearm_Delay returns ROF+3 (=23) like TD,
-    // not RA's flat ROF (=20). Also makes Speed= parse as raw MPHType (255=light).
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDM16"))->IsTDPort = true;
-    // TDGrenade (Grenadier): IsTDPort for TD cadence + raw Speed; its arcing bullet
-    // flies via the ported AI_TD (which handles IsArcing — bullet.cpp:375/827).
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDGrenade"))->IsTDPort = true;
-    // TDDragon (Rocket Soldier): IsTDPort for raw Speed (MPH_ROCKET=60) + AI_TD homing
-    // dispatch; its visible rotating missile (BULLET_TDTOW) homes + renders through the
-    // ported AI_TD path, same as TDPatriot/TDSSM.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDDragon"))->IsTDPort = true;
-    // TDFlamethrower (E4): IsTDPort for TD fire cadence + raw Speed (MPH_FAST). Its invisible
-    // BULLET_TDFLAME carries WARHEAD_TDFIRE; the visible jet is the ANIM_FLAME_N directional
-    // muzzle anim (techno.cpp), not a projectile sprite.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDFlamethrower"))->IsTDPort = true;
-    // TDChemspray (E5): IsTDPort for TD fire cadence + raw Speed (MPH_FAST). Its invisible
-    // BULLET_TDCHEM carries WARHEAD_TDHE; the visible jet is the ANIM_CHEM_N directional
-    // muzzle anim (techno.cpp), not a projectile sprite. Mechanically the flamethrower's twin.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDChemspray"))->IsTDPort = true;
-    // TDRifle (Commando): IsTDPort gives TD's single-shooter cadence (Rearm_Delay
-    // ROF+3) + raw Speed parse. Its invisible BULLET_TDBULLET takes WARHEAD_TDHOLLOW
-    // from the weapon (anti-infantry); the round is a reused "50cal" (non-IsTDPort).
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDRifle"))->IsTDPort = true;
-    // TDTusk (Mammoth AA secondary): IsTDPort for the TDSSM homing missile (raw Speed +
-    // AI_TD homing dispatch), same as TDTowTwo which also fires TDSSM.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDTusk"))->IsTDPort = true;
-    // TDFlameTongue (Flame Tank FTNK): the FLAME_TONGUE weapon -- a stronger Flamethrower
-    // (Dmg50 vs 35). Same invisible BULLET_TDFLAME + WARHEAD_TDFIRE + directional TDFLAME-N
-    // jet as the E4 Flamethrower; IsTDPort for TD fire cadence + raw Speed parse (identical
-    // treatment to TDFlamethrower).
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDFlameTongue"))->IsTDPort = true;
-    // TDM60mg (Hum-vee/Buggy): TD's M60 machine gun -- an invisible instant BULLET_TD50cal +
-    // WARHEAD_TDSA (same small-arms primitives as the Minigunner's TDM16). IsTDPort for raw
-    // Speed=255 (MPH_LIGHT_SPEED, instant) + TD single-shooter cadence (identical to TDM16).
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDM60mg"))->IsTDPort = true;
-    // TDStnkDragon (Stealth Tank STNK): the TD WEAPON_DRAGON fired as a 2-shot salvo (TD
-    // is_twoshooter -> Burst=2). Same TDTOW homing missile + WARHEAD_TDAP chain as TDDragon;
-    // a SEPARATE weapon so the single-shot E3 Rocket Soldier / Recon Bike keep Burst=1.
-    // IsTDPort for the raw Speed (MPH_ROCKET=60) + AI_TD homing dispatch (identical to TDDragon).
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDStnkDragon"))->IsTDPort = true;
-    // TDMlrsRocket (Rocket Launcher MLRS): TD WEAPON_MLRS -- a long-range (6) homing rocket firing
-    // BULLET_TDSSM2. IsTDPort for raw Speed (MPH_ROCKET) + AI_TD homing dispatch (same as TDSSM/TDTusk).
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDMlrsRocket"))->IsTDPort = true;
-    // TDHonestJohn (SSM Launcher MSAM): TD WEAPON_HONEST_JOHN -- a fast, NON-homing, long-range (10)
-    // napalm rocket firing BULLET_TDMISSILE. IsTDPort for raw Speed (MPH_FAST) + the AI_TD flight path.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDHonestJohn"))->IsTDPort = true;
-    // TSHoverMissile (TS-spike Hover MLRS): TS [HoverMissile] stats fired through the TDSSM
-    // AA+AG homing missile (the TDTusk pattern). IsTDPort for raw Speed + AI_TD homing dispatch.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TSHoverMissile"))->IsTDPort = true;
-    // TS120mm (Titan): TS [120mm] stats through the TDAPDS instant shell (TDMTNK's chain).
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TS120mm"))->IsTDPort = true;
-    // TS120mmx (old TS Mammoth Tank): TS [120mmx] stats through the same TDAPDS instant shell.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TS120mmx"))->IsTDPort = true;
-    // TD155mm (Artillery ARTY): TD WEAPON_155MM -- a high-damage (150) arcing HE bombardment shell
-    // firing BULLET_TDHESHELL. IsTDPort for raw Speed (MPH_MEDIUM_FAST) + the AI_TD arc path.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TD155mm"))->IsTDPort = true;
-    // TDTomahawk (GDI Gunboat primary): IsTDPort for raw Speed (MPH_ROCKET=60) + the AI_TD homing
-    // dispatch of BULLET_TDTOW (same path as TDDragon). WARHEAD_TDAP is set on the weapon in rules.ini.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDTomahawk"))->IsTDPort = true;
-    // TDFlameBunker (Nod Flame Bunker TDFBNK): a TDFlameTongue clone with Range bumped 2->4 so the
-    // static defence outranges buffed range-3 infantry. IsTDPort for raw Speed=40 (same as the flame
-    // tongue it clones); WARHEAD_TDFIRE + BULLET_TDFLAME are set on the weapon in rules.ini.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDFlameBunker"))->IsTDPort = true;
 
     return (true);
@@ -1011,10 +953,8 @@ bool RulesClass::Land_Types(CCINIClass& ini)
             gptr->Cost[SPEED_WHEEL] = ini.Get_Fixed(_lands[land], "Wheel", 1);
             gptr->Cost[SPEED_WINGED] = fixed(1);
             gptr->Cost[SPEED_FLOAT] = ini.Get_Fixed(_lands[land], "Float", 1);
-            // TS-spike hover locomotor: amphibious; rules.ini gives [Rock]/[Wall] Hover=0.
+            // TF: hover and amphibious costs. A land without Amphibious= costs what it does for hover.
             gptr->Cost[SPEED_HOVER] = ini.Get_Fixed(_lands[land], "Hover", 1);
-            // TS SpeedType=Amphibious: its own per-land table; a land without the key
-            // behaves as hover, so maps predating it stay traversable.
             gptr->Cost[SPEED_AMPHIBIOUS] = ini.Get_Fixed(_lands[land], "Amphibious", gptr->Cost[SPEED_HOVER]);
             gptr->Build = ini.Get_Bool(_lands[land], "Buildable", false);
         }
@@ -1138,12 +1078,8 @@ bool RulesClass::Objects(CCINIClass& ini)
         Weapons.Ptr(windex)->Read_INI(ini);
     }
 
-    /*
-    **  Mod-defined unit types: register new entries from the [NewUnits]
-    **  index before per-type Read_INI runs, so freshly-created entries pick
-    **  up their own section data on the same pass. Same pattern as the
-    **  [NewBuildings] block below — see that block's comment for details.
-    */
+    // TF: [NewUnits] names become heap types before Read_INI, so each reads its own section in this pass.
+    // Objects() runs again on every scenario load, so a name already in the heap is skipped.
     static char const* const NEW_UNITS = "NewUnits";
 #if 0
     /*
@@ -1219,13 +1155,7 @@ bool RulesClass::Objects(CCINIClass& ini)
         AircraftTypes.Ptr(aindex)->Read_INI(ini);
     }
 
-    /*
-    **  Mod-defined building types: register new entries from the [NewBuildings]
-    **  index before per-type Read_INI runs, so freshly-created entries pick up
-    **  their own section data on the same pass. Key format: "<ordinal>=<IniName>".
-    **  Existing IniNames are skipped to make the section idempotent across the
-    **  rules.ini + aftermath.ini pipeline.
-    */
+    // TF: the same for [NewBuildings] names.
     static char const* const NEW_BUILDINGS = "NewBuildings";
     if (ini.Is_Present(NEW_BUILDINGS)) {
         for (int x = 0; x < ini.Entry_Count(NEW_BUILDINGS); x++) {

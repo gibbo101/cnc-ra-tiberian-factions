@@ -38,30 +38,16 @@
 #include "drive.h"
 #include "ftimer.h"
 
-/*
-**	TF: harvester QoL tuning (ported from CFE Patch Redux, GPL v3, hard-enabled).
-**	CFE's shipped defaults, converted from cells to leptons (all comparisons
-**	are crow-flies lepton distances until the A* port lands).
-*/
+// TF: harvester queue-jump and refinery-choice tuning, ported from CFE Patch Redux (GPL v3): CFE's defaults
+// in leptons, compared against straight-line distances.
 #define HARV_QUEUE_JUMP_CUTOFF  (4 * CELL_LEPTON_W) // closer harvesters than this are never bumped
 #define HARV_UNLOAD_WAIT_WEIGHT (6 * CELL_LEPTON_W) // one queued unload ~= this much extra driving
 #define HARV_THRASHING_CUTOFF   (5 * CELL_LEPTON_W) // within this range, use the lower wait penalty
 #define HARV_THRASHING_WEIGHT   ((HARV_UNLOAD_WAIT_WEIGHT * 2) / 3)
 #define HARV_COMMUNALISM_WEIGHT ((HARV_UNLOAD_WAIT_WEIGHT * 9) / 4)
 
-/*
-**	TF economy-pace dial (2026-06-18). Bails offloaded per dock cycle, applied IDENTICALLY
-**	to all FOUR harvester/refinery pairings (RA-harv@RA-ref + RA-harv@TD-ref = the visible
-**	dust-loop; TD-harv@TD-ref = the refinery attach/siphon anim cycle; TD-harv@RA-ref = the
-**	timer-driven offload). Each path originally banked 1 bail per cycle, all tuned to the same
-**	~588-tick TD dock time. Vanilla RA dumped a full load in ONE shot (near-instant) -- the
-**	docking rework pulled RA's fast economy fully into TD territory. Banking N bails/cycle
-**	cuts every dock time by N while leaving each path's ANIMATION cadence untouched (fewer
-**	cycles, same speed) and credits-per-load unchanged (only the unload RATE rises). Keeping
-**	the SAME N on all four pairings keeps the RA and TD faction economies equal -- which is the
-**	point: equal economies make cross-faction unit balancing tractable. 1 = full TD-matched
-**	(old), 2 = half (the agreed RA<->TD compromise), 4 = quarter (~RA-insta feel).
-*/
+// TF: bails banked per dock cycle, the same for every harvester and refinery pairing so the economies match.
+// It divides every dock time and leaves the animation cadence alone (docs/harvester-docking-rework-plan.md).
 #define HARV_DOCK_BAILS_PER_CYCLE 2
 
 class BuildingClass;
@@ -131,11 +117,8 @@ public:
     */
     CDTimerClass<FrameTimerClass> Reload;
 
-    /*
-    **  Tiberian Factions — TS walker firing-pose countdown. Set to
-    **  FiringFrames * WalkRate on each shot; while it runs the body draws from
-    **  the firing block that follows the walk cycle instead of from the gait.
-    */
+    // TF: TS walker firing-pose countdown, set to FiringFrames * WalkRate on each shot. While it runs the body
+    // draws the firing block instead of the gait.
     CDTimerClass<FrameTimerClass> FireAnim;
 
     /*
@@ -149,23 +132,13 @@ public:
     */
     mutable TARGET TiberiumUnloadRefinery;
 
-    /*
-    **	TF: attack-move (ported from CFE Patch Redux, GPL v3). Minelayer-only state:
-    **	where the minelayer started (so it can go home after laying), and whether it
-    **	reached the ordered destination and switched to mine-laying mode.
-    */
+    // TF: attack-move minelayer state (CFE Patch Redux port, GPL v3): where it started, and whether it reached
+    // the ordered destination and switched to laying.
     TARGET MLoriginalposition;
     unsigned char MLattackmovemode;
 
-    /*
-    **	TF (harvester unreachable-target recovery): a harvester's chosen ore cell can be
-    **	reachable by movement-zone yet impossible to PATH to -- crucially, placing a
-    **	BUILDING (e.g. a turret walling a patch) does NOT trigger a zone recompute, so the
-    **	stale zone map still reports the patch "reachable" and the harvester re-commits to
-    **	it forever (the ABANDON-giveup spin). We track path failures, blacklist a patch
-    **	that keeps failing (with a timeout so a sold turret lets it retry), and wait/re-scan
-    **	instead of spinning. See Mission_Harvest / Goto_Tiberium.
-    */
+    // TF: harvester recovery (docs/harvester-recovery-design.md). Zones ignore buildings, so a walled ore field
+    // still looks reachable: path failures blacklist the field for a while instead of retrying it forever.
     enum
     {
         HARV_BLACKLIST_MAX = 4
@@ -176,21 +149,13 @@ public:
     int HarvReachableResets;                // stall windows forgiven because A* still finds a path (bounded backstop)
     CELL HarvStuckCell;                      // last cell the harvester occupied (anti-stuck watchdog; -1 = unset)
     long HarvStuckFrame;                     // Frame the harvester last moved/worked (position-stagnation timer)
-    // Each blacklist slot stores the BOUNDING BOX of a whole contiguous ore field (flood-filled
-    // from the failed cell), not a single cell -- a big walled patch would otherwise let the
-    // harvester give up on one cell and re-pick another cell of the same dead field.
+    // Each blacklist slot holds the bounding box of a whole flood-filled ore field, not one cell.
     CELL HarvBadMin[HARV_BLACKLIST_MAX];    // field bbox top-left  (-1 = empty slot)
     CELL HarvBadMax[HARV_BLACKLIST_MAX];    // field bbox bottom-right
     long HarvBadExpiry[HARV_BLACKLIST_MAX]; // Frame each blacklist entry expires
 
-    /*
-    **	TF subterranean cycle (Devil's Tongue / Subterranean APC). A port of TS's
-    **	TunnelLocomotionClass onto the unit itself: the vehicle turns to face its
-    **	destination, pitches nose-down through the dive ladder, leaves the surface
-    **	occupancy entirely while it travels underground in a straight line, then
-    **	surfaces through the emerge ladder at the destination (or the nearest legal
-    **	cell). See docs/subterranean-design.md for the locked choreography.
-    */
+    // TF: subterranean travel (Devil's Tongue, Subterranean APC), TS's TunnelLocomotionClass ported onto the
+    // unit (docs/subterranean-design.md).
     enum TunnelStateType : unsigned char
     {
         TUNNEL_IDLE,       // surfaced, an ordinary vehicle
@@ -206,12 +171,8 @@ public:
     unsigned char TunnelFacing; // 0..7 facing snapped at dig start (ladder frame block)
     COORDINATE TunnelDest;      // underground destination (0 when idle)
 
-    /*
-    **	TF: TS DeployToFire stance (the Juggernaut). Mobile it walks and cannot fire; it sets
-    **	down through the deploy ladder to fire from a fixed stance with a turning turret, and
-    **	packs up again before it honours a move. DeployNav keeps a destination given while it
-    **	is set down or mid-ladder.
-    */
+    // TF: TS DeployToFire stance (the Juggernaut): it fires only when set down and packs up before it moves.
+    // DeployNav keeps a move ordered while it is set down or mid-ladder.
     enum DeployStateType : unsigned char
     {
         DEPLOY_MOBILE,
@@ -241,11 +202,8 @@ public:
     StructType TF_Deploys_Into(void) const;
     CELL TF_Deploy_Origin(void) const;
 
-    /*
-    **	TF: TS FireballLauncher stream (Devil's Tongue). Frames of stream left after a
-    **	shot and the target it plays toward; Fire_Stream_AI spawns a BULLET_TSFIRE
-    **	particle every 4 of them (TS FireStreamSys SpawnFrames), alternating prongs.
-    */
+    // TF: TS FireballLauncher stream (Devil's Tongue): frames left after a shot, and its target. Fire_Stream_AI
+    // spawns a BULLET_TSFIRE particle every 4 frames (TS SpawnFrames).
     int FireStreamTicks;
     TARGET FireStreamTarget;
 

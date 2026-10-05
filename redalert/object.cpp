@@ -2407,16 +2407,8 @@ BuildingClass* ObjectTypeClass::Who_Can_Build_Me(bool intheory, bool legal, Hous
         BuildingClass* building = Buildings.Ptr(index);
         assert(building != NULL);
 
-        /*
-        **	Eras keep their own doors. RA and TD already do, because a unit's Owner
-        **	mask never includes the other era's ActLike (the check just below). The
-        **	TS tree is owned by every side by design (the yard is the gate), so it
-        **	would pass that check for any factory a house owns, and any RA/TD unit
-        **	would pass it for a TS factory the house built. Pair them explicitly:
-        **	a TS-tree unit exits only a TS factory, and a TS factory produces only
-        **	TS-tree units (Luke, 2026-08-30). Buildings are exempt: any yard
-        **	constructs, the TS tree gates itself through Prerequisite=TSFACT.
-        */
+        // TF: eras keep their own doors: a TS-tree unit exits only a TS factory, which builds only TS-tree units.
+        // Owner= can't pair them, as every side owns the TS tree; buildings are exempt, tied to a TS yard by Can_Build.
         if (RTTI != RTTI_BUILDINGTYPE) {
             bool const ts_factory = (building->Is_TS_War_Factory() || *building == STRUCT_TSPILE
                                      || *building == STRUCT_TSHPAD || *building == STRUCT_TSDROP);
@@ -2453,12 +2445,9 @@ BuildingClass* ObjectTypeClass::Who_Can_Build_Me(bool intheory, bool legal, Hous
                 /*
                 **	HACK ALERT: Helipads can build aircraft and airstrips can build
                 **	fixed wing craft only.
-                **	Tiberian Factions: STRUCT_TDHPAD (separated TD Helipad) accepted
-                **	alongside STRUCT_HELIPAD so the sidebar Recalc doesn't evict
-                **	rotary aircraft cameos when only TDHPAD is owned. Without this
-                **	extension, BuildableCount drops HELI/HIND immediately after
-                **	Update_Buildables adds them. See [[project-td-port-architecture]].
                 */
+                // TF: every helipad type builds rotary aircraft and every airstrip type fixed-wing, or the sidebar
+                // evicts the aircraft cameos of a house whose only pad or strip is one of ours.
                 if (What_Am_I() == RTTI_AIRCRAFTTYPE) {
                     AircraftTypeClass* air = (AircraftTypeClass*)this;
                     if ((building->Class->Is_Helipad() && !air->IsFixedWing)
@@ -2472,15 +2461,8 @@ BuildingClass* ObjectTypeClass::Who_Can_Build_Me(bool intheory, bool legal, Hous
 
                 } else if (What_Am_I() == RTTI_UNITTYPE) {
 
-                    /*
-                    **	The dropship bay builds its delivered cargo and nothing else, and
-                    **	nothing else builds that cargo -- the same arrangement the kennel
-                    **	has with dogs above. Both halves are needed: without the first, a
-                    **	rifle jeep could arrive by orbital pod; without the second, the
-                    **	Mk. II could roll out of the war factory door it is too tall to
-                    **	fit through, which is the whole reason the bay exists. The cargo
-                    **	list lives in TF_Is_Dropship_Delivered.
-                    */
+                    // TF: the dropship bay builds its cargo (TF_Is_Dropship_Delivered) and nothing else does, as the
+                    // kennel does with dogs: the Mk. II is too tall for a war factory door.
                     bool delivered = TF_Is_Dropship_Delivered((UnitTypeClass*)this);
                     if (delivered == (*building == STRUCT_TSDROP)) {
                         if (building->IsLeader)

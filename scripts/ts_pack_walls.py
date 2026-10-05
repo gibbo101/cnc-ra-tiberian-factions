@@ -140,7 +140,7 @@ def pier(occ, col, along, lo, hi):
     n = occ.shape[0]
     c = n // 2
     p0, p1 = c - PIER_T // 2, c + PIER_T // 2
-    # tan piers, faces and cap (Luke's pick, 2026-09-04): they read as the wall's
+    # tan piers, faces and cap: they read as the wall's
     # buttresses rather than more concrete
     if along == "x":
         box(occ, col, lo, hi, p0, p1, 0, PIER_H, C_PIER)

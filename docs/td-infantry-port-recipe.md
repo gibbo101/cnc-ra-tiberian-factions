@@ -1,5 +1,8 @@
 # TD Infantry Port Recipe
 
+**Status:** Reference. The pipeline for porting a TD infantry unit; every TD infantry unit ships
+this way.
+
 **Worked examples** (all shipped 2026-05-29): `INFANTRY_TDE1` Minigunner — first port, establishes the infantry pipeline the way TDATWR established buildings; `INFANTRY_TDE2` Grenadier (GDI-only) — its visible 8-frame tumbling-bomb bullet white-boxed, so it reuses RA's shared `Projectile=Lobbed`; `INFANTRY_TDE3` Rocket Soldier (GDI+Nod) — its **homing rotating missile is the first own-bullet visible projectile to render clean** (`Image=TDDRAGON`, reuses TDSSM's sprite, no bundling), confirming the playbook §3.25 rotating-renders / tumbling-white-boxes rule; `INFANTRY_TDE4` Flamethrower (Nod-only) — first **directional muzzle-anim** weapon: the flame jet is 8 facing-specific `ANIM_FLAME_*` anims (not a projectile), and **HD-only anims render a green placeholder until given a donor `ImageData`** — full sub-recipe in playbook **§3.26**; `INFANTRY_TDE5` Chem Warrior (Nod-only, Temple-gated) — the flamethrower's **reskinned twin** (byte-identical DO table + 660-frame layout → reuses `TdFlamethrowerDoControls` + `bundle_unit.py --tileset-donor E4`), and the unit that surfaced the **muzzle-weapon impact-explosion leak** + **classic-SHP parity** fixes (playbook §3.26 (d)/(e)).
 
 **Read first:** `docs/td-port-playbook.md` (architecture + traps). This doc is the infantry-specific companion to `docs/td-building-separation-recipe.md`.
@@ -97,5 +100,5 @@ The launcher's `Techno_Draw_Object` overlay then renders the real `TDxx` sprite 
 
 **Engineer (`INFANTRY_TDE6`) — key facts:**
 - No weapon; `Infiltrate=yes` → `IsCapture`. **BUT capture is `INFANTRY_RENOVATOR`-gated** across ~15 sites — a new engine type must be added at the **execution** (`infantry.cpp` Per_Cell_Process), the **cursor** (`What_Action`), and **AI capture-targeting** (`foot.cpp`) or it does not capture *at all*. See §3.27.
-- **Faction-conditional capture** (Luke's call): GDI/Nod (`House->ActLike` GOOD/BAD) capture **single** (one engineer, any building health = TD); Allied/Soviet keep RA's Aftermath **multi**-engineer (damage to ConditionRed, then take). Gate is on the engineer's owner.
+- **Faction-conditional capture:** GDI/Nod (`House->ActLike` GOOD/BAD) capture **single** (one engineer, any building health = TD); Allied/Soviet keep RA's Aftermath **multi**-engineer (damage to ConditionRed, then take). Gate is on the engineer's owner.
 - **Capture-only** — the RA engineer's friendly mega-repair is gated to RENOVATOR, so TDE6 has no repair action (TD-authentic).

@@ -40,7 +40,7 @@ and a small offset silhouette reproduces that band closely enough at this size.
 Sizing the throw off the sprite instead of fixing it is what broke: our TS
 sprites run up to 301px wide against RA's largest at 228, so a 12%-of-width
 throw gave the Mammoth Mk. II a 41px overhang where a TD tank has a 6px tuck.
-Luke's verdict on that round: sticks out far too much, the Mk. II looks like it
+That round read as sticking out far too much: the Mk. II looks like it
 is floating, and any TS unit stood next to a TD unit looks ridiculous. Alpha was
 never the problem in either round -- 191 pure black is what EA bakes, and it is
 what we ship.
