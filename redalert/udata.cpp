@@ -2583,7 +2583,7 @@ void UnitTypeClass::Dimensions(int& width, int& height) const
         {UNIT_TSTITN, 29, 49},
         {UNIT_TSAPC, 30, 21},
         {UNIT_TSMCV, 35, 23},
-        {UNIT_TSLIMP, 22, 46},
+        {UNIT_TSLIMP, 12, 32},
         {UNIT_TSMEMP, 33, 22},
         {UNIT_TSLPST, 31, 23},
         {UNIT_TSMWAR, 33, 28},
