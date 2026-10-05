@@ -288,8 +288,9 @@ The Hover MLRS keeps its own float.
   on the pad drawn in the hull frame, 12.54 voxels aft. The table is per hull frame drawn
   (`BodyShape`), from the HD art's README; the rack's own facing adds nothing. The fire point uses
   the same seat. `Sonic_Turret_Seat` seats the Disruptor's turret 6 classic px aft.
-- A draw-side slewed hull facing stops the rack jumping as RA pathing flicks the heading each
-  cell; the rack swings 3 directions a tick so sweeps read as rotation.
+- The rack seats from the hull facing the hull frame is drawn with, never a smoothed copy: the pad
+  is in the hull frame, so any other facing slides the rack off it. The rack swings 3 directions a
+  tick so sweeps read as rotation.
 
 **Mammoth Mk. II (TSHMEC) railgun.** TS has no railgun art: `[MechRailgun]` drives
 `LargeRailgunSys`, a particle system with no `Image=`. Ours is TS's helix maths (the `IsRailgun`

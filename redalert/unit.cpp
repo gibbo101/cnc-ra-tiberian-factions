@@ -3018,29 +3018,7 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
                 Recoil_Adjust(SecondaryFacing, xx, yy);
             }
 
-            // TF: the Hover MLRS rack seats from a display-only slewed copy of the hull facing, so the hull's flicking
-            // between move directions does not swing it. It must never feed the sim.
-            if (*this == UNIT_TSHVR) {
-                static unsigned char _rack_disp[600];
-                static bool _rack_disp_ok[600];
-                DirType hull = PrimaryFacing.Current();
-                int rid = Units.ID(this);
-                if (rid >= 0 && rid < 600) {
-                    if (!_rack_disp_ok[rid]) {
-                        _rack_disp_ok[rid] = true;
-                        _rack_disp[rid] = (unsigned char)hull;
-                    }
-                    signed char diff = (signed char)((unsigned char)hull - _rack_disp[rid]);
-                    int step = diff / 4;
-                    if (step == 0 && diff != 0)
-                        step = (diff > 0) ? 1 : -1;
-                    _rack_disp[rid] = (unsigned char)(_rack_disp[rid] + step);
-                    hull = (DirType)_rack_disp[rid];
-                }
-                Class->Hover_Rack_Seat(hull, xx, yy);
-            } else {
-                Class->Turret_Adjust(PrimaryFacing, xx, yy);
-            }
+            Class->Turret_Adjust(PrimaryFacing, xx, yy);
 
 #if TF_DEV_BUILD // TF DEV: TSHVR facing/seat diagnostic. One line per facing change per unit. Compiled out of release builds.
             if (*this == UNIT_TSHVR) {

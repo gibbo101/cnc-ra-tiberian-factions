@@ -2684,8 +2684,7 @@ void UnitTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
         y += _adjust[index].Y;
         break;
 
-    // TF: per-facing turret seats for the HD units. The draw path calls Hover_Rack_Seat itself with a slewed hull
-    // facing.
+    // TF: per-facing turret seats for the HD units.
     case UNIT_TSHVR:
         Hover_Rack_Seat(dir, x, y);
         break;
