@@ -83,9 +83,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 - **Component tower:** animations and weapon geometry for the Vulcan, RPG and SAM plugs. Confirm
   what is still wanted now the HD tower is in.
 - **Mk. II cap:** `TF_MK2_CAP` is 1; it goes to 3 on the maintainer's word.
-- **Dead code:** `tf_orbit.flag`; `UnitClass::Force_Emerge` (no callers); `defines.h:589`
-  divides `MAP_REGION_HEIGHT` by `REGION_HEIGHT` but rounds with `REGION_WIDTH` (harmless while
-  both are equal).
+- **Code tidy:** the dead-code pass (needs calls first), the comments left inside the
+  ts-buildings-hd branch's ranges, and phase 2: `code-tidy.md`. Also `defines.h:589` rounds
+  `MAP_REGION_HEIGHT` with `REGION_WIDTH` (harmless while both are equal).
 
 ## Investigate before touching
 

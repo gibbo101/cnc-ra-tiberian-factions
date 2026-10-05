@@ -210,6 +210,48 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 
 ---
 
+## Found in code review, not seen in play
+
+Suspected from reading the code during the code tidy (`code-tidy.md`). Confirm in play, then promote
+to a full entry above or delete. One line each: where, what, severity.
+
+- **Lobby AI difficulty (major):** dllinterface.cpp resets `TF_LobbyCandN` only in dev builds, so in a
+  release the candidate list fills across matches and an ambiguous read can take an earlier lobby's
+  difficulties.
+- **GDI/Nod build speed ignores power (major):** techno.cpp `Time_To_Build`'s GDI/Nod path returns before
+  the low-power scaling, the AI build slowdown and the house bias; TD itself applies the power scaling.
+- **TS harvester speed (minor):** rules.ini `[TSHARV] Speed=5`; the parity change to 6 went into a comment.
+- **Per-match statics never reset (minor):** house.cpp AI_Building's `_waiting_since[]` and
+  `TF_Eco_Below_Target`'s hold statics carry into the next match of a session.
+- **TS types missing from hand lists (minor):** Recalc_Center and `TF_Ferry_Wants_MCV` leave out
+  `STRUCT_TSFACT`; the enemy air cap leaves out `STRUCT_TSHPAD`; the radar jam and sting counts leave out
+  `STRUCT_TSTECH`.
+- **Scan bits past 31 (minor):** `Tracking_Add`/`Recalc_Attributes` shift `1L << type` for infantry and
+  units past bit 31 (undefined; on x86 TSGHOST sets the TANYA bit). Deterministic, so no desync.
+- **EMP and Firestorm granted early (minor):** the specials key on `Get_Quantity`, true while the
+  generator is still on the sidebar; the Firestorm grant never rechecks a placed one.
+- **Charges spent with no droid or pod (minor):** the Hunter Seeker and Drop Pods discharge even when the
+  spawn fails.
+- **Ferry (minor):** `TFF_SAIL` treats a transport idling offshore as arrived and unloads onto water,
+  then waits out `TF_FERRY_TIMEOUT`.
+- **Carryall (minor):** `TFCarryPickup` outlives a changed order, so a later landing can skip its LZ check
+  or lift that vehicle unasked.
+- **Give-way (minor):** `HOLD_TIMEOUT` (60) expires claim waits early against a 75-frame claim, and the
+  patient queue drops claims at 40 frames; `Find_Give_Way_Cell` checks only each ray's end cell.
+- **TS war factory pack-up (minor):** `TF_Pack_Up` re-unlimbos a TSDWEAP at a shifted cell when the
+  vehicle can't unlimbo, and can leave it in limbo with its power gone.
+- **Names (minor):** `NameOverride[128]` holds fewer slots than rules.ini's 137 `Name=` overrides, so the
+  last types read keep their stock names.
+- **Firing deploy-to-fire units (minor):** Firing_AI's `too_close` uses the raw MinRange while
+  Approach_Target adds half a cell.
+- **Sidebar (cosmetic):** a dropship cameo is never evicted while any bay stands
+  (sidebarglyphx.cpp ~546); the Mech Division isn't marked busy through the bay cooldown.
+- **Small ones (cosmetic or latent):** MinelayerFindSpot's `>` should be `>=`; Mission_Repair looks only
+  for a harvester's own refinery type; `Find_Passable_Position_Near` transposes x and y (from CFE); the
+  [TFTDTiles] reader is unchecked; the dormant TDLST indexes 16 facings on 4 frames; EA's own
+  `Make_Enemy` uses `!` for `~` and CNC_Read_INI's `memset` has its arguments swapped (both also
+  upstream); `[TSPLUG]` lacks the Capturable/Crewed/Repairable/Bib keys its TS original has.
+
 ## Limitations (cannot be fixed from a mod; do not re-investigate)
 
 ### Speech the DLL sends in the game-over window is dropped

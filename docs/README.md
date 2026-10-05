@@ -37,6 +37,7 @@ sections, and `package-for-workshop.sh` runs it.
 ### Trackers
 - `todo.md` — open work and the backlog.
 - `known-issues.md` — open bugs and player-facing limitations.
+- `code-tidy.md` — the code hygiene plan: the dead-code pass, comments left in branch ranges, phase 2.
 
 ### Porting TD units and buildings
 - `td-port-playbook.md` — read first: architecture, recipe, every trap so far.
