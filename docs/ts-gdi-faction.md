@@ -26,7 +26,7 @@ four Allied/Soviet duplicates, the slot set aside for the first new faction
 (`faction-select-identity.md`), and because the launcher already knows it natively (colour, flag, start
 markers, loading screens), which is what makes a fifth faction free of launcher work.
 
-**No DLL remap is needed.** GDI and Nod are remapped on receipt in `CNC_Start_Instance`
+**No DLL remap is needed.** GDI and Nod are remapped on receipt in `CNC_Set_Multiplayer_Data`
 (Spain→`HOUSE_GOOD`, Greece→`HOUSE_BAD`); TS GDI needs nothing, because the picker row the
 player clicks *is* the house they play.
 

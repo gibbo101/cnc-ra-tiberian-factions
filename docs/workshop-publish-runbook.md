@@ -60,7 +60,8 @@ main checkout is guaranteed to hold the current ones.
   `scripts/intro_work/REDINTRO.md5`).
 - **Asset packs clean:** `python3 scripts/asset_packs.py check` prints nothing.
 - **Saves:** any enum growth since the last release (a new type, `MZONE_HOVER`, a widened
-  `StructType` or `AnimType`) breaks saves made on an older build. That is accepted.
+  `StructType` or `AnimType`) or a grown class (`BuildingClass::RallyPoint`; VC dropped CFE's
+  padding) breaks saves made on an older build. That is accepted.
 - **Docs closed out:** for each doc changed since the last tag (`git diff --stat vX.Y.Z -- docs/`),
   the text describes what ships and the status line names this release; finished work leaves
   `todo.md` and fixed bugs leave `known-issues.md`. `python3 scripts/docs_check.py` must pass; the

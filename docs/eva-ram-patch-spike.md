@@ -9,7 +9,7 @@ overwrites the cached blob in ClientG's memory at match start, so all five launc
 lines follow the picked faction across an in-session switch. **Verified in play, both directions,
 all five lines (cannot-deploy, structure-sold, mission-accomplished, mission-failed, battle-
 control-terminated), no crash.** Promoted to shipping (runs in release builds; logging is
-`TF_DEV_BUILD`-only). Code: `TF_Patch_ClientG_Cache` / `TF_WriteFile_Into_Process`,
+`TF_DEV_BUILD`-only). Code: `TF_Patch_ClientG_Cache` / `TF_Replace_File_In_Process`,
 `dllinterface.cpp`.
 
 ## How it works

@@ -11,14 +11,16 @@ Per-slot AI difficulty is read from ClientG's lobby records (`AIPLAYERn`) at mat
 - **When:** the client tears down and rebuilds its `AIPLAYERn` records as a match launches, so a
   scan inside that window finds nothing or a half-written array (`E M H M` was caught reading
   `E M M M`). The deferred re-scan from `CNC_Advance_Instance` (`TF_Lobby_Difficulty_Retry`, 4
-  attempts 90 frames apart) requires two consecutive agreeing scans. Solo skirmish hits this too,
+  attempts 90 frames apart) requires two consecutive agreeing scans; the last attempt accepts an
+  unconfirmed read rather than none. Solo skirmish hits this too,
   from the second match of a session.
 - **Stale copies:** the heap can hold a stale copy of the array that matches the live one on
   colour and country. The resolver (`TF_Resolve_Lobby_Ambiguity`, `lobby-ambiguity-findings.md`)
   picks the live copy by its vector triple, exact referrer, freshness or a strict majority, and
   fails closed when undecided.
 - **Fallback chain:** RAM read, then `Documents/CnCRemastered/tf_ai_difficulty.txt` (global; it
-  applies in LAN too, since only the host's file reaches the sim, but that is not live-verified),
+  applies in LAN too, since only the host simulates, but that is not live-verified; the ClientG read
+  always comes first),
   then Hard.
 - `GlyphxID` cannot tell live from stale arrays: the IDs are fixed per slot index.
 - Mods load in LAN games only, so LAN is the whole modded multiplayer surface.
@@ -121,9 +123,9 @@ index" and any of them looked usable as a key. They are three different fields.
 - **`0x54` is the ActLike**, in the client's numbering: **RA HousesType + 2** (so 2-9),
   with 42 meaning the lobby pick was random (DontCryJustDie, 2026-07-22). Both samples we
   had logged decode exactly: an all-Soviet lobby's `4, 4, 4` is `HOUSE_USSR`, and a mixed
-  GDI / Nod / Allied lobby's `2, 9, 3` is Spain / Turkey / Greece, our two hijacked country
-  slots plus Greece. It is now a **second liveness key** alongside colour, gated against
-  `player_info.House` captured in `CNC_Set_Multiplayer_Data` before the Spain/Turkey hijack
+  GDI / Nod / Allied lobby's `2, 9, 3` decoded as Spain / Turkey / Greece, logged while Nod still
+  sat on Turkey (GDI and Nod now hijack Spain and Greece). It is now a **second liveness key** alongside colour, gated against
+  `player_info.House` captured in `CNC_Set_Multiplayer_Data` before the Spain/Greece hijack
   rewrites it. Skipped when the record reads 42 or falls outside 2-9, so an unexpected
   encoding degrades to the colour-only gate instead of failing the read.
 

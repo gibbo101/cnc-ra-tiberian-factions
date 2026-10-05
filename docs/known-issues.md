@@ -138,6 +138,26 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 
 ---
 
+## Balance data
+
+### The Allied artillery's range change never applies
+- **Severity:** major (a balance change that shipped in name only).
+- The mod's `CCDATA/aftrmath.ini` always loads after `rules.ini` (`Is_Aftermath_Installed()` is true in
+  the remaster) and overrides field by field. Its `[155mm] Range=6` beats `rules.ini`'s 8, so the
+  Allied Artillery plays at 6 while `balance-deep-dive.md` records 6 → 8. Its `[E3] Owner=allies`
+  also beats `rules.ini`'s `allies,soviet`. Found in the data, not yet checked in play.
+- Fix shape: set the intended values in `aftrmath.ini` too (`td-building-separation-recipe.md`,
+  gotcha 16), after deciding what E3's owner should be.
+
+### `Inaccurate=` does nothing on projectiles
+- **Severity:** major (balance).
+- EA's `BulletTypeClass::Read_INI` (`bbdata.cpp`) reads the misspelt key `Inaccuate`, so the eight
+  `Inaccurate=yes` lines in `rules.ini` (`[Ballistic]`, `[TDSSM]`, `[TDSSM2]`, the TD missiles) are
+  ignored: those shots are accurate unless the firer moves. The artillery's Range 8 was justified by
+  that scatter. `[TDMSUB]`'s `Inaccurate=` is read by nothing.
+- Fix shape: either key the entries as `Inaccuate=`, or fix the parser with a `// TF:` change. Both
+  change balance, so it needs a play test.
+
 ## AI and pathfinding
 
 ### Sim froze once in a 4-Hard-AI Docklands match (2026-09-02)

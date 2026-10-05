@@ -13,6 +13,26 @@ reports those cells to the launcher as CLEAR, so the atlas lookup never misses, 
 template IniName, ShapeIndex = the logical TIcon, Type = OVERLAY_V12). The launcher resolves that
 through the loose ZIP and tileset XML, the same pipeline as TIB01.
 
+Rules for these ground entries (`Cell_Class_Draw_It`):
+- **No entry under an overlay or smudge.** Two dynamic entries on one cell z-fight, because the
+  launcher's ordering is unstable (layer flags, pixel biases and CellY biases all failed); the static
+  layer shows the vanilla twin template there, leaving a tone seam on clear ground.
+- **Type `OVERLAY_V12`:** the launcher paints radar pips from the vanilla resource Type range whatever
+  the flags say (GOLD1 painted shore cells as ore); V12 is decorative and gets no pip. Pip art is per
+  Type: GOLD1-4 four gold shades, GEMS1-4 teal, magenta, green and red, which is why Tiberium goes
+  out as GEMS3 (`tiberium-ecosystem.md`).
+- **A constant ShapeIndex:** a churning value, even between identical frames, makes the launcher
+  re-create the sprite, and it pops above the overlay.
+- **Radar and static stand-ins** (`Get_Template_Info`) are chosen by the icon's art class, not its
+  land type: 'W' gives W1, 'B' SH02 icon 9, 'R' RIVER13 icon 6, 'K' SLOPE01, anything else CLEAR1 (on
+  interior: CLEAR1 for sand, ARRO0001-0004). Same-size vanilla twins keep road and river continuity,
+  and water beside a river uses RIVER13 icon 6.
+- **The overlay layer, not smudge:** the launcher skips smudge entries on building-occupied cells.
+- **Bibs on TD ground** draw RA's per-theatre art: winter maps use the temperate slot, whose bib
+  matches, and desert maps the interior slot, whose `BIB*.INT` is shadowed with TD desert bib pixels
+  (`build_desert_radar_palette.py`). A per-cell BIB-to-TDBIB AssetName swap layered unreliably
+  against the ground entry.
+
 The whole shore family (sh1 to sh18) and bridge1/2 render this way. RA redrew its own same-named
 shores, so matching by name and size is never art-safe for `sh*`. The map transcoder is
 `scripts/td_map_to_ra.py` (`td-skirmish-map-import.md`).

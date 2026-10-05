@@ -240,9 +240,10 @@ Faction: GDI · Donor: **MSLO** (RA Missile Silo — for superweapon hosting) ·
 | Capturable | true |
 | Bib | yes |
 
-**Design (2026-05-19):** EYE is GDI's superweapon host — building it grants the Ion Cannon strike. Mirrors Nod's TMPL (Temple of Nod hosts nuclear strike). Use Logic=MSLO so the engine grants a generic superweapon timer/picker.
-
-**🚧 v0.3 caveat:** MSLO's default superweapon is the Atom Bomb visual (mushroom cloud). The actual Ion Cannon beam-strike effect is a separate engine implementation in v0.4. For v0.3, EYE grants a working superweapon with placeholder visuals — the mechanic works, the art doesn't match yet.
+EYE (`STRUCT_TDEYE`) is GDI's superweapon host: it grants the Ion Cannon (`SPC_TD_ION_CANNON`,
+`ANIM_TD_ION_CANNON`), as the Temple grants Nod's nuke. The strike's `Explosion_Damage` gets a NULL
+source on purpose (`AnimClass::Middle`): a real source would make that Eye immune, so a player
+couldn't Ion Cannon their own Eye. The cost is that its kills aren't credited.
 
 **-200 power drain** is huge — players will need NUK2 (or two NUKEs) to support EYE. TD's design intent.
 
@@ -578,6 +579,8 @@ Faction: **GDI** · Donor: **WEAP** · TD lvl 2, $2000, -30 power, 500 HP, **3×
 **Note:** TD-faithful: GDI builds vehicles here, Nod builds at AFLD. Both Logic=WEAP, both produce the same vehicle roster until v0.4's TD vehicle work.
 
 ### FIX — Service Depot 📝
+`[TDFIX] Name=Repair Facility` matches TD's `TXT_FIX_IT`; RA calls its own one the Service Depot.
+
 Faction: **both** · Donor: **FIX** · TD lvl 5, $1200, -30 power, 400 HP, 3×3 wood, prereq NUKE
 
 | Field | Value |

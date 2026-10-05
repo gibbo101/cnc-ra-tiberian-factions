@@ -156,7 +156,7 @@ Two caveats if it is ever used:
 
 Both are live on the current 128x128 build.
 
-1. **A\* has an O(n^2) insert and no expansion cap** — `findpath.cpp:715` uses `open_list.insert(std::lower_bound(...))` into a `std::vector` (sorted-vector priority queue, linear insertion). Worse, there is **no node-expansion budget**: a *failed* search against an unreachable destination exhausts the entire reachable component. At 128x128 that is <=16K nodes with per-node `unordered_map` allocation — a long-range failed path can stall a frame. Recommend a real binary heap plus an explicit expansion budget with fallback. Relevant to the AI milestone.
+1. **Fixed since:** A\* now uses a binary heap and stops at `ASTAR_MAX_EXPANSIONS` (4096); the original finding follows. **A\* had an O(n^2) insert and no expansion cap** — `findpath.cpp:715` uses `open_list.insert(std::lower_bound(...))` into a `std::vector` (sorted-vector priority queue, linear insertion). Worse, there is **no node-expansion budget**: a *failed* search against an unreachable destination exhausts the entire reachable component. At 128x128 that is <=16K nodes with per-node `unordered_map` allocation — a long-range failed path can stall a frame. Recommend a real binary heap plus an explicit expansion budget with fallback. Relevant to the AI milestone.
 2. **`defines.h:589` copy-paste typo** — `MAP_REGION_HEIGHT` uses `REGION_WIDTH` in its rounding term instead of `REGION_HEIGHT`. Harmless while both are 4; a landmine if regions ever go non-square.
 
 ---

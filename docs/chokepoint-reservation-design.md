@@ -2,7 +2,7 @@
 
 **Status:** Reference; shipped in 2.3.0.
 **Open:** a vehicle head-on in a one-cell gap with no escape cell, scatter churn on a unit that
-re-paths straight back (`known-issues.md`), and the A* fallback detour around a busy pinch (below).
+re-paths straight back (`known-issues.md`).
 
 Vehicles crossing a 1-wide pinch in opposite directions no longer deadlock. Three layers, all in
 `DriveClass` and lockstep-safe:
@@ -136,41 +136,14 @@ Claims are transient: whatever a save holds ages out within the TTL.
 
 ---
 
-## Open: the A* fallback detour around a busy pinch
+## The busy-pinch hold (`findpath.cpp`)
 
-Known and low-harm; left for a later pathfinding pass.
+When A\* fails and a corridor claim younger than 75 frames lies within 14 cells on the line to the
+destination, `Find_Path` returns an empty path, so the unit waits in the patient queue
+(`Start_Of_Move`'s `traffic_blocked` scan) instead of taking the legacy edge-follower's detour round
+the cliff or lake. It is shared by infantry, harvesters and vehicles, and a clear route never trips
+it, because the claim ages out and A\* succeeds on the next pass.
 
-**Symptom.** A vehicle ordered to cross a chokepoint while the pinch is momentarily busy/claimed by the
-opposing direction is seen to "lose its pathfinding" and hug the cliff (take a long way around the
-lake), then recover. It is cosmetic-ish: the unit still reaches its destination, it just takes an ugly
-detour for a moment. It does NOT strand or deadlock.
-
-**Root cause.** Pathing and give-way are separate layers. `FootClass::Find_Path` runs A* first; A* will
-not route through a cell that is friendly-occupied head-on (`MOVE_NO` from an opposing moving ally) or
-otherwise blocked, so when the only route is the busy pinch, A* FAILS and `Find_Path` falls back to the
-legacy crash-and-turn edge-follower, which traces around the obstacle (the cliff/lake). The unit then
-follows that legacy path; `Give_Way_Decision` does not redirect it because its route now goes AROUND the
-pinch, not through it, so the give-way never engages to make it simply wait.
-
-**Playtest metrics (an AI-test log).** ~211 A* fallbacks / 901 paths (~23%), BUT: the bulk
-is infantry (`E6` 236, `E1` 66, `TDE6` 32, ...) which is the harmless sub-cell destination-contention
-(infantry never deadlock); vehicle fallbacks (`2TNK`/`APC`/`1TNK`/`ARTY`/`JEEP`/`V2RL`/`TDHARV`/`3TNK`)
-are almost all ONE-OFF (a single fallback then the unit proceeds). Only one unit repeated the same
-src→dst (a `2TNK`, twice). So it is brief and self-correcting, not a stuck loop. AI faction units
-(TD-prefixed) show the same one-off behaviour — no AI-specific deadlock.
-
-**Proposed fix (for the later pass).** Make the unit WAIT for the pinch instead of taking a legacy
-detour, when A* failed ONLY because of temporary traffic. Two candidate approaches:
-1. *Clairvoyant A* probe* — when A* fails at the normal threshold, retry treating temporary blockers
-   (ally `MOVE_TEMP`, ally-head-on `MOVE_NO`, and active `ChokeClaim` cells) as passable-but-costly. If
-   that probe finds a path through the pinch but the real one did not, the route is traffic-blocked:
-   return no-path (skip the legacy detour) so `Start_Of_Move`'s no-path branch + the patient-queue holds
-   the unit, and it re-paths cleanly once the lane clears. If the probe also fails, it is genuine no-path
-   → keep the legacy fallback.
-2. *Let A* route through temp-blocked cells at high cost* so the unit heads INTO the pinch and the
-   existing give-way HOLD then makes it wait there — simpler but broader blast radius (units routing
-   through each other elsewhere); needs care.
-Code: `redalert/foot.cpp` `FootClass::Find_Path` (the A*→legacy chain, ~line 365-478, `maxtype`
-escalation), `redalert/findpath.cpp` `Find_Path_AStar`. The patient-queue + no-path branch that the fix
-would hand off to is already in `redalert/drive.cpp` `Start_Of_Move` (the `traffic_blocked` 8-neighbour
-scan). Diagnostic: the `A* FALLBACK -> legacy` tally line in `tf_astar.log` (gated `TF_DEV_BUILD`).
+`ASTAR_MAX_EXPANSIONS` (4096) stops a search for an unreachable destination flooding the whole
+component (up to about 16K cells); a capped miss falls to the edge-follower. Raise it, don't remove
+it.

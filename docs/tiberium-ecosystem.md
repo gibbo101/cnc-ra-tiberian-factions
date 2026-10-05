@@ -5,7 +5,7 @@ damage it does to infantry, and Visceroids.
 
 ## The overlay
 
-Tiberium is its own overlay, `OVERLAY_TIB01`, last in the overlay enum (`odata.cpp`). Every rule
+Tiberium is its own overlay, `OVERLAY_TIB01`, after the vanilla overlays and before the TS walls (`defines.h`, `odata.cpp`). Every rule
 below keys on that overlay, never on `Land_Type() == LAND_TIBERIUM`: RA's Ore and Gems share that
 land type and are harmless. Spreading runs on `Rule.GrowthRate`, in multiplayer only when the
 lobby's Tiberium option is on. Tiberium and Ore never convert each other where their fields meet
@@ -18,7 +18,8 @@ there too.
 
 ## Blossom trees
 
-A blossom tree is a building, `STRUCT_TDBLOSSOM`, owned by `HOUSE_NEUTRAL`. On each growth tick it
+A blossom tree is a building, `STRUCT_TDBLOSSOM`, owned by `HOUSE_NEUTRAL`, drawn with TD's SPLIT2
+sprite (`build_tiberium_hd.py`). On each growth tick it
 spreads a neighbouring Tiberium cell, or failing that seeds an empty one (`building.cpp`). An
 ordinary tree with Tiberium in six or more of its eight neighbours turns into a blossom tree
 (`terrain.cpp`). The blossom tree's frame comes from `Frame` plus an ID-based stagger, so it needs
