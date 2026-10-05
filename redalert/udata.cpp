@@ -2581,11 +2581,11 @@ void UnitTypeClass::Dimensions(int& width, int& height) const
         {UNIT_TSSAPC, 28, 20},
         {UNIT_TSHVR, 30, 28},
         {UNIT_TSTITN, 29, 61},
-        {UNIT_TSAPC, 30, 22},
+        {UNIT_TSAPC, 30, 21},
         {UNIT_TSMCV, 35, 23},
         {UNIT_TSLIMP, 8, 22},
         {UNIT_TSMEMP, 33, 22},
-        {UNIT_TSLPST, 30, 23},
+        {UNIT_TSLPST, 31, 23},
         {UNIT_TSMWAR, 33, 28},
     };
     for (int i = 0; i < (int)ARRAY_SIZE(_art_boxes); i++) {
