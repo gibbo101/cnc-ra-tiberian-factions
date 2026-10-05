@@ -47,7 +47,7 @@ mask (north 1, east 2, south 4, west 8), plus 16 damaged and 32 with the field o
 | `wolverine.glb` | SMECH | TSSMEC | body (with muzzle_left and muzzle_right markers), legs | walk (12 steps, 0.133 s each, looping), stance (firing) |
 | `mammoth-mk1.glb` | 4TNK | TS4TNK | hull; turret (with the barrels and tusk pods) | |
 | `mammoth-mk2.glb` | HMEC | TSHMEC | body, four legs (upper, lower, foot each) | walk |
-| `disruptor.glb` | SONIC | TSSONIC | hull; turret (seated 0.46 cell aft, its ring's back on the hull's back) | |
+| `disruptor.glb` | SONIC | TSSONIC | hull; turret (the model seats it 0.46 cell aft; the mod draws it 6 px aft) | |
 | `hover-mlrs.glb` | HVR | TSHVR | hull with the pad; rack (on the pad's centre, 0.385 cell aft) | |
 | `apc.glb`, `apc-water.glb` | APC | TSAPC | land hull; water hull (the hull TS swaps in on water) | |
 | `subterranean-apc.glb` | SAPC | TSSAPC | hull | |
