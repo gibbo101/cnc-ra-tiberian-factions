@@ -138,7 +138,9 @@ texture set come from `build_config_meg.sh`.
 | `TF_UI_MISSIONSELECT_ITEMLIST_TSGDI_*.DDS` | `campaigns_row_art.py` |
 | `XML/INSTANCES.XML` | `campaigns_instances.py` |
 
-All of these ship loose, which overrides `CONFIG.MEG` at any size. The textures are gitignored;
-`scripts/campaigns_work/textures.md5` records them and `package-for-workshop.sh` checks the staged
-copies. The atlas painting runs on the existing atlas and can run again safely. `scripts/bui_dump.py`
+All of these ship loose, which overrides `CONFIG.MEG` at any size. The textures and the atlas are
+gitignored; `scripts/campaigns_work/textures.md5` locks them, the build and
+`package-for-workshop.sh` both check against it, and `campaigns_page_build.sh --lock` records new
+art on purpose. The atlas painting runs on the existing atlas and can run again safely, so a
+worktree builds from a copy of main's atlas. `scripts/bui_dump.py`
 prints a screen file's widget tree.
