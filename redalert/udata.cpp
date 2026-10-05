@@ -2580,7 +2580,7 @@ void UnitTypeClass::Dimensions(int& width, int& height) const
         {UNIT_TSSUBTANK, 36, 26},
         {UNIT_TSSAPC, 28, 20},
         {UNIT_TSHVR, 30, 28},
-        {UNIT_TSTITN, 29, 61},
+        {UNIT_TSTITN, 29, 49},
         {UNIT_TSAPC, 30, 21},
         {UNIT_TSMCV, 35, 23},
         {UNIT_TSLIMP, 8, 22},
