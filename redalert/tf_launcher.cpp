@@ -3,11 +3,12 @@
 **	the launcher loads the DLL at startup. Addresses are that build's. The campaign page it
 **	drives is described in docs/campaigns-page.md.
 */
-#include "tf_launcher.h"
 #include "function.h"
+#include "tf_launcher.h"
 
 #include <cstdio>
 #include <cstdlib>
+#include <cctype>
 #include <cstring>
 
 namespace {
@@ -55,6 +56,9 @@ void* Find_Widget(void* owner, const char* name, SIZE_T cast)
     return widget == NULL ? NULL : ((AsWidgetFn)cast)(owner, 0, widget);
 }
 
+/*
+**	Hides or shows a widget through its own virtual call; NULL is ignored.
+*/
 void Set_Hidden(void* widget, bool hidden)
 {
     if (widget != NULL) {
@@ -62,6 +66,9 @@ void Set_Hidden(void* widget, bool hidden)
     }
 }
 
+/*
+**	True when `size` bytes at `cave`, in ClientG's code padding, are still unused.
+*/
 bool Cave_Is_Free(SIZE_T cave, int size)
 {
     for (int i = 0; i < size; i++) {
@@ -73,16 +80,22 @@ bool Cave_Is_Free(SIZE_T cave, int size)
 }
 
 /*
-**	Moves a function's first instructions (`stock`, position independent) into `cave` with a
-**	jump back, then points the function at `hook`; the cave becomes the stock function.
+**	True when `function` starts with `stock` (position independent, 5 to 27 bytes) and `cave`
+**	has room for them and a jump back, so Detour can move them there.
+*/
+bool Detour_Ready(SIZE_T function, const unsigned char* stock, size_t length, SIZE_T cave)
+{
+    return length >= 5 && length <= 27 && memcmp((const void*)function, stock, length) == 0
+           && Cave_Is_Free(cave, (int)(length + 5));
+}
+
+/*
+**	Moves a function's first instructions into `cave` with a jump back, then points the function
+**	at `hook`; the cave becomes the stock function. Detour_Ready must hold.
 */
 bool Detour(SIZE_T function, const unsigned char* stock, size_t length, SIZE_T cave, SIZE_T hook)
 {
     unsigned char trampoline[32];
-    if (length < 5 || length + 5 > sizeof(trampoline) || memcmp((const void*)function, stock, length) != 0
-        || !Cave_Is_Free(cave, (int)(length + 5))) {
-        return false;
-    }
     memcpy(trampoline, stock, length);
     trampoline[length] = 0xE9;
     TF_Put_Rel32(trampoline + length + 1, cave + length + 5, function + length);
@@ -94,15 +107,21 @@ bool Detour(SIZE_T function, const unsigned char* stock, size_t length, SIZE_T c
 }
 
 /*
-**	Points a `call` at `site` from `stock_target` to `hook`; false when the site differs.
+**	True when the `call` at `site` targets `stock_target`.
 */
-bool Redirect_Call(SIZE_T site, SIZE_T stock_target, SIZE_T hook)
+bool Call_Ready(SIZE_T site, SIZE_T stock_target)
 {
     unsigned char call[5] = {0xE8, 0, 0, 0, 0};
     TF_Put_Rel32(call + 1, site + 5, stock_target);
-    if (memcmp((const void*)site, call, sizeof(call)) != 0) {
-        return false;
-    }
+    return memcmp((const void*)site, call, sizeof(call)) == 0;
+}
+
+/*
+**	Points the `call` at `site` at `hook`. Call_Ready must hold.
+*/
+bool Redirect_Call(SIZE_T site, SIZE_T hook)
+{
+    unsigned char call[5] = {0xE8, 0, 0, 0, 0};
     TF_Put_Rel32(call + 1, site + 5, hook);
     return TF_Write_Own_Code(site, call, sizeof(call));
 }
@@ -115,6 +134,8 @@ const DWORD INSTANCE_MISSION = 0x48C;
 const DWORD INSTANCE_EXPANSION = 0x54C;
 const DWORD INSTANCE_CUSTOM = 0x6A4;
 const DWORD INSTANCE_NO_LABEL = 0x1B2;
+const DWORD INSTANCE_GAME = 0x4C8;
+const DWORD GAME_RED_ALERT = 2;
 const DWORD EXPANSION_ANT = 3;
 enum
 {
@@ -126,6 +147,9 @@ enum
     FACTION_UKRAINE = 8
 };
 
+/*
+**	A 32-bit field of a ClientG instance record.
+*/
 DWORD Instance_Field(const void* instance, DWORD offset)
 {
     return *(const DWORD*)((const char*)instance + offset);
@@ -286,13 +310,14 @@ typedef void(__thiscall* WStringAssignFn)(MsvcWString* self, const wchar_t* text
 
 /*
 **	The mission's label on the campaign page: a GDI or Nod mission reads as its faction and
-**	number ("GDI 1", "TS GDI 1" on the Tiberian Sun tab); any other mission keeps the stock label.
+**	number ("GDI 1", "TS GDI 1" on the Tiberian Sun tab); any other mission, Tiberian Dawn's own
+**	included, keeps the stock label.
 */
 MsvcWString* __fastcall Mission_Label(const void* instance, void*, MsvcWString* out)
 {
     DWORD faction = Instance_Field(instance, INSTANCE_FACTION);
-    bool ours = (faction == FACTION_GDI || faction == FACTION_NOD) && Instance_Field(instance, INSTANCE_CUSTOM) == 0
-                && ((const char*)instance)[INSTANCE_NO_LABEL] == 0;
+    bool ours = (faction == FACTION_GDI || faction == FACTION_NOD) && Instance_Field(instance, INSTANCE_GAME) == GAME_RED_ALERT
+                && Instance_Field(instance, INSTANCE_CUSTOM) == 0 && ((const char*)instance)[INSTANCE_NO_LABEL] == 0;
     if (!ours) {
         return ((MissionLabelFn)LABEL_CAVE)(instance, out);
     }
@@ -312,35 +337,33 @@ MsvcWString* __fastcall Mission_Label(const void* instance, void*, MsvcWString* 
     return out;
 }
 
+/*
+**	Installs the campaign page's hooks, every site checked before any is written. The RA row
+**	style choice becomes: mov edx,ebx (instance) / mov ecx,edi (row) / call Row_Style / jmp.
+*/
 const char* Campaign_Page_Install(void)
 {
-    if (!Redirect_Call(EXPANSION_ALLIED_CALL, IS_ALLIED_SIDE, (SIZE_T)&Expansion_Allied_Side)
-        || !Redirect_Call(EXPANSION_SOVIET_CALL, IS_SOVIET_SIDE, (SIZE_T)&Expansion_Soviet_Side)) {
+    static const unsigned char style_stock[14] = {0x8B, 0xCB, 0xE8, 0x2F, 0xB8, 0xB5, 0x00, 0x8B, 0xCF, 0x84, 0xC0, 0x74, 0x07, 0xE8};
+    static const unsigned char select_stock[6] = {0x55, 0x8B, 0xEC, 0x56, 0x8B, 0xF1};
+    static const unsigned char tab_stock[7] = {0x55, 0x8B, 0xEC, 0x51, 0x8B, 0x45, 0x08};
+    static const unsigned char label_stock[9] = {0x55, 0x8B, 0xEC, 0x81, 0xEC, 0x84, 0x01, 0x00, 0x00};
+    if (!Call_Ready(EXPANSION_ALLIED_CALL, IS_ALLIED_SIDE) || !Call_Ready(EXPANSION_SOVIET_CALL, IS_SOVIET_SIDE)
+        || memcmp((const void*)ROW_STYLE_BRANCH, style_stock, sizeof(style_stock)) != 0
+        || !Detour_Ready(ROW_SELECT, select_stock, sizeof(select_stock), SELECT_CAVE)
+        || !Detour_Ready(TAB_SWITCH, tab_stock, sizeof(tab_stock), TAB_CAVE)
+        || !Detour_Ready(MISSION_LABEL, label_stock, sizeof(label_stock), LABEL_CAVE)) {
         return "campaign page: unknown launcher build, left alone";
-    }
-
-    /*
-    **	The RA row style choice becomes: mov edx,ebx (instance) / mov ecx,edi (row) /
-    **	call Row_Style / jmp ROW_STYLE_DONE.
-    */
-    static const unsigned char style_stock[13] = {0x8B, 0xCB, 0xE8, 0x2F, 0xB8, 0xB5, 0x00, 0x8B, 0xCF, 0x84, 0xC0, 0x74, 0x07};
-    if (memcmp((const void*)ROW_STYLE_BRANCH, style_stock, sizeof(style_stock)) != 0) {
-        return "campaign page: row style, unknown launcher build";
     }
     unsigned char style[14] = {0x8B, 0xD3, 0x8B, 0xCF, 0xE8, 0, 0, 0, 0, 0xE9, 0, 0, 0, 0};
     TF_Put_Rel32(style + 5, ROW_STYLE_BRANCH + 9, (SIZE_T)&Row_Style);
     TF_Put_Rel32(style + 10, ROW_STYLE_BRANCH + 14, ROW_STYLE_DONE);
-    if (!TF_Write_Own_Code(ROW_STYLE_BRANCH, style, sizeof(style))) {
-        return "campaign page: row style write failed";
-    }
-
-    static const unsigned char select_stock[6] = {0x55, 0x8B, 0xEC, 0x56, 0x8B, 0xF1};
-    static const unsigned char tab_stock[7] = {0x55, 0x8B, 0xEC, 0x51, 0x8B, 0x45, 0x08};
-    static const unsigned char label_stock[9] = {0x55, 0x8B, 0xEC, 0x81, 0xEC, 0x84, 0x01, 0x00, 0x00};
-    if (!Detour(ROW_SELECT, select_stock, sizeof(select_stock), SELECT_CAVE, (SIZE_T)&Row_Select)
+    if (!Redirect_Call(EXPANSION_ALLIED_CALL, (SIZE_T)&Expansion_Allied_Side)
+        || !Redirect_Call(EXPANSION_SOVIET_CALL, (SIZE_T)&Expansion_Soviet_Side)
+        || !TF_Write_Own_Code(ROW_STYLE_BRANCH, style, sizeof(style))
+        || !Detour(ROW_SELECT, select_stock, sizeof(select_stock), SELECT_CAVE, (SIZE_T)&Row_Select)
         || !Detour(TAB_SWITCH, tab_stock, sizeof(tab_stock), TAB_CAVE, (SIZE_T)&Tab_Switch)
         || !Detour(MISSION_LABEL, label_stock, sizeof(label_stock), LABEL_CAVE, (SIZE_T)&Mission_Label)) {
-        return "campaign page: hooks not installed";
+        return "campaign page: write failed";
     }
     return "campaign page installed";
 }
@@ -381,16 +404,22 @@ typedef char(__thiscall* LaunchSendFn)(void* ipc, const void* name, void* settin
 typedef void(__thiscall* MenuReturnFn)(void* menu);
 typedef void(__stdcall* ShowCreditsFn)(void* unused);
 
+/*
+**	The characters of an MSVC std::string, inline or on the heap.
+*/
 const char* String_Chars(const MsvcString* s)
 {
     return s->capacity >= 16 ? *(char* const*)s->buf : s->buf;
 }
 
+/*
+**	An instance's key as ClientG computes it: the CRC32 of the upper-case name.
+*/
 DWORD Name_Key(const char* name)
 {
     DWORD crc = 0xFFFFFFFF;
     for (; *name; name++) {
-        crc ^= (unsigned char)*name;
+        crc ^= (unsigned char)toupper((unsigned char)*name);
         for (int bit = 0; bit < 8; bit++) {
             crc = (crc >> 1) ^ (0xEDB88320 & (0 - (crc & 1)));
         }
@@ -398,11 +427,17 @@ DWORD Name_Key(const char* name)
     return ~crc;
 }
 
+/*
+**	A dword of ClientG memory, or 0 when it can't be read.
+*/
 DWORD Read_Dword(DWORD at)
 {
     return IsBadReadPtr((const void*)at, 4) ? 0 : *(const DWORD*)at;
 }
 
+/*
+**	The file a carrier launch hands its map to the DLL's scenario load through.
+*/
 bool Handoff_Path(char* out, size_t size)
 {
     const char* up = getenv("USERPROFILE");
@@ -442,6 +477,9 @@ char __fastcall Launch_Send(void* ipc, void*, const MsvcString* name, void* sett
     }
     char sent = ((LaunchSendFn)LAUNCH_SEND)(ipc, &carrier, settings, mode, a, b);
     CarrierSession = sent != 0;
+    if (!sent && Handoff_Path(handoff, sizeof(handoff))) {
+        DeleteFileA(handoff);
+    }
     CarrierLaunchedKey = Name_Key(String_Chars(name));
     return sent;
 }
@@ -454,6 +492,7 @@ void __fastcall Campaign_Over(void* menu, void*)
 {
     ((MenuReturnFn)MENU_RETURN)(menu);
     if (CarrierSession) {
+        CarrierSession = false;
         ((ShowCreditsFn)SHOW_CREDITS)(NULL);
     }
 }
@@ -478,11 +517,24 @@ void __stdcall Key_Lookup_Hit(const DWORD* regs)
 */
 void __stdcall Stage_Check_Hit(const DWORD* regs)
 {
+    if (!CarrierSession) {
+        return;
+    }
     DWORD stage = Read_Dword(regs[0] + 0x78);
     DWORD count = (Read_Dword(stage + 0x78) - Read_Dword(stage + 0x74)) / 32;
-    if (count == 1 && CarrierSession) {
+    if (count == 1) {
         *(unsigned char*)(stage + 0x70) = 1;
     }
+}
+
+/*
+**	True when `at` starts with `stock` (position independent, 5 to 17 bytes) and `cave` has
+**	room for a register-snapshot stub around them.
+*/
+bool Snapshot_Ready(SIZE_T at, const unsigned char* stock, size_t length, SIZE_T cave)
+{
+    return length >= 5 && length <= 17 && memcmp((const void*)at, stock, length) == 0
+           && Cave_Is_Free(cave, (int)(15 + length));
 }
 
 /*
@@ -492,10 +544,6 @@ void __stdcall Stage_Check_Hit(const DWORD* regs)
 bool Snapshot_Hook(SIZE_T at, const unsigned char* stock, size_t length, SIZE_T cave, SIZE_T hit)
 {
     unsigned char stub[32] = {0x9C, 0x60, 0x54, 0xE8};
-    if (length < 5 || 15 + length > sizeof(stub) || memcmp((const void*)at, stock, length) != 0
-        || !Cave_Is_Free(cave, (int)(15 + length))) {
-        return false;
-    }
     TF_Put_Rel32(stub + 4, cave + 8, hit);
     stub[8] = 0x61;
     stub[9] = 0x9D;
@@ -509,15 +557,22 @@ bool Snapshot_Hook(SIZE_T at, const unsigned char* stock, size_t length, SIZE_T 
     return TF_Write_Own_Code(cave, stub, 15 + length) && TF_Write_Own_Code(at, jump, length);
 }
 
+/*
+**	Installs the carrier's hooks, every site checked before any is written.
+*/
 const char* Carrier_Install(void)
 {
     static const unsigned char lookup_stock[6] = {0x55, 0x8B, 0xEC, 0x56, 0x8B, 0xF1};
     static const unsigned char stage_stock[7] = {0x8B, 0x47, 0x78, 0x80, 0x78, 0x70, 0x00};
-    if (!Redirect_Call(LAUNCH_SEND_CALL, LAUNCH_SEND, (SIZE_T)&Launch_Send)
-        || !Redirect_Call(CAMPAIGN_OVER_CALL, MENU_RETURN, (SIZE_T)&Campaign_Over)
+    if (!Call_Ready(LAUNCH_SEND_CALL, LAUNCH_SEND) || !Call_Ready(CAMPAIGN_OVER_CALL, MENU_RETURN)
+        || !Snapshot_Ready(KEY_LOOKUP, lookup_stock, sizeof(lookup_stock), KEY_LOOKUP_CAVE)
+        || !Snapshot_Ready(STAGE_CHECK, stage_stock, sizeof(stage_stock), STAGE_CHECK_CAVE)) {
+        return "carrier: unknown launcher build, left alone";
+    }
+    if (!Redirect_Call(LAUNCH_SEND_CALL, (SIZE_T)&Launch_Send) || !Redirect_Call(CAMPAIGN_OVER_CALL, (SIZE_T)&Campaign_Over)
         || !Snapshot_Hook(KEY_LOOKUP, lookup_stock, sizeof(lookup_stock), KEY_LOOKUP_CAVE, (SIZE_T)&Key_Lookup_Hit)
         || !Snapshot_Hook(STAGE_CHECK, stage_stock, sizeof(stage_stock), STAGE_CHECK_CAVE, (SIZE_T)&Stage_Check_Hit)) {
-        return "carrier: not installed";
+        return "carrier: write failed";
     }
     return "carrier installed";
 }
@@ -536,13 +591,14 @@ const char* TF_Launcher_Install(void)
                             &self)) {
         return "launcher: could not pin the DLL, left alone";
     }
+    const char* page = Campaign_Page_Install();
 #if TF_DEV_BUILD
-    const char* carrier = Carrier_Install();
-    if (strcmp(carrier, "carrier installed") != 0) {
-        return carrier;
-    }
+    static char result[128];
+    snprintf(result, sizeof(result), "%s; %s", page, Carrier_Install());
+    return result;
+#else
+    return page;
 #endif
-    return Campaign_Page_Install();
 }
 
 bool TF_Launcher_Take_Carrier_Map(char* map, size_t size)
