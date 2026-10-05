@@ -30,7 +30,7 @@ This doc is the **data-delivery** lever. `launcher-vs-dll-ownership.md` is the *
 2. Same-length byte edit: the country-name value `Turkey` → `Nod   ` (UTF-16LE, 12 bytes → 12 bytes, so the inner string-table offsets cannot shift).
 3. Repacked with `scripts/meg_pack.py` → output was **44,201,888 bytes, identical to base** (1 file swapped, everything else byte-clean — the MEG format has no checksum/signature/encryption).
 4. Shipped the repacked file as `<mod>/Data/CONFIG.MEG` (the **mod folder**, base install untouched), deployed to the Deck, relaunched.
-5. **Result:** the skirmish lobby country picker showed **"Nod : No bonus"** and the in-game sidebar label read **"Nod"** — the mod's CONFIG.MEG was loaded. The loose `Data/` overlay had previously *failed* to reach this same front-end data, confirming the whole-MEG ship is what works.
+5. **Result:** the skirmish lobby country picker showed **"Nod : No bonus"** and the in-game sidebar label read **"Nod"** — the mod's CONFIG.MEG was loaded.
 
 ---
 
@@ -63,7 +63,7 @@ cp /tmp/CONFIG.MEG build/remaster/Vanilla_RA/Data/CONFIG.MEG
 - **No integrity check.** The MEG reader (`Megafile.cs`) validates nothing — looks files up by path string, returns raw bytes. A faithful repack always loads.
 - **Mod CONFIG.MEG SHADOWS the base** — it is *replaced*, not merged. So you ship the **full** repacked archive (~44 MB) with your one change, not a delta. Budget ~44 MB per release. (EA stopped patching the Collection, so base-drift/staleness is a non-issue.)
 - **Mod-scoped.** The override only applies while the mod is active — the player's vanilla TD/RA front-end is untouched. This removes the "editing shared FACTIONS.XML breaks the user's TD" worry: it only breaks nothing, because it's only live under the mod.
-- **Loose `Data/` overlay does NOT reach front-end data.** Audio SFXEvent XML *is* loose-overridable, but factions/campaign/master-text are not — they require the whole-MEG ship. (That asymmetry is why this took so long to pin down.)
+- **Loose files reach front-end data too.** A file at its archive path under the mod's `Data/` (a `.BUI`, `MASTERTEXTFILE_*.LOC`, `INSTANCES.XML`, `GUITEXTURESETS.XML`) overrides the CONFIG.MEG member, at any size; the same-size rule binds only members inside a CONFIG.MEG (`campaigns-page.md` ships its screens this way).
 - **Safe to test.** Because you ship into the mod folder and never touch the base install, a bad repack at worst does nothing (launcher ignores it) — it can't corrupt the base or trip Steam "verify."
 
 ---

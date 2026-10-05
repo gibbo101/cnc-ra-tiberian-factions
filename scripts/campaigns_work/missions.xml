@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The mod's own campaign missions, appended to INSTANCES.XML by campaigns_instances.py.
+     Recipe: docs/campaigns-page.md. -->
+<Missions>
+</Missions>

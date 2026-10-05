@@ -39,7 +39,8 @@ Everything on the menu reaches the game one of two ways.
 2. **Your own `CONFIG.MEG`.** A mod can ship `<your mod>/Data/CONFIG.MEG`, and the launcher uses
    it in place of the base one. That archive holds the screen layouts (`.BUI`), the button
    texture sets (`GUITEXTURESETS.XML`), the text styles (`FONTLIBRARY.BFD`) and `FACTIONS.XML`.
-   Loose copies of these files are ignored: they only work from inside the MEG.
+   Loose copies also work: a file at its archive path under `<your mod>/Data/` overrides the
+   MEG's copy, at any size.
 
 Both are whole-file replacements. Your `CONFIG.MEG` is a complete copy of the base one with your
 edits in it, and your atlas is a complete copy of the stock atlas with your regions repainted.

@@ -18,6 +18,17 @@
     <Float Value="Disabled_Button_Alpha"> 0.1 </Float>
   </TextureSet>
 
+  <TextureSet GUIType="Icon_Button" Name="TF_Mission_Select_ListElement_TSGDI">
+    <Texture Quad="Background"> TF_UI_MissionSelect_ItemList_TSGDI_Off.tga </Texture>
+    <Texture Quad="Clock"> Empty.tga </Texture>
+    <Texture Quad="Toggled_On"> TF_UI_MissionSelect_ItemList_TSGDI_Selected.tga </Texture>
+    <Texture Quad="Mouse_Over"> UI_MissionSelect_ItemList_Hover.tga </Texture>
+    <Texture Quad="Mouse_Down"> Empty.tga </Texture>
+    <Float Value="Disabled_Button_Alpha"> 0.0 </Float>
+    <Float Value="Mouse_Over_Modifier"> 0.0 </Float>
+    <Float Value="Mouse_Down_Modifier"> 0.0 </Float>
+  </TextureSet>
+
 
 
 	<!-- ******************************************************************** -->
@@ -3716,11 +3727,6 @@
     <Float	Value="Mouse_Down_Modifier"> -0.25 </Float>
     <Float	Value="Disabled_Button_Alpha"> 0.25 </Float>
 
-    <!-- Collision Margins are pixel values, positive inward, and reduce the area of the control which is considered for mouse-over collision -->
-    <!--<Integer Value="Collision_Margin_Left"> 10 </Integer>
-		<Integer Value="Collision_Margin_Right"> 10 </Integer>
-		<Integer Value="Collision_Margin_Top"> 10 </Integer>
-		<Integer Value="Collision_Margin_Bottom"> 10 </Integer>-->
   </TextureSet>
 
   <TextureSet GUIType="Icon_Button" Name="Green_Refresh_Button">
@@ -4029,12 +4035,10 @@
     <Texture Quad="Toggled_On_Left"> UI_Quickmatch_SearchButton_Left_Off.tga </Texture>
     <Texture Quad="Toggled_On_Middle"> UI_Quickmatch_SearchButton_Mid_Off.tga </Texture>
     <Texture Quad="Toggled_On_Right"> UI_Quickmatch_SearchButton_Right_Off.tga </Texture>
-    <!--<String Value="Mouse_On_Overlay_Effect_Name"> Sheen </String>-->
     <Float	Value="Mouse_Over_Modifier"> 0.35 </Float>
     <Float	Value="Mouse_Down_Modifier"> -0.25 </Float>
     <Float	Value="Disabled_Button_Alpha"> 0.25 </Float>
 
-    <!-- Collision Margins are pixel values, positive inward, and reduce the area of the control which is considered for mouse-over collision -->
   </TextureSet>
 
   <TextureSet GUIType="Frame" Name="Quickmatch_Player_Search_Frame">
@@ -4652,4 +4656,4 @@
 		<Texture Quad="Right"> UI_Button_Splat00_Empty_LR.tga </Texture>
 	</TextureSet>
 
-                                                                                                                         </TextureSets>
+                                                                                                      </TextureSets>
