@@ -24,7 +24,8 @@ So it is a cut feature: code without content.
 **Can we finish it? No — three independent walls, and two are things already proven impossible:**
 
 1. **The screen cannot be supplied.** `UI_CampaignMenu_CoOp` is not a member of either archive, and
-   a mod cannot add a member. A loose `Data/ART/GUI/*.bui` is unproven, and even if it loaded we
+   a mod cannot add a member. A loose `Data/ART/GUI/*.bui` overrides an archive member at any size (`campaigns-page.md`);
+   whether ClientG opens a screen with no member is untested, and even if it did we
    would be authoring a whole ChunkFile scene graph to match what the compiled class expects.
 2. **The entry point does not ship either.** The campaign menu that does ship
    (`UI_CAMPAIGNMENU.BUI`) contains no `Button_CoopCampaign` and no `CoOp_MissionDetails_Group`;

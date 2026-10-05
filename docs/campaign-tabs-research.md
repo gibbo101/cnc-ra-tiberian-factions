@@ -5,8 +5,8 @@ milestone).
 
 Mission Select reads `INSTANCES.XML`. A campaign mission is delivered by shadowing an existing
 Counterstrike or Aftermath slot's scenario INI from the mod's `CCDATA/`, with `[Digest]` stripped
-(proven on the desktop and the Deck). Edits to the roster crash the desktop ClientG; the parked
-edits are in `scripts/build_missionselect_campaigns.py`.
+(proven on the desktop and the Deck). The CAMPAIGNS page (`campaigns-page.md`) now owns the
+roster: it hides the stock missions and places the mod's own on each tab.
 
 Tools: `scripts/meg_extract.py` (read), **`scripts/meg_pack.py`** (repack — byte-identical round-trip, no integrity check), `scripts/mix_namedb.py` (CRC→name). Format detail: `mix-file-format.md`. Launcher boundary: `launcher-vs-dll-ownership.md`.
 
@@ -63,8 +63,7 @@ win movie plays, campaign advances to "In the Nick of Time", completion shield a
 the roster). Dev-DLL freshness confirmed via live `tf_astar.log` writes; the probe INI
 existed only in the local mod's CCDATA, so no other copy could have supplied the content.
 Stock mission cannot be won unattended in seconds → the engine read our file. No crash on
-either surface (the `535197b` desktop crash was INSTANCES.XML roster edits, not scenario
-INIs).
+either surface.
 
 **Confirmed on both playtest surfaces:** the Linux desktop and the Steam Deck gave the same
 instant win. The Deck result is the one that counts (vanilla Proton on the real play hardware), and
@@ -109,15 +108,14 @@ Instances cluster by `Variant` (campaign base): 22 `Mobius_Allied_Campaign_Base`
 
 GDI/Nod **campaign missions are `ExternalGameID=TiberianDawn`** — TD-game instances on a TD-mode tab (`GuiLayer="TD_GDI"`). They will **not** appear in our RA mod's Mission Select. A *playable* GDI/Nod campaign in the RA mod needs **new RA-mode instances**, because the TD scenario format won't run in the RA engine.
 
-## Dead route: new instances
+## New instances
 
-New `<Instance>` entries in `INSTANCES.XML` display but cannot launch: `InstanceServerG` resolves
-the scenario from the base install. Hijack an existing slot instead; CONFIG.MEG is then needed only
-for cosmetic titles and briefing text (same-length master-text edits).
+New `<Instance>` entries display, but `InstanceServerG` launches only instances it read at
+startup, so a new one needs the mission carrier (`campaigns-page.md`) or a hijacked slot.
 
 ---
 
 ## Notes
 
-1. **Distribution:** a mod **can** ship its own `Data/CONFIG.MEG` and the launcher loads it over the base (proven on the Deck: a `MASTERTEXTFILE` country relabel `Turkey`→`Nod` shipped in the *mod folder* showed in the skirmish lobby picker + the in-game sidebar). The base install is never touched (Steam-verify-proof, mod-scoped — only active under the mod). So front-end edits ARE Workshop-distributable: ship the full repacked CONFIG.MEG (~44 MB). Canonical: **`config-meg-mod-delivery.md`**. (The loose `Data/` overlay still can't reach front-end data — the whole-MEG ship is what works.)
-2. **The RA roster-build wrinkle (native code).** Editing the RA Allied tab's `<Stages>` never moved the displayed roster — only `ShowOnMissionSelect` did. So the exact RA left-panel roster build lives in `ClientG.exe`. Irrelevant for *adding* new instances; relevant only for cleanly *relocating* existing missions between RA tabs (would need more experiments or a targeted Ghidra dive).
+1. **Distribution:** a mod **can** ship its own `Data/CONFIG.MEG` and the launcher loads it over the base (proven on the Deck: a `MASTERTEXTFILE` country relabel `Turkey`→`Nod` shipped in the *mod folder* showed in the skirmish lobby picker + the in-game sidebar). The base install is never touched (Steam-verify-proof, mod-scoped — only active under the mod). So front-end edits ARE Workshop-distributable: ship the full repacked CONFIG.MEG (~44 MB). Canonical: **`config-meg-mod-delivery.md`**. Loose files at their archive paths under the mod's `Data/` override the archive too, at any size.
+2. **The RA roster build.** ClientG files each mission into a tab in its tab sort (`0x633520`) by game, expansion and house; `campaigns-page.md` has the rules and the mod's hooks.
