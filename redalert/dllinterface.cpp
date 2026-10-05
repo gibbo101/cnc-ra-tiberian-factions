@@ -95,6 +95,7 @@ extern char const* Speech[VOX_COUNT];
 extern char const* SpeechTD[VOX_COUNT];
 extern void Init_SpeechTD(void);
 #include "tf_eva_mailbox.h"
+#include "tf_launcher.h"
 // Tiberian Sun GDI's EVA (audio.cpp Init_SpeechTS). NULL slots fall back to SpeechTD[].
 extern char const* SpeechTS[VOX_COUNT];
 extern void Init_SpeechTS(void);
@@ -1669,8 +1670,13 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
     */
     Force_CD_Available(ALWAYS_RELOAD_CD);
 
+    // TF: a carrier campaign launch's own map, taken below
+    char carrier_map[_MAX_FNAME + _MAX_EXT];
     if (override_map_name && strlen(override_map_name)) {
         strcpy(Scen.ScenarioName, override_map_name);
+    } else if (GAME_TO_PLAY == GAME_NORMAL && TF_Launcher_Take_Carrier_Map(carrier_map, sizeof(carrier_map))) {
+        // TF: a carrier campaign launch names the mod mission's own map
+        strcpy(Scen.ScenarioName, carrier_map);
     } else {
         Scen.Set_Scenario_Name(Scen.Scenario, scen_player, scen_dir, (ScenarioVarType)scenario_variation);
     }
@@ -4448,7 +4454,7 @@ static int TF_Click_Special_Index(int buildable_type, int buildable_id)
  *    launcher process, across matches; an older version of it is replaced with the fork       *
  *    set back to stock while the new instructions go in.                                      *
  *=============================================================================================*/
-static void TF_Put_Rel32(unsigned char* at, SIZE_T next, SIZE_T target)
+void TF_Put_Rel32(unsigned char* at, SIZE_T next, SIZE_T target)
 {
     int rel = (int)((long long)target - (long long)next);
     memcpy(at, &rel, 4);
@@ -4577,6 +4583,7 @@ void TF_Patch_Launcher_At_Load(void)
         TF_Click_Specials_Log("launcher load", TF_Patch_Click_Specials_In(GetCurrentProcess()));
         TF_Click_Specials_Log("launcher load", TF_Launcher_Resident_Install());
         TF_Click_Specials_Log("launcher load", TF_Patch_Launcher_Keys_In());
+        TF_Click_Specials_Log("launcher load", TF_Launcher_Install());
     }
 }
 
@@ -4783,7 +4790,7 @@ extern "C" void __cdecl TF_Launcher_Event_Hook(unsigned char* event)
     }
 }
 
-static bool TF_Write_Own_Code(SIZE_T at, const unsigned char* bytes, size_t len)
+bool TF_Write_Own_Code(SIZE_T at, const unsigned char* bytes, size_t len)
 {
     DWORD old_protect = 0;
     if (!VirtualProtect((LPVOID)at, len, PAGE_EXECUTE_READWRITE, &old_protect)) {

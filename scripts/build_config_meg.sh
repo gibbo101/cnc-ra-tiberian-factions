@@ -105,7 +105,7 @@ python3 scripts/musicevents_build.py "$BASE_MUS" "$MUS_LIST" "$EDIT_MUS"
 echo "==> Rebuilding edited MASTERTEXTFILE_EN-US.LOC from base (Unholy Alliance checkbox)"
 python3 scripts/loc_relabel.py "$BASE_LOC" "$EDIT_LOC" @scripts/loc_work/mastertext.edits.txt "${LOC_OVERRIDES[@]}"
 
-echo "==> Rebuilding GUITEXTURESETS.XML from base (the main menu's own steel button set)"
+echo "==> Rebuilding GUITEXTURESETS.XML from base (the main menu's steel buttons, the CAMPAIGNS row sets)"
 python3 scripts/gui_texturesets_build.py "$BASE_GUI" "$EDIT_GUI"
 
 echo "==> Repacking $MEG with the edited BUI + MUSICEVENTS + MASTERTEXT (in place)"

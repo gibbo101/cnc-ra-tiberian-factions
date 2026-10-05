@@ -88,8 +88,7 @@ comment at dllinterface.cpp's include of tf_eva_mailbox.h, under the menu-button
 - `scripts/wf_spawn_preview.py` must not be run: it rewrites `tsweap_exit_seats.inc` without the
   hand-set mouth seats, then fails its own check. Emit the mouth seats or move them out first.
 - A few script docstrings are stale: the walker frame count (12, not 15), the TSWEAPLT stub,
-  "hand-tucked pad", the cameo crest count, a dangling memory pointer in
-  build_missionselect_campaigns.py.
+  "hand-tucked pad", the cameo crest count.
 - Whether `SHAPE_GHOST` darkens the sonic discs is unsettled; check in game before anything claims it.
 
 ## Phase 2

@@ -44,6 +44,14 @@ TEXT_UNIT_TITLE_NOD_HELICOPTER=Apache
 TEXT_GAMETYPE_CF=Unholy Alliance
 TEXT_MULTIPLAYER_DETAILS_TOOLTIP_MODE_CAPTURE_FLAG=Start with an MCV and tech tree from all four factions.
 
+# The CAMPAIGNS page (docs/campaigns-page.md): Mission Select's title and menu button, and the
+# titles of the tabs that hold the GDI, Nod and TS GDI campaigns.
+TEXT_MISSION_LIST=CAMPAIGNS
+TEXT_MISSONSELECT=Campaigns
+TEXT_AFTERMATH_ALLIED_CAMPAIGN=GDI Campaign
+TEXT_AFTERMATH_USSR_CAMPAIGN=Nod Campaign
+TEXT_ANT_CAMPAIGN=Tiberian Sun GDI Campaign
+
 # Bytes for any grown value come from here: it holds "GDI" in a 53-character slot, so it
 # is almost entirely trailing space.
 !slack=TEXT_FACTION_BONUS_SPAIN

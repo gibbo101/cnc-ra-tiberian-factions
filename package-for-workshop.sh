@@ -90,6 +90,13 @@ if [[ "$(md5sum "$STAGED_INTRO" | cut -d' ' -f1)" != "$WANT_INTRO" ]]; then
 fi
 echo "✓ Startup intro is the locked cut ($WANT_INTRO)"
 
+# --- CAMPAIGNS page textures and the UI atlas: gitignored, so make sure the locked set ships ---
+if ! (cd "$STAGE_DIR/$SUBFOLDER_NAME/Data/ART/TEXTURES/SRGB" && md5sum --quiet -c -) < scripts/campaigns_work/textures.md5; then
+    echo "ERROR: the staged CAMPAIGNS page textures or UI atlas are missing or stale. Build them: scripts/campaigns_page_build.sh" >&2
+    exit 1
+fi
+echo "✓ CAMPAIGNS page textures and UI atlas match scripts/campaigns_work/textures.md5"
+
 # --- Strip debug symbols from the shipped DLL --------------------------------
 # The remaster preset builds RelWithDebInfo, embedding ~25MB of DWARF debug
 # sections (.debug_info/.debug_line/...) that bloat RedAlert.dll from ~2MB to

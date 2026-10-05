@@ -56,7 +56,7 @@ The broader property vocabulary seen in scene graphs (esp. `RA_TACTICAL_UI.BUI`)
 
 ## THE governing constraint — the same-size rule
 
-**Every member of a mod-shipped `CONFIG.MEG` must keep its EXACT original byte size, or ClientG crashes at boot** (twice-Deck-proven in `config-meg-mod-delivery.md`; the crash is an `ACCESS_VIOLATION` that misleadingly names an innocent *downstream* member — a stale-offset symptom). For `.bui` this means:
+**Every member of a mod-shipped `CONFIG.MEG` must keep its EXACT original byte size, or ClientG crashes at boot.** The rule binds members packed in CONFIG.MEG; a loose copy in the mod's `Data/` may be any size (`campaigns-page.md`). The crash is twice-Deck-proven in `config-meg-mod-delivery.md`: an `ACCESS_VIOLATION` that misleadingly names an innocent *downstream* member, a stale-offset symptom. For `.bui` this means:
 
 1. Keep the **decompressed length constant** — edit floats/flags in place and swap strings for **equal-length** strings; never add/remove payload bytes.
 2. Recompress at **zlib level 9** (base files are ~level-6, so re-editing at level 6 routinely *grows* the stream; L9 buys headroom). Assert the new compressed stream is **≤ the original compressed size**.
