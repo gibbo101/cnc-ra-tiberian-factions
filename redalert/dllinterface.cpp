@@ -1734,8 +1734,12 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
     */
     Force_CD_Available(ALWAYS_RELOAD_CD);
 
+    char carrier_map[_MAX_FNAME + _MAX_EXT];
     if (override_map_name && strlen(override_map_name)) {
         strcpy(Scen.ScenarioName, override_map_name);
+    } else if (GAME_TO_PLAY == GAME_NORMAL && TF_Launcher_Take_Carrier_Map(carrier_map, sizeof(carrier_map))) {
+        // TF: a carrier campaign launch names the mod mission's own map
+        strcpy(Scen.ScenarioName, carrier_map);
     } else {
         Scen.Set_Scenario_Name(Scen.Scenario, scen_player, scen_dir, (ScenarioVarType)scenario_variation);
     }
@@ -4956,7 +4960,7 @@ void TF_Patch_Launcher_At_Load(void)
         TF_Click_Specials_Log("launcher load", TF_Patch_Click_Specials_In(GetCurrentProcess()));
         TF_Click_Specials_Log("launcher load", TF_Launcher_Resident_Install());
         TF_Click_Specials_Log("launcher load", TF_Patch_Launcher_Keys_In());
-        TF_Click_Specials_Log("launcher load", TF_Launcher_Menu_Install());
+        TF_Click_Specials_Log("launcher load", TF_Launcher_Install());
     }
 }
 
