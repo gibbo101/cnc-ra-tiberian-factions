@@ -35,8 +35,8 @@ python3 scripts/campaigns_rows.py "$WORK/RA_MISSIONSELECT_LISTENTRY.base.BUI" \
 echo "==> Tab icons and row crests in the UI atlas"
 python3 scripts/campaigns_atlas.py "$ATLAS" "$MTD"
 python3 scripts/campaigns_row_art.py "$ATLAS" "$MTD" "$STOCK/RA_UI_MISSIONSELECT_BG.DDS" "$SRGB"
-echo "==> Stock missions hidden"
-python3 scripts/campaigns_instances.py "$WORK/INSTANCES.base.XML" "$DATA/XML/INSTANCES.XML"
+echo "==> Stock missions hidden, mod missions added"
+python3 scripts/campaigns_instances.py "$WORK/INSTANCES.base.XML" "$WORK/missions.xml" "$DATA/XML/INSTANCES.XML"
 
 (cd "$SRGB" && md5sum $(for t in $TEXTURES; do printf '%s.DDS ' "$t"; done)) > "$WORK/textures.md5"
 echo "==> Texture md5s in $WORK/textures.md5 (the packager checks the staged copies against them)"
