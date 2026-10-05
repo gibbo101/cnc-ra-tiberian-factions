@@ -107,6 +107,7 @@ def hull_parts():
 
 # ---------------------------------------------------------------- the turret
 TC = (8.5, 9.0)                                     # the rim's centre (turret q x, y; TS's ring sits half a voxel off it)
+RING_SCALE = 0.85                                   # the turntable and its rim against TS's size; the dish keeps its own
 DISH_Z = (5.0, 12.0)                                # the dish (turret q z)
 DISH_T = (2.6, 1.6)                                 # its thickness at its foot and its top (TS's back slopes)
 
@@ -134,7 +135,7 @@ def ring_sectors(F, c_q, prof, n, comp, name):
 def ring_parts():
     # TS's turntable: a disc of ochre and black (Westwood's hazard stripes round the turret), sunk a voxel inside the
     # rim
-    return [cyl(FR, (8.0, 8.0, 0.0), (8.0, 8.0, 2.0), 7.75, HAZARD, 'hazard_ring')]
+    return [cyl(FR, (8.0, 8.0, 0.0), (8.0, 8.0, 2.0), 7.75 * RING_SCALE, HAZARD, 'hazard_ring')]
 
 
 # the emitter arm (TS: a rod two voxels thick, y 8..10, from x 15 to the tip at x 21, rising toward the dish - its tip
@@ -233,7 +234,8 @@ def arm_parts():
 def turret_parts():
     out = []
     # the rim round the turntable, grey (TS: z 0..2, its outside 8.4 from the middle)
-    out += ring_sectors(FT, TC, [(7.25, 0.0), (8.6, 0.0), (8.6, 1.75), (8.35, 2.0), (7.25, 2.0)], 48, RIM, 'rim')
+    rim = [(r * RING_SCALE, z) for r, z in ((7.25, 0.0), (8.6, 0.0), (8.6, 1.75), (8.35, 2.0), (7.25, 2.0))]
+    out += ring_sectors(FT, TC, rim, 48, RIM, 'rim')
     # the dark base: a block each side under the dish's ends, grey rails on them (TS: y 3..5 and 13..15, x 3..13,
     # z 2..4, the rails z 4), a post under the dish's middle (TS: x 7..10, y 7..11) stepping down in front of it (TS: x 9
     # to z 4, x 10 to z 3)
