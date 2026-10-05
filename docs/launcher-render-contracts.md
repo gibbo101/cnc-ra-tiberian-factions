@@ -216,7 +216,8 @@ entry count against the committed copy (`mix_tools.py list`) rather than greppin
 A packed unit ships at 8x-classic density (canvas = ShapeSize x 8), so one canvas pixel is
 4/3 leptons and one TS SHP pixel at x6.4 is 8.53. Fire points, muzzle tables and any offset
 measured off packed art convert at that rate. Derive them in the packer and emit a table
-(`tstitn_muzzle.h`, `ts4tnk_muzzle.h`, `tsjugg_muzzle.h`) so the art and the offset cannot
+(`tstitn_muzzle.h`, `ts4tnk_muzzle.h`, `tsjugg_muzzle.h`, and `tshmec_muzzle.h` from
+`scripts/ts_hmec_muzzle.py`, read off the Mk. II's 3D model) so the art and the offset cannot
 drift; a hand-dialled constant will read right beside the unit and miss by cells at range.
 
 The Juggernaut's first fire point was a trig formula built on "1 TS px = 2 leptons", a quarter

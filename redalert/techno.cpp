@@ -134,6 +134,7 @@
 #include <math.h>
 #include "tstitn_muzzle.h"
 #include "ts4tnk_muzzle.h"
+#include "tshmec_muzzle.h"
 #include "r2tanks_muzzle.h"
 #include "unit_art_drop.h"
 #include "c3tanks.h"
@@ -562,6 +563,17 @@ static int TF_Art_Drop(TechnoClass const* techno)
     return (0);
 }
 
+// The side, left 0 or right 1, the Mammoth Mk. II fires its next shot from; it alternates shot by shot without
+// RA's burst timing, which halves the delay after every other shot.
+static unsigned char TF_Hmec_Side[1024];
+
+static unsigned char& TF_Hmec_Side_Of(TechnoClass const* techno)
+{
+    static unsigned char none;
+    int id = Units.ID((UnitClass const*)techno);
+    return (id >= 0 && id < (int)ARRAY_SIZE(TF_Hmec_Side)) ? TF_Hmec_Side[id] : none;
+}
+
 COORDINATE TechnoClass::Fire_Coord(int which) const
 {
     assert(IsActive);
@@ -624,6 +636,14 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
         short const* m = _ts4tnk_muzzle[which != 0][IsSecondShot ? 1 : 0][fi];
         COORDINATE centre = centre_art;
         return XY_Coord((int)Coord_X(centre) + m[0], (int)Coord_Y(centre) + m[1]);
+    }
+
+    // TF: the Mammoth Mk. II fires its railgun from the side pods and its missiles from the rear pods, read off its
+    // HD model per hull frame by scripts/ts_hmec_muzzle.py, left and right in turn.
+    if (What_Am_I() == RTTI_UNIT && ((UnitClass const*)this)->Class->Type == UNIT_TSHMEC) {
+        int fi = TechnoClass::BodyShape[Dir_To_32(((UnitClass const*)this)->PrimaryFacing.Current())];
+        short const* m = _tshmec_muzzle[which != 0][TF_Hmec_Side_Of(this)][fi];
+        return XY_Coord((int)Coord_X(centre_art) + m[0], (int)Coord_Y(centre_art) + m[1]);
     }
 
     // TF: the RA2 tanks fire from RA2's fire points, projected per turret frame by scripts/r2_pack_tanks.py. The
@@ -4254,6 +4274,11 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             Map.Flag_To_Redraw(true);
 
             new SmudgeClass(Random_Pick(SMUDGE_SCORCH1, SMUDGE_SCORCH6), target_coord);
+        }
+
+        // TF: the Mammoth Mk. II's next shot leaves the other side.
+        if (What_Am_I() == RTTI_UNIT && ((UnitClass const*)this)->Class->Type == UNIT_TSHMEC) {
+            TF_Hmec_Side_Of(this) ^= 1;
         }
 
         return (bullet);
