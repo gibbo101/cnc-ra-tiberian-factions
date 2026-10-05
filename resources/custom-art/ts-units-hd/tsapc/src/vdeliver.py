@@ -154,7 +154,7 @@ def check(spec, pkg):
 def package_src(spec, pkg, unit_dir):
     """copy the source into PKG/src with the paths made relative (paths.py says where the hand-off is)."""
     vox = os.path.dirname(os.path.abspath(__file__))
-    ren = HANDOFF + '/renderer'
+    ren = '/home/claude/units/ts-units-hd-handoff/renderer'
     S = pkg + '/src'
     os.makedirs(S, exist_ok=True)
     for f in SHARED + getattr(spec, 'SHARED_EXTRA', []):
@@ -171,7 +171,7 @@ def package_src(spec, pkg, unit_dir):
         s = re.sub(r"sys\.path\.insert\(0, ['\"]/home/claude/units/work/vox['\"]\)(;[ \t]*|\n)", "", s)
         s = re.sub(r"sys\.path\.insert\(0, ['\"]/home/claude/units/ts-units-hd-handoff/renderer['\"]\)",
                    "sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))", s)
-        s = s.replace("HANDOFF + '/", "HANDOFF + '/")
+        s = s.replace("'/home/claude/units/ts-units-hd-handoff/", "HANDOFF + '/")
         if "HANDOFF + '/" in s and 'from paths import HANDOFF' not in s:
             s = re.sub(r'^(import [^\n]+\n)', r'\1from paths import HANDOFF\n', s, count=1, flags=re.M)
         if 'os.path.dirname' in s and not re.search(r'^[ \t]*import[ \t]+([\w.]+[ \t]*,[ \t]*)*os\b', s, re.M):

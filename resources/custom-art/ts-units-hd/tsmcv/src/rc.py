@@ -216,12 +216,22 @@ def cast(parts, O, D, want_normals=True):
     n = O.shape[0]
     best = np.full(n, np.inf); who = np.full(n, -1, np.int32); nrm = np.zeros((n, 3))
     D = np.asarray(D, float)
+    # the rays' positions across the view (two axes perpendicular to D), sorted along the first, so each part
+    # looks only at the rays near its bounding sphere instead of all of them
+    e1 = np.cross(D, (0.0, 0.0, 1.0) if abs(D[2]) < 0.9 else (1.0, 0.0, 0.0)); e1 /= np.linalg.norm(e1)
+    e2 = np.cross(D, e1)
+    ra = O @ e1; rb = O @ e2
+    order = np.argsort(ra, kind='stable'); ra_s = ra[order]
     for i, p in enumerate(parts):
         if p.sphere is not None:
             c, R = p.sphere
-            q = O - c
-            perp = q - (q @ D)[:, None] * D
-            sel = np.nonzero((perp * perp).sum(1) <= R * R)[0]
+            ca, cb = float(np.asarray(c) @ e1), float(np.asarray(c) @ e2)
+            lo, hi = np.searchsorted(ra_s, ca - R), np.searchsorted(ra_s, ca + R, side='right')
+            if hi <= lo:
+                continue
+            cand = order[lo:hi]
+            da = ra[cand] - ca; db = rb[cand] - cb
+            sel = cand[da * da + db * db <= R * R]
             if sel.size == 0:
                 continue
             tin, tout, nin = intersect(p, O[sel], D)

@@ -7,8 +7,6 @@ The camera may stretch heights differently from depths (cE_eff): the Titan keeps
 (TS's 30 degree view scaled x6.4) while its depths foreshorten like the 32 degree RA camera.
 """
 import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
 from PIL import Image
 from scipy import ndimage
@@ -221,21 +219,38 @@ class RCRender:
         sl = (slice(y0 * ss, y1 * ss), slice(x0 * ss, x1 * ss))
         gxw, gyw = gx[sl], gy[sl]
         Pz = np.stack([gxw.ravel(), gyw.ravel(), np.full(gxw.size, footprint_z)], 1)
-        fw = np.zeros(gxw.shape, bool)
+        fw = np.zeros(gxw.size, bool)
+        # only the points under each part's bounding sphere are tested against it (sorted along x)
+        order = np.argsort(Pz[:, 0], kind='stable'); xs_sorted = Pz[order, 0]
         for p in parts:
-            inside = np.ones(len(Pz), bool)
+            if p.sphere is not None:
+                c0, R0 = p.sphere
+                if abs(c0[2] - footprint_z) > R0:
+                    continue
+                lo, hi = np.searchsorted(xs_sorted, c0[0] - R0), np.searchsorted(xs_sorted, c0[0] + R0, side='right')
+                if hi <= lo:
+                    continue
+                cand = order[lo:hi]
+                cand = cand[np.abs(Pz[cand, 1] - c0[1]) <= R0]
+            else:
+                cand = np.arange(len(Pz))
+            if cand.size == 0:
+                continue
+            Q = Pz[cand]
+            inside = np.ones(len(Q), bool)
             for c in p.cons:
                 if c.kind == 'plane':
-                    inside &= Pz @ c.n <= c.d
+                    inside &= Q @ c.n <= c.d
                 elif c.kind == 'ellip':
-                    q = (Pz - c.c) @ (c.R / c.r[None, :])
+                    q = (Q - c.c) @ (c.R / c.r[None, :])
                     inside &= (q * q).sum(1) <= 1
                 elif c.kind == 'cyl':
-                    q = Pz - c.c; qa = q @ c.a
+                    q = Q - c.c; qa = q @ c.a
                     inside &= ((q - qa[:, None] * c.a) ** 2).sum(1) <= c.r ** 2
                 if not inside.any():
                     break
-            fw |= inside.reshape(gxw.shape)
+            fw[cand[inside]] = True
+        fw = fw.reshape(gxw.shape)
         fp[sl] = fw
         if fp.any():
             dist = ndimage.distance_transform_edt(~fp) / ss

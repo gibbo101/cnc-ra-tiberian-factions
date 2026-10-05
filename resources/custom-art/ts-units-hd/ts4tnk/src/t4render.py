@@ -1,73 +1,123 @@
-"""the Mammoth Mk. I's HD frames (TS4TNK: 512 x 512; 0-31 the hull with its shadow, 32-63 the turret with the barrels,
-no shadow, drawn at the hull's canvas centre; 32 facings counter-clockwise from north), built straight from TS's
-4TNK.VXL, 4TNKTUR.VXL and 4TNKBARL.VXL posed by their HVAs (vxlunit / voxrender); the RA-grid camera (32 degrees),
-6.23 canvas px per voxel, the unit's position at canvas (255.5, 254.7) as in-mod/ has it.
+"""
+t4render.py - the Mammoth Mk. I's HD frames for the mod (TS4TNK, 512 x 512: 0-31 the hull with its shadow, 32-63
+the turret with its barrels, no shadow, drawn at the same canvas centre; 32 facings counter-clockwise from north),
+each with a -trim.png, from the rebuilt model (t4v2.py) posed by TS's HVAs.  Camera, size and place as v1 and the mod
+(t4cam.py).  The canvas is drawn at two thirds in the game, so the outline, the shadow's blur and the contact shadow
+are 1.5 times as wide (as the Titan's, the Wolverine's, the MCV's and the Mk. II's).
 
-    python3 t4render.py frames 0,24,56 [ss] [outdir] [sky]
+    python3 t4render.py 0,24,56 [ss] [outdir] [sky 0/1]
 """
 import os, sys, time
-from paths import HANDOFF
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
-import vxl, vxlunit as VU, voxrender as VR, rcrender as RR
+from PIL import Image
+import rc, rcrender as RR
+import t4v2 as T, t4mat as MM
+from t4cam import CANVAS, camera, unit_to_world, frame_of
 from frameio import save
 
-D = HANDOFF + '/05-TS4TNK/ts-original/'
-CANVAS = (512, 512)
-PPU = 6.23
-ORIGIN = (255.5, 254.7)
-ELEV = 32.0
+SHADOW_LEN = 1.0                        # v1's: the buildings' length (a low tank's shadow stays on its canvas)
+PX_SCALE = 1.5
 BOUNDS = ((-40, 40), (-40, 40), (-1, 30))
-SHADOW_LEN = 1.0
-TSN = float(os.environ.get('TSN', '0.6'))
+OUT = 'out'
 
 
-def load_file(name, pal, sigma=0.3, denoise=0.3):
-    secs = vxl.read_vxl(D + name + '.VXL'); names, mats = vxl.read_hva(D + name + '.HVA')
-    return [VU.Section(s, pal, sigma=sigma, denoise=denoise) for s in secs], mats
+def find_window(parts, cam, margin=14, step=3):
+    W_, H_ = CANVAS
+    xs = np.arange(0, W_, step) + step / 2; ys = np.arange(0, H_, step) + step / 2
+    SX, SY = np.meshgrid(xs, ys)
+    O = cam.rays(SX.ravel(), SY.ravel())
+    t, who, _ = rc.cast(parts, O, cam.D, want_normals=False)
+    hit = np.isfinite(t).reshape(SX.shape)
+    yy, xx = np.nonzero(hit)
+    return (max(int(xs[xx.min()] - margin), 0), max(int(ys[yy.min()] - margin), 0),
+            min(int(xs[xx.max()] + margin), W_), min(int(ys[yy.max()] + margin), H_))
 
 
-# TS's hull sits 1.24 voxels above its HVA origin (its tracks' lowest voxels): the model is lowered onto the ground
-# and the camera's origin raised to match, so every pixel stays where in-mod/ has it and the shadow meets the tracks
-GZ = 1.24
+# how soft each part's plane edges read (a rounded bevel in the shading, in local units)
+ROUNDED = {T.HULL_C: 0.32, T.COVER: 0.3, T.SKIRT: 0.18, T.DECKPLATE: 0.25, T.GRILLE: 0.1, T.LAMPHOUSE: 0.15,
+           T.TURRET: 0.34, T.MANTLET: 0.25, T.CUPOLA: 0.15, T.POD: 0.22, T.POD_FRONT: 0.1, T.SLEEVE: 0.22,
+           T.COLLAR: 0.18, T.DHATCH: 0.08, T.CORE: 0.1}
 
 
-def load():
-    pal = vxl.read_pal(D + 'UNITTEM.PAL')
-    hull, mh = load_file('4TNK', pal)
-    tur, mt = load_file('4TNKTUR', pal)
-    bar, mb = load_file('4TNKBARL', pal)
-    down = (np.eye(3), np.array([0.0, 0.0, -GZ]))
-    H = VR.Unit(hull, [(mh, i) for i in range(len(hull))], extra_pose=[down] * len(hull))
-    T = VR.Unit(tur + bar, [(mt, i) for i in range(len(tur))] + [(mb, i) for i in range(len(bar))],
-                extra_pose=[down] * (len(tur) + len(bar)))
-    return H, T
+def round_edges(r):
+    for i, p in enumerate(r.parts):
+        sig = ROUNDED.get(p.comp)
+        if sig is None:
+            continue
+        m = (r.who == i) & r.hitmask
+        if not m.any():
+            continue
+        planes = [c for c in p.cons if c.kind == 'plane']
+        if len(planes) < 2:
+            continue
+        N = np.array([c.n for c in planes]); d = np.array([c.d for c in planes])
+        Q = np.stack([r.x[m], r.y[m], r.z[m]], 1)
+        s = Q @ N.T - d[None, :]
+        w = np.exp((s - s.max(1, keepdims=True)) / sig)
+        n = w @ N
+        own = np.stack([r.nx[m], r.ny[m], r.nz[m]], 1)
+        curved = s.max(1) < -0.02
+        n = np.where(curved[:, None], own, n)
+        n = n / (np.linalg.norm(n, axis=1, keepdims=True) + 1e-9)
+        r.nx[m], r.ny[m], r.nz[m] = n[:, 0], n[:, 1], n[:, 2]
 
 
-def camera():
-    return RR.Cam((0, -1), ELEV, PPU, (ORIGIN[0], ORIGIN[1] - GZ * PPU * np.cos(np.deg2rad(ELEV))))
+def spec_hl(r, comps, strength=0.2, power=20.0):
+    L = r.L; V = -r.cam.D
+    Hh = (L + V) / np.linalg.norm(L + V)
+    nh = np.clip(r.nx * Hh[0] + r.ny * Hh[1] + r.nz * Hh[2], 0, 1)
+    sh = getattr(r, 'inshadow', 0.0)
+    m = np.isin(r.comp, comps)
+    return (strength * nh ** power * (1 - 0.9 * sh) * m * 255.0)[..., None] * np.array([1.0, 0.92, 0.78])
 
 
-def frame(units, k, ss=4, sky=True):
-    H, T = units
-    if k < 32:
-        return VR.frame(H, k, 0, camera(), CANVAS, BOUNDS, ss=ss, sky=sky, shadow_len=SHADOW_LEN, px_scale=1.5,
-                        sharp={i: 2.0 for i in range(len(H.sections))}, speckle=(0.75, 1.2), grime_z=3.0,
-                        ts_normals=TSN)
-    return VR.frame(T, k - 32, 0, camera(), CANVAS, BOUNDS, ss=ss, sky=sky, shadow_len=SHADOW_LEN, px_scale=1.5,
-                    sharp={i: 2.0 for i in range(len(T.sections))}, speckle=(0.75, 1.2), grime_z=0.0,
-                    with_shadow=False, ts_normals=TSN)
+_MODEL = None
+
+
+def model():
+    global _MODEL
+    if _MODEL is None:
+        _MODEL = T.model()
+    return _MODEL
+
+
+def frame(k, ss=4, sky=True, m=None):
+    which, facing, with_shadow = frame_of(k)
+    Mx = unit_to_world(facing)
+    parts, frames, owner = T.posed(m if m is not None else model(), which, Mx)
+    cam = camera()
+    win = find_window(parts, cam)
+    r = RR.RCRender(parts, cam, CANVAS, win, BOUNDS, ss=ss, frames=frames, shadow_len=SHADOW_LEN, px_scale=PX_SCALE)
+    r.sec = np.where(r.hitmask, owner[np.clip(r.who, 0, len(owner) - 1)], '')
+    r.poses = {}
+    for name in which:
+        R, t = T.SECTIONS[name].pose()
+        r.poses[name] = (Mx @ R, Mx @ t)
+    round_edges(r)
+    occ = r.sky_occlusion() if sky else None
+    alb, (bx, by, bz), emit = MM.materials(r, occ=occ)
+    ao = 0.84 + 0.16 * np.clip(r.z / 12.0, 0, 1)
+    col = r.shade(alb, sky_occ=occ, ao=ao) + emit
+    col = col * np.clip(1 + 0.3 * bz, 0.55, 1.35)[..., None]
+    col = col + spec_hl(r, MM.GLOSSY)
+    g = r.ground_alpha_full(shadow_parts=parts) if with_shadow else None
+    img = r.compose(col, ground=g)
+    tm = MM.trim_mask(r, alb).astype(np.float32)
+    full = np.zeros((r.H * ss, r.W * ss), np.float32)
+    x0, y0, x1, y1 = r.win
+    full[y0 * ss:y1 * ss, x0 * ss:x1 * ss] = tm
+    trim = Image.fromarray((full.reshape(r.H, ss, r.W, ss).mean(axis=(1, 3)) * 255).round().astype(np.uint8), 'L')
+    return img, trim
 
 
 if __name__ == '__main__':
-    ks = [int(a) for a in sys.argv[2].split(',')]
-    ss = int(sys.argv[3]) if len(sys.argv) > 3 else 4
-    out = sys.argv[4] if len(sys.argv) > 4 else 'out'
-    sky = bool(int(sys.argv[5])) if len(sys.argv) > 5 else True
+    ks = [int(a) for a in sys.argv[1].split(',')] if len(sys.argv) > 1 else [0]
+    ss = int(sys.argv[2]) if len(sys.argv) > 2 else 4
+    out = sys.argv[3] if len(sys.argv) > 3 else OUT
+    sky = bool(int(sys.argv[4])) if len(sys.argv) > 4 else True
     os.makedirs(out, exist_ok=True)
-    units = load()
     for k in ks:
         t0 = time.time()
-        img, trim = frame(units, k, ss, sky)
+        img, trim = frame(k, ss, sky)
         save(img, trim, f'{out}/ts4tnk-{k:04d}.png')
         print('frame', k, '%.0fs' % (time.time() - t0), flush=True)

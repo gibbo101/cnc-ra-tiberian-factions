@@ -6,8 +6,7 @@ a cylinder or an ellipsoid is the convex hull of points on its curved surface an
 also give back their own frame (centre, axes), so a moving part can be exported once in its own frame and posed by
 a node transform (the legs' walk as a glTF animation).
 """
-import sys
-import os
+import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
 from scipy.spatial import ConvexHull, HalfspaceIntersection

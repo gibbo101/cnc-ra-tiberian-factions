@@ -7,8 +7,7 @@ also give back their own frame (centre, axes), so a moving part can be exported 
 a node transform (the legs' walk as a glTF animation).
 """
 import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, '/home/claude/units/ts-units-hd-handoff/renderer')
 import numpy as np
 from scipy.spatial import ConvexHull, HalfspaceIntersection
 from scipy.optimize import linprog

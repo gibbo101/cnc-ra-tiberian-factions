@@ -42,13 +42,13 @@ mask (north 1, east 2, south 4, west 8), plus 16 damaged and 32 with the field o
 | File | Tiberian Sun | In Tiberian Factions | Parts | Animations |
 |---|---|---|---|---|
 | `harvester.glb` | HARV, HORV | TSHARV | harvester, harvester-unloading, tank (the lid: harvester = unloading + tank) | |
-| `mcv.glb` | MCV | TSMCV | tracks, hull, right_deck, cab, crane, left_deck, hitch | |
+| `mcv.glb` | MCV | TSMCV | tracks, hull, right_deck, front_block, spine, crate_rack, cockpit | |
 | `titan.glb` | MMCH | TSTITN | legs; upper_body with the cannon and a muzzle marker | walk (12 steps, 0.2 s each, looping) |
 | `wolverine.glb` | SMECH | TSSMEC | body (with muzzle_left and muzzle_right markers), legs | walk (12 steps, 0.133 s each, looping), stance (firing) |
 | `mammoth-mk1.glb` | 4TNK | TS4TNK | hull; turret (with the barrels and tusk pods) | |
 | `mammoth-mk2.glb` | HMEC | TSHMEC | body, four legs (upper, lower, foot each) | walk |
-| `disruptor.glb` | SONIC | TSSONIC | hull; turret (seated 6 px aft, as the mod draws it) | |
-| `hover-mlrs.glb` | HVR | TSHVR | hull; rack (at TS's place; the mod seats it per facing) | |
+| `disruptor.glb` | SONIC | TSSONIC | hull; turret (seated 0.46 cell aft, its ring's back on the hull's back) | |
+| `hover-mlrs.glb` | HVR | TSHVR | hull with the pad; rack (on the pad's centre, 0.385 cell aft) | |
 | `apc.glb`, `apc-water.glb` | APC | TSAPC | land hull; water hull (the hull TS swaps in on water) | |
 | `subterranean-apc.glb` | SAPC | TSSAPC | hull | |
 | `devils-tongue.glb` | SUBTANK | TSSUBTANK | hull | |

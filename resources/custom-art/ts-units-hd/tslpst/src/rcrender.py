@@ -6,8 +6,7 @@ canvas edge) for models made of convex parts (rc.py), cast ray by ray.
 The camera may stretch heights differently from depths (cE_eff): the Titan keeps the in-mod frames' heights
 (TS's 30 degree view scaled x6.4) while its depths foreshorten like the 32 degree RA camera.
 """
-import sys
-import os
+import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
 from PIL import Image

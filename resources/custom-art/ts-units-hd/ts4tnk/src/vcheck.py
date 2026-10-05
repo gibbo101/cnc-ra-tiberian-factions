@@ -36,10 +36,14 @@ def check(fmt, inmod, n, size, no_shadow=(), shift=(0, 0)):
         if ((tr > 0) & (a[..., 3] < 128)).any():
             bad.append((k, 'trim outside the unit'))
         dark = (a[..., :3].max(-1) < 8) & (a[..., 3] > 0) & (a[..., 3] < 250)
+        # a shadow lies off the unit: dark see-through pixels more than 2 px from its opaque body (the antialiased
+        # edges of its own black parts don't count)
+        from scipy import ndimage
+        off = ndimage.distance_transform_edt(a[..., 3] < 250) > 2.0
         if k not in no_shadow:
-            if not dark.any() or a[..., 3][dark].max() < 128:
+            if not (dark & off).any() or a[..., 3][dark & off].max() < 128:
                 bad.append((k, 'shadow alpha'))
-        elif (dark & (a[..., 3] > 160)).sum() > 50:
+        elif (dark & off & (a[..., 3] > 160)).sum() > 50:
             bad.append((k, 'shadow on a no-shadow frame'))
         if inmod:
             b = np.array(Image.open(inmod % k).convert('RGBA')).astype(int)

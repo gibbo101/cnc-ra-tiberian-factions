@@ -7,8 +7,7 @@ The camera may stretch heights differently from depths (cE_eff): the Titan keeps
 (TS's 30 degree view scaled x6.4) while its depths foreshorten like the 32 degree RA camera.
 """
 import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, "/home/claude/units/ts-units-hd-handoff/renderer")
 import numpy as np
 from PIL import Image
 from scipy import ndimage
