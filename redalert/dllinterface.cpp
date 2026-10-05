@@ -1669,6 +1669,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
     */
     Force_CD_Available(ALWAYS_RELOAD_CD);
 
+    // TF: a carrier campaign launch's own map, taken below
     char carrier_map[_MAX_FNAME + _MAX_EXT];
     if (override_map_name && strlen(override_map_name)) {
         strcpy(Scen.ScenarioName, override_map_name);
