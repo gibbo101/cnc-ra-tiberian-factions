@@ -102,6 +102,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   the lobbies (`lobby_art.py`, `fontlib_build.py`, `bui_lobby_build.py`; tile file
   `UI_WORKSHOPMAP_LISTBOX_ENTRY.BUI`).
 - **Copyright line:** "©2020 Electronic Arts Inc." under the main menu is still red.
+- **CAMPAIGNS page** (`campaigns-page.md`): Continue and Start over in the bottom bar; Start
+  greyed on an empty tab; a New Game button with its own campaign-select screen; the TS Nod tab
+  once TS Nod exists.
 - **Spike: the intro freeze on the Deck.** About 4 s into any startup movie the launcher hashes
   every local custom map on its main thread (`[PGUGC::UGC::Recalculate_Values] SHA256`, about
   17 ms a map, 0.8 s on the Deck), after its Workshop database reply. No data setting moves it.
@@ -215,9 +218,11 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ## Bigger arcs
 
-- **Campaign, "The Inheritance War"** (`gdi-nod-campaign-story.md`, `campaign-tabs-research.md`):
-  waits behind the AI milestone. First task: GDI mission 1 for real in an Aftermath slot, with a
-  map, briefing and win/lose conditions, before committing to all nine. With it, flatten the
+- **Campaign, "The Inheritance War"** (`gdi-nod-campaign-story.md`, `campaigns-page.md`):
+  waits behind the AI milestone. First task: a launch route that ships, either the mission
+  carrier reading its missions from data or a hijacked Aftermath slot given `<House>GDI</House>`,
+  then GDI mission 1 for real on the GDI tab, with a map, briefing and win/lose conditions,
+  before committing to all nine. With it, flatten the
   difficulty stat multipliers: `CCDATA/rules.ini` `[Easy]`/`[Difficult]` still carry the stock
   spread (Easy Firepower 1.2 / Armor 1.2 / ROF .8 / Cost .8), and difficulty is meant to be
   behavioural only. Check whether `Scen.CDifficulty` feeds `Rule.Diff[]` in skirmish.
