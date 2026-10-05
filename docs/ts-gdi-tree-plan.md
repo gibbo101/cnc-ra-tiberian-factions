@@ -135,7 +135,9 @@ Resource plugs stack by design (`Can_Upgrade`): the power plant takes two turbin
   target cell, and PODRING flashes at the shifted entry point, as TS's AtmosphereEntry does. Each
   pod (`TSPODDROP`, `bullet.cpp`) spawns one drop-height to the side of the landing zone and falls
   at equal horizontal and vertical speed, so it arrives as it grounds. It trails SMOKEY every 6
-  frames, drawn north by altitude; touchdown spawns the trooper, a DROPPOD1/2 husk and DROPEXP. The
+  frames, drawn north by altitude; touchdown spawns the trooper, a DROPPOD1/2 husk and DROPEXP. TS keeps husks forever; ours fade after
+  5 loops, by choice. Each pod's strafe does `TF_POD_STRAFE_DAMAGE` (25), half its first value, because
+  five pods' strafes one-shot power plants and barracks. The
   5-minute recharge was chosen to sit between the paratroops and the Ion Cannon (not a TS value).
 - **The Hunter Seeker** (`SPC_TS_HUNTSEEK`) flies as an `AircraftClass`, not a bullet, because the
   launcher draws bullets tiny. One left click launches it (`launcher-vs-dll-ownership.md`); only the
@@ -309,8 +311,9 @@ the launcher can't do, and TS ships no sonic-wave art.
   showed beads). Discs carry no owner: the launcher tints an owned anim in the house colour, which
   turned the green band gold.
 - **The band is the weapon:** per-cell anchor discs (`AnimClass::SonicDamage`) hit every techno in
-  their cell on five stages within ~1 s of the crest; the firer is exempt (`SonicFirer`), and
-  Disruptors are immune to sonic damage.
+  their cell nine times within ~1 s of the crest, every second stage (`SONIC_DAMAGE_PERIOD` = 2: at 4
+  a tank could drive into its own wave). The firer is exempt (`SonicFirer`), and so are the firing
+  house's own Disruptors.
 - **Firing behaviour is OpenTS's `WaveClass` tether:** each disc keeps its place on the live
   muzzle-to-target line (`SonicT`, `SonicTether`); a broken tether (firer dead, `TarCom` changed,
   or the target beyond `SONIC_TETHER_RANGE`, 2172 leptons) retracts the band from the tank end and
@@ -374,9 +377,10 @@ A unit here is done: no open art, geometry or behaviour work.
   amplitude ladder as a pale overlay (it can't read like TS's multiplicative tint), and hijacking
   the chrono vortex (the launcher ignores its width and height and draws the whole whirlpool).
   Launcher levers on the discs: `Cloak` on an anim or a unit-typed disc is ignored,
-  `SHAPE_PREDATOR` makes it invisible, `SHAPE_GHOST` does nothing, `FlashingFlags` strobes, and
+  `SHAPE_PREDATOR` makes it invisible, `FlashingFlags` strobes, and
   `Rotation` is honoured but clipped to the unrotated frame. Overlapping discs can't give a hard
-  edge or keep a mottle.
+  edge or keep a mottle. Whether `SHAPE_GHOST` (`IsTranslucent`) darkens the discs is unsettled: check
+  it in game before either this doc or the code claims it.
 - **A tower with N/E/S/W connectors:** voxel splats, two procedural Blender towers, an image-model
   redraw and a third-party STL were all rejected; the tower is TS's own sprite. Running TRELLIS
   locally needs 24 GB of VRAM (this box has 12).
@@ -397,8 +401,9 @@ A unit here is done: no open art, geometry or behaviour work.
   cameo vanish instead of greying, and a bay rebuilt during a pause re-offered its cargo through it,
   so cameos never came back. Order refusal lives in `TF_Delivery_Order_Refused` (`Begin_Production`
   and both click handlers), and the sidebar fill paints the countdown and locked dress.
-- **`CNCSidebarEntryStruct::Busy` draws nothing.** Show unavailability with `Constructing` +
-  `Progress`, or an AssetName swap.
+- **`CNCSidebarEntryStruct::Busy` draws nothing.** Show unavailability with an AssetName swap (the
+  Mk. II's dimming is its countdown art). A fake `Constructing` + `Progress` reads as a build and
+  miscounts queue clicks.
 - **Any divert that bypasses `MISSION_CONSTRUCTION` must free the builder itself** and run
   `Grand_Opening`: the plug install skipped it, the yard stayed in radio contact, and every later
   placement built then cancelled (`tf_plug_swap` in `building.cpp`).
@@ -488,6 +493,8 @@ A unit here is done: no open art, geometry or behaviour work.
   the aim point is higher than it is far; a flat answer pointing down is caught by solving again one
   lepton further out. A first throw clears cliffs; only a disc that has already bounced is set off by
   flying low over one. A collision near the target is moved onto the target, as TS does.
+- **TS infantry facings port with no reorder:** TS draws them anticlockwise from north, the order
+  `HumanShape` indexes (`idata.cpp`).
 - **The jumpjet flight model (`Jumpjet_AI`)** follows TS. It eases to half speed inside two cells of
   its destination and 3/10 inside one; with no target its flight level drops to 3/4 over the last
   cell. It bobs on a sine of `JUMPJET_WOBBLE` over `JUMPJET_WOBBLE_TICKS`, reset outside hover and

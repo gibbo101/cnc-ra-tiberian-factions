@@ -535,6 +535,10 @@ Research complete (agent report, §7). Two routes for staging-then-blob:
      bitmask ("which houses are coastal on this water"). Pond test + does-it-reach-the-enemy
      test = two lookups. Refresh with Zone_Reset. Nobody has this (AI Boost's detection is
      building-count only, and fog-blind — ours goes through the W1 intel layer).
+     **Shipped:** `Zone_Reset` records each water zone's cell count in `TF_WaterZoneSize` (`map.cpp`;
+     water zones ignore buildings, so it holds all match). `TF_Naval_Assessment` (`house.cpp`) keeps the
+     largest zone within `TF_NAVAL_COAST_RADIUS` (20 cells) of the base that reaches
+     `TF_NAVAL_POND_MIN` (80 cells), and reports whether a discovered enemy building is coastal on it.
    - **Yard placement gap:** Find_Cell_In_Zone already honours Legal_Placement (WaterBound →
      coastal water cells only) but searches rings around the LAND base center — on maps
      where the base isn't near shore it can silently fail. Bias yard placement toward the

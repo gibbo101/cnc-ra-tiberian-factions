@@ -29,7 +29,9 @@ float v0, u0, wn, hn;   // y/H, x/W, w/W, h/H of the region in MT_COMMANDBAR_COM
 
 The crest quad samples straight from this record every frame (the per-frame vertex buffers carry
 the same UVs). ALLIES = `{1706/6716, 5698/6871, 794/6871, 713/6716}`. There is a persistent
-master copy plus a per-match copy cloned from it (typically 2 records per slot, 4 total). Both
+master copy plus a per-match copy cloned from it (typically 2 records per slot, 4 total). The scans
+stop after the start-of-match burst, because records made later in a match are cloned from the
+master the scan already patched. Both
 TD crests already ship inside the atlas as the never-referenced `UI_SIDEBAR_FACTIONLOGO_GDI`
 (1,1875,718,706) and `_NOD` (3778,2221,660,660) regions. **Re-pointing the ALLIES record's 16
 bytes at the GDI or NOD rect swaps the drawn crest instantly** — no pixel data, no new art.

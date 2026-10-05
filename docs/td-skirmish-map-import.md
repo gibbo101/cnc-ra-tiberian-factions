@@ -6,7 +6,10 @@ raised video-memory use for everyone, and some were broken. They are planned as 
 item; the folder's README says how to bring them back.
 
 `scripts/td_map_to_ra.py` converts TD maps to RA format (temperate, winter and desert), and the DLL
-installs a mod's `CustomMaps/` triplets into `Local_Custom_Maps/` itself when `TF_TD_MAPS` is on.
+installs a mod's `CustomMaps/` triplets into `Local_Custom_Maps/Red_Alert/` itself when `TF_TD_MAPS`
+is on (`TF_Install_Bundled_Maps`, when the launcher registers the mod's CCDATA path, overwriting
+earlier copies; with `TF_TD_MAPS` 0 the installed copies are deleted). It has to: a Workshop mod
+can't ship files into Documents, and the official skirmish list takes no new maps.
 Desert maps play on the interior theatre slot (`theatre-desert-feasibility.md`); TD's cacti and
 rocks are dropped, since the interior slot has no terrain-object art. This doc keeps the per-map
 theatre matrix.

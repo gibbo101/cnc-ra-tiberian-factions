@@ -363,6 +363,8 @@ highest quality the pipeline can produce.** Concretely:
   `WalkFacings × WalkFrames`. Per-unit camera elevation is a legitimate dial
   (`vxl_render.py --elev` — the Mk. II renders at 35° for its TS stance vs the
   54° house camera).
+- **Voxel turreted units** lay out hull frames 0-31 and turret 32-63 (TS4TNK, R2APOC, R2PRIS,
+  TSSONIC); the layout lives in their pack scripts.
 - **VOXEL RENDER LEDGER (keep this current).** RA/TD Remastered HD unit sprites match a
   **~32° camera** (the 54° default read top-down, commit 51469c8c), so
   EVERY ground-vehicle voxel renders at `--elev 32`; the vxl_render default

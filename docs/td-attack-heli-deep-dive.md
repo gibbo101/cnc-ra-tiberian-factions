@@ -70,13 +70,17 @@ offsets. For these two:
   that broke the Chinook), drawn at body-centre — so it should align like RA's HIND/LONGBOW. The risk that
   remains is the TD-Assets **facing-0 orientation** (the Chinook's pointed diagonal): if HELI's facing-0
   isn't north, the body faces wrong. **Smoke-test first.** Muzzle offset (`primaryoffset`) = screenshot-tune.
-- **Orca: no rotor**, so no rotor risk; but it's **64 frames** (vs HELI's 32) — watch the facing layout.
-- HELI = 32 frames (donor: RA HIND, 32). ORCA = 64 frames (donor: a 64-frame unit, e.g. 2TNK, sliced).
+- **Orca: no rotor**, so no rotor risk.
+- Both use RA's HIND (32 frames) as the donor (`aadata.cpp` `One_Time`). With a missing TFASSETS stub, the donor needs at least as many frames as the type draws (TDORCA 0-31, TSHUNT 0-7), so HIND is safe for both.
 - Build icons `BuildIcon_TD_Apache` / `BuildIcon_TD_Orca` exist. Text `TXT_HELI`/`TXT_ORCA` (RA has TXT_ORCA).
 
 **Fallback if a TD sprite's facing/geometry is broken (per the Chinook):** these DO have faction-distinct
 gameplay (own weapons), so don't drop to pure-RA wholesale — but if the *sprite* is unusable, render RA's
 HIND/(Orca has no RA equiv) while keeping the TD weapon/stats, or remap the frames.
+
+**Names:** the Apache's sidebar label is `TEXT_UNIT_TITLE_NOD_HELICOPTER` ("Attack Helicopter") and its
+popup `Name=` "Apache"; the Orca uses the native `TEXT_UNIT_TITLE_GDI_ORCA`, so neither needs a
+CONFIG.MEG edit.
 
 ---
 

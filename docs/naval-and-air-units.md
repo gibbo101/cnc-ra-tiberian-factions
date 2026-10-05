@@ -19,7 +19,7 @@ its own type instead. The one shared piece is the RA transport, `[LST]`, owned b
 
 | Faction | Building | Units |
 |---|---|---|
-| GDI | GDI Naval Yard (`TDGYARD`, prerequisite `powr`) | `TDPT` Gunboat (TD Light Tank turret at 0.75x), `TDDD` Destroyer (MLRS rack, Allied destroyer weapons), `TDCA` Cruiser (twin cruise-missile launchers fore and aft, needs TDEYE) |
+| GDI | GDI Naval Yard (`TDGYARD`, prerequisite `powr`) | clones of the three Allied ships with their native turrets: `TDPT` Gunboat (RA PT, MGUN turret, `2Inch` + `DepthCharge`), `TDDD` Destroyer (RA DD, SSAM turret on a fore mount, `Stinger` + `DepthCharge`), `TDCA` Cruiser (RA CA, twin TURR guns, `8Inch`, needs TDEYE) |
 | Nod | Nod Sub Pen (`TDNPEN`, prerequisite `powr`) | `TDNSUB` Submarine (RA's SS hull: TD had no submarine art), `TDMSUB` Missile Sub (Temple-gated) |
 | both | | the RA `LST` transport |
 | GDI | GDI Airfield (`TDGAFLD`, behind TDHQ) | `TDA10` A-10 Warthog: fixed-wing napalm strafer, 60 HP, 3 runs a sortie, TD's `A10.ZIP` (32 frames) |

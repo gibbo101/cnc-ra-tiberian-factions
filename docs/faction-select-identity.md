@@ -71,7 +71,7 @@ Per-language: there's a `MASTERTEXTFILE_<lang>.LOC` per language (EN-US, FR-FR, 
 The picker lists countries in the launcher's enum order and that order is not data: reordering
 the `FACTIONS.XML` entries changes nothing, and a hidden entry leaves a blank row that still
 selects the hidden country. So the rows are assigned by position instead (DLL remap in
-`CNC_Start_Instance`, names in `scripts/loc_work/mastertext.edits.txt`, plates painted by
+`CNC_Set_Multiplayer_Data`, names in `scripts/loc_work/mastertext.edits.txt`, plates painted by
 `scripts/picker_emblems_paint.py`):
 
 | row | country | plays as | plate |
@@ -179,6 +179,8 @@ names, with loose `BuildIcon_*.tga` cameos.
   `ModText.csv` row; a hand-edited `RABUILDABLES` entry with no row shows whatever its ID resolves to
   in the base text (both MCV IDs resolve to "MCV").
 - Give an entity a faction name only together with the `Owner=` narrowing that makes it true.
+- The sidebar and the popup can differ: `[TDARTY]`'s sidebar shows the master text's
+  `TEXT_UNIT_TITLE_NOD_ARTILLERY` ("Artillery"), its popup `Name=` "Nod Artillery".
 
 ---
 
