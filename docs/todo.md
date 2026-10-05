@@ -10,6 +10,11 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ## Next version: first jobs
 
+- **Fix the balance data bugs** (`known-issues.md`, "Balance data"), each with a play test:
+  - the mod's `aftrmath.ini` overrides `[155mm] Range` (6 over the intended 8) and `[E3] Owner`
+    (allies over allies,soviet): set the intended values there too, after deciding E3's owner;
+  - `Inaccurate=` is dead (EA reads `Inaccuate`): turn projectile inaccuracy back on, through the
+    key or a `// TF:` parser fix, and retune the artillery range if the scatter changes it.
 - **Shrink the package.** 5.0.0 is 1,456 MB unpacked (the GitHub zip 1.0 GB; 4.0.0's was
   404 MB). Where it goes: 398 MB of sidebar cameos (1,196 loose `BuildIcon_*` TGAs, each an
   uncompressed 341x256 RGBA at 349 KB, many of them badge variants), 405 MB of building art (the
