@@ -2722,23 +2722,18 @@ void UnitTypeClass::Hover_Rack_Seat(DirType hull, int& x, int& y) const
     y += _seat[f][1];
 }
 
-// Seats the Disruptor turret 6 classic px aft of the hull centre (TS TurretOffset=-64): a 9 px aft mount
-// projection per hull facing, rescaled to 6 px with its 4.5 px deck lift taken out.
+// Seats the Disruptor turret 6 classic px aft along the hull, on the ground as the art's camera draws it (classic px
+// per hull frame).
 void UnitTypeClass::Sonic_Turret_Seat(DirType dir, int& x, int& y) const
 {
-    enum { SONIC_SEAT_AFT_PX = 6, HOVER_MOUNT_AFT_PX = 9, SONIC_SEAT_LIFT_PX = 0 };
-    static const signed char _mount_x[32] = {0,  -2, -3, -5, -5, -7, -8, -9, -9, -8, -7,
-                                             -6, -5, -5, -3, -2, 0,  2,  3,  5,  5,  6,
-                                             7,  8,  9,  8,  8,  7,  5,  5,  3,  2};
-    static const signed char _mount_y[32] = {1,  0,  0,  -1, -1, -2, -3, -4, -6, -7, -8,
-                                             -8, -9, -9, -9, -10, -10, -9, -9, -9, -9, -8,
-                                             -8, -6, -5, -4, -3, -2, -1, -1, 0,  0};
-    int i = Dir_To_32(dir);
-    int ax = (_mount_x[i] * SONIC_SEAT_AFT_PX * 2 + (_mount_x[i] < 0 ? -HOVER_MOUNT_AFT_PX : HOVER_MOUNT_AFT_PX)) / (HOVER_MOUNT_AFT_PX * 2);
-    int ay2 = _mount_y[i] * 2 + 9;
-    int ay = (ay2 * SONIC_SEAT_AFT_PX + (ay2 < 0 ? -HOVER_MOUNT_AFT_PX : HOVER_MOUNT_AFT_PX)) / (HOVER_MOUNT_AFT_PX * 2);
-    x += ax;
-    y += ay - SONIC_SEAT_LIFT_PX;
+    static const signed char _seat[32][2] = {
+        {0, 3},   {1, 3},   {2, 3},   {3, 3},   {4, 2},   {5, 2},   {6, 1},   {6, 1},
+        {6, 0},   {6, -1},  {6, -1},  {5, -2},  {4, -2},  {3, -3},  {2, -3},  {1, -3},
+        {0, -3},  {-1, -3}, {-2, -3}, {-3, -3}, {-4, -2}, {-5, -2}, {-6, -1}, {-6, -1},
+        {-6, 0},  {-6, 1},  {-6, 1},  {-5, 2},  {-4, 2},  {-3, 3},  {-2, 3},  {-1, 3}};
+    int f = TechnoClass::BodyShape[Dir_To_32(dir)];
+    x += _seat[f][0];
+    y += _seat[f][1];
 }
 
 /***********************************************************************************************
