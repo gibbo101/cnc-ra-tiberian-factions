@@ -2748,7 +2748,13 @@ int UnitClass::Shape_Number(void) const
                 return (Class->WalkFacings * Class->WalkFrames + wfacing * Class->FiringFrames + fstage);
             }
 
-            int stage = (IsDriving && !IsRotating) ? ((::Frame + ID) / Class->WalkRate) % Class->WalkFrames : 0;
+            bool walking = IsDriving && !IsRotating;
+            // TF: a walker with firing frames stands in its firing stance, as TS's standing frames do, on step 1,
+            // which carries no muzzle flash, so its feet stay put between bursts.
+            if (!walking && Class->FiringFrames > 1) {
+                return (Class->WalkFacings * Class->WalkFrames + wfacing * Class->FiringFrames + 1);
+            }
+            int stage = walking ? ((::Frame + ID) / Class->WalkRate) % Class->WalkFrames : 0;
             return (wfacing * Class->WalkFrames + stage);
         }
 
