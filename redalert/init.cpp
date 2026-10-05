@@ -218,12 +218,8 @@ bool Init_Game(int, char*[])
     **	of processing the rules.ini file, but that is a bit beyond the capabilities of
     **	the rule parser routine (currently).
     */
-    /*
-    **  Mod-defined type slots reserved past each vanilla enum count. Sized
-    **  generously enough to absorb a TD-themed building/unit/infantry/aircraft
-    **  catalogue without further tuning. Init_Heap() seeds the vanilla types
-    **  into the low slots; [NewBuildings] etc. in rules.ini fill the rest.
-    */
+    // TF: the building and unit heaps reserve slots past the vanilla counts: Init_Heap seeds the vanilla types and
+    // rules.ini [NewBuildings] and [NewUnits] fill the rest.
     HouseTypes.Set_Heap(HOUSE_COUNT);
     BuildingTypes.Set_Heap(MAX_BUILDING_TYPES);
     AircraftTypes.Set_Heap(AIRCRAFT_COUNT);
@@ -2306,16 +2302,8 @@ static void Init_Bootstrap_Mixfiles(void)
 
     new MFCD("REDALERT.MIX", &FastKey);
 
-    /*
-    **  Tiberian Factions mod: TFASSETS.MIX ships TD-origin SHPs (TDOBLI.SHP,
-    **  TDOBLIMAKE.SHP, etc.) renamed with TD-prefix so MFCD::Retrieve picks
-    **  them up for fully-separated STRUCT_TDxxxx buildings. Without this mix
-    **  loaded, classic graphics mode falls back to the borrowed-from-TSLA
-    **  ImageData stub in bdata.cpp One_Time (Tesla Coil sprite). Cache-load
-    **  is best-effort: assert is intentionally absent so the mod still boots
-    **  if the .MIX is missing (e.g. partial deploy), just with the classic-
-    **  mode SHP fallback active.
-    */
+    // TF: TFASSETS.MIX carries the mod's classic SHPs. Loading it is best-effort, so the mod still boots without it,
+    // drawing the donor art One_Time borrows.
     if (CCFileClass("TFASSETS.MIX").Is_Available()) {
         new MFCD("TFASSETS.MIX", &FastKey);
         MFCD::Cache("TFASSETS.MIX");

@@ -206,15 +206,11 @@ static AircraftTypeClass const OrcaHeli(AIRCRAFT_HIND,  // What kind of aircraft
                                         MISSION_HUNT    // Default mission for aircraft.
 );
 
-// TD C-17 cargo plane — Nod airstrip vehicle delivery. Mirrors
-// tiberiandawn/aadata.cpp:218 CargoPlane. Not player-buildable, not
-// selectable, not a legal target — Stage 3 spawns this aircraft from
-// the TDAFLD factory completion hook with a UnitClass attached as
-// cargo, then assigns MISSION_UNLOAD with destination = airstrip docking
-// coord. TXT_BADGER reused as placeholder text (never shown).
+// TD C-17 cargo plane (AIRCRAFT_TDCARGO), from TD's CargoPlane: the TD airstrip's delivery, unselectable and
+// untargetable. The airstrip's reinforcement flies it in with the vehicle as cargo (docs/cargo-plane-port.md).
 static AircraftTypeClass const TDCargoPlane(AIRCRAFT_TDCARGO, // What kind of aircraft is this.
                                             TXT_BADGER,       // Translated text (placeholder — never shown).
-                                            "TDC17",          // INI name of aircraft (TD-prefixed per gotcha #1).
+                                            "TDC17",          // INI name of aircraft (TD-prefixed).
                                             0x0000,           //	Vertical offset.
                                             0x0000,           // Primary weapon offset along turret centerline.
                                             0x0000,           // Primary weapon lateral offset along turret centerline.
@@ -233,17 +229,14 @@ static AircraftTypeClass const TDCargoPlane(AIRCRAFT_TDCARGO, // What kind of ai
                                             MISSION_HUNT      // Default mission for aircraft.
 );
 
-// Tiberian Factions (v4.0) -- TD C-17 PARADROP plane (AIRCRAFT_TDPARADROP). The targetable twin of
-// TDCargoPlane, spawned ONLY by the Nod Paratroopers support power to fly the minigunner squad in.
-// Two deliberate differences from TDCARGO: radar-VISIBLE and a legal target, so SAM/AA can shoot it
-// down. Passengers=5 (rules.ini [TDC17P]); reuses the TDC17 sprite via an RA_UNITS.XML "TDC17P" tile
-// alias; ImageData donor = Badger. Unbuildable (TechLevel -1) -- support-drop only.
+// TD C-17 paradrop plane (AIRCRAFT_TDPARADROP): TDCARGO's twin that flies the Nod Paratroopers in. Radar-visible and
+// targetable, unlike TDCARGO, so anti-air can down it; it draws TDC17's art through an RA_UNITS.XML alias.
 static AircraftTypeClass const TDParaDropPlane(AIRCRAFT_TDPARADROP, // What kind of aircraft is this.
                                                TXT_BADGER,       // Translated text (placeholder -- never shown).
                                                "TDC17P",         // INI name (own section; shares TDC17 art).
                                                0x0000,           // Vertical offset.
                                                0x0000,           // Primary weapon offset along turret centerline.
-                                               0x0000,           // Primary weapon lateral offset along turret centerline.
+                                               0x0000,           // Primary weapon lateral offset.
                                                true,             // Fixed wing aircraft?
                                                false,            // Equipped with a rotor?
                                                false,            // Custom rotor sets for each facing?
@@ -259,19 +252,11 @@ static AircraftTypeClass const TDParaDropPlane(AIRCRAFT_TDPARADROP, // What kind
                                                MISSION_HUNT      // Default mission for aircraft.
 );
 
-// Tiberian Factions -- TS Hunter Seeker droid (AIRCRAFT_TSHUNT), TS rules.ini [GHUNTER] / art
-// GGHUNT. The SPC_TS_HUNTSEEK payload (Seeker Control plug): a VTOL kamikaze that emerges beside
-// the Upgrade Centre, climbs to flight level, picks a random enemy the way TS's Fly locomotor does
-// (no threat weighting) and detonates on it. Modelled on TdOrca (helicopter flight, no rotor,
-// 32 hover facings) but the TS sprite is ONE facing x 8 spin frames, so Shape_Number cycles the
-// spin instead of reading a facing. Unselectable, unbuildable (TechLevel -1), no home building.
-// TS: Strength 500 / light armour, so anti-air can still shoot it down. Flight, targeting and
-// the detonation live in AircraftClass::TF_Hunter_Seeker_AI (aircraft.cpp).
-// Donor ImageData = AIRCRAFT_HIND (NULL-guard only; the 8-frame TSHUNT.SHP stub in TFASSETS.MIX
-// loads over it and the launcher draws TSHUNT.ZIP by name).
+// TS Hunter Seeker (AIRCRAFT_TSHUNT), TS [GHUNTER]: a droid that appears at flight level beside the Upgrade Centre
+// and dives on a random enemy (TF_Hunter_Seeker_AI). Shape_Number cycles its 8 spin frames, not facings.
 static AircraftTypeClass const TsHunt(AIRCRAFT_TSHUNT,  // What kind of aircraft is this.
                                       TXT_ORCA,         // Translated text (placeholder -- HD name via rules.ini Name=).
-                                      "TSHUNT",         // INI name of aircraft (TS-prefixed; matches the TSHUNT tileset).
+                                      "TSHUNT",         // INI name (TS-prefixed; matches the TSHUNT tileset).
                                       0x0000,           // Vertical offset.
                                       0x0000,           // Primary weapon offset (never fires conventionally).
                                       0x0000,           // Primary weapon lateral offset.
@@ -280,21 +265,21 @@ static AircraftTypeClass const TsHunt(AIRCRAFT_TSHUNT,  // What kind of aircraft
                                       false,            // Custom rotor sets for each facing?
                                       false,            // Can this aircraft land on clear terrain? (no)
                                       true,             // Is it invisible on radar?
-                                      false,            // Can the player select it so as to give it orders? (TS Selectable=false)
-                                      true,             // Can it be assigned as a target for attack. (anti-air may down it)
-                                      true,             // Is it insignificant (won't be announced)? (TS Insignificant=yes)
+                                      false,            // Can the player select it? (TS Selectable=false)
+                                      true,             // Can it be targeted? (anti-air may down it)
+                                      true,             // Insignificant (won't be announced)? (TS Insignificant=yes)
                                       false,            // Is it immune to normal combat damage?
                                       STRUCT_NONE,      // Preferred landing building (none -- it never returns).
                                       0xFF,             // Landing speed
-                                      32,               // Number of rotation stages (unused: spin frames, see Shape_Number).
+                                      32,               // Rotation stages (unused: spin frames, see Shape_Number).
                                       MISSION_ATTACK    // Default mission for aircraft.
 );
 
-// Tiberian Factions -- TS Orca Fighter (AIRCRAFT_TSORCA), TS rules [ORCA]: a VTOL gunship with two
-// Hellfire missiles a salvo, built and rearmed at the TS Helipad. Voxel render, 32 facings.
+// TS Orca Fighter (AIRCRAFT_TSORCA), TS rules [ORCA]: a VTOL gunship with two Hellfire missiles a salvo, built and
+// rearmed at the TS Helipad. Voxel render, 32 facings.
 static AircraftTypeClass const TsOrca(AIRCRAFT_TSORCA, // What kind of aircraft is this.
                                       TXT_ORCA,         // Translated text (placeholder -- HD name via rules.ini Name=).
-                                      "TSORCA",         // INI name of aircraft (TS-prefixed; matches the TSORCA tileset).
+                                      "TSORCA",         // INI name (TS-prefixed; matches the TSORCA tileset).
                                       0x0000,           // Vertical offset.
                                       0x0040,           // Primary weapon offset.
                                       0x0000,           // Primary weapon lateral offset.
@@ -313,11 +298,11 @@ static AircraftTypeClass const TsOrca(AIRCRAFT_TSORCA, // What kind of aircraft 
                                       MISSION_HUNT      // Default mission for aircraft.
 );
 
-// Tiberian Factions -- TS Orca Bomber (AIRCRAFT_TSORCAB), TS rules [ORCAB]: a VTOL bomber that drops
-// its bombs from over the target and rearms at the TS Helipad.
+// TS Orca Bomber (AIRCRAFT_TSORCAB), TS rules [ORCAB]: a VTOL bomber that drops its bombs from over the target and
+// rearms at the TS Helipad.
 static AircraftTypeClass const TsOrcaB(AIRCRAFT_TSORCAB, // What kind of aircraft is this.
                                       TXT_ORCA,         // Translated text (placeholder -- HD name via rules.ini Name=).
-                                      "TSORCAB",         // INI name of aircraft (TS-prefixed; matches the TSORCAB tileset).
+                                      "TSORCAB",         // INI name (TS-prefixed; matches the TSORCAB tileset).
                                       0x0000,           // Vertical offset.
                                       0x0000,           // Primary weapon offset.
                                       0x0000,           // Primary weapon lateral offset.
@@ -336,11 +321,11 @@ static AircraftTypeClass const TsOrcaB(AIRCRAFT_TSORCAB, // What kind of aircraf
                                       MISSION_HUNT      // Default mission for aircraft.
 );
 
-// Tiberian Factions -- TS Carryall (AIRCRAFT_TSCARRY), TS rules [TRNSPORT]: an unarmed VTOL that lifts
-// one vehicle and sets it down where sent; it lands on open ground when idle.
+// TS Carryall (AIRCRAFT_TSCARRY), TS rules [TRNSPORT]: an unarmed VTOL that lifts one vehicle and sets it down where
+// sent; it lands on open ground when idle.
 static AircraftTypeClass const TsCarry(AIRCRAFT_TSCARRY, // What kind of aircraft is this.
                                       TXT_ORCA,         // Translated text (placeholder -- HD name via rules.ini Name=).
-                                      "TSCARRY",         // INI name of aircraft (TS-prefixed; matches the TSCARRY tileset).
+                                      "TSCARRY",         // INI name (TS-prefixed; matches the TSCARRY tileset).
                                       0x0000,           // Vertical offset.
                                       0x0000,           // Primary weapon offset.
                                       0x0000,           // Primary weapon lateral offset.
@@ -359,25 +344,18 @@ static AircraftTypeClass const TsCarry(AIRCRAFT_TSCARRY, // What kind of aircraf
                                       MISSION_GUARD      // Default mission for aircraft.
 );
 
-// Tiberian Factions -- TD Apache attack helicopter (AIRCRAFT_TDAPACHE), ported from TD's
-// AIRCRAFT_HELICOPTER (tiberiandawn/aadata.cpp AttackHeli, TXT_HELI). NOD-ONLY (HOUSEF_BAD).
-// A genuine TD port (own weapon + sprite, unlike the Chinook). The attack-heli AI -- Ammo,
-// strafe (Good_Fire_Location), reload-at-helipad (MISSION_ENTER) -- is RA-generic (AircraftClass),
-// so this just clones RA's HIND attack-heli template (single rotor, helipad-landing). Single rotor
-// uses the GENERIC Draw_Rotors branch (not the TRANSPORT-gated dual that broke the Chinook), drawn
-// at body-centre. Fires TDApacheGun (TDChainGun + Burst=2 for TD's is_twoshooter). Stats in
-// rules.ini [TDHELI]; donor ImageData = AIRCRAFT_HIND (the matching 32-frame single-rotor heli).
-// See docs/td-attack-heli-deep-dive.md.
+// TD Apache (AIRCRAFT_TDAPACHE), ported from TD's AttackHeli; Nod only. RA's attack-heli AI flies it, drawn with
+// HIND's single rotor, firing TDApacheGun (docs/td-attack-heli-deep-dive.md).
 static AircraftTypeClass const TdApacheHeli(AIRCRAFT_TDAPACHE, // What kind of aircraft is this.
-                                            TXT_ORCA,        // Translated text (placeholder -- HD name via rules.ini Name=).
-                                            "TDHELI",        // INI name of aircraft (TD-prefixed; RA's Longbow is "HELI").
+                                            TXT_ORCA,        // Placeholder text (HD name via rules.ini Name=).
+                                            "TDHELI",        // INI name (TD-prefixed; RA's Longbow is "HELI").
                                             0x0000,          // Vertical offset.
-                                            0x0040,          // Primary weapon offset (chain-gun muzzle, like RA's HIND).
+                                            0x0040,          // Primary weapon offset (chain-gun muzzle, as RA's HIND).
                                             0x0000,          // Primary weapon lateral offset.
                                             false,           // Fixed wing aircraft? (no -- helicopter)
                                             true,            // Equipped with a rotor? (yes -- single)
                                             false,           // Custom rotor sets for each facing? (no -- single rotor)
-                                            false,           // Can this aircraft land on clear terrain? (no -- returns to helipad)
+                                            false,           // Lands on clear terrain? (no -- returns to helipad)
                                             true,            // Is it invisible on radar?
                                             true,            // Can the player select it so as to give it orders?
                                             true,            // Can it be assigned as a target for attack.
@@ -389,14 +367,8 @@ static AircraftTypeClass const TdApacheHeli(AIRCRAFT_TDAPACHE, // What kind of a
                                             MISSION_HUNT     // Default mission for aircraft.
 );
 
-// Tiberian Factions -- TD Orca (AIRCRAFT_TDORCA), ported from TD's AIRCRAFT_ORCA
-// (tiberiandawn/aadata.cpp OrcaHeli, TXT_ORCA). GDI-ONLY (HOUSEF_GOOD). Same attack-aircraft AI
-// as the Apache but is_rotorequipped=FALSE -- the Orca is a VTOL (fixed jet nacelles, no rotor
-// overlay). Fires TDStnkDragon (the Stealth Tank's TD WEAPON_DRAGON + Burst=2). Ammo 6 (rules.ini
-// [TDORCA]). The ORCA sprite is 64 frames = 32 hover facings (0-31, used by Rotation=32) + 32
-// fast-flight frames (32-63, the #ifdef TOFIX set, unused); Rotation=32 picks the hover facings.
-// Donor ImageData = AIRCRAFT_HIND (NULL-guard only; the 64-frame TDORCA.SHP from TFASSETS.MIX loads
-// over it and Rotation=32 never reads past frame 31). See docs/td-attack-heli-deep-dive.md.
+// TD Orca (AIRCRAFT_TDORCA), ported from TD's OrcaHeli; GDI only. The Apache's AI with no rotor, firing TDStnkDragon;
+// Rotation 32 draws the hover facings 0-31 of its 64 frames (docs/td-attack-heli-deep-dive.md).
 static AircraftTypeClass const TdOrca(AIRCRAFT_TDORCA, // What kind of aircraft is this.
                                       TXT_ORCA,        // Translated text (HD name via rules.ini Name=).
                                       "TDORCA",        // INI name of aircraft (TD-prefixed).
@@ -406,7 +378,7 @@ static AircraftTypeClass const TdOrca(AIRCRAFT_TDORCA, // What kind of aircraft 
                                       false,           // Fixed wing aircraft? (no -- VTOL)
                                       false,           // Equipped with a rotor? (NO -- Orca is a jet VTOL)
                                       false,           // Custom rotor sets for each facing?
-                                      false,           // Can this aircraft land on clear terrain? (no -- returns to helipad)
+                                      false,           // Lands on clear terrain? (no -- returns to helipad)
                                       true,            // Is it invisible on radar?
                                       true,            // Can the player select it so as to give it orders?
                                       true,            // Can it be assigned as a target for attack.
@@ -418,32 +390,24 @@ static AircraftTypeClass const TdOrca(AIRCRAFT_TDORCA, // What kind of aircraft 
                                       MISSION_HUNT     // Default mission for aircraft.
 );
 
-// Tiberian Factions (v4.0) -- TD A-10 Warthog (AIRCRAFT_TDA10), ported from TD's AIRCRAFT_A10
-// (tiberiandawn/aadata.cpp AttackPlane, TXT_A10). GDI-ONLY (HOUSEF_GOOD via rules.ini Owner).
-// DELIBERATE DIVERGENCE: TD's A-10 was a scripted airstrike *support power* (unbuildable); here it
-// is a real player-built fixed-wing aircraft from the (owner-opened) AFLD -- DTA-style. Fixed-wing +
-// STRUCT_AIRSTRIP landing exactly like the Yak/Mig, so it reuses RA's fixed-wing strafe AI (the
-// payload is dropped over the strafing run; Ammo 3 -> 3 napalm runs before rearm). Fires TDA10Napalm
-// (a dedicated incendiary weapon, WARHEAD_TDFIRE + ANIM_NAPALM2) -- stats in rules.ini [TDA10].
-// Donor ImageData = AIRCRAFT_BADGER (the fixed-wing NULL-guard donor, mirrors TDCargoPlane); the
-// 96-frame TDA10 HD tileset (TD-Assets) is resolved by IniName "TDA10" via the launcher overlay,
-// Rotation=32 reading the standard TD-aircraft facings. See docs/air-additions-4.0-design.md.
+// TD A-10 (AIRCRAFT_TDA10), from TD's AttackPlane; GDI only. Built at the GDI Airfield rather than TD's support
+// power, it flies RA's fixed-wing strafe AI with TDA10Napalm (docs/naval-and-air-units.md).
 static AircraftTypeClass const TdA10(AIRCRAFT_TDA10,  // What kind of aircraft is this.
                                      TXT_YAK,         // Translated text (placeholder -- HD name via rules.ini Name=).
                                      "TDA10",         // INI name of aircraft (TD-prefixed; matches the TDA10 tileset).
                                      0x0000,          // Vertical offset.
-                                     0x0020,          // Primary weapon offset along turret centerline (strafe muzzle, like the Mig).
+                                     0x0020,          // Primary weapon offset (strafe muzzle, like the Mig).
                                      0x0020,          // Primary weapon lateral offset.
                                      true,            // Fixed wing aircraft? (yes -- the A-10 is a plane)
                                      false,           // Equipped with a rotor? (no)
                                      false,           // Custom rotor sets for each facing? (no)
-                                     false,           // Can this aircraft land on clear terrain? (no -- returns to airstrip)
+                                     false,           // Lands on clear terrain? (no -- returns to airstrip)
                                      true,            // Is it invisible on radar? (TD A-10 invisible-on-radar=true)
                                      true,            // Can the player select it so as to give it orders?
                                      true,            // Can it be assigned as a target for attack.
                                      false,           // Is it insignificant (won't be announced)?
                                      false,           // Is it immune to normal combat damage?
-                                     STRUCT_TDGAFLD,  // Preferred landing building = the separated GDI Airfield (rearms here).
+                                     STRUCT_TDGAFLD,  // Preferred landing building: the GDI Airfield (rearms here).
                                      0xFF,            // Landing speed (like the Yak).
                                      32,              // Number of rotation stages (standard TD-aircraft facings).
                                      MISSION_HUNT     // Default mission for aircraft.
@@ -663,19 +627,8 @@ void AircraftTypeClass::One_Time(void)
         ((void const*&)uclass.ImageData) = MFCD::Retrieve(fullname);
     }
 
-    /*
-    **	Mod-entry ImageData fallback. Our TD-prefixed aircraft (currently
-    **	just AIRCRAFT_TDCARGO / "TDC17") have no legacy SHP in the MIX
-    **	files — only TGA tilesets bundled in resources/.../UNITS/<NAME>.ZIP.
-    **	MFCD::Retrieve above returned NULL for them, so AircraftClass::Draw_It
-    **	would bail at its `if (!shapefile) return;` guard and the plane stays
-    **	invisible. Mirror the building/unit Logic= alias pattern
-    **	(bdata.cpp:3452, udata.cpp:1391) by copying a vanilla donor's
-    **	ImageData pointer — the launcher's Techno_Draw_Object overlay then
-    **	resolves the actual sprite by IniName ("TDC17") via the RA_UNITS.XML
-    **	tileset, regardless of which pointer was supplied. Badger is the
-    **	closest fixed-wing donor in the vanilla heap.
-    */
+    // TF: our aircraft without a classic SHP borrow a vanilla donor's ImageData (Badger for planes, HIND for
+    // helicopters) to pass Draw_It's NULL guard; the launcher draws their real art by IniName.
     AircraftTypeClass& tdcargo = As_Reference(AIRCRAFT_TDCARGO);
     if (tdcargo.ImageData == NULL) {
         AircraftTypeClass const& donor = As_Reference(AIRCRAFT_BADGER);
@@ -686,17 +639,11 @@ void AircraftTypeClass::One_Time(void)
         ((void const*&)tdcargo.CameoData) = donor.CameoData;
     }
 
-    // TD C-17 paradrop twin (AIRCRAFT_TDPARADROP): same TGA-only situation as TDCARGO -> Badger donor
-    // ImageData so Draw_It doesn't bail; the launcher overlay resolves the real sprite by its "TDC17P"
-    // IniName via the RA_UNITS.XML alias. No cameo needed (unbuildable).
     AircraftTypeClass& tdpara = As_Reference(AIRCRAFT_TDPARADROP);
     if (tdpara.ImageData == NULL) {
         ((void const*&)tdpara.ImageData) = As_Reference(AIRCRAFT_BADGER).ImageData;
     }
 
-    // TD Apache (AIRCRAFT_TDAPACHE): TGA-only TD sprite -> NULL ImageData from the MFCD loop.
-    // Donor = AIRCRAFT_HIND (RA's single-rotor attack heli, matching 32 frames) so dimensions/rotor
-    // align; the launcher's overlay resolves the real "TDHELI" sprite by IniName.
     AircraftTypeClass& tdapache = As_Reference(AIRCRAFT_TDAPACHE);
     if (tdapache.ImageData == NULL) {
         ((void const*&)tdapache.ImageData) = As_Reference(AIRCRAFT_HIND).ImageData;
@@ -705,9 +652,6 @@ void AircraftTypeClass::One_Time(void)
         ((void const*&)tdapache.CameoData) = As_Reference(AIRCRAFT_HIND).CameoData;
     }
 
-    // TD Orca (AIRCRAFT_TDORCA): NULL-guard donor only. The 64-frame TDORCA.SHP (TFASSETS.MIX)
-    // loads over this; Rotation=32 only ever reads frames 0-31 (hover facings), so the 32-frame
-    // HIND donor is safe even if the SHP is missing. is_rotor=false -> no rotor overlay drawn.
     AircraftTypeClass& tdorca = As_Reference(AIRCRAFT_TDORCA);
     if (tdorca.ImageData == NULL) {
         ((void const*&)tdorca.ImageData) = As_Reference(AIRCRAFT_HIND).ImageData;
@@ -716,8 +660,6 @@ void AircraftTypeClass::One_Time(void)
         ((void const*&)tdorca.CameoData) = As_Reference(AIRCRAFT_HIND).CameoData;
     }
 
-    // TS Hunter Seeker (AIRCRAFT_TSHUNT): NULL-guard donor only. The 8-frame TSHUNT.SHP stub
-    // (TFASSETS.MIX) loads over this; Shape_Number only ever reads frames 0-7.
     AircraftTypeClass& tshunt = As_Reference(AIRCRAFT_TSHUNT);
     if (tshunt.ImageData == NULL) {
         ((void const*&)tshunt.ImageData) = As_Reference(AIRCRAFT_HIND).ImageData;
@@ -726,10 +668,6 @@ void AircraftTypeClass::One_Time(void)
         ((void const*&)tshunt.CameoData) = As_Reference(AIRCRAFT_HIND).CameoData;
     }
 
-    // TD A-10 (AIRCRAFT_TDA10): TGA-only HD tileset -> NULL ImageData from the MFCD loop. Donor =
-    // AIRCRAFT_BADGER (the fixed-wing NULL-guard donor, as for TDCargoPlane) so Draw_It doesn't bail;
-    // the launcher overlay resolves the real "TDA10" sprite by IniName. CameoData falls back to the
-    // bundled TDA10ICON (RABUILDABLES.XML BuildIcon); BADGER guards the classic path.
     AircraftTypeClass& tda10 = As_Reference(AIRCRAFT_TDA10);
     if (tda10.ImageData == NULL) {
         ((void const*&)tda10.ImageData) = As_Reference(AIRCRAFT_BADGER).ImageData;
@@ -940,13 +878,11 @@ void AircraftTypeClass::Dimensions(int& width, int& height) const
         width = 56;
         height = 56;
     } else if (Type == AIRCRAFT_TDCARGO) {
-        // C-17 sprite is ~250x150 across facings (peak frame 245x156).
-        // Round up so map-refresh bounding rect doesn't leave ghost trails.
+        // TF: the C-17's art peaks at 245x156; a smaller box leaves ghost trails on map refresh.
         width = 256;
         height = 160;
     } else if (Type == AIRCRAFT_TSCARRY) {
-        // Two cells high: the launcher centres the box on the aircraft, and the Carryall's
-        // hull stood above a shorter one.
+        // TF: two cells high, as the launcher centres the box on the aircraft and the hull rises above a shorter one.
         width = 40;
         height = 48;
     } else if (Type == AIRCRAFT_TSORCAB) {

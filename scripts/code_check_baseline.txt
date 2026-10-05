@@ -1,0 +1,106 @@
+common/keyframe.cpp	a date	mrparrot 2021-11-22: A better alternative to disabling bigshapebuffer
+redalert/aircraft.cpp	a date	** helipad", 2026-08-01). A live parked plane implies MISSION_ENTER at touchdown
+redalert/aircraft.cpp	a date	Diagnostic 2026-05-21: unload log is unexpectedly empty — log file
+redalert/bdata.cpp	a date	** (Luke, 2026-08-12).
+redalert/bdata.cpp	a date	** list drew a broken tetris piece -- Luke, 2026-08-04 23:15).
+redalert/bdata.cpp	a date	over empty ground (Luke, 2026-08-04 23:25).
+redalert/bdata.cpp	a date	south row is real footprint (Luke, 2026-08-13): the
+redalert/bdata.cpp	a personal name	** (Luke, 2026-08-12).
+redalert/bdata.cpp	a personal name	** building + pad (Luke).
+redalert/bdata.cpp	a personal name	** list drew a broken tetris piece -- Luke, 2026-08-04 23:15).
+redalert/bdata.cpp	a personal name	IN-plot as walkable concrete (Luke's original "similar
+redalert/bdata.cpp	a personal name	over empty ground (Luke, 2026-08-04 23:25).
+redalert/bdata.cpp	a personal name	south row is real footprint (Luke, 2026-08-13): the
+redalert/building.cpp	a date	2026-05-25 to diagnose TDHPAD's missing helicopter cameos. Per
+redalert/building.cpp	a date	Diagnostic 2026-05-20: capture vehicle-exit data for TD-mod
+redalert/building.cpp	a date	result logging (stubbed). Re-enabled 2026-05-25 to diagnose
+redalert/bullet.cpp	a date	Used 2026-05-22 to diagnose TDATWR close-range targeting (root cause: Speed
+redalert/defines.h	a date	Mech Division (dropship-bay group order) — a purchasable TOKEN that never touches the map: Deliver_Cargo expands it into 3 Titans + 2 Wolverines at the unload beat. Cost 2800 (3400 sticker, starport discount — Luke, 2026-08-12).
+redalert/defines.h	a personal name	Mech Division (dropship-bay group order) — a purchasable TOKEN that never touches the map: Deliver_Cargo expands it into 3 Titans + 2 Wolverines at the unload beat. Cost 2800 (3400 sticker, starport discount — Luke, 2026-08-12).
+redalert/dllinterface.cpp	a date	** TEMPORARY (2026-09-06): the credit tick and radar toggle are reported as playing
+redalert/dllinterface.cpp	a date	** Tiberian Factions diag 2026-08-07: the war factory sandwich.
+redalert/dllinterface.cpp	a date	** ends a square short past the pad (Luke, 2026-08-05 00:33).
+redalert/dllinterface.cpp	a date	2026-08-13, docs/launcher-render-contracts.md): the launcher
+redalert/dllinterface.cpp	a date	2x2 box, approved 2026-08-13
+redalert/dllinterface.cpp	a date	Apron emission ground truth (2026-08-17): the WF pad
+redalert/dllinterface.cpp	a date	Diagnostic 2026-05-19 for TDNUK2 sidebar invisibility.
+redalert/dllinterface.cpp	a date	Diagnostic 2026-05-19: log Draw calls for every TD-prefixed building
+redalert/dllinterface.cpp	a date	Diagnostic 2026-05-19: log the *final* AssetName the launcher
+redalert/dllinterface.cpp	a date	Ensemble bbox (2026-08-17 evening): the hand-tucked pad
+redalert/dllinterface.cpp	a date	Phase 1e proxy (donor IniName → launcher) — DISABLED 2026-05-18.
+redalert/dllinterface.cpp	a date	Resolved 2026-06-10 (bibs render fine with ground suppression); flip \
+redalert/dllinterface.cpp	a date	TF DIAG (2026-05-31 MCV-crash hunt) — OFF for release; per-object/per-frame log.
+redalert/dllinterface.cpp	a date	TF DIAG: mod-path/scenario-resolution spike (2026-06-09). Flip to 1 to re-enable.
+redalert/dllinterface.cpp	a date	TSFACT needs no case since the 3x2 plot (2026-08-13): the
+redalert/dllinterface.cpp	a date	Tiberian Factions debug dump (2026-05-16 v0.2.0-alpha investigation).
+redalert/dllinterface.cpp	a date	Tiberian Factions diag 2026-05-31 (pass 2): log the FINAL AssetName the launcher will
+redalert/dllinterface.cpp	a date	Tiberian Factions diag 2026-05-31: log EVERY object converted into the launcher's
+redalert/dllinterface.cpp	a date	Tiberian Factions diag 2026-05-31: log every sidebar buildable the DLL hands
+redalert/dllinterface.cpp	a date	Tiberian Factions diag 2026-05-31: log every state query the launcher makes, so the
+redalert/dllinterface.cpp	a personal name	** ends a square short past the pad (Luke, 2026-08-05 00:33).
+redalert/house.cpp	a date	Diagnostic hook 2026-05-19: log Can_Build calls for mod-defined building
+redalert/house.cpp	a date	TF DIAGNOSTIC 2026-05-27: stubbed after multi-plane convoy
+redalert/house.cpp	a date	TF DIAGNOSTIC 2026-05-27: when Check_Pertinent_Structures decides
+redalert/house.cpp	a date	for the 2026-05-20 GDI roster bring-up where E3 isn't appearing in the
+redalert/scenario.cpp	a date	** 12% over a 6-stage cosine (play-picked 2026-08-26); tank-end discs are further
+redalert/scenario.cpp	a date	TF DIAG: mod-path/scenario-resolution spike (2026-06-09). Flip to 1 to re-enable.
+redalert/scenario.cpp	a date	TF DIAGNOSTIC 2026-06-07: start-location overlap. Flip to 1 to re-enable. Verified fixed over 9 games (bijection, no collisions).
+redalert/sdata.cpp	a date	Width and height of smudge (in icons) — hand-tucked pad = the 4x3 plot exactly (2026-08-17 evening).
+redalert/techno.cpp	a date	TF DIAGNOSTIC 2026-05-27 (stubbed under #if 0 per
+redalert/techno.cpp	a date	toggle for TD-ported weapons). Confirmed working 2026-05-22 against
+redalert/unit.cpp	a date	** 2026-06-17 = MATCH the current TD full-load time; tune in playtest -- see
+redalert/unit.cpp	a date	** 2026-08-04 23:36).
+redalert/unit.cpp	a date	** follows the TD logic verbatim here -- Luke, 2026-08-05 00:45).
+redalert/unit.cpp	a personal name	** Aimed reverse, mirrored side (Luke's attempt 2): the
+redalert/unit.cpp	a personal name	** Switched off (Luke, 08-28): the bed dropping on the reverse-in seat
+redalert/unit.cpp	a personal name	** follows the TD logic verbatim here -- Luke, 2026-08-05 00:45).
+redalert/unit.cpp	a personal name	** intake from the south pad cell (Luke's Aseprite pose 467,548 --
+redalert/unit.cpp	a personal name	** or a queued harvester drives across the baked docked truck (Luke,
+redalert/unit.cpp	a personal name	** west into the bay mouth on Track15 (Luke's line-up-then-
+redalert/unit.cpp	a personal name	run is E-facing art and Luke's pose has the bed against the
+resources/remaster_mods/Vanilla_RA/CCDATA/rules.ini	a date	apron art restored as the ground visual (2026-08-04); placement-blocking moved to Is_TS_Apron_Cell
+scripts/build_tfassets.sh	a date	(the 4x3 tier read oversized next to the shrunk tier, Luke 2026-08-04).
+scripts/build_tfassets.sh	a date	4-cell fit read oversized next to the 2x2 tier — Luke, 2026-08-04). The
+scripts/build_tfassets.sh	a date	TSTECH 72x72 (2026-08-31, radar height trick with TSPLUG): 3x2 plot kept,
+scripts/build_tfassets.sh	a date	against a sprite at THIS size and signed off 2026-08-19. Changing these
+scripts/build_tfassets.sh	a date	compromise predates the tier-wide size drop, Luke 2026-08-04).
+scripts/build_tfassets.sh	a date	little-missile dims and the dropship renders TINY (live report, 2026-08-12).
+scripts/build_tfassets.sh	a date	size-up read oversized next to the 2x2 power plant (Luke, 2026-08-04).
+scripts/build_tfassets.sh	a date	still read oversized -- Luke, 2026-08-04).
+scripts/build_tfassets.sh	a personal name	(the 4x3 tier read oversized next to the shrunk tier, Luke 2026-08-04).
+scripts/build_tfassets.sh	a personal name	4-cell fit read oversized next to the 2x2 tier — Luke, 2026-08-04). The
+scripts/build_tfassets.sh	a personal name	The rack seat table (udata.cpp Hover_Rack_Seat) was eye-dialled by Luke
+scripts/build_tfassets.sh	a personal name	compromise predates the tier-wide size drop, Luke 2026-08-04).
+scripts/build_tfassets.sh	a personal name	size-up read oversized next to the 2x2 power plant (Luke, 2026-08-04).
+scripts/build_tfassets.sh	a personal name	still read oversized -- Luke, 2026-08-04).
+scripts/ts_pack_hvr_hmec.py	a date	Launcher contract (settled 2026-07-20 after one false turn): the launcher
+scripts/ts_pack_subterranean.py	a date	(verified against the shipped frames 2026-08-28 -- a +pitch SUBTANK dive
+scripts/ts_pack_subterranean.py	a date	the labelled Desktop facing sheet (Luke's eye, 2026-08-13) -- do not derive
+scripts/ts_pack_subterranean.py	a personal name	the labelled Desktop facing sheet (Luke's eye, 2026-08-13) -- do not derive
+scripts/ts_pack_tree.py	a date	2026-08-04). Margin 21 = art bottom 3 classic below the plot's south
+scripts/ts_pack_tree.py	a date	Canvas 384x256 since the 3x2 plot (2026-08-13): frame = plot, content
+scripts/ts_pack_tree.py	a date	TSTECH on the radar height trick (Luke, 2026-08-31): keep the 3x2 plot,
+scripts/ts_pack_tree.py	a date	bib, stub 72x72; the 4x3 tier read oversized -- Luke, 2026-08-04). Art
+scripts/ts_pack_tree.py	a personal name	Flat art sits ON the bib slab like the TD conyard (Luke, 22:03 SS
+scripts/ts_pack_tree.py	a personal name	ON the top (plot) row, slab owns the entire bottom row (Luke, 23:40).
+scripts/ts_pack_tree.py	a personal name	TSTECH on the radar height trick (Luke, 2026-08-31): keep the 3x2 plot,
+scripts/ts_pack_tree.py	a personal name	bib, stub 72x72; the 4x3 tier read oversized -- Luke, 2026-08-04). Art
+scripts/ts_pack_tree.py	a personal name	the 3x2 size-up made the 2x2 power plant "look like a toy" (Luke,
+scripts/ts_pack_units_wave.py	a date	--elev 32 (Luke's angle pick, 2026-08-04 — the 54-default read top-down
+scripts/ts_pack_units_wave.py	a date	next to the TD harvester) and pack scale 0.75 (Luke, final size call 2026-08-05; 0.533 read ridiculously
+scripts/ts_pack_units_wave.py	a date	small in the field; 0.80 read big — Luke's split, 2026-08-05).
+scripts/ts_pack_units_wave.py	a date	so rotate by +8 (cardinal-verified 2026-08-04: without it the hull drives
+scripts/ts_pack_units_wave.py	a date	turret renders line up with the hull renders index-for-index (facing sheet, 2026-08-25)
+scripts/ts_pack_units_wave.py	a personal name	--elev 32 (Luke's angle pick, 2026-08-04 — the 54-default read top-down
+scripts/ts_pack_units_wave.py	a personal name	next to the TD harvester) and pack scale 0.75 (Luke, final size call 2026-08-05; 0.533 read ridiculously
+scripts/ts_pack_units_wave.py	a personal name	small in the field; 0.80 read big — Luke's split, 2026-08-05).
+scripts/ts_pack_walkers.py	a date	Ground shadow (Luke, 2026-07-20, take 3): the FRAME'S OWN silhouette squashed
+scripts/ts_pack_walkers.py	a date	Launcher contract (settled 2026-07-20 after one false turn): the launcher
+scripts/ts_pack_walkers.py	a date	includes N (s=0): barrel points away, tip peeks over the pod (TS close-up ref 2026-07-20 23:13)
+scripts/ts_pack_walkers.py	a date	uniform scale at every facing (Luke 2026-07-20 — the earlier south-arc
+scripts/ts_pack_walkers.py	a personal name	FEET-ONLY shadow (Luke): the bottom ~13% of the silhouette IS the
+scripts/ts_pack_walkers.py	a personal name	Ground shadow (Luke, 2026-07-20, take 3): the FRAME'S OWN silhouette squashed
+scripts/ts_pack_walkers.py	a personal name	The cannon mounts on the Titan's RIGHT flank (Luke, from the TS ref):
+scripts/ts_pack_walkers.py	a personal name	at a time against the TS reference with Luke
+scripts/ts_pack_walkers.py	a personal name	uniform scale at every facing (Luke 2026-07-20 — the earlier south-arc
+scripts/ts_reshadow.py	a personal name	Luke passed at the longer TD-derived throw, and that is not an accident: it is

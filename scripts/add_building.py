@@ -16,8 +16,8 @@ Typical usage:
 
 Field order and boolean formatting are pinned to match the v0.3 phase-3a
 TDNUKE block (hand-written, validated on the Deck) so re-emitting TDNUKE is
-a no-op diff. See docs/adding-td-buildings.md for the canonical field
-recipe and docs/ai-targeting.md for the Points= rationale.
+a no-op diff. See docs/td-building-separation-recipe.md for the canonical
+field recipe and the Points= rationale.
 
 License: GPL v3 (inherited from Vanilla Conquer base).
 '''
@@ -209,8 +209,7 @@ def register_in_new_buildings(content, ininame):
 
     The engine only reads sections listed here, so an unregistered [TDxxxx]
     block is dead weight. Ordinals are allocated as `max(existing) + 1`; the
-    script-side note in docs/adding-td-buildings.md confirms the ordinal value
-    itself is decorative (the heap slot comes from BuildingTypes.Count()).
+    ordinal value itself is decorative (the heap slot comes from BuildingTypes.Count()).
     Re-registration is a no-op.
     '''
     # Anchor to "\n[NewBuildings]" so we hit the section header at the start of
@@ -221,7 +220,7 @@ def register_in_new_buildings(content, ininame):
     if section_anchor not in content and not content.startswith(NEW_BUILDINGS_SECTION):
         raise RuntimeError(
             "rules.ini missing %s section — add one manually (see "
-            "docs/adding-td-buildings.md step 1)." % NEW_BUILDINGS_SECTION
+            "docs/td-building-separation-recipe.md)." % NEW_BUILDINGS_SECTION
         )
 
     if content.startswith(NEW_BUILDINGS_SECTION):

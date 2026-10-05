@@ -272,24 +272,13 @@ void AnimClass::Draw_It(int x, int y, WindowNumberType window) const
                 transtable = Map.UnitShadow;
                 break;
 
-            // Tiberian Factions mod: Ion Cannon beam anchors at the cell's
-            // bottom (the strike point) and reaches upward 8 cells. Verbatim
-            // port of TD anim.cpp:247-254 — the Remastered/WINDOW_VIRTUAL
-            // branch maps cleanly to SHAPE_BOTTOM; classic mode gets a
-            // close-enough centered render until the conditional Y-anchor
-            // is re-introduced if needed.
+            // TF: ion beams draw bottom-anchored. The TD beam keeps TD's half-cell drop; the TS beam's tip sits
+            // on the cell centre, where its damage, scorch and RING1 flash land.
             case ANIM_TD_ION_CANNON:
                 flags = flags | SHAPE_BOTTOM;
                 y += 12;
                 break;
 
-            /*
-            **  TS beam: the segment tiling runs flush to the canvas bottom,
-            **  so the art's bottom edge IS the impact point. Anchor it at
-            **  the cell centre where the damage, scorch and RING1 flash all
-            **  land — TD's half-cell drop would ground the tip a half cell
-            **  south of the burn mark.
-            */
             case ANIM_TS_ION_BEAM:
                 flags = flags | SHAPE_BOTTOM;
                 break;
@@ -366,11 +355,8 @@ void AnimClass::Draw_It(int x, int y, WindowNumberType window) const
 #endif
 }
 
-/*
-**	The number of damage hits one anchor disc lands across a full band pass:
-**	every SONIC_DAMAGE_PERIOD-th stage from the first visible stage to the
-**	start of the fade. AmbientDamage is split across them.
-*/
+// The number of hits one anchor disc lands over a full band pass: every SONIC_DAMAGE_PERIOD-th stage from
+// the first visible stage to the start of the fade. A Disruptor's AmbientDamage is split across them.
 int AnimClass::Sonic_Damage_Hits(void)
 {
     AnimTypeClass const& wavetype = AnimTypeClass::As_Reference(ANIM_TS_SONICWAVE);
@@ -447,10 +433,7 @@ short const* AnimClass::Overlap_List(void) const
                                         REFRESH_EOL};
     static short const OverlapFlag[] = {0, 1, -MAP_CELL_W, -(MAP_CELL_W - 1), MAP_CELL_W, MAP_CELL_W + 1, REFRESH_EOL};
 
-    // Tiberian Factions mod: Ion Cannon beam extends 8 cells north of the
-    // strike point (3 cells wide). Verbatim port of TD anim.cpp:410-433
-    // OverlapIon array. Without this the beam visual gets clipped at the
-    // edge of the anim's bounding box.
+    // TF: the ion beams cover their strike cell and the seven rows north of it, three cells wide.
     static short const OverlapTdIon[] = {(-MAP_CELL_W * 7) - 1, (-MAP_CELL_W * 7), (-MAP_CELL_W * 7) + 1,
                                          (-MAP_CELL_W * 6) - 1, (-MAP_CELL_W * 6), (-MAP_CELL_W * 6) + 1,
                                          (-MAP_CELL_W * 5) - 1, (-MAP_CELL_W * 5), (-MAP_CELL_W * 5) + 1,
@@ -803,27 +786,15 @@ AnimClass::~AnimClass(void)
 #endif
 }
 
-/*
-**	A random step in [-0.5, 0.5], as TS's Random_Double(-0.5, 0.5), from the non-critical
-**	generator: railgun sparks are cosmetic.
-*/
+// A random step in [-0.5, 0.5], as TS's Random_Double(-0.5, 0.5), from the non-critical generator:
+// railgun sparks are cosmetic.
 static double TF_Rail_Jitter(void)
 {
     return (Sim_Random_Pick(-500, 500) / 1000.0);
 }
 
-/*
-**	Lays a TS railgun coil along a shot (OpenTS partsys.cpp ParticleSystemClass::Railgun_AI),
-**	from the muzzle at (sx, sy) across (dx, dy), dist leptons long. ParticlesPerCoord sparks per
-**	lepton sit on a helix of SpiralRadius around the line, turning SpiralDeltaPerCoord radians per
-**	lepton, each nudged by up to half PositionPerturbationCoefficient on every axis. Each drifts
-**	outward along its own point of the helix, bent by up to half MovementPerturbationCoefficient,
-**	at its particle Velocity plus a speed that random-walks from spark to spark, and lives MaxEC
-**	plus up to nine frames. The helix's height draws as a northward shift, as screen-up is
-**	map-north. The Ghost Stalker's light railgun ([SmallRailgunSys], [SmallRailgunPart]) and the
-**	Mk. II's ([LargeRailgunSys], [LargeRailgunPart]) differ only in these values. Returns the
-**	frames until the last spark fades.
-*/
+// Lays a TS railgun coil of spark anims along a shot, as OpenTS ParticleSystemClass::Railgun_AI. small picks
+// the Ghost Stalker's [SmallRailgunSys] over the Mk. II's; returns the frames until the last spark fades.
 int TF_Railgun_Coil(bool small, int sx, int sy, int dx, int dy, int dist)
 {
     struct RailgunSystemType
@@ -897,12 +868,8 @@ int TF_Railgun_Coil(bool small, int sx, int sy, int dx, int dy, int dist)
     return (longest);
 }
 
-/*
-**	One frame of a TS railgun spark (OpenTS ParticleClass::Railgun_Behavior_AI): it moves along
-**	its direction at its speed, the speed jittering by up to .05 either way, and its colour blends
-**	a further ColorSpeed plus up to .05 toward the second colour of its list, holding there once
-**	it arrives. The art is that blend as an even 12-frame ladder. It is gone when its life runs out.
-*/
+// One frame of a TS railgun spark, as OpenTS ParticleClass::Railgun_Behavior_AI: it drifts, and its colour
+// blends toward its list's second colour on a 12-stage ladder. It deletes itself when its life runs out.
 void AnimClass::Rail_Spark_AI(void)
 {
     if (IsToDelete || --RailLife <= 0) {
@@ -1008,18 +975,8 @@ void AnimClass::AI(void)
         return;
     }
 
-    /*
-    **	Tiberian Factions: the Disruptor band's tether, as TS's WaveClass
-    **	(OpenTS wave.cpp, Wave_Shape_AI). While the firer still aims at what
-    **	the band was fired at and it is within six cells, every disc re-derives
-    **	its place on the live muzzle->target line each tick, so the band
-    **	follows a moving target and swings with the hull. The first tick that
-    **	fails -- a move or stop order clears TarCom, a retarget swaps it,
-    **	either party dies, the target runs out of range -- the band freezes
-    **	where it is, stops dealing damage, and every disc of it jumps into the
-    **	fall by one shared delta, so the retract runs from the tank end toward
-    **	the target. The firer's rearm follows the shortened life.
-    */
+    // TF: a Disruptor band follows its target while the firer aims at it within SONIC_TETHER_RANGE, as OpenTS
+    // WaveClass. Once that fails, every disc stops damaging and skips into the fall, retracting from the tank end.
     if (Class->Type == ANIM_TS_SONICWAVE && SonicT >= 0) {
         TechnoClass* firer = Target_Legal(SonicFirer) ? As_Techno(SonicFirer) : NULL;
         bool tethered = firer != NULL && firer->IsActive && Target_Legal(SonicTether)
@@ -1138,26 +1095,14 @@ void AnimClass::AI(void)
                 }
             }
 
-            /*
-            **	Tiberian Factions: sonic-band damage tick (see SonicDamage in
-            **	anim.h). The first hit lands on the stage after the lead-in
-            **	ends, so a muzzle disc started AT the lead-in boundary still
-            **	takes every tick. Victims are collected before any damage is
-            **	dealt: Take_Damage can destroy an occupier and unlink the
-            **	chain being walked.
-            */
+            // TF: a sonic band's anchor disc hits the technos in its cell. Victims are gathered before any damage:
+            // Take_Damage can destroy an occupier and unlink the chain being walked.
             if (SonicDamage > 0 && Class->Type == ANIM_TS_SONICWAVE) {
                 int lit = stage - SONIC_LEAD_STAGES;
                 if (lit >= 0 && (lit % SONIC_DAMAGE_PERIOD) == 0
                     && lit < Class->Stages - SONIC_LEAD_STAGES - SONIC_FALL_STAGES) {
                     ObjectClass* victims[8];
                     int vcount = 0;
-                    /*
-                    **	Tiberian Sun's TypeImmune: a Disruptor takes no damage from
-                    **	a band fired by a Disruptor of its own house, so a Disruptor
-                    **	group never hurts itself. Enemy Disruptors, and allied ones
-                    **	of another house, are hit like anything else.
-                    */
                     ObjectClass* firer = Target_Legal(SonicFirer) ? As_Object(SonicFirer) : NULL;
                     ObjectClass* occ = Map[Coord_Cell(Center_Coord())].Cell_Occupier();
                     while (occ != NULL && vcount < (int)(sizeof(victims) / sizeof(victims[0]))) {
@@ -1414,33 +1359,9 @@ void AnimClass::Middle(void)
         Do_Atom_Damage(OwnerHouse, cell);
     }
 
-    /*
-    **  Tiberian Factions mod: ANIM_TD_ION_CANNON delivers 600 damage with
-    **  WARHEAD_TDPB at its impact cell + spawns the artillery explosion
-    **  inline. Verbatim port of TD anim.cpp:1204-1224 for the building-
-    **  owner search loop (so Explosion_Damage credits kills correctly).
-    **
-    **  The explosion anim spawns here at mid-anim rather than via Class
-    **  ChainTo at end-of-anim: the laser's logical 15-stage cycle takes
-    **  long enough that an end-chained explosion lands visibly late after
-    **  the beam visual ends. Spawning ART_EXP1 here fires it on the same
-    **  frame as the damage, matching the visual impact moment.
-    */
+    // TF: ion beams strike here, at the beam's biggest stage: 600 at the cell, and half that to the eight cells
+    // around it for the TS beam. The TD beam spawns its explosion now too, as an end-of-anim chain lands late.
     if (Class->Type == ANIM_TD_ION_CANNON || Class->Type == ANIM_TS_ION_BEAM) {
-        /*
-        **  Source = NULL deliberately. Explosion_Damage skips any object
-        **  whose pointer matches the source (combat.cpp:211), so if we
-        **  passed the firing house's TDEYE the player wouldn't be able
-        **  to Ion-Cannon their own TDEYE for friendly-fire / target-
-        **  practice. Cost: kill credit isn't attributed to "GDI's Ion
-        **  Cannon" — acceptable trade-off. (TD's source has the same
-        **  loop but presumably this edge case wasn't exercised.)
-        **
-        **  The TS beam (uplink flavour) hits at the same moment with the
-        **  same numbers — flavour only, balance identical. No ART_EXP1
-        **  for it: TS's own impact visual is the RING1 ground flash the
-        **  fire site spawns beside the beam.
-        */
         Explosion_Damage(Center_Coord(), 600, NULL, WARHEAD_TDPB);
         if (Class->Type == ANIM_TD_ION_CANNON) {
             AnimClass* impact_anim = new AnimClass(ANIM_ART_EXP1, Center_Coord(), 0, 1);
@@ -1448,12 +1369,6 @@ void AnimClass::Middle(void)
                 impact_anim->Set_Owner(OwnerHouse);
             }
         } else {
-            /*
-            **  The TS strike's RING1 shockwave is not just visual: the 3x3
-            **  it sweeps takes real damage, making the uplink cannon the
-            **  successor to the TD original (which stays single-cell).
-            **  Centre damage is TD-identical; the ring hits at half.
-            */
             for (FacingType face = FACING_N; face < FACING_COUNT; face++) {
                 Explosion_Damage(Adjacent_Cell(Center_Coord(), face), 600 / 2, NULL, WARHEAD_TDPB);
             }

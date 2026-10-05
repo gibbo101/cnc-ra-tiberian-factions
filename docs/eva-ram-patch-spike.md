@@ -1,12 +1,15 @@
 # EVA mailbox RAM-patch — SOLVED (2026-09-01)
 
+**Status:** Reference; shipped in 5.0.0. The launcher-owned EVA lines follow the faction across an
+in-session switch by a RAM write into ClientG's cached samples.
+
 Lifts the last limit of the EVA era-mailbox: ClientG caches each localized sample once per boot,
 so a faction switch WITHOUT relaunching kept the stale voice on already-heard lines. The DLL now
 overwrites the cached blob in ClientG's memory at match start, so all five launcher-owned EVA
 lines follow the picked faction across an in-session switch. **Verified in play, both directions,
 all five lines (cannot-deploy, structure-sold, mission-accomplished, mission-failed, battle-
 control-terminated), no crash.** Promoted to shipping (runs in release builds; logging is
-`TF_DEV_BUILD`-only). Code: `TF_Patch_ClientG_Cache` / `TF_WriteFile_Into_Process`,
+`TF_DEV_BUILD`-only). Code: `TF_Patch_ClientG_Cache` / `TF_Replace_File_In_Process`,
 `dllinterface.cpp`.
 
 ## How it works

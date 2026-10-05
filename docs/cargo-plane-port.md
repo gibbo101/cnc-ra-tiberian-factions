@@ -1,24 +1,14 @@
 # Cargo-plane delivery (TDAFLD / TDC17) — port notes
 
-End-to-end recipe for landing TD's cargo-plane vehicle delivery in RA's
-engine. Verified working 2026-05-21 (v0.3.1-phase2d); **building +
-multi-plane convoy shipped 2026-05-27** as part of M4 Tier 3.
+**Status:** Reference; shipped in 1.0.0. The Nod Airstrip's cargo-plane delivery (TDAFLD,
+TDC17).
 
-> **Update 2026-05-27 (commits `434f2d7` + `5c0c17e`):** TDAFLD is now
-> fully separated as `STRUCT_TDAFLD` (no more Logic=WEAP alias). The
-> Exit_Object cargo-plane dispatch uses TD's verbatim `Create_Special_
-> Reinforcement` (replacing the previous hand-rolled `new AircraftClass +
-> Unlimbo + Attach`). Three additional fixes enable back-to-back
-> multi-plane delivery: (1) `Place_Object` `intheory=true` retry for
-> radio-contact bypass, (2) `Do_Reinforcements` SOURCE_AIR east-edge
-> override with busy-strip fallback iteration, (3) `PICK_AIRSTRIP`
-> straight-line behavior (no random circling). See `docs/td-port-playbook.md`
-> §3.13–§3.19 for the trap catalogue.
->
-> The "ten dormant mechanics" below remain accurate as a history of the
-> single-plane delivery activation. Items §8 and §9 (`Find_Docking_Bay`
-> + `Docking_Coord` IniName fallbacks) have been cleaned up post-
-> separation — they now use `STRUCT_TDAFLD` type checks directly.
+How TD's cargo-plane vehicle delivery runs in RA's engine. `STRUCT_TDAFLD` is its own type; its
+`Exit_Object` dispatch uses TD's verbatim `Create_Special_Reinforcement`. Back-to-back multi-plane
+delivery needs three fixes: the `Place_Object` `intheory=true` retry past radio contact,
+`Do_Reinforcements`' SOURCE_AIR east-edge override with a busy-strip fallback, and `PICK_AIRSTRIP`
+flying straight in with no random circling (`td-port-playbook.md` §3.13–§3.19). The docking-bay
+lookups (`Find_Docking_Bay`, `Docking_Coord`) check `STRUCT_TDAFLD` directly.
 
 The TD source is the spec. RA's port left several mechanics half-finished
 or commented out; this doc enumerates each dormant slice and the
@@ -102,13 +92,17 @@ short-circuit:
 
 - `PICK_AIRSTRIP`: find airstrip via `Find_Docking_Bay(STRUCT_AIRSTRIP)`,
   `RADIO_HELLO` handshake, `Assign_Destination(building->As_Target())`,
-  transition to `FLY_TO_AIRSTRIP`. Fallback `MISSION_RETREAT` + random
-  direction on lookup failure.
+  transition to `FLY_TO_AIRSTRIP`. When every strip is busy and `Find_Docking_Bay` returns NULL,
+  it searches `Buildings` for any TDAFLD or airstrip the house owns, so later planes still fly to the
+  strip in convoy; `MISSION_RETREAT` + random direction only if there is none.
 - `FLY_TO_AIRSTRIP`: per-tick set PrimaryFacing toward NavCom, scale
   `Height` down from `FLIGHT_LEVEL` via `Fixed_To_Cardinal(FLIGHT_LEVEL,
   Cardinal_To_Fixed(0x0600, navdist))` when within 0x0600 leptons. Drop
-  cargo at navdist < 0x0080 via `Detach_Object` + `Unlimbo` onto
-  `Contact_With_Whom()->Find_Exit_Cell(unit)`. Transition to `BUG_OUT`.
+  cargo at navdist < 0x0200 via `Detach_Object` + `Unlimbo` onto
+  `Contact_With_Whom()->Find_Exit_Cell(unit)`. Not TD's 0x0080: at RA speed (Speed=40, about 8
+  leptons a tick) the plane overshoots half a cell, turns back and orbits. The delivered vehicle
+  never passes the factory's `RADIO_UNLOADED` exit hook, so the airstrip's rally point is applied
+  here, with a scatter if that fails. Transition to `BUG_OUT`.
 - `BUG_OUT`: `Assign_Mission(MISSION_RETREAT)`, plane heads off-map.
 
 ### 6. `Enter_Idle_Mode` in-air cargo branch
@@ -201,34 +195,16 @@ PICK_AIRSTRIP owns the setup; let it do its job.
 
 ## Verification
 
-End-to-end on Deck 2026-05-21 (v0.3.1-phase2d):
+Verified end to end on the Deck:
 - Plane spawns at east edge, no orbit.
 - Flies west in a straight line at constant speed.
 - Altitude scales down from FLIGHT_LEVEL when within ~6 cells of dock.
-- Drops vehicle at strip-adjacent cell when navdist crosses 0x0080
-  (~half cell).
+- Drops vehicle at strip-adjacent cell when navdist crosses 0x0200.
 - Plane continues west off map, despawns cleanly at edge via the
   activated AIRCRAFT_TDCARGO branch in `Edge_Of_World_AI`.
 
-## Diagnostic logging
+## Scope
 
-`tf_tdafld_exit.log` (per Exit_Object dispatch) and
-`tf_tdcargo_unload.log` (per Mission_Unload tick, rate-limited to every
-5 calls) are retained per the keep-diagnostics-until-v1 feedback rule.
-Both write to `%USERPROFILE%\Documents\CnCRemastered\`. Re-enable is a
-one-line flip — see inline diagnostic blocks in `building.cpp` and
-`aircraft.cpp`.
-
-## Future work
-
-- **AI doesn't build aircraft naturally** ([[project-ai-no-aircraft-builds]])
-  — Nod skirmish AI never produces vehicles via TDAFLD currently because
-  the AI build-list logic for aircraft is broken in our mod. Cargo-plane
-  delivery is end-to-end for player production only.
-- **Multi-queue stress test** — building 2+ vehicles back-to-back has
-  not been exercised. Each queue completion spawns a new plane;
-  concurrent planes should be fine (each is IsALoaner), but visual
-  collisions / strip-cell occupancy edge cases unexplored.
-- **GDI airstrip** — currently Nod-only. Future GDI airstrip would
-  reuse all of the above with a different IniName match in
-  Find_Docking_Bay / Docking_Coord (e.g., "TDGAFL" or generalised flag).
+Cargo-plane delivery is Nod's alone. GDI's airfield (`TDGAFLD`) builds the A-10
+(`naval-and-air-units.md`); another delivery airstrip would reuse all of the above with its own type
+check in `Find_Docking_Bay` and `Docking_Coord`.

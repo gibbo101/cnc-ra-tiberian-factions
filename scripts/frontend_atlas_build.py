@@ -80,7 +80,7 @@ for reg, logo in flagmap.items():
     prev.append((reg, c))
     print("flag:", reg, c, "<-", os.path.basename(logo))
 
-# --- Map-select start-position markers (2026-06-07) -------------------------
+# --- Map-select start-position markers ------------------------------------
 # The skirmish lobby pins a faction marker to each chosen start position on the
 # map preview, drawn from the UI_MAPSELECT_FACTION_NN region set (separate from
 # the RA_UI_FLAG_ICON_<country> regions above). The launcher indexes that marker

@@ -18,7 +18,7 @@ every cameo path: a plain cameo to its pack, the badged variants to the mod's ow
 Naming, kept inside AssetName[16]:
   buildables    <IniName>_<mask>     e.g. TDNUKE_C
   superweapons  S<mask>_<rest>       e.g. SC_TDNUKE   (prefix swap, same length)
-where <mask> is a hex digit of the faction bits below. The unbadged case is not
+where <mask> is a base-32 digit of the five faction bits below (TS alone = 'G'). The unbadged case is not
 generated: those entries point straight at the base atlas region, which costs
 no disk at all.
 
@@ -106,7 +106,7 @@ def owner_sets():
     """IniName -> faction bitmask, from the runtime dump (authoritative).
 
     tf_faction_masks.txt is written by TF_Dump_Faction_Masks in a dev build:
-    each type's mask straight from Get_Ownable(), collapsed to the four faction
+    each type's mask straight from Get_Ownable(), collapsed to the five faction
     bits by the SAME function the DLL uses at runtime. Reading it here is what
     guarantees the baked art covers exactly the keys the DLL will request -- the
     faction-split types carry their ownership in C++ defaults, not rules.ini, so

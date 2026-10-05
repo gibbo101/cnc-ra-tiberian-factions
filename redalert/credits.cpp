@@ -100,8 +100,6 @@ void CreditClass::Graphic_Logic(bool forced)
         **	effect was requested.
         */
         if (IsAudible) {
-            // NB: in REMASTER_BUILD this block does not run (GlyphX owns the draw
-            // path); the faction-routed tick fires from CreditClass::AI instead.
             if (IsUp) {
                 Sound_Effect(VOC_MONEY_UP, fixed(1, 2));
             } else {
@@ -271,17 +269,8 @@ void CreditClass::AI(bool forced, HouseClass* player_ptr, bool logic_only)
             IsAudible = true;
             IsUp = (adder > 0);
 #ifdef REMASTER_BUILD
-            /*
-            **	GlyphX displays this roll (VisibleCredits.Current is exported as the
-            **	sidebar counter) but never branches on faction, so its stock tick
-            **	events are data-silenced and the tick is fired here instead, where
-            **	the owning faction is known. Local player's HUD only.
-            */
-            /*
-            **	Everyone else's tick goes to them, not to us. Only the host runs a DLL in a
-            **	LAN game, so without this a joiner's counter rolls in silence; the host's own
-            **	tick below is untouched, which keeps single player exactly as it was.
-            */
+            // TF: GlyphX's stock tick is data-silenced, so the faction's own tick fires here, for the local
+            // player and for each human LAN joiner, whose machine runs no DLL (docs/building-sound-routing.md).
             if (player_ptr != PlayerPtr && player_ptr != NULL && player_ptr->IsHuman
                 && Session.Type != GAME_NORMAL) {
                 TF_Fire_Credit_Tick(player_ptr, IsUp);

@@ -1,12 +1,11 @@
 # TDGTWR + TDGUN — TD-source verification
 
-> **RESOLVED — separated + shipped (v0.50).** TDGTWR now binds `Primary=TDChainGun` (Damage=25/ROF=50, TD-authentic — no RA `[Vulcan]` alias); TDGUN runs its own separated chain. The body below is retained as TD-source reference / the plan that was executed.
+**Status:** Reference; shipped before 1.0.0. TDGTWR binds `Primary=TDChainGun` (TD-authentic
+Damage 25, ROF 50); TDGUN runs its own separated chain.
 
-**Status:** TDGTWR has a balance-affecting weapon mismatch (still bound to RA's vanilla `[Vulcan]`) plus one ClassTdGtwr offset bug. TDGUN is mostly TD-authentic — building flags correct, weapon stats correct — but its projectile binding (`Projectile=Cannon`) reuses RA's vanilla section in violation of the separation principle.
-
-**Session that produced it:** 2026-05-22, paired with `td-sam-deep-dive.md` and `td-atwr-deep-dive.md`. Goal: get all four M3 Tier 2 defensive buildings (TDGTWR/TDATWR/TDGUN/TDSAM) weapon-correct so future balance work has TD-authentic baselines.
-
-**Guiding principle:** wholesale port of TD's building + weapon + projectile + audio. No donor. No "modeled on Vulcan" / "modeled on Cannon." Per [[feedback-no-donor-for-td-separation]] / [[project-building-separation-committed]].
+The body is the TD-source analysis and the port plan that was carried out; live stats are in
+`rules.ini` and `balance-deep-dive.md`. TD entities run TD's own building, weapon and projectile code, ported from
+`reference/vanilla-conquer/tiberiandawn/`, never RA's nearest equivalent.
 
 ---
 
@@ -218,7 +217,7 @@ Every value differs. Net effect: our TDGTWR is **significantly stronger** than T
 Plus the rules.ini comment at line 3467 explicitly admits the issue:
 > `; Vulcan: same MG that PBOX donor used; TD's CHAIN_GUN closest analog.`
 
-That's the donor-thinking we're retiring per [[feedback-no-donor-for-td-separation]].
+That's the donor thinking the separation retired.
 
 ### TDGUN — current state in our DLL + rules.ini
 
@@ -435,8 +434,8 @@ TD's BULLET_APDS uses MPH_VERY_FAST. RA's `Speed=` integer for that enum needs v
 ## Decisions
 
 - **No donor framing.** Every value in this plan comes from TD source, not "what RA building has the same shape."
-- **`[TDChainGun]`/`[TDSpreadfire]`/`[TDAPDS]` are new TD-port sections.** Not aliased to RA's `[Vulcan]`/`[Invisible]`/`[Cannon]`. Per [[feedback-no-donor-for-td-separation]] / [[project-building-separation-committed]].
-- **TDGTWR uses TD-authentic stats even though they make it weaker than the current Vulcan-shaped version.** Per [[feedback-difficulty-philosophy]] — don't preserve a balance-buff just because it leaked in via a donor binding. If the building feels too weak in playtest, balance via TD-authentic levers (range, ROF, even a `Strength=` bump on the building) rather than reverting to a non-TD weapon.
+- **`[TDChainGun]`/`[TDSpreadfire]`/`[TDAPDS]` are new TD-port sections.** Not aliased to RA's `[Vulcan]`/`[Invisible]`/`[Cannon]`.
+- **TDGTWR uses TD-authentic stats even though they make it weaker than the current Vulcan-shaped version.** Don't preserve a balance-buff just because it leaked in via a donor binding. If the building feels too weak in playtest, balance via TD-authentic levers (range, ROF, even a `Strength=` bump on the building) rather than reverting to a non-TD weapon.
 - **TDGUN keeps the current Cannon-equivalent projectile values.** The new `[TDAPDS]` section starts as content-identical to `[Cannon]` because TD's `BULLET_APDS` happens to match RA's defaults. The point of porting it isn't to change behavior, it's to decouple TDGUN from RA's vanilla balance pool so they can drift independently.
 
 ---

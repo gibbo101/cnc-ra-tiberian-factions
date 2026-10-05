@@ -34,7 +34,7 @@ Env:
   TS_MAKE_DIR  buildup directory, used only with TS's own body (default shp_gtctwrmk)
   TS_BODY_W    body content width in final pixels. Default 128 = exactly one cell:
                the tower is a 1x1 building and its art stays inside its own square,
-               overlapping no neighbour (Luke, 2026-09-04)
+                overlapping no neighbour
   TS_TURRET_K  turret size over the TS-authentic body ratio (default 1.0)
   TS_SEAT_DX / TS_SEAT_DY   nudge the turret seat, in TS pixels
 License: GPL v3.
@@ -84,8 +84,8 @@ RECOIL_PX = 3          # TS ships no recoil frames for these turrets; nudge the 
 # Turret PLACEMENT still comes from the ring, which is what the turret stands on.
 TS_RING_W = 19.0
 TS_BODY_PX = 34.0
-# 1.0 = TS's own relationship, measured off an in-game shot of all four towers
-# (2026-09-04): the turret spans roughly three quarters of the tower's width and
+# 1.0 = TS's own relationship, measured off an in-game shot of all four towers:
+# the turret spans roughly three quarters of the tower's width and
 # sits down in the platform ring. Anything less reads as a toy gun on a big tower.
 TURRET_K = float(os.environ.get("TS_TURRET_K", "1.0"))
 TS_TURRET_OFFSET = (float(os.environ.get("TS_SEAT_DX", "0.0")),

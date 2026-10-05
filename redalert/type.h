@@ -487,13 +487,11 @@ public:
     unsigned Level;
 
     /*
-    **	Building prerequisites required before an object of this type can be
-    **	produced. Stored as a list of BuildingTypes heap indices (StructType
-    **	for vanilla, beyond STRUCT_COUNT for mod entries). Unused slots are
-    **	set to -1. Was a 32-bit STRUCTF_* bitmask in vanilla; that form
-    **	silently dropped mod-defined Type indices >= 32 from prereq chains.
-    **	See CCINIClass::Get_Buildings and HouseClass::Can_Build.
+    **	This specifies the building prerequisites required before an object
+    **	of this type can be produced.
     */
+    // TF: a list of building type indices, -1 in an unused slot, because a STRUCTF_ bitmask drops the mod
+    // types past 32.
     int Prerequisite[PREREQUISITE_MAX];
 
     /*
@@ -760,14 +758,8 @@ public:
     int Power;
     int Drain;
 
-    /*
-    **	TS building-addon support (TS PowersUpBuilding=/Upgrades=). A type whose
-    **	PowersUpBuilding names another building type is a plug: it is built like
-    **	any building but never unlimbos onto the map — placing it on a matching
-    **	host installs it there (see BuildingClass::Unlimbo), adding its Power to
-    **	the host's output. UpgradesMax on the HOST type is how many plugs it
-    **	accepts. Plugs live and die with their host and refund on its sale.
-    */
+    // TF: TS addons. A type whose PowersUpBuilding names a host is a plug, installed into that host when placed
+    // on it (a tower plug replaces the tower); UpgradesMax on the host is how many plugs it takes.
     StructType PowersUpBuilding;
     int UpgradesMax;
 
@@ -777,16 +769,8 @@ public:
     */
     BSizeType Size;
 
-    /*
-    **  Optional explicit pixel dimensions for the building's launcher-rendered
-    **  sprite. When non-zero, these override the SHP-derived width/height that
-    **  would normally be passed to DLL_Draw_Intercept. Needed for mod-defined
-    **  buildings whose donor SHP doesn't exist in the legacy mixfile registry
-    **  (so width/height would be 0,0 and the launcher would fall back to TGA-
-    **  native pixel scaling — which differs per asset and can render buildings
-    **  out-of-proportion to their footprint). Loaded from the `ShapeSize=W,H`
-    **  rules.ini field. EMC-style directive — see TD-Assets workshop docs.
-    */
+    // TF: the launcher-drawn sprite's pixel size from `ShapeSize=W,H`. Zero uses the SHP's size, which a mod
+    // building with no classic SHP lacks.
     int ShapeWidth;
     int ShapeHeight;
 
@@ -868,29 +852,15 @@ public:
     int Width(void) const;
     int Height(bool bib = false) const;
 
-    /*
-    **	Does this building act as a construction yard -- the structure an MCV deploys into and
-    **	can undeploy back out of, and the anchor of a base? Faction-specific yards each answer
-    **	true, so behaviour keyed to the ROLE stays in one place while the deploy/undeploy
-    **	mapping (which must name a particular faction's yard) keeps its explicit type compares.
-    **
-    **	STRUCT_FAKECONST answers FALSE on purpose. The fake yard is a decoy: it is Allied-only,
-    **	ships TechLevel=-1 so nothing can build it, and has never participated in any of the
-    **	behaviour below. Answering true here would, among other things, let it undeploy into a
-    **	real MCV -- turning a cheap decoy into a free construction yard.
-    */
+    // True for every faction's construction yard. The fake yard answers false: true would let the decoy
+    // undeploy into a real MCV.
     bool Is_Construction_Yard(void) const;
 
-    /*
-    **	Role test for a rotary-wing aircraft factory/pad of any faction (the
-    **	two shared legacy types plus the four W2 (d) faction helipads).
-    */
+    // True for every helicopter pad: the shared, faction and TS pads.
     bool Is_Helipad(void) const;
 
-    /*
-    **	Is this a Tiberian-era building (a TD port or the TS spike) rather than a Red Alert
-    **	one? Drives the TD construction and place-down audio.
-    */
+    // Is this a TD or TS building rather than a Red Alert one, and is it TS? They pick the construction and
+    // place-down sounds.
     bool Is_Tiberian_Era(void) const;
     bool Is_TS_Era(void) const;
 
@@ -926,19 +896,10 @@ public:
     **	Special overlay for the weapons factory.
     */
     static void const* WarFactoryOverlay;
-    /*
-    **  TD-source WEAP2.SHP — packed as TDWEAP2.SHP into TFASSETS.MIX.
-    **  Drawn on top of TDWEAP body (STRUCT_TDWEAP) instead of RA's WEAP2,
-    **  which is sized for RA's 3x2 footprint and shadowed TD's body in
-    **  classic mode. Loaded alongside WarFactoryOverlay in One_Time.
-    */
+    // TF: the TD war factory's door overlay, TD's WEAP2 packed as TDWEAP2.SHP, drawn over STRUCT_TDWEAP.
     static void const* WarFactoryOverlayTd;
-    /*
-    **  TS's bay-door overlay (STRUCT_TSWEAP). Packed as TSWEAP2.SHP into
-    **  TFASSETS.MIX at the war factory's own stub dimensions — the pointer
-    **  supplies the box the launcher scales the door tileset onto, so
-    **  borrowing another factory's overlay draws the door at its size.
-    */
+    // TF: the TS war factory's door layers (TSWEAPDR/UD/NF/NU), each loaded at the factory's stub size, which
+    // sets the box the launcher draws it in. WarFactoryOverlayTs is never loaded.
     static void const* WarFactoryOverlayTs;
     static void const* TsWeapShutter;
     static void const* TsWeapUnderDoor;
@@ -1034,41 +995,21 @@ public:
     */
     unsigned IsAnimating : 1;
 
-    /*
-    **  Tiberian Factions — TS walker animation. When WalkFrames > 1 the body
-    **  tileset is laid out as WalkFacings blocks of WalkFrames each
-    **  (shape = facing_index * WalkFrames + stage); the walk stage advances
-    **  while driving and rests at 0 when stopped. The turret block (if any)
-    **  starts after the walk and firing blocks instead of at 32. Parsed from
-    **  `WalkFrames=` / `WalkFacings=` in rules.ini (defaults 1/32 = the
-    **  standard 32-frame vehicle layout, untouched).
-    */
+    // TF: TS walker gait (`WalkFrames=`, `WalkFacings=`): WalkFacings blocks of WalkFrames, the stage advancing
+    // while driving. A turret block follows the walk and firing blocks rather than starting at 32.
     int WalkFrames = 1;
     int WalkFacings = 32;
-    /*
-    **  Tiberian Factions -- TS DeployToFire (the Juggernaut). The unit walks with no gun,
-    **  sets down through DeployFrames of ladder art to fire from a fixed stance with a
-    **  turning turret, and packs up again before it moves. The tileset carries the walk
-    **  blocks, then 32 deployed facings, then the ladder. Parsed from `DeployToFire=` /
-    **  `DeployFrames=` / `DeployRate=` in rules.ini.
-    */
+    // TF: TS DeployToFire (the Juggernaut) walks unarmed and sets down through DeployFrames of ladder to fire.
+    // Its tileset is walk, firing, 64 deployed facings (level, then pitched), then the ladder.
     bool IsDeployToFire = false;
     int DeployFrames = 0;
     int DeployRate = 2;
 
-    /*
-    **  Tiberian Factions — TS walker firing animation (art.ini FiringFrames).
-    **  When non-zero the tileset carries a second block of WalkFacings x
-    **  FiringFrames immediately after the walk cycle, and the body plays it
-    **  once per shot. Zero (the default) means the unit has no firing pose and
-    **  the walk cycle is the whole body tileset.
-    */
+    // TF: TS walker firing pose (art.ini FiringFrames): a WalkFacings x FiringFrames block after the walk
+    // cycle, played once per shot. Zero means the unit has no firing pose.
     int FiringFrames = 0;
 
-    /*
-    **  Game ticks per walk-animation frame (TS WalkRate semantics; bigger =
-    **  slower gait). Parsed from `WalkRate=`.
-    */
+    // TF: game ticks per walk frame (TS WalkRate; bigger is a slower gait).
     int WalkRate = 2;
 
     /*
@@ -1152,12 +1093,7 @@ public:
                   int toffset,
                   MissionType order);
 
-    /*
-    **  Dynamic 2-arg constructor for mod-defined unit types. Used by the
-    **  [NewUnits] index in rules.ini — mirrors BuildingTypeClass's 2-arg
-    **  constructor at bdata.cpp:2846. Sets minimal stub state; Logic=
-    **  alias in Read_INI fills in donor stats / IsXxx flags / ImageData.
-    */
+    // TF: builds a [NewUnits] entry; Read_INI's Logic= then makes it act as a vanilla unit type.
     UnitTypeClass(int utype, char const* ininame);
 
     static void* operator new(size_t) noexcept;
@@ -1172,11 +1108,7 @@ public:
 
     static void Init_Heap(void);
     static UnitType From_Name(char const* name);
-    /*
-    **  Name-based lookup across the full UnitTypes heap, including mod-
-    **  defined entries past UNIT_COUNT. From_Name only walks the vanilla
-    **  enum range. Mirrors BuildingTypeClass::As_Pointer.
-    */
+    // TF: finds a unit type by IniName across the whole heap; From_Name stops at UNIT_COUNT.
     static UnitTypeClass* As_Pointer(char const* name);
     static UnitTypeClass& As_Reference(UnitType type);
     static void Init(TheaterType){};
@@ -1193,11 +1125,7 @@ public:
     void Sonic_Turret_Seat(DirType dir, int& x, int& y) const;
     void Hover_Rack_Seat(DirType hull, DirType rack, int& x, int& y) const;
 
-    /*
-    **	Role test for a mobile construction vehicle of any faction (the two
-    **	stock-campaign types plus the four faction MCVs). The MCV-vs-yard
-    **	pairing itself lives in MCV_Deploy_Building / the undeploy table.
-    */
+    // True for a mobile construction vehicle of any faction: the stock-campaign pair and the five faction MCVs.
     bool Is_MCV(void) const;
 
 #ifdef SCENARIO_EDITOR
@@ -1349,10 +1277,7 @@ public:
     */
     unsigned IsFraidyCat : 1;
 
-    /*
-    **	Tiberian Factions: a fearless soldier is never frightened by damage, so it never drops
-    **	prone (TS [Infantry] Fearless).
-    */
+    // TF: a fearless soldier is never frightened by damage, so never goes prone (TS Fearless=).
     unsigned IsFearless : 1;
 
     /*
@@ -1708,20 +1633,10 @@ public:
     */
     unsigned IsGigundo : 1;
 
-    /*
-    **	Tiberian Factions mod: marker for TD-ported bullets. Per
-    **	[[project-td-port-architecture]] (Option A): runtime methods
-    **	(AI, Unlimbo) dispatch to verbatim TD ports when this is true,
-    **	never running RA's bullet logic for TD entities.
-    */
+    // TF: a TD-ported bullet, whose AI and Unlimbo run TD's code rather than RA's.
     unsigned IsTDPort : 1;
 
-    /*
-    **	Tiberian Factions mod: TD's BulletTypeClass has an explicit IsHoming flag
-    **	(tiberiandawn/type.h:1266). RA derived "is homing" from ROT != 0, but for
-    **	the TD code-path port we need the field explicit. Parsed from `Homing=yes`
-    **	in rules.ini for TD-ported bullets.
-    */
+    // TF: TD's explicit homing flag (`Homing=`) for TD-ported bullets; RA infers homing from ROT.
     unsigned IsHoming : 1;
 
     /*
@@ -1730,31 +1645,14 @@ public:
     */
     BulletType Type;
 
-    /*
-    **	Tiberian Factions mod: TD's BulletTypeClass has class-level Warhead
-    **	(tiberiandawn/type.h:1342). Some TD AI logic references Class->Warhead
-    **	(e.g. for impact damage selection). RA stores warhead per-instance on
-    **	BulletClass (from the firing weapon); we mirror TD's class-level field
-    **	for the TD port. Parsed from `Warhead=` in rules.ini.
-    */
+    // TF: TD's class-level warhead (`Warhead=`), which TD's bullet AI explodes with; RA takes it from the weapon.
     WarheadType ClassWarhead;
 
-    /*
-    **	Tiberian Factions mod: TD's BulletTypeClass has class-level Explosion anim
-    **	(tiberiandawn/type.h:1347). TD's AI spawns this anim at impact. RA's
-    **	impact anim is warhead-driven via Combat_Anim classifier. For the TD code
-    **	path we use this explicit value. Parsed from `ImpactAnim=` in rules.ini
-    **	(name chosen to avoid collision with RA warhead's `Explosion=` field).
-    */
+    // TF: TD's class-level impact anim (`ImpactAnim=`, named apart from the warhead's Explosion=). RA picks the
+    // impact anim from the warhead.
     AnimType ImpactAnim;
 
-    /*
-    **	Tiberian Factions mod: TD's BulletClass::Unlimbo at tiberiandawn/bullet.cpp:704
-    **	supports an explicit Range override (used when Class->Range != 0; otherwise
-    **	range is computed from distance / speed). Most TD bullets leave it at 0.
-    **	Parsed from `BulletRange=` in rules.ini (name avoids collision with
-    **	WeaponTypeClass `Range=`).
-    */
+    // TF: TD's explicit flight range (`BulletRange=`); zero computes it from distance and speed.
     int BulletRange;
 
     /*

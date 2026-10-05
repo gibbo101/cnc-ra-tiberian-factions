@@ -104,11 +104,8 @@ public:
     */
     int BadgerBombCount;
 
-    /*
-    **	Tiberian Factions: a subterranean vehicle drives to any surface-reachable
-    **	destination closer than this many cells and digs to everything else
-    **	(TS hardcodes 12; TS-authentic short hops stay on the surface).
-    */
+    // TF: a subterranean vehicle drives to a surface-reachable destination closer than this many cells and digs to
+    // everything else (UnitClass::Should_Dig_To). TS hardcodes 12.
     int TunnelDigThreshold;
 
     /*

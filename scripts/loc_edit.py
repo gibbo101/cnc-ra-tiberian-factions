@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Add/overwrite strings in a Remaster MASTERTEXTFILE_<lang>.LOC.
 
-The .LOC binary format (reverse-engineered 2026-06-21, round-trips byte-identical):
+The .LOC binary format (reverse-engineered, round-trips byte-identical):
 
   u32 count
   count x record: [u32 keyHash][u32 valLen(chars)][u32 keyLen(bytes)]   (sorted asc by keyHash)

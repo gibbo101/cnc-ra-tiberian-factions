@@ -298,25 +298,10 @@ bool FootClass::Mark(MarkType mark)
     return (false);
 }
 
-/***********************************************************************************************
- * FootClass::TF_Path_No_Progress -- No-progress detector for the path failure branches.       *
- *                                                                                             *
- *    Call EXACTLY ONCE per Basic_Path failure, at the top of the failure branch. Returns      *
- *    true once path attempts have kept failing from the same cell for `window` frames with    *
- *    no quiet gap longer than the staleness bound. Keyed on the source cell alone: a stuck    *
- *    unit's destination ROTATES (hunt logic re-picks another unreachable target every few     *
- *    attempts), so pair keying never accumulates -- but the unit not moving while failing     *
- *    is invariant. Any movement or a successful path (caller resets TF_NoProgSrc) starts a    *
- *    fresh window, so a queued column that advances even one cell never trips. The caller     *
- *    acts on the verdict caller-side; never from inside Basic_Path itself.                    *
- *=============================================================================================*/
+// True once Basic_Path has kept failing from the same cell for `window` frames. Call it once per failure and
+// act on the verdict in the caller, never inside Basic_Path (docs/path-failure-livelock-design.md).
 bool FootClass::TF_Path_No_Progress(long window)
 {
-    /*
-    **	Failures separated by more than this are unrelated episodes, not one continuous
-    **	stall -- without this bound a unit could trip instantly on the first failure of a
-    **	new order issued minutes after an old, long-forgotten stall at the same cell.
-    */
     const long TF_NOPROG_STALE = TICKS_PER_SECOND * 5;
 
     CELL src = Coord_Cell(Center_Coord());
@@ -533,15 +518,8 @@ int FootClass::Mission_Move(void)
     assert(IsActive);
 
     if (!Target_Legal(NavCom) && !IsDriving && MissionQueue == MISSION_NONE) {
-        /*
-        **	Attack-move (CFE port): destination reached. Only snap out of
-        **	attack-move if we forgot the remembered destination, arrived (or got
-        **	close), or can no longer reach it (zone check stands in for CFE's
-        **	Find_Path_AStar until the A* port lands). If there is still a nav queue
-        **	we're in queued attack-move -- advance it via Enter_Idle_Mode without
-        **	resetting the mode. ResetAttackMove(1) lets a minelayer lay at the spot
-        **	and stay in attack-move (so don't go idle in that case).
-        */
+        // TF: attack-move (CFE port) ends at the destination, or when that lies in another zone, unless a nav
+        // queue remains; ResetAttackMove(1) lets a minelayer lay here and stay in attack-move.
         if (AttackMove) {
             if (!Target_Legal(RememberedNavCom) || (Distance(RememberedNavCom) < Rule.CloseEnoughDistance)
                 || !Is_In_Same_Zone(As_Cell(RememberedNavCom))) {
@@ -629,10 +607,7 @@ int FootClass::Mission_Attack(void)
     if (Target_Legal(TarCom)) {
         Approach_Target();
     } else {
-        /*
-        **	Attack-move (CFE port): the target died. If we're in attack-move,
-        **	resume travelling toward the remembered destination instead of idling.
-        */
+        // TF: attack-move (CFE port): when the target dies, carry on toward the remembered destination.
         if (AttackMove) {
             AttackMoveEnterMoveMode();
             return (1);
@@ -666,9 +641,8 @@ int FootClass::Mission_Guard(void)
     **	If this unit is on an impassable cell for any reason, it needs to scatter immediately
     */
     if (What_Am_I() == RTTI_INFANTRY || What_Am_I() == RTTI_UNIT) {
-        // Impassability is per-locomotor, not per-land-type: ask the ground
-        // table so an amphibious (hover) unit may legally idle on water while
-        // a tracked unit stranded there still scatters to safety.
+        // TF: impassability is per locomotor, so a hover unit may idle on water while a stranded tracked unit
+        // scatters.
         LandType land = Map[Coord].Land_Type();
         if (!Target_Legal(NavCom) && ::Ground[land].Cost[Techno_Type_Class()->Speed] == 0) {
             Scatter(0, true, true);
@@ -742,14 +716,8 @@ int FootClass::Mission_Hunt(void)
     assert(IsActive);
     if (!Target_Something_Nearby(THREAT_NORMAL)) {
 
-        /*
-        **	A computer-house ground unit hunting blind explores instead of standing
-        **	down: with the fair-fog intel layer the house must SIGHT the enemy before
-        **	it can fight, so blind hunters probe the map's start locations. Scout
-        **	intensity follows the difficulty tier -- an Easy house (IQ 3) only probes
-        **	until it has found an enemy building, higher tiers re-probe whenever
-        **	their hunt goes blind.
-        */
+        // TF: a blind AI hunter probes the start locations rather than standing down, as fair fog makes it sight
+        // the enemy first. An Easy house (IQ 3 or less) stops probing once it knows an enemy building.
         if (!House->IsHuman && Session.Type != GAME_NORMAL && !Target_Legal(NavCom)
             && (What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_INFANTRY)) {
             bool probe = true;
@@ -1003,11 +971,8 @@ void FootClass::Approach_Target(void)
         int maxrange = Weapon_Range(primary);
         //		int maxrange = max(Weapon_Range(0), Weapon_Range(1));
 
-        /*
-        **	A weapon with a minimum range (TS artillery) cannot shoot a target standing on top
-        **	of it, so a target inside that range sends the unit looking for a cell as surely as
-        **	one out of reach does, and the sweep below only accepts cells beyond it.
-        */
+        // TF: a target inside the weapon's minimum range (TS artillery) also sends the unit looking for a cell,
+        // and the sweep below takes only cells beyond that range.
         TechnoTypeClass const& ttype = *Techno_Type_Class();
         WeaponTypeClass const* weap = (primary == 1) ? ttype.SecondaryWeapon : ttype.PrimaryWeapon;
         int minrange = (weap != NULL) ? (int)weap->MinRange : 0;
@@ -1131,9 +1096,8 @@ int FootClass::Mission_Guard_Area(void)
     **	If this unit is on an impassable cell for any reason, it needs to scatter immediately
     */
     if (What_Am_I() == RTTI_INFANTRY || What_Am_I() == RTTI_UNIT) {
-        // Impassability is per-locomotor, not per-land-type: ask the ground
-        // table so an amphibious (hover) unit may legally idle on water while
-        // a tracked unit stranded there still scatters to safety.
+        // TF: impassability is per locomotor, so a hover unit may idle on water while a stranded tracked unit
+        // scatters.
         LandType land = Map[Coord].Land_Type();
         if (!Target_Legal(NavCom) && ::Ground[land].Cost[Techno_Type_Class()->Speed] == 0) {
             Scatter(0, true, true);
@@ -1436,7 +1400,7 @@ void FootClass::Active_Click_With(ActionType action, ObjectClass* object)
 #endif
             }
 
-            // Attack-move (CFE port): pass on attack-move when that's the action.
+            // TF: attack-move (CFE port).
             if (action == ACTION_ATTACKMOVE) {
                 Player_Assign_Mission(MISSION_ATTACKMOVE, TARGET_NONE, targ);
             } else {
@@ -1504,11 +1468,8 @@ void FootClass::Active_Click_With(ActionType action, CELL cell)
             CellClass const* cellptr = &Map[::As_Cell(::As_Target(Center_Coord()))];
             if (What_Am_I() == RTTI_INFANTRY && ((InfantryClass*)this)->Is_Jumpjet()) {
 
-                /*
-                **	A jumpjet goes wherever it is sent, flying if it cannot walk there (TS moves
-                **	it anywhere): only a cell it cannot stand on is swapped for the nearest one
-                **	it can, in any zone.
-                */
+                // TF: a jumpjet flies where it cannot walk, so only a cell it cannot stand on is swapped for the
+                // nearest one it can, in any zone.
                 if (action == ACTION_NOMOVE) {
                     cell = Map.Nearby_Location(cell, Techno_Type_Class()->Speed, -1, Techno_Type_Class()->MZone);
                 }
@@ -1530,7 +1491,7 @@ void FootClass::Active_Click_With(ActionType action, CELL cell)
 #endif
             }
 
-            // Attack-move (CFE port): pass on attack-move when that's the action.
+            // TF: attack-move (CFE port).
             if (action == ACTION_ATTACKMOVE) {
                 Player_Assign_Mission(MISSION_ATTACKMOVE, TARGET_NONE, ::As_Target(cell));
             } else {

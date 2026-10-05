@@ -247,9 +247,8 @@ struct SoundEffectNameStruct
 
 #endif
 
-    // Tiberian Factions mod sounds — TD asset name in column 1; engine resolves
-    // via Voc_From_Name() during rules.ini parse. TD's ROCKET2.AUD ships in
-    // CONFIG.MEG; if not found at runtime, mod bundles it in its own mixfile.
+    // TF: mod sounds, in the VocType order of defines.h: keep the two in step. A rules.ini Report= finds them
+    // by sample name through Voc_From_Name.
     {"ROCKET2", 1, IN_NOVAR},  // VOC_TD_ROCKET2		TD rocket launch (light)
     {"TNKFIRE6", 1, IN_NOVAR}, // VOC_TD_TANK4			TD big gun tank fire
     {"OBELRAY1", 1, IN_NOVAR}, // VOC_TD_LASER			Obelisk humming laser beam
@@ -265,9 +264,8 @@ struct SoundEffectNameStruct
     {"BAZOOK1", 1, IN_NOVAR},   // VOC_TD_BAZOOKA — TD Rocket Soldier launch (WEAPON_TDDRAGON Report=), routed via RAC/RAR_SFX_BAZOOK1
     {"FLAMER2", 1, IN_NOVAR},   // VOC_TD_FLAMER — TD Flamethrower (WEAPON_TDFLAME Report=FLAMER2; TD VOC_FLAMER1 = file FLAMER2), routed via RAC/RAR_SFX_FLAMER2
     {"RAMGUN2", 1, IN_NOVAR},   // VOC_TD_SNIPER — TD Commando silenced rifle (WEAPON_TDRIFLE Report=RAMGUN2), routed via RAC/RAR_SFX_RAMGUN2
-    // TD Commando (RMBO) one-liners — names are "TD"+asset so the launcher resolves
-    // RAC/RAR_SFX_TD<NAME> (registered in SFXEVENTSLOCALIZED.XML -> TDC/TDR_SFX_CMD_<NAME>_EN-US).
-    // IN_NOVAR -> no .V0x extension appended (single-take), so the name passes through clean.
+    // TD Commando one-liners, named TD+asset so the launcher resolves RAC/RAR_SFX_TD<NAME>. IN_NOVAR keeps the
+    // single-take name free of a .V0x suffix.
     {"TDBOMBIT1", 20, IN_NOVAR},  // VOC_TD_CMD_BOMBIT — "I've got a present for ya"
     {"TDCMON1", 20, IN_NOVAR},    // VOC_TD_CMD_CMON — "c'mon"
     {"TDGOTIT1", 20, IN_NOVAR},   // VOC_TD_CMD_GOTIT — "you got it"
@@ -829,10 +827,7 @@ int Sound_Effect(VocType voc, fixed volume, int variation, signed short pan_valu
     "AARRIVE1", //	VOX_ALLIED_REINFORCEMENTS
     "SAVE1",    //	VOX_MISSION_SAVED
     "LOAD1",    //	VOX_MISSION_LOADED
-    // Tiberian Factions mod — TD-only EVA voices. Names match the engine
-    // name we register as RAC_SFX_TD<NAME> / RAR_SFX_TD<NAME> in mod-side
-    // SFXEVENTSLOCALIZED.XML, which map to TDC_SFX_EVA_<NAME>_EN-US.MP3 /
-    // TDR_SFX_EVA_<NAME>_EN-US.MP3 (assets shipped by base game).
+    // TF: Tiberian-era EVA lines, each registered as RAC/RAR_SFX_<NAME> in the mod's SFXEVENTSLOCALIZED.XML.
     "TDGDIDEAD1", // VOX_TD_DEAD_GDI       (TD "GDI unit destroyed")
     "TDNODDEAD1", // VOX_TD_DEAD_NOD       (TD "Nod unit destroyed")
     "TDCIVDEAD1", // VOX_TD_DEAD_CIV       (TD "civilian killed")
@@ -862,23 +857,8 @@ int Sound_Effect(VocType voc, fixed volume, int variation, signed short pan_valu
 
 static VoxType CurrentVoice = VOX_NONE;
 
-/*
-**  Tiberian Factions mod — TD EVA side-conditional override table.
-**  Indexed by VoxType. For each VOX slot that has a TD-equivalent voice
-**  for the same semantic event, holds the TD-prefixed engine name (e.g.
-**  "TDCONSTRU1"). NULL means "no TD equivalent — fall back to RA Speech[]".
-**
-**  Init_SpeechTD() (audio.cpp, called from Game_Init in init.cpp) fills the
-**  shared-semantic slots. New shared mappings get added there.
-**
-**  On_Speech (dllinterface.cpp) consults this table when the originating
-**  player's ActLike is HOUSE_GOOD or HOUSE_BAD. Allied/Soviet players are
-**  unaffected (Speech[] still wins).
-**
-**  Per session 2026-05-26: GDI + Nod share this table. Future per-side
-**  Nod voice work would add a parallel SpeechNOD[] and branch on actlike
-**  in On_Speech.
-*/
+// TF: the TD EVA sample for each VoxType, spoken for GDI and Nod. On a NULL slot they speak Speech[]'s line only
+// if it is a TD one, else nothing: a TD side never hears the RA announcer (On_Speech).
 char const* SpeechTD[VOX_COUNT] = {NULL};
 
 void Init_SpeechTD(void)
@@ -921,23 +901,8 @@ void Init_SpeechTD(void)
     SpeechTD[VOX_HQ_UNDER_ATTACK]    = "TDBASEATK1";
 }
 
-/*
-**  RA-voice overrides for lines whose launcher auto-fire is silence-stubbed
-**  (the radar recipe): the DLL refires these itself for every faction, so
-**  Allied/Soviet dispatch must resolve NEW event names (RAC/RAR_SFX_RAO*)
-**  whose samples are loose copies of the base RA EVA — the ORIGINAL event's
-**  sample name now points at a 44-byte silent stub. TD factions take
-**  SpeechTD[] first; this table is the everyone-else fallback. NULL = the
-**  RA Speech[] name is untouched by any stub, dispatch it as-is.
-*/
-/*
-**  Tiberian Sun GDI's own EVA. Same shape as SpeechTD[]: a filled slot is the
-**  sample name the DLL hands the launcher, a NULL slot falls back to the TD
-**  announcer (never RA's -- On_Speech drops a line no Tiberium-era side has a
-**  recording of). Samples ride the proven loose-file route: novel names resolve
-**  from <mod>\Data\AUDIO\EN-US as MS-ADPCM WAVs, registered as events in the
-**  mod's loose SFXEVENTSLOCALIZED.XML.
-*/
+// TF: TS GDI's own EVA sample for each VoxType; a NULL slot is silence. The samples are bundled WAVs registered
+// in the mod's loose SFXEVENTSLOCALIZED.XML.
 char const* SpeechTS[VOX_COUNT] = {NULL};
 
 void Init_SpeechTS(void)
@@ -983,6 +948,8 @@ void Init_SpeechTS(void)
     SpeechTS[VOX_TS_FIRESTORM_OFFLINE] = "TSFSOFFLN";
 }
 
+// TF: Allied and Soviet names for RA EVA lines whose stock sample is a silent stub, muting the launcher's own
+// faction-blind auto-fire; they name loose copies the DLL speaks mid-game. NULL keeps Speech[]'s name.
 char const* SpeechRAO[VOX_COUNT] = {NULL};
 
 void Init_SpeechRAO(void)
@@ -992,11 +959,6 @@ void Init_SpeechRAO(void)
         return;
     inited = true;
 
-    // RAO names exist for lines whose stock sample is silence-stubbed (to
-    // mute the launcher's own faction-blind auto-fire) but which the DLL can
-    // still speak audibly. That only works MID-GAME: speech dispatched in the
-    // game-over window is dropped by the launcher, so endgame lines route
-    // through the era mailbox instead (dllinterface.cpp).
     SpeechRAO[VOX_STRUCTURE_SOLD] = "RAOSTRUSLD1";
 }
 

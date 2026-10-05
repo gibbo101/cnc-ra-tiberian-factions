@@ -8,8 +8,8 @@ ships with the mod via the normal resources -> build copy; regenerate and commit
 whenever an entity type is added or its editor-relevant stats change.
 
 BUILDINGS / UNITS / INFANTRY are embedded tables in mapeditor.json entry form (seeded
-2026-08-31 from the editor's previously compiled-in tables, which were verified in-game
-across the v2.0+ releases). Review against redalert/defines.h ids and CCDATA/rules.ini
+from the editor's previously compiled-in tables, which were verified in-game).
+Review against redalert/defines.h ids and CCDATA/rules.ini
 when editing. TEMPLATES are derived, not embedded: ids/names/sizes come from
 scripts/td_ra_tile_map.json (the same file build_td_tiles.py generates the DLL enum and
 tileset data from), and per-icon land strings + usage masks from the Mobius editor

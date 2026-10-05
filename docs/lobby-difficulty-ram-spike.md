@@ -1,74 +1,42 @@
-# Per-slot AI difficulty via ClientG RAM — spike record + implementation design
+# Per-slot AI difficulty via ClientG RAM
 
-**Status: phase A SHIPPED + LIVE-VERIFIED 2026-07-18 (commit `3e156a0`).** A mixed
-Hard/Medium/Easy/Hard lobby produced IQ 5/4/3/5 on the matching houses, confirmed
-on-screen and in MOD_DEBUG_AI.txt.
+**Status:** Reference; shipped in 4.1.0, the ambiguity resolver in 5.0.0.
 
-**⭐ PHASE B RESOLVED 2026-07-19 — and the problem it was solving does not exist.**
-Two rig measurements collapsed the whole design space:
+Per-slot AI difficulty is read from ClientG's lobby records (`AIPLAYERn`) at match start.
 
-1. **In a LAN match only the host simulates.** The joiner's client renders streamed
-   state and never executes the game DLL at all. Proven by role swap on ONE machine:
-   Luke's desktop wrote zero diagnostic bytes across a full 10-minute match as joiner,
-   then wrote its first log line within ~10s of hosting. Same mod, same DLL, same
-   binary — only the role changed. The sim lives in `InstanceServerG.exe`, a separate
-   process from the `ClientG.exe` shell, and on a joiner that process has **no game
-   DLL mapped at all**.
-2. **The host reads its own live lobby correctly.** With cached values `3,1,2,3` in
-   memory, a fresh lobby set to Easy/Hard/Hard/Medium scanned as `s2=1 s3=3 s4=3
-   s5=2` — every slot tracked the change.
+- **Where it runs:** only the LAN host simulates, so the host's read sets every AI and there is
+  nothing to synchronise. A joiner's launcher loads the DLL only for the launcher patches; the sim
+  never runs there (`launcher-vs-dll-ownership.md`). Proven by role swap on one machine: no sim
+  log lines as joiner, the first within ~10 s as host.
+- **When:** the client tears down and rebuilds its `AIPLAYERn` records as a match launches, so a
+  scan inside that window finds nothing or a half-written array (`E M H M` was caught reading
+  `E M M M`). The deferred re-scan from `CNC_Advance_Instance` (`TF_Lobby_Difficulty_Retry`, 4
+  attempts 90 frames apart) requires two consecutive agreeing scans; the last attempt accepts an
+  unconfirmed read rather than none. Solo skirmish hits this too,
+  from the second match of a session.
+- **Stale copies:** the heap can hold a stale copy of the array that matches the live one on
+  colour and country. The resolver (`TF_Resolve_Lobby_Ambiguity`, `lobby-ambiguity-findings.md`)
+  picks the live copy by its vector triple, exact referrer, freshness or a strict majority, and
+  fails closed when undecided.
+- **Fallback chain:** RAM read, then `Documents/CnCRemastered/tf_ai_difficulty.txt` (global; it
+  applies in LAN too, since only the host simulates, but that is not live-verified; the ClientG read
+  always comes first),
+  then Hard.
+- `GlyphxID` cannot tell live from stale arrays: the IDs are fixed per slot index.
+- Mods load in LAN games only, so LAN is the whole modded multiplayer surface.
 
-**Therefore there is nothing to synchronise.** One sim, running on the machine that
-owns the lobby, reading the authoritative values directly. No broadcast, no
-cross-peer mirroring, no scanner v4, no live-model hex hunt. The `PHASEB-ID` GlyphxID
-probe was built to find a live model we did not need.
+Verified in play: a mixed Hard/Medium/Easy/Hard solo lobby gave IQ 5/4/3/5; a two-human LAN lobby
+set Easy/Easy/Easy/Hard read `s2=1 s3=1 s4=1 s5=3`, a multiset that is no permutation of the
+cached values, so a live read.
 
-**LIVE-VERIFIED in LAN MP 2026-07-19.** Lobby Easy/Easy/Easy/Hard with two humans read
-`s2=1 s3=1 s4=1 s5=3` and applied IQ 3/3/3/5, each house tagged `[slot n]`, shown
-on screen on **both** peers. The multiset `{1,1,1,3}` is not a permutation of the
-cached `{1,2,2,3}`, so this is unambiguously a live read rather than a stale one.
-(The joiner displaying host-generated messages is itself further confirmation of the
-host-only model: its own DLL never ran.)
-
-⭐ **READ TIMING RESOLVED 2026-07-21 — the scan is fine, the moment was wrong.** The client
-tears down and rebuilds its `AIPLAYERn` records as a match launches. A scan landing inside
-that window finds nothing, or finds a fresh array disagreeing with a not-yet-freed stale one,
-and reports failure — so the match falls back to global Hard. This is **not** LAN-specific:
-plain solo skirmish hits it from the second match of a session onward. Fix = a deferred
-re-scan from `CNC_Advance_Instance` (`TF_Lobby_Difficulty_Retry`, 4 attempts 90 frames apart)
-that requires **two consecutive agreeing scans**, because the rebuild passes through
-half-written states that are briefly self-consistent (`E M H M` was caught reading `E M M M`).
-Evidence and the failure census: `known-issues.md` "Per-slot difficulty goes stale".
-
-**`GlyphxID` cannot discriminate live from stale arrays** — the IDs are fixed per slot index
-(slot 1 read `1055504538` in two sessions hours apart), not generated per lobby.
-
-**`tf_ai_difficulty.txt` now applies in multiplayer too.** It was previously solo-only
-on the reasoning that a per-machine file would desync peers. Only the host simulates,
-so the host's file is the only one that reaches the sim. Not yet live-verified in MP.
-
-**The resulting fix is the removal of a guard, not an implementation:** the
-`TF_HumanPlayerCount < 2` gate on `apply_per_slot` was protecting against a
-divergence that cannot occur. Since a joiner never executes the DLL, *any* execution
-of this code is by definition the host — so per-slot difficulty applies
-unconditionally.
-
-**Scope note:** mods load in **LAN games only**, so LAN is the entire modded
-multiplayer surface. There is no internet/quickmatch case to cover.
-
-⚠️ **Retracted by this result:** the "phase-A regression — stale apply in 1-human LAN
-lobbies" previously recorded here was diagnosed on the assumption that the scanned
-array was saved config. That assumption is wrong (measurement 2), so the reasoning
-behind that bug does not hold. Re-test before treating it as real.
-
-Companion findings and session narrative: `todo.md` Phase 1 block, `ai-upgrade-plan.md`
-§6 Phase 1 STATUS.
+**Dead routes, do not rebuild:** a host-broadcast EventClass, mirrored lobby reads across peers, a
+live-model hex hunt, the `PHASEB-ID` GlyphxID probe. Each assumed both peers simulate. Measure the
+role; do not derive MP constraints from transport code.
 
 **Implementation notes (what shipped, all in `redalert/dllinterface.cpp`):**
 - Scanner: `TF_Read_Lobby_AI_Difficulties` + helpers, directly above
-  `CNC_Set_Difficulty`. Signature scan per the design below; every validated
-  candidate array must agree or the read fails (stale lobby copies exist in memory).
-  A failed read arms the deferred re-scan described in the status block.
+  `CNC_Set_Difficulty`. Signature scan per the design below; validated candidates that
+  disagree go to the ambiguity resolver. A failed read arms the deferred re-scan above.
 - **Trap found during GREEN:** the GlyphX house-assign loop renames AI houses'
   `IniName` from `AIPLAYERn` to the "Computer" display name before
   `CNC_Set_Difficulty` runs, and `InitialName` is compiled out (`WOLAPI_INTEGRATION`
@@ -155,9 +123,9 @@ index" and any of them looked usable as a key. They are three different fields.
 - **`0x54` is the ActLike**, in the client's numbering: **RA HousesType + 2** (so 2-9),
   with 42 meaning the lobby pick was random (DontCryJustDie, 2026-07-22). Both samples we
   had logged decode exactly: an all-Soviet lobby's `4, 4, 4` is `HOUSE_USSR`, and a mixed
-  GDI / Nod / Allied lobby's `2, 9, 3` is Spain / Turkey / Greece, our two hijacked country
-  slots plus Greece. It is now a **second liveness key** alongside colour, gated against
-  `player_info.House` captured in `CNC_Set_Multiplayer_Data` before the Spain/Turkey hijack
+  GDI / Nod / Allied lobby's `2, 9, 3` decoded as Spain / Turkey / Greece, logged while Nod still
+  sat on Turkey (GDI and Nod now hijack Spain and Greece). It is now a **second liveness key** alongside colour, gated against
+  `player_info.House` captured in `CNC_Set_Multiplayer_Data` before the Spain/Greece hijack
   rewrites it. Skipped when the record reads 42 or falls outside 2-9, so an unexpected
   encoding degrades to the colour-only gate instead of failing the read.
 
@@ -207,8 +175,8 @@ difficulty read can also run lazily on first AI tick — retro-apply already exi
    A candidate must cover the whole AI roster. Equality tests against any field whose
    meaning is merely assumed are what broke this twice (`slot == slot2` first, then the
    1-based floor on `+0x50`); colour and country are corroborated from outside the scan,
-   which is what makes them safe to gate on. All checks must pass for exactly ONE candidate
-   array; ambiguity or zero hits = scan failure.
+   which is what makes them safe to gate on. Candidates that pass but disagree go to the
+   ambiguity resolver; zero hits is a scan failure.
 5. Map `AIPLAYERn` → the n-th AI entry in the `CNC_Set_Multiplayer_Data` player list
    (names match — we log both already), then per-house:
    Easy→IQ 3, Medium→IQ 4, Hard→`Rule.MaxIQ` (existing `TF_AI_IQ_From_Difficulty`,
@@ -220,18 +188,7 @@ difficulty read can also run lazily on first AI tick — retro-apply already exi
 to allocate the array above 4 GB on some machines, use `NtWow64ReadVirtualMemory64`.
 Check `IsWow64Process` on ClientG during implementation.
 
-### Multiplayer with AI (phase B) — RESOLVED 2026-07-19
-
-Nothing to build. Only the host simulates (see the status block at the top of this
-file), so per-slot difficulty applies unconditionally — the fix was removing the
-`TF_HumanPlayerCount < 2` guard on `apply_per_slot`.
-
-**Retired, do not rebuild:** host-broadcast EventClass, mirrored-lobby read across
-peers, live-model hex hunt / scanner v4, the `PHASEB-ID` GlyphxID probe. Each was
-sound reasoning from `queue.cpp` / `Glyphx_Queue_AI` (no DLL-side event transport —
-still true), resting on a false premise: that both peers simulate. Measure the role;
-do not re-derive MP constraints from transport code.
-## RAM reconnaissance — what else is extractable (survey 2026-07-18)
+## RAM reconnaissance — what else is extractable
 
 Question posed: is reading ClientG RAM a general "launcher unblocker"? **No — it is a
 lobby-SELECTION extraction channel, not a capability unlocker.** The distinction is
@@ -241,7 +198,7 @@ read vs write:
   (difficulty is the proven case). Good for "the client knows X, the DLL needs X, no
   official pipe."
 - The launcher WALLS (5th faction, playable campaign, hotkey classes, front-end
-  textures — see `bui-front-end-modding.md`, `front-end-texture-meg-spike.md`) are
+  textures — see `bui-front-end-modding.md`, `ui-atlas-modding.md`) are
   limits of the client's COMPILED BEHAVIOUR, not hidden data. Reading can't change them;
   writing (`WriteProcessMemory`) can't add code paths that don't exist and is the
   fragile/AV-triggering/crash-prone route we deliberately avoid. RAM does NOT move these.
@@ -274,5 +231,6 @@ one real gap, and it's solved.
   fall back gracefully.
 - **Lobby edits mid-match** (host fiddling a hypothetical UI) are not re-read; we read
   once at match start, matching launcher semantics.
-- Scanner cost: one pass over ClientG's private RW regions (~hundreds of MB) at match
-  start only. Chunked reads, early-out on first validated array.
+- Scanner cost: a pass over ClientG's private RW regions (~hundreds of MB) at match start,
+  plus up to four deferred re-scans. Chunked reads; every validated array is kept for the
+  resolver.

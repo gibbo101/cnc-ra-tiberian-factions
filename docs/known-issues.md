@@ -1,774 +1,270 @@
 # Known issues
 
-Canonical in-repo tracker for known bugs and limitations. Started 2026-06-16.
+**Status:** Tracker. Open bugs, and player-facing limitations a mod cannot fix.
 
-Each entry: **severity** (blocker / major / minor / cosmetic), **status**, and a pointer to detail.
-Player-facing limitations that cannot be fixed from a mod are listed too, so we stop re-investigating
-them. When an issue is fixed, move it to the "Resolved" section with the fix commit.
+The tracker for open bugs, and for player-facing limitations a mod cannot fix, so nobody
+re-investigates them. Checked against main at the 5.0.0 release (2026-10-04).
+
+Each entry gives a **severity** (blocker / major / minor / cosmetic) and where the detail lives.
+When an issue is fixed, delete its entry: the commit message and `CHANGELOG.md` record the fix.
+A dead end worth warning about stays as one line in the topic doc it belongs to.
 
 ---
 
-## OPEN: Medics loop on a hurt Jumpjet Infantry (2026-09-27)
+## Units and buildings
 
-- **Severity:** minor (medics stand re-targeting instead of healing anyone else).
-- A TS Medic picks a damaged Jumpjet Infantry as a heal target and tries forever, landed or not.
-- Cause: TS-authentic numbers. Jumpjet Infantry is `Armor=light`; the heal warhead `Organic` does
-  100% to no armour and 0% to everything else (TS `RULES.INI` agrees, so TS medics cannot heal
-  jumpjets either). The heal does nothing and is refused, but the target scan still offers it.
-- Fix (recommended, Luke to confirm): stop medics choosing a target their heal does 0% to. The
-  alternative, letting the heal reach jumpjets, is a deliberate deviation from TS.
-
-## OPEN: TS Upgrade Center shows no RA slab (2026-09-27)
-
+### TS Upgrade Center shows no RA slab
 - **Severity:** minor (units cannot path round its bottom row the way they do round the others).
 - Every other TS GDI building sits on an RA concrete slab; the Upgrade Center (TSPLUG) does not,
-  though its setup matches the Tech Center exactly: `BSIZE_32`, `List32`, `Bib=yes` in rules.ini,
-  and the same stamp path (`building.cpp` Mark, `Bib_And_Offset` -> BIB2). Seen side by side
-  with a Tech Center in play. Suspect its add-on handling (plug install re-marks the building).
-
-## RESOLVED: "New construction options" on every building placement and superweapon shot (2026-09-27)
-
-- **Severity:** minor (a wrong announcer line, heard constantly).
-- Cause: `Update_Buildables` added any building the house could build (`Can_Build`), but the
-  sidebar evicts buildings no owned yard produces (`Who_Can_Build_Me`). The two disagreed (an
-  Allied wall offered to a TS GDI yard), so every recalc added and evicted the same building,
-  and each add played the launcher's "new construction options".
-- Fix: the add requires both tests (`building.cpp`, both `Update_Buildables` loops), commit
-  8bad2c61. Verified in play.
-
-## RESOLVED: Nod Airstrip stops delivering vehicles partway through a match (2026-09-26)
-
-- **Severity:** major (shipped in every release since the Airstrip went to TD's delivery code,
-  `434f2d7a`). **Status:** fixed on main and on `hotfix-4.2.1`; reported by a Workshop player
-  and reproduced by Luke.
-- Symptom: Nod vehicles sit at Ready and no cargo plane comes, for the AI and the player alike.
-  Selling and rebuilding the Airstrip does not help; infantry still builds.
-- Cause: every Airstrip delivery runs `Create_Special_Reinforcement`, which allocates a
-  transient `TeamTypeClass`. TD frees a transient type when its last team dies
-  (`tiberiandawn/team.cpp` `~TeamClass`); RA's destructor never did, so each delivery leaked
-  one slot. The pool is `[Maximums] TeamType=100`, shared by every house, so after 100
-  deliveries in a match (all Nod players combined) the allocation fails and `Exit_Object`
-  returns 0 forever. Luke's repro stalled at exactly delivery 100.
-- Fix: `~TeamClass` frees a transient type once its `Number` reaches 0, and
-  `Create_Special_Reinforcement` frees the type on failure only when no team was made from
-  it (a memberless team frees it itself).
-
-## RESOLVED: The Dropship Bay shares the War Factory's build queue (2026-09-26)
-
-- **Severity:** major (gameplay). **Status:** resolved 2026-09-26, verified in play (Luke: "works
-  perfectly"). A human house now has a separate `DropFactory` slot and `DropFactories` count,
-  routed by `TF_Bay_Order(type, id)`; a finished bay unit leaves the sidebar with the
-  `TF_PLACE_BAY` cell. Computer houses were never affected: each of their factory buildings
-  holds its own production.
-- Ordering a Mk. II or a Mech Division from the bay occupies the unit queue, so the War Factory
-  cannot build while the bay's order runs, and the other way round. Luke wants the bay independent,
-  as an airfield is.
-- Cause: a house has one factory per RTTI (`HouseClass::Fetch_Factory`, `UnitFactory`), and the
-  bay's products are units. Fix = a separate bay factory slot, routed by type
-  (`TF_Is_Dropship_Delivered`) at every lookup and busy check: about 24 sites across
-  `dllinterface.cpp` (sidebar start/hold/cancel, per-entry busy), `house.cpp` and `building.cpp`.
-  Re-verify the delivery cooldown, the Mk. II cap and the AI's bay orders afterwards.
-
-## "Unable to comply, building in progress" plays in the RA voice for GDI/Nod (2026-09-26)
-
-- **Severity:** cosmetic. **Status:** open, needs the EVA RAM patch.
-- Luke heard RA's `PROGRES1` as Nod. The DLL never sent it: `tf_speech.log` for that match has
-  no `idx=2` (`VOX_NO_FACTORY`) event, while every DLL send of that index routes correctly
-  (`TDBLDG1` for GDI/Nod, `TSNOFACT1` for TS GDI). So `ClientG` plays the line itself, like
-  cannot-deploy and structure-sold.
-- Route: add `PROGRES1` to the launcher-owned lines the EVA RAM patch overwrites at match start
-  (`eva-ram-patch-spike.md`), with `TDBLDG1` / `TSNOFACT1` as the per-era payloads under the
-  same-size rule.
-
-## Waypoint and rally markers show the Allied emblem for TS GDI (2026-09-17)
-
-- **Severity:** cosmetic. **Status:** open, needs the RAM lever.
-- The move/waypoint marker and the rally-point marker carry the Allied emblem when the player is
-  TS GDI, because that faction rides a decoupled Allied country house.
-- Launcher-owned, not ours: there is no rally or waypoint draw code in the DLL, and
-  `MT_COMMANDBAR_COMMON.MTD` has no waypoint or rally region. The marker is drawn from
-  `RA_UI_ALLIED_LOGO_SMALL` (`RA_UI_SOVIET_LOGO_SMALL` for the other side), chosen by side.
-- **A loose atlas repaint is not a fix** — it is global, so real Allied players would get a GDI
-  eagle on their own waypoints. The route is the RAM lever from `radar-crest-ram-spike.md`:
-  re-point ClientG's cached region record at match start, as the radar crest and the EVA lines do.
-
-## RESOLVED: TS GDI War Factory: the under-door stripes take team colour, the apron's stay gold (2026-09-12)
-
-- **Severity:** cosmetic. **Status:** resolved 2026-09-12, verified in play. Every stripe is gold
-  for every house: `EXTRA_LAYER_BAKE` in `scripts/ts_pack_tree.py` bakes `GTWEAP_1`'s floor
-  stripes (source rows 118-133) into both the under-door layer and the open-doorway front; the
-  team block on the bay frame keeps its house colour. The same pass stopped the damaged door
-  drawing magenta: `GAWEAP_D`'s second nine frames are TS shadow frames, not damaged ones.
-- Luke's screencast (2026-09-12, red team): the yellow and black hazard stripes inside the bay,
-  seen when the door opens, turn red while the apron's stripes stay gold.
-- Cause: TS paints both sets of stripes in remap (team-colour) pixels, in `GTWEAPBB` (the apron)
-  and `GTWEAP_1` (the bay under the door). Our apron is ground art, and the launcher never
-  house-remaps ground art, so its stripes were baked gold when the apron shipped (2026-08-07,
-  Luke accepted gold whoever owns the building). The bay art is ordinary building art, so its
-  remap pixels still recolour per house, and the two sets no longer match.
-- Proposed fix: bake the bay's stripe pixels gold in `scripts/ts_pack_tree.py`, the same
-  treatment as the apron, so every stripe is gold for every house. Team-coloured stripes
-  everywhere isn't available: the apron can't be remapped.
-
----
-
-## Launcher drops DLL speech dispatched in the game-over window (2026-08-31)
-
-- **Severity:** limitation (worked around). **Status:** confirmed — do not retry refire there.
-- Play-proven (tf_speech.log + ears, 2026-08-31): speech events the DLL dispatches during /
-  after `On_Multiplayer_Game_Over` are discarded by the launcher — `TDACCOM1`, `TDFAIL1` and
-  `RAOLOST1` all logged going out through fully valid chains (events registered, samples
-  present) and stayed inaudible, while every mid-game dispatch plays. Stub + refire therefore
-  can never voice the endgame lines; they ride the era mailbox instead (below). Mid-game
-  stub + refire (structure sold) is unaffected and proven audible.
-
----
-
-## Sim froze once in a 4-Hard-AI Docklands match — ⏳ OPEN, UNREPRODUCED (2026-09-02)
-
-First run of the `ai-regression` build: every DLL log stopped inside frame 22357 (~11 real
-minutes), ClientG kept spinning at ~60% CPU, no minidump, no A* fallback storm (3,385 fallbacks,
-astar log silent too). Second run, same build and lobby, ran to F45000 clean with a stall
-watchdog armed. Nothing in the last log lines stands out (a grenadier order, a forced Nod
-launch, an Allied strike conversion). Next occurrence: attach gdb before it hangs — poll the AI
-log size every 5 s and on a 20 s stall run `gdb -p <pid> -batch -ex 'thread apply all bt 30'`
-on ClientG (ptrace is allowed here; gdb attaches fine, only breakpoints never fire). Suspects
-in order: the new wave/eco code (house.cpp `TF_Wave_*`, `TF_Eco_*`), then the naval/ferry arc
-which had never soaked with four Hard AIs on that build.
-
-## RESOLVED: TD construction yard offers the TS Radar (Luke, 2026-09-02, seen with dev cheats on)
-
-Reported mid A/B: a GDI (TD) yard's sidebar listed the TS Radar. Cause: TS-tree buildings skip
-the faction-yard test, and the era door rule's shared pool lets a TD or RA refinery satisfy
-`TSPROC`, so TSRADR and TSSILO (then TSHPAD, once a leaked radar stood) appeared on a yard with
-no TS yard. Fixed by `576962c1` (2026-09-03): every TS building needs a standing TSFACT. That
-gate sat inside the skirmish-only block, so campaigns still leaked; on 2026-09-13 it moved ahead
-of the prerequisite loop for every game type. `MOD_DEBUG_CANBUILD.txt` is switched off in
-`house.cpp`, so it is not a diagnostic channel.
-
-## RESOLVED: mailbox EVA lines now follow the picked faction across an in-session switch (2026-09-01)
-
-- Was: ClientG caches each localized sample once per boot, so a faction switch without
-  relaunching kept the stale voice. FIXED by the RAM patch — the DLL overwrites the cached blob
-  in ClientG's memory at match start (`TF_Patch_ClientG_Cache`, dllinterface.cpp). All five
-  launcher-owned lines verified faction-correct both directions, no crash. Full record and the
-  five findings that made it work: `eva-ram-patch-spike.md`.
-
----
-
-## MP clients keep RA voice on the mailbox-routed EVA lines (2026-08-31)
-
-- **Status: RESOLVED 2026-09-30** (verified in a LAN game, Deck host + desktop joiner). Every
-  launcher now keeps a copy of the DLL from its startup load and applies the EVA mailbox, cache
-  patch, tab icons and crest for its own player when the host's match-start message arrives
-  (`launcher-vs-dll-ownership.md`, "Launcher-resident patches").
-
----
-
-## MP clients hear no credit tick (faction-routed tick, 2026-08-31)
-
-- **Severity:** minor. **Status:** fix BUILT 2026-09-05, awaiting a LAN test.
-- The faction-routed credit tick silences the launcher's stock `cashup1`/`cashdn1`
-  events and re-fires from the DLL for the local player only (`credits.cpp`
-  `CreditClass::AI`). In LAN MP the sim is host-only, so client HUDs get the
-  silenced events and no DLL fire — silent tick. The fix this entry called for is
-  now in: `TF_Fire_Credit_Tick` (dllinterface.cpp) hands the roll's own house to
-  `DLLExportClass::On_Sound_Effect`, so the tick is addressed to the player whose
-  credits moved instead of to whoever is local. The host's own tick still goes
-  through the unchanged path, so single player is untouched.
-- **What the LAN test decides.** EA's beacon addresses allied players exactly this
-  way (`CNC_Handle_Beacon_Request`), so the launcher plainly honours the id for
-  *some* events — but whether it forwards a remotely-addressed sound to that
-  player's shell is launcher-internal and unproven. Two outcomes: joiners hear
-  their own faction's tick (done), or **the host hears the other players' ticks**,
-  which means the id is a local filter only and the data-side flank is needed
-  instead (`building-sound-routing.md` §2). The failure mode is audible, so one
-  match settles it.
-
-## TS building placement (ts-units branch)
-
-### TS power plant and TS radar placement — FIXED 2026-08-28 (Luke: "fixed!")
-- Root cause: the 08-18 override made the launcher ghost the tall towers' 2x2 *box* (art headroom
-  + pads) instead of their *ground* (pads + bib), so the RA bib always stamped one row south of
-  the ghost and could sit on a neighbour. Now: ghost = the two ground rows with the cursor on its
-  top-left (`BuildingTypeClass::Placement_Ghost_Rows_Above`; the sidebar export drops headroom
-  rows and `DLLExportClass::Place` re-anchors the plot above the ghost), and legality is the
-  ghost's cells only — a white ghost always places; headroom rows are never checked.
-
----
-
-## Dropship bay (ts-units branch)
-
-### ClientG crash at the dropship takeoff sound — ✅ FIX DEPLOYED 2026-08-13, VERIFY IN PLAY
-- **Severity:** blocker (game exits to desktop mid-match). Two live crashes 2026-08-13
-  (00:24, 00:30), both at a Mech Division delivery's takeoff.
-- **Root cause:** the DROPDWN1/DROPUP1 override WAVs shipped plain PCM; dormant-host
-  overrides must be MS-ADPCM like the MEG samples they impersonate, or ClientG's ADPCM
-  block math divides by zero (deterministic `ClientG+0xAB5E69`, `RAR_SFX_DROPUP1` on the
-  crash stack). Full record: `ts-gdi-tree-plan.md` top block; rule:
-  `launcher-render-contracts.md`.
-- **Fix:** `2f70e2b5` re-encodes both WAVs `adpcm_ms`. Deployed desktop (`042a01e0`).
-  State-dependent crash, so several clean takeoffs = good signal, not proof.
-
-### Countdown cameo tooltip flickers once per second — ACCEPTED (Luke, 2026-08-12)
-- **Severity:** cosmetic. The 5:00→0:01 cooldown countdown is per-second baked-art
-  AssetName swaps; each swap rebuilds the client's sidebar button, killing an open
-  tooltip. No DLL-side fix exists (tooltip and icon are one client widget). Luke chose
-  per-second precision over flicker-free coarser steps.
-
-### Mk. II cameo reads clickable at the field cap; EVA acks refused orders — OPEN
-- **Severity:** minor. At `TF_MK2_CAP` the order is correctly refused (play-confirmed),
-  but the cameo looks live and a click plays the EVA "Building" acknowledgment. Wanted:
-  locked look (red X / grey) via the AssetName-swap channel + gate the ack on
-  `Begin_Production`'s verdict. Next-session list, `ts-gdi-tree-plan.md` top.
-
----
-
-## AI difficulty
-
-### Per-slot AI difficulty fell back to global Hard on most matches — ✅ FIXED 2026-07-21 (verification pass outstanding)
-- **Symptom:** a mixed-difficulty lobby produced all-Hard AIs, logging `ram_slots=0` and HELLO
-  lines tagged `[global]` instead of `[slot n]`. Affected solo skirmish and LAN alike, from the
-  second match of a session onward; the first match after launching the game was always correct.
-  Changing any difficulty dropdown before starting made it work, which is what made the failures
-  look alternating and random.
-- **⭐ PRIMARY ROOT CAUSE (DontCryJustDie, 2026-07-21): the record field at `+0x68` is the
-  slot's COLOUR, not a second copy of the slot index.** Our validator required
-  `slot == slot2`, so it threw away perfectly good arrays whenever an AI's colour did not
-  happen to equal its slot number. Default lobbies assign colours in slot order, which is
-  exactly why it worked at first and failed once anyone touched a colour. His evidence: with
-  `slot == slot2` he gets no hits after changing an AI's colour, while a colour-range test
-  keeps working. Corroborated on our side -- a Python dump that checked only names and
-  difficulty found healthy candidate arrays during a match the DLL had rejected.
-  - **Fix:** range-check the field as a colour, and require it to match the colours
-    `CNC_Set_Multiplayer_Data` hands us for the current match. That doubles as the liveness
-    key -- an array carrying another lobby's colours is stale by definition, which is the
-    discriminator the falsified `GlyphxID` idea was reaching for.
-  - Awaiting a verification pass (mixed lobby, then a second match with an AI's colour
-    changed).
-- **Secondary: the read can also land mid-rebuild.** The client tears down and rebuilds its `AIPLAYERn`
-  records as a match launches. A scan inside that window finds nothing, or finds a fresh array
-  that disagrees with a not-yet-freed stale one, and the unanimity requirement correctly rejects
-  it. The values are correct and unanimous either side of the window — a match that logged
-  `ram_slots=0` had three resident copies all agreeing on the right values a minute later.
-  Touching a dropdown makes the client write the records during lobby editing, so the rebuild is
-  settled before launch rather than racing it.
-- **Fix:** a failed read arms a deferred re-scan from `CNC_Advance_Instance`
-  (`TF_Lobby_Difficulty_Retry`, 4 attempts 90 frames apart) which re-tiers the AI houses on
-  success. `TF_Read_Lobby_AI_Difficulties` and its validation are unchanged.
-- **Two consecutive scans must agree before a re-scan is applied.** The rebuild passes through
-  half-written states that are briefly self-consistent — a lobby set to `E M H M` was caught
-  reading `E M M M` — so one confident-looking read is not enough. The final attempt accepts an
-  unconfirmed read rather than discarding it.
-- **Evidence:** five back-to-back solo matches on the desktop (correct / `ram_slots=0` / correct /
-  `ram_slots=0` / correct), plus live candidate dumps from ClientG (`dump_candidates.py`,
-  `poll_candidates.py`) showing the arrays vanish and reappear across a match launch. No stale
-  values were ever applied in those runs — every failure was a clean bail.
-- **Falsified:** `GlyphxID` cannot discriminate live from stale arrays; the IDs are fixed per slot
-  index (slot 1 read `1055504538` in two sessions hours apart), not generated per lobby.
-- **Related, still unexplained:** the first solo skirmish after a LAN session once received a
-  roster in `CNC_Set_Multiplayer_Data` describing the *previous* LAN lobby (8 slots, 6 AIPLAYERs
-  against an actual 1+5 lobby) and spawned 6 AI houses. Same rebuild-lag family, but on the
-  roster the client hands us rather than on the RAM read; re-test if it recurs.
-
-### Hiding a cloaked building's bib frees its cell for enemy placement — ✅ FIXED 2026-07-15
-- **Severity:** minor (placement exploit; enemy could build one row into a cloaked base's bib strip).
-- **Root cause:** the `TF_Sync_Bib` bib-hide (building.cpp) `Disown`ed the bib `SmudgeClass`, but a bib
-  smudge also **blocks placement** (`CellClass::Is_Clear_To_Build`, cell.cpp:494). Removing it both
-  hid the bib AND opened the cell for the (blind) enemy.
-- **Fix:** removed `TF_Sync_Bib` entirely — it was redundant. A **render-time** bib-hide already exists
-  in the Remaster draw path (`dllinterface.cpp` `tf_hide_bib`, from the original stealth-gen commit
-  `cd8bd17`): it keeps the smudge (placement stays blocked) and suppresses only the *draw* when the
-  covering building is `VISUAL_HIDDEN` (enemy view) — transparent to the enemy, bib still shown to the
-  owner. Now that the cloak driver settles buildings to `CLOAKED` reliably, this handles the hide.
-  Playtest-confirmed (Luke, 2026-07-16): enemy-side bibs stay hidden.
-
----
-
-## Campaign (mod enabled over stock missions)
-
-### Tanya can't board / evac a campaign transport (no enter cursor) — ✅ FIXED 2026-07-22 (verified in-game; shipped 4.1.0, `8c69c3b`)
-- **Symptom:** in stock campaigns (Tanya's Tale 5a; also Allied 1) Tanya could not be ordered
-  into the evac Chinook -- no green enter cursor appeared. Einstein evac'd from the same Chinook
-  fine; Tanya boarded a Chinook fine in skirmish. So: Tanya-specific, campaign-specific.
-- **ROOT CAUSE:** our Tiberian Factions gate in `InfantryClass::What_Action` (`infantry.cpp`)
-  restricted the enter path to `action == ACTION_SELECT`. `FootClass::What_Action` returns
-  `ACTION_SELECT` for a **same-house** techno but `ACTION_NONE` for an **allied, different-house**
-  one. The campaign evac Chinook is `HOUSE_GOOD` (owner 8) while the player is Greece (owner 1) --
-  allied, not same house -- so for armed Tanya the base action was `ACTION_NONE` and the gate
-  silently skipped the enter path. Einstein (unarmed) and skirmish (player owns the Chinook) both
-  yield `ACTION_SELECT`, so they were unaffected. Proven with an `ENTERCHK` diag:
-  `unit=E7 myowner=1 objowner=8 isally=1 canload=1(ROGER) action=0(NONE)` -- everything green
-  except the action state the gate demanded.
-- **FIX:** gate on `action != ACTION_ATTACK` instead of `== ACTION_SELECT` -- preserves the
-  Ctrl-force-fire exclusion the gate was added for, restores vanilla enter for every other hover
-  state. Vanilla has no action gate here at all. **Verified in-game 2026-07-22:** loaded the
-  mission-1 save, selected Tanya, ordered her into the allied Chinook, she boarded (gone from map).
-  Diagnostic left dormant under `#if 0` in `infantry.cpp`.
-- **Sibling gates (aircraft.cpp) — FIXED 2026-07-22, shipped 4.1.0 (`46f01f3`); a skirmish
-  heli-dock eyeball is still owed.** The two `Is_Ally`-gated dock overrides (helipad building ~2801, aircraft carrier
-  ~2807) had the identical flaw and blocked docking at an allied different-house pad -- against the
-  agreed universal-landing design (`docs/ai-upgrade-plan.md`: ANY heli may land/rearm/repair at
-  ANY pad). Changed both to `!= ACTION_ATTACK`. Same-house docking (all of skirmish, any faction
-  pad type) is unchanged (still `ACTION_SELECT`); only allied-house docking is newly enabled.
-  ⚠️ The **repair-factory gate (~2841) was deliberately LEFT as `== ACTION_SELECT`**: it has NO
-  `Is_Ally` check and relies on `ACTION_SELECT` as its implicit same-house restriction -- relaxing
-  it to `!= ACTION_ATTACK` would let an unarmed aircraft dock an *enemy* repair bay. `unit.cpp`
-  (~5045+) is same-house gated, not affected. Verify a skirmish helicopter still docks its own
-  helipad before committing.
-
-
-### Stock campaign enemy plays like a skirmish AI (over-produces, sells buildings) — ✅ FIXED 2026-07-22 (5a + skirmish-Easy-AI both verified; shipped 4.1.0, `5414de6`)
-- **ROOT CAUSE:** `[IQ] Production` lowered from vanilla 5 to 3 (for skirmish Easy AIs) is global,
-  so campaign enemies with a modest scenario IQ tripped the master wake-up at `house.cpp:1370`
-  (`IsBaseBuilding/IsStarted/IsAlerted = true`) — waking the whole AI (build + produce + power
-  manage/sell + attack). One switch = all the symptoms.
-- **FIX:** `house.cpp:1370` uses the vanilla threshold (`Rule.MaxIQ`) in campaign
-  (`Session.Type == GAME_NORMAL`), `Rule.IQProduction` (3) in skirmish. Verified in 5a: enemy sits
-  as EA scripted. Skirmish path is byte-identical to before (else branch), sanity-check pending.
-  `RepairSell=1` is stock RA, not ours. The AI_Attack aggression theory was wrong (reverted).
-  Original diagnosis retained below for reference.
-- **Severity:** minor (campaign is not a supported surface with the mod enabled; the mod ships
-  no campaigns). Observed in **Tanya's Tale (Allied 5a)** by Luke 2026-07-21.
-- **Symptoms (all "didn't used to do this"):** the Soviet enemy mass-produces infantry from
-  frame 2, builds a refinery + flame towers (verified screenshot), sold power plants, and hunts
-  **civilians** (neutral house) in 5a. All consistent with the campaign house running full
-  skirmish-grade AI (build economy → produce → hunt everything). Only base-builder-enemy missions
-  affected (5b/5c looked ok).
-- **Fix approach:** our AI *enhancements* (build-choice tie-break + economy gates in
-  `AI_Building`/`house.cpp` ~5897-7282; Phase-0 hunt-dispatch send-percentage + scatter; targeting)
-  run for all non-human houses incl. campaign fixed houses. Gate them on
-  `Session.Type != GAME_NORMAL` so campaign defers to vanilla AI. ⚠️ Do NOT disable base-building
-  wholesale — some campaigns rely on the enemy rebuilding; the goal is *vanilla parity*, not a
-  dormant enemy. Needs multi-mission in-game verification. NOT a blind one-line gate.
-- **Diagnosis (partial):** `MOD_DEBUG_AI.txt` shows the campaign Soviet/Nod houses
-  (`H2 AL2` = `HOUSE_USSR`, `H9` = `HOUSE_BAD`) running our AI build-choice pool
-  (`POOL(9) -> WIN ...`) and continuous `PROD start` from frame 2, on a **fresh launch**
-  (ruled out the cross-match difficulty-state leak below). NOT an IQ-forcing bug: both houses
-  are below `HOUSE_MULTI1`, so `TF_Apply_AI_Difficulties` (which only touches `>= HOUSE_MULTI1`)
-  never re-tiers them; they keep their scenario `Read_INI` IQ. The building-sale itself is
-  **not instrumented** (zero sell/paranoid events logged), so that half is unconfirmed.
-- **Why only one mission:** unknown; points to something scenario-specific in Tanya's Tale
-  rather than a blanket campaign regression. Investigate under the campaign milestone.
-- **Related latent defect:** our difficulty globals (`TFLobbyAIDifficultySet`, `Scen.CDifficulty`)
-  are set by a skirmish match and **never reset**, so a campaign started in the same game session
-  after a skirmish inherits polluted difficulty state. Not the cause here (fresh launch still
-  reproduces) but worth a match-start reset.
-
-### Campaign sidebar cameos show both faction logos — ⏳ OPEN (cosmetic, low priority)
-- Deploying the vanilla campaign yard shows Allied+Soviet badges on the buildable cameos. The
-  tech tree is correct (Allied-only, verified); the badge just paints each building's full
-  owner-set ({Allied, Soviet} for shared vanilla buildings) with no campaign-context awareness.
-  Cosmetic only. Fix when the campaign-AI work lands.
-
-### Overlay index shift turns stock-campaign fences into crates — ✅ FIXED 2026-07-21 (verified in-game; shipped 4.1.0, `e2ce6d6`; Mobius-fork renumber still pending)
-- **Fix shipped in code:** `OVERLAY_TIB01` moved to the enum END (25), vanilla indices 0-24
-  restored; `odata.cpp` heap init reordered to match; `dllinterface.cpp` resource check explicit;
-  `td_map_to_ra.py` synced (`TIB01=25`) and all 31 TD maps re-transcoded + redeployed. Verified
-  in-game: stock fences render as fences (no heal-crate), our maps' Tiberium still renders/harvests.
-- **Remaining:** renumber the Mobius editor fork
-  (`../mobius-editor` `RedAlert/OverlayTypes.cs`, `TIB01=13`→25, V-fields back to vanilla) so
-  hand-authored maps aren't misread. Below is the original diagnosis, retained for reference.
-- **Severity:** minor (campaign not a supported surface; pre-existing since v2.0.0, shipped in
-  v4.0.0 — NOT a 4.1 regression). Observed in a stock Soviet mission 2026-07-21.
-- **Symptom:** wire-fence lines render and behave as goodie crates in stock campaign maps.
-- **Root cause:** `OVERLAY_TIB01` (Tiberium ecosystem, commit `693bb25`, v2.0.0) was inserted
-  after `OVERLAY_GEMS4`, pushing every later overlay up by one. Stock maps store overlays by
-  index, so a map's `OVERLAY_FENCE` (vanilla 23) is read by our engine as index 23 =
-  `OVERLAY_STEEL_CRATE`. Same shift misreads haystacks/fields/other crates.
-- **Fix (Luke wants this resolved, 2026-07-21):** move `OVERLAY_TIB01` to the end of the enum
-  (fresh index, unused by stock maps), restoring vanilla alignment, and change the resource-range
-  check at `dllinterface.cpp:8525` to
-  `(Type >= OVERLAY_GOLD1 && Type <= OVERLAY_GEMS4) || Type == OVERLAY_TIB01`.
-- **⚠️ Blast radius CONFIRMED — not a code-only fix.** `scripts/td_map_to_ra.py` hardcodes
-  `OVERLAY_TIB01 = 13` and `OVERLAY_CARRY = {"V12": 14, ...}` (the shifted indices), so the
-  **31 shipped TD maps** were transcoded against index 13. The fix therefore also requires:
-  update the transcoder (TIB01 → new index, `OVERLAY_CARRY` back to vanilla `V12=13`…),
-  **re-transcode and re-verify all shipped TD maps** (Tiberium fields must still render), check
-  `build_tiberium_hd.py` / `build_td_tiles.py` for index deps, and check the mod-aware Mobius
-  editor fork (may also write `TIB01=13`). Its own dedicated task, not a release-eve patch.
-
----
-
-## UI / interaction
-
-### Deploy cursor appears when hovering the faction construction yards — ⏳ OPEN (queued for 4.2)
-- **Severity:** minor (cosmetic/interaction; no functional effect).
-- **Status:** OPEN — observed by Luke 2026-07-21, deferred to 4.2.
-- **Symptom:** hovering the mouse over one of our new faction construction yards (the
-  W2-split GDI/Nod/Soviet yards) shows a **deploy cursor that does nothing** when clicked. The
-  vanilla yard does not do this.
-- **Suspected cause (unconfirmed):** the split yard types inherited an `ACTION_SELF` /
-  deployable trait path that the vanilla construction yard does not expose, so the cursor logic
-  offers deploy but there is no deploy action to run. Investigate the new `STRUCT_*FACT`
-  entities' action/self-action wiring against the vanilla `STRUCT_CONST`.
-
----
-
-## Combat / units
-
-### Endgame auto-sonar doesn't know the TD subs exist (found 2026-08-01, unfixed)
-- Vanilla's endgame stall-breaker (`house.cpp` FIXIT_VERSION_3 block, `AutoSonarTimer` 40s
-  cadence): when a house owns nothing but submarines, every sub is force-uncloaked for 15s so
-  opponents can find and finish it. Both halves are hardcoded to the RA hulls only:
-  - The trigger gate is `VQuantity[VESSEL_SS] > 0` (SS/MSUB share the slot count) — a Nod
-    house reduced to only TDNSUB/TDOBLISUB/TDMSUB never trips it, so a cloaked TD sub can
-    stall the endgame FOREVER (the exact stall the mechanism exists to prevent).
-  - The "nothing but subs" census loops run over the RA-era ranges (`UNIT_RA_COUNT`,
-    `VESSEL_RA_COUNT`), so TD ground units aren't counted either — a Soviet-teamed house
-    with TD remnants could get pinged while it still has an army.
-- Fix shape when picked up: treat all five sub hulls (SS/MSUB/TDNSUB/TDOBLISUB/TDMSUB) as
-  subs in both the gate and the ping loop, and run the census over the full type ranges.
-- Related context: sub concealment is the standard cloak system (`Cloakable=yes` on all five
-  hulls); the only passive detection in the engine is the 1-cell adjacency shimmer
-  (`foot.cpp` scanner check — all vessels and infantry are `IsScanner`), which is cosmetic
-  and never acted on by the AI. Sub-detection improvements are a design discussion
-  (2026-08-01), not yet a workstream.
-
-### AI built A-10s at helipads (parked-on-pad / fly-in-and-explode) — ✅ FIXED 2026-08-01
-- **Symptoms (both player-observed, Docklands skirmishes):** a GDI A-10 parked dead-center on
-  a helipad; later the same day, an AI A-10 "flying in like a helicopter" to a loaded helipad
-  and self-destructing on arrival. AI economy bleed: money spent on aircraft that explode.
-- **Root cause (proven by TF_AI_DIAG):** `PROD start TDA10 ... at factory TDGHPAD#86` — the
-  per-building factory logic asks `Suggest_New_Object(RTTI_AIRCRAFTTYPE)`, and the house-level
-  `BuildAircraft` choice does not know which factory is asking, so whichever aircraft factory
-  ticks first takes the order — including a helipad taking a fixed-wing. `Exit_Object` then
-  spawns it parked on a free pad (`Docking_Coord`, Height=0), or map-edge-flies it in when the
-  pad is tethered; an undockable fixed-wing self-destructs at touchdown (`Landing_Takeoff_AI`).
-  All the docking/`Who_Can_Build_Me` chains were audited type-correct — production assignment
-  was the one unguarded path.
-- **Fix:** the wrong-family factory DECLINES the order (helipads take rotary only, the
-  airstrip family fixed-wing only) and leaves it for a sibling; an order cannot strand because
-  `Can_Build` already requires the airfield prerequisite for fixed-wing types.
-- **Related fix, same session (`0c12624`):** the out-of-ammo rearm search was hardcoded
-  `Find_Docking_Bay(STRUCT_HELIPAD)`, which fixed-wing can never satisfy — an AI A-10 with
-  empty ammo never found its airfield and flew disarmed forever. Now searches the aircraft's
-  home-building family (airstrip family matching made symmetric).
-- `FIXEDWING-LAND` touchdown census (TF_DEV_BUILD) left in for regression-watching.
-
-### AI superweapon targeting ignores stealth-generator cloak — ✅ FIXED + PLAYER-VERIFIED 2026-08-01
-- **Was:** GDI AI ion-cannoned the player's airfield while it sat inside a Nod stealth
-  generator field. Vanilla AI superweapon target selection predates building cloak and never
-  checked visibility.
-- **Fix (`0164b7f`):** `Special_Weapon_AI` skips any building `Is_Cloaked(this)` — discovery
-  stays sticky intel, but the live cloak veils the strike, forcing target displacement exactly
-  like direct fire. Cloak state already encodes detector coverage (a detector forces the
-  uncloak), so no separate detector check is needed.
-- **Verified in play the same day:** "enemy going for the unstealthed stuff" (Luke, live
-  Docklands match with stealth generator up).
-
-### Recon Bike (TDBIKE) won't turn to fire at off-axis targets — ✅ FIXED 2026-06-16
-- **Severity:** major (unit was much less effective; affected Nod harass doctrine).
-- **Status:** RESOLVED — `UnitClass::Rotation_AI` (unit.cpp:601).
-- **Root cause:** for turretless vehicles, RA only rotates the hull to face a target if the unit is
-  **tracked** ("wheeled vehicles never rotate to face the target — not maneuverable enough"). TDBIKE is
-  wheeled, so it never turned and only fired at whatever it already faced. TD's source special-cases its
-  wheeled bike to rotate anyway (`tiberiandawn/tarcom.cpp:166`, `|| *this == UNIT_BIKE`); RA left that
-  clause commented out (vanilla RA has no bike). Fix = restore the exemption for `UNIT_TDBIKE`. Now uses
-  the same body-rotate-in-place path as the (tracked, turretless) Artillery, which always worked.
-
----
-
-## AI base building
-
-### A house that cannot place a building retries the same doomed search forever — ✅ FIXED 2026-07-31
-- **Was:** major. GDI repeatedly failed to place `TDPROC` / `TDWEAP` / `TDFIX` while holding
-  thousands of credits (one match: `TDFIX` started 16 times, completed zero; base stalled at
-  `CurB≈10`). The bulk of the "sluggish GDI" feel. Nod showed a second mode: a broke order
-  logged `PROD abandon TDPROC pct=0 cash=24` and vanished.
-- **Root cause (named by the per-predicate reject counters, `b3152de`):** `Recalc_Center`
-  (`house.cpp`) divides the **unweighted** sum of building distances by the **cost-weighted**
-  count it builds for the centroid, so an expensive base computes a `Radius` 2-3x too small —
-  a live Nod base of 7 buildings sat at `radius=518` leptons, the 512 floor. `Which_Zone`
-  returns `ZONE_NONE` past `Radius * 4`, so the whole build-site search collapsed to a disc
-  the base itself filled (airfield scan: 16,384 cells, 7,888 out-of-zone, the 176 in-zone all
-  footprint-blocked, `ok=0`). EA-original 1995 arithmetic; worst for expensive wide-footprint
-  TD bases.
-- **Fixes (all three EA-original defects):**
-  1. `6604354` — Radius divides by the building quantity; cost weighting stays centroid-only.
-  2. `eb5d6d8` — the try-any-zone fallback in `Find_Build_Location` returned a raw `CELL`
-     where the caller expects a `COORDINATE`; now wrapped in `Cell_Coord()` like the
-     preferred-zone path (broken since 1996, `REDALERT/HOUSE.CPP:4669`).
-  3. `265d632` — an unstarted computer order (Start() refuses when the first tick is
-     unaffordable) is held on the 3-second retry timer while the house has income
-     (`TF_Has_Income`: refinery + live harvester + tiberium), instead of being scrapped on
-     the next pass. Mirrors the human sidebar, where a broke order pauses.
-- **Verified 2026-07-31** (full skirmish to F11,944, log `MOD_DEBUG_AI.radius-after.txt` vs
-  `.radius-before.txt`): **0 `PLACE-FAIL`, 0 `PROD abandon`**; at 7 buildings radius read
-  850-950 instead of 518; GDI peaked `CurB=14`, `Rad=2111`, past the old stall.
-- **Zone filter made real in `85883e1` and VERIFIED (2026-08-01):** `Find_Cell_In_Zone` now
-  restricts the sweep to the requested zone, so the defence-rated zone is the actual placement
-  target and each fallback pass searches fresh ground. Verified on the DOCKLANDS run: zero
-  `PLACE-FAIL` across ~12,800 frames, radii healthy to 1,756 leptons. Corroborated the same
-  night by the autonomous soak: **zero `PLACE-FAIL` across 43 matches** (Docklands + Deep Six
-  Mega, GDI at Easy/Medium/Hard, deepest F11,507 with GDI at 22,400 gathered) —
-  `docs/lobby-ambiguity-data/overnight-2026-08-01-results.md`.
-- **FALSIFIED — do not re-chase:**
-  - *"TD buildings aren't valid proximity anchors."* No: the ownership test needs
-    `base->Class->IsBase`, `IsBase` defaults true, and `TDPROC`/`TDWEAP`/`TDFIX` all set
-    `BaseNormal=yes` explicitly.
-  - *"Infantry spam starves the expensive builds of funds."* No: GDI's failures were all
-    placement with healthy cash, and `PROD abandon` never fired for GDI.
-  - *"The 4x zone multiplier is too narrow."* The multiplier is fine — the **Radius feeding
-    it** was collapsed (see root cause).
-  - *"`PROD start` means a build completed."* No — it only means an order began. Reading it as
-    completion produced three wrong conclusions in one session; always confirm against `CurB`,
-    the `ROLE` counts, or the player's eyes.
-
-### The economy gate counts buildings that are still in limbo (2026-07-23)
-- **Severity:** minor on its own, but it decides *which* building gets thrashed above.
-- **Status:** root-caused, confirmed in code, **not fixed** (it is the passenger, not the driver).
-- **Cause:** `house.cpp:7143/7152` gate `tf_economy_ready` on `TF_Role_Quantity(BQuantity, ...)`.
-  `BQuantity[]` increments in `Tracking_Add` when the object is **created in limbo** — the moment
-  production starts — whereas `ActiveBQuantity` "mirrors ActiveBScan semantics (unlimbo'd +
-  locked)" per its declaration comment in `house.h`. So starting a war factory immediately reads as
-  *owning* one, which unlocks `TDFIX` at a higher urgency; when `TDFIX` takes over the count drops
-  back to zero and `TDWEAP` wins again. A two-state oscillator, visible in the log as `ROLE`
-  flipping `weap=1/1 fix=0/0` <-> `weap=0/0 fix=1/1` every decision cycle. `CurBuildings` shares the
-  property, which is why `CurB` counts buildings that were never placed.
-- **Fix direction:** gate `tf_economy_ready` on `ActiveBQuantity` (completed only); leave the
-  "do I need another one of these" counts at 7310/7381/7421/7599/7624 on `BQuantity`, since those
-  *should* see in-flight orders or the AI will queue duplicates.
-
-## Pathfinding / AI cooperation
-
-### Units livelock retrying a doomed path forever — ✅ CLOSED 2026-08-01 (crash fixed+verified; wedges cured; storm deferred to naval)
-- **Final status:** the give-way recursion CRASH is fixed and verified (two long matches, no
-  artifacts). The in-base wedge livelock is cured by the no-progress detector. The
-  unreachable-target retry storm is NOT curable by give-up logic (measured 8.96 vs 8.4
-  fallbacks/frame with detector v2 + scan-limit) — those units simply have no ground route;
-  the cure is AI naval transport (`ai-upgrade-plan.md`), Luke's call 2026-08-01. Full verdict
-  + falsification history: `path-failure-livelock-design.md`.
-- **The 2026-08-01 DOCKLANDS `EXCEPTION_STACK_OVERFLOW` was a SEPARATE defect the livelock merely
-  fed.** Walking the crash minidump (`InstanceServerG.exe_2026-08-01_00-17-47_T472.dmp`, raw
-  stack scan + addr2line) showed ~1,500 repetitions of one cycle: `Start_Of_Move` give-way
-  RETREAT (`drive.cpp` gw==2) → `Assign_Destination(back)` → nested `Start_Of_Move` (engine calls
-  it for a stationary unit) → RETREAT again — unbounded mutual recursion in OUR v2.2.3 give-way
-  code whenever a pinch is so jammed the retreat decision repeats. The earlier "stack death is in
-  the legacy fallback under retry-storm volume" reading was wrong (the legacy pathfinder is
-  iterative). Fixed with a call-stack re-entrancy guard: a retreat-triggered nested
-  `Start_Of_Move` skips give-way evaluation and paths straight to the retreat cell.
-- **Status:** livelock root cause CONFIRMED 2026-07-19; **both fixes implemented 2026-08-01**
-  (recursion guard above + the no-progress detector below, `FootClass::TF_Path_No_Progress`:
-  infantry give-up branch aborts after 8s of zero progress on the same (cell, destination) pair;
-  the vehicle patient queue yields to the abandon branch after 60s of literally zero movement —
-  a genuinely queued column advances cells, which restarts the window). Old savegames break
-  (FootClass grew), accepted like the SuperWeapon-enum growth. Two earlier dead ends are recorded
-  in the design doc: never call the virtual `Assign_Destination()` from inside `Basic_Path()`
-  (crashed both machines), and the `Nearby_Location` guard alone (falsified).
-  **Verification pending:** DOCKLANDS-style rerun on the fixed build.
-- **⭐ Full detail: `docs/path-failure-livelock-design.md`. Read it before touching this** — it
-  records both dead ends, and both are easy to walk straight back into.
-- **Symptom:** the same `(unit, src, dst)` triple repeats in `tf_astar.log` hundreds of times in
-  one match: `TDE1 src=(40,40) dst=(35,33)` x598, `TDE6 src=(28,77) dst=(28,77)` x260. Retry
-  cadence is `PathDelay` ≈ 14 ticks, so ~4 attempts/second/unit. Predates the A* heap work
-  (visible in pre-heap logs).
-- **Cause:** the give-up branch at `infantry.cpp:4346` clears `NavCom` **only when the destination
-  is in a different movement zone**. Movement zones ignore buildings by design, so anything walled
-  off is "same zone" but unreachable and never aborts — and a cell is always in its own zone, so
-  the `src==dst` case can never satisfy the test at all. Vehicles have the same defect by a
-  different route: the patient queue at `drive.cpp:2180` resets `TryTryAgain` every cycle whenever
-  a neighbour holds traffic, which inside a busy base is ~always.
-- **Framing correction (important):** `src==dst` is NOT the bug, just its most visible subtype.
-  The largest livelocks are ordinary reachable-looking destinations. Anything scoped only to
-  self-cell addresses a minority of the problem.
-- **Recommended cure:** a no-progress detector (N consecutive identical failures -> abort
-  regardless of zone), the same pattern already shipped in `harvester-recovery-design.md`. Not a
-  zone fix — zones ignoring buildings is by design and was rejected as a target once already.
-- **Success signal:** repeated-`(unit,src,dst)` counts collapse to single digits while total
-  `src!=dst` failures stay near baseline (~2800-3200/match desktop, ~1500 Deck).
-- **Probably the same root cause as "Deadlock-breaker micro-churn on returners" below** (a `2TNK`
-  observed doing 67× `src==dst`); re-check that entry when this is fixed.
-
-### Thousands of genuine path failures per match — UNINVESTIGATED 2026-07-19
-- **Severity:** unknown, potentially major (larger in volume than the livelock above).
-- **Detail:** with livelock cases excluded, genuine `src!=dst` path failures still run ~2800-3200
-  per desktop match and ~1500 per Deck match, harvesters prominent (`TDHARV` at 1584 and climbing
-  in one Deck match). Surfaced while measuring the livelock; never investigated on its own.
-  Unclear how much is normal churn (a fallback to the legacy edge-follower is not automatically a
-  failure to move) versus real lost unit-time. **Establish that baseline before treating it as a
-  bug.**
-
-### Vehicle-vs-vehicle head-on in a 1-tile gap with no escape cell (breaker unreachable from gw==2)
-- **Severity:** minor (self-resolves — the boxed unit eventually dies/clears; never escalates to gridlock).
-- **Status:** OPEN — remaining give-way loose end after v2.3.0.
-- **Detail:** when `Give_Way_Decision` returns gw==2 (RETREAT) but `Find_Give_Way_Cell` finds no free
-  escape cell, the unit holds and never reaches `Try_Deadlock_Scatter`, so the breaker can't fire on
-  that case. Fix = make the breaker reachable from the gw==2 path. NOTE: the original "breaker is in the
-  WRONG BRANCH" issue (it only lived in the no-path branch, missing execution-time head-on `MOVE_NO`
-  clumps) was FIXED in v2.3.0 — `Try_Deadlock_Scatter` is now called from the execution head-on path
-  (`drive.cpp ~2301`) as well as the no-path branch. See `docs/chokepoint-reservation-design.md`.
-
-### Deadlock-breaker micro-churn on returners
-- **Severity:** minor (cosmetic jiggle; unit not lost).
-- **Status:** OPEN — noted 2026-06-16.
-- **Detail:** a unit can scatter then re-path straight back into the stuck spot and spin (observed a
-  `2TNK` doing 67× `src==dst`). Consider capping re-scatter when a unit keeps returning (likely an
-  unreachable goal, not a breakable deadlock). See the checkpoint doc.
-
-### Recurring west map pinch (~cell x90, y63 on the test snow map)
-- **Severity:** minor (units congest there repeatedly; never escalates to map-wide gridlock).
-- **Status:** OPEN — noted 2026-06-16; watch whether the breaker-branch fix resolves it.
-
----
-
-## Harvester logic / economy (own workstream)
-
-### Harvesters spin forever on an unreachable resource
-- **Severity:** major (idle harvesters = dead economy for those units).
-- **Status:** OPEN — own workstream (deferred to a dedicated segment, Luke 2026-06-16). Targeting /
-  pathing / claiming / reachability.
-- **Detail:** when ore/Tiberium is unreachable (e.g. the AI walls its own gems field with buildings) a
-  harvester A*-fails → `ABANDON-giveup` → AI re-orders → loops forever instead of re-selecting a
-  reachable field. Same root hit a tank ordered into a base-blocked cell. Also: 2 harvesters jammed at a
-  refinery dock (contention). **Diagnostic note:** an idle/abandoned harvester emits NOTHING to
-  `tf_astar.log` — this workstream needs its own instrument. See `docs/chokepoint-reservation-design.md`
-  CHECKPOINT 2026-06-16 (spun-off workstreams) + memory `project-cfe-port-plan`.
-- **✅ LARGELY FIXED 2026-06-17 (symptom-patch hardened + playtest-validated; canonical write-up
-  `docs/harvester-recovery-design.md`).** The "fix it properly via zone recompute on building events"
-  plan was **REJECTED** after reading the code: `Zone_Span` ignores buildings *by design* (the
-  `ignorevehicles` mask `0x5F` drops the Building occupy bit `0x80`, cell.cpp:3125), so making buildings
-  call `Zone_Reset` is a no-op, and the building-aware variant that would be needed changes the global
-  meaning of `Zones[]` (AI targeting / A* gate / `Is_In_Same_Zone` / base placement) — MP-determinism-
-  risky, not worth it. **Chosen instead = harden the proven pathfinder-agnostic no-progress detector:**
-  (1) `Blacklist_Harvest_Cell` flood-fills the whole contiguous ore field and blacklists its bounding
-  box (was a single cell ±3, which let big walled fields keep re-spinning); (2) on no reachable ore the
-  harvester pulls back toward a refinery + re-scans instead of idling at the wall. Playtest 2026-06-17:
-  whole-field bboxes captured (28/66/45 cells) and harvesters redirected to a different reachable patch
-  — Luke accepted as-is. Detector is a robust safety net for *any* unreachable-target case (not just
-  buildings). Logs `HARV-BLACKLIST`/`HARV-WAIT` are `TF_DEV_BUILD`-gated (compiled out of release).
-- **✅ FIELD SELECTION + BLACKLIST OVER-FIRING 2026-06-18 (commits `2465ae9` + the follow-up, on `main`,
-  v3.0-gated). Desktop-validated across several AI matches.** Three linked fixes to `Goto_Tiberium` /
-  the no-progress detector:
-  1. **Travel-distance field pick.** The ring search returned the densest cell in the FIRST crow-flies
-     ring with ore, so a field near in a straight line but only reachable the long way around water/cliff
-     beat a closer-by-road one (Luke's SS #1). The LOOKING-state pick now gathers the NEAREST ore cell of
-     each of the closest `HARV_FIELD_CANDIDATES`=10 rings and chooses the shortest ACTUAL A* path
-     (`Find_Path_AStar`, null `resultPath` = cheap length-only query), density only a tiebreak.
-  2. **Candidates by PROXIMITY, not density.** First cut picked each ring's *densest* cell — but a thin
-     near field (low value) loses to a thick far/contested one, so harvesters drove across the map past
-     close ore (the "ignored the field by the refinery, went south" reports). Proximity + A*-min-path
-     fixed it; density-as-primary was the bug, NOT depletion (the near fields were full, just lower-value).
-  3. **A* threshold = `MOVE_MOVING_BLOCK`, and the blacklist gated on real reachability.** The v2.4.0
-     no-progress detector blacklisted any field a harvester couldn't approach for 5s — but base traffic /
-     parked vehicles / friendly infantry produce that same symptom, so reachable home fields got
-     blacklisted and harvesters fled (343 blacklists/session). Now the 5s stall consults A*: a path exists
-     (congestion) → don't blacklist, grant up to 3 windows (~15s) then a bounded backstop; A* returns 0
-     (genuinely walled) → blacklist as before. Querying at `MOVE_MOVING_BLOCK` (not the strict
-     `PathThreshhold`) treats units-on-the-route as passable (they move / give-way pushes them) while
-     walls/buildings/water still block — so unit-blocked near fields stop reading `apath=0`. Result:
-     **343 → ~3 blacklists/session, all legitimate** (AI walling its own field with buildings; 1-cell
-     remnant patches). New member `HarvReachableResets` (serialized with the unit). TF_DEV `HARV-FIELD`
-     dumps each candidate's zone/value/apath + the nearest-ore/blacklist state.
-  ⬜ STILL OPEN (follow-ups, not blockers): **exponential blacklist backoff** (a persistently building-
-  walled field un-blacklists every 15s and gets re-poked — give repeat failures a longer TTL);
-  **threat-aware selection** (don't route through enemy fire).
-- **✅ ADDRESSED 2026-06-18 — harvester stuck/idle recovery + dock contention (#5, #6, dock).** Shipped
-  (committed, v3.0-gated): `525910b`/`2d46def`/`49f8157`. See `harvester-docking-session-handover.md`
-  (⭐ 2026-06-18 section) for the full write-up. Summary:
-  - **Anti-stuck watchdog** (`UnitClass::AI`, position-stagnation, any mission): recovers wedged AND
-    gave-up/idle harvesters (3s shove infantry → 6s `Try_Deadlock_Scatter` → 12s restart). Exempts only a
-    HUMAN's manual MOVE/GUARD park. **Field-blacklisting stays owned by the ore-pursuit detector** (the
-    watchdog must NOT blacklist — it can't tell "field walled" from "harvester wedged"; that poisoned
-    good fields, `blskips=151`). Validated 83→4 blacklists, no loops.
-  - **Field-richness gate** (`Goto_Tiberium`): prefer a field with ≥ half a load over a closer lone
-    regrown block; tier-2 fallback = richest reachable. `Field_Tiberium_Value` + `HARV_FIELD_LOAD_DIVISOR`.
-  - **Layer B harvester-only dock pad** + **dock staging** (per-harvester `Nearby_Location` locationmod).
-  - **Corrected belief:** on the real maps the dominant "stuck" cause is **terrain** (cliff/water-split
-    ore + narrow gaps) and **the AI walling its own ore/harvester with buildings**, NOT idle infantry
-    (the 2026-06-17 "scatter friendly infantry" hypothesis was wrong — a 91-event sample was
-    terrain/building-dominated, ally-infantry pins ≈ 0). A genuinely AI-box-in harvester (turret placed
-    trapping it against the refinery+water) is OUT OF SCOPE — an AI placement problem.
-  ⬜ STILL OPEN: **threat-aware field selection** (don't route through enemy fire). ⚠ BLOCKER: the engine
-  region-threat map (`Cell_Threat`) is `Session.Type==GAME_NORMAL`-gated (`object.cpp:1859`) so it is
-  INERT in skirmish — must build on a custom enemy-proximity scan instead. Design in the handover doc.
-- **(earlier) ROOT CAUSE FOUND + partial fix for the walled-field loop (2026-06-16):** the autonomous scan
-  `UnitClass::Tiberium_Check` (unit.cpp:2519) ALREADY zone-filters (`Map[Coord].Zones[MZone] !=
-  Map[center].Zones[MZone] → 0`), so `Goto_Tiberium` correctly finds "no reachable tiberium" when the
-  only field is walled off. The infinite spin was the **`ArchiveTarget` fallback** in `Mission_Harvest`
-  LOOKING (unit.cpp:3291): it re-dispatches the harvester to its last-mined cell **with no reachability
-  check** and (unlike the sibling site at 3256) never clears it. So path-fail → NavCom clears → re-scan
-  finds nothing reachable → archive still legal → re-dispatch to the same unreachable cell → loop (the
-  "256 fallbacks"). **FIX (commit pending):** guard that reassignment with
-  `Is_In_Same_Zone(As_Cell(ArchiveTarget))`; if the archive is gone/unreachable, clear it and fall to
-  GOINGTOIDLE instead of charging it forever. Surgical — only changes behaviour in the exact failure
-  case (archive in a different zone), identical in normal harvesting. **STILL FOR THE SEGMENT:** target
-  CLAIMING (two harvesters picking the same patch), refinery dock contention, the same-zone-but-
-  dynamically-blocked case (a partial wall / unit blocking a reachable-by-zone route), and finding a
-  reachable field beyond TiberiumLongScan range. This fix only kills the walled-off-field spin.
-
-### Economy asymmetry: GDI/Nod dock (slow) vs RA auto-dump (fast)
-- **Severity:** balance (intended TD-authentic behaviour, not a bug — but a candidate to equalise).
-- **Status:** PROPOSAL — make RA also dock (dwell on the tilted-bucket unload frame) for a matched time.
-- **Detail + balance interaction:** see `docs/balance-deep-dive.md` (economy asymmetry section) — note
-  equalising removes the GDI/Nod slower-economy counterweight to their cheaper army + the Mammoth.
-
----
-
-## Launcher / engine limitations (cannot be fixed from a mod — do not re-investigate)
-
-### Select-all (A) and Deploy hotkeys ignore faction harvesters + MCVs — ✅ FIXED 2026-09-02
-- **Was:** WON'T FIX (launcher-hardcoded unit identity). Now FIXED on the DLL side, no launcher
-  change: the DLL polls the deploy key itself (`GetAsyncKeyState`, cross-process) and runs the
-  generic self-action on the selection, so every faction MCV, APC, transport and minelayer
-  deploys/unloads on the stock backslash key; and while A is held the DLL vetoes harvesters and
-  MCVs in the launcher's select-all hand-over. Mechanism + the reverse-engineered launcher gate
-  (exported AssetName+TypeName must both be "MCV"): `launcher-vs-dll-ownership.md`. Verified
-  headless on GDI/Allied MCVs and a GDI harvester; Luke to re-test APC/Chinook/minelayer/TS units.
-- **Player-facing copy still says it's a limitation** (Workshop "Known limitations", ModDB page):
-  update at the next release.
-
-### Classic graphics mode dropped (HD-only)
-- **Severity:** by-design, player-facing.
-- **Status:** WON'T FIX — classic completely dropped once the TD theatre tilesets were added (no classic
-  art path → terrain/units render broken). HD is the only supported mode. The classic spacebar toggle
-  can't be locked from the mod side (launcher-owned; clean lockout is network-games-only). Memory
-  `feedback-classic-graphics-unsupported`.
-
----
-
-## Localization
-
-### Localized SFX file clobbers DE/FR voice dub
-- **Severity:** minor, non-fatal (German/French players hear English voices).
-- **Status:** OPEN backlog.
-- **Detail:** our `SFXEVENTSLOCALIZED.XML` is a 981-event all-`_EN-US` file overriding every player's
-  localized voices. Fix = trim to TD-only events. Memory `project-localized-sfx-clobbers-dub`.
-
----
-
-## Multiplayer / LAN
-
----
-
-## Resolved
-<!-- Move fixed issues here with the fix commit, e.g.:
-- Immortal-claim whole-map gridlock — FIXED 6f35ea9 (claim-on-crossing). -->
-- Immortal-claim whole-map chokepoint gridlock — FIXED `6f35ea9` (claim-on-crossing). See
-  `docs/chokepoint-reservation-design.md` CHECKPOINT 2026-06-16.
-- LAN crashes with crates enabled — FIXED for 5.0.0, confirmed 2026-10-02 (eight-player LAN games,
-  crates on, no crash). Two causes: an explosion crate destroyed the unit entering its cell, then
-  `DriveClass::Start_Of_Move` and `While_Moving` called the virtual `Set_Speed(0)` on the freed unit
-  (both now return when `IsActive` is clear, `0fe6fdea`; only the simulating host runs unit AI, which
-  fit "the host crashes"); and unit crates could loop forever looking for a vehicle a GDI, Nod or TS
-  GDI house could get (one even pool of every faction's crate vehicles, `e7769961`).
-- TD temperate coastal tiles rendered as white squares (shores/bridges) — FIXED `ede7ca1`.
-  The `TDSH*`/`TDBRIDGE*` `<Tile>` blocks were missing from `RA_TERRAIN_TEMPERATE.XML` so the
-  launcher couldn't resolve their AssetNames. Cause: `build_td_tiles.py` spliced the shared
-  `TF_TD_TILES` marker once **per theatre letter**, but `T` (temperate) and `S` (winter) both
-  target the temperate XML and `splice()` replaces the whole block — the winter pass (added with
-  the winter/desert theatres, `7c80fde`) overwrote the temperate shore/bridge block. Only visible
-  on TD temperate coastal maps (e.g. TD Lost Arena); winter/desert maps were unaffected, so it
-  shipped unnoticed. Fix: group the XML splice by destination file + restore the dropped blocks.
-
----
-
-## Skirmish setup
-
-### GDI/Nod skirmish "starting units" bonus gives RA units, not TD
+  though its setup matches the Tech Center: `BSIZE_32`, `List32`, `Bib=yes` in rules.ini, and the
+  same stamp path (`building.cpp` Mark, `Bib_And_Offset` -> BIB2). Suspect its add-on handling
+  (the plug install re-marks the building).
+
+### Deploy cursor shows on a construction yard when the player owns two or more
+- **Severity:** cosmetic (the click does nothing).
+- `BuildingClass::What_Action` keeps `ACTION_SELF` on a factory whose house has more than one of
+  its kind (`Factory_Counter(ToBuild) > 1`), so another factory can be set primary. The switch has
+  no case for `RTTI_BUILDINGTYPE`, so a yard keeps `ACTION_SELF` too, which the launcher draws as
+  the deploy cursor, and `Active_Click_With` has no yard handler. EA's `STRUCT_CONST` code is the
+  same, so any second yard shows it.
+- Fix shape: `ACTION_NONE` for `RTTI_BUILDINGTYPE` in that switch. MCV undeploy goes through
+  `ACTION_MOVE` and is not affected.
+
+### Endgame auto-sonar ignores the TD subs
+- **Severity:** minor (a Nod house down to cloaked TD subs can stall the endgame forever).
+- The stall-breaker in `house.cpp` (`AutoSonarTimer`, 40 s) uncloaks every sub of a house that
+  owns nothing else. Its gate is `VQuantity[VESSEL_SS] > 0` and its ping hits only `VESSEL_SS` and
+  `VESSEL_MISSILESUB`, so TDNSUB, TDOBLISUB and TDMSUB never trip it. The "nothing but subs"
+  census runs over the RA ranges (`UNIT_RA_COUNT`, `VESSEL_RA_COUNT`, infantry up to
+  `INFANTRY_DOG`), so TD and TS units are not counted either.
+- Fix shape: all five sub hulls in the gate and the ping, and the census over the full ranges.
+
+### TS GDI gets no starting-bonus infantry
 - **Severity:** minor.
-- **Status:** OPEN (post-1.0, unverified since; migrated from memory 2026-07-15).
-- **Detail:** with UnitCount>0, the MCV spawn is faction-correct (Create_Units spawns UNIT_TDMCV) but
-  the bonus combat units (tot_units = UnitCount*2/3; tot_infantry = remainder, scenario.cpp:3023) fill
-  from RA's unit-selection logic with no TD-faction branch -> GDI/Nod get RA vehicles/infantry. Fix: add
-  a TD-faction branch to the bonus-unit picker, mirroring AI_Unit/AI_Infantry's Can_Build approach.
+- With `UnitCount>0` the bonus picker (`scenario.cpp`, the `utable`/`itable` faction columns)
+  gives GDI and Nod their own units, and TS GDI its vehicles, but skips infantry for TS GDI. The
+  code comment says no TS infantry exists; TSE1, TSE2 and the rest do now.
+
+### TS Engineer shows the damage cursor over a healthy building
+- **Severity:** minor (the click still captures outright; only the cursor misleads).
+- `InfantryClass::What_Action` (`infantry.cpp`) picks the cursor with its own `td_single` test,
+  which counts GDI and Nod houses but not `INFANTRY_TSENGINEER`; `Per_Cell_Process`, which does the
+  capture, includes it. So a TS Engineer of any other house, TS GDI's own included, shows the damage
+  cursor over a building above the capture threshold, then captures it on arrival. Confirmed in
+  play.
+- Fix shape: add `|| *this == INFANTRY_TSENGINEER` to `What_Action`'s `td_single`.
+
+### A sold or destroyed Tesla Coil leaves a TS rifleman
+- **Severity:** minor.
+- `BuildingClass::Crew_Type` (`building.cpp`) gives every building whose IniName starts with "TS" a TS
+  Light Infantry (`INFANTRY_TSE1`) as its survivor. The RA Tesla Coil is `TSLA` and `Crewed=yes` in
+  rules.ini, so it matches. Found in the code, not yet seen in play.
+- Fix shape: test `Class->Is_TS_Era()` instead of the IniName prefix.
+
+### Infantry pushed aside in a narrow pass lose their orders (suspected)
+- **Severity:** minor.
+- When a vehicle drives through a one-cell pass, `DriveClass::Drain_Infantry_Along` (`drive.cpp`)
+  gives each untethered friendly infantryman ahead a one-cell `MISSION_MOVE` out of the way, and
+  nothing restores his order. A soldier walking through the pass, or an engineer on
+  `MISSION_ENTER` heading to capture, would stop one cell aside and stay there. Not yet seen in play.
+- Fix shape: re-issue the man's mission and destination once he has stepped aside, or push only
+  men with no order of their own.
+
+---
+
+## Audio and launcher art
+
+### GDI and Nod players' RA special infantry answer in TD soldier voices (suspected)
+- **Severity:** cosmetic.
+- `InfantryClass::Response_Select`, `Response_Move` and `Response_Attack` (`infantry.cpp`) return
+  TD's generic lines for every infantry type when `PlayerPtr->ActLike` is GDI or Nod, before EA's
+  per-type answers for Tanya, dogs, spies, medics, thieves and Einstein. A GDI or Nod player holding
+  an Allied or Soviet yard trains those units, so they would answer as TD riflemen. Not yet seen in
+  play.
+- Fix shape: take the GDI/Nod branch only for types without their own response set.
+
+### "Unable to comply, building in progress" plays in the RA voice for GDI, Nod and TS GDI
+- **Severity:** cosmetic. Queued as a post-release job in `todo.md`.
+- The DLL never sends this line: `ClientG` plays RA's `PROGRES1` itself. Every DLL send of
+  `VOX_NO_FACTORY` routes correctly (`TDBLDG1` for GDI/Nod, `TSNOFACT1` for TS GDI).
+- Route: add `PROGRES1` to the lines the EVA cache patch overwrites at match start
+  (`tf_eva_mailbox.h`, `scripts/eva_mailbox_build.py`, `eva-ram-patch-spike.md`), with
+  `TDBLDG1` / `TSNOFACT1` as the per-era payloads under the same-size rule.
+
+### Waypoint and rally markers show the Allied emblem for TS GDI
+- **Severity:** cosmetic.
+- The launcher draws both markers from `RA_UI_ALLIED_LOGO_SMALL` (`RA_UI_SOVIET_LOGO_SMALL` for
+  the other side), chosen by side, and TS GDI rides an Allied country house. There is no marker
+  draw code in the DLL. A loose atlas repaint is global, so real Allied players would get the
+  eagle too.
+- Route: the RAM lever in `radar-crest-ram-spike.md`, re-pointing ClientG's cached region record
+  at match start. The crest patch handles two records today (`TF_CREST_SLOTS 2`).
+
+### Localized SFX file overrides the German and French voice dubs
+- **Severity:** minor (DE/FR players hear English voices).
+- `Data/XML/AUDIO/SFXEVENTSLOCALIZED.XML` carries 985 events, every sample `_EN-US`, and replaces
+  every player's localized voices. Fix: trim it to the events the mod changes. The EVA mailbox
+  relies on the `RA*_SFX_EVA_*` names, so check those before cutting any RA event.
+
+### Campaign sidebar cameos show both faction badges
+- **Severity:** cosmetic (stock campaigns with the mod on).
+- `TF_Compute_Producer_Masks` ORs each owned yard's owners into the badge mask, and the vanilla
+  `[FACT]` is `Owner=allies,soviet`, so every cameo gets both badges. The tech tree is right; the
+  badge code has no campaign awareness.
+
+---
+
+## Multiplayer
+
+### LAN joiners' credit tick: untested
+- **Severity:** minor.
+- In LAN the host alone simulates, so the DLL's faction-routed tick (`credits.cpp`
+  `CreditClass::AI`) fires on the host. `TF_Fire_Credit_Tick` addresses it to the house whose
+  credits moved (`DLLExportClass::On_Sound_Effect(house, ...)`), as EA's beacon does.
+- One LAN match settles it: either joiners hear their own faction's tick (done), or the host hears
+  everyone's, which means the id is a local filter and the data-side route in
+  `building-sound-routing.md` §2 is needed.
+
+### The radar on/off sting never plays with two or more humans
+- **Severity:** cosmetic.
+- The debounce in `HouseClass::AI` (`tf_radar_on`, `tf_pending`, `tf_stable`) is function-static,
+  shared by every human house. With two or more humans their states alternate, nothing holds the 8
+  frames the debounce needs, and no sting plays (it never loops). Fix shape: per-house state.
+
+### First solo skirmish after a LAN session spawned the LAN lobby's AIs (seen once)
+- **Severity:** minor, unreproduced.
+- `CNC_Set_Multiplayer_Data` handed over the previous LAN lobby's roster (8 slots, 6 AIs against an
+  actual 1 + 5) and six AI houses spawned. Re-test if it recurs.
+
+---
+
+## Balance data
+
+### The Allied artillery's range change never applies
+- **Severity:** major (a balance change that shipped in name only).
+- The mod's `CCDATA/aftrmath.ini` always loads after `rules.ini` (`Is_Aftermath_Installed()` is true in
+  the remaster) and overrides field by field. Its `[155mm] Range=6` beats `rules.ini`'s 8, so the
+  Allied Artillery plays at 6 while `balance-deep-dive.md` records 6 → 8. Its `[E3] Owner=allies`
+  also beats `rules.ini`'s `allies,soviet`. Found in the data, not yet checked in play.
+- Fix shape: set the intended values in `aftrmath.ini` too (`td-building-separation-recipe.md`,
+  gotcha 16), after deciding what E3's owner should be.
+
+### `Inaccurate=` does nothing on projectiles
+- **Severity:** major (balance).
+- EA's `BulletTypeClass::Read_INI` (`bbdata.cpp`) reads the misspelt key `Inaccuate`, so the eight
+  `Inaccurate=yes` lines in `rules.ini` (`[Ballistic]`, `[TDSSM]`, `[TDSSM2]`, the TD missiles) are
+  ignored: those shots are accurate unless the firer moves. The artillery's Range 8 was justified by
+  that scatter. `[TDMSUB]`'s `Inaccurate=` is read by nothing.
+- Fix shape: either key the entries as `Inaccuate=`, or fix the parser with a `// TF:` change. Both
+  change balance, so it needs a play test.
+
+## AI and pathfinding
+
+### Sim froze once in a 4-Hard-AI Docklands match (2026-09-02)
+- **Severity:** unknown, unreproduced.
+- Every DLL log stopped inside frame 22357 (about 11 minutes); ClientG kept spinning at about 60%
+  CPU; no minidump, no A* storm. A rerun of the same build and lobby ran to F45000 clean. Logs:
+  `docs/ai-ab-2026-09-02/g4-docklands-4ai-hang-MOD_DEBUG_AI.txt`.
+- Next time: poll the AI log size every 5 s and on a 20 s stall run
+  `gdb -p <pid> -batch -ex 'thread apply all bt 30'` on the sim process (gdb attaches under Wine;
+  breakpoints never fire).
+
+### The economy gate counts buildings still in limbo
+- **Severity:** minor.
+- `tf_economy_ready` (`house.cpp`) counts refineries and war factories with
+  `TF_Role_Quantity(BQuantity, ...)`. `BQuantity` rises when production starts, so an unbuilt war
+  factory reads as owned and unlocks `TDFIX` early. Fix shape: gate on `ActiveBQuantity`; leave the
+  "do I need another" counts on `BQuantity`, which must see in-flight orders.
+
+### Lobby difficulty state survives into the next game
+- **Severity:** minor, no symptom seen.
+- `TF_Apply_AI_Difficulties` sets `TFLobbyAIDifficultySet` and `Scen.CDifficulty`, and nothing
+  resets them, so a campaign started after a skirmish in the same session inherits them. Fix
+  shape: reset both at match start.
+
+### Thousands of genuine path failures per match: baseline not set
+- **Severity:** unknown.
+- With livelocks excluded, `src!=dst` path failures run about 2,800 to 3,200 per desktop match and
+  1,500 per Deck match, harvesters prominent. A fallback to the legacy edge-follower is not
+  automatically a unit that failed to move; set that baseline before treating it as a bug.
+- One cheap target is known: the Amphibious APC (TSAPC) searched from its own cell 1,352 times
+  in one headless AI match (`path-failure-livelock-design.md`).
+
+### Head-on in a one-tile gap with no escape cell
+- **Severity:** minor (self-resolves when one unit dies or clears).
+- In `drive.cpp`, when give-way decides RETREAT (`gw == 2`) and `Find_Give_Way_Cell` finds no
+  cell, the unit stops and returns, so neither `Try_Deadlock_Scatter` nor the vehicle no-progress
+  detector runs. Fix shape: let that path reach the breaker. `chokepoint-reservation-design.md`.
+
+### Deadlock-breaker churn on returners
+- **Severity:** cosmetic.
+- A unit can scatter, re-path straight back into the stuck spot and repeat (a `2TNK` did it 67
+  times). `Try_Deadlock_Scatter` has no re-scatter cap, and the no-progress detector misses it
+  because each scatter changes the source cell. Probably an unreachable goal. A recurring pinch on
+  the old test snow map (about cell 90,63) looks the same.
+
+### Harvester follow-ups
+- **Severity:** minor. The unreachable-ore loop itself is fixed (`harvester-recovery-design.md`).
+- Open: a field that stays walled is re-tried every 15 s (`HARV_BLACKLIST_TTL`, no backoff); two
+  harvesters can pick the same patch (no claiming); ore beyond `TiberiumLongScan` is never found.
+
+---
+
+## Found in code review, not seen in play
+
+Suspected from reading the code during the code tidy (`code-tidy.md`). Confirm in play, then promote
+to a full entry above or delete. One line each: where, what, severity.
+
+- **Lobby AI difficulty (major):** dllinterface.cpp resets `TF_LobbyCandN` only in dev builds, so in a
+  release the candidate list fills across matches and an ambiguous read can take an earlier lobby's
+  difficulties.
+- **GDI/Nod build speed ignores power (major):** techno.cpp `Time_To_Build`'s GDI/Nod path returns before
+  the low-power scaling, the AI build slowdown and the house bias; TD itself applies the power scaling.
+- **TS harvester speed (minor):** rules.ini `[TSHARV] Speed=5`; the parity change to 6 went into a comment.
+- **Per-match statics never reset (minor):** house.cpp AI_Building's `_waiting_since[]` and
+  `TF_Eco_Below_Target`'s hold statics carry into the next match of a session.
+- **TS types missing from hand lists (minor):** Recalc_Center and `TF_Ferry_Wants_MCV` leave out
+  `STRUCT_TSFACT`; the enemy air cap leaves out `STRUCT_TSHPAD`; the radar jam and sting counts leave out
+  `STRUCT_TSTECH`.
+- **Scan bits past 31 (minor):** `Tracking_Add`/`Recalc_Attributes` shift `1L << type` for infantry and
+  units past bit 31 (undefined; on x86 TSGHOST sets the TANYA bit). Deterministic, so no desync.
+- **EMP and Firestorm granted early (minor):** the specials key on `Get_Quantity`, true while the
+  generator is still on the sidebar; the Firestorm grant never rechecks a placed one.
+- **Charges spent with no droid or pod (minor):** the Hunter Seeker and Drop Pods discharge even when the
+  spawn fails.
+- **Ferry (minor):** `TFF_SAIL` treats a transport idling offshore as arrived and unloads onto water,
+  then waits out `TF_FERRY_TIMEOUT`.
+- **Carryall (minor):** `TFCarryPickup` outlives a changed order, so a later landing can skip its LZ check
+  or lift that vehicle unasked.
+- **Give-way (minor):** `HOLD_TIMEOUT` (60) expires claim waits early against a 75-frame claim, and the
+  patient queue drops claims at 40 frames; `Find_Give_Way_Cell` checks only each ray's end cell.
+- **TS war factory pack-up (minor):** `TF_Pack_Up` re-unlimbos a TSDWEAP at a shifted cell when the
+  vehicle can't unlimbo, and can leave it in limbo with its power gone.
+- **Names (minor):** `NameOverride[128]` holds fewer slots than rules.ini's 137 `Name=` overrides, so the
+  last types read keep their stock names.
+- **Firing deploy-to-fire units (minor):** Firing_AI's `too_close` uses the raw MinRange while
+  Approach_Target adds half a cell.
+- **Sidebar (cosmetic):** a dropship cameo is never evicted while any bay stands
+  (sidebarglyphx.cpp ~546); the Mech Division isn't marked busy through the bay cooldown.
+- **Small ones (cosmetic or latent):** MinelayerFindSpot's `>` should be `>=`; Mission_Repair looks only
+  for a harvester's own refinery type; `Find_Passable_Position_Near` transposes x and y (from CFE); the
+  [TFTDTiles] reader is unchecked; the dormant TDLST indexes 16 facings on 4 frames; EA's own
+  `Make_Enemy` uses `!` for `~` and CNC_Read_INI's `memset` has its arguments swapped (both also
+  upstream); `[TSPLUG]` lacks the Capturable/Crewed/Repairable/Bib keys its TS original has.
+
+## Limitations (cannot be fixed from a mod; do not re-investigate)
+
+### Speech the DLL sends in the game-over window is dropped
+- The launcher discards speech dispatched during or after `On_Multiplayer_Game_Over`
+  (`TDACCOM1`, `TDFAIL1` and `RAOLOST1` all went out through valid chains and stayed silent),
+  so the endgame lines ride the EVA mailbox. Mid-game stub-and-refire is unaffected.
+
+### The Dropship Bay's countdown cameo tooltip flickers once a second
+- The 5:00 to 0:01 cooldown is a per-second AssetName swap (`%s_CD%03d`), and each swap rebuilds the launcher's sidebar
+  button, closing an open tooltip. Tooltip and icon are one launcher widget. Per-second precision
+  was chosen over coarser, flicker-free steps.
+
+### Classic graphics mode is unsupported
+- The mod's terrain and units have no classic art, so the mod is HD-only.
+  `CNCDisableLegacyGraphicsOption` in `Data/XML/GameConstants_Mod.xml` removes the option and the
+  spacebar toggle.

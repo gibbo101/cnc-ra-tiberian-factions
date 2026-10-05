@@ -293,21 +293,14 @@ AircraftClass::AircraftClass(AircraftType classid, HousesType house)
  * HISTORY:                                                                                    *
  *   07/26/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-/***********************************************************************************************
- * TF_Orbit_Probe -- Is the from-orbit arrival probe switched on?                              *
- *                                                                                             *
- *    OPT-IN, unlike the other dev levers, and deliberately so: this one spawns aircraft in a  *
- *    state the engine never otherwise produces, and a build that wedges the game should not   *
- *    be able to do it to every Orca the moment it loads. Create                               *
- *    Documents/CnCRemastered/tf_orbit.flag to arm it; delete the file to disarm without a     *
- *    rebuild. Read once and cached, like TF_Dev_Cheats.                                       *
- *=============================================================================================*/
+// Dev builds: true when Documents/CnCRemastered/tf_orbit.flag exists at the first call, arming the from-orbit
+// arrival probe. Off by default: it puts aircraft where the engine never otherwise does.
 bool TF_Orbit_Probe(void)
 {
 #if TF_DEV_BUILD
     static int cached = -1;
     if (cached < 0) {
-        cached = 0; // default OFF -- this one has to be asked for
+        cached = 0;
         const char* h = getenv("USERPROFILE");
         if (h == NULL)
             h = getenv("HOME");
@@ -401,10 +394,7 @@ int AircraftClass::Shape_Number(void) const
 {
     int shapenum = 0;
 
-    /*
-    **	The hunter seeker's sprite is one facing x 8 spin frames (TS GGHUNT,
-    **	WalkFrames=8): the frame cycles with time, never with the heading.
-    */
+    // TF: the hunter seeker's sprite is one facing of 8 spin frames, cycled by time rather than by heading.
     if (*this == AIRCRAFT_TSHUNT) {
         return ((Frame / 3) & 7);
     }
@@ -806,11 +796,7 @@ int AircraftClass::Mission_Hunt(void)
                     Transmit_Message(RADIO_OVER_OUT);
                 }
 
-                /*
-                **	TD A-10: a fresh sortie gets TD's 3 bombing passes (tiberiandawn
-                **	AircraftClass ctor AttacksRemaining=3); ammo refills between
-                **	passes in DROP_BOMBS, mirroring TD Mission_Hunt.
-                */
+                // TF: a TD A-10 sortie gets TD's three bombing passes; DROP_BOMBS refills its ammo between them.
                 if (*this == AIRCRAFT_TDA10) {
                     AttacksRemaining = 3;
                 }
@@ -823,14 +809,8 @@ int AircraftClass::Mission_Hunt(void)
         **	Homing in on target stage.
         */
         case FLY_TO_TARGET:
-            /*
-            **	TD A-10 (tiberiandawn Mission_Hunt FLY_TO_TARGET, verbatim): home on the
-            **	target and begin the bombing run only inside 0x0380 (3.5 cells), checked
-            **	at TICKS_PER_SECOND cadence -- so the run starts 3.5..~1.2 cells out and
-            **	the 5-tick bomb stream walks ONTO the target as the plane overflies it.
-            **	(RA's weapon-range gate below would start the run 4.5 cells out and every
-            **	bomb would fall short -- bombs land beneath the release point.)
-            */
+            // TF: the TD A-10 starts its bomb run 3.5 cells out, as in TD, so the stream walks onto the target.
+            // RA's weapon-range gate below would start it farther out, and every bomb would fall short.
             if (*this == AIRCRAFT_TDA10) {
                 if (!Target_Legal(TarCom)) {
                     Status = LOOK_FOR_TARGET;
@@ -896,24 +876,10 @@ int AircraftClass::Mission_Hunt(void)
         case DROP_BOMBS:
             TARGET targ;
 
-            /*
-            **	TD A-10 bombing run -- verbatim port of TD Mission_Hunt DROP_BOMBS
-            **	(tiberiandawn/aircraft.cpp:672-690): once the run starts, a bomb drops
-            **	every 5 ticks while ammo remains. NO ROF/rearm gate between drops
-            **	(Fire_At resets Arm but TD ignored it) and NO range/facing re-check
-            **	mid-run -- the bombs fall in a line along the overflight, which is the
-            **	TD stream. Ammo out -> REGROUP (RA's path back to the Airfield to
-            **	rearm, our sanctioned divergence from TD's retreat-off-map).
-            */
+            // TF: the TD A-10 drops a bomb every 5 ticks with no rearm or range check (TD DROP_BOMBS), refilling for
+            // three passes a sortie; then REGROUP flies it home to rearm rather than off the map as in TD.
             if (*this == AIRCRAFT_TDA10) {
                 if (!Ammo) {
-                    /*
-                    **	TD multi-pass loop (tiberiandawn Mission_Hunt DROP_BOMBS): the
-                    **	payload refills between passes and the plane swings around for
-                    **	another run, 3 passes per sortie. Passes spent -> REGROUP, which
-                    **	sends it home to the Airfield to rearm (our divergence from TD's
-                    **	retreat-off-map, since ours is a buildable unit).
-                    */
                     AttacksRemaining--;
                     if (AttacksRemaining > 0) {
                         Ammo = Class->MaxAmmo;
@@ -987,13 +953,8 @@ int AircraftClass::Mission_Hunt(void)
         **	Pull away to regroup for possibly another attack or a retreat.
         */
         case REGROUP: {
-            /*
-            **	Attack-move (CFE port): the original code could call Enter_Idle_Mode
-            **	twice (once here, once below), so we defer it via a forceidle flag.
-            **	When out of ammo, or in attack-move with a dead target, force idle so
-            **	we get back on track to the remembered destination instead of looping
-            **	around to LOOK_FOR_TARGET.
-            */
+            // TF: attack-move (CFE port): out of ammo, or attack-moving with its target gone, the aircraft goes idle,
+            // and with ammo idle mode resumes the attack-move rather than looping back to LOOK_FOR_TARGET.
             bool forceidle = false;
             if (Ammo == 0) {
                 AttacksRemaining = 0;
@@ -1071,10 +1032,7 @@ void AircraftClass::AI(void)
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
 
-    /*
-    **	The hunter seeker keeps the inert attack mission alive; its flying and
-    **	self-destruct run later in AI() (the Edge_Of_World-safe delete zone).
-    */
+    // TF: the hunter seeker holds an attack mission that does nothing; it flies and detonates later in AI().
     if (*this == AIRCRAFT_TSHUNT && Mission != MISSION_ATTACK && MissionQueue != MISSION_ATTACK) {
         Assign_Mission(MISSION_ATTACK);
     }
@@ -1143,13 +1101,8 @@ void AircraftClass::AI(void)
         return;
     }
 
-    /*
-    **	The hunter seeker's flight and self-destruct run here -- the same late
-    **	point in AI() where Edge_Of_World_AI deletes an aircraft from inside its
-    **	own AI. Running it at the top of AI() (before FootClass::AI) deleted the
-    **	droid mid-way through the logic layer's per-object bookkeeping and
-    **	crashed; this is the proven-safe position.
-    */
+    // TF: the hunter seeker flies and detonates here, where Edge_Of_World_AI also deletes aircraft. Run before
+    // FootClass::AI, its self-delete crashes the game.
     if (*this == AIRCRAFT_TSHUNT) {
         if (TF_Hunter_Seeker_AI()) {
             return;
@@ -1320,21 +1273,6 @@ int AircraftClass::Mission_Unload(void)
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
 
-    // Fixed-wing cargo plane (AIRCRAFT_TDCARGO) gets a verbatim port of
-    // TD's fixed-wing Mission_Unload state machine
-    // (tiberiandawn/aircraft.cpp:1044+). RA shipped only the helicopter
-    // half — the fixed-wing branch was stubbed to Mission_Hunt because
-    // vanilla RA has no aircraft that ever needs to land + unload.
-    //
-    // TD's flow: PICK_AIRSTRIP (find docked airstrip, radio handshake)
-    // → FLY_TO_AIRSTRIP (approach, scale Altitude/Height down to a low
-    // pass, drop cargo at distance < 0x0080) → BUG_OUT (head off-map via
-    // MISSION_RETREAT). The plane never truly lands — the visual is a
-    // low pass with the vehicle Unlimbo'd onto a Find_Exit_Cell-picked
-    // strip-adjacent cell as the plane flies through.
-    //
-    // Differences from TD: `Altitude` → `Height` (RA naming), Validate()
-    // removed, AIRCRAFT_CARGO → AIRCRAFT_TDCARGO.
     // Diagnostic 2026-05-21: unload log is unexpectedly empty — log file
     // not created at all, so Mission_Unload is never being called for our
     // cargo plane. Unconditional first-entry log + per-call marker so we
@@ -1372,6 +1310,8 @@ int AircraftClass::Mission_Unload(void)
         fflush(s_unload_log);
     }
 
+    // TF: the TD cargo plane's delivery run (TD Mission_Unload): it flies to its airstrip, drops the vehicle in a
+    // low pass, sends it to the strip's rally point, and leaves the map (docs/cargo-plane-port.md).
     if (Class->IsFixedWing && *this == AIRCRAFT_TDCARGO) {
         enum
         {
@@ -1382,9 +1322,6 @@ int AircraftClass::Mission_Unload(void)
 
         switch (Status) {
 
-        /*
-        **	Find a suitable airfield to land at.
-        */
         case PICK_AIRSTRIP:
             if (!Target_Legal(NavCom) || !In_Radio_Contact()) {
                 BuildingClass* target_building = As_Building(NavCom);
@@ -1395,16 +1332,6 @@ int AircraftClass::Mission_Unload(void)
                                               ? target_building
                                               : Find_Docking_Bay(STRUCT_TDAFLD, false);
 
-                /*
-                **  Convoy fallback: if Find_Docking_Bay returned NULL because
-                **  every strip is busy with a prior plane, iterate Buildings
-                **  list directly to find any TDAFLD/AIRSTRIP this house owns.
-                **  Without this, plane #2+ would lose its target and circle
-                **  off-map. With this, every plane heads straight for the
-                **  strip in a straight-line east→west convoy and queues up
-                **  near the dock; landings happen in arrival order as the
-                **  strip frees between deliveries.
-                */
                 if (building == NULL) {
                     for (int i = 0; i < Buildings.Count(); i++) {
                         BuildingClass* b = Buildings.Ptr(i);
@@ -1417,16 +1344,6 @@ int AircraftClass::Mission_Unload(void)
                 }
 
                 if (building) {
-                    /*
-                    **  Always face and head for the strip — even if the
-                    **  RADIO_HELLO handshake gets RADIO_NEGATIVE (strip busy
-                    **  with another plane). The next tick will retry RADIO_HELLO
-                    **  and once the strip frees, Status transitions to
-                    **  FLY_TO_AIRSTRIP. No random-circling: this is the
-                    **  "boom boom boom" straight-line convoy behavior — planes
-                    **  spawn east-aligned to the strip and fly west at full
-                    **  speed regardless of dock availability.
-                    */
                     Assign_Destination(building->As_Target());
                     PrimaryFacing.Set_Desired(Direction(building->Center_Coord()));
                     SecondaryFacing.Set_Desired(PrimaryFacing.Desired());
@@ -1438,7 +1355,6 @@ int AircraftClass::Mission_Unload(void)
                         Status = FLY_TO_AIRSTRIP;
                     }
                 } else {
-                    // No airstrip at all → retreat off-map (TD source intent).
                     Assign_Mission(MISSION_RETREAT);
                     return (TICKS_PER_SECOND);
                 }
@@ -1447,9 +1363,6 @@ int AircraftClass::Mission_Unload(void)
             }
             break;
 
-        /*
-        **	Home in on target. When close enough, drop the cargo.
-        */
         case FLY_TO_AIRSTRIP:
             if (!Target_Legal(NavCom) || !In_Radio_Contact()) {
                 Status = PICK_AIRSTRIP;
@@ -1470,12 +1383,6 @@ int AircraftClass::Mission_Unload(void)
                     Height = Fixed_To_Cardinal(FLIGHT_LEVEL, Cardinal_To_Fixed(0x0600, navdist));
                 }
 
-                // TD uses navdist < 0x0080 (half-cell) which is tight enough
-                // for a TD-speed plane to overshoot. RA's Speed=40 cargo plane
-                // covers ~8 leptons/tick at MPH_FAST and overshoots, then
-                // turns back and orbits. Widen to 0x0200 (2 cells) so the
-                // plane commits to drop on first approach. Luke's spec is a
-                // straight-line east-bound pass, no orbiting.
                 if (navdist < 0x0200) {
                     FootClass* unit = (FootClass*)Detach_Object();
 
@@ -1492,13 +1399,6 @@ int AircraftClass::Mission_Unload(void)
                                 unit->IsALoaner = false;
                                 unit->IsLocked = true;
 
-                                /*
-                                **	TF: rally points — cargo-delivered vehicles
-                                **	never pass through the factory's
-                                **	RADIO_UNLOADED exit hook, so honor the
-                                **	airstrip's rally point here. Fall back to
-                                **	the usual scatter off the drop cell.
-                                */
                                 bool rallied = false;
                                 TechnoClass* strip = Contact_With_Whom();
                                 if (strip != NULL && strip->What_Am_I() == RTTI_BUILDING) {
@@ -1524,9 +1424,6 @@ int AircraftClass::Mission_Unload(void)
             }
             break;
 
-        /*
-        **	All cargo unloaded, head off the map.
-        */
         case BUG_OUT:
             Assign_Mission(MISSION_RETREAT);
             return (1);
@@ -1534,8 +1431,6 @@ int AircraftClass::Mission_Unload(void)
         return (MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
     }
 
-    // Vanilla RA fixed-wing handling — Badger/U2/MIG/YAK never unload;
-    // their MISSION_UNLOAD short-circuits to Mission_Hunt.
     if (Class->IsFixedWing) {
 
         Assign_Target(NavCom);
@@ -2099,11 +1994,8 @@ ResultType AircraftClass::Take_Damage(int& damage, int distance, WarheadType war
     return (res);
 }
 
-/*
-**	Whether this is a Carryall sent to lift a vehicle: empty, and its destination a friendly
-**	vehicle rather than a cell. Such a destination is never a landing zone, so the move
-**	mission flies straight over it instead of looking for clear ground beside it.
-*/
+// True for an empty Carryall out to lift a friendly vehicle. Mission_Move then flies onto the vehicle instead
+// of looking for a clear landing zone beside it.
 bool AircraftClass::TF_Carryall_Pickup_Pending(void) const
 {
     if (*this != AIRCRAFT_TSCARRY || Is_Something_Attached()) {
@@ -2112,12 +2004,8 @@ bool AircraftClass::TF_Carryall_Pickup_Pending(void) const
     return (TF_Pickup_Unit() != NULL);
 }
 
-/*
-**	The vehicle this Carryall is out to lift, liftable right now. The navigation computer
-**	holds it while the aircraft flies in, but the move mission rewrites that target to a
-**	landing zone and clears it on arrival, so the order is remembered in TFCarryPickup and
-**	that is what answers once the aircraft is on the ground.
-*/
+// The vehicle this Carryall is out to lift, or NULL if it can't be lifted now. NavCom names it on the way in;
+// TFCarryPickup remembers it once landing clears NavCom.
 UnitClass* AircraftClass::TF_Pickup_Unit(void) const
 {
     UnitClass* unit = As_Unit(NavCom);
@@ -2130,12 +2018,8 @@ UnitClass* AircraftClass::TF_Pickup_Unit(void) const
     return (unit);
 }
 
-/*
-**	A Carryall over its destination lifts the vehicle beneath it, or sets down the one it
-**	carries (TS AircraftClass::Do_MISSION_MOVE_Carryall). Returns whether it did either; the
-**	caller then leaves the move mission without landing. A vehicle that cannot be placed
-**	stays aboard.
-*/
+// Over its destination, a Carryall lifts the vehicle beneath it or sets down its load (TS
+// Do_MISSION_MOVE_Carryall). Returns whether it did either; a load that can't be placed stays aboard.
 bool AircraftClass::TF_Carryall_Exchange(void)
 {
     if (!Is_Something_Attached()) {
@@ -2156,15 +2040,6 @@ bool AircraftClass::TF_Carryall_Exchange(void)
     if (unit == NULL) {
         return (false);
     }
-    /*
-    **	The vehicle is set down where it was being carried, not at the centre of the cell
-    **	underneath: the Carryall touches down wherever it happens to be, so snapping the load
-    **	to the cell centre slid it most of a cell in a single frame.
-    **
-    **	A landed aircraft occupies its cell like anything else, so the carrier itself would
-    **	fail the load's legality check and send it to a neighbouring cell. It comes off the map
-    **	for the placement and goes back down afterwards; it takes off immediately either way.
-    */
     CELL cell = Coord_Cell(Coord);
     COORDINATE spot = Coord;
     bool grounded = !IsInLimbo;
@@ -2192,11 +2067,8 @@ bool AircraftClass::TF_Carryall_Exchange(void)
     return (true);
 }
 
-/*
-**	Draws the vehicle a Carryall carries, hull and turret, hanging just below the aircraft
-**	(the launcher resolves the hull's own tileset by name). The TS walkers keep their turret
-**	block elsewhere in their frame set, so only their hull is drawn.
-*/
+// Draws a Carryall's load, hull and turret, hanging below the aircraft; the launcher resolves the load's
+// tileset by name. A walker's turret frames follow its walk and firing frames.
 void AircraftClass::TF_Draw_Carried(int x, int y, WindowNumberType window) const
 {
     FootClass const* cargo = Attached_Object();
@@ -2254,12 +2126,7 @@ int AircraftClass::Mission_Move(void)
 
         case TAKE_OFF:
 
-            /*
-            **	Attack-move (CFE port): a fixed-wing with no ammo to start with has
-            **	nothing to do on an attack-move, so abort it and go idle. (CFE gated
-            **	this on its Smarter-Aircraft option; we include it unconditionally,
-            **	and drop the queue-memorize since q-move loops are not ported.)
-            */
+            // TF: attack-move (CFE port): a plane with no ammo drops the attack-move and goes idle.
             if (AttackMove && !IsALoaner && !Ammo) {
                 ResetAttackMove();
                 Clear_Navigation_List();
@@ -2290,10 +2157,8 @@ int AircraftClass::Mission_Move(void)
             distance = Distance(NavCom);
 
             if (distance < 0x00C0) {
-                /*
-                **	Attack-move (CFE port): if there's still a queued destination,
-                **	advance the queue by entering idle mode.
-                */
+                // TF: attack-move (CFE port): with another destination queued the plane idles to take it up; at the
+                // last one the attack-move ends.
                 if (Target_Legal(NavQueue[0])) {
                     Assign_Destination(TARGET_NONE);
                     Assign_Target(TARGET_NONE);
@@ -2301,10 +2166,6 @@ int AircraftClass::Mission_Move(void)
                     return (1);
                 }
 
-                /*
-                **	Attack-move (CFE port): destination reached -- exit attack-move
-                **	and go home.
-                */
                 if (AttackMove) {
                     ResetAttackMove();
                 }
@@ -2397,11 +2258,7 @@ int AircraftClass::Mission_Move(void)
     **	Double check and change LZ if necessary.
     */
     case VALIDATE_LZ:
-        /*
-        **	Attack-move (CFE port): a helicopter with no ammo to start with has
-        **	nothing to do on an attack-move, so abort it and go idle. (Included
-        **	unconditionally; q-move-loop memorize is not ported.)
-        */
+        // TF: attack-move (CFE port): a helicopter with no ammo drops the attack-move and goes idle.
         if (AttackMove && !IsALoaner && !Ammo) {
             ResetAttackMove();
             Clear_Navigation_List();
@@ -2451,10 +2308,8 @@ int AircraftClass::Mission_Move(void)
             int distance = Process_Fly_To(true, NavCom);
 
             if (distance < 0x0080) {
-                /*
-                **	Attack-move (CFE port): if there's still a queued destination,
-                **	advance the queue by entering idle mode.
-                */
+                // TF: attack-move (CFE port): with another destination queued the helicopter idles to take it up; at
+                // the last one it ends the attack-move and heads home instead of landing.
                 if (Target_Legal(NavQueue[0])) {
                     Assign_Destination(TARGET_NONE);
                     Assign_Target(TARGET_NONE);
@@ -2462,10 +2317,6 @@ int AircraftClass::Mission_Move(void)
                     return (1);
                 }
 
-                /*
-                **	Attack-move (CFE port): helicopters go home at the end of an
-                **	attack-move rather than landing at the destination.
-                */
                 if (AttackMove) {
                     Assign_Target(TARGET_NONE);
                     Assign_Destination(TARGET_NONE);
@@ -2511,10 +2362,8 @@ int AircraftClass::Mission_Move(void)
             Status = TAKE_OFF;
         }
         if (Process_Landing()) {
-            /*
-            **	The Carryall lifts its load or sets it down only once it is on the ground (TS lands for
-            **	both); loaded it climbs straight back to a hover, empty it hops to a clear spot beside.
-            */
+            // TF: the Carryall lifts or sets down its load only once landed (TS lands for both). Having lifted, it
+            // climbs back to a hover; having set down, it hops to a clear spot beside.
             if (*this == AIRCRAFT_TSCARRY) {
                 bool loaded = Is_Something_Attached();
 #if TF_DEV_BUILD
@@ -2579,12 +2428,8 @@ void AircraftClass::Enter_Idle_Mode(bool)
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
 
-    /*
-    **	Attack-move (CFE port): if we'd go idle but still have ammo, keep heading
-    **	for the remembered destination instead. Out of ammo -> end attack-move and
-    **	clear the queue, then fall through to the normal idle logic. (CFE's
-    **	queue-memorize for air q-moves is not ported.)
-    */
+    // TF: attack-move (CFE port): with ammo the aircraft resumes its attack-move instead of idling; without, it
+    // drops the attack-move and its queue and idles as usual.
     if (AttackMove) {
         if (Ammo) {
             AttackMoveEnterMoveMode();
@@ -2620,13 +2465,7 @@ void AircraftClass::Enter_Idle_Mode(bool)
             if (Team.Is_Valid())
                 return;
 
-            // TD-port: in-air cargo plane carrying a unit and acting as a
-            // loaner (i.e., enters from map edge, drops off, leaves) gets
-            // MISSION_UNLOAD here. Mirrors tiberiandawn/aircraft.cpp:1869-
-            // 1876 — the dormant code RA never ported, the gap that makes
-            // fixed-wing cargo delivery impossible by default. Once cargo
-            // is dropped, Is_Something_Attached() is false → falls through
-            // to the existing MISSION_RETREAT / etc. paths.
+            // TF: a loaner plane with cargo aboard unloads it, as in TD; this starts the cargo plane's delivery run.
             if (Is_Something_Attached() && IsALoaner) {
                 mission = MISSION_UNLOAD;
             } else
@@ -2703,10 +2542,8 @@ void AircraftClass::Enter_Idle_Mode(bool)
                         Assign_Destination(Good_LZ());
                     }
                 } else {
+                    // TF: a loaded Carryall holds its hover rather than landing with the vehicle.
                     if (*this == AIRCRAFT_TSCARRY) {
-                        /*
-                        **	A loaded Carryall holds its hover rather than landing with the vehicle.
-                        */
                         Assign_Destination(TARGET_NONE);
                         mission = MISSION_GUARD;
                     } else {
@@ -2920,9 +2757,7 @@ void AircraftClass::Active_Click_With(ActionType action, ObjectClass* object)
         return;
 
     case ACTION_ENTER:
-        /*
-        **	The Carryall's lift order is a move onto the vehicle; the exchange happens on arrival.
-        */
+        // TF: the Carryall's lift order is a move onto the vehicle; the exchange happens on arrival.
         if (*this == AIRCRAFT_TSCARRY && object->What_Am_I() == RTTI_UNIT) {
             Player_Assign_Mission(MISSION_MOVE, TARGET_NONE, object->As_Target());
             return;
@@ -3033,16 +2868,7 @@ ActionType AircraftClass::What_Action(ObjectClass const* target) const
         action = ACTION_NONE;
     }
 
-    // Tiberian Factions: exclude ONLY action == ACTION_ATTACK from the
-    // friendly-building / aircraft-carrier dock overrides so Ctrl-force-fire on
-    // the player's own helipad / repair bay / carrier is preserved. The earlier
-    // `action == ACTION_SELECT` form silently blocked docking at an ALLIED,
-    // different-house pad: FootClass::What_Action returns ACTION_SELECT only for
-    // a same-house target, ACTION_NONE for an allied one. That broke the agreed
-    // universal-landing design (any helicopter may land/rearm/repair at ANY pad)
-    // for campaign/co-op allied pads. Same-house docking (all of skirmish, any
-    // faction pad type) still yields ACTION_SELECT and is unchanged. Mirrors the
-    // infantry What_Action fix.
+    // TF: a force-fire (ACTION_ATTACK) on an allied building or carrier the aircraft could dock at stays an attack.
     if (House->IsPlayerControl && action != ACTION_ATTACK && House->Is_Ally(target)
         && target->What_Am_I() == RTTI_BUILDING
         && ((AircraftClass*)this)->Transmit_Message(RADIO_CAN_LOAD, (TechnoClass*)target) == RADIO_ROGER) {
@@ -3057,10 +2883,8 @@ ActionType AircraftClass::What_Action(ObjectClass const* target) const
     }
 #endif
 
-    /*
-    **	An empty Carryall over a friendly vehicle on the ground offers to lift it (TS's tote
-    **	cursor; the launcher's nearest is the enter cursor). Not one inside a war factory.
-    */
+    // TF: an empty Carryall offers to lift a friendly vehicle on open ground (TS's tote cursor; the launcher
+    // shows the enter cursor).
     if (*this == AIRCRAFT_TSCARRY && !Is_Something_Attached() && action != ACTION_ATTACK
         && target->What_Am_I() == RTTI_UNIT && House->Is_Ally(target) && !target->IsInLimbo && target->Height == 0
         && Map[target->Center_Coord()].Cell_Building() == NULL) {
@@ -3086,6 +2910,8 @@ ActionType AircraftClass::What_Action(ObjectClass const* target) const
     /*
     **	Special return to friendly repair factory action.
     */
+    // ACTION_SELECT is the only owner check here, as What_Action gives it for a same-house building alone; the
+    // dock overrides' != ACTION_ATTACK test would let an unarmed aircraft dock at an enemy repair bay.
     if (House->IsPlayerControl && action == ACTION_SELECT && target->What_Am_I() == RTTI_BUILDING) {
         BuildingClass* building = (BuildingClass*)target;
         if ((building->Class->Type == STRUCT_REPAIR || building->Class->Type == STRUCT_TDFIX
@@ -3180,12 +3006,8 @@ DirType AircraftClass::Pose_Dir(void) const
     return (DIR_NE);
 }
 
-/*
-**	TS Hunter Seeker targeting (OpenTS fly.cpp Acquire_Hunter_Seeker_Target):
-**	every live, visible, legal enemy techno is a candidate and the pick is
-**	uniformly random -- no threat weighting, no distance weighting. When any
-**	candidate belongs to a human player, the pick is made among those first.
-*/
+// TS Hunter Seeker targeting (OpenTS fly.cpp Acquire_Hunter_Seeker_Target): a uniformly random live, legal,
+// uncloaked enemy, chosen among human players' objects whenever there are any.
 template <class HEAP>
 static void TF_HS_Walk(HEAP& heap, HouseClass const* house, bool humans_only, int& counter, int pick, TechnoClass*& out)
 {
@@ -3264,15 +3086,8 @@ TARGET TF_Hunter_Seeker_Acquire(HouseClass const* house)
     return (out != NULL ? out->As_Target() : TARGET_NONE);
 }
 
-/*
-**	TS Hunter Seeker flight (OpenTS fly.cpp, the IsHunterSeeker branches):
-**	emerge slowly from the ground beside the Upgrade Centre, climb to flight
-**	level, fly straight at the victim, sink toward it inside the descend
-**	radius and detonate inside the detonate radius. The victim is
-**	re-acquired whenever the current one is gone; with no enemy left the
-**	droid hovers. TS constants, leptons per frame: EmergeSpeed 6, AscentSpeed
-**	40, DescentSpeed 50, DescendProximity 700, DetonateProximity 150.
-*/
+// TS Hunter Seeker flight (OpenTS fly.cpp): flies at flight level straight at its victim, re-acquiring one
+// when it is gone, and detonates within DETONATE_PROXIMITY. Returns true once the droid is deleted.
 bool AircraftClass::TF_Hunter_Seeker_AI(void)
 {
     enum
@@ -3299,19 +3114,8 @@ bool AircraftClass::TF_Hunter_Seeker_AI(void)
         PrimaryFacing.Set_Desired(Direction(tcoord));
         SecondaryFacing.Set_Desired(Direction(tcoord));
     }
-    /*
-    **	The droid strikes from flight level rather than diving to the deck. A
-    **	dive drops it into LAYER_GROUND, an abnormal state for an aircraft, and
-    **	self-deleting from there corrupted the layer lists (the recurring
-    **	detonation crash). Staying at FLIGHT_LEVEL keeps it a normal LAYER_TOP
-    **	aircraft through the strike, so its removal is the ordinary aircraft
-    **	death the engine handles cleanly.
-    */
-
-    /*
-    **	Altitude: the launcher draws Height as a north shift with the engine
-    **	shadow underneath, so the climb and the final dive both read.
-    */
+    // The droid strikes from FLIGHT_LEVEL, never diving: deleting an aircraft from LAYER_GROUND corrupts the
+    // layer lists.
     bool emerging = (Height < EMERGE_HEIGHT);
     if (Height < want) {
         Height = min(want, Height + (emerging ? EMERGE_SPEED : ASCENT_SPEED));
@@ -3320,14 +3124,8 @@ bool AircraftClass::TF_Hunter_Seeker_AI(void)
     }
     Mark(MARK_CHANGE);
 
-    /*
-    **	Keep the droid registered in the layer matching its CURRENT height
-    **	BEFORE anything that removes it from the map. It emerges from the
-    **	ground and dives back toward it, so it crosses the ground/air boundary
-    **	on the very frame it detonates; if the layer resubmit ran after the
-    **	detonate (as it did originally) Limbo would unlink the wrong layer list
-    **	and leave a dangling pointer -- the recurring null crash. Do it first.
-    */
+    // Re-register the droid's layer for its current height before anything that can delete it, or Limbo
+    // unlinks the wrong layer list and leaves a dangling pointer.
     if (layer != In_Which_Layer()) {
         Map.Remove(this, layer);
         Map.Submit(this, In_Which_Layer());
@@ -3350,19 +3148,8 @@ bool AircraftClass::TF_Hunter_Seeker_AI(void)
     return (false);
 }
 
-/*
-**	The strike, ported from OpenTS fly.cpp Nearing_Target (the IsHunterSeeker
-**	detonate branch): the target takes the weapon's full attack, a splash of
-**	the same magnitude lands at the droid, and the droid takes the same and
-**	dies. The self Take_Damage's destructor unlinks the map layers on its own
-**	-- exactly like a shot-down aircraft -- so there is NO manual Map.Remove
-**	(the RA landing path does one only because it is mid-transition, and doing
-**	it here removed the object from the wrong layer under the freed pointer:
-**	the post-fire crash).
-**
-**	Nothing touches this object after the self Take_Damage; TF_Hunter_Seeker_AI
-**	returns true and AI() returns, the one context where a self-delete is safe.
-*/
+// The hunter seeker's strike (OpenTS fly.cpp Nearing_Target): the victim takes the weapon's full attack, a
+// blast of the same lands at the droid, and the droid is deleted. The caller must not touch it afterwards.
 void AircraftClass::TF_Hunter_Seeker_Detonate(void)
 {
     WeaponTypeClass const* weapon = Class->PrimaryWeapon;
@@ -3375,14 +3162,8 @@ void AircraftClass::TF_Hunter_Seeker_Detonate(void)
 
     Sound_Effect(VOC_TS_HUNTER2, here);
 
-    /*
-    **	Deal the strike with the droid neutralised (Strength 0): a target's
-    **	death-explosion (an explosive harvester fires Wide_Area_Damage on death,
-    **	unit.cpp) that reaches the droid hits the Take_Damage guard
-    **	`if (oldstrength ...)` and no-ops, so it can neither re-enter nor free
-    **	this pointer. Kill the target with source NULL for the same reason (no
-    **	dangling back-reference to a droid that is about to die).
-    */
+    // Strength 0 first, so a victim's death blast that reaches the droid no-ops in Take_Damage instead of
+    // freeing it; the victim is hit with no source, so nothing is left pointing at the droid.
     Stun();
     Strength = 0;
 
@@ -3397,13 +3178,8 @@ void AircraftClass::TF_Hunter_Seeker_Detonate(void)
 
     Explosion_Damage(here, attack, NULL, warhead);
 
-    /*
-    **	Remove the droid the same way Edge_Of_World_AI removes a spent aircraft
-    **	from inside AI(): Stun (radio/nav severed) then a plain delete, whose
-    **	destructor Limbo unlinks the map layers. The engine's Take_Damage death
-    **	path (Death_Announcement etc.) crashed here; this minimal teardown is the
-    **	proven one, now that the whole routine runs at the safe late point in AI.
-    */
+    // Deleted as Edge_Of_World_AI deletes a spent aircraft: the destructor unlinks the layers. A manual
+    // Map.Remove or Take_Damage's death path here crashes the game.
     new AnimClass(ANIM_FBALL1, here);
     delete this;
 }
@@ -3430,12 +3206,8 @@ int AircraftClass::Mission_Attack(void)
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
 
-    /*
-    **	The hunter seeker's flight and detonation run from AI() (a mission
-    **	function must never delete its own object -- MissionClass::AI writes
-    **	Timer to the freed object right after). Its mission is just a live
-    **	keep-alive.
-    */
+    // TF: the hunter seeker flies and detonates from AI(); a mission function must never delete its own
+    // object, as MissionClass::AI writes Timer to it right after.
     if (*this == AIRCRAFT_TSHUNT) {
         return (1);
     }
@@ -3475,11 +3247,8 @@ int AircraftClass::Mission_Attack(void)
         if (!Target_Legal(TarCom)) {
             Status = RETURN_TO_BASE;
         } else if (*this == AIRCRAFT_TSORCAB) {
-            /*
-            **	The Orca Bomber flies a run straight over its target (TS strafes with any non-homing
-            **	weapon): the run ends four cells past the target, five bombs fall while it is within reach,
-            **	and the next run comes back the other way while it has bombs left.
-            */
+            // TF: the Orca Bomber strafes as in TS: each run ends four cells past the target, five bombs fall while
+            // it is in reach, and the next run comes back the other way while it has bombs left.
             COORDINATE tc = As_Coord(TarCom);
             DirType run = ::Direction(Center_Coord(), tc);
             COORDINATE beyond = Coord_Move(tc, run, 4 * CELL_LEPTON_W);
@@ -3533,9 +3302,7 @@ int AircraftClass::Mission_Attack(void)
         }
         break;
 
-    /*
-    **	The Orca Bomber's turn between runs: fly through the turning point, then line up again.
-    */
+    // TF: the Orca Bomber's turn between runs: fly through the turning point, then line up again.
     case TF_BOMB_LOOP:
         if (!Target_Legal(TarCom) || !Ammo) {
             Status = RETURN_TO_BASE;
@@ -3552,6 +3319,8 @@ int AircraftClass::Mission_Attack(void)
     **	Fly to attack location.
     */
     case FLY_TO_POSITION:
+        // TF: the Orca Bomber's run: nose into the run, five bombs a pass while in reach, then a bank round to a
+        // turning point off to the side, so the way back over the target is a loop.
         if (*this == AIRCRAFT_TSORCAB) {
             if (!Target_Legal(TarCom) || !Ammo) {
                 Status = RETURN_TO_BASE;
@@ -3562,8 +3331,8 @@ int AircraftClass::Mission_Attack(void)
                 return (1);
             }
             int run = Process_Fly_To(false, NavCom);
-            SecondaryFacing.Set_Desired(PrimaryFacing.Desired());   // nose into the run, never side-on
-            if (TFBombsThisRun < 5 && In_Range(TarCom) && Can_Fire(TarCom, 0) == FIRE_OK) {   // TS strafe: five bombs a pass
+            SecondaryFacing.Set_Desired(PrimaryFacing.Desired());
+            if (TFBombsThisRun < 5 && In_Range(TarCom) && Can_Fire(TarCom, 0) == FIRE_OK) {
                 Fire_At(TarCom, 0);
                 Map[::As_Cell(TarCom)].Incoming(Coord, true);
                 TFBombsThisRun++;
@@ -3573,10 +3342,6 @@ int AircraftClass::Mission_Attack(void)
                     Status = RETURN_TO_BASE;
                     return (1);
                 }
-                /*
-                **	Bank round for the next run: a turning point off to the side of the run line, so
-                **	the way back over the target is a loop rather than a stop and a reverse.
-                */
                 DirType bank = (DirType)(((int)PrimaryFacing.Current() + (int)DIR_E) & 0x00FF);
                 COORDINATE turn = Coord_Move(Coord, bank, 3 * CELL_LEPTON_W);
                 if (Map.In_Radar(Coord_Cell(turn))) {
@@ -4019,9 +3784,7 @@ bool AircraftClass::Process_Take_Off(void)
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
 
-    /*
-    **	An aircraft an E.M. Pulse caught on the ground stays down until the stun wears off.
-    */
+    // TF: an aircraft an E.M. Pulse caught on the ground stays down until the stun wears off.
     if (Is_Immobilized() && Height == 0) {
         IsTakingOff = false;
         return (false);
@@ -4209,11 +3972,8 @@ TARGET AircraftClass::Good_Fire_Location(TARGET target) const
         int range = Weapon_Range(0);
         COORDINATE tcoord = As_Coord(target);
 
-        /*
-        **	A weapon that only reaches the next cell (the Orca Bomber's bombs) is dropped from
-        **	directly above: the ring search below starts a cell inside the range and would find
-        **	no position at all, sending the aircraft home instead of attacking.
-        */
+        // TF: a weapon of under three cells' reach (the Orca Bomber's bombs) fires from directly above the target:
+        // the ring search below starts a cell inside the range and can find nowhere, sending the aircraft home.
         if (range < 0x0300) {
             return (::As_Target(Coord_Cell(tcoord)));
         }
@@ -4674,20 +4434,10 @@ TARGET AircraftClass::Good_LZ(void) const
     return (::As_Target(Coord_Cell(Coord)));
 }
 
-/***********************************************************************************************
- * AircraftClass::DoSmarterRunAway -- Leave the repair pad for a helipad/airstrip.             *
- *                                                                                             *
- *    TF: smarter repair bay (ported from CFE Patch Redux, GPL v3). A repaired                 *
- *    aircraft heads to a free helipad/airstrip; helicopters with nowhere to                   *
- *    dock land at a nearby LZ. Returns false for a fixed-wing plane with no                   *
- *    free strip (it must NOT be kicked off the pad — it would have nowhere                    *
- *    to land and crash).                                                                      *
- *=============================================================================================*/
+// Sends an aircraft leaving a repair bay to a free helipad or airstrip (CFE Patch Redux); a helicopter with
+// none lands nearby. Returns false for a plane with no free strip: put off the pad, it would crash.
 bool AircraftClass::DoSmarterRunAway(void)
 {
-    /*
-    **	Go to a helipad/airfield if one is open.
-    */
     BuildingClass* building = Find_Docking_Bay(Class->Building, false);
     if (Transmit_Message(RADIO_HELLO, building) != RADIO_ROGER) {
         building = NULL;
@@ -4699,10 +4449,6 @@ bool AircraftClass::DoSmarterRunAway(void)
         return true;
     }
 
-    /*
-    **	If we're a helicopter, we can at least land next to a helipad if
-    **	they're all full.
-    */
     if (!Class->IsFixedWing) {
         TARGET goodenough = Good_LZ();
         if (Target_Legal(goodenough) && (goodenough != ::As_Target(Coord_Cell(Coord)))) {
@@ -4715,10 +4461,6 @@ bool AircraftClass::DoSmarterRunAway(void)
         return true;
     }
 
-    /*
-    **	Fixed-wing with no open airfield: stay put — kicking it off the pad
-    **	means a crash.
-    */
     return false;
 }
 
@@ -4877,9 +4619,7 @@ int AircraftClass::Mission_Guard(void)
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
 
-    /*
-    **	A loaded Carryall holds its hover until it is sent somewhere to set the vehicle down.
-    */
+    // TF: a loaded Carryall holds its hover until it is sent somewhere to set the vehicle down.
     if (*this == AIRCRAFT_TSCARRY && Is_Something_Attached()) {
         if (Height < FLIGHT_LEVEL) {
             Process_Take_Off();
@@ -4943,14 +4683,8 @@ int AircraftClass::Mission_Guard(void)
     */
     if (Ammo == 0 && Is_Weapon_Equipped()) {
         if (!In_Radio_Contact()) {
-            /*
-            **	Tiberian Factions: search the aircraft's own home-building type, not a
-            **	hardcoded helipad. Helipads refuse fixed-wing at RADIO_CAN_LOAD, so an
-            **	out-of-ammo AI A-10 could never find its airfield here and flew around
-            **	disarmed forever. Helicopters still resolve to the helipad family
-            **	(Find_Docking_Bay cross-matches all pad types), fixed-wing to the
-            **	airstrip family.
-            */
+            // TF: the aircraft looks for its own dock type, as a helipad refuses a fixed-wing plane, which would then
+            // never find its airfield to rearm.
             BuildingClass* building = Find_Docking_Bay(Class->Building, false);
 #ifdef FIXIT_CARRIER //	checked - ajw 9/28/98
             if (!Class->IsFixedWing) {
@@ -5079,9 +4813,7 @@ void AircraftClass::Response_Attack(void)
 {
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
-    /*
-    **	The TS aircraft answer in the Orca pilot's voice (TS voice set 30), whoever owns them.
-    */
+    // TF: the TS aircraft answer in the Orca pilot's voice (TS voice set 30), whoever owns them.
     if (*this == AIRCRAFT_TSORCA || *this == AIRCRAFT_TSORCAB || *this == AIRCRAFT_TSCARRY) {
         static VocType _ts[] = {VOC_TS_30I022, VOC_TS_30I030, VOC_TS_30I034, VOC_TS_30I036};
         if (AllowVoice) {
@@ -5115,9 +4847,7 @@ void AircraftClass::Response_Move(void)
 {
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
-    /*
-    **	The TS aircraft answer in the Orca pilot's voice (TS voice set 30), whoever owns them.
-    */
+    // TF: the TS aircraft answer in the Orca pilot's voice (TS voice set 30), whoever owns them.
     if (*this == AIRCRAFT_TSORCA || *this == AIRCRAFT_TSORCAB || *this == AIRCRAFT_TSCARRY) {
         static VocType _ts[] = {VOC_TS_30I014, VOC_TS_30I016, VOC_TS_30I018, VOC_TS_30I022};
         if (AllowVoice) {
@@ -5151,9 +4881,7 @@ void AircraftClass::Response_Select(void)
 {
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
-    /*
-    **	The TS aircraft answer in the Orca pilot's voice (TS voice set 30), whoever owns them.
-    */
+    // TF: the TS aircraft answer in the Orca pilot's voice (TS voice set 30), whoever owns them.
     if (*this == AIRCRAFT_TSORCA || *this == AIRCRAFT_TSORCAB || *this == AIRCRAFT_TSCARRY) {
         static VocType _ts[] = {VOC_TS_30I000, VOC_TS_30I002, VOC_TS_30I004, VOC_TS_30I006};
         if (AllowVoice) {
@@ -5272,18 +5000,8 @@ bool AircraftClass::Landing_Takeoff_AI(void)
         if (IsLanding) {
             Mark(MARK_UP);
             if (Height) {
-                /*
-                **  Tiberian Factions -- fall fast from orbit, then flare to
-                **  land. The stock step is one lepton-pixel a tick, which is
-                **  right for a helicopter dropping the 256 of FLIGHT_LEVEL and
-                **  a crawl for anything starting far above it. Above cruise
-                **  height take a bigger bite, clamped so the last stretch is
-                **  always walked down at the stock rate and the touchdown
-                **  looks the way every other landing does.
-                **
-                **  Nothing in stock play is ever above FLIGHT_LEVEL, so this
-                **  is inert until something deliberately spawns up there.
-                */
+                // TF: above FLIGHT_LEVEL (a from-orbit arrival) an aircraft descends TF_ORBIT_FALL_RATE times faster,
+                // clamped at FLIGHT_LEVEL so the touchdown is walked down at the stock rate.
                 int step = Pixel_To_Lepton(1);
                 if (Height > FLIGHT_LEVEL) {
                     step *= TF_ORBIT_FALL_RATE;
@@ -5448,11 +5166,7 @@ bool AircraftClass::Landing_Takeoff_AI(void)
 bool AircraftClass::Edge_Of_World_AI(void)
 {
     if (!Map.In_Radar(Coord_Cell(Coord))) {
-        // Activated the vestigial AIRCRAFT_CARGO branch (was commented out in
-        // the EA port) with our own AIRCRAFT_TDCARGO enum: when a cargo plane
-        // crosses the map edge after dropping its vehicle on the airstrip, it
-        // should despawn cleanly instead of looping back to hunt. Empty TDC17s
-        // exiting east are the expected end-of-delivery state.
+        // TF: an empty TD cargo plane leaving the map is deleted like a retreating aircraft, ending its delivery.
         if (Mission == MISSION_RETREAT
             || (*this == AIRCRAFT_TDCARGO && !Is_Something_Attached())) {
 
@@ -5614,11 +5328,8 @@ void AircraftClass::Assign_Destination(TARGET dest)
     if (dest == NavCom)
         return;
 
-    /*
-    **	An empty Carryall sent onto a friendly vehicle remembers it as its load. Only an
-    **	order naming a vehicle sets this; the landing-zone rewrites the move mission makes
-    **	on the way in leave it standing.
-    */
+    // TF: an empty Carryall sent onto a vehicle remembers it as its load. Only an order naming a vehicle sets
+    // this, so the landing-zone destinations given on the way in leave it standing.
     if (*this == AIRCRAFT_TSCARRY && !Is_Something_Attached() && As_Unit(dest) != NULL) {
         TFCarryPickup = dest;
     }
@@ -5657,13 +5368,8 @@ LayerType AircraftClass::In_Which_Layer(void) const
         return (LAYER_TOP);
     }
 
-    /*
-    **	The Carryall keeps to the top layer until it is actually on the ground, rather than
-    **	dropping into the ground layer at two thirds of flight level as everything else does:
-    **	it descends onto the vehicle it is lifting, and the ground layer sorts that vehicle
-    **	over it. Set down it belongs in the ground layer, where it occupies its cell like any
-    **	other landed aircraft and still draws over a unit sharing it.
-    */
+    // TF: the Carryall stays in the top layer until it touches down, rather than dropping to the ground layer
+    // at two thirds of flight level, so the vehicle it descends onto does not draw over it.
     if (*this == AIRCRAFT_TSCARRY && Height > 0) {
         return (LAYER_TOP);
     }

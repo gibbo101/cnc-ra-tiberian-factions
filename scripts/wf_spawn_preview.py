@@ -6,8 +6,8 @@ Two spawn markers on the sheet drive everything:
   SPAWN -- MOVE ME   (magenta)  the DEFAULT seat, every unit except the Titan
   SPAWN TSTITN       (orange)   the Titan's own seat
 
-Each seat gets its own straight exit rail to the centre of TILE 13 (Luke,
-2026-08-18) -- the pad corner cell (3,2) in the sheet's numbered grid, the
+Each seat gets its own straight exit rail to the centre of TILE 13 --
+the pad corner cell (3,2) in the sheet's numbered grid, the
 engine's reserved handover cell. The hull faces its line's direction the
 whole way; both rails sit within a few DirType units of pure SE, so both
 hulls render SE for the entire glide. Only a cell centre hands over to

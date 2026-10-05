@@ -5,7 +5,8 @@ The RA lobby picker icon for a faction is a preloaded atlas region (`FACTIONS.XM
 only the UI_MULTIPLAYER_PLAYERSLOT_FACTION_NN regions are safe). GDI uses _03, Nod _10, Allies
 _04, Soviet _05, and the country duplicates _06.._09; each has _ON / _OVER variants. The region is a 150x80
 parallelogram: a flag on the left, the side crest badge on the right. The region becomes the faction's
-radar crest alone, centred, on a transparent plate: no flag, no badge, no field (Luke, 2026-09-02). Byte-edits the target atlases in place, same size.
+radar crest alone, centred, on a transparent plate: no flag, no badge, no field.
+Byte-edits the target atlases in place, same size.
 
 usage: picker_emblems_paint.py <target MT_COMMANDBAR_COMMON.TGA> [more targets...]
 """
@@ -28,7 +29,7 @@ def _variants(nn):
 # picker region -> (emblem source region, field colour). Rows follow the launcher's country
 # order: _03 Spain = GDI, _04 Greece = Nod (DLL remap), _05 USSR = Soviet, _06 England = Allies,
 # _07 Ukraine = Soviet duplicate, _08 Germany / _09 France / _10 Turkey = Allied duplicates.
-PLATE_RED = (150, 14, 14)   # unused: red plates looked wrong on the dropdown's black panel (Luke, 2026-09-02)
+PLATE_RED = (150, 14, 14)   # unused: red plates look wrong on the dropdown's black panel
 SLOTS = {}
 for nn in ('03',):
     SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_GDI', None)

@@ -365,13 +365,8 @@ public:
     */
     CDTimerClass<FrameTimerClass> RepairTimer;
 
-    /*
-    **	How long until this house may order another dropship delivery. Runs from the
-    **	moment a pod lands rather than from the order, so the wait is between arrivals.
-    **	Held per house rather than per bay: it stays meaningful if the one-bay cap is
-    **	ever raised, which a per-bay timer would not. The constant is shared with the
-    **	sidebar, which renders the remaining fraction as a recharge sweep.
-    */
+    // TF: time until the house may order another dropship delivery, set when the bay sends a pod and held per
+    // house, not per bay. The sidebar counts it down on the delivered units' cameos.
     enum { TF_DROPBAY_COOLDOWN = TICKS_PER_MINUTE * 5 };
     CDTimerClass<FrameTimerClass> TFDropBayTimer;
 
@@ -608,14 +603,8 @@ private:
     **	Tracks number of each building type owned by this house. Even if the
     **	building is in construction, it will be reflected in this total.
     */
-    /*
-    **	BQuantity / ActiveBQuantity are sized to the BuildingTypes heap
-    **	(MAX_BUILDING_TYPES, defines.h) rather than the vanilla STRUCT_COUNT
-    **	enum, so mod-defined building Types past STRUCT_COUNT have valid
-    **	counter slots. ActiveBQuantity mirrors ActiveBScan semantics
-    **	(unlimbo'd + locked) and is the source of truth for Prerequisite=
-    **	checks that need to resolve mod IniNames (D1.2 phase 1).
-    */
+    // TF: sized to the BuildingTypes heap so types past STRUCT_COUNT have counters. ActiveBQuantity counts
+    // standing buildings, as ActiveBScan does, and is what Prerequisite= checks read.
     int BQuantity[MAX_BUILDING_TYPES];
     int ActiveBQuantity[MAX_BUILDING_TYPES];
 #ifdef FIXIT_ANTS
@@ -1047,23 +1036,13 @@ public:
     {
         return (BQuantity[index]);
     }
-    /*
-    **	True if this house currently owns at least one fully-built,
-    **	unlimbo'd building of the specified Type. Index is a BuildingTypes
-    **	heap index (StructType enum value for vanilla, beyond STRUCT_COUNT
-    **	for mod entries). Used by Can_Build to resolve Prerequisite= chains
-    **	for mod IniNames that don't fit in the 32-bit ActiveBScan mask.
-    */
+    // True if the house has a standing building of this BuildingTypes index, which may lie past the 32 types
+    // the ActiveBScan mask can hold.
     bool Has_Building_Active(int type_index) const
     {
         return (type_index >= 0 && type_index < MAX_BUILDING_TYPES && ActiveBQuantity[type_index] > 0);
     }
-    /*
-    **	Increment the active-building counter for the specified Type.
-    **	Paired with the BScan/ActiveBScan bitmask writes at building
-    **	Unlimbo time so prereq checks (which iterate ActiveBQuantity)
-    **	see the new building before the next Recalc_Attributes pass.
-    */
+    // Counts a building as it unlimbos, so prerequisite checks see it before the next Recalc_Attributes.
     void Active_Building_Add(int type_index)
     {
         if (type_index >= 0 && type_index < MAX_BUILDING_TYPES) {

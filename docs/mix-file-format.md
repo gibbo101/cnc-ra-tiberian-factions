@@ -1,6 +1,7 @@
 # MIX & MEG archive formats — reference + asset inventory
 
-**Status:** Mapped & verified 2026-05-28. All format details below were confirmed by round-tripping our own tooling against the real game archives on disk; all asset inventories were produced with 100% (or near-100%) filename resolution via the XCC name database. This is the canonical reference for every archive operation in this mod — extracting TD art for ports, pulling palettes for the classic-mode remap, reading scenario INIs, and packing `TFASSETS.MIX`.
+**Status:** Reference. The MIX and MEG formats, the tooling, and the asset inventories, verified by
+round-tripping the game's own archives with our tools.
 
 Tooling lives in `scripts/` (Python) and `tools/mixtool/` (C++, from Vanilla Conquer).
 

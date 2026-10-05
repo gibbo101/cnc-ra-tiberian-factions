@@ -42,20 +42,8 @@
 
 #include "function.h"
 
-/*
-**  Tiberian Factions mod: TD GDI Ion Cannon beam-strike anim. Verbatim
-**  port of TD's ANIM_ION_CANNON (tiberiandawn/adata.cpp:1874). IniName
-**  is "TDIONSFX" per the TD prefix convention — classic mode reads the
-**  SHP from TFASSETS.MIX (packed as TDIONSFX.SHP); Remastered resolves
-**  via the TDIONSFX tileset entry in RA_VFX.XML which points to the
-**  base game's ionsfx-XXXX.tga frames (TEXTURES_TD_SRGB.MEG).
-**
-**  ChainTo = ANIM_ART_EXP1: when the beam finishes its 15-stage cycle
-**  it chains into RA's artillery explosion at the impact cell. The
-**  damage hit (600 / WARHEAD_TDPB) fires from AnimClass::Middle() —
-**  the engine-side dispatch lives in anim.cpp Middle() and uses the
-**  EYE owner search-loop ported verbatim from TD anim.cpp:1204.
-*/
+// TD Ion Cannon beam (ANIM_TD_ION_CANNON), ported from TD's ANIM_ION_CANNON. AnimClass::Middle deals its 600 damage
+// and spawns ART_EXP1 on that frame, rather than chaining the blast to the end of the anim.
 static AnimTypeClass const TdIonCannon(ANIM_TD_ION_CANNON, // Animation number.
                                        "TDIONSFX",         // Data name of animation.
                                        48,                 // Maximum dimension of animation.
@@ -69,7 +57,7 @@ static AnimTypeClass const TdIonCannon(ANIM_TD_ION_CANNON, // Animation number.
                                        false,              // Ground level animation?
                                        false,              // Translucent colors?
                                        false,              // Flame thrower animation?
-                                       0x0000,             // Damage per tick (Middle() spawns Explosion_Damage instead).
+                                       0x0000,             // Damage per tick (Middle() deals the strike's damage).
                                        1,                  // Delay between frames.
                                        0,                  // Starting frame.
                                        0,                  // Loop start.
@@ -77,19 +65,13 @@ static AnimTypeClass const TdIonCannon(ANIM_TD_ION_CANNON, // Animation number.
                                        15,                 // Number of stages.
                                        0,                  // Loops.
                                        VOC_TD_ION1,        // Sound (routed to TDC/TDR_SFX_TDION1).
-                                       ANIM_NONE,          // ChainTo cleared: ART_EXP1 spawned inline in Middle() so it lands on the same frame as the damage instead of late at end-of-anim.
+                                       ANIM_NONE,          // ChainTo (Middle() spawns ART_EXP1 with the damage).
                                        32,                 // Virtual stages.
                                        0x200               // Virtual scale.
 );
 
-/*
-**  Tiberian Factions: TD vehicle death frag explosion. Verbatim port of TD's
-**  ANIM_FRAG2 (tiberiandawn/adata.cpp:866) -- RA only ships ANIM_FRAG1. TD's
-**  ANIM_FRAG2 uses the SHP named "FRAG3"; IniName is "TDFRAG3" per the TD prefix
-**  convention -- classic mode reads TDFRAG3.SHP from TFASSETS.MIX, Remastered
-**  resolves the TDFRAG3 tileset in RA_VFX.XML (base FRAG3 frames in
-**  TEXTURES_TD_SRGB.MEG). Used by the GDI Medium Tank's death (UNIT_TDMTNK).
-*/
+// TD vehicle frag explosion (ANIM_TDFRAG2), ported from TD's ANIM_FRAG2, whose art is FRAG3; RA ships only FRAG1.
+// TD's Medium Tank, APC, Stealth Tank and Mobile SAM die with it.
 static AnimTypeClass const TdFrag2(ANIM_TDFRAG2, // Animation number.
                                    "TDFRAG3",     // Data name (TD ANIM_FRAG2 SHP = "FRAG3"; TD-prefixed).
                                    41,            // Maximum dimension of animation (TD FRAG2).
@@ -2350,11 +2332,8 @@ void AnimTypeClass::operator delete(void* pointer)
  * HISTORY:                                                                                    *
  *   07/09/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-// Tiberian Factions -- TD flamethrower directional muzzle jets (ANIM_FLAME_*, E4).
-// Ported from tiberiandawn/adata.cpp FlameN.. (IsFlameThrower=true, 9 stages). RA's
-// AnimTypeClass inserts an IsTheater param after BiggestStage (=false). 8 dirs in
-// Dir_Facing order to match the techno.cpp `ANIM_FLAME_N + Dir_Facing` dispatch; art
-// renders from the base TD FLAME-<dir> SHPs via the RA_VFX.XML tiles (no bundling).
+// TD Flamethrower muzzle jets (ANIM_FLAME_*), ported from TD's FlameN..: eight in Dir_Facing order, as techno.cpp
+// spawns ANIM_FLAME_N + Dir_Facing. They draw TD's FLAME-<dir> art through the RA_VFX.XML tiles.
 static AnimTypeClass const FlameN(ANIM_FLAME_N, "TDFLAME-N", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 static AnimTypeClass const FlameNE(ANIM_FLAME_NE, "TDFLAME-NE", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 static AnimTypeClass const FlameE(ANIM_FLAME_E, "TDFLAME-E", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
@@ -2364,11 +2343,8 @@ static AnimTypeClass const FlameSW(ANIM_FLAME_SW, "TDFLAME-SW", 48, 9, false, fa
 static AnimTypeClass const FlameW(ANIM_FLAME_W, "TDFLAME-W", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 static AnimTypeClass const FlameNW(ANIM_FLAME_NW, "TDFLAME-NW", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 
-// Tiberian Factions -- TD Flame Tank (UNIT_TDFTNK) directional muzzle jets
-// (ANIM_TDFTFLAME_*). Byte-identical to the Flamethrower's FlameN.. above EXCEPT the
-// IniName -> a SEPARATE TDFTFLAME-<dir> art family whose sprite anchor is reseated onto
-// the tank's twin nozzles (RA_VFX.XML tiles). Decoupled from ANIM_FLAME_* so tuning the
-// tank's flame position no longer drags the trooper's flame off its gun.
+// TD Flame Tank muzzle jets (ANIM_TDFTFLAME_*): the Flamethrower's jets with their own FTFLAME-<dir> art, seated on
+// the tank's twin nozzles (RA_VFX.XML tiles), so the tank's flame is placed apart from the trooper's.
 static AnimTypeClass const TdftFlameN(ANIM_TDFTFLAME_N, "FTFLAME-N", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 static AnimTypeClass const TdftFlameNE(ANIM_TDFTFLAME_NE, "FTFLAME-NE", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 static AnimTypeClass const TdftFlameE(ANIM_TDFTFLAME_E, "FTFLAME-E", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
@@ -2378,15 +2354,8 @@ static AnimTypeClass const TdftFlameSW(ANIM_TDFTFLAME_SW, "FTFLAME-SW", 48, 9, f
 static AnimTypeClass const TdftFlameW(ANIM_TDFTFLAME_W, "FTFLAME-W", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 static AnimTypeClass const TdftFlameNW(ANIM_TDFTFLAME_NW, "FTFLAME-NW", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 
-/*
-**	Tiberian Factions -- green "Tiberium fumes" for the harvester dock at an RA refinery.
-**	Reuses the LZ drop-zone smoke art (SMOKLAND, the green rising plume) but as its OWN
-**	AnimType, so it does NOT fire ANIM_LZ_SMOKE's hardcoded Sight_From map-reveal, and its
-**	loop count is tuned to ~a full unload (rise 0-71 then loop 72-91; 15 loops vs LZ's 127).
-**	Spawned once per dock (UnitClass::Mission_Unload UNIT_TDHARV) and Attach_To'd to the
-**	refinery for z-order. Same params as LZSmoke EXCEPT ground-level=false (we let Attach_To
-**	own the layer/sort, matching the old SmokePuff path) and loops=15.
-*/
+// Green Tiberium fumes over an RA refinery while a TD or TS harvester offloads: the LZ smoke art as its own type, so
+// it skips ANIM_LZ_SMOKE's map reveal, looping 15 times for about one unload.
 static AnimTypeClass const TibFumes(ANIM_TIB_FUMES, // Animation number.
                                     "SMOKLAND",     // Data name of animation (green LZ smoke art).
                                     32,             // Maximum dimension of animation.
@@ -2410,11 +2379,8 @@ static AnimTypeClass const TibFumes(ANIM_TIB_FUMES, // Animation number.
                                     VOC_NONE,       // Sound effect to play.
                                     ANIM_NONE);
 
-// Tiberian Factions -- TD chem-warrior directional spray jets (ANIM_CHEM_*, E5).
-// Ported from tiberiandawn/adata.cpp ChemN.. -- structurally identical to the flame
-// jets above (8 dirs, 13 stages) EXCEPT IsFlameThrower=false (TD's ChemN sets it
-// false; it's inert in RA but kept source-faithful). Art renders from the bundled
-// TDCHEM-<dir> tiles (RA_VFX.XML) via the One_Time donor-ImageData fix below.
+// TD Chem Warrior spray jets (ANIM_CHEM_*), ported from TD's ChemN..: the flame jets with IsFlameThrower false, as in
+// TD. They draw the bundled TDCHEM-<dir> tiles through One_Time's donor ImageData.
 static AnimTypeClass const ChemN(ANIM_CHEM_N, "TDCHEM-N", 48, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 static AnimTypeClass const ChemNE(ANIM_CHEM_NE, "TDCHEM-NE", 48, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 static AnimTypeClass const ChemE(ANIM_CHEM_E, "TDCHEM-E", 48, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
@@ -2424,27 +2390,19 @@ static AnimTypeClass const ChemSW(ANIM_CHEM_SW, "TDCHEM-SW", 48, 9, false, false
 static AnimTypeClass const ChemW(ANIM_CHEM_W, "TDCHEM-W", 48, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 static AnimTypeClass const ChemNW(ANIM_CHEM_NW, "TDCHEM-NW", 48, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 
-// Tiberian Factions -- TS railgun particle spark (ANIM_RAILFX), the Mk. II's coil. TS
-// renders the railgun as a laser line plus particles spiralling around it; each spark is
-// one of TS's [LargeRailgunPart] particles, laid by TF_Railgun_Coil and moved each frame by
-// AnimClass::Rail_Spark_AI, which also sets its stage and ends it. Art =
-// scripts/ts_gen_railfx.py: a 12-frame ladder from the ColorList's blue to its grey.
-// Classic = transparent stub in TFASSETS.MIX.
+// TS railgun spark (ANIM_RAILFX), a [LargeRailgunPart] particle of the Mk. II's coil: TF_Railgun_Coil lays it and
+// AnimClass::Rail_Spark_AI moves, stages and ends it. Art from scripts/ts_gen_railfx.py, blue fading to grey.
 static AnimTypeClass const RailFx(ANIM_RAILFX, "RAILFX", 24, 3, false, false, false, false, false, false, false, false, false, 0, 4, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
 
-// Tiberian Factions -- TS light railgun particle (ANIM_TS_RAILFXS), the Ghost Stalker's
-// coil: one of TS's [SmallRailgunPart] particles, run like RAILFX, on a ladder from
-// (200,200,200) to (150,150,150). Art = scripts/ts_gen_railfx.py. Classic = transparent stub.
+// TS light railgun spark (ANIM_TS_RAILFXS), the Ghost Stalker's coil: a [SmallRailgunPart] particle run like RAILFX,
+// (200,200,200) fading to (150,150,150). Art from scripts/ts_gen_railfx.py.
 static AnimTypeClass const TsRailFxS(ANIM_TS_RAILFXS, "TSRAILFXS", 24, 3, false, false, false, false, false, false, false, false, false, 0, 4, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
 
-// Tiberian Factions -- TS S_BANG34 (ANIM_TS_SBANG34), TS's [General] InfantryExplode: the burst
-// a jumpjet makes when it is shot down in the air. art.ini [S_BANG34]: Normalized, Translucent,
-// Crater, Scorch, Report=EXPNEW10. 13 frames (TSBANG34.ZIP, ts_pack_infantry.py EFFECTS).
+// TS S_BANG34 (ANIM_TS_SBANG34), TS [General] InfantryExplode: the burst of a jumpjet shot down in the air.
+// art.ini [S_BANG34]: Normalized, Translucent, Crater, Scorch, Report=EXPNEW10.
 static AnimTypeClass const TsSBang34(ANIM_TS_SBANG34, "TSBANG34", 17, 5, false, true, false, true, true, false, false, true, false, 0, 2, 0, 0, 0, 13, 0, VOC_TS_EXPNEW10, ANIM_NONE, 13, 0x100);
-// Tiberian Factions -- the EMP Cannon's E.M. Pulse (docs/emp-cannon-design.md). TSPULSBL is TS
-// PULSBALL charging at the barrel (the same tileset the flying ball draws), TSPULSF1 / TSPULSF2
-// are TS PULSEFX1 / PULSEFX2 flat on the ground at the landing, one picked at random as TS does.
-// Art = scripts/ts_pack_emp.py.
+// The EMP Cannon's E.M. Pulse (docs/emp-cannon-design.md): TSPULSBL charges at the barrel, and TSPULSF1 or TSPULSF2,
+// picked at random as TS does, lies flat at the landing. Art from scripts/ts_pack_emp.py.
 static AnimTypeClass const TsPulsBall(ANIM_TS_PULSBALL, "TSPULSBL", 8, 4, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 23, 0, VOC_NONE, ANIM_NONE, 23, 0x100);
 static AnimTypeClass const TsFsIdle(ANIM_TS_FSIDLE, "TSFSIDLE", 136, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 19, 0, VOC_NONE, ANIM_NONE, 19, 0x100);
 static AnimTypeClass const TsFsGrnd(ANIM_TS_FSGRND, "TSFSGRND", 66, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 19, 0, VOC_NONE, ANIM_NONE, 19, 0x100);
@@ -2454,56 +2412,25 @@ static AnimTypeClass const TsPulseFx1(ANIM_TS_PULSEFX1, "TSPULSF1", 152, 44, fal
 static AnimTypeClass const TsPulseFx2(ANIM_TS_PULSEFX2, "TSPULSF2", 152, 44, false, false, false, false, false, false, true, false, false, 0, 1, 0, 0, 0, 15, 0, VOC_NONE, ANIM_NONE, 15, 0x100);
 static AnimTypeClass const TsEmpFx(ANIM_TS_EMPFX, "TSEMPFX", 20, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 27, 27, -1, VOC_NONE, ANIM_NONE, 27, 0x100);
 
-// Tiberian Factions -- TS Disruptor sonic wave (ANIM_TS_SONICWAVE). Art is ours
-// (TSSONICW.ZIP via scripts/ts_gen_sonicwave.py): TS has NO sonic-wave art to
-// port, it distorts the screen live. One soft translucent disc; a chain of them
-// along the shot builds the band. 25 stages at 5 ticks: 5 transparent lead-in
-// stages (the outward sweep, see SONIC_SWEEP_STAGES), then ~2.5s lit, matching
-// the ~3.3s TS band at the ~40 tick/s the game runs on Luke's speed setting.
-// Not IsNormalized: the damage ticks ride the stages and must stay in step with
-// game logic. NOT IsTranslucent: that flag draws with SHAPE_GHOST, which the
-// launcher renders as a colourless darkening of the ground (the art's own
-// alpha channel does the blending, as RAILFX proves). No sound of its own --
-// SONIC4 already fires from the weapon's Report.
-// Tiberian Factions -- TS subterranean DIG mound (ANIM_TS_DIG). TS [AudioVisual]
-// Dig=DIG: the earth burst a tunneling vehicle throws up when it digs in and
-// again when it surfaces. Art = TSDIG.ZIP (scripts/ts_pack_dig.py, 37 frames
-// decoded from TS DIG.SHP against ANIM.PAL). Not a ground-layer anim: it must
-// draw OVER the hull so the mound swallows the nose (docs/subterranean-design.md).
+// TS subterranean dig mound (ANIM_TS_DIG), TS [AudioVisual] Dig=DIG, thrown up as a vehicle digs in and surfaces.
+// Not ground-layer: it draws over the hull so the mound swallows the nose (docs/subterranean-design.md).
 static AnimTypeClass const TsDig(ANIM_TS_DIG, "TSDIG", 64, 18, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 37, 0, VOC_NONE, ANIM_NONE, 37, 0x100);
 
-// Tiberian Factions -- TS Ion Cannon strike pair (SPC_TS_ION_CANNON, the
-// uplink-granted superweapon; the TD Advanced Comm Centre's SPC_TD_ION_CANNON
-// keeps ANIM_TD_ION_CANNON).
-// Art = TSIONBM.ZIP / TSIONRNG.ZIP (scripts/ts_pack_ion.py: TS IONBEAM.SHP +
-// RING1.SHP decoded against ANIM.PAL at the 8/3 scale; the 120px beam segment
-// is pre-tiled tall since the launcher cannot tile TS's Tiled=yes anims).
-// The BEAM carries the damage + sound (anim.cpp Middle(), same 600/WARHEAD_TDPB
-// moment as the TD strike -- flavour only, balance identical) and anchors
-// SHAPE_BOTTOM at the cell like the TD beam. The RING is TS [General]
-// IonBlast=RING1: a flat one-shot ground flash, visual only, faster (TS rate
-// 300 vs the beam's 200). Classic = transparent stubs in TFASSETS.MIX.
+// TS Ion Cannon strike (SPC_TS_ION_CANNON): the beam deals all its damage (AnimClass::Middle); the ring is TS's
+// IonBlast=RING1 flash. Art from scripts/ts_pack_ion.py, the beam pre-tiled, as the launcher can't tile anims.
 static AnimTypeClass const TsIonBeam(ANIM_TS_ION_BEAM, "TSIONBM", 48, 11, false, false, false, true, true, false, false, false, false, 0, 2, 0, 0, 0, 15, 0, VOC_TS_ION1, ANIM_NONE, 15, 0x100);
 static AnimTypeClass const TsIonRing(ANIM_TS_ION_RING, "TSIONRNG", 48, 7, false, false, false, false, false, false, true, false, false, 0, 1, 0, 0, 0, 15, 0, VOC_NONE, ANIM_NONE, 15, 0x100);
 
-// Tiberian Factions -- TS Drop Pod strike set (SPC_TS_DROPPODS; TS [General]
-// DropPod=/DropPodPuff=/AtmosphereEntry= + the SMOKEY trail; OpenTS
-// droppod.cpp). Art = scripts/ts_pack_pods.py (ANIM.PAL, x4, canvas = classic
-// stub x 8). The husks are the "mark to leave" after a pod lands -- TS keeps
-// them forever; ours linger through 5 loop cycles then fade. Ground-layer so
-// the trooper walks OVER its own pod. DROPEXP rides on top (not ground);
-// PODRING is the flat entry flash at the spawn point; SMOKEY is the descent
-// trail, spawned by the pod bullet's AI every 6 frames.
+// TS Drop Pod strike (SPC_TS_DROPPODS, OpenTS droppod.cpp), art from scripts/ts_pack_pods.py. The husks lie on the
+// ground layer for 5 loops, so the trooper walks over its pod; the falling pod lays SMOKEY every 6 frames.
 static AnimTypeClass const TsDropPod1(ANIM_TS_DROPPOD1, "TSDPOD1", 24, 4, false, false, false, false, false, false, true, false, false, 0, 4, 0, 0, 0, 8, 5, VOC_NONE, ANIM_NONE, 8, 0x100);
 static AnimTypeClass const TsDropPod2(ANIM_TS_DROPPOD2, "TSDPOD2", 24, 4, false, false, false, false, false, false, true, false, false, 0, 4, 0, 0, 0, 8, 5, VOC_NONE, ANIM_NONE, 8, 0x100);
 static AnimTypeClass const TsDropExp(ANIM_TS_DROPEXP, "TSDRPEXP", 50, 6, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
 static AnimTypeClass const TsPodRing(ANIM_TS_PODRING, "TSPODRNG", 50, 10, false, false, false, false, false, false, true, false, false, 0, 1, 0, 0, 0, 20, 0, VOC_NONE, ANIM_NONE, 20, 0x100);
 static AnimTypeClass const TsSmokey(ANIM_TS_SMOKEY, "TSSMOKEY", 16, 5, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 11, 0, VOC_NONE, ANIM_NONE, 11, 0x100);
 
-// Tiberian Factions -- TS component tower weapon art (scripts/ts_pack_towerfx.py, TS canvas x 4,
-// stub = canvas / 8). The Vulcan's MGUN-N..NW muzzle flashes, one per facing; the tower
-// warheads' impacts ([SA] PIFFPIFF, [RPG] S_CLSN16-58, [SAMWH] XGRYSML1/2 + EXPLOSML) with
-// art.ini's Normalized/Translucent/Crater/Scorch and Report= sounds; the SAM missile's SMOKEY2.
+// TS component tower weapon art (scripts/ts_pack_towerfx.py): the Vulcan's MGUN flash per facing, the tower
+// warheads' impacts with art.ini's flags and Report= sounds, and the SAM missile's SMOKEY2 trail.
 static AnimTypeClass const TsMgunN(ANIM_TS_MGUN_N, "TSMGUNN", 9, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
 static AnimTypeClass const TsMgunNE(ANIM_TS_MGUN_NE, "TSMGUNNE", 9, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
 static AnimTypeClass const TsMgunE(ANIM_TS_MGUN_E, "TSMGUNE", 9, 1, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
@@ -2523,18 +2450,16 @@ static AnimTypeClass const TsXgrySml2(ANIM_TS_XGRYSML2, "TSXGRY2", 18, 5, false,
 static AnimTypeClass const TsExploSml(ANIM_TS_EXPLOSML, "TSEXPSML", 14, 2, false, false, false, true, true, false, false, true, false, 0, 2, 0, 0, 0, 14, 0, VOC_TS_EXPNEW13, ANIM_NONE, 14, 0x100);
 static AnimTypeClass const TsSmokey2(ANIM_TS_SMOKEY2, "TSSMOKY2", 8, 7, false, false, false, false, false, false, false, true, false, 0, 2, 0, 0, 0, 11, 0, VOC_NONE, ANIM_NONE, 11, 0x100);
 
+// TS Disruptor sonic wave (ANIM_TS_SONICWAVE), our art (scripts/ts_gen_sonicwave.py), as TS distorts the screen live.
+// Never IsNormalized: its damage rides the stages, so they must keep to the game's frames.
 static AnimTypeClass const TsSonicWave(ANIM_TS_SONICWAVE, "TSSONICW", 24, 7, false, false, false, false, false, false, false, false, false, 0, 5, 0, 0, 0, 25, 0, VOC_NONE, ANIM_NONE, 25, 0x100);
 
-// Tiberian Factions -- TS Disruptor ripple disc (ANIM_TS_SONICPULSE): RETIRED,
-// nothing spawns it (the type stays registered to keep the enum stable and its
-// TSSONICP art slot valid). Every ripple mechanism was tried and rejected in
-// play 2026-08-27; the findings live in docs/ts-gdi-tree-plan.md.
-// Tiberian Factions -- TS GUNFIRE muzzle flash (ANIM_TS_GUNFIRE): TS's [MechRailgun]
-// Anim=GUNFIRE, art.ini Translucent=yes. Art = CONQUER.MIX gunfire.shp decoded with
-// ANIM.PAL and scaled x4 onto the 128 canvas (TSGUNFIRE.ZIP). Attached to the firer
-// by Fire_At's Anim= dispatch, as any RA muzzle anim.
+// TS GUNFIRE muzzle flash (ANIM_TS_GUNFIRE), TS [MechRailgun] Anim=GUNFIRE, art.ini Translucent=yes: TS's
+// gunfire.shp scaled x4. Fire_At attaches it to the firer through the weapon's Anim=, as any RA muzzle anim.
 static AnimTypeClass const TsGunfire(ANIM_TS_GUNFIRE, "TSGUNFIRE", 16, 1, false, false, false, false, false, false, false, true, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
 
+// TS Disruptor ripple disc (ANIM_TS_SONICPULSE): nothing spawns it. It stays registered so the enum and the heap
+// keep their order (docs/ts-gdi-tree-plan.md).
 static AnimTypeClass const TsSonicPulse(ANIM_TS_SONICPULSE, "TSSONICP", 24, 7, false, false, false, false, false, false, false, false, false, 0, 5, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x100);
 
 void AnimTypeClass::Init_Heap(void)
@@ -2642,14 +2567,11 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(Flag);
     new AnimTypeClass(Beacon);
 
-    // Tiberian Factions mod anims — keep in ANIM_TD_* enum order.
+    // TF: ours register in their enum order, as the heap ID is the registration order.
     new AnimTypeClass(TdIonCannon); // ANIM_TD_ION_CANNON (Ion Cannon strike)
     new AnimTypeClass(TdFrag2);     // ANIM_TDFRAG2 (TD vehicle death frag explosion)
-    // Flame Tank jets — registration order here MUST match the ANIM_TDFTFLAME_* enum slot in
-    // defines.h (immediately after ANIM_TDFRAG2, before ANIM_ANT1_DEATH). The heap ID == registration
-    // order, so a mismatch shifts every later anim's heap slot vs its enum value — which made
-    // ANIM_CORPSE3 (infantry explosion-death body) resolve to ANIM_CRATE_DEVIATOR ("red finned
-    // missile"). Keep these eight contiguous and in this position.
+    // The eight Flame Tank jets follow ANIM_TDFRAG2 in the enum; out of place, every later anim resolves to the
+    // wrong type.
     new AnimTypeClass(TdftFlameN);
     new AnimTypeClass(TdftFlameNE);
     new AnimTypeClass(TdftFlameE);
@@ -2662,7 +2584,6 @@ void AnimTypeClass::Init_Heap(void)
     // Tiberium fumes (harvester dock at an RA refinery). MUST stay immediately after the
     // TDFTFLAME block to match the ANIM_TIB_FUMES enum slot (heap ID == registration order).
     new AnimTypeClass(TibFumes);
-    // (RailFx is registered at the very end of this function — see below.)
 
 #ifdef FIXIT_ANTS
     new AnimTypeClass(Ant1Death);
@@ -2677,11 +2598,8 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(BeaconVirtual);
 #endif
 
-    // MUST stay last, in this order: heap ID == registration order, and these
-    // occupy the ANIM_RAILFX / ANIM_TS_SONICWAVE / ANIM_TS_SONICPULSE /
-    // ANIM_TS_GUNFIRE / ANIM_TS_DIG / ANIM_TS_ION_BEAM / ANIM_TS_ION_RING /
-    // ANIM_TS_DROPPOD1 / ANIM_TS_DROPPOD2 / ANIM_TS_DROPEXP /
-    // ANIM_TS_PODRING / ANIM_TS_SMOKEY enum slots that follow the virtual anims.
+    // MUST stay last and in this order: these fill the enum slots after the virtual anims, from ANIM_RAILFX on, and
+    // the heap ID is the registration order.
     new AnimTypeClass(RailFx);
     new AnimTypeClass(TsSonicWave);
     new AnimTypeClass(TsSonicPulse);
@@ -2764,17 +2682,8 @@ void AnimTypeClass::One_Time(void)
     }
 
 #ifdef REMASTER_BUILD
-    /*
-    **	Tiberian Factions: the TD Flamethrower (TDFLAME-N..NW) AND Chem Warrior (TDCHEM-N..NW)
-    **	directional muzzle jets -- the ANIM_FLAME_* and ANIM_CHEM_* enums are kept contiguous so this
-    **	one loop donors both. The TD jet anims
-    **	are HD-tile-only -- no classic SHP in any MIX -- so the loop above leaves their
-    **	ImageData NULL and the GlyphX overlay draws a green placeholder instead of
-    **	resolving the RA_VFX TDFLAME-<dir> tile. Identical fix to ANIM_BEACON_VIRTUAL
-    **	(Init, below) and our bullet/unit/aircraft MFCD donor-ImageData pattern: hand the
-    **	anim a vanilla donor's ImageData so Draw_It passes its NULL guard; the overlay then
-    **	renders the real TDFLAME-<dir> sprite by IniName from the tileset.
-    */
+    // TF: the TD Flamethrower, Chem Warrior and Flame Tank jets are HD tiles with no classic SHP, so they borrow
+    // FBALL1's ImageData to pass Draw_It's NULL guard; the overlay then draws the real tile by IniName.
     {
         void const* flame_donor = As_Reference(ANIM_FBALL1).ImageData;
         for (int fa = ANIM_FLAME_N; fa <= ANIM_CHEM_NW; fa++) {
@@ -2782,8 +2691,6 @@ void AnimTypeClass::One_Time(void)
                 ((void const*&)As_Reference((AnimType)fa).ImageData) = flame_donor;
             }
         }
-        // Tiberian Factions -- Flame Tank jets (ANIM_TDFTFLAME_*) are a separate, non-
-        // contiguous family, so donor them with the same FBALL1 ImageData here.
         for (int fa = ANIM_TDFTFLAME_N; fa <= ANIM_TDFTFLAME_NW; fa++) {
             if (As_Reference((AnimType)fa).ImageData == NULL) {
                 ((void const*&)As_Reference((AnimType)fa).ImageData) = flame_donor;

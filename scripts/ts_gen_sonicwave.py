@@ -5,7 +5,7 @@ There is NO sonic-wave art in Tiberian Sun to port: TS generates the effect in
 its own engine as a live screen distortion of whatever is behind the wave. We
 cannot distort, so the wave is faked with translucent sprites.
 
-WHAT THE REAL THING LOOKS LIKE (measured off TS footage, 2026-08-24)
+WHAT THE REAL THING LOOKS LIKE (measured off TS footage)
 -------------------------------------------------------------------
 Not rings, and not a beam: a WIDE TRANSLUCENT BAND that sweeps out from the
 tank along the firing line. Measured on a 834x465 capture:
@@ -37,7 +37,7 @@ measured off TS: ~0.7s out, ~2s held, ~0.7s retract, ~3.3s in all at 2 ticks
 per stage.
 
 TIMING (measured off the same TS footage, 6fps frames): the whole band lives
-~20 frames = ~3.3s. 50 ticks (25 stages x 2) ran in 1.2s on Luke's game speed,
+~20 frames = ~3.3s. 50 ticks (25 stages x 2) ran in 1.2s at the dev game speed,
 so the game runs ~40 ticks/s there and the stage delay is 5.
 
 Tuning lives entirely in the constants below.
@@ -52,17 +52,17 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import asset_packs
 
 CANVAS = 128          # 5.33 canvas px per classic px -> 24 classic dim, as RAILFX
-FRAMES = 25           # anim stages at 5 ticks each (adata.cpp): ~3.2s at Luke's ~40 tick/s game speed, the TS band's life
+FRAMES = 25           # anim stages at 5 ticks each (adata.cpp): ~3.2s at ~40 ticks/s, the TS band's life
 LEAD_STAGES = 5       # fully transparent lead-in = the outward sweep (SONIC_SWEEP_STAGES)
-DIAMETER = 80.0       # ~15 classic px: 25% under the TS polygon (+-100 leptons = 18.75 px) at Luke's call, 2026-08-27
-COLOR = (105, 228, 200)   # teal: TS's solved green (130,235,140) pulled toward its cyan highlights; Luke twice: 'too green', 'definitely more blue'
+DIAMETER = 80.0       # ~15 classic px: 25% under the TS polygon (+-100 leptons = 18.75 px)
+COLOR = (105, 228, 200)   # teal: TS's solved green (130,235,140) pulled toward its cyan highlights
 A_PEAK = 46           # per DISC. Discs overlap ~5 deep at 32-lepton spacing with the 80px
                       # disc, and the band's ~60% measured alpha is the STACK:
                       # 1-(1-46/255)^5 = 0.63. 153 here (60% per disc) compounds to an opaque mud.
 EDGE_SOFT = 5.0       # gaussian blur on the disc edge, in px
 MOTTLE = 0.5          # 0 = flat fill, 1 = heavily rippled interior. The 6-7 deep disc
                       # stack is a blur along the line: per-disc texture cannot survive
-                      # it (simulated 2026-08-24: every design measured flat), so this is
+                      # it (simulated: every design measured flat), so this is
                       # only edge softening. Full strength halved the band's alpha.
 MOTTLE_SCALE = 3.0    # blur radius of the noise clumps, px on the 128 canvas
 MOTTLE_SEED = 20260824

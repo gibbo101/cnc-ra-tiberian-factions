@@ -1,27 +1,22 @@
-# Cross-faction balance deep-dive (v1.0 baseline)
+# Cross-faction balance deep-dive
 
-**Status:** analysis complete 2026-06-02, against the shipped v1.0 `rules.ini`
-(`resources/remaster_mods/Vanilla_RA/CCDATA/rules.ini`). **No changes applied
-yet** — this is the data + analysis + proposed plan for the v1.x balance pass.
+**Status:** Reference. A stat audit of the four original factions against the v1.0 `rules.ini`
+(TS GDI is not covered), with the deviations from TD-authentic values that shipped in 4.0.0:
+- Orca and Apache at 225 HP for $1200, full parity with the Longbow and Hind (this replaced the
+  F6 price cut to 950);
+- Nod SAM `TDNike` ROF 20 (F7); Nod Light Tank `TD75mm` ROF 40 (F3);
+- GDI Mammoth speed 4 with cost kept at 1500 (F1); GDI APC speed 8 with cost kept at 700;
+- Minigunner `TDM16` range 3 and `TDE1` speed 4; Nod turret `TDTurretGun` ROF 50.
 
-> **⭐ v4.0 BALANCE PASS APPLIED 2026-06-19 (uncommitted on `main`, DLL built clean).**
-> All locked v4.0 tweaks are now in `rules.ini` (+ one DLL change for F8):
-> **F6** TDORCA+TDHELI `Cost 1200→950`; **F7** Nod SAM `TDNike ROF 50→20`;
-> **F8** new `WARHEAD_TDAGT` (TDHE clone, vs-heavy 25→50) in `defines.h`+`rules.cpp`+`[TDAGT]`,
-> `TDTowTwo` repointed (AGT-only, no collateral); **F3** `TD75mm ROF 60→40`;
-> **F1** GDI Mammoth `Speed 5→4` (Cost kept 1500); GDI APC `Speed 10→8` (Cost kept 700);
-> Minigunner `TDM16 Range 2→3` + `TDE1 Speed 3→4`; Nod Turret `TDTurretGun ROF 60→50`.
-> All target weapons are single-user (zero collateral). Needs playtest to confirm magnitudes.
->
-> This document is the analytical companion to `balance-v1-notes.md` (the running
-playtest-report log) and operationalises the deferred-balance backlog captured
-in `[[project-balance-deferred-to-v1]]`. Read both before touching a stat.
+The AGT keeps plain TDHE damage against heavy armour (F8 reverted, "Base defences" below). Where the
+analysis quotes older values, `rules.ini` is the truth. Log playtest balance reports here, and fix
+fidelity bugs (a stat that differs from the TD source) at once.
 
 ---
 
 ## Why now
 
-The standing rule (`[[project-balance-deferred-to-v1]]`) deferred *all* stat
+A standing rule deferred *all* stat
 tuning until 1.0 shipped, keeping every unit TD-source-authentic so we had a
 known reference point. v1.0.0 is tagged and the **TD unit roster is real, not
 RA stand-ins** (full TD vehicle + combat-unit + infantry + aircraft rosters
@@ -31,12 +26,11 @@ landed pre-1.0 — `0477d95`, `d879d6c`, TDE1/E2/E3, Orca/Apache). So:
 2. We're balancing the units that *stay*, not placeholders.
 3. The four factions fight **cross-faction** (GDI Mammoth vs Soviet Mammoth,
    Nod Light vs Allied Light) — so TD-vs-RA stat comparisons are the live
-   balance question, not academic (`[[project-balance-deferred-to-v1]]`,
-   Luke 2026-05-30).
+   balance question, not academic.
 
 ## Guardrails (unchanged)
 
-- **Difficulty stays behavioural** (`[[feedback-difficulty-philosophy]]`): IQ /
+- **Difficulty stays behavioural:** IQ /
   timing / strategy levers only. Never stat-bias multipliers per difficulty.
 - **Every deviation from TD-authentic is deliberate and documented here** with
   a reason. TD-authentic was the v1 baseline; moving off it is a balance call,
@@ -119,14 +113,13 @@ anti-infantry second weapon on top. Both Mammoths are mechanically identical.
   faster (5 vs 4), and arrives at TL5 vs TL10** behind an easier prereq (`fix`
   vs `weap,stek`). In a cross-faction game GDI fields the best heavy tank for
   less money, half a tech tree earlier. This is the single clearest imbalance.
-  Already flagged in `[[project-balance-deferred-to-v1]]`.
-  - **DECISION 2026-06-03 (Luke) [SUPERSEDED]: keep TDHTNK Cost at 1500**, on the
+  - **First decision, superseded: keep TDHTNK Cost at 1500**, on the
     grounds that the cheaper Mammoth offsets the GDI/Nod *economy handicap* (TD
     harvesters dock = bank slower). **This basis is now gone** — v3.0 (2026-06-18)
     equalised the harvester economy (dock times halved + made equal for every
     combination; "both sides' economies in step"). So the economy no longer
     justifies anything. See the economy section.
-  - **✅ REVISED DECISION 2026-06-19 (Luke): match Speed to Soviet, keep Cost.**
+  - **✅ Decided for 4.0.0: match Speed to Soviet, keep Cost.**
     - **`Speed` 5 → 4** (match the Soviet 4TNK) — removes the one *gratuitous*
       edge (there was no reason the GDI Mammoth was faster).
     - **`Cost` stays 1500** (cheaper than 4TNK's 1700) — but the justification is
@@ -150,7 +143,7 @@ anti-infantry second weapon on top. Both Mammoths are mechanically identical.
   is Nod's *ceiling* — Nod has no Medium or Heavy tank. Nod's armored core is
   weak by design (doctrine: cheap harass + tricks), but the gap vs Allied armor
   is large. TD-authentic.
-  - **✅ DECIDED v4.0 (Luke, 2026-06-19): `TD75mm` ROF 60 → 40** (match the
+  - **✅ Decided for 4.0.0: `TD75mm` ROF 60 → 40** (match the
     Allied 75mm). Single dial, **zero collateral** (TD75mm is used by *only*
     TDLTNK). Closes the DPS deficit exactly → even 1v1 vs the Allied Light, after
     which Nod's cheaper cost (600) + earlier tech (TL3) become the deciding edge:
@@ -267,9 +260,10 @@ only 25% vs heavy. Effective anti-air DPS vs a heavy heli (per ~60 ticks):
 **The compounding problem:** TD factions are weaker on *both* sides of the air
 war — fragile attack helis AND weak AA defense. Fix air as one system.
 
-### v4.0 air-balance plan — DECIDED 2026-06-19 (Luke)
+### v4.0 air-balance plan (decided for 4.0.0)
 
-Two AA buffs + one heli price-cut + zero weapon-damage changes. All
+Two AA buffs + one heli price-cut + zero weapon-damage changes. The heli price cut was later
+replaced by full parity (225 HP for $1200), and the AGT buff reverted. All
 identity-safe (the "fragile air" pillar is preserved on offense; the buffs are
 defensive).
 
@@ -299,14 +293,14 @@ they still "feel like wasted money" individually.
 - Net: GDI/Nod infantry are marginally outranged/outpaced but cost the same.
   Low priority — infantry trades are dominated by buildings (pillbox/turret)
   and tanks, not 1v1 infantry duels.
-- **✅ DECIDED v4.0 (Luke, 2026-06-19): TDE1 Minigunner → match the E1 Rifleman.**
+- **✅ Decided for 4.0.0: TDE1 Minigunner → match the E1 Rifleman.**
   `TDM16` Range 2→3 and TDE1 Speed 3→4 (everything else already identical:
   50hp/100cr/dmg15/ROF20). The basic backbone rifleman isn't a faction-identity
   piece — it should be at parity, and TDE1 was strictly-dominated (shorter range +
   slower, zero compensation). Documented TD-authentic deviation. **Only the basic
   Minigunner** — specialist TD infantry (TDE3 Rocket etc.) keep their TD stats.
 
-### ⚠ META PRINCIPLE — TechLevel is NOT a balancing lever (Luke, 2026-06-19)
+### ⚠ META PRINCIPLE — TechLevel is NOT a balancing lever
 
 **Skirmish games are played at TechLevel 10**, so "available earlier" (a lower
 unit TechLevel) confers **no real advantage** — both factions have everything from
@@ -335,7 +329,7 @@ weapon. **Fills a real, persistent hole:** Nod's only static defence is the anti
 *armor* Turret (TDAP = 25% vs infantry); every other faction has an early anti-
 *infantry* emplacement (Allied Pillbox, Soviet Flame Tower, GDI Guard Tower) but Nod
 had **none** — and the Obelisk (TL7) is no answer (slow single-target charge, swarmed
-by infantry; see `[[project-tdobli-verification]]`).
+by infantry; see `td-obli-verification.md`).
 
 **Why the pillbox over the Soviet Flame Tower (the rejected alt):** the Pillbox
 chassis is compact/cheap (400hp wood, ~400cr) and **neutral-looking** (reads as a
@@ -359,51 +353,44 @@ infantry *swarms* (the exact Obelisk weakness).
 Result: Nod gets the anti-armor Turret + anti-infantry Flame Pillbox pair every
 other faction has — parity, not power-creep (warheads don't overlap: AP vs Fire).
 
+### Base defences: the AGT, the Obelisk and Nod's defensive economy (2026-07-13)
+
+- **The AGT's anti-tank buff (F8) is reverted.** `[TDAGT]` reads plain TDHE again, 25% vs
+  heavy. The tower is already strong for its price: 1000 credits, −20 power, Burst=2, and it
+  hits ground and air. `WARHEAD_TDAGT` stays separate so the AGT can be tuned without touching
+  the other TDHE weapons.
+- **The Obelisk's 7.5-cell reach is shorter than the Tesla Coil's 8.5 on purpose:** it hits
+  harder and reaches less.
+- **Nod pays far more than GDI to defend.** One AGT covers ground and air for 1000 credits and
+  −20 power. Nod needs an Obelisk (1500, −150, ground only) plus a SAM (750, −20): about 2.25
+  times the cost and 8.5 times the power. Nod's light vehicles and Apaches are what the AGT
+  beats. Levers if a GDI-vs-Nod game shows it: the AGT's cost or power, or cheaper Nod
+  defences. Not the AGT warhead: vs-light was never changed. Stood down for now.
+- **RA's Tesla Coil does not chain** (one target, `Spread=1`); its crowd-clearing feel is the
+  Super warhead one-shotting infantry. An arc to nearby targets would be new code. Parked.
+
 ---
 
 ## Cross-cutting: the economy asymmetry
 
-Already documented in `[[project-balance-deferred-to-v1]]`
-(`[[project-tdproc-tdharv-shipped]]`): TD harvesters **dock** at the refinery
-(full TD plumbing port) while RA harvesters **auto-dump**. RA's income *rate* is
-therefore higher → Allied/Soviet economies snowball faster than GDI/Nod's. This
-is TD-authentic, not a bug, and it is the **counterweight to F2/F4**: GDI/Nod
-get cheaper/earlier/faster units but build them off a slower bank.
+In vanilla, TD harvesters **dock** at the refinery while RA harvesters **auto-dump**, so RA income
+runs faster and Allied/Soviet economies snowball. That was once the counterweight to GDI/Nod's
+cheaper, earlier units (F2/F4) and the cheaper GDI Mammoth.
 
-Luke's stated lean (2026-05-30): **lean into it** (slower-economy/cheaper-army
-as GDI/Nod flavour, tune unit costs to net even) with a touch of harvester
-tuning — keep the dock mechanic. Don't auto-dump the TD harvester.
-
-> **⚠ NEW PROPOSAL 2026-06-16 (Luke) — EQUALISE instead of lean-into.** Rather
-> than auto-dumping the TD harvester (speed GDI/Nod *up*), make the **RA
-> harvester also dock** (slow RA *down*): dwell on the RA harvester's
-> tilted-bucket unload frame and drip credits over a matched time `T`, so both
-> sides have the same per-cycle dwell. Equalises the economy *and* slightly cools
-> RA's famously fast tempo (Luke wants the slower pace). **Balance interaction:**
-> this DIRECTLY REMOVES the counterweight above — if the economies are equal,
-> GDI/Nod's cheaper/earlier/faster units (F2/F4) and the GDI Mammoth are no longer
-> offset by a slower bank, so the unit-cost / Mammoth reasoning in this doc must be
-> re-derived if this lands. Decide deliberately. Tracked in the harvester-logic
-> workstream — see `docs/chokepoint-reservation-design.md` CHECKPOINT 2026-06-16.
-
-> **✅ SHIPPED in v3.0 (2026-06-18) — the equalise landed.** The harvester docking
-> overhaul made every harvester dock + unload visibly, with dock times halved and
-> **made equal for every harvester-and-refinery combination** ("both sides'
-> economies in step... unit costs comparable across factions"). **So the economy
-> counterweight is GONE.** Every GDI/Nod discount that was justified as
-> "compensation for a slower economy" must now be re-derived against the equal
-> baseline — keep it only if a *different* justification (doctrine, roster depth)
-> holds.
+**Equalised in 3.0.0:** every harvester docks, with the same dock time at every refinery
+(`harvester-docking-rework-plan.md`), so the economies are equal and that counterweight is gone.
+Every GDI/Nod discount justified as "compensation for a slower economy" was re-derived against the
+equal baseline in 4.0.0 (below), kept only where a different reason (doctrine, roster depth) holds.
 
 ### v4.0 cross-faction cost re-derivation (post-v3.0 equal economy)
 
 Going unit-by-unit; the test is "was this discount economy-compensation (now
 remove) or genuine doctrine/roster flavour (keep)?":
 
-- **GDI Mammoth (F1) — DECIDED 2026-06-19:** Speed 5→4 (match Soviet); **keep Cost
+- **GDI Mammoth (F1):** Speed 5→4 (match Soviet); **keep Cost
   1500** — re-justified by *roster depth* (Mammoth is GDI's only real heavy hitter
   vs Soviet's Heavy Tank/V2/Tesla/Mammoth), not economy. See F1 above.
-- **GDI APC (TDAPC) — DECIDED 2026-06-19:** **keep Cost 700** (cheaper than Allied
+- **GDI APC (TDAPC):** **keep Cost 700** (cheaper than Allied
   800) but **Speed 10 → 8** — the cheaper price is now earned by being *slower*
   (Allied APC = pricier+faster; GDI = budget+sluggish). Also resolves the
   long-standing "GDI APC too fast" feel (was 14 → 10 → now 8; still above the TD
@@ -429,16 +416,12 @@ the data, then sets up measured iteration for the rest.
   be observable). If not, that's a prerequisite — see `ai-improvements.md`.
 - Run a batch of cross-faction skirmishes (GDI vs Soviet, Nod vs Allied, mirror
   + cross) and log who wins, when, and on what unit. Use the screenshot/Deck
-  loop. Capture reports into `balance-v1-notes.md`.
+  loop. Capture reports in this doc.
 
-### Phase 1 — the unambiguous fix (F1) — ✅ CLOSED, no change shipped
+### Phase 1 — the unambiguous fix (F1), shipped in 4.0.0 as speed 5→4
 
-**DECISION 2026-06-03 (Luke):** keep TDHTNK at Cost 1500 / Speed 5. The
-cheaper-and-faster Mammoth is accepted as the deliberate counterweight to the
-GDI/Nod docking-economy handicap (see F1 above + the economy section). The
-analysis below is retained for context but the cost/tech bump is **not** being
-applied. Revisit only if playtest shows the Mammoth dominating despite the
-slower economy.
+The Mammoth's cost stays 1500 and its speed matches the Soviet Mammoth's 4 (F1 above). The cost
+and tech bumps analysed below were not applied.
 
 **GDI Mammoth (TDHTNK):** bring it into line with the Soviet Mammoth it
 directly competes with. Recommended single-dial-first:
@@ -457,10 +440,9 @@ provable from the numbers (strictly-better unit, same role, same engine).
   early Mediums/Mammoths, nudge `TechLevel` on TDMTNK (3→4/5) and/or TDHTNK.
   Watch the economy counterweight first — slower GDI banking may already
   absorb this.
-- **F6/F7/F8 (air parity) — DECIDED for v4.0, see "v4.0 air-balance plan" above.**
-  F6 resolved as a **cost-cut** (1200→950), not a Strength bump — keeps the
-  fragile-air identity. F7 (Nod SAM ROF 50→20) and F8 (GDI AGT dedicated warhead,
-  vs-heavy 25→50) are the two AA buffs. HP bumps held in reserve.
+- **F6/F7/F8 (air parity), see "v4.0 air-balance plan" above.** F6 shipped as full parity with
+  the RA helicopters (225 HP, $1200); F7 (Nod SAM ROF 50→20) shipped; F8 (the AGT's vs-heavy
+  25→50) was reverted.
 
 ### Phase 3 — doctrine tuning (lowest confidence, most playtest-dependent)
 
@@ -476,11 +458,17 @@ provable from the numbers (strictly-better unit, same role, same engine).
 - **F4/F5 (cheap GDI/Nod light vehicles & arty):** likely leave as doctrine;
   only touch if Buggy/Bike/Hum-vee spam proves oppressive.
 
-### Tank pace (carry-over from `balance-v1-notes.md`)
+### Nod SAM against RA jets (playtest, after 4.0.0)
 
-TD tanks run at `Speed=7` (TD MPHType/2) vs the Allied Light's 9. Luke endorsed
-keeping TD vehicle speeds at the MPHType-derived values
-(`[[project-balance-deferred-to-v1]]`) — at TD's true pace they'd be kited by RA
+Four Nod SAM sites let a MiG finish three attack runs before it died, even at ROF 20. TDSAM is tuned
+against TD's slow helicopters, and RA's MiG and Yak are fast, with stand-off missiles. Before
+tuning: compare projectile speed, ROF and range against RA's SAM and AA gun, and check whether the
+open-close animation eats the firing window (`td-sam-deep-dive.md`).
+
+### Tank pace
+
+TD tanks run at `Speed=7` (TD MPHType*100/256) vs the Allied Light's 9. TD vehicle speeds stay at
+the MPHType-derived values; at TD's true pace they'd be kited by RA
 armour. **Do not reduce TD vehicle speeds.** The open question is line-wide pace
 feel, not per-unit; defer to playtest.
 
@@ -490,13 +478,13 @@ feel, not per-unit; defer to playtest.
 
 | # | Finding | Severity | Confidence from data | Lever | Phase |
 |---|---|---|---|---|---|
-| F1 | GDI Mammoth > Soviet Mammoth (cheaper/faster/earlier) | 🟠 re-derived | high | **Speed 5→4 (match Soviet); keep Cost 1500** (roster-depth, not economy) — Luke 2026-06-19 | 4.0 |
+| F1 | GDI Mammoth > Soviet Mammoth (cheaper/faster/earlier) | 🟠 re-derived | high | **Speed 5→4 (match Soviet); keep Cost 1500** (roster depth, not economy) | 4.0 |
 | F2 | GDI armor available too early (TL3 Medium / TL5 Mammoth) | 🟠 med | med | TechLevel | 2 |
-| F6 | GDI/Nod aircraft fragile (125 vs 225 HP) | 🟠 med | high | **Cost 1200→950** (v4.0, decided) | 4.0 |
+| F6 | GDI/Nod aircraft fragile (125 vs 225 HP) | 🟠 med | high | **225 HP, $1200: full parity** (shipped) | 4.0 |
 | F7 | Nod SAM weak vs RA SAMs (60 vs 150 DPS, half HP) | 🟠 med | high | **TDNike ROF 50→20** (v4.0, decided) | 4.0 |
-| F8 | GDI AGT weak vs heavy (45 DPS air & ground; no dedicated AA) | 🟠 med | high | **dedicated warhead vs-heavy 25→50** (v4.0, decided) | 4.0 |
+| F8 | GDI AGT weak vs heavy (45 DPS air & ground; no dedicated AA) | 🟠 med | high | dedicated warhead vs-heavy 25→50, **reverted** | — |
 | F3 | Nod mainline tank DPS-starved | 🟠 med | high | **TD75mm ROF 60→40** (v4.0, decided) | 4.0 |
-| Econ | TD-dock vs RA-auto-dump income gap | 🟡 design | high | cost net-even / lean in | 3 |
+| Econ | TD-dock vs RA-auto-dump income gap | 🟡 design | high | **equal docking** (shipped) | 3.0 |
 | F4/F5 | GDI/Nod light vehicles & arty cheaper per credit | 🟢 low | high | leave (doctrine) | watch |
 
 **Bottom line:** the data exposes exactly one provable imbalance worth fixing

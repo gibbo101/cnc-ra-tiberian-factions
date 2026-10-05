@@ -1,12 +1,12 @@
 # TDNUKE / TDNUK2 / TDPYLE / TDSILO — TD-source verification
 
-> **RESOLVED — separated + shipped (v0.50).** All four are fully separated `STRUCT_TD*` types; the rules.ini stat fixes, the two TDPYLE engine dispatches, and the TDSILO tiberium-fill render branch all landed. The body below is retained as TD-source reference / the plan that was executed.
+**Status:** Reference; shipped before 1.0.0. TDNUKE, TDNUK2, TDPYLE and TDSILO are separated
+`STRUCT_TD*` types, with the rules.ini stat fixes, the two TDPYLE engine dispatches and TDSILO's
+Tiberium-fill render branch.
 
-**Status:** All four M2 Tier 1 separated buildings (commit a8217c9) are mostly TD-authentic. Building class flags and constructor args match TD field-for-field. The deltas are in **rules.ini values** (4 sight/strength stat divergences) and **two missing STRUCT_TDPYLE engine dispatches** that affect infantry production/death. TDSILO has a third issue: missing tiberium-fill render branch.
-
-**Session that produced it:** 2026-05-22, completion of the M2/M3 verification pass paired with `td-sam-deep-dive.md`, `td-atwr-deep-dive.md`, `td-gtwr-gun-verification.md`, `td-obli-verification.md`.
-
-**Guiding principle:** wholesale port of TD source. No donor framing. Per [[feedback-no-donor-for-td-separation]] / [[project-building-separation-committed]].
+The body is the TD-source analysis and the port plan that was carried out; live stats are in
+`rules.ini` and `balance-deep-dive.md`. TD entities run TD's own building, weapon and projectile code, ported from
+`reference/vanilla-conquer/tiberiandawn/`, never RA's nearest equivalent.
 
 ---
 
@@ -354,7 +354,7 @@ Update the four dict `"notes"` fields to reference this doc. No structural chang
 
 ## Decisions
 
-- **No donor.** All TD-source-grounded. The aliased dispatches (STRUCT_TDPYLE with STRUCT_BARRACKS; STRUCT_TDSILO with STRUCT_STORAGE) are *identical-behavior positive-dispatch aliases* between TD and RA buildings that conceive of barracks/silo the same way. This is the legitimate aliasing pattern per [[project-building-separation-committed]] / `td-sam-deep-dive.md` M6 — not "modeling on" RA.
+- **No donor.** All TD-source-grounded. The aliased dispatches (STRUCT_TDPYLE with STRUCT_BARRACKS; STRUCT_TDSILO with STRUCT_STORAGE) are *identical-behavior positive-dispatch aliases* between TD and RA buildings that conceive of barracks/silo the same way. This is the legitimate aliasing pattern (`td-sam-deep-dive.md` M6) — not "modeling on" RA.
 - **TDSILO Strength=150 is the only balance-affecting change.** TD-authentic value. If playtest reveals silos die too easily, balance via warhead Verses table or armor type, never by reverting to a non-TD strength.
 - **Sight value corrections are pure data.** No code change, no risk to other buildings.
 - **TDPYLE exit-point `XYP_COORD(24, 47)` left alone for now.** TD uses `(30, 33)`. Difference is cosmetic in practice — Find_Exit_Cell handles the actual cell pathfinding. Worth fixing for full TD parity, but lower priority than the engine dispatch gaps.
@@ -380,4 +380,4 @@ All three independent — any order.
 - TDGTWR + TDGUN: `td-gtwr-gun-verification.md`
 - TDOBLI: `td-obli-verification.md`
 
-This doc closes the verification pass over all **9 fully-separated** STRUCT_TDxxxx buildings. The remaining 7 Logic=-aliased entries (TDHQ, TDPROC, TDFIX, TDWEAP, TDHPAD, TDEYE, TDFACT) are *known not separated* per [[project-building-separation-committed]] — verifying them produces redundant findings until they're individually separated through the M3-M5 plan.
+This doc closes the verification pass over the first **9 separated** STRUCT_TDxxxx buildings. The other seven (TDHQ, TDPROC, TDFIX, TDWEAP, TDHPAD, TDEYE, TDFACT) were separated later through `td-building-separation-recipe.md` and are outside this pass.

@@ -528,17 +528,8 @@ static InfantryTypeClass const E1(INFANTRY_E1, // Infantry type number.
                                   0  // pointer to override remap table
 );
 
-// Tiberian Factions — TD Minigunner (INFANTRY_TDE1), ported from TD's E1
-// (tiberiandawn/idata.cpp:100). NOTE: RA's DoType enum has only 21 actions vs
-// TD's 34. The extra TD entries are the hand-to-hand set (DO_ON_GUARD/PUNCH/
-// KICK/etc.) — TD declared them with sprite frames but NEVER triggered them in
-// gameplay (0 refs outside TD's enum/table; dead scaffolding in TD too), so RA
-// omits them losing no real behaviour. This table follows RA's DO_ order with
-// TD's minigunner sprite frame offsets
-// (idle 256/272, gestures 436/460/484/508, deaths 382/398/406/418). It equals
-// RA's E1DoControlsVirtual because RA's E1 *is* the TD minigunner; used for both
-// classic and the GlyphX 'virtual' HD render. Stats (cost/strength/weapon/owner)
-// come from rules.ini [TDE1]; the ctor mirrors RA's E1 (same sprite geometry).
+// TD Minigunner (INFANTRY_TDE1), ported from TD's E1. The table equals RA's E1DoControlsVirtual, as RA's E1 is TD's
+// minigunner: RA's DoType drops TD's hand-to-hand actions, which TD never triggered. Stats in rules.ini [TDE1].
 static DoInfoStruct TdMiniGunnerDoControls[DO_COUNT] = {
     {0, 1, 1},    // DO_STAND_READY
     {8, 1, 1},    // DO_STAND_GUARD
@@ -581,13 +572,8 @@ static InfantryTypeClass const TdE1(INFANTRY_TDE1, // Infantry type number.
                                     0              // pointer to override remap table
 );
 
-/*
-**	TS Light Infantry. TS ART.INI [E1Sequence] as {frame, count, frames per facing}, on
-**	RA's DoType order. TS draws its infantry facings anticlockwise from north, the order
-**	HumanShape indexes, so the facing blocks need no reorder. TS has no gestures or
-**	salutes (the standing frame stands in) and only two deaths: Die1 for gunfire and fire,
-**	Die2 for the explosion and grenade deaths.
-*/
+// TS Light Infantry (INFANTRY_TSE1): TS art.ini [E1Sequence] as {frame, count, frames per facing}, in DoType order.
+// TS has no gestures (the stand stands in) and two deaths: Die1 for gunfire and fire, Die2 for explosions and grenades.
 static DoInfoStruct TsE1DoControls[DO_COUNT] = {
     {0, 1, 1},     // DO_STAND_READY      Ready
     {0, 1, 1},     // DO_STAND_GUARD      Guard
@@ -630,11 +616,8 @@ static InfantryTypeClass const TsE1(INFANTRY_TSE1, // Infantry type number.
                                     0              // pointer to override remap table
 );
 
-/*
-**	TS Disc Thrower (INFANTRY_TSE2). TS art.ini [E2] shares E1Sequence, so it uses the
-**	Light Infantry's table. The disc leaves the hand on FireUp=6, the stage after the six
-**	throw frames: Firing_AI sees that stage before Doing_AI ends the action.
-*/
+// TS Disc Thrower (INFANTRY_TSE2): art.ini [E2] shares E1Sequence. The disc leaves the hand on FireUp=6, after the six
+// throw frames: Firing_AI sees that stage before Doing_AI ends the action.
 static InfantryTypeClass const TsE2(INFANTRY_TSE2, // Infantry type number.
                                     TXT_E2,        // Translate name number (display set via rules.ini Name=).
                                     "TSE2",        // INI name for infantry.
@@ -658,7 +641,7 @@ static InfantryTypeClass const TsE2(INFANTRY_TSE2, // Infantry type number.
 **	TS Engineer (INFANTRY_TSENGINEER). TS art.ini [ENGINEER] shares E1Sequence; unarmed.
 */
 static InfantryTypeClass const TsEngineer(INFANTRY_TSENGINEER, // Infantry type number.
-                                          TXT_E6,              // Translate name number (display set via rules.ini Name=).
+                                          TXT_E6,              // Translate name number (display via rules.ini Name=).
                                           "TSENGINEER",        // INI name for infantry.
                                           0x0035,              // Vertical offset.
                                           0x0010,              // Primary weapon offset along centerline.
@@ -744,12 +727,8 @@ static InfantryTypeClass const TsGhost(INFANTRY_TSGHOST, // Infantry type number
                                        0                 // pointer to override remap table
 );
 
-/*
-**	TS Jumpjet Infantry (INFANTRY_TSJUMPJET), TS art.ini [JUMPJET] JumpjetSequence. The ground
-**	poses follow E1Sequence's layout with no prone set (Prone, Down and Up are the stand, Crawl
-**	the walk). Shape_Number draws the flight poses (Fly 292, Hover 340, FireFly 388) while it is
-**	airborne.
-*/
+// TS Jumpjet Infantry (INFANTRY_TSJUMPJET), art.ini JumpjetSequence: E1Sequence's ground poses with no prone set.
+// Shape_Number draws the flight poses (Fly 292, Hover 340, FireFly 388) while it is airborne.
 static DoInfoStruct TsJumpjetDoControls[DO_COUNT] = {
     {0, 1, 1},     // DO_STAND_READY      Ready
     {0, 1, 1},     // DO_STAND_GUARD      Guard
@@ -812,12 +791,8 @@ static InfantryTypeClass const E2(INFANTRY_E2, // Infantry type number.
                                   0   // pointer to override remap table
 );
 
-// Tiberian Factions — TD Grenadier (INFANTRY_TDE2), ported from TD's E2
-// (tiberiandawn/idata.cpp:170). GDI-only (TD's E2 is HOUSEF_GOOD). The table is
-// RA's E2DoControlsVirtual values — RA's 21-action DoType order with TD's
-// grenadier frame offsets (RA's E2 IS the TD grenadier, so it's a verbatim
-// match; used for classic + GlyphX HD). Stats from rules.ini [TDE2]; the ctor
-// mirrors RA's E2 (same sprite geometry, firelaunch 14/6). Fires TDGrenade.
+// TD Grenadier (INFANTRY_TDE2), ported from TD's E2; GDI only. The table is RA's E2DoControlsVirtual, as RA's E2 is
+// TD's grenadier. Stats in rules.ini [TDE2]; it fires TDGrenade.
 static DoInfoStruct TdGrenadierDoControls[DO_COUNT] = {
     {0, 1, 1},    // DO_STAND_READY
     {8, 1, 1},    // DO_STAND_GUARD
@@ -860,12 +835,8 @@ static InfantryTypeClass const TdE2(INFANTRY_TDE2, // Infantry type number.
                                     0              // pointer to override remap table
 );
 
-// Tiberian Factions -- TD Rocket Soldier (INFANTRY_TDE3), ported from TD's E3
-// (tiberiandawn/idata.cpp:259). GDI+Nod (TD's E3 is HOUSEF_GOOD|HOUSEF_BAD). The
-// table is RA's E3DoControlsVirtual values -- RA's 21-action DoType order with the
-// rocket-soldier frame offsets (RA's E3 IS the TD rocket soldier, a verbatim match).
-// Stats from rules.ini [TDE3]; ctor mirrors RA's E3 (same geometry, firelaunch 3/3).
-// Fires TDDragon (BULLET_TDTOW homing missile, anti-armor/air).
+// TD Rocket Soldier (INFANTRY_TDE3), ported from TD's E3; GDI and Nod. The table is RA's E3DoControlsVirtual, as
+// RA's E3 is TD's rocket soldier. Stats in rules.ini [TDE3]; it fires TDDragon, a homing missile.
 static DoInfoStruct TdRocketSoldierDoControls[DO_COUNT] = {
     {0, 1, 1},     // DO_STAND_READY
     {8, 1, 1},     // DO_STAND_GUARD
@@ -908,11 +879,8 @@ static InfantryTypeClass const TdE3(INFANTRY_TDE3, // Infantry type number.
                                     0              // pointer to override remap table
 );
 
-// Tiberian Factions -- TD Flamethrower (INFANTRY_TDE4), ported from TD's E4
-// (tiberiandawn/idata.cpp:336). NOD-ONLY (TD's E4 = HOUSEF_BAD). The table is RA's
-// E4DoControlsVirtual values (RA's E4 IS the TD flamethrower). Stats from rules.ini
-// [TDE4]; ctor mirrors RA's E4 (firelaunch 2/0). Fires TDFlamethrower -- invisible
-// BULLET_TDFLAME + the directional ANIM_FLAME_N muzzle jet (techno.cpp dispatch).
+// TD Flamethrower (INFANTRY_TDE4), ported from TD's E4; Nod only. The table is RA's E4DoControlsVirtual. It fires
+// TDFlamethrower: an unseen BULLET_TDFLAME behind the ANIM_FLAME_* muzzle jet that techno.cpp spawns.
 static DoInfoStruct TdFlamethrowerDoControls[DO_COUNT] = {
     {0, 1, 1},     // DO_STAND_READY
     {8, 1, 1},     // DO_STAND_GUARD
@@ -955,16 +923,12 @@ static InfantryTypeClass const TdE4(INFANTRY_TDE4, // Infantry type number.
                                     0              // pointer to override remap table
 );
 
-// Tiberian Factions -- TD Chem Warrior (INFANTRY_TDE5), ported from TD's E5
-// (tiberiandawn/idata.cpp:412). NOD-ONLY (TD's E5 = HOUSEF_BAD, GOOD commented out).
-// TD's ChemwarriorDos is BYTE-IDENTICAL to FlamethrowerDos (chem & flame share the TD
-// sprite layout), so it reuses TdFlamethrowerDoControls verbatim. No TXT_E5 in RA ->
-// TXT_E4 fallback (display is rules.ini [TDE5] Name=). Fires TDChemspray -- invisible
-// BULLET_TDCHEM + the directional ANIM_CHEM_N muzzle jet (techno.cpp dispatch).
+// TD Chem Warrior (INFANTRY_TDE5), ported from TD's E5; Nod only. TD's ChemwarriorDos equals FlamethrowerDos, so it
+// shares that table. It fires TDChemspray: an unseen BULLET_TDCHEM behind the ANIM_CHEM_* muzzle jet.
 static InfantryTypeClass const TdE5(INFANTRY_TDE5, // Infantry type number.
-                                    TXT_E4,        // Translate name number (no TXT_E5 in RA; display via rules.ini Name=).
+                                    TXT_E4,        // Translate name number (no TXT_E5 in RA; rules.ini Name= names it).
                                     "TDE5",        // INI name for infantry.
-                                    0x0035,        // Vertical offset (matches RA's E4 -- shares the flamethrower/chem sprite layout).
+                                    0x0035,        // Vertical offset (as RA's E4, whose sprite layout it shares).
                                     0x0010,        // Primary weapon offset along centerline.
                                     false,         // Is this a female type?
                                     true,          // Has crawling animation frames?
@@ -980,14 +944,8 @@ static InfantryTypeClass const TdE5(INFANTRY_TDE5, // Infantry type number.
                                     0              // pointer to override remap table
 );
 
-// Tiberian Factions -- TD Engineer (INFANTRY_TDE6), ported from TD's E7/"E6"
-// (tiberiandawn/idata.cpp:447). GDI+Nod (TD's E6 is ownable by all houses incl.
-// GOOD/BAD). No weapon: captures buildings via rules.ini [TDE6] Infiltrate=yes
-// (IsCapture -> RA's Mission_Capture, a shared engine primitive). The table is
-// TD's EngineerDos mapped to RA's 21-action DoType order (rows 0-10 verbatim,
-// TD's death/gesture rows 22-30 -> positions 11-19, hand-to-hand dropped). No
-// fire/idle2 frames (engineer doesn't shoot). Donor INFANTRY_RENOVATOR (RA's
-// engineer) supplies ImageData/dims; the HD overlay renders the real TDE6 tileset.
+// TD Engineer (INFANTRY_TDE6), ported from TD's E6; GDI and Nod. Unarmed, it captures through rules.ini Infiltrate=yes.
+// The table maps TD's EngineerDos onto RA's DoType order, dropping the hand-to-hand rows.
 static DoInfoStruct TdEngineerDoControls[DO_COUNT] = {
     {0, 1, 1},    // DO_STAND_READY
     {8, 1, 1},    // DO_STAND_GUARD
@@ -1030,14 +988,8 @@ static InfantryTypeClass const TdE6(INFANTRY_TDE6, // Infantry type number.
                                     0              // pointer to override remap table
 );
 
-// Tiberian Factions -- TD Commando (INFANTRY_TDRMBO), ported from TD's RMBO
-// (tiberiandawn/idata.cpp:517). GDI+Nod (TD's RMBO is ownable by both). Fires
-// WEAPON_TDRIFLE -- a 125-dmg BULLET_TDBULLET (invisible "50cal") + WARHEAD_TDHOLLOW
-// (one-shots infantry, ~nil vs armor). C4 building-destroy via rules.ini [TDRMBO]
-// C4=yes (IsBomber): TD hardcodes C4 to INFANTRY_RAMBO, RA generalised it to the
-// flag -- same mechanic. PIP_COMMANDO + has-crawl. The table is TD's CommandoDos
-// mapped to RA's 21-action order (rows 0-10 verbatim, death/gesture 22-30 ->
-// 11-19). Donor INFANTRY_E1 supplies ImageData/dims; HD overlay renders TDRMBO.
+// TD Commando (INFANTRY_TDRMBO), ported from TD's RMBO; GDI and Nod. TDRifle one-shots infantry, and C4=yes lets it
+// blow up buildings. The table maps TD's CommandoDos onto RA's DoType order.
 static DoInfoStruct TdCommandoDoControls[DO_COUNT] = {
     {0, 1, 1},    // DO_STAND_READY
     {8, 1, 1},    // DO_STAND_GUARD
@@ -1062,7 +1014,7 @@ static DoInfoStruct TdCommandoDoControls[DO_COUNT] = {
     {0, 0, 0},    // DO_DOG_MAUL (N/A — RA's DO_ enum drops TD's hand-to-hand actions)
 };
 static InfantryTypeClass const TdRmbo(INFANTRY_TDRMBO, // Infantry type number.
-                                      TXT_E7,          // Translate name number (RA hero-unit slot; HD display via launcher text).
+                                      TXT_E7,          // Translate name (RA's hero slot; HD name via launcher text).
                                       "TDRMBO",        // INI name for infantry.
                                       0x0035,          // Vertical offset (standard standing infantry).
                                       0x0010,          // Primary weapon offset along centerline.
@@ -1705,8 +1657,7 @@ void InfantryTypeClass::Init_Heap(void)
     new InfantryTypeClass(Mechanic);
 #endif
 
-    // Tiberian Factions — TD infantry. Last in the list, matching the enum
-    // (INFANTRY_TDE1/TDE2 appended just before INFANTRY_COUNT in defines.h).
+    // TF: ours register last, in enum order, as the heap ID is the registration order.
     new InfantryTypeClass(TdE1);
     new InfantryTypeClass(TdE2);
     new InfantryTypeClass(TdE3);
@@ -1948,18 +1899,8 @@ void InfantryTypeClass::One_Time(void)
 #endif
     }
 
-    /*
-    **	Tiberian Factions mod — mod-entry ImageData fallback (MFCD donor pattern).
-    **	Our TD-prefixed infantry (TDE1) have no .SHP in any MIX — only the TGA
-    **	tileset bundled in resources/.../UNITS/TDE1.ZIP. MFCD::Retrieve above
-    **	returned NULL, so InfantryClass::Draw_It bails at its NULL-shape guard and
-    **	the unit is invisible (though selectable + voiced). Copy a vanilla infantry
-    **	donor's ImageData/CameoData pointers — the launcher's Techno_Draw_Object
-    **	overlay then renders the actual TDE1 sprite by IniName via the RA_UNITS.XML
-    **	tileset. E1 (RA's minigunner) is the exact donor: identical dimensions, so
-    **	it also supplies the correct render size (no ShapeSize needed). Same pattern
-    **	as aircraft (aadata.cpp:455) / units (udata.cpp:1446).
-    */
+    // TF: our infantry without a classic SHP borrow a same-size vanilla soldier's ImageData and CameoData to pass
+    // Draw_It's NULL guard; the launcher draws their real art by IniName, and the donor sets the render size.
     InfantryTypeClass& tde1 = As_Reference(INFANTRY_TDE1);
     if (tde1.ImageData == NULL) {
         ((void const*&)tde1.ImageData) = As_Reference(INFANTRY_E1).ImageData;
@@ -1968,7 +1909,7 @@ void InfantryTypeClass::One_Time(void)
         ((void const*&)tde1.CameoData) = As_Reference(INFANTRY_E1).CameoData;
     }
 
-    InfantryTypeClass& tse1 = As_Reference(INFANTRY_TSE1);  // TS Light Infantry -- donor E1 (rifleman-sized render box).
+    InfantryTypeClass& tse1 = As_Reference(INFANTRY_TSE1);  // TS Light Infantry
     if (tse1.ImageData == NULL) {
         ((void const*&)tse1.ImageData) = As_Reference(INFANTRY_E1).ImageData;
     }
@@ -1976,7 +1917,7 @@ void InfantryTypeClass::One_Time(void)
         ((void const*&)tse1.CameoData) = As_Reference(INFANTRY_E1).CameoData;
     }
 
-    InfantryTypeClass& tse2 = As_Reference(INFANTRY_TSE2);  // TS Disc Thrower -- donor E1 (packed on the E1 canvas like TSE1).
+    InfantryTypeClass& tse2 = As_Reference(INFANTRY_TSE2);  // TS Disc Thrower
     if (tse2.ImageData == NULL) {
         ((void const*&)tse2.ImageData) = As_Reference(INFANTRY_E1).ImageData;
     }
@@ -1984,7 +1925,7 @@ void InfantryTypeClass::One_Time(void)
         ((void const*&)tse2.CameoData) = As_Reference(INFANTRY_E1).CameoData;
     }
 
-    InfantryTypeClass& tseng = As_Reference(INFANTRY_TSENGINEER);  // TS Engineer -- donor E1 (packed on the E1 canvas like TSE1).
+    InfantryTypeClass& tseng = As_Reference(INFANTRY_TSENGINEER);  // TS Engineer
     if (tseng.ImageData == NULL) {
         ((void const*&)tseng.ImageData) = As_Reference(INFANTRY_E1).ImageData;
     }
@@ -1992,7 +1933,7 @@ void InfantryTypeClass::One_Time(void)
         ((void const*&)tseng.CameoData) = As_Reference(INFANTRY_E1).CameoData;
     }
 
-    InfantryTypeClass& tsmedic = As_Reference(INFANTRY_TSMEDIC);  // TS Medic -- donor E1 (packed on the E1 canvas like TSE1).
+    InfantryTypeClass& tsmedic = As_Reference(INFANTRY_TSMEDIC);  // TS Medic
     if (tsmedic.ImageData == NULL) {
         ((void const*&)tsmedic.ImageData) = As_Reference(INFANTRY_E1).ImageData;
     }
@@ -2000,7 +1941,7 @@ void InfantryTypeClass::One_Time(void)
         ((void const*&)tsmedic.CameoData) = As_Reference(INFANTRY_E1).CameoData;
     }
 
-    InfantryTypeClass& tsghost = As_Reference(INFANTRY_TSGHOST);  // TS Ghost Stalker -- donor E1 (packed on the E1 canvas like TSE1).
+    InfantryTypeClass& tsghost = As_Reference(INFANTRY_TSGHOST);  // TS Ghost Stalker
     if (tsghost.ImageData == NULL) {
         ((void const*&)tsghost.ImageData) = As_Reference(INFANTRY_E1).ImageData;
     }
@@ -2008,11 +1949,8 @@ void InfantryTypeClass::One_Time(void)
         ((void const*&)tsghost.CameoData) = As_Reference(INFANTRY_E1).CameoData;
     }
 
-    /*
-    **	TS Jumpjet -- its own TSJUMPJET.SHP stub (TFASSETS.MIX) carries all 610 frames the flight
-    **	poses and ground shadows need; E1's 438 would cut them off. E1 stands in only if the stub
-    **	is missing.
-    */
+    // The TS Jumpjet's own TSJUMPJET.SHP stub carries the 610 frames its flight poses and shadows draw; E1's 438
+    // would cut them off, so E1 stands in only when the stub is missing.
     InfantryTypeClass& tsjumpjet = As_Reference(INFANTRY_TSJUMPJET);
     if (tsjumpjet.ImageData == NULL) {
         ((void const*&)tsjumpjet.ImageData) = As_Reference(INFANTRY_E1).ImageData;
@@ -2021,7 +1959,7 @@ void InfantryTypeClass::One_Time(void)
         ((void const*&)tsjumpjet.CameoData) = As_Reference(INFANTRY_E1).CameoData;
     }
 
-    InfantryTypeClass& tde2 = As_Reference(INFANTRY_TDE2);  // TD Grenadier — donor E2 (RA's grenadier).
+    InfantryTypeClass& tde2 = As_Reference(INFANTRY_TDE2);  // TD Grenadier
     if (tde2.ImageData == NULL) {
         ((void const*&)tde2.ImageData) = As_Reference(INFANTRY_E2).ImageData;
     }
@@ -2029,7 +1967,7 @@ void InfantryTypeClass::One_Time(void)
         ((void const*&)tde2.CameoData) = As_Reference(INFANTRY_E2).CameoData;
     }
 
-    InfantryTypeClass& tde3 = As_Reference(INFANTRY_TDE3);  // TD Rocket Soldier -- donor E3 (RA's rocket soldier).
+    InfantryTypeClass& tde3 = As_Reference(INFANTRY_TDE3);  // TD Rocket Soldier
     if (tde3.ImageData == NULL) {
         ((void const*&)tde3.ImageData) = As_Reference(INFANTRY_E3).ImageData;
     }
@@ -2037,7 +1975,7 @@ void InfantryTypeClass::One_Time(void)
         ((void const*&)tde3.CameoData) = As_Reference(INFANTRY_E3).CameoData;
     }
 
-    InfantryTypeClass& tde4 = As_Reference(INFANTRY_TDE4);  // TD Flamethrower -- donor E4 (RA's flamethrower).
+    InfantryTypeClass& tde4 = As_Reference(INFANTRY_TDE4);  // TD Flamethrower
     if (tde4.ImageData == NULL) {
         ((void const*&)tde4.ImageData) = As_Reference(INFANTRY_E4).ImageData;
     }
@@ -2045,7 +1983,7 @@ void InfantryTypeClass::One_Time(void)
         ((void const*&)tde4.CameoData) = As_Reference(INFANTRY_E4).CameoData;
     }
 
-    InfantryTypeClass& tde5 = As_Reference(INFANTRY_TDE5);  // TD Chem Warrior -- donor E4 (shares the flamethrower sprite dims).
+    InfantryTypeClass& tde5 = As_Reference(INFANTRY_TDE5);  // TD Chem Warrior
     if (tde5.ImageData == NULL) {
         ((void const*&)tde5.ImageData) = As_Reference(INFANTRY_E4).ImageData;
     }
@@ -2053,7 +1991,7 @@ void InfantryTypeClass::One_Time(void)
         ((void const*&)tde5.CameoData) = As_Reference(INFANTRY_E4).CameoData;
     }
 
-    InfantryTypeClass& tde6 = As_Reference(INFANTRY_TDE6);  // TD Engineer -- donor RENOVATOR (RA's engineer dims).
+    InfantryTypeClass& tde6 = As_Reference(INFANTRY_TDE6);  // TD Engineer
     if (tde6.ImageData == NULL) {
         ((void const*&)tde6.ImageData) = As_Reference(INFANTRY_RENOVATOR).ImageData;
     }
@@ -2061,7 +1999,7 @@ void InfantryTypeClass::One_Time(void)
         ((void const*&)tde6.CameoData) = As_Reference(INFANTRY_RENOVATOR).CameoData;
     }
 
-    InfantryTypeClass& tdrmbo = As_Reference(INFANTRY_TDRMBO);  // TD Commando -- donor E1 (standard male-soldier dims).
+    InfantryTypeClass& tdrmbo = As_Reference(INFANTRY_TDRMBO);  // TD Commando
     if (tdrmbo.ImageData == NULL) {
         ((void const*&)tdrmbo.ImageData) = As_Reference(INFANTRY_E1).ImageData;
     }

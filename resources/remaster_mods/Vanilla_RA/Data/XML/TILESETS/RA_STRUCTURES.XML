@@ -23355,9 +23355,7 @@
 			     which was sized for RA's 4-stage Open_Door(8, 5). Mission_Unload_TD
 			     uses TD-verbatim Open_Door(2, 11) — Stages = stages-1 = 10, so
 			     Door_Stage returns 0..9. Damaged offset +10 in Draw_It lands
-			     shapes 10..19 on the damaged TGA frames. See gotcha #13 in
-			     docs/adding-td-buildings.md (now superseded by this 1:1 layout
-			     for the separated STRUCT_TDWEAP). -->
+			     shapes 10..19 on the damaged TGA frames. -->
 			<Tile>
 				<Key><Name>TDWEAP2</Name><Shape>0</Shape></Key>
 				<Value><Frames><Frame>tdweap2\tdweap2-0000.tga</Frame></Frames></Value>

@@ -57,8 +57,8 @@ TD_CDATA = REPO.parent / "reference/vanilla-conquer/tiberiandawn/cdata.cpp"
 # Theatre wiring: letter used in TILES -> source + destination config.
 # "D" = TD desert -> RA's INTERIOR slot (jonwil recipe: a new RA theatre is
 # launcher-blocked, but adding tiles to an existing theatre works).
-# "S" = TD winter -> RA's TEMPERATE slot as the SEPARATE "TDW" family (Luke's
-# 2026-06-10 rework): TD winter is icy-temperate, so hosting it in temperate
+# "S" = TD winter -> RA's TEMPERATE slot as the SEPARATE "TDW" family: TD winter is
+# icy-temperate, so hosting it in temperate
 # makes RA's native bibs/radar-stand-ins/vanilla-fallback all match the look
 # (RA snow's all-white versions matched nothing). A template id carries ONE
 # art per theatre and TD<NAME> already holds TD temperate art there, so the
@@ -101,10 +101,10 @@ TILES = [("sh1", "TS"), ("sh2", "TS"), ("sh3", "TS"), ("sh4", "TS"),
          ("sh32", "TS"), ("sh33", "TS"), ("sh34", "TS"), ("sh35", "TS"),
          ("p16", "S"), ("p17", "S"), ("p18", "S"), ("p19", "S"), ("p20", "S")]
 
-# Phase 5 (2026-06-10): the ENTIRE remaining TD winter template set, ids
+# The ENTIRE remaining TD winter template set, ids
 # 430+. TD winter is icy-TEMPERATE (dark green ground, muddy banks, snow
 # patches) while RA snow is all-white -- so the name+size auto-match onto RA
-# snow templates renders a white map with green TD patches (the 12-46-52
+# snow templates renders a white map with green TD patches.
 # screenshot). Authentic TD winter = render EVERY cell (incl. CLEAR ground,
 # via TDCLEAR1 + the positional 4x4 icon pattern) from TD's own winter art.
 # Winter-ONLY: on temperate maps the auto-match stays (TD temperate art and
@@ -127,7 +127,7 @@ TILES += [(n, "S") for n in
            "rv09", "rv10", "rv11", "rv12", "rv13",
            "ford1", "ford2", "falls1", "falls2", "bridge1d", "bridge2d"]]
 
-# Phase 6 (2026-06-10): the DESERT theatre -> RA's interior slot. 93 existing
+# The DESERT theatre -> RA's interior slot. 93 existing
 # tiles also ship in TD desert (theatre letter added programmatically below);
 # 73 are desert-only, appended as ids 541+. Editor-source order, append-only.
 # p08/br5/br10 are desert-flagged in the editor source but the remaster MEG
@@ -179,7 +179,7 @@ def anim_shapes(w, h):
 
 # Markers (idempotent splice). C++-style for code files; XML files MUST use
 # XML comments instead -- a raw '<' in text content (the '<<<' arrows) makes
-# the tileset XML ill-formed and CRASHES ClientG at map load (2026-06-09).
+# the tileset XML ill-formed and CRASHES ClientG at map load.
 # No '--' inside the comment text either (illegal in XML comments).
 M = lambda tag: (f"// >>> TF_TD_TILES {tag} >>>", f"// <<< TF_TD_TILES {tag} <<<")
 MX = lambda tag: (f"<!-- TF_TD_TILES {tag} BEGIN -->", f"<!-- TF_TD_TILES {tag} END -->")
@@ -266,8 +266,8 @@ def td_tem_to_ra(data, map_w, map_h, land, altland, alt_icons):
     format) to RA format (40-byte header: +MapWidth/MapHeight at offset 8,
     +ColorMap offset at 32) and append the per-icon land table. Feeding a raw
     TD iconset to the RA engine reads zeros for MapWidth*MapHeight ->
-    'icon % 0' INTEGER DIVIDE BY ZERO in Land_Type at map load (2026-06-09
-    crash, RVA 0x3CDFB). Palettes/Remaps are zeroed: TD files carry junk there
+    'icon % 0' INTEGER DIVIDE BY ZERO in Land_Type at map load (RVA 0x3CDFB). Palettes/Remaps are zeroed:
+    TD files carry junk there
     and the remaster classic render doesn't use them."""
     icon_w, icon_h, count, _alloc = struct.unpack_from("<4h", data, 0)
     _size, icons, _pal, _remaps, trans, imap = struct.unpack_from("<6i", data, 8)

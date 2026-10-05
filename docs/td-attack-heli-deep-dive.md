@@ -1,7 +1,8 @@
 # TD attack helicopters — Apache (Nod) + Orca (GDI) deep dive
 
-**Status:** TD logic examined (2026-06-01), no code yet. The last two TD combat units. Read with
-`td-vehicle-port-recipe.md` and `project-chinook-pure-ra` (the aircraft-sprite-geometry caveat).
+**Status:** Reference; shipped in 1.0.0. The Apache (`TDHELI`) and Orca (`TDORCA`) reuse RA's
+`AircraftClass` attack loop. Below is the TD-source analysis; live stats are in rules.ini and
+`balance-deep-dive.md` (both at 225 HP for $1200 since 4.0.0). Read with `td-vehicle-port-recipe.md`.
 
 ---
 
@@ -63,25 +64,29 @@ There's no RA rotor-less attack aircraft to clone, but the ctor is just HIND wit
 
 ## 4. Sprite-geometry risk (the Chinook lesson)
 
-`project-chinook-pure-ra`: TD-Assets aircraft sprites can mismatch the engine's hardcoded per-type
+The Chinook showed that TD-Assets aircraft sprites can mismatch the engine's hardcoded per-type
 offsets. For these two:
 - **Apache: single rotor** = the **generic `else` branch** in `Draw_Rotors` (NOT the TRANSPORT-gated dual-rotor
   that broke the Chinook), drawn at body-centre — so it should align like RA's HIND/LONGBOW. The risk that
   remains is the TD-Assets **facing-0 orientation** (the Chinook's pointed diagonal): if HELI's facing-0
   isn't north, the body faces wrong. **Smoke-test first.** Muzzle offset (`primaryoffset`) = screenshot-tune.
-- **Orca: no rotor**, so no rotor risk; but it's **64 frames** (vs HELI's 32) — watch the facing layout.
-- HELI = 32 frames (donor: RA HIND, 32). ORCA = 64 frames (donor: a 64-frame unit, e.g. 2TNK, sliced).
+- **Orca: no rotor**, so no rotor risk.
+- Both use RA's HIND (32 frames) as the donor (`aadata.cpp` `One_Time`). With a missing TFASSETS stub, the donor needs at least as many frames as the type draws (TDORCA 0-31, TSHUNT 0-7), so HIND is safe for both.
 - Build icons `BuildIcon_TD_Apache` / `BuildIcon_TD_Orca` exist. Text `TXT_HELI`/`TXT_ORCA` (RA has TXT_ORCA).
 
 **Fallback if a TD sprite's facing/geometry is broken (per the Chinook):** these DO have faction-distinct
 gameplay (own weapons), so don't drop to pure-RA wholesale — but if the *sprite* is unusable, render RA's
 HIND/(Orca has no RA equiv) while keeping the TD weapon/stats, or remap the frames.
 
+**Names:** the Apache's sidebar label is `TEXT_UNIT_TITLE_NOD_HELICOPTER` ("Attack Helicopter") and its
+popup `Name=` "Apache"; the Orca uses the native `TEXT_UNIT_TITLE_GDI_ORCA`, so neither needs a
+CONFIG.MEG edit.
+
 ---
 
 ## 5. Port plan
 
-**Apache (`AIRCRAFT_TDAPACHE`, Nod) — do first (Luke):** clone RA HIND ctor (rotor, helipad-landing,
+**Apache (`AIRCRAFT_TDAPACHE`, Nod), first:** clone RA HIND ctor (rotor, helipad-landing,
 primaryoffset 0x40), IniName "TDHELI"; NEW weapon `TDApacheGun` (TDChainGun + Burst=2); HELI sprite
 (32-frame, HIND donor); `[TDHELI]` rules (Primary=TDApacheGun, Ammo=15, Str 125, Armor=heavy, Cost 1200,
 Owner=BadGuy, Prereq=hpad, TechLevel 6, Speed 16=MPH_FAST, ROT 4). Cameo BuildIcon_TD_Apache.

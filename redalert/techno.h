@@ -200,10 +200,8 @@ public:
     StageClass CloakingDevice;
     CDTimerClass<FrameTimerClass> CloakDelay;
 
-    /*
-    **	TS Limpet Drone: the houses whose drone rides this object (one bit per HousesType) and
-    **	the throttle it puts on speed and turn rate while any does. A repair bay strips it.
-    */
+    // TF: TS Limpet Drone: the houses whose drone rides this object (one bit per HousesType) and the throttle it
+    // puts on speed and turn rate while any does. A repair bay strips it.
     unsigned LimpetType;
     fixed LimpetSpeedFactor;
 
@@ -225,18 +223,12 @@ public:
     */
     CDTimerClass<FrameTimerClass> Arm;
 
-    /*
-    **	Tiberian Factions: the game frame at which this object's Disruptor band is
-    **	gone. A sonic weapon cannot fire again while its band lives (TS keeps one
-    **	WaveClass per firer); a cut band shortens it.
-    */
+    // TF: the frame this object's Disruptor band is gone. A sonic weapon can't fire while its band lives, as TS
+    // keeps one WaveClass per firer; a cut band shortens it.
     int SonicBandEnd;
 
-    /*
-    **	Tiberian Factions: the game frame at which this object's last railgun coil has faded.
-    **	A railgun cannot fire again while its coil lives (TS keeps one railgun particle system
-    **	per firer and refuses the shot until it is gone).
-    */
+    // TF: the frame this object's last railgun coil fades. A railgun can't fire while its coil lives, as TS keeps
+    // one railgun particle system per firer.
     int RailCoilEnd;
 
     /*
@@ -253,13 +245,8 @@ public:
     COORDINATE ElectricZapTarget;
     int ElectricZapWhich;
 
-    /*
-    **  Tiberian Factions mod: used by the Obelisk laser to cache laser-beam
-    **  rendering data (ported from tiberiandawn/techno.h:195-198). Each line
-    **  consists of: x, y, x1, y1, color. LineMaxFrames is the visible
-    **  duration in render ticks; LineFrame is the current counter, advanced
-    **  each frame in the draw routine and cleared when it reaches max.
-    */
+    // TF: laser-beam lines, ported from TD's TechnoClass: x, y, x1, y1, colour each. They draw for LineMaxFrames
+    // render frames, counted by LineFrame, and AI clears them once those run out.
     int Lines[3][5];
     int LineCount;
     int LineFrame;
@@ -277,17 +264,9 @@ public:
     */
     unsigned int IsDiscoveredByPlayerMask;
 
-    /*
-    **	TF: attack-move (ported from CFE Patch Redux, GPL v3). Do NOT initialise these
-    **	here -- RA's savegame load copies the data then placement-news, so defaults
-    **	belong in the constructor (CFE's hard-won lesson). `mutable` because the
-    **	What_Action/AI paths that maintain them are const.
-    **
-    **	RememberedNavCom is the original attack-move destination; it survives any
-    **	number of detour fights. AttackMove is the mode flag. AttackMoveBoatClock
-    **	is the surface-vessel "stop chasing, get moving again" countdown.
-    */
-    mutable TARGET RememberedNavCom;
+    // TF: attack-move, ported from CFE Patch Redux; mutable because the const What_Action and AI paths keep them.
+    // Never initialise these here: a load copies the data, then placement-news, so defaults go in the constructor.
+    mutable TARGET RememberedNavCom; // the attack-move destination, kept through any detour fights
     union
     {
         mutable unsigned char CFEPatchFlags;
@@ -297,12 +276,10 @@ public:
             mutable unsigned int CFEPatchFlagsPadding : 7; // spare bits for future CFE ports
         };
     };
-    mutable unsigned char AttackMoveBoatClock;
+    mutable unsigned char AttackMoveBoatClock; // a surface vessel's countdown to stop chasing and move on
 
-    /*
-    **	Frames left of an E.M. Pulse stun (TS StunDuration), and the length of the stun
-    **	that set it. While it runs the object cannot fire, move, deploy or take orders.
-    */
+    // TF: frames left of an E.M. Pulse stun (TS StunDuration), and the length of the stun that set it. While it
+    // runs the object cannot fire, move, deploy or take orders.
     int StunDuration;
     int StunLength;
     enum
@@ -459,10 +436,8 @@ public:
                               WindowNumberType window,
                               COORDINATE source_coord = 0L,
                               unsigned char* remap = NULL) const;
-    /*
-    **	Tiberian Factions: true while a subterranean vehicle is travelling underground.
-    **	Every "can that house see / target this" query treats it like a cloaked object.
-    */
+    // TF: true while a subterranean vehicle travels underground. Every "can that house see or target this" query
+    // treats it like a cloaked object.
     virtual bool Is_Tunneling(void) const
     {
         return (false);
@@ -559,11 +534,8 @@ public:
 
     virtual unsigned Spied_By() const;
 
-    /*
-    **	TF: attack-move (CFE port). Mode transitions for the move<->attack loop.
-    **	minelayercommand: 0 = just exit attack-move; 1 = lay mines at the
-    **	destination instead of exiting; 2 = exit and send the minelayer home.
-    */
+    // TF: attack-move (CFE port) mode changes. ResetAttackMove's minelayercommand: 0 exits, 1 lays mines if the
+    // minelayer reached its destination and else sends it home, 2 sends it home.
     void ResetAttackMove(int minelayercommand = 0);
     void AttackMoveEnterMoveMode();
     void AttackMoveEnterAttackMode();

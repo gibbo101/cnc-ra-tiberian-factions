@@ -1,12 +1,11 @@
 # TDOBLI — TD-source verification
 
-> **RESOLVED — separated + shipped (v0.50).** TDOBLI is fully separated and binds `Primary=TDOblsLaser` in rules.ini; the charge-timing fix landed. The body below is retained as TD-source reference / the plan that was executed.
+**Status:** Reference; shipped before 1.0.0. TDOBLI is fully separated and binds
+`Primary=TDOblsLaser`, with TD's charge timing.
 
-**Status:** Largely TD-authentic. The "validated vertical slice" reputation from M5 is correct — building flags, rules.ini stats, weapon stats, projectile, warhead, audio routing, and engine dispatch are all TD-correct. **One balance-relevant bug**: charge timing is ~6× faster than TD's. **Three cosmetic-tier divergences**: VerticalOffset, missing HorizontalOffset, class naming. No "still bound to RA vanilla weapon" issues — TDOBLI is the cleanest separation in the M3 Tier 2 set.
-
-**Session that produced it:** 2026-05-22, paired with `td-gtwr-gun-verification.md`. Same TD-source-grounded verification pattern.
-
-**Guiding principle:** wholesale port of TD's building + weapon + projectile + audio. Per [[feedback-no-donor-for-td-separation]] / [[project-building-separation-committed]] / [[project-td-prefix-convention]].
+The body is the TD-source analysis and the port plan that was carried out; live stats are in
+`rules.ini` and `balance-deep-dive.md`. TD entities run TD's own building, weapon and projectile code, ported from
+`reference/vanilla-conquer/tiberiandawn/`, never RA's nearest equivalent.
 
 ---
 
@@ -123,7 +122,7 @@ Hitscan laser with `WARHEAD_LASER`.
 | Field | Our value | TD value | Status |
 |---|---|---|---|
 | Name token | `TXT_NONE` (rules.ini Name=) | `TXT_OBELISK` | OK (rules.ini overrides) |
-| IniName | `"TDOBLI"` | `"OBLI"` (TD prefix added per [[project-td-prefix-convention]]) | match-by-convention |
+| IniName | `"TDOBLI"` | `"OBLI"` (TD prefix added by convention) | match-by-convention |
 | VerticalOffset | `0x00C8` | `0x00A8` (from Fire_Coord) | ⚠ DIVERGES by 0x20 |
 | PrimaryOffset | `0x0000` | (uses fixed Fire_Coord, no PrimaryOffset path) | OK (laser is hitscan) |
 | HorizontalOffset | not in BuildingTypeClass constructor | `0x0018 W` (from Fire_Coord) | ⚠ missing per-building lateral |
@@ -324,7 +323,7 @@ Unlike TDSAM/TDATWR/TDGTWR, there are **no observable rendering or firing bugs**
 | Charge completes one stage early | charge_complete_stage = Count - 1; TD uses Count | C2 |
 | Laser beam origin not exactly at crystal tip | VerticalOffset 0x00C8 vs TD's 0x00A8 + missing 0x0018 W shift | C3 (cosmetic) |
 | Code-reading inconsistency: ClassObelisk vs ClassTdGtwr etc. | Class name not prefixed | C4 (cosmetic) |
-| `[TDLaser] Verses=100%,100%,100%,100%,100%` may differ from TD WARHEAD_LASER | Unverified against TD source | C5 (verify, not necessarily change) |
+| `[TDLaser] Verses=100%,100%,100%,100%,100%` | matches TD's `WARHEAD_LASER` (0x100 against every armour) | C5 (verified, no change) |
 
 ---
 

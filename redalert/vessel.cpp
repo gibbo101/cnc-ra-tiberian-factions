@@ -339,13 +339,7 @@ int VesselClass::Shape_Number(void) const
 
     int shapenum = UnitClass::BodyShape[Dir_To_16(PrimaryFacing) * 2] >> 1;
 
-    /*
-    **	Tiberian Factions: the GDI Gunboat HULL. The 3D-rendered TD hull has the
-    **	gun split OFF into a separate spinning turret (TDBOATTUR, drawn in Draw_It),
-    **	so the body is a plain 16-facing RA vessel: frame s = facing s
-    **	(scripts/render_gunboat_split.py mode=body). The turret tracks its target
-    **	independently and fires from the barrel — see Draw_It's VESSEL_TDGUNBOAT case.
-    */
+    // TF: the GDI Gunboat's hull is a plain 16-facing body, frame = facing; Draw_It seats its SSAM turret on top.
     if (*this == VESSEL_TDGUNBOAT) {
         return ((int)Dir_To_16(PrimaryFacing));
     }
@@ -417,13 +411,6 @@ void VesselClass::Draw_It(int x, int y, WindowNumberType window) const
         DirType rotation = DIR_N;
         int scale = 0x0100;
 
-        // NOTE (v4.0 battlecarrier): draw-`scale` (8.8 fixed: 0x0100=1.0x) is the ONLY lever that
-        // changes a unit's on-screen size in HD -- the launcher normalises art frame-pixel size to a
-        // fixed logical footprint, so a bigger ZIP does nothing. BUT scale is cosmetic only (footprint
-        // stays 1 cell -> worsens unit-overlap), so TDCA stays 1.0x: the helideck is sized to the
-        // native beam (slight realistic overhang) instead of enlarging the hull. See
-        // reference-hd-unit-display-scale memory.
-
         /*
         **	Actually perform the draw. Overlay an optional shimmer effect as necessary.
         */
@@ -446,11 +433,8 @@ void VesselClass::Draw_It(int x, int y, WindowNumberType window) const
             int turret_scale = 0x0100;   // 8.8 fixed draw scale for the turret overlay
 
             switch (Class->Type) {
-            // VESSEL_TDGUNBOAT = GDI Gunboat -- wears the RA SSAM missile box (the Allied
-            // Destroyer's turret; global named art, classic CCW frame order so BodyShape
-            // remap applies) firing its TD-authentic Tomahawks. Donor shapefile just
-            // satisfies the non-NULL guard; Turret_Adjust seats it on the dot-marked
-            // foredeck mount. (The earlier Blender TDBOATTUR launcher is retired.)
+            // TF: the GDI Gunboat wears the Allied Destroyer's SSAM box (global art, classic CCW frames) and fires
+            // TD's Tomahawks; Turret_Adjust seats it on the foredeck mount.
             case VESSEL_TDGUNBOAT:
                 turret_shape_name = "SSAM";
                 shapefile = Get_Image_Data();
@@ -459,8 +443,7 @@ void VesselClass::Draw_It(int x, int y, WindowNumberType window) const
                 Class->Turret_Adjust(turdir, xx, yy);
                 break;
 
-            // GDI clones wear their RA counterparts' native turrets (Luke 2026-07-03:
-            // the turret-swap experiment is over) -- identical art, mounts, fire points.
+            // TF: the GDI clones wear their RA counterparts' turrets, mounts and fire points.
             case VESSEL_TDCA:
             case VESSEL_CA:
                 turret_shape_name = "TURR";
@@ -677,15 +660,8 @@ void VesselClass::AI(void)
         return;
     }
 
-    /*
-    **	v4.0 Obelisk Attack Sub (VESSEL_TDOBLISUB) charge wind-up. When the sub is reloaded and has a
-    **	target in laser range it does NOT fire immediately: it surfaces (Do_Uncloak -> vulnerable),
-    **	plays the Obelisk power-up hum once, and holds for OBELISK_SUB_CHARGE_FRAMES while PulseCountDown
-    **	keeps it surfaced. Can_Fire returns FIRE_REARM until the timer expires, then the laser fires.
-    **	This is the vessel equivalent of the building Obelisk's charge (BuildingClass::Charging_AI is
-    **	BuildingClass-only -- IsCharging/IsCharged are building bitfields). Arm (set on firing) flips
-    **	wants_to_fire false next frame, which auto-resets the wind-up for the next shot.
-    */
+    // TF: the Obelisk Attack Sub surfaces and hums for OBELISK_SUB_CHARGE_FRAMES before each shot, PulseCountDown
+    // holding it surfaced; Can_Fire answers FIRE_REARM until the charge runs out.
     if (*this == VESSEL_TDOBLISUB) {
         const int OBELISK_SUB_CHARGE_FRAMES = 45; // ~3s wind-up (the vulnerable window before each shot)
         bool wants_to_fire = Target_Legal(TarCom) && !Arm && In_Range(TarCom, 0);
@@ -693,15 +669,14 @@ void VesselClass::AI(void)
             if (!IsObeliskCharging) {
                 IsObeliskCharging = true;
                 ObeliskCharge = OBELISK_SUB_CHARGE_FRAMES;
-                Sound_Effect(VOC_TD_LASER_POWER, Coord); // the unique laser-charge hum
-                Do_Uncloak();                            // surface = vulnerable during the wind-up
+                Sound_Effect(VOC_TD_LASER_POWER, Coord);
+                Do_Uncloak();
             }
-            // Keep the sub surfaced (uncloaked) for the whole wind-up.
             if ((int)PulseCountDown < (int)ObeliskCharge) {
                 PulseCountDown = ObeliskCharge;
             }
         } else {
-            IsObeliskCharging = false; // lost target / fired / reloading -> cancel the wind-up
+            IsObeliskCharging = false;
         }
     }
 
@@ -1121,11 +1096,7 @@ FireErrorType VesselClass::Can_Fire(TARGET target, int which) const
     if (*this == VESSEL_DD) {
         Mono_Set_Cursor(0, 0);
     }
-    /*
-    **	v4.0 Obelisk Sub: hold the laser during the charge wind-up (driven in AI). The shot only
-    **	fires once IsObeliskCharging is set AND ObeliskCharge has expired -- otherwise report
-    **	FIRE_REARM so the sub keeps its target and finishes charging (surfaced + vulnerable).
-    */
+    // TF: the Obelisk Sub holds its shot until its charge, started in AI, runs out; FIRE_REARM keeps its target.
     if (*this == VESSEL_TDOBLISUB && (fire == FIRE_OK || fire == FIRE_CLOAKED)) {
         if (!IsObeliskCharging || ObeliskCharge != 0) {
             return (FIRE_REARM);
@@ -1152,10 +1123,8 @@ FireErrorType VesselClass::Can_Fire(TARGET target, int which) const
         dir = Direction(target);
 
         if (weapon->Bullet->IsSubSurface) {
-            /*
-            **	A vehicle afloat on open water (a hover or amphibious one) is in the torpedo's
-            **	element too: a torpedo running through its cell detonates on it.
-            */
+            // TF: a vehicle afloat on open water (hover or amphibious) is in the torpedo's element: a torpedo running
+            // through its cell detonates on it.
             UnitClass const* unit = As_Unit(target);
             bool afloat = (unit != NULL && unit->Height == 0 && Map[unit->Center_Coord()].Land_Type() == LAND_WATER);
             if (!isseatarget && !afloat && Is_Target_Object(target)) {
@@ -1296,7 +1265,7 @@ FireDataType VesselClass::Fire_Data(int which) const
         return {coord, 0x0010};
     }
 
-    // TDDD: missiles leave the dot-marked FORE mount (see Turret_Adjust).
+    // TF: the GDI Destroyer's missiles leave its fore mount (see Turret_Adjust).
     if (*this == VESSEL_TDDD) {
         coord = Coord_Move(coord, PrimaryFacing, 0x009A);
         coord = Coord_Move(coord, DIR_N, 0x0028);
@@ -1331,7 +1300,7 @@ COORDINATE VesselClass::Fire_Coord(int which) const
         return (coord);
     }
 
-    // TDDD: missiles leave the dot-marked FORE mount (see Turret_Adjust).
+    // TF: the GDI Destroyer's missiles leave its fore mount (see Turret_Adjust).
     if (*this == VESSEL_TDDD) {
         coord = Coord_Move(coord, PrimaryFacing, 0x009A);
         coord = Coord_Move(coord, DIR_N, 0x0028);
@@ -1407,11 +1376,8 @@ TARGET VesselClass::Greatest_Threat(ThreatType threat) const
             threat = (ThreatType)(threat & (~THREAT_INFANTRY));
         }
 
-        /*
-        **	Attack-move (CFE port): an attack-moving ship should be willing to
-        **	shell buildings. Cruisers additionally ignore air -- they can't hit
-        **	padless idling helicopters bobbing up and down anyway.
-        */
+        // TF: attack-move (CFE port): an attack-moving ship shells buildings too, and a cruiser ignores air, which it
+        // can't hit.
         if (AttackMove && (*this != VESSEL_SS)) {
             threat = threat | THREAT_BUILDINGS;
             if (*this == VESSEL_CA || *this == VESSEL_TDCA) {
@@ -2393,8 +2359,8 @@ void VesselClass::Rotation_AI(void)
             SecondaryFacing.Set_Desired(dir);
         }
     } else if (!Target_Legal(TarCom) && Class->IsTurretEquipped) {
-        // GDI TD ships: with no target, the turret settles onto the hull heading so a
-        // cruising ship carries its gun facing the direction of travel (Luke, 2026-07-03).
+        // TF: with no target, a GDI ship's turret settles onto the hull heading, so a cruising ship carries its gun
+        // forward.
         switch (Class->Type) {
         case VESSEL_TDGUNBOAT:
         case VESSEL_TDPT:
@@ -2451,17 +2417,8 @@ void VesselClass::Combat_AI(void)
         */
         int primary = What_Weapon_Should_I_Use(TarCom);
 
-        /*
-        **	A skirmish-AI ship with a live target in weapon range stops to finish it.
-        **	Sailing on while shooting is how a patrolling destroyer trades itself for
-        **	two pot-shots at a power plant -- and a turretless hull (the subs) cannot
-        **	fire AT ALL with a NavCom assigned (Can_Fire -> FIRE_MOVING), so a ship
-        **	kept permanently on the move never fights, however close the enemy.
-        **	Dropping the destination lets guard logic take over: the hull or turret
-        **	comes to bear, the target dies, and the fleet doctrine in Expert_AI deals
-        **	the next order once the water is clear. Humans keep full control of their
-        **	own ships, and campaign scripting is left untouched.
-        */
+        // TF: a skirmish-AI ship with a live target in range drops its destination to fight it: a turretless hull
+        // can't fire with a NavCom (FIRE_MOVING). Humans and campaign scripting keep control of their ships.
         if (Session.Type != GAME_NORMAL && !House->IsHuman && Target_Legal(NavCom) && In_Range(TarCom, primary)) {
             Assign_Destination(TARGET_NONE);
         }

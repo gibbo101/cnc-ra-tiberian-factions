@@ -1,11 +1,12 @@
-# ModDB page copy (current: v5.0.0, draft for Luke's review)
+# ModDB page copy (current: v5.0.0)
+
+**Status:** Reference. The ModDB page text for the current release, 5.0.0.
 
 **Live page: https://www.moddb.com/mods/tiberian-factions-for-red-alert**
-(ModDB serves 403 to automated fetches, so the page state cannot be checked from here. Luke is
-the only one who can see what is currently published.)
+(ModDB serves 403 to automated fetches, so the live page can only be checked in a browser.)
 
-Paste-ready content for the mod's ModDB page. Luke does everything in-browser; this doc holds
-every field's content so page day is copy-paste only. Updated per release.
+Paste-ready content for the mod's ModDB page, which is edited by hand in the browser; this doc
+holds every field's content so page day is copy-paste only. Updated per release.
 
 **Style rule:** no em dashes anywhere in user-facing copy (colons, commas, hyphens instead).
 
@@ -14,7 +15,7 @@ the A* pathfinding internals (engine jargon that means nothing to a player). The
 walkers were a crate easter egg until 5.0.0; they are now TS GDI's own army and are announced as
 such. The crate-only finds are an easter egg: the store pages (Workshop and ModDB) never mention them,
 not even as rare tanks. The repo (changelog, README) may name them. Keep it that way on future
-releases unless Luke says otherwise.
+releases.
 
 ---
 
@@ -30,7 +31,7 @@ releases unless Luke says otherwise.
 | Development stage | Released |
 | License | GPL v3 (DLL source inherited from EA's 2020 source release) |
 | Homepage | https://github.com/gibbo101/cnc-ra-tiberian-factions |
-| Icon | Current: `logo.png` (four-faction emblem grid, 1200x1200; `logo-512.png` the pre-scaled icon), which doubles as the Workshop preview. Candidate for 5.0.0: the new title-over-emblems logo in `~/Desktop/Tiberian Factions/tf-logo/` (`logo-512.png`, or `logo-fire-512.png` with the fire title), Luke's call. |
+| Icon | `~/Desktop/Tiberian Factions/tf-logo/logo-fire-512.png` (the fire title over the six faction emblems; the 1200x1200 `logo-fire-draft.png` is the Workshop preview from 5.0.0). |
 | Tags | command and conquer, red alert, tiberian dawn, tiberian sun, gdi, nod, remastered |
 
 ## Summary (short field, keep under ~300 chars)
@@ -61,7 +62,7 @@ Medics, Jumpjet Infantry and the Ghost Stalker; Wolverines, Titans, Hover MLRS, 
 Juggernauts and the Mammoth Mk. I; Orcas and the Carryall; and the Mammoth Mk. II, delivered by
 dropship. It defends with component towers that take Vulcan, RPG or SAM upgrades, and with
 Firestorm Defense.</li>
-<li><b>Five separate tech trees, and capture that matters.</b> Every faction builds its own
+<li><b>Separate tech trees.</b> Every faction builds its own
 Construction Yard, MCV, War Factory and Helipad. Capture a rival construction yard and you
 get that faction's arsenal, so an Allied commander who takes a Nod yard can start building
 Nod. Only low tier infrastructure is shared; barracks, war factories, helipads, naval yards,
@@ -82,14 +83,11 @@ lobbies.</li>
 <li><b>Walls and gates.</b> Every faction has a gate that opens for its own units, and
 placing a wall in line with another of its kind, up to five cells away, fills the gap.</li>
 <li><b>The Tiberium ecosystem.</b> Tiberium spreads, converts trees into blossom trees and
-harms infantry, with a chance of Visceroids from Tiberium deaths. 151 of Red Alert's own
-multiplayer maps now mix Tiberium fields with the ore, with lobby thumbnails to match. The 31
-Tiberian Dawn maps are out of the mod for now, to save video memory, and are planned to return
-as a separate download.</li>
+harms infantry, with a chance of Visceroids from Tiberium deaths. Most of Red Alert's own
+skirmish maps now mix Tiberium with ore.</li>
 <li><b>Unholy Alliance mode.</b> A lobby option that starts every player, human and AI, with
-the Allied, Soviet, GDI and Nod construction yards at once.</li>
-<li><b>Crates with surprises.</b> Unit crates turn up more often and draw from every faction's
-vehicles.</li>
+an Allied, Soviet, GDI and Nod MCV.</li>
+<li><b>Crates.</b> The unit pool now covers every faction.</li>
 <li><b>Computer opponents for all five factions</b>, each AI on its own Easy, Medium or Hard
 setting from its lobby slot.</li>
 <li><b>Authentic look and sound</b>: Tiberian Dawn and Tiberian Sun EVA, unit voices, building
@@ -118,8 +116,27 @@ RedAlert.dll (for example CFE Patch Redux). Disable other DLL mods first.</li>
 faction's crest, EVA and hotkeys.</li>
 <li>Saved games from earlier versions of the mod will not load in 5.0.</li>
 <li>The TS GDI AI does not use Firestorm Defense or build the EMP Cannon, and builds no
-transports or navy on maps split by water. No faction's AI builds walls or gates.</li>
+transports or navy on maps split by water (a TS GDI navy may come later). No faction's AI
+builds walls or gates.</li>
 <li>German and French players hear English voices while the mod is enabled.</li>
+</ul>
+
+<h2>Planned</h2>
+<ul>
+<li><b>Tiberian Sun Nod</b> as a playable faction.</li>
+<li><b>A balance pass for TS GDI and TS Nod.</b> 5.0 uses Tiberian Sun's exact values.</li>
+<li><b>Smarter AI</b>, including naval invasions.</li>
+<li><b>The Tiberian Dawn maps</b> back as a separate download.</li>
+<li><b>GDI and Nod campaigns.</b></li>
+<li><b>Co-op missions</b> for two players.</li>
+</ul>
+
+<h2>My other C&amp;C projects</h2>
+<ul>
+<li><a href="https://github.com/gibbo101/renegade-pad">Renegade Pad</a>: C&amp;C Renegade's campaign played like a console shooter on the Steam Deck, with a full controller scheme.</li>
+<li><a href="https://github.com/gibbo101/opents-pad">OpenTS Pad</a>: OpenTS, the open-source Tiberian Sun, on a controller, in the style of Red Alert: Retaliation on the PlayStation.</li>
+<li><a href="https://github.com/gibbo101/cnc-map-editor">C&amp;C Remastered Map Editor</a>: a Linux-native map editor for Red Alert and Tiberian Dawn that understands mods, Tiberian Factions included.</li>
+<li><a href="https://github.com/gibbo101/ps1-lan-link">PS1 Link Cable</a>: two-player link-cable play between two Steam Decks over wifi, for Red Alert: Retaliation, Dune 2000 and more.</li>
 </ul>
 
 <h2>Source and licensing</h2>
@@ -180,7 +197,7 @@ Mammoth Mk. II and the Mech Division from orbit.</p>
 sections, and one click raises a field that destroys whatever crosses it, your own units
 included, and stops enemy shots, for as long as its charge lasts. The EMP Cannon's pulse freezes
 vehicles and silences buildings where it lands. The Upgrade Center takes an Ion Cannon uplink, a drop pod node and the Hunter
-Seeker, which launches itself at the enemy when it is ready. The Mobile War Factory deploys
+Seeker: one click sends the droid to hunt down an enemy. The Mobile War Factory deploys
 into a working war factory, the Mobile Sensor Array shows cloaked enemies, and component
 towers take Vulcan, RPG or SAM upgrades.</p>
 
@@ -201,7 +218,7 @@ straight line the way they do in Tiberian Sun and Red Alert 2: place a wall in l
 of its kind, up to five cells away, and the gap fills in.</p>
 
 <h2>Tiberium on Red Alert's own maps</h2>
-<p>151 of Red Alert's official multiplayer maps now mix Tiberium fields with the ore, balanced
+<p>Most of Red Alert's official skirmish maps now mix Tiberium fields with the ore, balanced
 so every start gets a fair mix, with lobby thumbnails to match.</p>
 <p>The 31 Tiberian Dawn maps are out of the mod for now: they raised video memory use for every
 player. They are planned to return as a separate download. Copies installed by earlier versions
@@ -212,8 +229,7 @@ are removed from your custom maps.</p>
 harvesters and MCVs out of your army, for every player in LAN games too.</p>
 
 <h2>Crates</h2>
-<p>Unit crates turn up more often and draw from every faction's vehicles, so anyone can find
-anything.</p>
+<p>The unit pool now covers every faction.</p>
 
 <h2>The AI</h2>
 <p>The computer opponents play all five factions, TS GDI included. In 5.0 they field a stronger
@@ -221,7 +237,8 @@ economy and build a navy on water maps. More AI work is to come.</p>
 
 <h2>Known limitations</h2>
 <p>The TS GDI AI does not use Firestorm Defense or build the EMP Cannon, and builds no
-transports or navy on maps split by water. No faction's AI builds walls or gates.</p>
+transports or navy on maps split by water (a TS GDI navy may come later). No faction's AI builds
+walls or gates.</p>
 
 <p>Thanks to <b>hazelnut</b> for the Tiberian Sun GDI emblem and to the <b>OpenTS
 Developers</b>, whose OpenTS is the reference for every Tiberian Sun unit in this release.</p>
@@ -238,7 +255,7 @@ for automatic updates. Full changelog on
 | Field | Value |
 |---|---|
 | Name | Tiberian Factions for Red Alert 5.0.0 |
-| Filename | `TiberianFactions-v5.0.0.zip` (size: fill in from the GitHub release asset) |
+| Filename | `TiberianFactions-v5.0.0.zip`, 1,006,896,567 bytes (960 MB) |
 | Source | GitHub release asset, identical file: https://github.com/gibbo101/cnc-ra-tiberian-factions/releases/tag/v5.0.0 |
 | Category | Full Version |
 | Description | Version 5.0.0: Tiberian Sun GDI joins as a fifth faction, with an all-new intro movie, a UI overhaul and more. Extract into Documents/CnCRemastered/Mods/Red_Alert/ or subscribe on the Steam Workshop. |
@@ -251,13 +268,16 @@ Already on the page from 4.0 (the `~/Desktop/TiberianFactionsinRedAlert4.0 media
 longer on the Desktop): nod-stealth-generator.mp4, nod-paradrop.mp4, raharv-tdref.mp4,
 tdharv-raref.mp4, the GDI and Nod base showcases.
 
-**Wanted for 5.0:** a TS GDI base with the Firestorm field up; the dropship landing a Mammoth
-Mk. II; an EMP pulse landing on a column; the new main menu and the lobby faction picker; a gate
-in a wall line opening for a unit; an official map with Tiberium beside the ore. Shoot with
-`tf_dev_off.flag` present or on the release DLL so dev overlays do not burn in. New captures go
-in `~/Desktop/Tiberian Factions/<topic>/`.
+**New for 5.0 (captured 2026-10-04):** `~/Desktop/Tiberian Factions/screenshots-5.0.0/` (full-size PNGs;
+JPG copies under 1 MB in `jpg/`): the main menu, skirmish lobby, loading screen, the dropship over
+a Mammoth Mk. II, TS units at a Tiberium crossroads, a TS GDI base with Firestorm and its gate, a
+Soviet base with the Tesla gate. Not captured: an EMP pulse.
 
-## Per-release update checklist (Luke in browser)
+**Intro video:** https://youtu.be/rqk9Q1sgvAc (YouTube, 2026-10-04; also on the Workshop page, whose
+media only takes YouTube links). The 1080p MP4 for ModDB is rendered from the intro pipeline's own
+frames and music (`intro_cut.py ... frames`, then H.264 CRF 16 + AAC), not decoded from the Bink.
+
+## Per-release update checklist (in the browser)
 
 1. Edit the mod page: replace the description, refresh the limitations list.
 2. Post the release article (Articles > Add Article, category News).

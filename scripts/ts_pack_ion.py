@@ -39,7 +39,10 @@ import asset_packs
 
 RAW = f"{ART}/.raw"
 SCALE = 4.0
-BEAM_SEGMENTS = 8  # 8 x 480 = 3840 canvas px. The TD beam's art is 2038px but renders at VirtualScale 0x200 (adata.cpp) = ~4076 virtual px; ours draws at 0x100 to keep the narrow TS column width, so the height must be tiled in at pack time (Luke: the TD beam enters from the top of the screen; the TS one must too)
+# 8 x 480 = 3840 canvas px. The TD beam's art is 2038px but renders at VirtualScale 0x200 (adata.cpp) = ~4076
+# virtual px; ours draws at 0x100 to keep the narrow TS column width, so the height must be tiled in at pack time
+# (the TD beam enters from the top of the screen; the TS one must too).
+BEAM_SEGMENTS = 8
 
 
 def tga_bytes(img):

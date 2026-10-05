@@ -77,25 +77,12 @@ typedef MixFileClass<CCFileClass> MFCD;
 extern bool IsVQ640;
 extern unsigned int GameVersion;
 
-/*
-**	Tiberian Factions -- true while the loaded scenario is a converted TD
-**	WINTER map (detected by TDW* templates in the [TFTDTiles] side-channel,
-**	display.cpp). Winter maps live in the TEMPERATE theatre, so trees swap
-**	to snowy art: classic via TerrainClass::Get_Image_Data (terrain.cpp),
-**	HD via the exported AssetName (dllinterface.cpp).
-*/
+// TF: true while the loaded map is a converted TD winter map (TDW* templates in [TFTDTiles]). It plays in the
+// temperate theatre with its trees swapped to snowy art.
 extern bool TF_TDWinterMap;
 
-/*
-**	Tiberian Factions -- Unholy Alliance mode: every player starts with one MCV of all
-**	four factions and may build all four tech trees. Carried by the lobby's Capture the
-**	Flag game type, which this mod relabels and repurposes (the flag game is unsupported
-**	here -- our maps carry no flag spots), so CTF's own behaviour is switched off wherever
-**	this is on. A game type rather than a checkbox because the Mode list is exclusive: a
-**	checkbox could be ticked alongside a bases-off game and silently do nothing, since the
-**	launcher only greys out options it was compiled to know about. Applies to AI houses
-**	too. Set in CNC_Set_Multiplayer_Data.
-*/
+// TF: Unholy Alliance: every house, AI too, starts with the Allied, Soviet, GDI and Nod MCVs and may build all
+// four trees. It rides the lobby's Capture the Flag game type, whose flag game is switched off.
 extern bool TF_UnholyAlliance;
 extern bool Debug_MotionCapture;
 extern bool Debug_Rotate;
@@ -140,7 +127,7 @@ extern int CarrierLaunchDelay;
 #endif
 
 #ifdef FIXIT_NAME_OVERRIDE
-extern char const* NameOverride[128]; // Tiberian Factions: was 25 (see globals.cpp)
+extern char const* NameOverride[128]; // TF: one slot per Name= override; an overflow crashes the launcher
 extern int NameIDOverride[128];
 #endif
 

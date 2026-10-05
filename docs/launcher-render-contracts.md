@@ -1,9 +1,9 @@
-# Launcher render contracts — discoveries from the TS walker ports (2026-07-20)
+# Launcher render contracts
 
-Hard-won rules from porting the TS Titan (`UNIT_TSTITN`) and Mammoth Mk. II
-(`UNIT_TSHMEC`) with a working railgun. Every one of these cost a build-test
-cycle to find; check this list BEFORE shipping any new unit art, anim, or
-beam weapon. Fix-site comments exist in code; this doc is the collected story.
+**Status:** Reference. How the launcher draws unit, building, anim and beam art, and the house
+rules for TS-sourced art. Check it before shipping any new unit art, anim or beam weapon.
+
+Each contract cost a build-test cycle to find, most of them while porting the TS walkers.
 
 ## 1. Sprites anchor by the VIRTUAL CANVAS CENTER — place content accordingly
 
@@ -124,8 +124,8 @@ Corollaries: a box reads wrong exactly when the ART is seated off its plot
 centre (the TSFACT slab reseat is what "broke" its box — the box never moved).
 TDFACT (correct box, same 3x3 plot, same pipeline) vs TSFACT (box a tile high)
 is the standing control pair for the one unexplored lever: classic stub /
-canvas geometry. Open boxes as of 2026-08-13: TSFACT (1 tile high), TSDROP
-(1 tile low), TSPROC (Luke wants 2 tiles more headroom than a plot-centred box
+canvas geometry. Open boxes: TSFACT (1 tile high), TSDROP
+(1 tile low), TSPROC (wants 2 tiles more headroom than a plot-centred box
 can give). Fix path: diff TDFACT's stub/canvas content geometry against
 TSFACT's and transplant the relationship, art compensated to stay put.
 
@@ -163,7 +163,7 @@ coordinate's top-left rather than its centre, always draws the full chrono whirl
 Useless for a beam ripple; potentially useful for a deliberate large one-off screen warp.
 The real `ChronalVortex` always owns the slot when active.
 
-## 11. Voxel units are lit the way Tiberian Sun lights them — and a relight never re-places a sprite (2026-08-28, signed off "night and day")
+## 11. Voxel units are lit the way Tiberian Sun lights them, and a relight never re-places a sprite
 
 **The shading model (`scripts/vxl_render.py`, default `--shade ts --normals vxl`):**
 - Light: one fixed world vector at 45° elevation (OpenTS `_voxel.h Set_Voxel_Light_Angle`), length
@@ -176,7 +176,7 @@ The real `ChronalVortex` always owns the slot when active.
 - Normals: **the VXL's own per-voxel normal index**, resolved through TS's tables
   (`scripts/ts_vxl_normals.py` = OpenTS `VoxelNormals1..4`, chosen by the section's normal mode byte).
   Geometry-derived normals (`--normals geo`) quantise to 26 directions; under TS's stepped table that
-  reads as **blotches across flat decks** (Luke: "patchy"). Real normals light decks evenly and brighter.
+  reads as **blotches across flat decks**. Real normals light decks evenly and brighter.
 - Team colour: the remap ramp keeps its **1.45× lift under either model** — the launcher's hue-remap
   preserves luminance, and remap-heavy hulls (APC, Disruptor, harvester) read dark without it.
 - Shaded RGB is clipped at 255 before the uint8 cast, or bright channels wrap into green fringe pixels.
@@ -193,21 +193,20 @@ bbox-centred paste **moves the sprite** even when every body pixel is in the sam
   verified 100% (Disruptor) / 94–99.7% (rack, the cut pole) mask overlap with the shipped frames.
 - The APC water hull (32–63) is relit, then levelled to the land hull's mean luminance (`apcw.vxl`
   shades brighter on its own table), and **carries no shadow** (a hull in water keeps its shadow under
-  the surface, as RA's ships do — Luke: "much better"). **Never run `ts_reshadow.py` over the water
+  the surface, as RA's ships do). **Never run `ts_reshadow.py` over the water
   frames.**
 - Titan and Wolverine are TS SHPs (MMCH/SMECH), not renders, with TS's light baked per facing (a mech
   turned away from the light read a step darker: Wolverine SE vs S, Titan N a quarter under NE).
   `scripts/ts_equalise_shp_facings.py` levels each facing block to the brightest block's mean body
   luminance (idempotent; in-frame shading and shadows untouched). The Titan's cannon barrel
   (`MMCHBARL.VXL`, 30° render inside the walkers script) is still legacy-lit — needs the Titan inputs.
-- **Voxel-mesh upscale: SPIKED AND REJECTED (2026-08-28, harvester A/B in-game).** `scripts/vxl_mesh_render.py`
+- **Voxel-mesh upscale: tried and rejected (harvester A/B in game).** `scripts/vxl_mesh_render.py`
   (marching cubes + Taubin smoothing + denoised vertex colours, TS lighting) renders a smoother hull,
   but at game sprite scale the 1-voxel ribs and panel lines ARE the detail, and any smoothing that
-  rounds the staircase rounds them away — Luke: "the smaller one has more detail", "lost some side
-  panelling". The voxel render with real normals stays. Script kept for reference only (needs a
+  rounds the staircase rounds them away (the side panelling went). The voxel render with real normals stays. Script kept for reference only (needs a
   scikit-image venv). Don't re-chase unless units are drawn larger than the game does.
 
-## 12. A new stub line does nothing until TFASSETS.MIX is rebuilt and committed (2026-09-13)
+## 12. A new stub line does nothing until TFASSETS.MIX is rebuilt and committed
 
 Adding a stub line to `scripts/build_tfassets.sh` does nothing until the script is run and
 `CCDATA/TFASSETS.MIX` is committed. A new HD bullet with no classic stub draws at a fallback
@@ -215,7 +214,7 @@ size, as a large blocky square: the Disc Thrower's TSDISCUS flew as a ~70x80 px 
 colours until the rebuild. The rebuilt archive lists new entries by CRC, not name, so check the
 entry count against the committed copy (`mix_tools.py list`) rather than grepping for the name.
 
-## 13. Art px to leptons is canvas px x 4/3 (2026-09-17)
+## 13. Art px to leptons is canvas px x 4/3
 
 A packed unit ships at 8x-classic density (canvas = ShapeSize x 8), so one canvas pixel is
 4/3 leptons and one TS SHP pixel at x6.4 is 8.53. Fire points, muzzle tables and any offset
@@ -227,7 +226,7 @@ The Juggernaut's first fire point was a trig formula built on "1 TS px = 2 lepto
 of the real rate: its shells left from near the hull centre in every pose, which looks close
 enough on screen at point-blank and is a cell and a half out at range 18.
 
-## 14. A unit and the building it deploys into must share a ground line (2026-09-17)
+## 14. A unit and the building it deploys into must share a ground line
 
 The launcher centres a selection box on the object and draws its health bar above that box, and
 a unit's art anchors on its canvas centre. So where the art's lowest pixels sit relative to that
@@ -249,7 +248,7 @@ meta `crop` offset) and divide by the density. For reference, TS's 1x1 buildings
 +12 classic px below the cell centre, and unit shadows sit further out again the taller the unit
 (Wolverine +13.9, Juggernaut deployed +18, Titan +22.8).
 
-## 15. Vehicle hulls are centred on the unit (2026-10-02, replaces the 2026-09-26 ground-line rule)
+## 15. Vehicle hulls are centred on the unit
 
 EA's HD vehicles centre the hull's opaque pixels on the unit to within 1.5 classic px (21 RA and
 TD vehicles measured; the Mammoths sit 2.6 high). Turrets and barrels stick up past it, and art
@@ -258,25 +257,25 @@ centred hull gets a box that hugs it. Our voxel packers put the model's ground p
 centre, which drew hulls 3 to 7 px high: above EA's vehicles in the same row, with the box's slack
 below. `scripts/unit_centring.py` centres them after packing and records the drop for
 `Fire_Coord`. Size boxes from its printout (width = art width, height = 2 × the art's reach from
-centre). The 09-26 "+7.7 ground line" came from measuring only the two Mammoths. The
+centre). Measuring only the two Mammoths gives a misleading ground-line rule. The
 `unit-art-placement` skill (`.claude/skills/`) walks through a new or re-packed unit.
 
-Proven 2026-09-26: the launcher places a unit's box at the unit's centre and ignores
+The launcher places a unit's box at the unit's centre and ignores
 `CenterCoordY` and `Altitude` for it, alone or together (as it ignores them for buildings,
 contract 7); only `DimensionX/Y` is ours. The airborne Jumpjet's lifted `CenterCoordY` does move
 its box, but that path is infantry in flight and does not carry over to a ground vehicle. Buildings differ: see contract 7, where the box is the
 plot's and the art must be seated on the plot.
 
-## 16. Growing a unit's frame count doesn't add its tiles (2026-09-27)
+## 16. Growing a unit's frame count doesn't add its tiles
 
 `ts_pack_infantry.patch_tileset` skips a unit already in `RA_UNITS.XML` ("already in, left as
 is"), so repacking a unit with more frames leaves the new shapes without a `<Tile>` entry and
 they draw as white boxes. After adding frames, add the new `<Tile>` entries by hand (or remove
 the unit's old block first so the helper writes them all), and grow the classic stub in
-`build_tfassets.sh` to the same count, then rebuild TFASSETS.MIX (contract 12). Hit twice on
-2026-09-27 splitting the Hover MLRS (64 -> 96) and Limpet Drone (10 -> 20) shadows.
+`build_tfassets.sh` to the same count, then rebuild TFASSETS.MIX (contract 12). Splitting the
+Hover MLRS (64 -> 96) and Limpet Drone (10 -> 20) shadows hit this twice.
 
-## House quality policy for TS-sourced assets (Luke, 2026-07-20)
+## House quality policy for TS-sourced assets
 
 **Every unit, building, and weapon pulled from Tiberian Sun ships at the
 highest quality the pipeline can produce.** Concretely:
@@ -313,7 +312,7 @@ highest quality the pipeline can produce.** Concretely:
 - **Launcher alpha cutoff ~128:** sprite pixels below roughly half alpha are
   discarded — soft low-alpha shadows render as nothing; bake shadows
   mostly-solid (~135+).
-- **⭐ THE SHADOW CONVENTION (measured off EA's art 2026-08-20, `ts_reshadow.py`).**
+- **THE SHADOW CONVENTION (measured off EA's art, `ts_reshadow.py`).**
   Ground units get NO engine shadow — the DLL only shadows things in the air
   (`bullet.cpp:848`, `IsShadow` → `DisplayClass::UnitShadow`). Every ground
   shadow is baked into the sprite, EA's included. Fitting a shifted copy of the
@@ -321,7 +320,7 @@ highest quality the pipeline can produce.** Concretely:
   whole TD vehicle set, so EA bakes an offset silhouette exactly like we do.
   Their tuning, measured off the BASE GAME's own art (`TEXTURES_RA_SRGB.MEG`:
   2TNK/3TNK/MCV/JEEP) and independently confirmed against the **TD Medium Tank,
-  which is Luke's reference unit** — RA and TD share one convention:
+  the reference unit** — RA and TD share one convention:
   **dx = 0.028 × body width, dy = 0.120 × body width, alpha 191.**
   ⚠ A first pass used means taken off our repacked TD art (0.042 / 0.138) and
   the in-game verdict was "way over done" on every ground unit. **Alpha was
@@ -330,8 +329,8 @@ highest quality the pipeline can produce.** Concretely:
   visible shadow band inflates in proportion. Measure against base-game art,
   not against our own ports.
   **Exception, `OFFSET_OVERRIDE`: the Hover MLRS keeps the longer (5,17)
-  throw** — Luke passed it at the TD-derived numbers while rejecting every
-  ground unit, and it is the roster's only true hover unit, so a shadow thrown
+  throw**: it passed at the TD-derived numbers when every ground unit failed,
+  and it is the roster's only true hover unit, so a shadow thrown
   further than a ground hull's reads as float rather than as error.
   Both offsets scale off **WIDTH, never height** — width tracks the ground
   footprint, height also carries how tall the thing stands, and height-scaling
@@ -364,9 +363,10 @@ highest quality the pipeline can produce.** Concretely:
   `WalkFacings × WalkFrames`. Per-unit camera elevation is a legitimate dial
   (`vxl_render.py --elev` — the Mk. II renders at 35° for its TS stance vs the
   54° house camera).
-- **⭐ VOXEL RENDER LEDGER (2026-08-18 — keep this current; its absence cost
-  an evening).** RA/TD Remastered HD unit sprites match a **~32° camera**
-  (Luke's pick, commit 51469c8c: "the 54-degree default read top-down"), so
+- **Voxel turreted units** lay out hull frames 0-31 and turret 32-63 (TS4TNK, R2APOC, R2PRIS,
+  TSSONIC); the layout lives in their pack scripts.
+- **VOXEL RENDER LEDGER (keep this current).** RA/TD Remastered HD unit sprites match a
+  **~32° camera** (the 54° default read top-down, commit 51469c8c), so
   EVERY ground-vehicle voxel renders at `--elev 32`; the vxl_render default
   is 54 and reads alien next to RA art. Current renders, all
   `--px-per-voxel 12 --team-green 0,200,0 --elev 32`:
@@ -386,50 +386,5 @@ highest quality the pipeline can produce.** Concretely:
   re-extractable from TIBSUN.MIX LOCAL.MIX via tools/ts_extract.py.
   Frame-0 convention: yaw0 90 ⇒ frame 0 = N advancing CCW (zip-native);
   yaw0 0 ⇒ E-start, needs the wave's +8 face_fix.
-- **Audio policy (Luke, 2026-07-20): every TS unit ships its AUTHENTIC TS
-  sounds** — weapon reports, and eventually voices — via the dormant-sample
-  recipe (`td-audio-routing-recipe.md` + the HOVRMIS1 trap notes).
-- **Dormant-sample audio hosts — ~176 slots, count needs a re-census**
-  (2026-07-20: 221 TD-side samples in SFX3D.MEG, 47 referenced by RA-side
-  events; the true free count is lower because that census missed
-  GUI-referenced samples — see the rule below).
-  Rule: a TD?_SFX_* sample is a valid host iff no RAC_/RAR_ **and no
-  SFX_GUI_*** event in our shipped SFXEVENTSNONLOCALIZED.XML references it —
-  TDC_/TDR_-named events only fire in TD game context, never in our mod, but
-  GUI events are game-agnostic and DO fire in RA mode (proven 2026-07-22:
-  SFX_GUI_Generic_Bad_Sound plays SCOLD1, which the RAC_/RAR_-only census had
-  marked dormant). ⭐ **THE DORMANT-HOST CONSTRAINT IS FALSIFIED (2026-08-31,
-  controlled live probe): NOVEL sample names RESOLVE from loose files.** A
-  novel-named copy of known-good bytes played on the EVA channel
-  (RAR_SFX_TDCONSTRU1 → "TSEVA_PROBE2_EN-US.MP3" → loose file, played), and a
-  same-name loose override of a localized sample played in the same run. Every
-  historical "novel name" failure was file FORMAT: the old crash was plain-PCM
-  hitting the ADPCM math (EIP 0x400000+0xAB5E69), and two 08-30 probes failed
-  as an actual MP3 / wrong-shape WAV. **The real rules: (1) format must be
-  MS-ADPCM WAV (the localized "MP3" entries are a lie — MEG members are
-  ADPCM WAVs, e.g. EVA lines stereo 44077 Hz align 140; SFX 22050 mono align
-  1024); (2) localized samples live under a locale dir (Data/AUDIO/EN-US/) and
-  the XML .MP3 extension maps to a .WAV member; (3) bad format fails silent or
-  crashes — md5+fmt-check files against a base sample of the same channel.**
-  Dormant hosts are now just a legacy technique (the 6 shipped ones keep
-  working); new audio ships under its OWN names. **END-TO-END PROVEN
-  2026-08-31: an actual TS EVA line played in-game** — TIBSUN.MIX SPEECH01.MIX
-  `00-I018.AUD` → ts_aud_decode.py → `ffmpeg -ac 2 -ar 44077 -c:a adpcm_ms`
-  (default align 1024 IS accepted on the EVA channel) → loose novel name →
-  localized event repoint. **PROVEN ON BOTH CHANNELS**: localized/EVA (TS EVA
-  line in-game) AND nonlocalized weapon-SFX (2026-08-31: MGUN2 repointed at a
-  novel-named 22050-mono MS-ADPCM WAV played on every minigunner shot). No
-  caveats remain — the dormant-host constraint is fully dead. Probe
-  side-lesson: never probe audio via the launcher-fired credit tick (any loose
-  override silences it — bad vehicle).
-  Used so far: `BONUS_UNLOCK` (hover missile), `DINOATK1` (railgun),
-  `DINODIE1` (Mk. II tusks), `DINOMOUT` (Titan 120mm), `DINOYES` (dropship
-  landing DROPDWN1), `STRUGGLE` (dropship takeoff DROPUP1).
-  ⚠ **The override WAV must be MS-ADPCM (fmt tag 2, like every TD?_SFX_ host
-  sample), NOT plain PCM.** A PCM (tag 1) override CRASHES ClientG with an
-  integer divide-by-zero in its audio path (deterministic, ClientG+0xAB5E69;
-  two live crashes 2026-08-13, `RAR_SFX_DROPUP1` on the crash stack) — the
-  client runs ADPCM block math against the file's header. Encode with
-  `ffmpeg -c:a adpcm_ms -ar 22050 -ac 1`. One host per sound;
-  prefer clearly TD-gameplay names over generic UI-ish ones (BUTTON, BLEEP)
-  as extra insurance. Census one-liner lives in the git history of this doc.
+- **Audio:** every TS unit ships its authentic TS sounds (weapon reports, and voices in time), under
+  their own sample names; the format rules are in `td-audio-routing-recipe.md`.

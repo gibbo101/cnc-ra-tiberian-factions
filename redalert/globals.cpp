@@ -36,7 +36,7 @@
 bool IsVQ640 = false;
 unsigned int GameVersion = 0;
 
-// Tiberian Factions -- see externs.h; set per-scenario in DisplayClass::Read_INI.
+// TF: scenario and game-mode flags, described in externs.h.
 bool TF_TDWinterMap = false;
 bool TF_UnholyAlliance = false;
 bool Debug_MotionCapture = false;
@@ -211,11 +211,8 @@ PKey SlowKey;
 /***************************************************************************
 **	This is where the name overrides for the units will reside.
 */
-// Tiberian Factions: enlarged from EA's stock 25 — every TD building/unit
-// ships a rules.ini Name= HD-display override, and the rules.ini+aftermath.ini
-// double-pass plus dedup-by-id (techno.cpp) means each type now claims exactly
-// one slot. 25 was exhausted at ~26 overrides and overflowed into a NULL
-// OverrideDisplayName that crashed the launcher (std::string from NULL char*).
+// TF: one slot per type with a rules.ini Name= override; a type that finds no free slot keeps its
+// stock name.
 char const* NameOverride[128];
 int NameIDOverride[128];
 #endif

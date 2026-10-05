@@ -1885,7 +1885,7 @@
 	</ObjectTypeClass>
 
 	<!-- v4.0 GDI surface fleet (separated clones of the Allied PT/DD/CA). Reuse the RA cameos
-	     until item 4 renders bespoke GDI ship cameos. See docs/naval-art-3d-pipeline-handover.md. -->
+	     until item 4 renders bespoke GDI ship cameos. See docs/naval-and-air-units.md. -->
 	<ObjectTypeClass Name="RA_TDPT" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TDPT</ObjectNameTextID>

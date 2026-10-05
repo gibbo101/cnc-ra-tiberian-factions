@@ -130,14 +130,8 @@ BulletClass::BulletClass(BulletType id,
 static UnitType const _mech_division[] = {UNIT_TSTITN, UNIT_TSTITN, UNIT_TSTITN, UNIT_TSSMEC, UNIT_TSSMEC};
 int const MECH_DIVISION_COUNT = (int)(sizeof(_mech_division) / sizeof(_mech_division[0]));
 
-/***********************************************************************************************
- * BulletClass::TF_Disembark -- One unit steps out from under the landed dropship.             *
- *                                                                                             *
- *    Spawns one unit of the given type at the ship's exit point (the north edge of the       *
- *    front cell, tucked under the hull) and walks it clear -- to the bay's rally point if     *
- *    one is set, else a couple of rows out from the ramp. Used by the paced Mech Division     *
- *    unload and by the destructor backstop.                                                  *
- *=============================================================================================*/
+// Spawns one unit at the landed dropship's exit, under the hull on the bay's front row, and walks it to the bay's
+// rally point or two rows clear. The paced Mech Division unload and Deliver_Cargo both use it.
 void BulletClass::TF_Disembark(HouseClass* owner, UnitType type)
 {
     if (owner == NULL) {
@@ -152,13 +146,6 @@ void BulletClass::TF_Disembark(HouseClass* owner, UnitType type)
     BuildingClass* deck = Map[wcell].Cell_Building();
     COORDINATE spot = Coord;
     if (deck != NULL && *deck == STRUCT_TSDROP) {
-        /*
-        **	The bib row -- the plot's own bottom row, walkable since the
-        **	blocking footprint is only the deck's 3x2 -- one row south of the
-        **	foundation centre, biased to its north edge so the unit appears
-        **	tucked under the ship's hull ON the concrete, not on the snow
-        **	beyond it (Luke, 2026-08-13).
-        */
         CELL front = (CELL)(Coord_Cell(deck->Center_Coord()) + MAP_CELL_W);
         spot = Coord_Move(Cell_Coord(front), DIR_N, 0x0060);
     }
@@ -176,16 +163,8 @@ void BulletClass::TF_Disembark(HouseClass* owner, UnitType type)
     }
 }
 
-/***********************************************************************************************
- * BulletClass::Deliver_Cargo -- Sets a dropship pod's cargo down beside its bay.              *
- *                                                                                             *
- *    The cargo is set down at the deck's front edge, one row south of the pad, as if it      *
- *    rolled off -- the war factory arrangement, whose exit row is likewise outside its       *
- *    occupy list. It is NOT set down on the deck itself: a unit standing on building-        *
- *    occupied cells renders under the building's sprite and cannot path off them at all      *
- *    (proven in play 2026-08-12 -- manual orders can't rescue it). Safe to call more than    *
- *    once; the first delivery takes the cargo and the rest are no-ops.                       *
- *=============================================================================================*/
+// Sets a dropship pod's cargo down on the bay's front row and walks it clear; never on the deck, as a unit on
+// building cells can't path off them. Safe to call more than once: only the first call delivers.
 void BulletClass::Deliver_Cargo(void)
 {
     if (Payback == NULL || Payback->What_Am_I() != RTTI_UNIT || !Payback->IsInLimbo) {
@@ -200,23 +179,11 @@ void BulletClass::Deliver_Cargo(void)
     CELL wcell = Coord_Cell(where);
     BuildingClass* deck = Map[wcell].Cell_Building();
     if (deck != NULL && *deck == STRUCT_TSDROP) {
-        /*
-        **	The bib row's north edge, tucked under the hull: the plot's bottom
-        **	row is walkable (blocking footprint is the deck's 3x2 only), so the
-        **	cargo appears ON the concrete, and the ship's south-biased sort
-        **	draws the hull over the emerging walker (mirrors TF_Disembark).
-        */
         CELL front = (CELL)(Coord_Cell(deck->Center_Coord()) + MAP_CELL_W);
         where = Coord_Move(Cell_Coord(front), DIR_N, 0x0060);
     }
-    /*
-    **	The Mech Division token is an ORDER, not a unit: it converts into the
-    **	group it stands for. The paced unload in the AI dwell normally walks
-    **	the members out one at a time; this path is the backstop for a pod
-    **	destroyed early, so it disembarks whatever REMAINS (TFUnloaded keeps
-    **	the two paths from double-delivering). The token itself is consumed --
-    **	it must never reach the map.
-    */
+    // The Mech Division token is an order, never a unit: it must not reach the map. TFUnloaded stops this backstop
+    // and the paced unload in AI from delivering a member twice.
     if (cargo->Class->Type == UNIT_TSMDIV) {
         delete cargo;
         cargo = NULL;
@@ -234,13 +201,6 @@ void BulletClass::Deliver_Cargo(void)
         where = Cell_Coord(Map.Nearby_Location(Coord_Cell(where), cargo->Class->Speed));
     }
     if (cargo->Unlimbo(where, DIR_S)) {
-        /*
-        **	It steps out from under the ship and walks clear, the way a unit
-        **	leaves a transport: the appear cell sits beneath the dropship's
-        **	overhang, so standing pat read as the ship having parked on it.
-        **	The bay is a real factory, so a rally point set on it wins; the
-        **	fallback walk is a couple of rows out from the ramp.
-        */
         if (deck == NULL || !deck->Rally_Unit(*static_cast<TechnoClass*>(cargo))) {
             CELL clear = Map.Nearby_Location((CELL)(Coord_Cell(where) + MAP_CELL_W * 2), cargo->Class->Speed);
             cargo->Assign_Destination(::As_Target(clear));
@@ -251,13 +211,6 @@ void BulletClass::Deliver_Cargo(void)
         cargo = NULL;
     }
 
-    /*
-    **	The cooldown normally starts at pod launch (building.cpp, the Exit_Object
-    **	case) so the order window closes while the pod is still falling. This is
-    **	the backstop for any pod that existed without that site running: only arm
-    **	if no countdown is already live, because resetting here would snap a
-    **	running countdown back up to 5:00.
-    */
     if (owner != NULL && owner->TFDropBayTimer == 0) {
         owner->TFDropBayTimer = HouseClass::TF_DROPBAY_COOLDOWN;
     }
@@ -267,13 +220,8 @@ BulletClass::~BulletClass(void)
 {
     if (GameActive) {
 
-        /*
-        **	A dropship bay's cargo rides the pod in limbo, the same way the dog rides
-        **	its bullet. The normal unload happens mid-dwell in the AI stage machine;
-        **	this is the backstop, so that EVERY path which destroys the pod delivers
-        **	the cargo -- a pod removed for any other reason would otherwise strand a
-        **	vehicle in limbo, owned and paid for but permanently absent.
-        */
+        // TF: a dropship pod's cargo rides it in limbo, as the dog rides its bullet. Delivering it here means no way of
+        // destroying the pod strands the vehicle in limbo.
         if (*this == BULLET_TSDROPPOD) {
             Deliver_Cargo();
         }
@@ -300,11 +248,7 @@ BulletClass::~BulletClass(void)
                     newcoord = Map.Nearby_Location(Coord_Cell(newcoord), dog->Class->Speed);
                 }
 
-                /*
-                **	Attack-move (CFE port): unlimboing the dog runs Enter_Idle_Mode,
-                **	which would drop it out of attack-move. Save the state now and
-                **	restore it after the dog is back on the map.
-                */
+                // TF: unlimboing the dog runs Enter_Idle_Mode, which drops attack-move (CFE port); restored below.
                 unsigned int resumeattackmove = dog->AttackMove;
                 TARGET resumerememberednavcom = dog->RememberedNavCom;
 
@@ -329,7 +273,7 @@ BulletClass::~BulletClass(void)
                         ScenarioInit--;
 
                         unlimbo = true;
-                        // Attack-move (CFE port): restore the dog into attack-move.
+                        // TF: restore the dog's attack-move (CFE port).
                         if (resumeattackmove) {
                             dog->AttackMove = 1;
                             dog->RememberedNavCom = resumerememberednavcom;
@@ -523,11 +467,7 @@ static InfantryClass* TF_Airborne_Jumpjet(TARGET target)
     return (NULL);
 }
 
-/*
-**	TS's constants for the Disc Thrower's disc: [General] Gravity=6 halved for a Floater,
-**	BulletTypeClass's default Elasticity, and the band above the ground inside which a
-**	ballistic shot strikes a building, a wall or (once skipping) a cliff.
-*/
+// The Disc Thrower's disc falls at TS's [General] Gravity=6, halved for a Floater.
 static double const TS_FLOATER_GRAVITY = 3.0;
 
 /*
@@ -535,15 +475,14 @@ static double const TS_FLOATER_GRAVITY = 3.0;
 **	the range over which the artillery warhead still does most of its damage.
 */
 static int const TS_JUGG_SCATTER = 85;
+
+// TS's BulletTypeClass default Elasticity for the disc's bounce, and the band above the ground in which a ballistic
+// shot strikes a building, a wall or (once skipping) a cliff.
 static double const TS_DISC_ELASTICITY = 0.75;
 static int const TS_OBSTACLE_BAND = 150;
 
-/*
-**	TS's firing solution for a lobbed shot (OpenTS combat.cpp Calculate_Projectile_Angle): the
-**	launch angle that carries a shot at this speed, under this gravity, across a horizontal
-**	distance to a height difference. A reachable aim point has a flat and a lobbed answer;
-**	high_arc picks the lobbed one. Returns whether any answer exists.
-*/
+// TS's launch angle for a lobbed shot at this speed and gravity across a distance to a height difference (OpenTS
+// combat.cpp Calculate_Projectile_Angle). high_arc picks the lobbed answer over the flat one; false when none exists.
 static bool TS_Projectile_Angle(bool high_arc, double speed, double distance, double height, double gravity, double& angle)
 {
     double dx2 = (distance < 1.0) ? 1.0 : distance * distance;
@@ -563,20 +502,10 @@ static bool TS_Projectile_Angle(bool high_arc, double speed, double distance, do
     return (true);
 }
 
-/*
-**	Launches the Disc Thrower's disc as TS throws [Lobbed] (OpenTS TechnoClass::Fire_At). It
-**	leaves the thrower's hand at his fire height, aimed where the target will be: a moving
-**	vehicle is led by the ground it covers while the disc is in the air (Predict_Target_Coord).
-**	The launch speed carries the weapon's full range under the Floater's half gravity, capped
-**	at half the distance to the aim point, and the flat arc that lands on the aim point sets
-**	the angle. Returns false, throwing nothing, when no arc reaches the aim point.
-*/
+// Throws the Disc Thrower's disc as TS throws [Lobbed] (OpenTS TechnoClass::Fire_At), leading a moving vehicle by
+// the ground it covers in flight. Returns false, throwing nothing, when no arc reaches the aim point.
 bool BulletClass::TS_Disc_Launch(COORDINATE coord)
 {
-    /*
-    **	RA's fire coordinate carries the hand height as a northward shift; the disc starts on
-    **	the ground beneath that point, at that height.
-    */
     int lift = 0;
     int range = CELL_LEPTON_W * 9 / 2;
     if (Payback != NULL) {
@@ -622,10 +551,6 @@ bool BulletClass::TS_Disc_Launch(COORDINATE coord)
         speed = (int)(length / 2);
     }
 
-    /*
-    **	The lobbed arc is taken only for an aim point higher than it is far away; the flat
-    **	answer can point downwards, which a second solve a lepton further out reveals.
-    */
     bool high = (dz > 0.0 && planar < dz);
     double angle = 0.0;
     if (speed <= 0 || !TS_Projectile_Angle(high, speed, planar, dz, TS_FLOATER_GRAVITY, angle)) {
@@ -662,18 +587,8 @@ bool BulletClass::TS_Disc_Launch(COORDINATE coord)
     return (true);
 }
 
-/*
-**	Flies the Disc Thrower's disc on TS's ballistic step for a Bouncy Floater (OpenTS
-**	BulletClass::AI, the unguided branch). Each frame half gravity pulls it down and it moves
-**	by its velocity. Flying under the obstacle band into a non-allied building or a wall
-**	strikes it. Striking the ground or an obstacle bounces it back at three quarters of its
-**	speed, unless an enemy stands in the cell it came from, the landing cell is water or a
-**	cliff, or it has touched down three times; any of those sets it off. Once it has skipped,
-**	flying low over a cliff sets it off too, though a first throw clears cliffs. In flight it
-**	goes off on any enemy within half a cell of it, and it goes off where it lies once it has
-**	slowed to a crawl near the ground. A disc that lands on someone near its target goes off
-**	on the target, as TS nudges a collision onto its victim.
-*/
+// Flies the Disc Thrower's disc on TS's ballistic step for a Bouncy Floater (OpenTS BulletClass::AI). It bounces at
+// three quarters speed and goes off on an enemy, water, a cliff, its third touchdown, or once it slows to a crawl.
 void BulletClass::TS_Disc_AI(void)
 {
     ObjectClass::AI();
@@ -690,9 +605,6 @@ void BulletClass::TS_Disc_AI(void)
     double y = TFPosY + TFVelY;
     double z = TFPosZ + TFVelZ;
 
-    /*
-    **	A disc thrown off the edge of the map vanishes.
-    */
     double const edge = (double)(MAP_CELL_W * CELL_LEPTON_W);
     if (x < 0.0 || y < 0.0 || x >= edge || y >= edge || !Map.In_Radar(Coord_Cell(XY_Coord((int)x, (int)y)))) {
         Mark();
@@ -816,22 +728,13 @@ void BulletClass::AI(void)
     assert(Bullets.ID(this) == ID);
     assert(IsActive);
 
-    /*
-    **	Tiberian Factions mod: TD-ported bullets run TD's verbatim AI body via
-    **	AI_TD(). No RA logic for TD entities per [[project-td-port-architecture]].
-    */
-    /*
-    **	The TS SAM missile trails SMOKEY2 puffs (TS art.ini [DRAGON] Trailer=SMOKEY2), each
-    **	drawn where the missile appears: screen-up is map-north, so it sits north by its height.
-    */
+    // TF: the TS SAM missile trails SMOKEY2 puffs (TS art.ini [DRAGON] Trailer=SMOKEY2), each drawn where the
+    // missile appears: screen-up is map-north, so it sits north by its height.
     if (*this == BULLET_TSAAHEATSEEKER && !IsInLimbo && (Frame % 3) == 0) {
         new AnimClass(ANIM_TS_SMOKEY2, Coord_Move(Coord, DIR_N, Height));
     }
 
-    /*
-    **	A projectile flying into a live Firestorm is consumed by it, unless the field is its
-    **	shooter's own (TS).
-    */
+    // TF: a projectile flying into a live Firestorm is consumed by it, unless the field is its shooter's own (TS).
     if (!IsInLimbo) {
         BuildingClass* wall = TF_Firestorm_Wall_At(Coord_Cell(Coord), Payback != NULL ? Payback->House : NULL);
         if (wall != NULL) {
@@ -841,6 +744,7 @@ void BulletClass::AI(void)
         }
     }
 
+    // TF: TD-ported bullets run TD's own AI, and the Disc Thrower's disc flies its own ballistic step.
     if (Class->IsTDPort) {
         AI_TD();
         return;
@@ -851,26 +755,10 @@ void BulletClass::AI(void)
         return;
     }
 
-    /*
-    **	TF: TS fire-stream particle (OpenTS ParticleClass::Fire_Behavior_AI). The sprite
-    **	ages one state every 6 frames and dies at state 19; while the state is at or
-    **	below 14 it burns everything sharing its cell every 3 frames (Strength is the
-    **	per-burn damage). Once it reaches its target it stops flying and burns out in
-    **	place instead of exploding.
-    */
+    // TF: TS fire-stream particle (OpenTS ParticleClass::Fire_Behavior_AI): it ages a state every TFDwell frames,
+    // burns its cell every 3 frames up to state 14 and dies at 19. At its target it burns out instead of exploding.
     if (*this == BULLET_TSFIRE) {
-        /*
-        **	TS Normalized particle: the state-advance is sized so the particle reaches its
-        **	target at the final damage state (14) and dies five states later, so the burn
-        **	stops at arrival and the flame fades about a third of its flight beyond it.
-        */
         if (TFDwell <= 0) {
-            /*
-            **	Backstop only -- the stream spawner sizes the dwell at launch. A
-            **	particle reaching this with its target already dead must fade at the
-            **	minimum rate: As_Coord on a dead target is the map origin, and
-            **	measuring against that handed the flame a cross-map lifetime.
-            */
             if (!Target_Legal(TarCom)) {
                 TFDwell = 1;
             } else {
@@ -885,12 +773,8 @@ void BulletClass::AI(void)
             return;
         }
         if ((TFStage % 3) == 0 && state <= 14) {
-            /*
-            **	A burn can kill its target, and a death can take neighbours with it, so the
-            **	cell chain is re-read from the cell after every kill rather than walked
-            **	through a saved Next pointer. Objects already burnt this tick are remembered
-            **	so the re-read never burns one twice.
-            */
+            // A burn can kill, and a death can take neighbours with it, so the cell chain is re-read after every kill,
+            // never walked through a saved Next pointer. burnt[] keeps the re-read from burning anything twice.
             ObjectClass* burnt[16];
             int nburnt = 0;
             bool again = true;
@@ -911,14 +795,6 @@ void BulletClass::AI(void)
                     if (nburnt < 16) {
                         burnt[nburnt++] = optr;
                     }
-                    /*
-                    **	TS Modify_Damage, verbatim (OpenTS combat.cpp): distance is particle-to-centre
-                    **	leptons / 10, scaled by SpreadFactor * (PIXEL_LEPTON_W / 3) with TS's 48px
-                    **	cells (5 leptons per pixel -> x1), clamped to 16; the modified damage is
-                    **	floored to 1 first, divided by the scaled distance, and only inside 4
-                    **	(320 leptons) does MinDamage apply. RA's 24px cells would scale the same
-                    **	formula by 400 instead of 80, so it is computed here and delivered unscaled.
-                    */
                     WarheadTypeClass const* wh = WarheadTypeClass::As_Pointer(Warhead);
                     int dist = ::Distance(Coord, optr->Center_Coord()) / 10;
                     int modified = Strength * wh->Modifier[optr->Class_Of().Armor];
@@ -970,13 +846,8 @@ void BulletClass::AI(void)
         Mark(MARK_CHANGE);
     }
 
-    /*
-    **	The dropship-bay pod flies a VTOL profile, not a ballistic one: straight
-    **	down over the deck, a beat on the ground while the cargo rolls out,
-    **	straight up and gone. There is no map-space motion at all, so the shadow
-    **	never leaves the pad -- the whole sequence is Height against a fixed
-    **	Coord, which also means the fuse and Physics never run for this bullet.
-    */
+    // TF: the dropship-bay pod flies a VTOL profile over a fixed Coord: down onto the deck, a dwell while the cargo
+    // rolls out, then straight up and gone. The fuse and Physics never run for it.
     if (*this == BULLET_TSDROPPOD) {
         ObjectClass::AI();
         if (!IsActive) {
@@ -986,11 +857,6 @@ void BulletClass::AI(void)
         LayerType layer = In_Which_Layer();
         switch (TFStage) {
         case 0:
-            /*
-            **	Descending: fast from altitude, flaring out near the deck.
-            **	Height/20 with a floor of 3 runs ~6.5 s from the ceiling --
-            **	eased from /16 on Luke's call (2026-08-13).
-            */
             if (Height > 3) {
                 Height -= max(3, Height / 20);
             } else {
@@ -1002,11 +868,6 @@ void BulletClass::AI(void)
             break;
 
         case 1: {
-            /*
-            **	On the deck. A single cargo rolls out mid-dwell; the Mech
-            **	Division walks out one member at a time, naval-transport
-            **	cadence (Luke, 2026-08-12), the token consumed with the last.
-            */
             TFDwell--;
             bool group = (Payback != NULL && Payback->What_Am_I() == RTTI_UNIT
                           && ((UnitClass*)Payback)->Class->Type == UNIT_TSMDIV);
@@ -1032,12 +893,6 @@ void BulletClass::AI(void)
         }
 
         default:
-            /*
-            **	Departing: climb until out of the scene, then vanish -- twice the
-            **	spawn altitude, so the exit reads as a long pull away rather than
-            **	a pop. The cargo went out mid-dwell, so the destructor's backstop
-            **	is a no-op.
-            */
             Height += max(8, Height / 12);
             if (Height >= TF_POD_DEPART_CEILING) {
                 delete this;
@@ -1052,28 +907,8 @@ void BulletClass::AI(void)
         return;
     }
 
-    /*
-    **	The infantry drop pod streaks in along TS's fixed ~45-degree approach
-    **	(DropPodAngle 0.79): equal horizontal and vertical speed, so it spawns
-    **	one drop-height sideways from the LZ and arrives exactly as it grounds.
-    **	OpenTS droppod.cpp Process(), ported onto the bullet frame: SMOKEY
-    **	puffs trail the fall, the LZ takes doubled Vulcan2 fire while a
-    **	non-ally holds it, and touchdown spawns the trooper, the husk mark and
-    **	the DROPEXP puff -- or a C4-grade blast when the cell won't take the
-    **	trooper. Like the dropship, it returns before the ballistic code, so
-    **	the fuse and Physics never run.
-    */
-    /*
-    **	TS Hunter Seeker droid (SPC_TS_HUNTSEEK). A self-guided kamikaze on the
-    **	bullet frame -- the bullet's own AI deletes it cleanly, which the
-    **	aircraft attempt could not. It flies at altitude toward a random enemy
-    **	the granting house's picker chose (re-acquiring if that victim dies) and
-    **	detonates on contact: the target takes a forced lethal hit, a tight
-    **	splash lands, and the droid removes itself. Being airborne it is never
-    **	in the impact cell's occupier list, so a target's own death-explosion
-    **	(an explosive harvester) can never reach it. TFPodHouse carries the
-    **	firing house; TarCom is the current victim.
-    */
+    // TF: BULLET_TSHUNTER homes on a random enemy from TF_Hunter_Seeker_Acquire, re-acquiring when its victim dies,
+    // and kills it on contact. TFPodHouse carries the firing house.
     if (*this == BULLET_TSHUNTER) {
         ObjectClass::AI();
         if (!IsActive) {
@@ -1122,6 +957,8 @@ void BulletClass::AI(void)
         return;
     }
 
+    // TF: the infantry drop pod (OpenTS droppod.cpp) streaks in at TS's 45-degree DropPodAngle, strafing a held LZ,
+    // and lands its trooper, or blasts the cell when the trooper can't land. The fuse and Physics never run for it.
     if (*this == BULLET_TSPODDROP) {
         ObjectClass::AI();
         if (!IsActive) {
@@ -1137,10 +974,6 @@ void BulletClass::AI(void)
             Height -= TF_POD_FALL_SPEED;
             Coord = Coord_Move(Coord, TFPodApproach, TF_POD_FALL_SPEED);
 
-            /*
-            **	The trail draws where the pod APPEARS: screen-up is map-north,
-            **	so the puff's coord is the pod shifted north by its altitude.
-            */
             if (TFDwell % 6 == 0) {
                 new AnimClass(ANIM_TS_SMOKEY, Coord_Move(Coord, DIR_N, Height));
             }
@@ -1189,11 +1022,8 @@ void BulletClass::AI(void)
     if (!IsActive)
         return;
 
-    /*
-    **	The TS SAM missile climbs from the muzzle to flight level, rising half as fast
-    **	as it flies. Its map layer follows the height so Limbo removes it from the
-    **	right list.
-    */
+    // TF: the TS SAM missile climbs from the muzzle to flight level, rising half as fast as it flies. Its layer
+    // follows its height so Limbo removes it from the right list.
     if (*this == BULLET_TSAAHEATSEEKER && Height < FLIGHT_LEVEL) {
         LayerType layer = In_Which_Layer();
         Height = min(Height + max((int)MaxSpeed / 2, 16), (int)FLIGHT_LEVEL);
@@ -1335,10 +1165,7 @@ void BulletClass::AI(void)
         **	maintenance (usually nothing). Otherwise, explode and then
         **	delete the bullet.
         */
-        /*
-        **	The Juggernaut's shell and the EMP pulse ball have no proximity fuse: only the end of
-        **	the arc brings them down.
-        */
+        // TF: the Juggernaut shell and the EMP pulse ball have no proximity fuse: only the arc's end brings them down.
         if (!forced
             && (Class->IsDropping || *this == BULLET_TSBALLISTIC2 || *this == BULLET_TSPULSBALL || !Fuse_Checkup(Coord))) {
             /*
@@ -1349,7 +1176,7 @@ void BulletClass::AI(void)
             }
 
         } else if (*this == BULLET_TSFIRE) {
-            // A fire particle passes through its target; its state, not the fuse, ends it.
+            // TF: a fire particle passes through its target; its state, not the fuse, ends it.
         } else {
             Bullet_Explodes(forced);
             delete this;
@@ -1376,9 +1203,7 @@ int BulletClass::Shape_Number(void) const
 {
     int shapenum = 0;
 
-    /*
-    **	TF: FLAMEALL is 4 axis sets (N/S, NE/SW, E/W, NW/SE) x 19 ageing states.
-    */
+    // TF: BULLET_TSHUNTER cycles 8 frames; FLAMEALL is 4 axis sets (N/S, NE/SW, E/W, NW/SE) x 19 ageing states.
     if (*this == BULLET_TSHUNTER) {
         return ((Frame / 3) & 7);
     }
@@ -1466,13 +1291,8 @@ void BulletClass::Draw_It(int x, int y, WindowNumberType window) const
                           NULL,
                           DisplayClass::UnitShadow);
         } else {
-            /*
-            **	The dropship's shadow grows as the ship sinks. The engine can't
-            **	scale at draw time -- a shadow is the body sprite redrawn dark --
-            **	so shapes 1..3 in TSDSHP.ZIP are the silhouette pre-scaled to
-            **	55/70/85%, bucketed by altitude; the full frame takes over for
-            **	the last stretch of the descent.
-            */
+            // TF: the dropship's shadow grows as it sinks. A shadow is the body sprite redrawn dark and can't scale, so
+            // TSDSHP shapes 1-3 are the silhouette pre-scaled to 55/70/85%, bucketed by height.
             int shadownum = shapenum;
             if (*this == BULLET_TSDROPPOD) {
                 if (Height > 960) {
@@ -1637,11 +1457,7 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
     }
 #endif
 
-    /*
-    **	Tiberian Factions mod: TD-ported bullets run TD's verbatim Unlimbo body
-    **	via Unlimbo_TD(). No RA logic for TD entities per
-    **	[[project-td-port-architecture]] (Option A).
-    */
+    // TF: TD-ported bullets run TD's own Unlimbo, and the Disc Thrower's disc launches on its own arc.
     if (Class->IsTDPort) {
         return (Unlimbo_TD(coord, dir));
     }
@@ -1653,9 +1469,9 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
     /*
     **	Try to unlimbo the bullet as far as the base class is concerned. Use the already
     **	set direction and strength if the "punt" values were passed in. This allows a bullet
-    **	to be setup prior to being launched. The TS SAM missile leaves the launcher at
-    **	the muzzle and climbs to flight level in AI.
+    **	to be setup prior to being launched.
     */
+    // TF: the TS SAM missile leaves the launcher at the muzzle and climbs to flight level in AI.
     if (!Class->IsHigh || *this == BULLET_TSAAHEATSEEKER) {
         Height = 0;
     }
@@ -1672,13 +1488,8 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
             dir = Direction(tcoord);
         }
 
-        /*
-        **	The Juggernaut's shell lands within TS_JUGG_SCATTER of its aim point, in any
-        **	direction, rolled afresh for every shot. The roll is the smaller of two, so the
-        **	cluster sits tight around the aim and a fair share of shells land dead on: damage
-        **	falls off as distance / (Spread * 5) leptons, so a shell a cell wide of its mark
-        **	scratches the paint.
-        */
+        // TF: the Juggernaut's shell lands within TS_JUGG_SCATTER of its aim point, rolled afresh each shot. The
+        // smaller of two rolls keeps the cluster tight, so a fair share of shells land dead on.
         if (*this == BULLET_TSBALLISTIC2) {
             int scatter = min(Random_Pick(0, TS_JUGG_SCATTER), Random_Pick(0, TS_JUGG_SCATTER));
             tcoord = Coord_Move(tcoord, (DirType)Random_Pick(0, 255), scatter);
@@ -1719,10 +1530,7 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
         **	location and dispense with the actual flight.
         */
         if (MaxSpeed == MPH_LIGHT_SPEED && Class->IsInvisible) {
-            /*
-            **	An instant shot stops at the first live Firestorm across its path, where the
-            **	field consumes it next frame (TS).
-            */
+            // TF: an instant shot stops at the first live Firestorm on its path, which consumes it next frame.
             COORDINATE wall = TF_Firestorm_On_Path(Coord, tcoord, Payback != NULL ? Payback->House : NULL);
             Coord = (wall != 0) ? wall : tcoord;
         }
@@ -1778,19 +1586,9 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
             Riser = ((Distance(tcoord) / 2) / (speed + 1)) * Rule.Gravity;
             Riser = max(Riser, 10);
 
-            /*
-            **	The Juggernaut's shell and the EMP Cannon's pulse ball land on the frame they reach
-            **	their aim point: the flight is cut into whole frames, the ground speed set so those
-            **	frames cover the range exactly, and the climb chosen so the arc comes down on the
-            **	last of them. The stock arithmetic above rounds the climb independently of the speed
-            **	and puts a fast shell down a constant half cell from where it was aimed.
-            */
+            // TF: the Juggernaut's shell and the EMP pulse ball fly the true distance to their aim in whole frames and
+            // land on the last. The stock arithmetic and ::Distance's diagonal overstatement would land them wide.
             if (*this == BULLET_TSBALLISTIC2 || *this == BULLET_TSPULSBALL) {
-                /*
-                **	The flight covers the true distance to the aim point. ::Distance() is the
-                **	cheap approximation (the bigger axis plus half the smaller), which overstates
-                **	a diagonal by up to an eighth and throws the shell that far beyond its aim.
-                */
                 double adx = (double)((int)Coord_X(tcoord) - (int)Coord_X(Coord));
                 double ady = (double)((int)Coord_Y(tcoord) - (int)Coord_Y(Coord));
                 int dist = (int)(sqrt(adx * adx + ady * ady) + 0.5);
@@ -1836,22 +1634,6 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
     return (false);
 }
 
-/***********************************************************************************************
- * BulletClass::Unlimbo_TD -- Verbatim TD port of BulletClass::Unlimbo.                        *
- *                                                                                             *
- *    Per [[project-td-port-architecture]] (Option A). Body ported from                        *
- *    reference/vanilla-conquer/tiberiandawn/bullet.cpp:631 line-for-line.                     *
- *    Engine-plumbing additions (Map.Remove/Submit, Height init, IsFalling) are RA-side        *
- *    requirements that don't exist in TD's engine — flagged inline.                            *
- *    Symbol renames vs TD source:                                                              *
- *      Class->Warhead          -> Class->ClassWarhead   (rename to avoid RA collision)         *
- *      Class->Range            -> Class->BulletRange    (rename to avoid weapon Range= collide) *
- *      Class->MaxSpeed         -> MaxSpeed              (RA stores per-instance, set at fire)  *
- *      Altitude                -> Height                 (RA's flight-altitude member)         *
- *      GRAVITY                 -> Rule.Gravity           (RA runtime-config'd gravity)         *
- *      MIN/MAX                 -> min/max                (RA uses std-style)                   *
- *      BULLET_GRENADE special  -> commented placeholder  (no TD grenade port yet)              *
- *=============================================================================================*/
 // Tiberian Factions diagnostic: TDSSM/TDLaser/TDAPDS flight-and-impact trace.
 // Open once, written by Unlimbo_TD (spawn) and AI_TD (per-frame + detonation).
 // Used 2026-05-22 to diagnose TDATWR close-range targeting (root cause: Speed
@@ -1877,6 +1659,8 @@ static void TF_OpenTDPortLog()
 #endif
 }
 
+// TD's BulletClass::Unlimbo, ported for TD-port bullets with RA's layer bookkeeping (docs/td-atwr-deep-dive.md).
+// IsFalling stays clear: AI_TD integrates the fall itself, and ObjectClass::AI would integrate it a second time.
 bool BulletClass::Unlimbo_TD(COORDINATE coord, DirType dir)
 {
     assert(Bullets.ID(this) == ID);
@@ -1884,40 +1668,23 @@ bool BulletClass::Unlimbo_TD(COORDINATE coord, DirType dir)
 
     TF_OpenTDPortLog();
 
-    // RA engine plumbing: Height bookkeeping (TD's ObjectClass::Unlimbo handles
-    // this internally; RA's doesn't, so initialise here for non-high bullets).
     if (!Class->IsHigh) {
         Height = 0;
     }
 
     if (ObjectClass::Unlimbo(coord)) {
-        Map.Remove(this, In_Which_Layer());  // RA engine plumbing.
+        Map.Remove(this, In_Which_Layer());
 
         COORDINATE tcoord = As_Coord(TarCom);
 
-        /*
-        **	Homing projectiles (missiles) do NOT override facing. They just fire in the
-        **	direction specified and let the chips fall where they may.
-        */
         if (!Class->IsHoming && !Class->IsDropping) {
             dir = Direction(tcoord);
         }
 
-        /*
-        **	Possibly adjust the target if this projectile is inaccurate. This occurs whenever
-        **	certain weapons are trained upon targets they were never designed to attack. Example:
-        **	when turrets or anti-tank missiles are fired at infantry. Indirect fire is
-        **	inherently inaccurate.
-        */
         if (IsInaccurate || Class->IsInaccurate
             || ((Is_Target_Cell(TarCom) || Is_Target_Infantry(TarCom))
                 && (Class->ClassWarhead == WARHEAD_AP || Class->IsFueled))) {
 
-            /*
-            **	Inaccuracy for low velocity or homing projectiles manifests itself as a standard
-            **	Circular Error of Probability (CEP) algorithm. High speed projectiles usually
-            **	just overshoot the target by extending the straight line flight.
-            */
             if (Class->IsHoming || Class->IsArcing) {
                 int scatterdist = ::Distance(coord, tcoord) / 3;
                 scatterdist = min(scatterdist, 0x0200);
@@ -1935,12 +1702,6 @@ bool BulletClass::Unlimbo_TD(COORDINATE coord, DirType dir)
                 tcoord = Coord_Move(tcoord, dir, Random_Pick(0, 0x0100));
             }
 
-            /*
-            **	Limit scatter to the weapon range of the firer. Without this, scatter
-            **	at close range can send the target outside the firer's weapon range and
-            **	the projectile flies off-target — the symptom Luke reported for TDATWR
-            **	failing to hit walls 1 cell away.
-            */
             if (Payback) {
                 if (!Payback->In_Range(tcoord, 0) && !Payback->In_Range(tcoord, 1)) {
                     tcoord = Coord_Move(tcoord,
@@ -1950,23 +1711,11 @@ bool BulletClass::Unlimbo_TD(COORDINATE coord, DirType dir)
             }
         }
 
-        /*
-        **	For very fast and invisible projectiles, just make the projectile exist at the
-        **	target location and dispense with the actual flight.
-        */
         if (MaxSpeed == MPH_LIGHT_SPEED && Class->IsInvisible) {
-            /*
-            **	An instant shot stops at the first live Firestorm across its path, where the
-            **	field consumes it next frame (TS).
-            */
             COORDINATE wall = TF_Firestorm_On_Path(Coord, tcoord, Payback != NULL ? Payback->House : NULL);
             Coord = (wall != 0) ? wall : tcoord;
         }
 
-        /*
-        **	Set the range equal to either the class defined range or the calculated
-        **	number of game frames it would take for the projectile to reach the target.
-        */
         int range = 0xFF;
         if (!Class->BulletRange) {
             if (!Class->IsDropping) {
@@ -1976,10 +1725,6 @@ bool BulletClass::Unlimbo_TD(COORDINATE coord, DirType dir)
             range = Class->BulletRange;
         }
 
-        /*
-        **	Projectile speed is usually the default value for that projectile, but
-        **	certain projectiles alter speed according to the distance to the target.
-        */
         int speed = MaxSpeed;
         if (speed == MPH_LIGHT_SPEED)
             speed = MPH_IMMOBILE;
@@ -1991,23 +1736,8 @@ bool BulletClass::Unlimbo_TD(COORDINATE coord, DirType dir)
             Fly_Speed(255, (MPHType)speed);
         }
 
-        /*
-        **	Arm the fuse.
-        */
         Arm_Fuse(Coord, tcoord, range, ((As_Aircraft(TarCom) != 0) ? 0 : Class->Arming));
 
-        /*
-        **	Projectiles that make a ballistic flight to impact point must determine a
-        **	vertical component for the projectile launch. Crude simulation: bias ground
-        **	speed by distance, then add vertical velocity to keep airborne for the
-        **	desired time. Uses TD's Height/Riser members (TD's Altitude == RA's Height).
-        **
-        **	IsFalling is deliberately left clear: AI_TD integrates the fall itself,
-        **	TD-verbatim (Riser per frame). Setting IsFalling would make ObjectClass::AI
-        **	integrate the same fall a second time each frame (at Rule.Gravity, not TD's
-        **	rate), so the projectile would descend far too fast. AI_TD keeps the map
-        **	layer registration in sync in place of the base falling logic.
-        */
         Riser = 0;
         if (Class->IsArcing) {
             Height = 1;
@@ -2025,7 +1755,7 @@ bool BulletClass::Unlimbo_TD(COORDINATE coord, DirType dir)
             }
         }
 
-        Map.Submit(this, In_Which_Layer());  // RA engine plumbing.
+        Map.Submit(this, In_Which_Layer());
 
         PrimaryFacing = dir;
 
@@ -2053,19 +1783,8 @@ bool BulletClass::Unlimbo_TD(COORDINATE coord, DirType dir)
     return (false);
 }
 
-/***********************************************************************************************
- * BulletClass::AI_TD -- Verbatim TD port of BulletClass::AI.                                  *
- *                                                                                             *
- *    Per [[project-td-port-architecture]] (Option A). Body ported from                        *
- *    reference/vanilla-conquer/tiberiandawn/bullet.cpp:293 line-for-line.                     *
- *    Symbol renames vs TD source:                                                              *
- *      Class->Warhead        -> Class->ClassWarhead                                            *
- *      Class->Explosion      -> Class->ImpactAnim                                              *
- *      Altitude              -> Height (RA's projectile altitude member)                       *
- *      GRAVITY               -> Rule.Gravity                                                    *
- *      BULLET_TOW            -> BULLET_SSM (our TDSSM is TD's TOW equivalent)                   *
- *      BULLET_BULLET branch  -> commented placeholder (no TD small-arms port yet)              *
- *=============================================================================================*/
+// TD's BulletClass::AI, ported for TD-port bullets (docs/td-atwr-deep-dive.md). It alone integrates their ballistic
+// fall: IsFalling stays clear, so ObjectClass::AI doesn't integrate it a second time.
 void BulletClass::AI_TD(void)
 {
     assert(Bullets.ID(this) == ID);
@@ -2089,12 +1808,6 @@ void BulletClass::AI_TD(void)
 
     ObjectClass::AI();
 
-    /*
-    **	Ballistic objects (arcing / dropping) are handled here. This is the sole
-    **	integrator of the ballistic fall for TD-port bullets — IsFalling is left
-    **	clear (see Unlimbo_TD) so ObjectClass::AI does not integrate it a second time.
-    **	The layer sync below stands in for the base falling logic's map bookkeeping.
-    */
     bool forced = false; // Forced explosion.
     LayerType startlayer = In_Which_Layer();
     if (Class->IsArcing) {
@@ -2116,28 +1829,17 @@ void BulletClass::AI_TD(void)
         }
     }
 
-    /*
-    **	Keep the map layer registration in step with altitude. ObjectClass::Limbo
-    **	removes the bullet from In_Which_Layer() at detonation, so the layer it is
-    **	submitted to must track Height as it falls or the removal misses.
-    */
+    // Limbo removes the bullet from In_Which_Layer(), so its layer must follow Height as it falls, or the removal
+    // misses and the layer keeps a deleted bullet.
     if ((Class->IsArcing || Class->IsDropping) && In_Which_Layer() != startlayer) {
         Map.Remove(this, startlayer);
         Map.Submit(this, In_Which_Layer());
     }
 
-    /*
-    **	Homing projectiles constantly change facing to face toward the target but
-    **	they only do so every other game frame (improves game speed and makes
-    **	missiles not so deadly).
-    */
     if ((Frame & 0x01) && Class->IsHoming && Target_Legal(TarCom)) {
         PrimaryFacing.Set_Desired(Direction256(Coord, ::As_Coord(TarCom)));
     }
 
-    /*
-    **	Move the projectile forward according to its speed and direction.
-    */
     coord = Coord;
     if (Class->IsFlameEquipped) {
         if (IsToAnimate) {
@@ -2146,32 +1848,18 @@ void BulletClass::AI_TD(void)
         IsToAnimate = !IsToAnimate;
     }
 
-    /*
-    **	Handle any body rotation at this time. Must occur every game frame for
-    **	smooth rotation.
-    */
     if (PrimaryFacing.Is_Rotating()) {
         PrimaryFacing.Rotation_Adjust(Class->ROT);
     }
 
     switch (Physics(coord, PrimaryFacing)) {
-
-    /*
-    **	When a projectile reaches the edge of the world, it vanishes from existence
-    **	-- presumed to explode off map.
-    */
     case IMPACT_EDGE:
         Mark();
-        delete this;  // TD source: Delete_This() — RA's idiom is `delete this`.
+        delete this;
         break;
 
     default:
     case IMPACT_NONE:
-
-    /*
-    **	The projectile has moved. Check its fuse. If detonation is signaled, then
-    **	do so. Otherwise, just move.
-    */
     case IMPACT_NORMAL:
         Mark();
         if (!Class->IsHigh) {
@@ -2182,11 +1870,6 @@ void BulletClass::AI_TD(void)
             }
         }
 
-        /*
-        **	Bullets are generally more effective when fired at aircraft. TD's
-        **	BULLET_TOW gets 1/3 boost; other AA bullets get 1/2. Our TDSSM is
-        **	the TD-port equivalent of TD's TOW.
-        */
         if (Class->IsAntiAircraft && (As_Aircraft(TarCom) || TF_Airborne_Jumpjet(TarCom)) && Distance(TarCom) < 0x0080) {
             forced = true;
             if (*this == BULLET_SSM) {  // TD: BULLET_TOW
@@ -2208,20 +1891,11 @@ void BulletClass::AI_TD(void)
 
         } else {
 
-            /*
-            **	When the target is reached, explode and do the damage required of it.
-            **	For homing objects, don't force the explosion to match the target
-            **	position. Non-homing projectiles adjust position so they hit the
-            **	target. This compensates for the error in line of flight logic.
-            */
             Mark();
             if (!forced && !Class->IsArcing && !Class->IsHoming && Fuse_Target()) {
                 Coord = Fuse_Target();
             }
 
-            /*
-            **	Non-aircraft targets apply damage to the ground.
-            */
 #if TF_TDPORT_LOG_ENABLED
             if (TF_TDPortLog != NULL) {
                 COORDINATE target = As_Coord(TarCom);
@@ -2242,10 +1916,6 @@ void BulletClass::AI_TD(void)
                 Explosion_Damage(Coord, Strength, Payback, Class->ClassWarhead);
             } else {
 
-                /*
-                **	Special damage apply for SAM missiles. This is the only way that
-                **	missile damage affects an aircraft or airborne jumpjet target.
-                */
                 if (Distance(TarCom) < 0x0080) {
                     TechnoClass* object = As_Aircraft(TarCom);
                     if (object == NULL) {
@@ -2258,10 +1928,6 @@ void BulletClass::AI_TD(void)
                 }
             }
 
-            /*
-            **	For projectiles that are invisible while traveling toward the target,
-            **	allow scatter effect for the impact animation.
-            */
             if (Class->IsInvisible) {
                 Coord = Coord_Scatter(Coord, 0x0020);
             }
@@ -2271,16 +1937,13 @@ void BulletClass::AI_TD(void)
                     newanim->Sort_Above(TarCom);
                 }
 
-                /*
-                **	Owner tracking for atom blasts so kills credit correctly.
-                */
                 if (newanim && Class->ImpactAnim == ANIM_ATOM_BLAST && newanim->Owner() == HOUSE_NONE) {
                     if (Payback && Payback->House && Payback->House->Class) {
                         newanim->Set_Owner(Payback->House->Class->House);
                     }
                 }
             }
-            delete this;  // TD source: Delete_This() — RA's idiom is `delete this`.
+            delete this;
             return;
         }
         break;
@@ -2330,14 +1993,8 @@ COORDINATE BulletClass::Sort_Y(void) const
     assert(this != 0);
     assert(IsActive);
 
-    /*
-    **	The landed dropship pod sits over its bay in the ground layer, and a
-    **	building's sort band reaches its own south edge -- half a cell of bias
-    **	loses that contest and the pad draws over the ship (the same burial the
-    **	Mk. II suffered on the deck). Three cells of bias clears the pad's south
-    **	edge even from the raised landing point (deck visual centre, ~0.6 cells
-    **	north of the plot centre).
-    */
+    // TF: the landed dropship pod sits over its bay in the ground layer, and a building's sort band reaches its
+    // south edge. Three cells of bias clears the pad's south edge, so the pad never draws over the ship.
     if (*this == BULLET_TSDROPPOD) {
         return (Coord_Move(Coord, DIR_S, CELL_LEPTON_H * 3));
     }
@@ -2459,11 +2116,8 @@ bool BulletClass::Is_Forced_To_Explode(COORDINATE& coord) const
  *=============================================================================================*/
 void BulletClass::Bullet_Explodes(bool forced)
 {
-    /*
-    **	The Juggernaut's shell and the EMP pulse ball come down on their aim point when the arc
-    **	ends within a cell of it, so the flight's rounding never moves the burst off where it was
-    **	aimed (for the Juggernaut, where its scatter was rolled to land).
-    */
+    // TF: the Juggernaut's shell and the EMP pulse ball burst on their aim point when the arc ends within a cell of
+    // it, so the flight's rounding never moves the burst (for the Juggernaut, the point its scatter rolled).
     if ((*this == BULLET_TSBALLISTIC2 || *this == BULLET_TSPULSBALL) && forced && Fuse_Target() != 0
         && ::Distance(Coord, Fuse_Target()) < CELL_LEPTON_W) {
         Coord = Fuse_Target();
@@ -2484,27 +2138,14 @@ void BulletClass::Bullet_Explodes(bool forced)
         }
     }
 #endif
-    /*
-    **	A delivery projectile arrives rather than detonating: it applies no damage at
-    **	all, and its cargo is set down by the destructor, exactly as the dog bullet
-    **	puts its dog back on the map. Returning here is the whole behaviour.
-    **
-    **	This is the reason the descent is a projectile at all. An aircraft brought
-    **	down onto an occupied pad has to reach a state the engine recognises -- radio
-    **	contact, a navigation computer, a completed docking handshake -- and getting
-    **	that wrong froze the game twice. A projectile carries none of that machinery,
-    **	so the entire class of failure cannot arise.
-    */
+    // TF: a delivery pod arrives rather than detonating: no damage, and the destructor sets its cargo down. It is a
+    // projectile so no aircraft radio or docking handshake is involved; a wrong handshake freezes the game.
     if (*this == BULLET_TSDROPPOD) {
         return;
     }
 
-    /*
-    **	The EMP Cannon's pulse ball does no damage: its landing plays one of the two
-    **	pulse impacts, picked at random as TS does for an EMEffect warhead (OpenTS
-    **	combat.cpp Combat_Anim), and sets off the pulse. The pulse reaches 3 cells,
-    **	the span of the impact ring, so what the ring covers is what gets stunned.
-    */
+    // TF: the EMP Cannon's pulse ball does no damage: it plays one of TS's two pulse impacts at random and sets off
+    // a pulse reaching 3 cells, the span of the impact ring (docs/emp-cannon-design.md).
     if (*this == BULLET_TSPULSBALL) {
         enum { EMP_CANNON_SPREAD = 3 };
         new AnimClass(Random_Pick(0, 1) ? ANIM_TS_PULSEFX2 : ANIM_TS_PULSEFX1, Coord);
@@ -2524,12 +2165,8 @@ void BulletClass::Bullet_Explodes(bool forced)
         Coord = Fuse_Target();
     }
 
-    /*
-    **	A TS arcing shell that lands near its target goes off on the target's centre, so
-    **	a target that moved during the flight still takes the full blast. Near means a
-    **	third of the landing distance is within the greater of half a cell and two
-    **	frames' flight, TS's own rule.
-    */
+    // TF: the RPG tower's canister goes off on its target's centre when it lands near it, by TS's rule: a third of
+    // the landing distance within the greater of half a cell and two frames' flight.
     if (*this == BULLET_TSLOBBED2) {
         TechnoClass* victim = As_Techno(TarCom);
         if (victim != NULL && victim->IsActive && !victim->IsInLimbo) {
@@ -2553,8 +2190,9 @@ void BulletClass::Bullet_Explodes(bool forced)
 
         /*
         **	Special damage apply for SAM missiles. This is the only way that missile
-        **	damage affects an aircraft or airborne jumpjet target.
+        **	damage affects the aircraft target.
         */
+        // TF: an airborne jumpjet takes this damage too, as an aircraft aloft does.
         if (Distance(TarCom) < 0x0080) {
             TechnoClass* object = As_Aircraft(TarCom);
             if (object == NULL) {

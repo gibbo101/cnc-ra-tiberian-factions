@@ -47,7 +47,7 @@ OVERLAY_TIB01 = 25                # must match redalert/defines.h OVERLAY_TIB01
 # index values -- required so stock campaign maps read correctly. V12-V18 are
 # decorative farm fields. WALLS (SBAG/CYCL/BRIK/BARB/WOOD) are intentionally NOT
 # carried: in SP source maps they are the campaign bases' perimeter fences, which
-# read as abandoned fortifications in skirmish (Luke 2026-06-09). Crates and TD's
+# read as abandoned fortifications in skirmish. Crates and TD's
 # ROAD overlay are dropped too.
 OVERLAY_CARRY = {"V12": 13, "V13": 14, "V14": 15, "V15": 16, "V16": 17,
                  "V17": 18, "V18": 19}

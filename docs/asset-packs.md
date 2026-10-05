@@ -1,5 +1,8 @@
 # Asset packs
 
+**Status:** Reference. The TS, RA2 and C&C3 asset packs: layout, routing by name, staging into
+the build, and publishing.
+
 The mod's Tiberian Sun, Red Alert 2 and C&C3 assets live in `asset-packs/`, one folder per Steam
 Workshop item, so other modders can take them. Tiberian Factions' own files stay in
 `resources/remaster_mods/Vanilla_RA/`. The build stages both into one mod.
@@ -64,6 +67,9 @@ only the `RA_` files. A pack's XML files are what a modder copies, and what the 
   block of the same name. `check` reports without moving.
 - **After adding to a pack:** `python3 scripts/asset_pack_docs.py` refreshes its README and
   ccmod.json.
+- **Publishing:** `python3 scripts/asset_pack_workshop.py` stages each pack for upload and writes
+  its Workshop manifest and preview; the steps are in `docs/workshop-publish-runbook.md` (Asset
+  packs).
 
 ## Not yet in the packs
 

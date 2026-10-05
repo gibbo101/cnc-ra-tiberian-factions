@@ -1,5 +1,8 @@
 # C&C3 units to C&C Remastered sprites: a working recipe
 
+**Status:** Reference. Pulling a C&C3 unit into HD Remastered sprites, as done for the Mammoth
+Mk. III and the Predator.
+
 How to pull a unit out of Command & Conquer 3: Tiberium Wars (models, textures, audio,
 stats) and turn it into HD sprites for a C&C Remastered Collection mod. Written for an AI
 coding agent to follow. Every fact here was verified on the GDI Mammoth Tank and Predator

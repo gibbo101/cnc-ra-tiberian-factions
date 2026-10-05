@@ -2,7 +2,7 @@
 """
 Bundled custom-map builder (Tiberian Factions mod).
 
-Delivery model (decided 2026-06-09 after the official-list bisect):
+Delivery model:
 converted TD maps ship INSIDE the mod at <mod>/CustomMaps/ as
 Local_Custom_Maps triplets (mpr + tga + json) under synthetic UGC
 filenames. The DLL self-installs them into the user's

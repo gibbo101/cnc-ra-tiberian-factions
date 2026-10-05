@@ -1347,8 +1347,7 @@ void SidebarClass::StripClass::Deactivate(void)
  *=============================================================================================*/
 bool SidebarClass::StripClass::Add(RTTIType type, int id, bool via_capture)
 {
-    /* < not <=: at count==MAX the write lands out of bounds (EA off-by-one,
-    ** first hit when a multi-tree game pushed a column past 75 entries). */
+    // TF: <, not <=: on a full strip the add would write one past the end of Buildables.
     if (BuildableCount < MAX_BUILDABLES) {
         for (int index = 0; index < BuildableCount; index++) {
             if (Buildables[index].BuildableType == type && Buildables[index].BuildableID == id) {
@@ -1564,11 +1563,8 @@ bool SidebarClass::StripClass::AI(KeyNumType& input, int, int)
                             case RTTI_VESSEL:
                             case RTTI_UNIT:
                             case RTTI_AIRCRAFT: {
-                                /*
-                                **	A dropship bay delivery names the bay's own factory slot in the
-                                **	event's cell, so it is never confused with a war factory unit
-                                **	finished in the same frame.
-                                */
+                                // TF: a dropship bay delivery names the bay's slot in the PLACE event's cell, so it
+                                // is never confused with a war factory unit finished in the same frame.
                                 bool bay = pending->What_Am_I() == RTTI_UNIT
                                            && TF_Is_Dropship_Delivered(((UnitClass*)pending)->Class);
                                 OutList.Add(EventClass(EventClass::PLACE, pending->What_Am_I(), (CELL)(bay ? TF_PLACE_BAY : -1)));

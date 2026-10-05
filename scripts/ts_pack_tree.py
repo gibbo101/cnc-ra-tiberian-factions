@@ -53,8 +53,8 @@ AFFINES = {}
 
 
 # Source-pixel patches, (dirname) -> [((x, y), (x, y) to copy from)]. NTREFN's
-# rib foot carries three orange pixels that read as a red spark in HD
-# (Luke, 08-28); they take the rib colour from the row above.
+# rib foot carries three orange pixels that read as a red spark in HD; they
+# take the rib colour from the row above.
 _RIB_FOOT = [((97, 137), (97, 136)), ((98, 137), (98, 136)), ((99, 137), (99, 136)), ((98, 138), (98, 136))]
 PIXEL_PATCHES = {
     "shp_ntrefn": _RIB_FOOT,
@@ -82,7 +82,7 @@ def real_frames(dirname):
     empty 24-31, fragments 32-47). The pixel-count floor drops the empties;
     the post-peak area cut drops the fragment tail (a fragment is a small
     corner piece appearing after the fully-built peak frame — shipping one
-    made the radar buildup 'snap to a shard' at the end, 2026-08-03)."""
+    makes the radar buildup 'snap to a shard' at the end)."""
     counts = []
     for i in range(frame_count(dirname)):
         im = load(dirname, i)
@@ -203,9 +203,9 @@ def bleed_edges(img, rounds=3):
 #   hq4x-hard  hq4x edge reconstruction, Lanczos to size, 1-bit alpha.
 #   hq4x-soft  same colour path, Lanczos-resampled (soft) alpha.
 #   lanczos    plain Lanczos colour + soft alpha: the smooth, filtered look
-#              of TS at native pixels (Luke's TS-refinery screencast, 08-28).
+#              of TS at native pixels.
 #   lanczos-hard  Lanczos colour, 1-bit alpha: a soft silhouette over snow
-#              reads as a pale outline on a dark building (08-28 SS), so the
+#              reads as a pale outline on a dark building, so the
 #              edge stays hard and only the interior is smoothed.
 SCALER_MODE = {"TSPROC": "lanczos-hard", "TSWEAP": "lanczos-hard", "TSDWEAP": "lanczos-hard"}
 CURRENT_INI = [None]
@@ -429,8 +429,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
 
     # Damaged run keeps the anims cycling over the damaged base — TS itself
     # freezes damaged buildings (the anim SHPs' damaged halves are empty),
-    # but the mod's stealth-gen baseline animates damaged, and Luke prefers
-    # that (2026-08-01).
+    # but the mod's stealth-gen baseline animates damaged, so the mod does too.
     healthy = [composite(base_h, anims, i, 1) for i in range(n)]
     damaged_frames = [composite(base_d, anims, i, 2) for i in range(n)]
 
@@ -800,16 +799,16 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # the rolled shutter above it stay in front of the vehicle (nothing
         # may show between the door roof and the hangar roof).
         open_bb = scaled(centre_on(load(wf["door"], wf["stages"] - 1), base_h.size)).getbbox()
-        # Luke's read (08-28): the LEFT jamb renders over the vehicle, the vehicle
+        # The LEFT jamb renders over the vehicle, the vehicle
         # renders over the RIGHT pillar (it exits SE past it). So the band runs
         # from the door's left edge eastward to the widest vehicle's reach.
         # x1 = the canvas edge: nothing of the front belongs east of the door
         # below the awning (the open-doorway composite reaches x=772 and drew
-        # over units walking out -- 08-29 cast).
+        # over units walking out).
         x0, y0, x1 = int(open_bb[0]) + 4, int(ob[1]), int(canvas_w) - 1
         opening = Image.new("L", (canvas_w, canvas_h), 0)
-        # The band's LEFT boundary is Luke's yellow line (custom-art/
-        # tsweap-front-cut-line.json, drawn in Aseprite 08-28 along the left
+        # The band's LEFT boundary is the hand-drawn line (custom-art/
+        # tsweap-front-cut-line.json, drawn along the left
         # jamb's inner edge): everything left of it renders over the vehicle.
         # Rows above/below the line extend its end points.
         line_path = os.path.join(MOD, "..", "..", "custom-art", wf["line"])
@@ -934,21 +933,18 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # the <INI>LT lamp layer, drawn just above the door overlay, carrying
         # each phase's lamp pixels over the frozen ones.
         lamp_runs = [[split_alpha(f, canvas_masks[r], True) for f in full[r]] for r in (0, 1)]
-        # Full-face frames (the play-approved look). A changing-pixels trim
-        # was tried 2026-08-18 and REVERTED 2026-08-19: it left the red
-        # glow's dilated halo as isolated smudges over the roof. Its
-        # motivation -- the double-blended door/floor seam -- was removed
-        # separately when the seam rows moved into the BASE layer, so the
-        # full face re-covers itself with identical pixels everywhere.
+        # Full-face frames. A changing-pixels trim leaves the red
+        # glow's dilated halo as isolated smudges over the roof. The seam rows
+        # sit in the BASE layer, so the full face re-covers itself with
+        # identical pixels everywhere.
         full = [[split_alpha(f, canvas_masks[r], False) for f in full[r]] for r in (0, 1)]
 
-    # Luke's red-pixel markup (2026-08-18, edit 3): a leftover hazard-stripe
+    # A leftover hazard-stripe
     # skirt from the source GTWEAP art rides in the BASE below the overlay's
     # bottom edge, west of the bay mouth, on top of the hand-tucked pad.
     # Erase the marked patch (+2px margin); the pad ground art beneath is the
     # intended surface. Canvas space, so the coordinates are the markup's.
-    # (A wider remap-green sweep of the whole south skirt was tried 2026-08-18
-    # and REVERTED on Luke's instruction -- the band is wanted art there.)
+    # Do not widen the erase to the south skirt: the remap-green band there is wanted art.
     if ini == "TSWEAP":
         for run in full:
             for f in run:
@@ -1053,8 +1049,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # on the finished frames: the band top sits a fixed distance above the
         # overlay's lowest opaque row, derived per pack so a respec moves it
         # automatically. 62 canvas rows ~= 26 source px at the current fit --
-        # deep enough for the east frame's upright foot (Luke's red-pixel
-        # markup, canvas y329, band bottom y390).
+        # deep enough for the east frame's upright foot (canvas y329, band bottom y390).
         if front_canvas is not None:
             y_last = max(f.getbbox()[3] for f in door_frames if f.getbbox())
             band_top = y_last - 62
@@ -1245,8 +1240,8 @@ def emit_sidebar_data(ini, display, desc, icon_dir):
 
 def loop(d):
     """TS anims pack HEALTHY frames then DAMAGED frames inside the usable
-    window (radar dish, tech dome, depot pad, barracks flag all confirmed
-    2026-08-03). Even count -> split halves; odd -> no damaged half, same
+    window (radar dish, tech dome, depot pad, barracks flag all do). Even count -> split halves;
+    odd -> no damaged half, same
     window both runs. Convention-breakers (GTCNST_B light, NTREFN_B plume:
     one continuous cycle, damaged form = the empty half) pass a pre-built
     (dir, healthy, damaged) tuple instead, returned untouched."""
@@ -1277,21 +1272,19 @@ WAVE2 = [
      "shp_gtdeptmk", 19, (384, 256), 382, "shp_fixicon", "Dropship Bay", "Receives the Mammoth Mk. II by dropship."),
 ]
 
-# TSPROC/TSWEAP apron plates dropped with the 3x3 conversion (2026-08-03
-# late): structure-only composites fill the box, engine Bib=yes lays the RA
-# slab like every other refinery/factory.
+# TSPROC/TSWEAP carry no apron plates: structure-only composites fill the box,
+# engine Bib=yes lays the RA slab like every other refinery/factory.
 BIBS = {"TSHPAD": "shp_gthpadbb", "TSDEPT": "shp_gtdeptbb"}
 
 # (artwork, width fraction of content, squash ratio, dx, dy). Fill-the-pad
-# dial (Luke's pick off a 4-way sheet, 2026-08-13): the ring's inner ellipse
+# dial: the ring's inner ellipse
 # measures 292x136 centred at (197.6, 103.2) on the healthy frame, so squash
 # matches the ring's own 2.15 (not the deck skirt's 1.95) and (+6, -6)
 # corrects the bbox-centre bias -- the bbox includes the skirt, whose centre
 # sits left and low of the ring's. 0.74 (284px) leaves ~4px to the remap
 # band; crossing it speckles house colour through the emblem edge.
-# APRON_CLIP: clip a building's concrete to its tile grid. Tried on TSWEAP
-# 2026-08-17 and REJECTED ("cutting the pad off looks like garbage" -- the
-# same hard-edge failure recorded 2026-08-05); the ghost grew to 5x3 instead.
+# APRON_CLIP: clip a building's concrete to its tile grid. A hard-edge clip of TSWEAP's pad
+# looks like garbage, so its ghost is 5x3 instead.
 APRON_CLIP = {"TSWEAP", "TSDWEAP"}  # GAWEAPBB leaves a sliver east of the 5-wide plot; the pad must stay inside the placement ghost
 
 # EXTRA_LAYERS: event-driven TS anims shipped as sub-object layers (see
@@ -1399,14 +1392,13 @@ def keep_largest_component(img):
         for p in comp:
             px[p] = (0, 0, 0, 0)
 
-# Emblem art lives IN the repo (resources/custom-cameos) — a Desktop copy
-# got Trash-cleaned 2026-08-16 and broke the pack.
+# Emblem art lives IN the repo (resources/custom-cameos), not in a Desktop copy.
 EMBLEMS = {"TSDROP": (os.path.join(os.path.dirname(__file__), "..",
                                    "resources/custom-cameos/ts-gdi-logo.png"),
                       0.74, 2.15, 6, -6)}
 
 # Per-entry bottom anchor (classic px), switching that entry to the size-pass
-# fit. TSDROP: the plot is the deck's own 3x2 (2026-08-13), canvas 384x256
+# fit. TSDROP: the plot is the deck's own 3x2, canvas 384x256
 # mapped onto it; margin 9 keeps the deck's bottom at the same 39cl below the
 # origin the 3x3-era margin 33 gave it, so the art does not move on screen.
 BOTTOM_MARGINS = {"TSDROP": 9}
@@ -1421,10 +1413,8 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), tw, cameo, disp, desc in WAVE2:
         print(f"{ini}: SKIP (no {base})")
         continue
     # Damaged base = frame 1: TS building SHPs are 0 healthy, 1 LIGHT damage,
-    # 2 HEAVY damage, 3-5 rubble fragments (the old "frame 1 = healthy
-    # variant" claim was falsified 2026-08-06). Luke picked LIGHT as the
-    # damaged state off the Desktop sheets, 2026-08-13. TSDROP keeps HEAVY:
-    # its weathered damaged deck was approved in play 2026-08-13.
+    # 2 HEAVY damage, 3-5 rubble fragments. LIGHT is the damaged state;
+    # TSDROP keeps HEAVY for its weathered damaged deck.
     build_structure(ini, base, 0, (2 if ini == "TSDROP" else 1),
                     [loop(d) for d in anim_dirs], mk, mkc, cw, ch,
                     None if ini in BOTTOM_MARGINS else tw,
@@ -1433,8 +1423,8 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), tw, cameo, disp, desc in WAVE2:
                     mk_clip_dir=MK_CLIPS.get(ini))
     emit_sidebar_data(ini, disp, desc, cameo)
 
-# ---- Size pass (2026-08-03, docs/ts-gdi-tree-plan.md top block): the four
-# buildings Luke rejected as too small, rebuilt with taller classic stubs and
+# ---- Size pass (docs/ts-gdi-tree-plan.md): the four
+# buildings rebuilt with taller classic stubs and
 # the width-fit + bottom-anchor mode. Stubs (build_tfassets.sh) must match:
 # TSPROC 72x72 (RA-refinery 3x3 geometry clone), TSWEAP 96x72 (TDWEAP-parity
 # 3x3, hangar art overhangs the box sides), TSPILE 72x48 (2x2 plot, wide
@@ -1451,7 +1441,7 @@ SIZEPASS = [
     # wide -> full-width factor 5.45x -> 643 HD px tall: the canvas must be
     # 672 or the plume tip clips (512/544/576 all did).
     # Width-fit to the full 3x3 PLOT (72 classic; the 4-cell/512 fit read
-    # oversized next to the 2x2 tier -- Luke, 2026-08-04). Stub 138x174:
+    # oversized next to the 2x2 tier). Stub 138x174:
     # the BSIZE_43 foundation (2 building rows + apron row; the art's top
     # row OVERHANGS the row north of the plot, radar treatment) puts the
     # draw anchor (= foundation centre) a full cell south of where the
@@ -1460,11 +1450,11 @@ SIZEPASS = [
     # pixel-static -- margin 27+48=75 keeps the disc bottom on the
     # building rows' south edge, and the plume keeps its full 27-classic
     # headroom above the art top. The wide canvas carries the NTREFNBB
-    # apron OVERLAY (dock bay incl. the hazard-striped ramp, Luke's TS
-    # screenshot) riding east/south into the halo -- fit-excluded, so the
+    # apron OVERLAY (dock bay incl. the hazard-striped ramp)
+    # riding east/south into the halo -- fit-excluded, so the
     # building size is unchanged.
     # Plume cycle = frames 2-16 only: 0-1/17-19 carry 10-57 src px and
-    # scale to "dead pixel" specks at the chimney tip (Luke, 23:17 SS).
+    # scale to "dead pixel" specks at the chimney tip.
     # Idle = the NTREFN_C deck lights (16 healthy + 16 damaged). The chimney
     # fireball (NTREFN_B) and the dock lid (NTREFN_A) are NOT baked: TS plays
     # the fireball as a one-shot burst with a random pause between bursts and
@@ -1473,10 +1463,9 @@ SIZEPASS = [
     ("TSPROC", "shp_ntrefn", [("shp_ntrefn_c", list(range(16)), list(range(16, 32)))],
      "shp_ntrefnmk", 19, (736, 928), 75, 1.0, "shp_reficon",
      "TS Tiberium Refinery", "Processes Tiberium into credits."),
-    # 4x3 plot, descaled 2026-08-16 (Luke): the Mk. II arrives by dropship
-    # bay now, so the hangar no longer has to pass a 40px sprite -- fit_w 460:
-    # Luke's split-the-difference between the 416 APC floor and the old 512
-    # (416 read barely bigger than the power plant, 2026-08-16 SS).
+    # 4x3 plot, descaled: the Mk. II arrives by dropship bay, so the hangar does not have to pass a 40px sprite.
+    # fit_w 460 splits the difference between the 416 APC floor and the old 512
+    # (416 read barely bigger than the power plant).
     # 3x2 PLOT, hangar CENTRED (dst_x 448 = canvas centre): the 70x44 art
     # fills the 72x48 plot, so the launcher's plot-centred box hugs it with
     # NO export case -- TDFACT/TDWEAP parity. Concrete = wholly outside the
@@ -1487,7 +1476,7 @@ SIZEPASS = [
     # bottom 12 classic into the south row so the door face meets the
     # concrete and the art roughly centres on the plot-centred selection
     # box. Canvas/stub unchanged (896x672 = 168x126).
-    # margin 40.5 (2026-08-17 evening, Luke's Aseprite pass): building union
+    # margin 40.5: building union
     # bottom at canvas 456, which centres the ENSEMBLE (hangar + hand-tucked
     # pad, bbox 205-467) on the 4x3 plot (144-528). Art centred on plot =
     # the launcher's plot-centred selection box hugs it at 96x49 with a size
@@ -1542,7 +1531,7 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
         # GTRADR_A packs 15 healthy rotation frames + 15 torn-dish damaged
         # frames in its 30-frame usable window (the engine's shapes-N..2N-1
         # damaged convention applied inside the anim SHP). Cycling all 30 as
-        # the healthy idle was Luke's "broken animation". The 15 frames are
+        # the healthy idle looks like a broken animation. The 15 frames are
         # HALF a sweep (frame 14 = opposite extreme of frame 0), so bake the
         # return sweep too — forward + reverse = a seamless 28-frame ping-pong
         # (the TS dish scans back and forth; a plain loop teleports the dish).
@@ -1550,7 +1539,7 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
         dfwd, dback = list(range(15, 30)), list(range(28, 15, -1))
         anims = [("shp_gtradr_a", fwd + back, dfwd + dback)]
     elif ini == "TSWEAP":
-        # From scratch (08-28): TS's three looping active anims baked into one
+        # TS's three looping active anims baked into one
         # 32-step idle -- _A (16f) and _B (8f) at Rate 400 advance every other
         # step, _C (4f) at Rate 800 every step. Each SHP = healthy half +
         # damaged half. The shutter and under-door are event layers (below).
@@ -1577,9 +1566,8 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
     # supply them on its own shows them raw green. Once built the door overlay
     # covers them, which is why it only ever showed while building.
     masks = {}
-    # Full apron (the 4x3-rectangle clip sliced hard edges through the
-    # stripes -- Luke, 2026-08-05 01:20; the cliff-edge drape is a queued
-    # design question, not solvable with a rectangle cut).
+    # Full apron (a 4x3-rectangle clip slices hard edges through the stripes; the cliff-edge
+    # drape is not solvable with a rectangle cut).
     overlays = {"TSPROC": "shp_ntrefnbb", "TSWEAP": "shp_gtweapbb", "TSDWEAP": "shp_mwarbb"}
     # Aprons ship as ground art, one tile per cell: (plot, tile grid), the grid
     # matching the building's SmudgeTypeClass in sdata.cpp.
@@ -1599,9 +1587,7 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
                     fit_w={"TSPROC": 384, "TSWEAP": 404}.get(ini),  # TSWEAP 404 = GTWEAP 98 src px at the refinery's 4.12
                     dst_x_px={"TSPROC": 304, "TSWEAP": 392}.get(ini),
                     apron_cells=aprons.get(ini),
-                    # TSWEAP's pad is hand-authored (Luke, Aseprite, 2026-08-17):
-                    # the committed canvas replaces the affine'd GTWEAPBB.
-                    apron_canvas=None,  # TS's own GAWEAPBB at the building's affine (08-28 restart)
+                    apron_canvas=None,  # TS's own GAWEAPBB at the building's affine
                     # How far the near face encroaches into the bay opening.
                     # 0 = the hole is exactly what the shutter uncovers, so a
                     # vehicle is visible through the full opening and hidden
@@ -1695,7 +1681,7 @@ if os.path.isdir(f"{ART}/shp_gtpowr_b"):
 # centre's fit factor so the ghost reads at installed size.
 if os.path.isdir(f"{ART}/shp_gtplug"):
     # Anim windows straight from TS ART.INI (the halved-windows convention is
-    # WRONG for this building — Luke caught the mid-sweep snap, 2026-08-31):
+    # WRONG for this building: it snaps mid-sweep):
     #   [GAPLUG_A]  LoopEnd=20, no ping-pong -> the full 20 frames are ONE
     #               cycle, both runs (no damaged form).
     #   [GAPLUG_B]  healthy 0-8 straight; [GAPLUG_BD] damaged = 10-19

@@ -1,14 +1,12 @@
-# Lobby ambiguity — overnight evidence (2026-07-23)
+# Lobby ambiguity evidence
 
-UNCOMMITTED working data for `docs/lobby-ambiguity-findings.md`. Safe to delete.
+Data behind `docs/lobby-ambiguity-findings.md`.
 
-- `resolver.py FILE...` — exact offline port of the in-DLL `TF_Resolve_Lobby_Ambiguity`.
-  Prints per-cycle branch + PASS/WRONG/UNDECIDED vs ground truth, and a tally.
-  Run: `python3 resolver.py batch2-results.txt batch4-results.txt batch5-results.txt`
-  Result: 28 ambiguous, PASS=28 WRONG=0 UNDECIDED=0 (branches R=20 F=5 M=3).
-- `verdict3.py` — compares individual rules (majority / maxRefs / minRefwin / combined).
-- `analyze.py` — Route-A byte-diff of candidate records (shows the ~55 differing offsets).
-- `batchN-results.txt` — captured scans: each ambiguous CAND line is `diff:refs(exact):refwin`.
-  Ground truth is the cycle's `gt=` (row2 difficulty + fixed Hard row3).
-- `first-ambiguity-full-records.log` — the first reproduction with full 168-byte record dumps.
-- `dcjd-forum-reply-draft.md` — draft reply, pending Luke's review.
+- `resolver.py FILE...`: an exact offline port of the DLL's `TF_Resolve_Lobby_Ambiguity`. It prints
+  each cycle's branch and PASS / WRONG / UNDECIDED against ground truth, then a tally. Run
+  `python3 resolver.py batch2-results.txt batch4-results.txt batch5-results.txt`: 28 ambiguous,
+  PASS 28, WRONG 0, UNDECIDED 0.
+- `test_resolver.c`: the C harness for the same logic.
+- `batchN-results.txt`: captured scans; each ambiguous CAND line is `diff:refs(exact):refwin`, and
+  the cycle's `gt=` is the ground truth.
+- `overnight-2026-08-01-results.md`: the 2026-08-01 overnight run.

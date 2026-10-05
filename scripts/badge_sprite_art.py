@@ -9,8 +9,8 @@ placed on the uncropped canvas and each frame is re-emitted full-size with
 crop=[0,0,W,H]. MAKE (buildup) archives are left untouched: the emblem arrives
 with the finished building.
 
-Used by the W2 faction split: the four construction yards and four MCVs share
-era art, and the on-map emblem is what tells twins apart (Luke, 2026-07-19).
+Used by the faction split: the four construction yards and four MCVs share
+era art, and the on-map emblem is what tells twins apart.
 
 Usage: scripts/badge_sprite_art.py            # all eight yard/MCV entities
        scripts/badge_sprite_art.py AFACT AMCV # a subset
