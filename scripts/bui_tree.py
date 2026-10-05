@@ -98,14 +98,19 @@ def load(path):
     return d, parse_all(zlib.decompress(d[HEADER:]))
 
 
-def write_same_size(base_bytes, roots, out):
-    """Write the edited tree as a .BUI the size of the base; returns the zero padding used."""
+def pack(base_bytes, roots):
+    """The edited tree as .BUI bytes: the base's header with the new stream length, then the stream."""
     edited = b''.join(serialise(r) for r in roots)
     parse_all(edited)
     comp = zlib.compress(edited, 9)
     hdr = bytearray(base_bytes[:HEADER])
     struct.pack_into('<I', hdr, 0x10, len(comp))
-    body = bytes(hdr) + comp
+    return bytes(hdr) + comp
+
+
+def write_same_size(base_bytes, roots, out):
+    """Write the edited tree as a .BUI the size of the base; returns the zero padding used."""
+    body = pack(base_bytes, roots)
     pad = len(base_bytes) - len(body)
     assert pad >= 0, f'edited BUI larger than the base ({len(body)} > {len(base_bytes)}); cannot pad'
     open(out, 'wb').write(body + b'\x00' * pad)
@@ -114,12 +119,7 @@ def write_same_size(base_bytes, roots, out):
 
 def write_loose(base_bytes, roots, out):
     """Write the edited tree as a loose .BUI of any size (loose files are not size-locked)."""
-    edited = b''.join(serialise(r) for r in roots)
-    parse_all(edited)
-    comp = zlib.compress(edited, 9)
-    hdr = bytearray(base_bytes[:HEADER])
-    struct.pack_into('<I', hdr, 0x10, len(comp))
-    open(out, 'wb').write(bytes(hdr) + comp)
+    open(out, 'wb').write(pack(base_bytes, roots))
 
 
 def micro(widget, tag):
@@ -158,6 +158,11 @@ def instance_ids(node, out):
         for c in body:
             instance_ids(c, out)
     return out
+
+
+def last_id(roots):
+    """The highest widget instance id in the tree; clones take ids above it."""
+    return max(v for r in roots for v in instance_ids(r, []))
 
 
 def renumber(node, fresh):

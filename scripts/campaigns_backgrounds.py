@@ -43,7 +43,7 @@ def read_dds(path):
 def write_dds(path, header, img):
     w, h = img.size
     hdr = bytearray(header)
-    struct.pack_into('<II', hdr, 12, h, w)
+    struct.pack_into('<III', hdr, 12, h, w, w * 4)
     open(path, 'wb').write(bytes(hdr) + img.tobytes('raw', 'BGRA'))
 
 

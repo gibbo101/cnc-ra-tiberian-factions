@@ -9,7 +9,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from bui_tree import (load, headers, micro, chain_to, instance_ids, renumber, replace_named_micro,  # noqa: E402
+from bui_tree import (load, headers, leaves, micro, chain_to, last_id, renumber, replace_named_micro,  # noqa: E402
                       rename_widget, swap_strings, write_loose)
 
 STOCK_GROUPS = (b'MissionFrameBG_Allied_Group', b'MissionFrameBG_Soviet_Group',
@@ -28,10 +28,6 @@ SOURCE_SET = b'Mission_Select_ListElement_GDI'
 MOD_GROUPS = [(b'TF_Row_TSGDI', b'TF_Row_TSGDI_B', b'TF_Mission_Select_ListElement_TSGDI')]
 
 
-def fresh_id(roots):
-    return max(v for r in roots for v in instance_ids(r, []) if v < 0x3F000000)
-
-
 def set_hidden(roots, name):
     found = headers(roots, name)
     assert len(found) == 1, name
@@ -45,7 +41,7 @@ def main(src, td_row, out):
     _, td_roots = load(td_row)
     anchor = next(c for c in (chain_to(r, b'MissionFrameBG_Allied_Group') for r in roots) if c)
     parent = anchor[-4]
-    fresh = fresh_id(roots)
+    fresh = last_id(roots)
     for name in TD_GROUPS:
         chain = next(c for c in (chain_to(r, name) for r in td_roots) if c)
         clone = copy.deepcopy(chain[-3])
@@ -56,27 +52,19 @@ def main(src, td_row, out):
     counts = {}
     for r in roots:
         swap_strings(r, TD_ROW_ART, counts)
+    assert set(counts) == set(TD_ROW_ART), 'stock row changed, TD art names not found'
 
     chain = next(c for c in (chain_to(r, SOURCE_GROUP) for r in roots) if c)
     entry, parent = chain[-3], chain[-4]
-    fresh = fresh_id(roots)
+    fresh = last_id(roots)
     for group, button, texture_set in MOD_GROUPS:
         clone = copy.deepcopy(entry)
         assert rename_widget(clone, SOURCE_GROUP, group) == 1 and rename_widget(clone, SOURCE_BUTTON, button) == 1
-        assert sum(replace_named_micro(leaf, SOURCE_SET, texture_set) for leaf in leaves_of(clone)) == 1
+        assert sum(replace_named_micro(leaf[1], SOURCE_SET, texture_set) for leaf in leaves(clone)) == 1
         fresh = renumber(clone, fresh)
         parent[1].append(clone)
     write_loose(base, roots, out)
     print('wrote', out)
-
-
-def leaves_of(node):
-    nid, body = node
-    if isinstance(body, list):
-        for c in body:
-            yield from leaves_of(c)
-    else:
-        yield body
 
 
 if __name__ == '__main__':

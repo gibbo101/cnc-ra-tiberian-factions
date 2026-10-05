@@ -10,7 +10,7 @@ import struct
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from bui_tree import (load, headers, string_value, string_body, micro, chain_to, instance_ids,  # noqa: E402
+from bui_tree import (load, headers, string_value, string_body, micro, chain_to, last_id,  # noqa: E402
                       swap_strings, write_loose)
 
 TEX_W, TEX_H = 2123.0, 1531.0
@@ -134,7 +134,7 @@ def add_label(roots, name, label, px, hidden):
     chain = next(c for c in (chain_to(r, TITLE) for r in roots) if c)
     entry, group = chain[-3], chain[-4]
     assert entry[0] == 1 and group[0] == 0
-    fresh = max(v for r in roots for v in instance_ids(r, []) if v < 0x3F000000) + 0x10000
+    fresh = last_id(roots) + 0x10000
     clone = copy.deepcopy(entry)
     header = chain_to(clone, TITLE)[-1]
     for c in header[1]:
@@ -194,6 +194,8 @@ def main(src, td_screen, out):
     counts = {}
     for r in roots:
         swap_strings(r, TD_ART, counts)
+    missing = [k.decode() for k in TD_ART if k not in counts]
+    assert not missing, 'stock screen changed, TD art names not found: %s' % missing
     add_label(roots, *COMING_SOON, True)
     write_loose(base, roots, out)
     print('wrote', out)

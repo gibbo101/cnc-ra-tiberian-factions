@@ -15,7 +15,7 @@ W, H, HDR = 6871, 6716, 18
 ROW = W * 4
 EMBLEMS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tab_emblems')
 
-# Tab icons: TD tab regions the RA page never draws, repainted with the RA and TS crests.
+# Tab icons: TD tab regions only TD's own Mission Select draws, repainted with the RA and TS crests.
 TAB_STATES = ('OFF', 'ON', 'OVER', 'PRESSED', 'DISABLED')
 TAB_TARGETS = [('COVERTOPS', 'allied.png'), ('CONTROLLER', 'soviet.png'), ('DINO', 'tsgdi.png')]
 INSET = (12, 12, 166, 66)
