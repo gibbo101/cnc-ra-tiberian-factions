@@ -15,6 +15,10 @@ __pycache__/
 resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB/MT_COMMANDBAR_COMMON.TGA
 scripts/_td_tems/
 
+# CAMPAIGNS page textures (~66MB) - build via scripts/campaigns_page_build.sh
+resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB/RA_UI_MISSIONSELECT_*.DDS
+resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB/TF_UI_MISSIONSELECT_*.DDS
+
 # Startup intro movie (~136MB, over GitHub's 100MB limit) — build via scripts/intro_work/build_intro.sh
 resources/remaster_mods/Vanilla_RA/Data/ART/MOVIES/RA/REDINTRO.BK2
 
