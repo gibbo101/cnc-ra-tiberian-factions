@@ -1988,6 +1988,7 @@ typedef enum AircraftType : char
     AIRCRAFT_TSORCA,     // TS Orca Fighter (ORCA): VTOL, fires TSHellfire, rearms at the TS Helipad. aadata.cpp TsOrca.
     AIRCRAFT_TSORCAB,    // TS Orca Bomber (ORCAB): VTOL, drops TSBomb over the target. aadata.cpp TsOrcaB.
     AIRCRAFT_TSCARRY,    // TS Carryall (TRNSPORT): unarmed VTOL that lifts and carries one vehicle. aadata.cpp TsCarry.
+    AIRCRAFT_TSORCATRAN, // TS Orca Transport (ORCATRAN): unarmed VTOL that carries five infantry, as the Chinook. aadata.cpp TsOrcaTran.
 
     AIRCRAFT_COUNT,
     AIRCRAFT_NONE = -1,
