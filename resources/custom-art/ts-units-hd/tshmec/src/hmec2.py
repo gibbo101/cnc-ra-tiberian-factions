@@ -40,6 +40,7 @@ LEGS = {'RF': (THIGH_RF, SHIN_RF, FOOT_RF, False), 'RR': (THIGH_RR, SHIN_RR, FOO
 HOUSE = (RPOD, SPOD, MOUNT, HIPCOV, GUARD_G)
 
 BODY_YC = 15.0                                    # the body's centre line (q y)
+BODY_ROLL_SCALE = 0.4                             # the body's roll in TS's walk (up to 5 degrees) is kept at this share
 ZS = 0.5                                          # the side attachments' lift over TS's right half (q z)
 
 
@@ -67,7 +68,12 @@ class Frame:
 
     def pose(self, hf):
         M = MATS[hf, self.i]
-        return M[:, :3], M[:, 3] * self.det
+        R = M[:, :3]
+        if self.i == BODY and BODY_ROLL_SCALE != 1.0:
+            roll = np.arctan2(R[2, 1], R[2, 2]) * (BODY_ROLL_SCALE - 1.0)
+            c, s = np.cos(roll), np.sin(roll)
+            R = R @ np.array([[1.0, 0.0, 0.0], [0.0, c, -s], [0.0, s, c]])
+        return R, M[:, 3] * self.det
 
     def r(self, r, axis=None):
         """a length in q units -> local units (the mean of the two axes across `axis`)."""

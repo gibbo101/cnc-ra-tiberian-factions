@@ -29,7 +29,8 @@ v1 copied TS's voxel step by step, so it still read as voxels.  v3 is built the 
 the MCV are: TS's voxel is the blueprint (where every part is and how big), and each part is modelled clean - flat
 plates, true slopes, round pins and tubes, bevelled edges - in one paint colour per part, TS's own.  The details the
 voxel loses come from Westwood's own art of the Mk. II (the render, the FMV stills and the sidebar icon Luke sent).
-It still walks with TS's own walk: every section is posed by HMEC.HVA exactly as TS poses it.
+It still walks with TS's own walk: every section is posed by HMEC.HVA as TS poses it, except that the body keeps
+only 40% of TS's side-to-side roll (BODY_ROLL_SCALE in src/hmec2.py), so the hull stays level as it walks.
 
 The Mk. II, part by part:
 - Hull: the wide middle, its top crowned (TS's steps as a curve), two plated panels each side of the rails with bolts
