@@ -4,7 +4,7 @@ Tiberian Sun GDI buildings, units, infantry, walls, gates and component towers, 
 
 ## Contents
 
-**Units** (26): TS4TNK, TSAPC, TSCARRY, TSE1, TSE2, TSENGINEER, TSGHOST, TSHARV, TSHMEC, TSHUNT, TSHVR, TSJUGG, TSJUMPJET, TSLIMP, TSLPST, TSMCV, TSMEDIC, TSMEMP, TSMWAR, TSORCA, TSORCAB, TSSAPC, TSSMEC, TSSONIC, TSSUBTANK, TSTITN
+**Units** (27): TS4TNK, TSAPC, TSCARRY, TSE1, TSE2, TSENGINEER, TSGHOST, TSHARV, TSHMEC, TSHUNT, TSHVR, TSJUGG, TSJUMPJET, TSLIMP, TSLPST, TSMCV, TSMEDIC, TSMEMP, TSMWAR, TSORCA, TSORCAB, TSORCATRAN, TSSAPC, TSSMEC, TSSONIC, TSSUBTANK, TSTITN
 
 **Structures** (83): TSCSAM, TSCSAMMAKE, TSCSAMT, TSCTWR, TSCTWRMAKE, TSCTWRX, TSDEPT, TSDEPTMAKE, TSDEPTRP, TSDLIMP, TSDLIMPMAKE, TSDPSA, TSDPSAMAKE, TSDROP, TSDROPMAKE, TSDWEAP, TSDWEAPDR, TSDWEAPMAKE, TSDWEAPNF, TSDWEAPNU, TSDWEAPUD, TSFACT, TSFACTMAKE, TSFGEN, TSFGENMAKE, TSFSDF, TSGATEH, TSGATEHL, TSGATEHMAKE, TSGATEHX, TSGATEV, TSGATEVL, TSGATEVMAKE, TSGATEVX, TSHPAD, TSHPADMAKE, TSNGATEH, TSNGATEHL, TSNGATEHMAKE, TSNGATEHX, TSNGATEV, TSNGATEVL, TSNGATEVMAKE, TSNGATEVX, TSNWALL, TSPILE, TSPILEMAKE, TSPION, TSPLUG, TSPLUGMAKE, TSPODS, TSPOWR, TSPOWRMAKE, TSPROC, TSPROCFR, TSPROCLD, TSPROCMAKE, TSPROCNF, TSPULS, TSPULSMAKE, TSPULST, TSRADR, TSRADRMAKE, TSROCK, TSROCKMAKE, TSROCKT, TSSEEK, TSSILO, TSSILOMAKE, TSTECH, TSTECHMAKE, TSTURB, TSVULC, TSVULCMAKE, TSVULCT, TSWALL, TSWEAP, TSWEAP2, TSWEAPDR, TSWEAPMAKE, TSWEAPNF, TSWEAPNU, TSWEAPUD
 
@@ -16,7 +16,7 @@ Tiberian Sun GDI buildings, units, infantry, walls, gates and component towers, 
 
 **Terrain (interior)** (3): TSDWEAPBB, TSPROCBB, TSWEAPBB
 
-**3D models** (46): apc, apc-water, barracks, carryall, construction-yard, devils-tongue, disc-thrower, disruptor, dropship, dropship-bay, engineer, firestorm-generator, firestorm-wall, ghost-stalker, harvester, helipad, hover-mlrs, hunter-seeker, juggernaut, juggernaut-deployed, jumpjet-infantry, light-infantry, limpet-drone, limpet-mine, mammoth-mk1, mammoth-mk2, mcv, medic, mobile-emp-cannon, mobile-sensor-array, mobile-war-factory, orca-bomber, orca-fighter, power-plant, pulse-cannon, radar, refinery, sensor-array, service-depot, silo, subterranean-apc, tech-center, titan, upgrade-center, war-factory, wolverine. The HD rebuilds as glTF models, in `3d/`; `3d/README.md` lists their parts and conventions. The game does not use them.
+**3D models** (47): apc, apc-water, barracks, carryall, construction-yard, devils-tongue, disc-thrower, disruptor, dropship, dropship-bay, engineer, firestorm-generator, firestorm-wall, ghost-stalker, harvester, helipad, hover-mlrs, hunter-seeker, juggernaut, juggernaut-deployed, jumpjet-infantry, light-infantry, limpet-drone, limpet-mine, mammoth-mk1, mammoth-mk2, mcv, medic, mobile-emp-cannon, mobile-sensor-array, mobile-war-factory, orca-bomber, orca-fighter, orca-transport, power-plant, pulse-cannon, radar, refinery, sensor-array, service-depot, silo, subterranean-apc, tech-center, titan, upgrade-center, war-factory, wolverine. The HD rebuilds as glTF models, in `3d/`; `3d/README.md` lists their parts and conventions. The game does not use them.
 
 ## Using it
 

@@ -284,7 +284,7 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/c3mk3_stub.shp" 64 64 128
 PACK_ARGS+=("$TMPDIR/c3mk3_stub.shp:C3MK3.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/c3pred_stub.shp" 48 48 128
 PACK_ARGS+=("$TMPDIR/c3pred_stub.shp:C3PRED.SHP")
-# TS aircraft (Orca Fighter / Orca Bomber / Carryall) -- HD-only voxel renders, 32
+# TS aircraft (Orca Fighter / Orca Bomber / Carryall / Orca Transport) -- HD-only voxel renders, 32
 # facings each; dims match each one's rules.ini ShapeSize.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsorca_stub.shp" 48 48 32
 PACK_ARGS+=("$TMPDIR/tsorca_stub.shp:TSORCA.SHP")
@@ -292,6 +292,8 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tsorcab_stub.shp" 48 48 32
 PACK_ARGS+=("$TMPDIR/tsorcab_stub.shp:TSORCAB.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tscarry_stub.shp" 56 56 32
 PACK_ARGS+=("$TMPDIR/tscarry_stub.shp:TSCARRY.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsorcatran_stub.shp" 62 62 32
+PACK_ARGS+=("$TMPDIR/tsorcatran_stub.shp:TSORCATRAN.SHP")
 # TS Juggernaut -- 202 shapes: 120 walk + 32 deployed at rest + 32 deployed aiming + 18 deploy ladder.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsjugg_stub.shp" 56 56 202
 PACK_ARGS+=("$TMPDIR/tsjugg_stub.shp:TSJUGG.SHP")

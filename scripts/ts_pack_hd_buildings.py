@@ -253,6 +253,7 @@ UNITS = {
     "TSMWAR": _voxel_unit("tsmwar", 32, contact_shadow=True),
     "TSORCA": _voxel_unit("tsorca", 32),
     "TSORCAB": _voxel_unit("tsorcab", 32),
+    "TSORCATRAN": _voxel_unit("tsorcatran", 32),
     "TSSAPC": _voxel_unit("tssapc", 113),
     "TSSONIC": _voxel_unit("tssonic", 64, contact_shadow=True),
     "TSSUBTANK": _voxel_unit("tssubtank", 113, contact_shadow=True),

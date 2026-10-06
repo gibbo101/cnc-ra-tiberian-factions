@@ -399,4 +399,11 @@
 			<BuildIcon>BuildIcon_TS_Fsdf</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSORCATRAN" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSORCATRAN</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSORCATRAN_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_OrcaTransport</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 </ObjectTypeList>

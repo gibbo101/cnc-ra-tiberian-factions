@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""The sidebar side of the TS aircraft (Orca Fighter, Orca Bomber, Carryall):
+"""The sidebar side of the TS aircraft (Orca Fighter, Orca Bomber, Carryall, Orca Transport):
   - BuildIcon_TS_<Name>.tga from the TS cameo (CAMEO.PAL, no remap), the base RA_<INI>
     entry in TSBUILDABLES.XML, and the ModText rows.
   Their art is the HD rebuilds', packed by scripts/ts_pack_hd_buildings.py: 32 facings on a square
   canvas (ShapeSize x 8), no baked shadow, as aircraft get the engine's air shadow.
   Cameos and XML go to the tree asset_packs.py routes each name to.
 Inputs (set TS_ART_DIR):
-  $TS_ART_DIR/shp_orcaicon|shp_obmbicon|shp_otrnicon/frame-0000.png (ts_shp.py --no-remap)
+  $TS_ART_DIR/shp_orcaicon|shp_obmbicon|shp_otrnicon|shp_crryicon/frame-0000.png (ts_shp.py --no-remap)
 Then: faction_masks.txt <INI> 16, cameo_badge_build.py <INI>, cameo_variants_build.py.
 License: GPL v3.
 """
@@ -25,6 +25,8 @@ AIRCRAFT = {
                 "Heavy VTOL bomber. Drops its bombs from over the target and rearms at the TS Helipad."),
     "TSCARRY": ("otrnicon", "BuildIcon_TS_Carryall", "Carryall",
                 "Unarmed VTOL transport. Lifts one vehicle and sets it down where you send it."),
+    "TSORCATRAN": ("crryicon", "BuildIcon_TS_OrcaTransport", "Orca Transport",
+                   "Unarmed VTOL transport. Carries five infantry, landing to load and unload them."),
 }
 
 

@@ -57,6 +57,7 @@ mask (north 1, east 2, south 4, west 8), plus 16 damaged and 32 with the field o
 | `mobile-war-factory.glb` | MOBWARG | TSMWAR | hull | |
 | `orca-fighter.glb` | ORCA | TSORCA | hull | |
 | `orca-bomber.glb` | ORCAB | TSORCAB | hull | |
+| `orca-transport.glb` | ORCATRAN | TSORCATRAN | hull | |
 | `carryall.glb` | TRNSPORT | TSCARRY | hull | |
 | `dropship.glb` | DSHP | TSDSHP | hull | |
 | `juggernaut.glb` | JUGG (walking) | TSJUGG | body (with the barrel housings), legs | walk (15 steps, 0.2 s each, looping) |

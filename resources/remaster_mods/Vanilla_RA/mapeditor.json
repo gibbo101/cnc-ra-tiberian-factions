@@ -2077,6 +2077,22 @@
       "flags": []
     },
     {
+      "id": 16,
+      "kind": "aircraft",
+      "name": "tsorcatran",
+      "text_id": "TEXT_UNIT_TSORCATRAN",
+      "owner": "Germany",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": []
+    },
+    {
       "id": 7,
       "kind": "vessel",
       "name": "tdboat",

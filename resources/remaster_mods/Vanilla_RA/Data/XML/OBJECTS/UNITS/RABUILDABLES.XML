@@ -11431,6 +11431,22 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
+	<ObjectTypeClass Name="RA_TSORCATRAN_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSORCATRAN</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSORCATRAN_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_OrcaTransport</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSORCATRAN_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSORCATRAN</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSORCATRAN_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSORCATRAN_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 	<ObjectTypeClass Name="RA_TSJUGG_0" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TSJUGG</ObjectNameTextID>
