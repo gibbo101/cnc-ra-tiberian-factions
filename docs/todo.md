@@ -94,6 +94,10 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   shows it flying and hitting. Look before changing any TD-port bullet speed.
 - **The TD-port bullet path never damaged aircraft with `TSAAHeatSeeker`;** the cause was not
   found. Any other TD-port AA bullet (`BULLET_TDPATRIOT`) may share it.
+- **The committed cameo-variant block is behind `cameo_variants_build.py`:** a re-run adds
+  `RA_TSDPSA_0`, `RA_SG_TSFIRE_0` and `RA_SG_TSEMP_0`, reorders the block, and also emits doubled
+  keys (`RA_C3MK3_0_0`, `RA_TSFGEN_0_0`) for pack entries that are already variants. Fix the
+  generator's input before the next full re-run; new types are added by hand for now.
 
 ## UI polish
 
