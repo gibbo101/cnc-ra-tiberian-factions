@@ -67,7 +67,7 @@ def smooth_rim(r, Mx):
     m = (r.comp == T.RIM) & r.hitmask
     if not m.any():
         return
-    R, t = T.FT.pose()
+    R, t = T.pose('tur')
     c = Mx @ (R @ T.FT.p((T.TC[0], T.TC[1], 0.0)) + t)
     d = np.stack([r.x[m] - c[0], r.y[m] - c[1]], 1)
     d = d / (np.linalg.norm(d, axis=1, keepdims=True) + 1e-9)

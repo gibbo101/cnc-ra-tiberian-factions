@@ -32,8 +32,9 @@ P0 = dict(
     bs=4.4, bz=21.5, brad=2.3, bl=8.0, ml=3.0, mh=2.4,
     # the hatch's slot: so above the roof, sh tall
     so=1.0, sh=0.8,
-    # the sensor box at the roof's back corner
-    anu=-14.0, anv=-3.3, anh=4.6, anr=1.5,
+    # the sensor at the roof's back corner: 0 TS's house-colour box with its dark core (v1, v2); 2 the HD Titan's
+    # antenna in its place (Luke, v2.1: "remove the box and go for a Titan-esque antenna")
+    anu=-14.0, anv=-3.3, anh=4.6, anr=1.5, sensor=2.0,
     # the arch over the pack: from au0 (roof) to au1 (pack top), its peak ah above the roof, at av across
     arch=1.0, au0=2.2, au1=9.5, ah=3.0, av=0.0,
     # hip block under the shell
@@ -99,10 +100,14 @@ def upper_parts(P, dw=0.0):
             for fr in (0.42, 0.78):
                 out.append(rc.box(b + np.array([P['ml'] * fr, 0, 0]), I, (0.22, P['mh'] + 0.06, P['mh'] + 0.06),
                                   MSLOT, name='mslot'))
-    # the sensor: a small house-colour box standing on the roof's back corner (TS draws it with a dark core)
-    a = np.array([P['anu'], P['anv'], P['bw1'] - 0.5]) + o
-    out.append(rc.box(a + np.array([0, 0, P['anh'] / 2]), I, (P['anr'], P['anr'], P['anh'] / 2 + 0.5), ANT,
-                      name='sensor'))
+    # the sensor: a small house-colour box standing on the roof's back corner (TS draws it with a dark core); v2.1:
+    # the Titan's antenna in its place (antenna_parts)
+    if P.get('sensor', 0) >= 1.5:
+        out += antenna_parts(P, dw)
+    else:
+        a = np.array([P['anu'], P['anv'], P['bw1'] - 0.5]) + o
+        out.append(rc.box(a + np.array([0, 0, P['anh'] / 2]), I, (P['anr'], P['anr'], P['anh'] / 2 + 0.5), ANT,
+                          name='sensor'))
     if P.get('arch', 1.0) > 0.5:
         # the arch: a thin house-colour hoop along the centre line, from the roof at the hatch's front over to the
         # barrel pack's top (two straight runs up to its peak), and a grey cable from its front foot along the pack
@@ -145,6 +150,31 @@ def upper_parts(P, dw=0.0):
 
 RECESS, HSLIT, SCORE, MSLOT = 87, 88, 89, 90
 CLASS.update({RECESS: 5, HSLIT: 5, SCORE: 5, MSLOT: 5})
+# the antenna (Luke, v2.1: "remove the box and go for a Titan-esque antenna"): the HD Titan's (titan/torso2.py: a plain
+# black rod 0.45 px in radius standing 16 px above its shell), on the spot of TS's box at the roof's back corner
+# (ids clear of jbase.py's 91-95, jtlegs.py's 111-119 and jdeprender.py's 300-301)
+ANTENNA = 123
+CLASS.update({ANTENNA: 5})
+ANT_R = 0.45
+ANT_L = 16.0            # above the roof, as the Titan's stands above its shell
+
+
+def roof_at(P, u, v, dw=0.0):
+    """the shell's top at (u, v): a ray straight down onto it (the roof curves down towards the back)."""
+    t, who, _ = rc.cast([shell_part(P, dw)], np.array([[u, v, 200.0]]), np.array([0, 0, -1.0]), want_normals=False)
+    return 200.0 - float(t[0])
+
+
+ANT_BACK, ANT_OUT = 2.5, 1.2   # Luke: off the edge, into the house colour: 2.5 px behind the hatch's back left corner
+                               # and 1.2 px out from its side (the walker: u -10.5, v -7.5, 2.9 px in from the body's
+                               # side and clear of the roof's curve down at the back); the cabin the same against its hatch
+
+
+def antenna_parts(P, dw=0.0):
+    """the Titan's antenna standing on the roof just in from its back left corner, its foot inside the shell."""
+    u, v = P['hu0'] - ANT_BACK, -(P['hv'] + ANT_OUT)
+    top = roof_at(P, u, v, dw) + ANT_L
+    return [rc.cylinder((u, v, P['bw1'] - 2.0 + dw), (u, v, top), ANT_R, ANTENNA, 'antenna')]
 
 
 def details(P, dw=0.0):
@@ -163,11 +193,12 @@ def details(P, dw=0.0):
     uf = P['hu1'] - P['hs'] + P['hs'] * (P['bw1'] + P['hh'] - wm) / max(P['hh'], 1e-3)
     out.append(rc.box(np.array([uf - 0.1, 0, wm]) + o, I, (0.16, P['hv'] * 0.85, max(P['hh'] * 0.17, 0.25)), HSLIT,
                       name='slit'))
-    # the sensor's dark core
-    a = np.array([P['anu'], P['anv'], P['bw1'] - 0.5 + P['anh'] / 2 - 0.25]) + o
-    r = P['anr']
-    out.append(rc.box(a, I, (r + 0.03, r * 0.38, P['anh'] / 2 + 0.2), SCORE, name='core'))
-    out.append(rc.box(a, I, (r * 0.38, r + 0.03, P['anh'] / 2 + 0.2), SCORE, name='core'))
+    # the sensor's dark core (the electronics box has its vents instead)
+    if P.get('sensor', 0) < 0.5:
+        a = np.array([P['anu'], P['anv'], P['bw1'] - 0.5 + P['anh'] / 2 - 0.25]) + o
+        r = P['anr']
+        out.append(rc.box(a, I, (r + 0.03, r * 0.38, P['anh'] / 2 + 0.2), SCORE, name='core'))
+        out.append(rc.box(a, I, (r * 0.38, r + 0.03, P['anh'] / 2 + 0.2), SCORE, name='core'))
     return out
 
 

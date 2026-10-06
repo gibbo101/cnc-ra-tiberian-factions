@@ -1,7 +1,7 @@
 """draw a .glb's meshes (static pose: node TRS) through its orthographic camera onto the frame's canvas, to check
 the model lines up with the rendered frames.
 
-    python3 glbcheck.py model.glb frame.png [out.png] [canvas]
+    python3 glbcheck.py model.glb frame.png [out.png] [canvas: a side, or WxH]
 """
 import json, struct, sys
 import numpy as np
@@ -101,8 +101,9 @@ def raster(meshes, cam, W=448, H=448):
 
 if __name__ == '__main__':
     js, binb = load_glb(sys.argv[1])
-    size = int(sys.argv[4]) if len(sys.argv) > 4 else 384
-    img, m = raster(world_meshes(js, binb), camera(js), size, size)
+    size = sys.argv[4] if len(sys.argv) > 4 else '384'                 # a square side, or WxH
+    W, H = (int(v) for v in size.split('x')) if 'x' in size else (int(size), int(size))
+    img, m = raster(world_meshes(js, binb), camera(js), W, H)
     ref = np.array(Image.open(sys.argv[2]))[..., 3] > 250          # the frame's solid pixels (its shadow is 191)
     print('overlap of the .glb drawn through its camera with the frame: %.3f' % ((m & ref).sum() / (m | ref).sum()))
     vis = np.zeros(img.shape, np.uint8); vis[...] = (30, 30, 40)

@@ -22,6 +22,9 @@ import jdeployed as JD
 import jfitcabin as JC
 import jbase as JB
 import jrender as JR
+import jtlegs as TL
+import jtrender as JT
+import jtbase as TB
 from frameio import save
 
 HERE = os.path.dirname(os.path.abspath(__file__)) + '/'
@@ -124,7 +127,7 @@ def materials(r, comp, grain):
     put(legs, (JR.OCHRE * (1 - 0.35 * lit) + JR.BRIGHT * 0.35 * lit) * g1)
     dust = smoothstep(4.0, 0.5, r.z) * 0.35 * legs
     alb = alb * (1 - dust[..., None]) + (JR.GRIME * g1) * dust[..., None]
-    return alb
+    return JR.sensor_materials(r, alb, g1)                     # the antenna (the Titan's)
 
 
 ROUNDED = dict(JR.ROUNDED)
@@ -134,7 +137,7 @@ ROUNDED.update({JB.LIMB: 0.4, JB.LFOOT: 0.4})
 def deployed_scene(m, f, pitch):
     """the deployed piece with the cabin at the mod's facing f (32) and the barrels at pitch: (modelled parts,
     the barrels' pose)."""
-    return JD.base_world(m['M']) + cabin_parts(m, f), barrel_pose(m, f, pitch)
+    return TB.base_world(m['M']) + cabin_parts(m, f), barrel_pose(m, f, pitch)
 
 
 def frame(k, m, ss=4, sky=True, tsn=0.6):
@@ -157,7 +160,7 @@ def render(rcparts, pose, m, cam, ss=4, sky=True, tsn=0.6):
     parts = rcparts + bar
     nrc = len(rcparts)
     win = JR.find_window(parts, cam)
-    r = RR.RCRender(parts, cam, CANVAS, win, BOUNDS, ss=ss, shadow_len=JR.SHADOW_LEN, px_scale=JR.PX_SCALE)
+    r = JT.setup(parts, cam, CANVAS, win, BOUNDS, ss)              # the Titan's legs lit on their own (jtrender)
     hm = r.hitmask
     sh = hm.shape
     comp = r.comp
@@ -198,7 +201,7 @@ def render(rcparts, pose, m, cam, ss=4, sky=True, tsn=0.6):
         nn = np.where(cth < cm, cm * nr + np.sqrt(1 - cm * cm) * perp, nn)
         r.nx = np.where(isbar, nn[..., 0], r.nx); r.ny = np.where(isbar, nn[..., 1], r.ny)
         r.nz = np.where(isbar, nn[..., 2], r.nz)
-    occ = r.sky_occlusion() if sky else None
+    sh_extra, occ = JT.lighting(r, sky)
     grain = JR.grain_of(r, None)
     alb = materials(r, comp, grain)
     # the barrels' albedo (voxrender's: speckle held, gain, white cap, house green with TS's remap shades)
@@ -211,13 +214,9 @@ def render(rcparts, pose, m, cam, ss=4, sky=True, tsn=0.6):
     bhouse = np.clip((whouse - 0.35) / 0.3, 0, 1) * isbar
     balb = balb * (1 - bhouse[..., None]) + bhouse[..., None] * JR.GREEN[None, None, :] * (hshade * (1 + 1.1 * grain))[..., None]
     alb = np.where(isbar[..., None], balb, alb)
+    alb = TL.materials(r, alb)                                     # the Titan's legs and waist
     ao = 0.86 + 0.14 * np.clip(r.z / 14.0, 0, 1)
-    col = r.shade(alb, sky_occ=occ, ao=ao)
-    tc = np.array([cam.T[0] * cam.cE, cam.T[1] * cam.cE, cam.sE]); tc = tc / np.linalg.norm(tc)
-    nf = np.clip(r.nx * tc[0] + r.ny * tc[1] + r.nz * tc[2], 0, 1) * (1 - np.clip(r.nz, 0, 1))
-    if occ is not None:
-        nf = nf * (1 - 0.85 * np.clip(occ, 0, 1))
-    col = col + alb * (JR.FILL * nf)[..., None]
+    col = JT.finish(r, alb, occ, sh_extra, ao=ao)
     g = r.ground_alpha_full(shadow_parts=parts)
     img = r.compose(col, ground=g)
     house = (np.isin(comp, (JG.SHELL, JG.ANT, JG.ARCH)) & hm).astype(np.float32)

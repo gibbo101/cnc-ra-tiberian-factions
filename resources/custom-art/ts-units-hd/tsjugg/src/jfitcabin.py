@@ -26,9 +26,12 @@ def cabin_parts(P):
     """the shell, the hatch and its slot, the sensor box at the back, and the dark front plate."""
     out = JG.upper_parts(P, 0.0)
     keep = [p for p in out if p.comp in (JG.SHELL, JG.HATCH, JG.SLOT)]
-    a = np.array([P['anu'], P['anv'], P['bw1'] - 0.5])
-    keep.append(rc.box(a + np.array([0, 0, P['anh'] / 2]), np.eye(3), (P['anr'], P['anr'], P['anh'] / 2 + 0.5), JG.ANT,
-                       name='sensor'))
+    if P.get('sensor', 0) >= 1.5:
+        keep += JG.antenna_parts(P)                 # v2.1: the Titan's antenna in place of the box, as the walker's
+    else:
+        a = np.array([P['anu'], P['anv'], P['bw1'] - 0.5])
+        keep.append(rc.box(a + np.array([0, 0, P['anh'] / 2]), np.eye(3), (P['anr'], P['anr'], P['anh'] / 2 + 0.5),
+                           JG.ANT, name='sensor'))
     c = np.array([P['bu1'] + P['fu'] / 2 + 0.2, 0, (P['fw0'] + P['fw1']) / 2])
     keep.append(rc.box(c, np.eye(3), (abs(P['fu']) / 2 + 0.3, P['fv'], (P['fw1'] - P['fw0']) / 2), FRONT, name='front'))
     return keep

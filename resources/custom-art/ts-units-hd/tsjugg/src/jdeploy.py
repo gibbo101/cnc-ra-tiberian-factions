@@ -7,12 +7,15 @@ extents per frame, jdeploy.MEASURED):
     1-5      the west limb slides out from under the body (its foot from x 38 to 31 in TS's frame)
     4-12     the east limb slides out (55 to 68)
     6-10     the body slides back onto the column, 9 px right and 2 down in TS's frame, in steps of 2, 2, 2, 2, 1
+    7-8      under it, the waist (the Titan's dome, MMCH's pixels in TS) moves onto the cabin's axis: TS's dome pixels
+             move 3 px right and 3 down, two thirds of the way in frame 7 (jtbase.py)
     10-11    the barrel housings telescope forward (3 px, then 5)
     12-16    the three barrels slide out of them (2 px a frame)
     17       the deployed piece (= rest frame 132: TS's own last frame leaves the barrels to the engine's voxel, so
              ours carries them and nothing pops when the game turns to the deployed frames)
 
-The walker's two legs stay planted throughout (TS's front limb is the walker's near leg, pixel for pixel).
+The walker's two legs (the Titan's, jtlegs.py) stay planted throughout (TS's front limb is the walker's near leg,
+pixel for pixel).
 
     python3 jdeploy.py frames 184,190,201 [ss] [outdir] [sky]
 """
@@ -25,6 +28,8 @@ import jbase2 as JB2
 import jdeployed as JD
 import jdeprender as DR
 import jrender as JR
+import jtlegs as TL
+import jtbase as TB
 from frameio import save
 
 FIRST = 184
@@ -51,7 +56,10 @@ def progress():
     pack = [min(1.0, max(0.0, (26 + 9 * slide[t] - M['pack_x0'][t]) / 5.0)) for t in range(17)] + [1.0]
     # the barrels: their tips against where the slid, telescoped housings put the muzzles
     rods = [min(1.0, max(0.0, (21 + 9 * slide[t] - 5 * pack[t] - M['rods_x0'][t]) / 9.0)) for t in range(17)] + [1.0]
-    return dict(slide=slide, west=west, east=east, pack=pack, rods=rods)
+    # the waist: MMCH's dome pixels at the walker's place to frame 6, two thirds of the way (2 px of 3) in 7, at the
+    # base's pivot from 8 (jdeploy dome tracking: frames 0-6 match at (1, 11), 7 at (3, 13), 8-16 at (4, 14))
+    waist = [0.0] * 7 + [2.0 / 3.0] + [1.0] * 10
+    return dict(slide=slide, west=west, east=east, pack=pack, rods=rods, waist=waist)
 
 
 PROG = progress()
@@ -65,7 +73,7 @@ def setup():
     M = m['M']
     # the walker's ground point in the deployed world (origin the column's foot, x east, y south, z up)
     g = JB2.walker_offset(M['bax'], M['by0'], JB2.S32) + np.array([M['base_off'], 0.0, 0.0])
-    P = wm['P']; pose = JR.walk_pose(wm, 0)
+    P = wm['P']; pose = TB.POSE0                       # the walker at walk step 0 on the Titan's gait (walk frame 45)
     # where the slid body ends: the walker's shell centre onto the cabin's
     PC = M['PC']
     cw = np.array([(P['bu0'] + P['bu1']) / 2, 0.0, (P['bw0'] + P['bw1']) / 2 + pose[6]])
@@ -86,12 +94,12 @@ def limb_out(P, yaw, p):
 
 
 def walker_body(S, t):
-    """the walker's upper body, hip block and its barrels at deploy frame t, in the deployed world."""
+    """the walker's upper body and its barrels at deploy frame t, in the deployed world."""
     P = dict(S['P']); pose = S['pose']
     pr = PROG
     ext = pr['pack'][t] * PACK_LEN
     Q = dict(P); Q['bl'] = P['bl'] + ext
-    parts = JG.upper_parts(Q, pose[6]) + JG.lower_static(Q, pose[6]) + JG.details(Q, pose[6])
+    parts = JG.upper_parts(Q, pose[6]) + JG.details(Q, pose[6])
     # the barrels sliding out of the housings: three thin grey rods from the muzzles' fronts
     rl = pr['rods'][t] * RODS_LEN
     if rl > 0.05:
@@ -99,15 +107,19 @@ def walker_body(S, t):
             a = np.array([Q['pu1'] + Q['bl'] + Q['ml'] - 0.3, k * Q['bs'], Q['bz'] + pose[6]])
             parts.append(rc.cylinder(a, a + np.array([rl + 0.3, 0, 0]), 0.75, DR.ROD, 'rod'))
     o = S['start'] + pr['slide'][t] * (S['end'] - S['start'])
-    return [p.moved(CW5, o) for p in parts]
+    return TL.move(parts, CW5, o)
 
 
 def walker_legs(S):
-    P = S['P']; pose = S['pose']
-    out = []
-    for side, ang in ((-1, pose[0:3]), (1, pose[3:6])):
-        out += [p.moved(CW5, S['g']) for p in JG.leg_parts(side, *ang, P, pose[6])[0]]
-    return out
+    """the Titan's legs, planted where the walker stands (jtbase)."""
+    return TB.legs_world(S['m']['M'])
+
+
+def walker_waist(S, t):
+    """the Titan's waist at deploy frame t: from where the walker carries it to the base's pivot."""
+    M = S['m']['M']
+    d, _ = TB.waist_shift(M)
+    return TL.move(TB.waist_walker(M), np.eye(3), PROG['waist'][t] * d)
 
 
 def scene(S, t):
@@ -118,7 +130,7 @@ def scene(S, t):
     side = []
     for yaw, p in ((PB['yw'], PROG['west'][t]), (PB['ye'], PROG['east'][t])):
         side += [q.moved(np.eye(3), (M['base_off'], 0.0, 0.0)) for q in limb_out(PB, yaw, p)]
-    return walker_body(S, t) + walker_legs(S) + side, None
+    return walker_body(S, t) + walker_legs(S) + walker_waist(S, t) + side, None
 
 
 def frame(k, S, ss=4, sky=True):

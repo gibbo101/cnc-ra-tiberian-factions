@@ -13,7 +13,7 @@ D3 = PKG + '-3d'
 VOX = '/home/claude/units/work/vox/'
 RENDERER = HANDOFF + '/renderer/'
 
-SRC = ['jugg.py', 'jrender.py', 'jdeprender.py', 'jdeployed.py', 'jdeploy.py', 'jbase.py', 'jbase2.py', 'jfit.py',
+SRC = ['jugg.py', 'jtlegs.py', 'jtwalker.py', 'jtrender.py', 'jtbase.py', 'titan_legs.json', 'jrender.py', 'jdeprender.py', 'jdeployed.py', 'jdeploy.py', 'jbase.py', 'jbase2.py', 'jfit.py',
        'jfitcabin.py', 'jfithatch.py', 'jfitwalk.py', 'jfitwalker.py', 'jbarfit.py', 'jmap.py', 'jclass.py', 'jpal.py',
        'jfinal.py', 'jpreviews.py', 'jexport.py', 'jtips.py', 'jcheck.py', 'jshapecheck.py', 'jpackage.py', 'paths.py',
        'fit_walker_e.json', 'fit_walk_e.json', 'fit_cabin_a.json', 'fit_hatch_a.json', 'fit_base2_a.json',
@@ -62,8 +62,8 @@ def package_src():
     # render a walk frame, a deployed frame and a deploy frame from a copy, at 1 ray a pixel
     test = tempfile.mkdtemp()
     shutil.copytree(Sd, test + '/src')
-    code = ('import jrender as JR, jdeprender as DR, jdeploy as JD\n'
-            'm = JR.load("fit_walk_e.json"); a = JR.frame(45, m, 1, False)[0]\n'
+    code = ('import jtrender as JT, jdeprender as DR, jdeploy as JD\n'
+            'm = JT.load(); a = JT.frame(45, m, 1, False)[0]\n'
             'd = DR.load(); b = DR.frame(132, d, 1, False)[0]\n'
             'c = JD.frame(190, JD.setup(), 1, False)[0]\n'
             'print("src ok", a.size, b.size, c.size)')
@@ -74,8 +74,8 @@ def package_src():
     return left, out
 
 
-README = """Juggernaut (Firestorm [JUGG]) in HD for Tiberian Factions: TSJUGG
-=================================================================
+README = """Juggernaut (Firestorm [JUGG]) in HD for Tiberian Factions: TSJUGG  (v2.1: on the Titan's legs)
+===================================================================================================
 
 frames/     tsjugg-0000.png ... tsjugg-0201.png, the mod's 202 frames on its 448 x 448 canvas, each with a -trim.png
             (white = house colour, antialiased):
@@ -89,6 +89,7 @@ previews/   walk-east.gif, walk-south.gif   the walk, the mod's frames beside HD
             deploy.gif                the deploy, the mod's frames beside HD, held at both ends
             turn.gif                  the deployed cabin turning through its 32 facings at rest, beside the mod's
             walk-8-facings.png        TS's sprite, the mod's frame and HD, walk step 0 in each facing
+            titan-legs.png            TS's sprite, HD and the HD Titan's leg frame, walk step 0 in each facing
             rest-8-facings.png, aim-8-facings.png   the deployed piece, the mod's frames beside HD
             scale.png                 next to the HD harvester and the HD Titan, as the game draws them
             shape-walker.png, shape-cabin.png, shape-base.png   TS's sprites as colour classes beside the model's,
@@ -97,25 +98,59 @@ ts-jugg-hd-3d/   the 3D models and the barrel tips, in their own zip (ts-jugg-hd
 src/        the model, its fits, the renderers and the checks (see Rebuilding below)
 
 
+v2: the Titan's legs (Luke: "use the Titan's legs")
+----------------------------------------------------
+TS draws the Juggernaut on the Titan's own legs, and v2 follows it:
+- Walking: below the body, every pixel of TS's JUGGER walk frames is a pixel of MMCH's (the Titan's leg sprite), the
+  same frame for frame, 3 TS px higher.  So the walker stands on the HD Titan's legs as signed off: their shape, their
+  paint and their walk (the Titan's gait, fitted to all 120 of TS's walk frames, here at TS's 15 steps), the feet on
+  the Juggernaut's ground.  The Titan's waist (pelvis, bearing ring, dome) takes the place of v1's olive hip block,
+  under the body; the body rides the gait's bob (JUGGER's own bob, which v1 fitted step by step, follows the same
+  curve).
+- Deployed: TS's base frame (DJUGG 0) is MMCH's pixels too.  Its front limb is the walker's near leg where the walker
+  stands, and the pivot the cabin turns on is MMCH's dome, moved 3 px right and 3 px down: onto the cabin's turning
+  axis (it lands 0.1 px from it).  So the base is the Titan's two legs planted where the walker stands and the
+  Titan's waist on the cabin's axis, the cabin turning on its dome as the Titan's upper body does, with the two side
+  limbs as fitted.  v1's pivot column and rim were the fit's reading of those dome pixels.
+- The deploy: the legs stay planted; under the sliding body the waist moves onto the cabin's axis in frames 7-8, as
+  TS's dome pixels do (DJUGGMK frames 0-6 have them where the walker carries them, 7 two thirds of the way, 8-16 on the
+  axis).
+- The legs are lit as the HD Titan's are: on their own, as TS lights its leg sprite (they take shadow and sky cover
+  only from themselves), the waist in the body's shadow and cover so it reads dark, as TS's does.  The cabin, body
+  and side limbs are lit as in v1.
+- The whole unit sits a quarter of a canvas pixel lower than v1 (see Look: it keeps the lowest body pixel at y 363
+  on the Titan's toes), so the barrel tips in muzzle.txt are a quarter of a pixel lower too.
+Everything else is as v1 (signed off at the shape check): the body, the cabin, the barrels, the deploy's timing.
+
+
+v2.1: the antenna (Luke: "remove the box and go for a Titan-esque antenna")
+---------------------------------------------------------------------------
+The house-colour box TS draws on the roof's back corner is gone; in its place stands the HD Titan's antenna: a plain
+black rod 0.45 px in radius, standing 16 px above the roof as the Titan's stands above its shell.  The deployed cabin
+has it too (TS's cabin is the same body).  It is not house colour, so the -trim masks no longer have the box.
+
+
 What it is
 ----------
 One 3D model of the walker and one of the deployed piece, fitted to TS's own art and drawn the way the HD buildings and
 the other units are:
-- the walker fitted to all 120 of TS's JUGGER frames (8 facings x 15 steps): its shape to the standing frames, then
-  each step's pose to that step's 8 facings.  At step 0 its silhouette overlaps TS's by {walker:.2f} on average in TS's
-  own camera ({wmin:.2f} to {wmax:.2f} by facing; TS's legs are a few pixels wide, so a pixel counts for a lot);
-- the cabin fitted to DJUGG_A's 32 facings (overlap {cabin:.2f}), the base to DJUGG frame 0 ({base:.2f});
+- the walker's body fitted to all 120 of TS's JUGGER frames (8 facings x 15 steps), on the HD Titan's legs and walk
+  (above).  At step 0 its silhouette overlaps TS's by {walker:.2f} on average in TS's own camera ({wmin:.2f} to {wmax:.2f} by
+  facing; TS's legs are a few pixels wide, so a pixel counts for a lot; v1's legs, fitted to JUGGER itself, 0.82);
+- the cabin fitted to DJUGG_A's 32 facings (overlap {cabin:.2f}); the base, the Titan's legs and waist and the two side
+  limbs, against DJUGG frame 0: {base:.2f} (v1's column, fitted to that frame, 0.89);
 - the barrels are TS's own DJUGGBAR.VXL, voxel by voxel, in its colours and normals, at the size and place the mod's
   deployed frames draw them, hinged at the breech.
 Walker: the house-green body with the light grey hatch on its roof (its dark slot, the slit across its front, the dark
-panel in its top), the sensor on the roof's back corner with its dark core, the two green hoops over the roof, the
-three khaki barrel housings side by side with the steel muzzle brakes and their two slots, the olive hips, and the
-two ochre legs with their joints.
-Deployed: the walker's two legs planted as TS's base draws them (TS's front limb is the walker's near leg, pixel for
-pixel) with the pivot column, its rim and the two side limbs; the cabin turning on the column; the three barrels.
+panel in its top), the Titan's black antenna on the roof's back corner, the three khaki barrel housings side by side
+with the steel muzzle brakes and their two slots; under it the Titan's waist
+and its two legs: gold thighs with their armour plates' edges, steel knee spurs with dark tips, gold shins and
+split-toed feet, steel joints, round hip joints.
+Deployed: the Titan's two legs planted as TS's base draws them (TS's front limb is the walker's near leg, pixel for
+pixel), its waist on the cabin's axis, the two side limbs; the cabin turning on the dome; the three barrels.
 The deploy follows TS's DJUGGMK frame by frame, what moves when measured off TS's frames: the west limb slides out
-(frames 1-5), the east limb (4-12), the body slides back onto the column (6-10), the housings telescope forward
-(10-11) and the barrels slide out of them (12-16).
+(frames 1-5), the east limb (4-12), the body slides back onto the pivot (6-10) and the waist moves under it (7-8), the
+housings telescope forward (10-11) and the barrels slide out of them (12-16).
 
 Against the mod's current frames the silhouettes overlap by {ov_all:.2f}: walk {ov_walk:.2f}, at rest {ov_rest:.2f},
 aiming {ov_aim:.2f}, the deploy {ov_deploy:.2f}.  Those frames are TS's sprites scaled up 6.3 times, so this is mostly
@@ -137,28 +172,32 @@ Keep (from the hand-off README)
 Look
 ----
 - Camera: the RA-grid camera, orthographic, 32 degrees above the ground, looking north; 6.33 canvas px per TS pixel,
-  the size the mod has now.  TS's sprite point (x, y) sits at canvas (6.33 x - 76.72, 6.33 y + 4.33): the mod's frames
-  matched to TS's (overlap 0.97), then 5 px up, because the 32-degree camera draws ground in front of the unit about
-  3 px lower than TS's 30 degrees and the ground line must stay at y {ground}.
+  the size the mod has now.  TS's sprite point (x, y) sits at canvas (6.33 x - 76.72, 6.33 y + 4.58): the mod's frames
+  matched to TS's (overlap 0.97), then 4.75 px up, because the 32-degree camera draws ground in front of the unit
+  about 3 px lower than TS's 30 degrees and the ground line must stay at y {ground} (v1 was 5 px up: the Titan's toes
+  end a little short of v1's feet, so v2 sits a quarter of a canvas pixel lower to keep the lowest body pixel there).
+  The HD Titan's canvas is 6.4 px per TS pixel, so the legs are 1% smaller here, each at its own canvas's scale.
 - The deployed piece stands where TS's deploy puts it against the walker (DJUGGMK's frame 0 is JUGGER's CW5 frame
   moved by (1, 14) TS px).
 - Light, sky, ambient, outline and supersampling are the buildings' (hd.py), with the camera fill on the sides facing
   the camera as on the other units.  The game draws this canvas at two thirds (8 canvas px per classic pixel), so the
   outline, the shadow's blur and the grain are 1.5 times as wide on the canvas, as on the Titan's.
 - The shadow falls as the other walkers' do (62% as long as the buildings'), so it stays on the canvas.
-- Colours read from TS's frames: house green 0,214,0 x (1 + 1.1 grain) on the body, the sensor and the hoops (the
-  -trim masks cover exactly those); the hatch light grey with dark slots; khaki housings and barrels; steel muzzles;
-  the legs in the Titan's yellow-brown (TS's ochre ramp), olive hips, grey joints.
+- Colours read from TS's frames: house green 0,214,0 x (1 + 1.1 grain) on the body (the -trim masks cover exactly
+  that); the antenna the HD Titan's black; the hatch light grey with dark slots; khaki housings and barrels; steel muzzles;
+  the legs and waist the HD Titan's (its yellow-brown paint, TS's ochre ramp; steel joints and spurs).
 - Facing east the barrels reach the canvas's right edge in three rest frames, as they do in six of the mod's: the
   canvas is the mod's.
 
 
 3D models (ts-jugg-hd-3d/)
 -------------------------
-tsjugg-walker.glb     the walker facing east, its walk as a glTF animation ("walk": 15 steps, 0.2 s each, looping)
-tsjugg-deployed.glb   the deployed piece: the base (as TS draws it, deployed facing south-west), the cabin turned east
-                      with the barrels at their rest pitch on a hinge node (animation "aim": raised to 45 degrees and
-                      back) and markers at the three muzzles
+tsjugg-walker.glb     the walker facing east on the Titan's legs, its walk as a glTF animation ("walk": 15 steps,
+                      0.2 s each, looping)
+tsjugg-deployed.glb   the deployed piece: the base (the Titan's legs as TS draws them deployed facing south-west, the
+                      waist on the cabin's axis, the side limbs), the cabin turned east with the barrels at their rest
+                      pitch on a hinge node (animation "aim": raised to 45 degrees and back) and markers at the three
+                      muzzles
 muzzle.txt            the barrel tips on the canvas for every rest and aim frame (120-183)
 - Axes: glTF's own (y up): x east, y up, z south.  1.0 = one cell (192 px on this canvas, 128 px in the game).
   Origin: the unit's position on the ground (the walker's ground point; the deployed piece stands where the deploy
@@ -172,9 +211,25 @@ muzzle.txt            the barrel tips on the canvas for every rest and aim frame
 
 Judgement calls (each one easy to change)
 -----------------------------------------
-- After the shape check (signed off): the arches as two thin hoops either side of the roof, as TS's diagonal and side
-  views draw them (the silhouette fit had shrunk them to a stub); the muzzle brakes' two slots (JUGGER CW2); the legs
-  in the Titan's yellow-brown, a little brighter than at the shape check.
+v2.1:
+- The antenna is the Titan's as it is: its radius, its black and its height above the body (16 px; jugg.ANT_R,
+  ANT_L), standing where TS's box stood (P['sensor'] = 0 puts TS's box back).
+v2:
+- No hoops over the roof (Luke: they are not in his reference art or the voxel, and TS's deployed cabin, DJUGG_A, has
+  none).  TS's walker sprite draws only a thin 1 px green arc each side between the hatch and the barrel housings,
+  which v1 had built into two hoops; it is left out (jrender.load: P['arch'] = 1 puts the hoops back).
+- The legs' height: the Titan's fit and the Juggernaut's put the ground a third of a TS pixel apart (the same legs
+  would stand 0.39 px lower by the pixels); they stand on the Juggernaut's ground.  The walk's overlap with TS's is
+  the same either way (0.81).
+- The deployed waist moves 3.5 px back, 0.9 left and 4.7 down from where the walker carries it, so the thighs' tops
+  come to its top corners: the near hip joint stays on its thigh there (TS's moved dome pixels cover that corner), the
+  far one goes with the waist (where the walker carries it, it would stand out past the dome, where TS's base has
+  nothing).
+- The side limbs keep v1's paint (the same yellow-brown) and shape: they are TS's base's own, not the Titan's.
+- Not taken from the reference renders: their chrome pistons and flat oval feet (neither TS's legs nor the HD
+  Titan's have them).
+From v1 (signed off at the shape check):
+- The muzzle brakes' two slots (JUGGER CW2).
 - The hatch refitted with TS's white sides told apart from its grey top: it came out taller and narrower than the
   silhouette fit had it.
 - The three barrel housings are three cylinders side by side, as TS's front view draws them (the silhouette fit had
@@ -192,12 +247,16 @@ Rebuilding (src/)
 Python 3 with numpy, scipy, Pillow and cma.  The renderer files from the buildings (hd.py, walls2.py, wnoise.py,
 export3d.py) and the voxel reader (vxl.py) are included; paths.py says where the hand-off folders are (TS_HANDOFF:
 the folder holding 04-TSJUGG/, 00-TSHARV-example/ and renderer/).
-  jugg.py                the walker as convex parts;  jfitwalker.py, jfitwalk.py  its fit and its walk
+  jugg.py                the walker's body as convex parts;  jfitwalker.py, jfitwalk.py  its fit and v1's walk
                          (fit_walker_e.json, fit_walk_e.json)
+  jtlegs.py              the HD Titan's legs, waist, gait and paint (from the Titan's src: legfit.py, gait.py,
+                         titanmat.py; its fit and gait in titan_legs.json);  jtwalker.py  the walker on them
   jfitcabin.py, jfithatch.py   the deployed cabin's fit (fit_cabin_a.json, then the hatch: fit_hatch_a.json)
-  jbase2.py              the deployed base (fit_base2_a.json);  jbarfit.py  the barrels' size, mount and pitches
+  jtbase.py              the deployed base on the Titan's legs;  jbase2.py  the base fit (fit_base2_a.json: the side
+                         limbs and the base's place);  jbarfit.py  the barrels' size, mount and pitches
                          (fit_bar_rest.json, fit_bar_aim.json);  jmap.py  how the mod scales and places TS's sprites
-  jrender.py             a walk frame;  jdeprender.py, jdeployed.py  a deployed frame;  jdeploy.py  a deploy frame
+  jtrender.py            a walk frame, and the Titan legs' lighting in every frame;  jrender.py  the camera, the
+                         body's materials;  jdeprender.py, jdeployed.py  a deployed frame;  jdeploy.py  a deploy frame
   jfinal.py              all 202 frames;  jcheck.py  the checks above;  jtips.py  muzzle.txt
   jpreviews.py, jshapecheck.py   the previews;  jexport.py  the .glb files;  glbcheck.py  draws a .glb through its
                          camera to check it;  jpackage.py  this README, src/ and the zips
@@ -219,8 +278,9 @@ def write_readmes():
     txt = README.format(**vals)
     open(PKG + '/README.txt', 'w').write(txt)
     i = txt.index('3D models (ts-jugg-hd-3d/)'); j = txt.index('Judgement calls')
-    open(D3 + '/README.txt', 'w').write('Juggernaut (Firestorm [JUGG]) in HD: the 3D models\n'
-                                        '==================================================\n\n' + txt[i:j].rstrip() + '\n')
+    open(D3 + '/README.txt', 'w').write('Juggernaut (Firestorm [JUGG]) in HD: the 3D models (v2.1: on the Titan\'s legs)\n'
+                                        '===========================================================================\n\n'
+                                        + txt[i:j].rstrip() + '\n')
     return txt
 
 

@@ -1,7 +1,7 @@
 """the Juggernaut's shape check: TS's colour classes beside the model's in TS's own camera (walker, cabin, base),
-and the HD renders beside the mod's frames.
+and the HD renders beside the mod's frames.  The walker and the base stand on the Titan's legs (jtwalker, jtbase).
 
-    python3 jshapecheck.py OUTDIR [HD_DIR]
+    python3 jshapecheck.py OUTDIR [HD_DIR] [shape.json to update]
 """
 import json, os, sys
 import numpy as np
@@ -11,18 +11,24 @@ import jfit as JF
 import jfitcabin as JC
 import jbase as JB
 import jrender as JR
+import jtlegs as TL
+import jtwalker as TW
+import jtbase as TB
+import jdeployed as JD
 
 OUT = sys.argv[1]
 HD = sys.argv[2] if len(sys.argv) > 2 else 'out_sc'
+SHAPE = sys.argv[3] if len(sys.argv) > 3 else None
 os.makedirs(OUT, exist_ok=True)
 INMOD = HANDOFF + '/04-TSJUGG/in-mod/tsjugg/frames/tsjugg-%04d.png'
 BG = (92, 104, 72, 255)
 
-# 1. the walker at step 0: TS's classes and the model's (with the details and TS's three barrel housings)
+# 1. the walker at step 0 on the Titan's legs: TS's classes and the model's (with the details and TS's three barrel
+# housings)
 m = JR.load('fit_walk_e.json')
-P = m['P']; pose = JR.walk_pose(m, 0)
+P = m['P']
 V = JF.Views([cw * 15 for cw in range(8)])
-parts = JG.body_parts(P, pose) + JG.details(P, pose[6])
+parts = TW.all_parts(P, 0)
 iou = V.iou(parts, m['ax'], m['y0'])
 JF.compare(V, parts, m['ax'], m['y0'], OUT + '/walker-classes.png', label='walk')
 print('walker IoU per facing', np.round(iou, 3), 'mean %.3f' % iou.mean())
@@ -36,13 +42,14 @@ ciou = CV.iou(cparts, jc['cax'], jc['cy0'])
 JF.compare(CV, cparts, jc['cax'], jc['cy0'], OUT + '/cabin-classes.png', label='cabin')
 print('cabin IoU', np.round(ciou, 3), 'mean %.3f' % ciou.mean())
 
-# 3. the base (DJUGG frame 0)
+# 3. the base (DJUGG frame 0): the Titan's legs, its waist on the cabin's axis, the two side limbs (jtbase), in the
+# base's own frame (the column's foot) and TS's 30-degree camera
 import jbase2 as JB2
 from paths import HANDOFF
 jb = json.load(open('fit_base2_a.json'))
-PB = dict(JB2.P0); PB.update(jb['P'])
+M = JD.load_fits()
 BV = JB.BaseView()
-bparts = JB2.base_parts(PB, jb['bax'], jb['by0'])
+bparts = TL.move(TB.base_world(M, JB2.S30), np.eye(3), (-M['base_off'], 0.0, 0.0))
 biou = BV.iou(bparts, jb['bax'], jb['by0'])
 JF.compare(BV, bparts, jb['bax'], jb['by0'], OUT + '/base-classes.png', label='base', z=10)
 print('base IoU', np.round(biou, 3))
@@ -79,4 +86,9 @@ if os.path.exists('%s/tsjugg-%04d.png' % (HD, 148)):
     pair_sheet([120 + 4 * f for f in range(8)], 'deployed-rest-hd.png', crop=(20, 30, 428, 390), labels=DIRS)
 if os.path.exists('%s/tsjugg-%04d.png' % (HD, 180)):
     pair_sheet([152 + 4 * f for f in range(8)], 'deployed-aim-hd.png', crop=(20, 0, 428, 390), labels=DIRS)
+if SHAPE:
+    st = json.load(open(SHAPE)) if os.path.exists(SHAPE) else {}
+    st.update(walker=round(float(iou.mean()), 3), wmin=round(float(iou.min()), 3), wmax=round(float(iou.max()), 3),
+              cabin=round(float(ciou.mean()), 3), base=round(float(biou.mean()), 3))
+    json.dump(st, open(SHAPE, 'w'), indent=1)
 print('done')

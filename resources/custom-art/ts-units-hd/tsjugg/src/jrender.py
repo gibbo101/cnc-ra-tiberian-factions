@@ -26,7 +26,9 @@ PPU = 6.33
 # ground line is the mod's (the lowest body pixel of the deployed frames, deploy frames 184 and 201 and walk frame 45 at
 # canvas y 363, the README's "Keep"): the RA camera's 32 degrees draws ground TS's 30-degree sprites put 15 px in
 # front of the unit about 3 px lower, which drops the nearest foot that much
-MAP = (6.33, -76.72, 9.33 - 5.0)
+# v2: a quarter of a canvas px lower again, so that on the Titan's legs (whose toes end a little short of v1's feet) the
+# lowest solid body pixel is still y 363 in every deployed and deploy frame (the README's "Keep")
+MAP = (6.33, -76.72, 9.33 - 5.0 + 0.25)
 SHADOW_LEN = 0.62                  # the walkers' (Titan, Wolverine, Mammoth Mk. II)
 PX_SCALE = 1.5
 BOUNDS = ((-30, 30), (-30, 30), (-1, 45))
@@ -44,6 +46,7 @@ OLIVE = np.array([66, 60, 34.])           # the hip block (TS's 76-79, 119-127)
 JOINT = np.array([84, 84, 84.])           # knees and ankles (TS's 13, 53)
 CABLE = np.array([120, 120, 124.])
 GRIME = np.array([112, 104, 78.])
+ANTENNA_C = np.array([28, 28, 30.])       # the antenna: the HD Titan's black
 FILL = 0.32
 HOUSE_COMPS = (JG.SHELL, JG.ANT, JG.ARCH)
 
@@ -75,6 +78,10 @@ def load(path):
              cl=0.0)
     # the muzzle brakes' two slots (JUGGER CW2: darker columns 2 and 4 px from the muzzle's back)
     P['mslots'] = 1.0
+    # v2: no hoops over the roof (Luke: they are not in his reference art or the voxel; TS's deployed cabin, DJUGG_A,
+    # has none either).  The only trace is the thin 1 px green arc JUGGER draws each side between the hatch and the
+    # barrel housings, which v1 had built into two hoops (P['arch'] = 1 puts them back).
+    P['arch'] = 0.0
     m = dict(P=P, ax=js['ax'], y0=js['y0'], stand=js.get('pose'))
     if 'poses' in js:
         m['walk'] = {int(k): v for k, v in js['poses'].items()}
@@ -164,6 +171,12 @@ def materials(r, P):
     # grime rising from the ground on the legs
     dust = smoothstep(4.0, 0.5, r.z) * 0.35 * legs
     alb = alb * (1 - dust[..., None]) + (GRIME * g1) * dust[..., None]
+    return sensor_materials(r, alb, g1)
+
+
+def sensor_materials(r, alb, g1):
+    """the antenna on the roof's back corner: the Titan's black (titanmat.BLACK)."""
+    np.copyto(alb, np.broadcast_to(ANTENNA_C * g1, alb.shape).astype(np.float32), where=(r.comp == JG.ANTENNA)[..., None])
     return alb
 
 

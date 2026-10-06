@@ -15,6 +15,7 @@ import numpy as np
 import walls2 as W
 from walls2 import smoothstep
 import sonmodel as T
+from soncam import K_TUR, PPU as PPU_HULL, PPU_T0
 
 GREEN = np.array([0, 214, 0.])
 OCHRE = np.array([214, 166, 72.])
@@ -45,6 +46,7 @@ HAZ_K = np.array([30, 28, 26.])
 GRIME = np.array([112, 104, 78.])
 FILL = 0.32
 PPU = 6.27
+KS = K_TUR / (PPU_T0 / PPU_HULL)                     # v4's turret on screen against v3's: its stripes keep v3's width
 
 PAINT = {T.OCHRE: OCHRE, T.BELT: DARK, T.BODY: BODY_C, T.BLACK: BLACK_C, T.OLIVE: OLIVE_C, T.TRENCH: TRENCH_C,
          T.RING: OCHRE, T.HAZARD: HAZ_Y, T.RIM: GREY, T.BASE: np.array([50, 50, 54.]),
@@ -162,44 +164,17 @@ def materials(r, occ=None):
     bd = is_(T.BODY) & hullp
     if bd.any():
         # TS's light grey floor in the trench beside the front box; TS's ochre band across behind it
-        put(bd & top & (y > 13.9) & (x > 24.0) & (x < 44.0), TRENCH_C * g1)
-        seam |= bd & top & (y > 13.9) & (x > 24.0) & (x < 44.0) & (phase(x, 3.0, 25.0) < 0.07)
+        put(bd & top & (y > 13.0) & (x > 24.0) & (x < 44.0), TRENCH_C * g1)
+        seam |= bd & top & (y > 13.0) & (x > 24.0) & (x < 44.0) & (phase(x, 3.0, 25.0) < 0.07)
         put(bd & top & (x > 21.0) & (x < 24.8) & (y < 12.0), OCHRE * g1)
         put(bd & top & (x > 21.0) & (x < 24.8) & (y >= 12.0), OCHRE_D * 0.8 * g1)
-    gr = is_(T.GREEN) & hullp
-    if gr.any():
-        rd = gr & (x < 21.6) & (x > 2.9)
-        seam |= rd & top & ((np.abs(x - 12.2) < 0.07) | (np.abs(y - 13.5) < 0.07))
-        # a hatch in the rear deck (its rim, a handle) and a pair of louvred vents ahead of it
-        rt = rd & top & (z > 9.8)
-        seam |= rt & rect_seam(x, y, 5.0, 8.6, 14.4, 18.4, 0.07)
-        up += rt * rect(x, y, 6.2, 7.4, 17.4, 17.7)
-        for ya, yb in ((8.0, 12.6), (14.4, 19.0)):
-            v = rt & rect(x, y, 14.6, 19.6, ya, yb)
-            seam |= rt & rect_seam(x, y, 14.6, 19.6, ya, yb, 0.06)
-            seam |= v & (phase(x, 0.55, 14.9) < 0.07)
-            up += 0.5 * (v & (phase(x, 0.55, 15.15) < 0.1))
-        # the rear grille: TS's dark gaps between its fins
-        grl = gr & (x < 3.3) & ~side
-        put(grl & ((np.abs(y - 9.5) < 0.45) | (np.abs(y - 12.5) < 0.45) | (np.abs(y - 15.5) < 0.45)), BLACK_C * g1)
-        house &= ~(grl & ((np.abs(y - 9.5) < 0.45) | (np.abs(y - 12.5) < 0.45) | (np.abs(y - 15.5) < 0.45)))
-        # the louvred blocks: ribs across
-        lv = gr & (x > 5.7) & (x < 14.7) & ((y < 6.0) | (y > 19.0))
-        seam |= lv & (top | side) & (phase(x, 0.6, 6.1) < 0.08)
-        # the front box: joints across its top
-        fb = gr & (x > 25.5)
-        seam |= fb & top & (phase(x, 4.0, 29.0) < 0.07) & (x > 29.5) & (x < 45.0)
-        # louvres down the front box's sides, a hatch on its top
-        fs = fb & side & (z > 9.0) & (x > 30.0) & (x < 44.5)
-        seam |= fs & (phase(x, 0.6, 30.3) < 0.07) & (np.abs(x - 37.0) > 2.0)
-        ft = fb & top & (z > 10.8)
-        seam |= ft & rect_seam(x, y, 34.4, 38.6, 7.8, 12.2, 0.07)
-        up += ft * rect(x, y, 37.6, 37.9, 9.2, 10.8)
+    # v4: the house colour is plain, the rear grille's fins too (Luke: grilles, detail and black lines on the
+    # house-colour areas look fuzzy in the game as the unit moves); its shapes and bevels carry it
     # ------------------------------------------------------------------ the turret
     hz = is_(T.HAZARD)
     if hz.any():
         # Westwood's hazard stripes round the turntable (TS's ochre and black)
-        put(hz & (phase(x - y, 1.7) < 0.42), HAZ_K * g1)
+        put(hz & (phase(x - y, 1.7 / KS) < 0.42 / KS), HAZ_K * g1)
     bs = is_(T.BASE) & turp
     if bs.any():
         # the base's plates: a joint across the side blocks
@@ -235,7 +210,7 @@ def materials(r, occ=None):
     if bk.any():
         # the zig-zag brackets striped across, as the FMV's, in TS's ochre and black (the turntable's)
         put(bk, HAZ_Y * g1)
-        put(bk & (phase(x + 0.55 * z, 0.62) < 0.16), HAZ_K * g1)
+        put(bk & (phase(x + 0.55 * z, 0.62 / KS) < 0.16 / KS), HAZ_K * g1)
     ds = is_(T.DISH)
     if ds.any():
         # its face (concave, forward): TS's white band across the middle (Westwood's white panels), grey frame above and

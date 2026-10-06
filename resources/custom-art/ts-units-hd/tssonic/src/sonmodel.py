@@ -83,21 +83,22 @@ def hull_parts():
     out = track_pods()
     # the hull between the pods: dark, its floor at z 3, its deck at z 8 over the front half (TS's)
     out.append(B(FH, 1.0, 44.6, 5.0, 20.0, 3.0, 8.0, BODY, ch=0.2, name='body'))
-    # the rear deck, house colour (TS: x 3..21, y 7..20, up to z 10), its back a louvred grille stepping down to the
-    # rear plate (TS: z 7 at x 3 down to z 5 at x 0)
-    out.append(B(FH, 3.0, 21.3, 7.0, 20.0, 7.0, 10.0, GREEN, ch=0.3, name='rear_deck'))
-    out.append(prism(FH, 1, [(0.0, 3.0), (3.2, 3.0), (3.2, 7.2), (0.0, 5.0)], 6.0, 19.0, GREEN, ch=0.15,
+    # the rear deck, house colour (TS: x 3..21, y 6..19, up to z 10; v1-v3 had it a voxel to the left, at y 7..20), its
+    # back a grille stepping down to the rear plate (TS: z 7 at x 3 down to z 5 at x 0, its house colour y 6..18; v4
+    # plain, Luke: no grilles or black lines on the house colour)
+    out.append(B(FH, 3.0, 21.3, 6.0, 19.0, 7.0, 10.0, GREEN, ch=0.3, name='rear_deck'))
+    out.append(prism(FH, 1, [(0.0, 3.0), (3.2, 3.0), (3.2, 7.2), (0.0, 5.0)], 6.0, 18.0, GREEN, ch=0.15,
                      name='rear_grille'))
-    # louvred blocks on the rear pods' inner edges, black posts between them (TS: x 6..14, y 3..5 and 19..21)
-    for (y0, y1) in mirror(2.9, 5.9):
+    # louvred blocks on the rear pods' inner edges, black posts between them (TS: x 6..14, y 3..6 and 19..21)
+    for (y0, y1) in ((2.9, 5.9), (19.1, 21.1)):
         out.append(B(FH, 5.8, 14.6, y0, y1, 6.8, 8.0, GREEN, ch=0.12, name='side_louvre'))
         for xa in (7.9, 11.9):
             out.append(B(FH, xa, xa + 1.1, y0 + 0.1, y1, 6.8, 9.0, BLACK, ch=0.12, name='post'))
-    # the front: the long house-colour box on the right on its black base (TS: x 26..46, y 6..14, z 8..11, its back
-    # end a step lower), its front coming down to z 5 (TS's)
-    out.append(B(FH, 25.0, 46.8, 5.6, 14.0, 7.8, 9.0, BLACK, ch=0.15, name='box_base'))
-    out.append(B(FH, 25.8, 29.2, 6.6, 13.4, 8.8, 10.0, GREEN, ch=0.2, name='front_box'))
-    out.append(B(FH, 28.8, 45.6, 6.6, 13.4, 8.8, 11.0, GREEN, ch=0.25, name='front_box'))
+    # the front: the long house-colour box on the right on its black base (TS: x 26..46, the box y 6..12 up to z 11, its
+    # back end a step lower, the base y 5..13; v1-v3 had them a voxel to the left), its front coming down to z 5 (TS's)
+    out.append(B(FH, 25.0, 46.8, 5.0, 13.0, 7.8, 9.0, BLACK, ch=0.15, name='box_base'))
+    out.append(B(FH, 25.8, 29.2, 6.0, 12.0, 8.8, 10.0, GREEN, ch=0.2, name='front_box'))
+    out.append(B(FH, 28.8, 45.6, 6.0, 12.0, 8.8, 11.0, GREEN, ch=0.25, name='front_box'))
     out.append(B(FH, 27.5, 46.6, 6.0, 12.0, 5.0, 7.9, GREEN, ch=0.2, name='front_low'))
     out += ochre_box()
     # the olive plate across the front's left (TS: x 44..46, y 13..20, z 6..7)
@@ -107,7 +108,6 @@ def hull_parts():
 
 # ---------------------------------------------------------------- the turret
 TC = (8.5, 9.0)                                     # the rim's centre (turret q x, y; TS's ring sits half a voxel off it)
-RING_SCALE = 0.85                                   # the turntable and its rim against TS's size; the dish keeps its own
 DISH_Z = (5.0, 12.0)                                # the dish (turret q z)
 DISH_T = (2.6, 1.6)                                 # its thickness at its foot and its top (TS's back slopes)
 
@@ -132,10 +132,17 @@ def ring_sectors(F, c_q, prof, n, comp, name):
     return out
 
 
+# v5: the circular pad (the turntable and its rim) at PAD_K of TS's radius, its height TS's, so on screen it is v4's pad
+# and stays on the green deck at every facing; the rest of the turret is TS's size (Luke: the dish back to its size,
+# only the pad smaller)
+from soncam import K_TUR, K_TUR_V4
+PAD_K = K_TUR_V4 / K_TUR                            # 0.70
+
+
 def ring_parts():
     # TS's turntable: a disc of ochre and black (Westwood's hazard stripes round the turret), sunk a voxel inside the
     # rim
-    return [cyl(FR, (8.0, 8.0, 0.0), (8.0, 8.0, 2.0), 7.75 * RING_SCALE, HAZARD, 'hazard_ring')]
+    return [cyl(FR, (8.0, 8.0, 0.0), (8.0, 8.0, 2.0), 7.75 * PAD_K, HAZARD, 'hazard_ring')]
 
 
 # the emitter arm (TS: a rod two voxels thick, y 8..10, from x 15 to the tip at x 21, rising toward the dish - its tip
@@ -233,9 +240,10 @@ def arm_parts():
 
 def turret_parts():
     out = []
-    # the rim round the turntable, grey (TS: z 0..2, its outside 8.4 from the middle)
-    rim = [(r * RING_SCALE, z) for r, z in ((7.25, 0.0), (8.6, 0.0), (8.6, 1.75), (8.35, 2.0), (7.25, 2.0))]
-    out += ring_sectors(FT, TC, rim, 48, RIM, 'rim')
+    # the rim round the turntable, grey (TS: z 0..2, its outside 8.4 from the middle; v5 at PAD_K of TS's radius, its
+    # height and top bevel TS's)
+    ri, ro = 7.25 * PAD_K, 8.6 * PAD_K
+    out += ring_sectors(FT, TC, [(ri, 0.0), (ro, 0.0), (ro, 1.75), (ro - 0.25, 2.0), (ri, 2.0)], 48, RIM, 'rim')
     # the dark base: a block each side under the dish's ends, grey rails on them (TS: y 3..5 and 13..15, x 3..13,
     # z 2..4, the rails z 4), a post under the dish's middle (TS: x 7..10, y 7..11) stepping down in front of it (TS: x 9
     # to z 4, x 10 to z 3)
@@ -275,15 +283,45 @@ def model():
 SECTIONS = {'hull': FH, 'ring': FR, 'tur': FT}
 
 
+def _middle(F, q):
+    R, t = F.pose()
+    c = R @ F.p(q) + t
+    return np.array([c[0], c[1], 0.0])
+
+
+def _posed_z(F, q, dz=0.0):
+    R, t = F.pose()
+    return float((R @ F.p(q) + t)[2] + dz)
+
+
+# v4: the turret's two sections each centred on the pivot (TS's turntable sits half a voxel off the turret's rim and the
+# turret a third of a voxel right of the pivot), so the ring turns on the spot and stays on the deck at every facing.
+# v5: the hull centred side to side on the unit's position too (TS's hull sits 0.11 voxel left of it: its middle, q y
+# 12.5, where the pods, the deck and the body are centred), so the pad turning about the pivot is centred on the deck;
+# and the turret lowered so its pad stands on the deck's top (TS's turntable foot floats 0.58 voxel above it)
+HULL_Y = float(_middle(FH, (0.0, 12.5, 0.0))[1])
+DECK_TOP = _posed_z(FH, (10.0, 12.5, 10.0), -GZ)    # the rear deck's top (its box's top, hull q z 10), raised as the hull
+DROP = _posed_z(FR, (8.0, 8.0, 0.0)) - DECK_TOP     # the turntable's foot onto the deck: 0.58
+SHIFT = {'hull': np.array([0.0, -HULL_Y, -GZ]),
+         'ring': -_middle(FR, (8.0, 8.0, 0.0)) - np.array([0.0, 0.0, DROP]),
+         'tur': -_middle(FT, (TC[0], TC[1], 0.0)) - np.array([0.0, 0.0, DROP])}
+from soncam import Z_BASE as _ZB
+assert abs(DECK_TOP - _ZB) < 0.01, (DECK_TOP, _ZB)  # soncam's turret base is the deck's top
+
+
+def pose(k):
+    """a section's pose in the unit's frame: TS's HVA (frame 0), the hull raised onto the ground and centred side to
+    side on the unit's position, the turret's sections centred on the pivot and lowered onto the deck."""
+    R, t = SECTIONS[k].pose()
+    return R, t + SHIFT[k]
+
+
 def posed(m, which, Mx=np.eye(3)):
-    """the parts of the named sections posed (HVA frame 0; the hull raised by -GZ) and turned by Mx (unit frame ->
-    world): (parts, frames, owner)."""
+    """the parts of the named sections posed (pose()) and turned by Mx (unit frame -> world): (parts, frames, owner)."""
     parts, frames, owner = [], [], []
     for k in which:
         F = SECTIONS[k]
-        R, t = F.pose()
-        if k == 'hull':
-            t = t + np.array([0.0, 0.0, -GZ])
+        R, t = pose(k)
         Rw, tw = Mx @ R, Mx @ t
         Mq = Rw @ np.diag(1.0 / F.sc)
         tq = tw + Rw @ F.mn

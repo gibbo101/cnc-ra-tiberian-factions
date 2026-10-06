@@ -16,7 +16,7 @@ static const struct
     {UNIT_TSAPC, 48},
     {UNIT_TSLPST, 56},
     {UNIT_TSMCV, 28},
-    {UNIT_TSMEMP, 39},
+    {UNIT_TSMEMP, 35},
     {UNIT_TSMWAR, 75},
     {UNIT_TSSAPC, 45},
     {UNIT_TSSONIC, 29},

@@ -1,9 +1,9 @@
-Hunter-Seeker (TS [GHUNTER]) in HD for Tiberian Factions: TSHUNT
-================================================================
+Hunter-Seeker (TS [GHUNTER]) in HD for Tiberian Factions: TSHUNT  (v3)
+=====================================================================
 
-frames/     tshunt-0000.png ... tshunt-0007.png, the mod's 8 frames on its 384 x 384 canvas, each with a -trim.png (all
-            black: it never takes house colour), one facing, 3 ticks a frame, no shadow (the game draws it from the
-            frame)
+frames/     tshunt-0000.png ... tshunt-0007.png, the mod's 8 frames on its 384 x 384 canvas, each with a -trim.png
+            (white = house colour, antialiased: the wings, the strut and the fins), one facing, 3 ticks a frame, no
+            shadow (the game draws it from the frame)
 previews/   spin.gif                 the 8 frames, the mod's beside HD
             droid.png                TS's sprite (x 4, as the mod has it), the mod's frame and HD
             scale.png                next to the HD harvester and EA's TD Orca, as the game draws them
@@ -23,8 +23,8 @@ Top to bottom, with the pixels each part comes from (columns and rows of TS's 73
 - the star (rows 10-12): a blue core 3 px across with a spike either side (columns 34 and 38); its light on the centre
   pixel (36, 11), and the dark grey stub just under the light (36, 12)
 - the neck (columns 35-37): bronze, with a dark collar under its top (row 16)
-- the strut (row 19): a steel bar from column 32 to 40, behind the neck, between the wings' inner edges
-- the wings (rows 16-20, columns 27-32 and 40-45): thin steel blades, wider at the bottom and leaning in at the top,
+- the strut (row 19): a house-colour bar from column 32 to 40, behind the neck, between the wings' inner edges
+- the wings (rows 16-20, columns 27-32 and 40-45): thin house-colour blades, wider at the bottom and leaning in at the top,
   each with a dark slot one pixel in from its outer edge ((30, 17)-(29, 18) and (42, 17)-(43, 18)); a red-brown mark on
   the left one's inner top corner (32, 16)
 - the shoulder (rows 21-24): 13 px across but only 3-4 rows tall, so a bar across the body, not a disc (a disc that
@@ -34,7 +34,7 @@ Top to bottom, with the pixels each part comes from (columns and rows of TS's 73
   middle where the surface faces the camera, so the body's top there is a round mass standing out in front of the bar
 - the body: 7 px across (columns 33-39) from row 25 down, a lug either side at rows 27-28 (columns 32 and 40), the blue
   strip down its front (column 36, rows 27-29), its bottom on row 34
-- three steel fins round the bottom, alike: one towards the camera (columns 35-37, rows 32-35: 1 px at its top and 3
+- three house-colour fins round the bottom, alike: one towards the camera (columns 35-37, rows 32-35: 1 px at its top and 3
   below, so a ridged wedge) and two to the sides (columns 31-33 and 39-41, rows 31-34), with red-brown marks at their
   roots ((33, 31), its twin (39, 31) in shadow)
 The frames differ as TS's do: the star's light pulses blue to white (frame 3) and back, in TS's colours; at frame 0 the
@@ -53,10 +53,10 @@ Look
 - The bronze shines as TS's does: TS's sprite has a white highlight on the shoulder's front, so the bronze takes a
   highlight from the light TS lit its sprites with (front left of the camera, hd.py's L_CAM_TS); it lands on the chest,
   as TS's does.
-- Colours: TS's bronze on the body (its be913c lit, a58538 mid); the mod's steel on TS's remap parts (wings, strut,
-  fins: as light on average as the mod's frames have them, 148, 153, 166 on the wings); TS's blues on the star and the
-  strip and its blue-grey on the mast and collar (each as dark on average as TS's pixels for it); TS's red-brown marks.
-  No house colour (the -trim masks are black).
+- Colours: TS's bronze on the body (its be913c lit, a58538 mid); house colour on TS's remap parts (the wings, the
+  strut, the fins): pure green 0,214,0 x (1 + 1.1 grain), the wings' slots dark, the -trim masks covering exactly those
+  parts (but for the fins' white flash at frame 0); TS's blues on the star and the strip and its blue-grey on the mast
+  and collar (each as dark on average as TS's pixels for it); TS's red-brown marks.
 
 
 3D model (ts-hunt-hd-3d/)
@@ -69,12 +69,14 @@ tshunt.glb   the droid in its own colours, with the mod's camera
 - Camera "camera_mod": orthographic, 32 degrees above the ground, looking north; it frames the 384 canvas exactly
   (checked by drawing the mesh through it over frame 4: overlap 0.923).
 - The file passes Khronos's glTF validator with no errors or warnings (errors 0 warnings 0 infos 1 hints 0; the info is the empty marker node).
-- Vertex colours: COLOR_0 albedo (no light or shadow), COLOR_1 house colour (none).
+- Vertex colours: COLOR_0 albedo (no light or shadow), COLOR_1 house colour (white = house colour).
 
 
 Judgement calls (each one easy to change)
 -----------------------------------------
-- This is the second version.  The first read the droid as round all the way (a disc for a shoulder, a drum for a
+- v3 (Luke: "restore house colours"): TS's remap parts are house colour again; v1 and v2 had painted them the mod's
+  steel.  Nothing else changed from v2.
+- The second version.  The first read the droid as round all the way (a disc for a shoulder, a drum for a
   belt): from 32 degrees those showed as a saucer and a second rim TS doesn't have.  Now every part is read off TS's
   pixels first (the list above) and the fit only moves them a pixel or so.  A fit with the camera height left free came
   back to 28-29 degrees, so TS did draw it from its usual 30.

@@ -2,7 +2,8 @@
 hsrender.py - the Hunter-Seeker's HD frames for the mod (TSHUNT, 384 x 384, one facing, 8 frames, 3 ticks a frame): the
 fitted model (hseek.py, fit_h.json) in the RA-grid camera (32 degrees) at the size and place the mod's frames have
 (4 canvas px per TS px: TS's sprite x 4 exactly), lit as the buildings and units are.  No shadow (the game draws it
-from the frame) and no house colour (the mod paints TS's remap parts steel, the steel its frames show).
+from the frame).  v3: house colour back on TS's remap parts (the wings, the strut, the fins), pure green 0,214,0 x
+(1 + 1.1 grain), with -trim masks (Luke: "restore house colours"; v1-v2 had the mod's steel there).
 The frames differ as TS's do: the star's light pulses (blue to white at frame 3 and back), and the fins flash white at
 frame 0 (their upper faces, as TS's) and stay brighter through frames 1-3.  The bronze has TS's shine: the highlight
 TS's sprite shows on the shoulder's front, from the light TS lit its sprites with (front left of the camera).
@@ -24,8 +25,10 @@ PX_SCALE = 1.0                 # this canvas is drawn 1:1 (4 canvas px a TS px; 
 BOUNDS = ((-14, 14), (-14, 14), (-2, 36))
 
 BRONZE = np.array([222, 172, 78.])        # TS's be913c lit, a58538 mid (lit as the Titan's yellow-brown)
-STEEL = np.array([186, 191, 209.])        # the mod's steel on TS's remap parts: its wings 148, 153, 166 on average
-SLOT = STEEL * 0.5                        # the wings' slots: TS's 006500-007700 in its 00c800 remap
+STEEL = np.array([186, 191, 209.])        # v1-v2: the mod's steel on TS's remap parts (its wings 148, 153, 166)
+GREEN = np.array([0, 214, 0.])            # v3: house colour on TS's remap parts (the wings, the strut, the fins)
+HOUSE = None                              # set below, once hseek's ids are in
+SLOT = np.array([46, 50, 46.])            # the wings' slots: dark (TS's 006500-007700, the remap's darkest), not house
 STAR = np.array([124, 124, 220.])         # TS's star 85, 85, 137 on average
 SPIKE = np.array([94, 94, 179.])          # TS's 55559d, 595971
 STUB = np.array([78, 78, 82.])            # TS's 343434 under the light
@@ -42,6 +45,7 @@ STAR_LIGHT = [(125, 125, 206), (149, 149, 230), (178, 178, 255), (255, 255, 255)
               (125, 125, 206), (105, 105, 182)]
 FIN_FLASH = [1.0, 0.18, 0.18, 0.1, 0.0, 0.0, 0.0, 0.0]
 ELEV = 32.0
+HOUSE = (S.WING, S.STRUT, S.FIN)
 
 
 FIT = 'fit_h.json'
@@ -75,7 +79,8 @@ def render(P, k, origin, ss=4, sky=True):
     put = lambda m, c: np.copyto(alb, np.broadcast_to(c, alb.shape).astype(np.float32), where=m[..., None])
     bronze = np.isin(comp, (S.BODY, S.CHEST, S.SHOULDER, S.LOBE, S.LUG, S.NECK, S.BAND))
     put(bronze, BRONZE * g1)
-    put(np.isin(comp, (S.WING, S.STRUT, S.FIN)), STEEL * g1)
+    house = np.isin(comp, HOUSE) & hm
+    put(house, GREEN * (1 + 1.1 * grain)[..., None])
     put(comp == S.SLOT, SLOT * g1)
     put(comp == S.STAR, STAR * g1)
     put(comp == S.SPIKE, SPIKE * g1)
@@ -102,9 +107,11 @@ def render(P, k, origin, ss=4, sky=True):
     # steel a touch brighter while it fades (frames 1-3, TS's remap a shade or two up)
     f = FIN_FLASH[k % 8]
     fins = (comp == S.FIN) & hm
+    flash = np.zeros(hm.shape, bool)
     if f >= 1.0:
         w = np.clip(0.35 + 1.1 * r.nz, 0, 1) * fins
         col = col + (np.array([248, 248, 248.]) - col) * (0.9 * w)[..., None]
+        flash = w > 0.5                           # the flashed white: not house colour while it lasts
     elif f > 0:
         col = np.where(fins[..., None], np.minimum(col * (1 + f), 255.0), col)
     # the star's light: the point of the core facing the camera, TS's colour, unshaded, TS's pixel across
@@ -114,7 +121,10 @@ def render(P, k, origin, ss=4, sky=True):
     a = np.clip((0.55 - d) / 0.15, 0, 1)[..., None] * ((comp == S.STAR) & hm)[..., None]
     col = col * (1 - a) + np.asarray(STAR_LIGHT[k % 8], float) * a
     img = r.compose(col, ground=None)
-    return img, Image.new('L', CANVAS, 0)
+    tm = (house & ~flash).astype(np.float32)
+    ss_ = r.ss
+    trim = Image.fromarray((tm.reshape(CANVAS[1], ss_, CANVAS[0], ss_).mean(axis=(1, 3)) * 255).round().astype(np.uint8), 'L')
+    return img, trim
 
 
 def frame(k, P, place, ss=4, sky=True):

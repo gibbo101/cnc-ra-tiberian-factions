@@ -1,12 +1,15 @@
 """shape check for the Disruptor: the model drawn flat (a colour per part) in the mod's cameras beside the mod's frame,
-with the silhouette overlap per frame (the hull's frames 0-31, the turret's 32-63).
+with the silhouette overlap per frame (the hull's frames 0-31, the turret's 32-63).  The mod's turret frames are moved
+to where the turret is drawn and scaled to its size (K_TUR) about its base (inmod_turret()) before they are compared:
+v4 drew the whole turret at 0.69; v5 draws it at the mod's size again (a scale of 1 here), only its pad smaller (Luke),
+standing on the deck and centred on the hull (so it sits a few px lower and 1.5 px left of the mod's).
     python3 sonshape.py out.png [frames] [zoom]"""
 import sys
 import numpy as np
 from PIL import Image, ImageDraw
 import rc
 import sonmodel as T
-from soncam import flat_cam, unit_to_world, frame_of, CANVAS
+from soncam import flat_cam, unit_to_world, frame_of, CANVAS, PPU_T, PPU_T0, ORIGIN_T0, ORIGIN_T, Z_BASE, Z_BASE_TS, ELEV
 from paths import HANDOFF
 
 INMOD = HANDOFF + '/08-TSSONIC/in-mod/tssonic/frames/tssonic-%04d.png'
@@ -39,6 +42,24 @@ def flat(parts, cam, ss=2, size=CANVAS[0]):
     return Image.fromarray(np.clip(im, 0, 255).round().astype(np.uint8), 'RGBA'), cov
 
 
+def inmod_turret(k):
+    """the mod's turret frame k brought to where and how big the drawn turret is: its base (TS's turntable foot, drawn
+    by the mod's camera) moved onto the drawn turret's base (v5: on the deck, its pivot where the hull's unit position
+    is), scaled to the drawn turret's size about it (v5: the mod's own size)."""
+    im = Image.open(INMOD % k).convert('RGBA')
+    s = PPU_T / PPU_T0
+    ce = np.cos(np.deg2rad(ELEV))
+    bx, by = ORIGIN_T0[0], ORIGIN_T0[1] - Z_BASE_TS * PPU_T0 * ce          # the mod's turret base on its canvas
+    cx, cy = ORIGIN_T[0], ORIGIN_T[1] - Z_BASE * PPU_T * ce                # the drawn turret's base
+    # out = c + s (in - b)  ->  in = b + (out - c) / s
+    a = 1 / s
+    return im.transform(im.size, Image.AFFINE, (a, 0, bx - a * cx, 0, a, by - a * cy), resample=Image.BICUBIC)
+
+
+def inmod(k):
+    return inmod_turret(k) if k >= 32 else Image.open(INMOD % k).convert('RGBA')
+
+
 def check(ks, out, zoom=1, m=None):
     m = m if m is not None else T.model()
     tiles = []; scores = []
@@ -46,10 +67,10 @@ def check(ks, out, zoom=1, m=None):
         which, facing, tur = frame_of(k)
         parts, _, _ = T.posed(m, which, unit_to_world(facing))
         fl, cov = flat(parts, flat_cam(tur))
-        im = Image.open(INMOD % k).convert('RGBA')
+        im = inmod(k)
         a = np.array(im)[..., 3] > 250
         iou = (a & cov).sum() / max((a | cov).sum(), 1); scores.append(iou)
-        crop = (130, 60, 320, 210) if tur else (60, 70, 390, 340)
+        crop = (154, 100, 294, 210) if tur else (60, 70, 390, 340)
         W, Ht = crop[2] - crop[0], crop[3] - crop[1]
         z = zoom * (2 if tur else 1)
         t = Image.new('RGB', (2 * W * z + 6, Ht * z + 16), (28, 30, 34))

@@ -1,6 +1,6 @@
 """
 jfinal.py - the Juggernaut's 202 HD frames for the mod (TSJUGG, 448 x 448), each with its -trim.png:
-    0-119    the walk (jrender.py): frame = mod facing x 15 + step
+    0-119    the walk on the Titan's legs (jtrender.py): frame = mod facing x 15 + step
     120-151  deployed at rest (jdeprender.py), 32 facings counter-clockwise from north
     152-183  deployed and aiming
     184-201  the deploy (jdeploy.py); 184 is walk frame 45 and 201 is rest frame 132, copied, so they match exactly
@@ -30,9 +30,9 @@ def render(pkg, part, n, ss=4, sky=True):
             continue
         t0 = time.time()
         if k < 120:
-            import jrender as JR
-            walk = walk or JR.load(os.path.join(HERE, 'fit_walk_e.json'))
-            img, trim = JR.frame(k, walk, ss, sky)
+            import jtrender as JT
+            walk = walk or JT.load()
+            img, trim = JT.frame(k, walk, ss, sky)
         elif k < 184:
             import jdeprender as DR
             dep = dep or DR.load()
