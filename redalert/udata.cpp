@@ -2572,7 +2572,7 @@ void UnitTypeClass::Dimensions(int& width, int& height) const
         {UNIT_C3MK3, 53, 33},
         {UNIT_C3PRED, 32, 22},
         {UNIT_TS4TNK, 33, 30},
-        {UNIT_TSSONIC, 37, 32},
+        {UNIT_TSSONIC, 37, 31},
         {UNIT_TSHMEC, 42, 41},
         {UNIT_TSHARV, 37, 28},
         {UNIT_TSSMEC, 14, 27},
@@ -2722,15 +2722,15 @@ void UnitTypeClass::Hover_Rack_Seat(DirType hull, int& x, int& y) const
     y += _seat[f][1];
 }
 
-// Seats the Disruptor turret 6 classic px aft along the hull, on the ground as the art's camera draws it (classic px
-// per hull frame).
+// Seats the Disruptor turret 0.43 cell aft along the hull, on the ground as the art's camera draws it (classic px
+// per hull frame, from the HD art's README in resources/custom-art/ts-units-hd/tssonic/).
 void UnitTypeClass::Sonic_Turret_Seat(DirType dir, int& x, int& y) const
 {
     static const signed char _seat[32][2] = {
-        {0, 3},   {1, 3},   {2, 3},   {3, 3},   {4, 2},   {5, 2},   {6, 1},   {6, 1},
-        {6, 0},   {6, -1},  {6, -1},  {5, -2},  {4, -2},  {3, -3},  {2, -3},  {1, -3},
-        {0, -3},  {-1, -3}, {-2, -3}, {-3, -3}, {-4, -2}, {-5, -2}, {-6, -1}, {-6, -1},
-        {-6, 0},  {-6, 1},  {-6, 1},  {-5, 2},  {-4, 2},  {-3, 3},  {-2, 3},  {-1, 3}};
+        {0, 5},   {2, 5},   {4, 5},   {6, 5},   {7, 4},   {9, 3},   {10, 2},  {10, 1},
+        {10, 0},  {10, -1}, {10, -2}, {9, -3},  {7, -4},  {6, -5},  {4, -5},  {2, -5},
+        {0, -5},  {-2, -5}, {-4, -5}, {-6, -5}, {-7, -4}, {-9, -3}, {-10, -2}, {-10, -1},
+        {-10, 0}, {-10, 1}, {-10, 2}, {-9, 3},  {-7, 4},  {-6, 5},  {-4, 5},  {-2, 5}};
     int f = TechnoClass::BodyShape[Dir_To_32(dir)];
     x += _seat[f][0];
     y += _seat[f][1];
