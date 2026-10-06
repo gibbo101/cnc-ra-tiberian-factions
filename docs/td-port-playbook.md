@@ -309,11 +309,11 @@ Already implemented in `weapon.cpp:202-210`. Just flag your new TD weapon and wr
 
 ### 3.9 — Build pipeline: POST_BUILD copy skipped on incremental builds
 
-**Trap:** `./deploy.sh --no-build` skips the build entirely AND skips the `resources/` → `build/` copy step. Pure rules.ini edits don't make it to the deploy bundle.
+**Trap:** the CMake `POST_BUILD` copy of `resources/` and the asset packs into `build/` runs only when the DLL
+relinks, and never deletes. A data-only change after a build doesn't reach `build/` by itself.
 
-**Trap variant:** running `./deploy.sh --yes` (with build) AFTER recent successful build: ninja considers the DLL up-to-date, skips relink, and the CMake `POST_BUILD` resources-copy step doesn't fire because it's tied to the DLL link.
-
-**Fix:** `touch redalert/<any>.cpp` before deploy to force a relink and trigger the staging step.
+**Fix:** `./deploy.sh` (without `--no-build`) restages `build/remaster/Vanilla_RA/` from scratch after the build. By
+hand: `python3 scripts/stage_asset_packs.py <mod dir> --full`. `--no-build` deploys `build/` exactly as it stands.
 
 ### 3.10 — No RA-engine logic for TD entities
 
@@ -432,11 +432,13 @@ if (((*building == STRUCT_HELIPAD || *building == STRUCT_TDHPAD) && !air->IsFixe
 
 **Fix:** Translate to RA-idiomatic compare: `if (Health_Ratio() <= Rule.ConditionYellow) shapenum += N;`. `Rule.ConditionYellow = fixed(1, 2) = 0.5` by default (rules.ini-configurable). Semantically equivalent to TD's `< 0x0080`. Already documented in `docs/td-tier1-verification.md:231` by example; codify it here so it's caught earlier.
 
-### 3.17 — `deploy.sh --no-build` can silently skip XML/MIX changes
+### 3.17 — rsync's size-and-mtime skip can swallow a changed file
 
-**Trap:** When you only change an XML or MIX file (no DLL rebuild needed), `./deploy.sh --no-build` may rsync the build artifacts without including the resources tree, or rsync's mtime-based skip can swallow the change. Symptom: code expects updated XML mappings or MIX contents, but the launcher still uses the old version.
+**Trap:** plain `rsync -a` skips a file whose size and mtime match the target's even when its bytes differ. The
+RA*_SFX_EVA_* seed WAVs hit this; an XML or MIX change can too.
 
-**Fix:** After modifying XML/MIX, verify on the Deck with `grep -c '<NewEntryName>'` or `python3 scripts/mix_tools.py list ...` against the deployed path. If the count doesn't match local, force-push with explicit `scp <localpath> deck@steamdeck:<deckpath>`. Worked example: TDWEAP2 XML expansion from 8 to 20 shape entries needed a force-scp when the standard deploy skipped it.
+**Fix:** `./deploy.sh` mirrors with `rsync -ac` (checksums) and then checks that the target matches the build by
+checksum. Deploy by hand with `-c` too.
 
 ### 3.18 — `#ifdef FIXIT_HELI_LANDING` is INACTIVE — check active branch
 
