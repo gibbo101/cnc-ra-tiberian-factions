@@ -313,39 +313,22 @@ highest quality the pipeline can produce.** Concretely:
 - **THE SHADOW CONVENTION (measured off EA's art, `ts_reshadow.py`).**
   Ground units get NO engine shadow — the DLL only shadows things in the air
   (`bullet.cpp:848`, `IsShadow` → `DisplayClass::UnitShadow`). Every ground
-  shadow is baked into the sprite, EA's included. Fitting a shifted copy of the
-  body against EA's actual shadow region scores **IoU 0.72–0.88** across their
-  whole TD vehicle set, so EA bakes an offset silhouette exactly like we do.
-  Their tuning, measured off the BASE GAME's own art (`TEXTURES_RA_SRGB.MEG`:
-  2TNK/3TNK/MCV/JEEP) and independently confirmed against the **TD Medium Tank,
-  the reference unit** — RA and TD share one convention:
-  **dx = 0.028 × body width, dy = 0.120 × body width, alpha 191.**
-  ⚠ A first pass used means taken off our repacked TD art (0.042 / 0.138) and
-  the in-game verdict was "way over done" on every ground unit. **Alpha was
-  never the problem** — 191 pure black is exactly what RA and TD both bake —
-  the throw was simply ~50% too far sideways and ~20% too far down, and the
-  visible shadow band inflates in proportion. Measure against base-game art,
-  not against our own ports.
-  **Exception, `OFFSET_OVERRIDE`: the Hover MLRS keeps the longer (5,17)
-  throw**: it passed at the TD-derived numbers when every ground unit failed,
-  and it is the roster's only true hover unit, so a shadow thrown
-  further than a ground hull's reads as float rather than as error.
-  Both offsets scale off **WIDTH, never height** — width tracks the ground
-  footprint, height also carries how tall the thing stands, and height-scaling
-  threw the Wolverine's and Mk. II's shadows clear of their feet. The ratio
-  (dy/dx ≈ 3.3) reproduces EA's measured dy/dx ≈ 3 independently, so the light
-  direction falls out of the data: **high and near-south, only slightly east.**
-  Our TS art had shipped at dy/dx ≈ 1.3 — a 45° throw that reads as a hard
-  black duplicate of the hull rather than as ground shade.
-  ⚠ **Alpha is a cliff, not a dial:** the launcher discards below ~128, and
-  three TS units were rendering NO shadow at all — TSHARV (alpha 66) and
-  TSHMEC (71) had been diluted under the cutoff by a resize applied AFTER
-  `drop_shadow`, and TSMCV had no shadow layer whatsoever. `ts_reshadow.py`
-  runs on the PACKED zips as the authoritative final pass, after any resize,
-  and is safe to re-run: it strips the old shadow before applying its own,
-  preserves body pixels byte-for-byte, and the center-symmetric crop keeps the
-  body's on-screen position invariant. Turret frames carry no shadow, which is
-  what keeps TSHVR's rack seat out of its reach.
+  shadow is baked into the sprite, EA's included, as an offset copy of the
+  silhouette: pure black, alpha 191, soft-edged. On what the launcher draws
+  (alpha 128 and up) EA's Mammoths throw about 3.8 classic px down and 4.8
+  across, 19% of the hull; the medium tanks about two thirds as far. Our vehicles
+  are Mammoth-sized, so `drop_shadow` is fitted to the Mammoths: offset
+  (4, 22) at 8 canvas px per classic px, Gaussian blur 3, one setting for
+  every vehicle. The HD packer (`ts_pack_hd_buildings.py`, `contact_shadow`)
+  swaps the HD vehicles' own cast shadows, drawn as long as a building's, for
+  it; `ts_reshadow.py` re-shadows the C&C3 tanks' packed ZIPs. The walkers keep
+  their HD art's own shadows, and the Hover MLRS its separate shadow frames
+  (5,17 throw: it hovers).
+  ⚠ **Alpha is a cliff, not a dial:** the launcher discards below ~128, so a
+  shadow diluted under it (a resize after `drop_shadow`) renders as nothing,
+  and a blur's faint fringe never shows: measure shadows on the pixels at 128
+  and up. Turret frames carry no shadow, which is what keeps TSHVR's rack
+  seat out of its reach.
 - **Baked shadows: always the offset-silhouette (`drop_shadow`), never a
   bottom-anchored shape.** Both bottom-anchored recipes tried on the Hover
   MLRS (whole-hull squash at the bbox bottom, then the Mk. II bottom-slice)

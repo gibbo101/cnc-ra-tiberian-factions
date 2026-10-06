@@ -1,15 +1,15 @@
 {
   "C3MK3": 32,
   "C3PRED": 24,
-  "R2APOC": 30,
+  "R2APOC": 29,
   "R2PRIS": 31,
-  "TS4TNK": 29,
-  "TSAPC": 37,
+  "TS4TNK": 28,
+  "TSAPC": 36,
   "TSLPST": 42,
-  "TSMCV": 22,
-  "TSMEMP": 30,
-  "TSMWAR": 57,
+  "TSMCV": 21,
+  "TSMEMP": 29,
+  "TSMWAR": 56,
   "TSSAPC": 34,
-  "TSSONIC": 23,
-  "TSSUBTANK": 35
+  "TSSONIC": 22,
+  "TSSUBTANK": 34
 }

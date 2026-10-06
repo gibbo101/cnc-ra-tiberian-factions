@@ -24,6 +24,10 @@ The canvas is padded evenly to a height that is a multiple of 16, so the classic
 Pixels at alpha 4 or less are cleared: they are invisible, and a veil of them over the
 canvas would stop every frame cropping.
 
+A vehicle marked contact_shadow trades its art's cast shadow (pure black, as long as a building's)
+for EA's vehicle shadow (ts_reshadow.py's drop_shadow), on the frames that carry one. Walkers
+keep their art's own shadows.
+
 Usage: ts_pack_hd_buildings.py [INI ...]   (buildings, units and aprons by ini; none = all)
 License: GPL v3.
 """
@@ -32,6 +36,7 @@ import numpy as np
 from PIL import Image
 
 import asset_packs
+from ts_reshadow import drop_shadow, EA_DX, EA_DY
 
 SCRIPTS = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(SCRIPTS, "..", "resources", "custom-art", "ts-buildings-hd")
@@ -40,6 +45,10 @@ REDALERT = os.path.join(SCRIPTS, "..", "redalert")
 THEATRES = ("TEMPERATE", "SNOW", "INTERIOR")
 STUB_MANIFEST = f"{SCRIPTS}/ts_stub_dims.json"
 HAZE_ALPHA = 4
+# The units' black outline antialiases this far out from the solid body; a cast shadow is what
+# lies beyond, and a frame with fewer such pixels than CAST_SHADOW_MIN_PX has none.
+OUTLINE_PX = 2
+CAST_SHADOW_MIN_PX = 500
 
 # GDI's weathered eagle, painted on the dropship bay's deck. It comes on a black field with no alpha of its own.
 EAGLE = os.path.join(SCRIPTS, "..", "resources", "custom-cameos", "ts-gdi-logo.png")
@@ -272,7 +281,8 @@ BUILDINGS["TSWEAPNU"] = BUILDINGS["TSWEAPNF"]
 # ini: the source folder and the frames (path prefix, count) on the unit's own canvas. root
 # overrides the folder the source sits in, digits the frame number's width, and muzzle names the
 # art's table of barrel tips (frame, facing, canvas x, canvas y) for the generated header. kind is
-# the art folder (UNITS unless named); centred crops every frame about the canvas centre.
+# the art folder (UNITS unless named); centred crops every frame about the canvas centre;
+# contact_shadow swaps the art's cast shadow for EA's vehicle shadow.
 def _voxel_unit(src, count, **extra):
     return dict(root=UNITS_SRC, src=src, frames=(f"frames/{src}", count), digits=4, centred=True, **extra)
 
@@ -281,22 +291,22 @@ UNITS = {
     "TSHARV": dict(src="tsproc", frames=("harvester/harvester", 64)),
     "TSTITN": dict(root=UNITS_SRC, src="tstitn", frames=("frames/tstitn", 128), digits=4,
                    muzzle="3d/muzzle.txt"),
-    "TSMCV": dict(root=UNITS_SRC, src="tsmcv", frames=("frames/tsmcv", 32), digits=4),
+    "TSMCV": dict(root=UNITS_SRC, src="tsmcv", frames=("frames/tsmcv", 32), digits=4, contact_shadow=True),
     "TSSMEC": dict(root=UNITS_SRC, src="tssmec", frames=("frames/tssmec", 128), digits=4),
-    "TS4TNK": _voxel_unit("ts4tnk", 64),
-    "TSAPC": _voxel_unit("tsapc", 64),
+    "TS4TNK": _voxel_unit("ts4tnk", 64, contact_shadow=True),
+    "TSAPC": _voxel_unit("tsapc", 64, contact_shadow=True),
     "TSCARRY": _voxel_unit("tscarry", 32),
     "TSHMEC": _voxel_unit("tshmec", 256),
     "TSHVR": _voxel_unit("tshvr", 96),
-    "TSLPST": _voxel_unit("tslpst", 32),
-    "TSMEMP": _voxel_unit("tsmemp", 32),
+    "TSLPST": _voxel_unit("tslpst", 32, contact_shadow=True),
+    "TSMEMP": _voxel_unit("tsmemp", 32, contact_shadow=True),
     "TSMEMPFX": dict(root=UNITS_SRC, src="tsmemp", frames=("fx/tsmempfx", 12), digits=4, centred=True, kind="VFX"),
-    "TSMWAR": _voxel_unit("tsmwar", 32),
+    "TSMWAR": _voxel_unit("tsmwar", 32, contact_shadow=True),
     "TSORCA": _voxel_unit("tsorca", 32),
     "TSORCAB": _voxel_unit("tsorcab", 32),
     "TSSAPC": _voxel_unit("tssapc", 113),
-    "TSSONIC": _voxel_unit("tssonic", 64),
-    "TSSUBTANK": _voxel_unit("tssubtank", 113),
+    "TSSONIC": _voxel_unit("tssonic", 64, contact_shadow=True),
+    "TSSUBTANK": _voxel_unit("tssubtank", 113, contact_shadow=True),
     "TSDSHP": dict(root=UNITS_SRC, src="tsdshp", frames=("frames/tsdshp", 4), digits=4, kind="VFX"),
     "TSHUNT": _voxel_unit("tshunt", 8),
     "TSLIMP": _voxel_unit("tslimp", 20),
@@ -307,8 +317,8 @@ UNITS = {
     "TSGHOST": _voxel_unit("tsghost", 292),
     "TSMEDIC": _voxel_unit("tsmedic", 307),
     "TSJUMPJET": _voxel_unit("tsjumpjet", 451),
-    "R2APOC": _voxel_unit("r2apoc", 64),
-    "R2PRIS": _voxel_unit("r2pris", 64),
+    "R2APOC": _voxel_unit("r2apoc", 64, contact_shadow=True),
+    "R2PRIS": _voxel_unit("r2pris", 64, contact_shadow=True),
 }
 
 # smudge ini: the source folder, the apron's layer on its building's canvas, where the smudge's
@@ -318,6 +328,29 @@ APRONS = {
     "TSWEAPBB": dict(src="tsweap", layer="bib/war-factory-bib-00", origin=(48, 128), cells=(3, 3),
                      recolour=lane_gold),
 }
+
+
+def near(mask, px):
+    """mask grown by px in every direction (a square neighbourhood)."""
+    m = np.pad(mask, px)
+    out = np.zeros_like(mask)
+    h, w = mask.shape
+    for dy in range(2 * px + 1):
+        for dx in range(2 * px + 1):
+            out |= m[dy:dy + h, dx:dx + w]
+    return out
+
+
+def contact_shadow(img):
+    """The frame with its cast shadow (pure black, translucent, clear of the body's outline)
+    swapped for EA's vehicle shadow; a frame without one (a turret, a hull in water) is unchanged."""
+    a = np.asarray(img).copy()
+    black = (a[..., 3] > 0) & (a[..., 3] < 255) & (a[..., :3].max(axis=2) <= 2)
+    cast = black & ~near(a[..., 3] >= 250, OUTLINE_PX)
+    if cast.sum() < CAST_SHADOW_MIN_PX:
+        return img
+    a[cast] = 0
+    return drop_shadow(Image.fromarray(a, "RGBA"), EA_DX, EA_DY)
 
 
 def clean(img):
@@ -482,6 +515,8 @@ def pack_unit(name, spec):
     src = os.path.join(spec.get("root", SRC), spec["src"])
     digits = spec.get("digits", 2)
     tiles = [Image.open(os.path.join(src, f"{path}-{i:0{digits}d}.png")).convert("RGBA") for i in range(count)]
+    if spec.get("contact_shadow"):
+        tiles = [contact_shadow(i) for i in tiles]
     kind = spec.get("kind", "UNITS")
     write_zip(asset_packs.art_zip(name, kind), name.lower(), [clean(i) for i in tiles], spec.get("centred", False))
     patch_in_place(name, count, asset_packs.tileset_xml(name, kind))

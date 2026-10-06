@@ -18,61 +18,29 @@ Re-rendering would risk both of those. This pass cannot.
 
 THE CONVENTION (measured, not guessed)
 --------------------------------------
-EA's throw is a FIXED PIXEL DISTANCE, independent of how big the sprite is.
-Measured per-column -- the vertical gap between the shadow's lower edge and the
-body's own lower edge in the same column -- across nine base-game vehicles
-spanning 122px to 228px of body width:
-
-    RA JEEP 126px  -5.5    RA 2TNK 134px  -6.0    RA 4TNK 185px  -6.0
-    RA MCV  228px  -7.0    RA HARV 200px  -5.0    TD APC  122px  -5.0
-    TD MTNK 133px  -6.0    TD HTNK 185px  -6.0    TD MSAM 128px  -7.0
-
-Body width nearly doubles across that set and the throw does not move: it is a
-constant, not a ratio. Visible shadow runs 6-12% of body pixel area throughout.
-
-Note the SIGN. EA's shadow tucks UNDER the hull and stops short of its bottom
-edge; the shadow's bbox sits inside the body's bbox on all four sides. So EA is
-not baking a full-size translated copy of the body -- a translation can only
-ever push the silhouette past the hull, never inside it. What the eye actually
-reads is the thin contact band, ~6px thick, that escapes along the lower edge,
-and a small offset silhouette reproduces that band closely enough at this size.
-
-Sizing the throw off the sprite instead of fixing it is what broke: our TS
-sprites run up to 301px wide against RA's largest at 228, so a 12%-of-width
-throw gave the Mammoth Mk. II a 41px overhang where a TD tank has a 6px tuck.
-That round read as sticking out far too much: the Mk. II looks like it
-is floating, and any TS unit stood next to a TD unit looks ridiculous. Alpha was
-never the problem in either round -- 191 pure black is what EA bakes, and it is
-what we ship.
-
-Three TS units were worse than mistuned and rendered NO shadow at all:
-TSHARV (alpha 66) and TSHMEC (alpha 71) both sat under the launcher's alpha
-cutoff and were discarded at draw time; TSMCV had no shadow layer whatsoever.
+EA bakes every ground vehicle's shadow as an offset copy of its silhouette, pure
+black at alpha 191, softened at the edges, and the launcher draws only what is at
+alpha 128 or more. On those pixels EA's Mammoths (RA 4TNK, TD HTNK) throw about
+3.8 classic px down and 4.8 across, covering 19% of the hull; the medium tanks
+(2TNK, MTNK) throw about two thirds as far. Our vehicles are
+Mammoth-sized (26-37 classic px wide), so drop_shadow is fitted to the Mammoths:
+offset (4, 22) at 8 canvas px per classic px, blurred by 3. One fixed offset for
+every unit: a throw sized off the sprite gave the 48-wide C&C3 Mammoth and the
+walkers shadows that float.
 
 Usage:  ts_reshadow.py [--dry-run] [UNIT ...]
 """
 import io, json, os, sys, zipfile
-from PIL import Image
+from PIL import Image, ImageFilter
 
 import asset_packs
 
-# ABSOLUTE PIXELS, applied to every unit whatever its size. Do not re-express
-# these as a fraction of the sprite: two rounds were rejected in play for doing
-# exactly that, and the base-game measurement in the docstring above is flat
-# across a 2x range of body widths. A fraction also punishes our biggest art
-# hardest, which is the opposite of what the eye wants -- the Mk. II is the unit
-# most often parked beside a TD tank.
-#
-# dy 6 puts the visible contact band at EA's own thickness; dx 2 keeps EA's
-# roughly 3:1 down-to-sideways lean. Measured result on the real art:
-#
-#     unit      before            after       EA's range
-#     TSHMEC    +41px / 24%    +6px /  5%     ~6px / 6-12%
-#     TSAPC     +30px / 27%    +6px /  6%
-#     TSTITN    +18px / 22%    +6px /  9%
-EA_DX = 2
-EA_DY = 6
+# Canvas px at 8 per classic px; the docstring has the measurement they are fitted to.
+EA_DX = 4
+EA_DY = 22
 EA_ALPHA = 191
+# Gaussian radius in canvas px: EA's soft edge.
+EA_BLUR = 3
 
 # Per-unit overrides, in packed-canvas pixels. The Hover MLRS was the one unit
 # Luke passed at the longer TD-derived throw, and that is not an accident: it is
@@ -80,9 +48,9 @@ EA_ALPHA = 191
 # hull's reads as float rather than as error. Keep its approved values.
 OFFSET_OVERRIDE = {"TSHVR": (5, 17)}
 
-# The TS units carry their HD art's own shadows (scripts/ts_pack_hd_buildings.py) and are never
-# re-shadowed here; the pass and drop_shadow serve the RA2 and C&C3 tank packers.
-UNITS = []
+# The HD units are shadowed by their packer (scripts/ts_pack_hd_buildings.py, which uses drop_shadow
+# for its vehicles) and are never re-shadowed here; the pass re-shadows the C&C3 tanks' packed ZIPs.
+UNITS = ["C3MK3", "C3PRED"]
 
 # Whether a unit currently carries a shadow is DETECTED from the art (a flat
 # pure-black alpha plateau), never hardcoded -- that keeps the pass idempotent
@@ -135,20 +103,20 @@ def strip_shadow(im, alpha):
     return out, n
 
 
-def drop_shadow(frame, dx, dy, alpha=EA_ALPHA):
-    """Offset-silhouette shadow, composited UNDER the sprite.
+def drop_shadow(frame, dx, dy, alpha=EA_ALPHA, blur=EA_BLUR):
+    """Offset-silhouette shadow, softened by blur, composited UNDER the sprite.
 
     Bottom-anchored variants (whole-hull squash, bottom-slice) are FALSIFIED:
     both collapse into a detached floating nub at diagonal facings, because a
     diagonal hull's bbox bottom is a single pointy corner. The full silhouette
     offset down-and-south hugs the whole lower edge at every facing.
     """
-    sil = Image.new("RGBA", frame.size, (0, 0, 0, 0))
-    mask = frame.split()[3].point(lambda a: alpha if a > 0 else 0)
-    black = Image.new("RGBA", frame.size, (0, 0, 0, 255))
-    sil.paste(black, (dx, dy), mask)
+    sil = Image.new("L", frame.size, 0)
+    sil.paste(frame.split()[3].point(lambda a: alpha if a > 0 else 0), (dx, dy))
+    if blur:
+        sil = sil.filter(ImageFilter.GaussianBlur(blur))
     out = Image.new("RGBA", frame.size, (0, 0, 0, 0))
-    out.alpha_composite(sil)
+    out.putalpha(sil)
     out.alpha_composite(frame)
     return out
 
@@ -254,6 +222,6 @@ if __name__ == "__main__":
     dry = "--dry-run" in sys.argv
     for u in (args or UNITS):
         if asset_packs.hd_owned(u):
-            print(f"{u}: skipped, its HD art carries its own shadow")
+            print(f"{u}: skipped, ts_pack_hd_buildings.py shadows it")
             continue
         process(u, dry)
