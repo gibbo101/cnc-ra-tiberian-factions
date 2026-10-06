@@ -157,6 +157,17 @@ BUILDINGS = {
     ]),
     "TSWEAPDR": dict(src="tsweap", make=None, frames=("D-door/war-factory-door", 9), repeat=2),
     "TSWEAPUD": dict(src="tsweap", make=None, frames=("1-under-door/war-factory-under", 2), repeat=2),
+    # The deployed Mobile War Factory on the War Factory's 3x4 plot, the door south on the middle cell, in the
+    # same layers. Idle on the near face: fans (5), window lights (12) and roof lamps (8), 120 steps.
+    "TSDWEAP": dict(src="tsdweap", make=("build-up/mobile-war-factory-build", 19),
+                    base="building-bay/mobile-war-factory-bay", runs=[(120, [])]),
+    "TSDWEAPNF": dict(src="tsdweap", make=None, base="2-over-units/mobile-war-factory-over", runs=[
+        (120, [("A-fans/mobile-war-factory-fans", range(0, 5), range(5, 10)),
+               ("B-lights/mobile-war-factory-lights", range(0, 12), range(12, 24)),
+               ("C-lamps/mobile-war-factory-lamps", range(0, 8), range(8, 16))]),
+    ]),
+    "TSDWEAPDR": dict(src="tsdweap", make=None, frames=("D-door/mobile-war-factory-door", 12), repeat=2),
+    "TSDWEAPUD": dict(src="tsdweap", make=None, frames=("1-under-door/mobile-war-factory-under", 2), repeat=2),
     # The radar on its 2x2 plot, the tower and its antennas rising into the headroom above. Idle: the dish
     # turning there and back (28), healthy then damaged.
     "TSRADR": dict(src="tsradr", make=("build-up/radar-build", 26), frames=("loop/radar-loop", 56)),
@@ -214,6 +225,7 @@ BUILDINGS = {
 }
 # The open-door near face is the same layer: the door is its own layer here.
 BUILDINGS["TSWEAPNU"] = BUILDINGS["TSWEAPNF"]
+BUILDINGS["TSDWEAPNU"] = BUILDINGS["TSDWEAPNF"]
 
 # ini: the source folder and the frames (path prefix, count) on the unit's own canvas. root
 # overrides the folder the source sits in, digits the frame number's width, and muzzle names the
@@ -264,6 +276,7 @@ APRONS = {
     "TSPROCBB": dict(src="tsproc", layer="bib/refinery-bib-00", origin=(112, 272), cells=(5, 3)),
     "TSWEAPBB": dict(src="tsweap", layer="bib/war-factory-bib-00", origin=(48, 128), cells=(3, 3),
                      recolour=lane_gold),
+    "TSDWEAPBB": dict(src="tsdweap", layer="bib/mobile-war-factory-bib-00", origin=(48, 128), cells=(3, 3)),
 }
 
 

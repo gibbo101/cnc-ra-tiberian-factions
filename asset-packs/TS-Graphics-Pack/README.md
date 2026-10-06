@@ -4,15 +4,7 @@ Tiberian Sun structures, effects and sidebar cameos as HD sprites, for Command &
 
 ## Contents
 
-**Structures** (6): TSDWEAP, TSDWEAPDR, TSDWEAPMAKE, TSDWEAPNF, TSDWEAPNU, TSDWEAPUD
-
 **Effects** (43): RAILFX, TSBANG34, TSCANIST, TSCLSN16, TSCLSN22, TSCLSN30, TSCLSN42, TSCLSN58, TSDIG, TSDISCUS, TSDPOD1, TSDPOD2, TSDRPEXP, TSEMPFX, TSEXPSML, TSFIRE, TSFSAIR, TSFSGRND, TSFSIDLE, TSGUNFIRE, TSIONBM, TSIONRNG, TSMGUNE, TSMGUNN, TSMGUNNE, TSMGUNNW, TSMGUNS, TSMGUNSE, TSMGUNSW, TSMGUNW, TSPIFF, TSPODBLT, TSPODRNG, TSPULSBL, TSPULSF1, TSPULSF2, TSRAILFXS, TSSMOKEY, TSSMOKY2, TSSONICP, TSSONICW, TSXGRY1, TSXGRY2
-
-**Terrain (temperate)** (1): TSDWEAPBB
-
-**Terrain (snow)** (1): TSDWEAPBB
-
-**Terrain (interior)** (1): TSDWEAPBB
 
 **Sidebar cameos** (56): BuildIcon_TSNGATEH, BuildIcon_TSNGATEV, BuildIcon_TS_AmphAPC, BuildIcon_TS_Carryall, BuildIcon_TS_Csam, BuildIcon_TS_Ctwr, BuildIcon_TS_Dept, BuildIcon_TS_DevilsTongue, BuildIcon_TS_Disruptor, BuildIcon_TS_Drop, BuildIcon_TS_Dweap, BuildIcon_TS_E1, BuildIcon_TS_E2, BuildIcon_TS_Engineer, BuildIcon_TS_Fgen, BuildIcon_TS_Fsdf, BuildIcon_TS_GateH, BuildIcon_TS_GateV, BuildIcon_TS_Ghost, BuildIcon_TS_Harvester, BuildIcon_TS_HoverMLRS, BuildIcon_TS_Hpad, BuildIcon_TS_Juggernaut, BuildIcon_TS_Jumpjet, BuildIcon_TS_LimpetDrone, BuildIcon_TS_MCV, BuildIcon_TS_MammothMk1, BuildIcon_TS_MammothMk2, BuildIcon_TS_MechDivision, BuildIcon_TS_Medic, BuildIcon_TS_MobileEMP, BuildIcon_TS_MobileWarFactory, BuildIcon_TS_NWall, BuildIcon_TS_OrcaBomber, BuildIcon_TS_OrcaFighter, BuildIcon_TS_Pile, BuildIcon_TS_Pion, BuildIcon_TS_Plug, BuildIcon_TS_Pods, BuildIcon_TS_PowerPlant, BuildIcon_TS_Proc, BuildIcon_TS_Puls, BuildIcon_TS_Radr, BuildIcon_TS_Rock, BuildIcon_TS_Seek, BuildIcon_TS_SensorArray, BuildIcon_TS_Silo, BuildIcon_TS_StealthGen, BuildIcon_TS_SubAPC, BuildIcon_TS_Tech, BuildIcon_TS_Titan, BuildIcon_TS_Turb, BuildIcon_TS_Vulc, BuildIcon_TS_Wall, BuildIcon_TS_Weap, BuildIcon_TS_Wolverine
 
