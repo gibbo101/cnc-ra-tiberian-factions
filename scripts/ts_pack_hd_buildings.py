@@ -238,7 +238,7 @@ BUILDINGS = {
     # The dropship bay's pad, centred on its 3x2 plot: the art comes on a wider canvas round a 3x3, cut to
     # the 3x2 here so the pad's centre is the plot's. GDI's eagle is painted across the deck inside the band,
     # over the gratings, from the build-up frame that paints the band on.
-    # The upgrade center on its 3x2 plot, turned a quarter (TS's east end to the camera). Its idle loop
+    # The upgrade center on TS's 2x3 plot, its sockets and plugs to the south. Its idle loop
     # is baked per plug combination in the order building.cpp's TF_Plug_Art_Block numbers them: none,
     # each plug alone in the right-hand socket, then each ordered pair (right, left), plugs taken
     # ion, pods, seeker. Each block is 40 healthy then 40 damaged frames of the dish, lamps and slot.
