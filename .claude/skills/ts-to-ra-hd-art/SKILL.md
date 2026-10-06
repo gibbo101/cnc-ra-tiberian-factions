@@ -1,6 +1,6 @@
 ---
 name: "ts-to-ra-hd-art"
-description: "Use when rebuilding Tiberian Sun buildings, units, walls or structures as HD art (128 px/cell) for a C&C Remastered Red Alert mod such as Tiberian Factions, in TS's isometric angle or on RA's square grid, with their 3D models."
+description: "Use when rebuilding Tiberian Sun buildings, units, walls or structures as HD art (128 px/cell) for a C&C Remastered Red Alert mod such as Tiberian Factions, on RA's square grid (fitted to TS's sprites in TS's own camera), with their 3D models."
 ---
 
 # Tiberian Sun -> Red Alert Remastered HD art
@@ -13,9 +13,10 @@ Tiberium Refinery and the TS Harvester; and the units: Titan, Wolverine, MCV, Ma
 voxel vehicles and aircraft after them.
 
 Match TS frame by frame: every detail TS shows is expected, and nothing TS doesn't have. Catch differences
-yourself first (the inventory, the shape check and the self-review below). Read TS's actual shapes rather
-than fitting proportions, and never invent a detail or its placement: only what TS's art, TS's voxels or a
-Westwood render shows.
+yourself first (the inventory, the shape check and the self-review below). The yard and the plant are the
+quality bar: buildings made unattended (barracks, tech) came out a dip below it because proportions were
+fitted instead of TS's actual shapes being read. Hold every building to the yard's standard, unattended or
+not, and never invent a detail or its placement: only what TS's art, TS's voxels or a Westwood render shows.
 
 ## Start of a task
 - Sessions don't share files. Check for (or ask for) the attachments. The scripts named below (hd.py,
@@ -28,9 +29,9 @@ Westwood render shows.
     occlusion; outline; supersampling); brender.py wraps a model + materials + damage module into both views
     (Building, Prep); pfinal.py has overlay() and save(); bdeliver.py builds previews/README/src/zip from a
     small spec module (see pilespec.py, silospec.py, techspec.py, procspec.py: crop/zoom options for big
-    canvases, under-layers like a bib, extra_previews); export3d.py writes the .glb models. Start new
-    buildings from these. Units: start from the latest unit package's src/ (the voxel pipeline, or the
-    walkers' rc.py / rcrender.py), see Units below;
+    canvases, under-layers like a bib, extra_previews, views=('ra',) for an RA-only package); export3d.py
+    writes the .glb models. Start new buildings from these. Units: start from the latest unit package's src/
+    (the voxel pipeline, or the walkers' rc.py / rcrender.py), see Units below;
   - one or two RA/TD HD frames of a similar asset, as the target for detail (ref/RA and ref/TD hold more,
     e.g. RA TENT, BARR and TD PYLE for barracks).
 - PROMPT.txt is the spec: canvas, cell placement, frame list, states. If it doesn't give a building's canvas
@@ -39,10 +40,12 @@ Westwood render shows.
   frames it names (TSPOWR 0000 = healthy 1 pod, 0036 = damaged 2 pods -> blocks of 12: 1H 1D 2H 2D 3H 3D).
 - Normally one building at a time, with sign-off before the next. When asked to carry on through a list
   unattended, deliver each package as it is finished and note every judgement call in its README.
-- TS buildings get two versions from ONE model: (1) TS's isometric angle in HD, (2) on RA's square grid.
-  The RA grid-aligned version is the accepted path for all buildings: grid-aligned, the entrance or
-  production side facing the camera. For the isometric one, keep the canvas and scale of the building as it
-  sits in the mod (in-mod/).
+- Deliver the RA grid only: render and package the RA-grid version, grid-aligned, the entrance or production
+  side facing the camera. Don't render or package the TS angle: the .glb carries TS's own camera (the mod's
+  TS-angle canvas, scale and place) and src/ can still render that view if it is ever wanted; say so in the
+  README. TS's own camera stays the tool for fitting the model to TS's sprites (the shape check), and the
+  previews put TS's sprite beside the RA version (bdeliver spec views=('ra',)). Older packages still carry
+  their TS angle.
 - RA buildings have two states only: healthy and damaged. No destroyed state, even if the PROMPT lists one.
 - Size and footprint: buildings keep TS's own size and shape. Where TS's foundation is bigger than the mod's
   plot (the silo: TS 2x2, mod 2x1), use TS's footprint on RA's grid: buildings that don't match RA's
@@ -51,7 +54,8 @@ Westwood render shows.
   later), so don't reshape a building to fit the mod's current, larger unit sprites.
 - The RA version may be turned to suit the grid (the tech center: long and thin on a 2x3, the wide end with the
   dome to the front, the fins at the point). RA's bib may force it back, so keep the orientation a switch
-  (layouts, below) and show both orientations at the shape check.
+  (layouts, below) and show both orientations at the shape check. A building may be wanted symmetrical
+  facing south (the Mobile War Factory): the RA layout then mirrors about the door's axis.
 - Every package also carries the 3D models, with suggested camera angles, for buildings and units alike: they
   allow the greatest flexibility later. See 3D models and Package below.
 
@@ -64,12 +68,14 @@ Westwood render shows.
     cos32 (0.848). The Mammoth Mk. II is the exception, at 35.
   - Walls and gates: RA's oblique projection, screen_y = ground_y - 0.6 * height; the ground is not
     compressed.
-  - TS itself: orthographic, 30 degrees above the ground, looking north-west (0.265 px/unit). A cell is a
+  - TS itself (for fitting, and the .glb's TS camera): orthographic, 30 degrees above the ground, looking
+    north-west (0.265 px/unit). A cell is a
     48x24 px diamond: x = gx + 24(X - Y)/128, y = gy + 12(X + Y)/128 - 0.2297 Z (units). Sliding a point
     along TS's view ray (X += 1.225t, Y += 1.225t, Z += t) keeps its pixel: fix depth from ground contacts.
     TS puts the foundation's NORTH corner at the frame's centre: 2x2 in 96x96 -> ground centre (48, 72);
     3x3 in 144x144 -> (72, 108); 3x2 in 192x120 -> (108, 90); 4x3 in 192x168 -> (108, 126).
-  - In-mod isometric placement differs per building: find it by an alpha-IoU search of TS's frame scaled
+  - In-mod isometric placement (TS's sprite on the mod's canvas in the previews, and the .glb's TS camera)
+    differs per building: find it by an alpha-IoU search of TS's frame scaled
     into the in-mod frame (canvas = TS px x K + offset). Found: plant K 3.36 (-30, -53.5), barracks 3.2
     (-26, -96), silo 3.73 (-32, -137), tech 3.73 (-220, -109.5), refinery 4.1 (-69.4, -44.7). Search coarse
     then fine, with ranges narrowed from the bounding boxes: a brute-force search over a 384 canvas takes too
@@ -80,7 +86,7 @@ Westwood render shows.
   736x928 as the mod has it). Units keep their in-mod canvas, size and place pixel for pixel.
 - Light (walls2.py): L = (-0.451, -0.551, 0.702) (x east, y south, z up: from the north-west, above).
   shade = 0.20 + 0.26 (0.5 + 0.5 nz) + 0.62 max(0, n.L) (1 - 0.8 in_shadow); AO 0.8 + 0.2 clip(z / 40).
-  The light is camera-relative: the TS-angle version is lit like TS's sprites (hd.py's L_CAM_TS). A thin
+  The light is camera-relative: a render in TS's camera is lit like TS's sprites (hd.py's L_CAM_TS). A thin
   plate facing away from the light renders dark; where TS's part is bright, give it sloping (ridged) sides.
   Units add a soft fill from the camera on their camera-facing sides (EA's HD units are front-lit; the key
   light alone leaves a unit's near side dark); a unit drawn into a building's frames gets the same fill.
@@ -97,15 +103,17 @@ Westwood render shows.
   detail only as thin seams or ribs. It also goes out as a -trim.png mask (white = house colour) for every
   frame, overlays included; build the trim from the house components only (plus broken house-coloured bits on
   the ground), so natural Tiberium green (the silo's fill) and lit green lamps never count as house colour.
-  The green areas are TS's green areas (TS's remap greens - the refinery's dock lamps are house colour).
+  The green areas are TS's green areas (TS's remap greens - the refinery's dock lamps are house colour). A
+  solid core's side seen where it shouldn't be (in the gap under a raised deck) must not carry the colour of
+  the part on top: it showed as a green sliver under the Upgrade Center's deck.
 - Flags: on the RA grid a flag flies to the right (east), face-on to the camera, like RA's Allied (TENT) and
-  Soviet (BARR) and TD's GDI (PYLE) barracks; in the TS-angle view to the right as TS's (north-east). A
-  flag flown north-east on the RA grid looks tilted and squashed.
+  Soviet (BARR) and TD's GDI (PYLE) barracks. A flag flown north-east on the RA grid looks tilted and squashed.
 - Open pipes (chimneys, stacks, columns): TS draws a black hole in a light rim on top, not a closed cap. Paint the hole on the flat top (a geometric recess in a heightfield renders as
   a jagged crown); a broken pipe's snapped top is hollow and dark.
 - Damage: greys and browns only - scorch, cracks, grime, chipped edges, angular rubble chunks. Build TS's
   damage into the shape first (holes, snapped parts; read which parts TS breaks: the silo's west claw and
-  east claw foot, not a made-up one), then texture it, in world space (wnoise.py) so both views match. Keep
+  east claw foot, not a made-up one; and which end of a part TS keeps: the Upgrade Center's pipes lose their
+  lower halves, their tops hanging from the bends), then texture it, in world space (wnoise.py). Keep
   break colours on the part that broke. Make it as heavy as TS's (strong soot and charred holes are
   right), but keep smashed/sparking areas as small as TS's.
 
@@ -124,6 +132,10 @@ Westwood render shows.
      of lamps gives the radius at any height, so the centre's offset sets the height (silo lamps: rim 44).
    - unproject colour classes (tan roofs, green, red) to plan view; map TS's classes onto the model's faces
      (render the model in TS's camera, look up TS's class per pixel) to place hatches and panels.
+   - TS's camera can't tell a skewed part from a square one: a line TS draws straight up can run diagonally
+     in 3D, and an edge can run off to a corner the footprint doesn't suggest (the Upgrade Center's east hip
+     ran out to the deck's north-east corner, its pipes lying on it). Prefer square, grid-aligned readings
+     (upright walls, vertical pipes) and check every fitted part from RA's camera too.
    - units: read the .VXL voxel by voxel (vxl.py): dump the top height per (x, y) and the side colours with
      the palette, and build the model to those steps (voxel index i spans i..i+1, so a top voxel at z 16 is a
      surface at 17). A parametric model fitted by silhouette alone came out squat and plain next to the
@@ -132,21 +144,21 @@ Westwood render shows.
    in the building's own frame with layouts (to_local per layout; per-view parameters passed as Prep kwargs
    into scene(), materials read r.mk): TS's own placement for the TS-angle view, centred / turned for RA.
 4. Shape check BEFORE materials: flat colours in TS's camera, silhouette overlap >= ~0.88-0.9 and every
-   landmark (fins, claws, lamps, entrances, stairs, walls) where TS has it; then shaded renders of both views
-   beside TS at 2x. Send that check for review (both RA orientations if the footprint could change) before finals.
-5. Frames: 0 healthy, 1 damaged; build-up in TS's order (the ..MK SHP) at >= TS's real frame count (24 is a
+   landmark (fins, claws, lamps, entrances, stairs, walls) where TS has it; then shaded renders
+   beside TS at 2x, in TS's camera and on the RA grid: every part fitted in TS's camera must read square from
+   RA's too. Send that check for review (both RA orientations if the footprint could change) before finals.
+5. Frames (RA grid): 0 healthy, 1 damaged; build-up in TS's order (the ..MK SHP) at >= TS's real frame count (24 is a
    good default), driven by progress controls; its last frame is exactly the healthy frame - or, when TS's MK
    bakes in a part that an overlay draws later (the barracks' flag), the healthy frame plus that overlay at
    frame 0, so nothing pops. Follow TS's order and oddities exactly (the silo's lid unfolds on the ground with
    its first blade, the drum lifts it, the other blades go on in TS's order; the tech's fins are raised from
    lying back; its dome goes up as see-through struts, then the panels go in). No construction arm.
    A bib (..BB) is its own layer under the building; TS's MK (and the mod's MAKE zip) include it.
-6. Self-review before every checkpoint: both views beside TS at 2-4x, and close-ups at 3-5x of the areas
+6. Self-review before every checkpoint: the RA version beside TS at 2-4x, and close-ups at 3-5x of the areas
    a reviewer looks at first: a unit's near side facing east (its right side) and south-east, the lower hull,
    tracks and wheels, flat house-colour panels. Look for black specks, squiggles or blotches on flat panels and
    for anything that reads weaker than in-mod/ (tracks, slots, hatches).
-7. Previews: the asset alone; states vs TS; the in-mod frames vs the same-numbered HD frames; next to the
-   yard, plant, Component Tower and a wall run (RA grid); house green next to the yard's; build-up strip and
+7. Previews: the asset alone; states vs TS; next to the yard, plant, Component Tower and a wall run; house green next to the yard's; build-up strip and
    GIF vs TS; idle loops vs TS (healthy and damaged), built from the package's own frames and overlays, with
    every overlay playing (lamps and the flame together). Keep a review page (an artifact with every
    building's build-up and idle GIFs, one tab each) updated, and put any GIF the reviewer asks to see on it
@@ -158,14 +170,14 @@ Westwood render shows.
    slopes smooth), meshes it by marching cubes and colours every vertex with the building's own materials
    (albedo; COLOR_1 = the house mask). One .glb per building: healthy and damaged nodes (+ the bib, add-ons
    like pods), marker nodes (a dock, a flame's mouth, lamps) and two orthographic camera nodes - the RA-grid
-   one framing the delivered canvas exactly (check it: render the mesh through it over the frame), the
-   TS-angle one. Axes x east, y up, z south; 1.0 = one cell; origin = the foundation centre on the ground;
+   one framing the delivered canvas exactly (check it: render the mesh through it over the frame), and the
+   TS-angle one (TS's camera on the mod's TS-angle canvas: it rebuilds the TS angle, which isn't packaged). Axes x east, y up, z south; 1.0 = one cell; origin = the foundation centre on the ground;
    units at their position, facing east (mod frame 24). Write the cameras and axes into the README.
    export_all.py does the earlier buildings. Voxel units: vexport.py (exact boxes, subdivided by longest-edge
    bisection with shared vertices so the vertex colours carry TS's colours; a node per section; the facing
    node's rotation quat(A @ Mx), sections kept in the unit frame, or improper matrices flip the legs); check
    with Khronos's validator and glbcheck.py.
-9. Package: README.txt, one folder per frame set, previews/, src/. The 3D models go in a sibling folder named
+9. Package (RA grid only, no ts-angle/ folder): README.txt, one folder per frame set, previews/, src/. The 3D models go in a sibling folder named
    <package>-3d, e.g. ts-hmec-hd-3d/, with its own README, zipped on its own as <package>-3d.zip; the main
    zip carries no 3D folder. Where uploads are capped (30 MiB in a claude.ai chat): first recompress the PNGs
    losslessly (oxipng via pyoxipng, colour type, bit depth and every pixel kept,
@@ -228,6 +240,11 @@ Westwood render shows.
   panels, house-colour posts at its back), a dark olive engine block, a house-colour cab sloping to a black
   windscreen, a scoop and four claws; HORV is the same truck with a flat bed where the tank was. TS's size
   next to the refinery: 3.46 units per voxel (fitted to a video of TS).
+- Upgrade Center (GTPLUG): TS's east end is a hip skewed out to the deck's north-east corner with the pipes
+  and light slot lying on it; it reads straight only from TS's camera (on the RA grid, a rectangle morphed into
+  a parallelogram). Built square: the block runs on under a low hip to an upright end wall, three vertical
+  pipes bend into it, the light runs down an upright post; a wedge behind the block (hidden on the RA grid)
+  keeps TS's brown face right of the pipes for TS's camera.
 
 ## Animations and add-ons
 - "Idle" means every active overlay playing together; specials (the silo's fill level) on their own.
@@ -268,8 +285,12 @@ Westwood render shows.
   wall is next to it, hugging the building; end pieces per wall kind; walls count it as a neighbour.
 
 ## Pitfalls already hit
+- A part fitted only in TS's camera can be skewed in 3D (TS's own model may be: the Upgrade Center's east hip
+  and its pipes). On the RA grid it showed slanted pipes and walls not flush. Build such parts square, keep
+  TS's silhouette with pieces RA's camera can't see, and check the fix loses nothing TS shows.
 - Smoothing a heightfield spreads faces ~1 px past their footprint: give skirt cells the taller neighbour's
-  component. A part meeting a slab leaves a crease: run it to the ground as one slab.
+  component. A part meeting a slab leaves a crease: run it to the ground as one slab, or keep both in one
+  solid heightfield core.
 - A heightfield can't undercut: a dome that is more than a hemisphere gets a vertical drum below its equator;
   keep the sphere's centre close above its base ring (h ~10).
 - Ground-projected fields stretch on vertical faces; use world-space fields.
@@ -282,11 +303,12 @@ Westwood render shows.
 - Icosahedron faces from vertex triples have mixed winding: orient each face normal outward.
 - Material-only frames reuse one geometry pass; anything that changes geometry (a waving flag, a rising pod)
   needs its own pass. Timing at x4 on 2 CPUs: a 256x256 pass ~30-40 s, a material frame ~4-8 s; a building
-  package ~30-50 min for both views in two background batches. A voxel vehicle frame ~5 s, the Mk. II's
-  13-section walker ~28 s.
+  package ~30-50 min in background batches. A voxel vehicle frame ~5 s, the Mk. II's 13-section walker ~28 s.
 - Memory: a claude.ai sandbox's cgroup is ~6.27 GB. Every slab is three full-grid arrays: merge non-overlapping slabs
   (merge_slabs) and model a unit inside a building on a sub-window of the grid round it; a 4x pass of a big
   building with a truck in it peaks ~4.3 GB, a merged 4x unit frame ~1.2 GB - run big renders one at a time.
+  ulimit -v counts virtual memory, well above the resident size: the Upgrade Center's two-plug RA frames
+  (~4.2 GB resident) needed ~7.8 GB virtual.
 - A claude.ai sandbox's shell tool times out after 2 minutes: start renders with setsid nohup into a log and poll it (sleeps
   under 2 minutes).
 - The workspace can restart while renders run and every background job dies with it (uptime shows it). Run
@@ -306,4 +328,6 @@ Westwood render shows.
 - When quality is said to have dipped, own it plainly, say what was missed, and show the shape check before
   finals. When a renderer problem shows on one unit, fix it in the shared code and re-render every unit it
   touched, delivered ones included.
+- Finals can render into a staging copy while a test is under review; nothing replaces a delivered package
+  until it is signed off.
 - Keep replies short: what changed, the files, one next step.
