@@ -65,7 +65,7 @@
 #define MCW MAP_CELL_W
 
 #define XYCELL(x, y) (y * MAP_CELL_W + x)
-// TS war factory door seats; ClassTsWeap and ClassTsDweap exit at TSWEAP_SEAT_MOUTH.
+// TS war factory door seats (ClassTsWeap, ClassTsDweap).
 #include "tsweap_exit_seats.inc"
 static short const ExitPyle[] = {XYCELL(1, 2),
                                  XYCELL(2, 2),
@@ -121,35 +121,6 @@ static short const List23[] = {0, 1, MCW, MCW + 1, (MCW * 2), (MCW * 2) + 1, REF
 static short const TsProcList[] = {(MCW * 1), (MCW * 1) + 1, (MCW * 2), (MCW * 2) + 1, REFRESH_EOL};
 static short const TsProcOList[] = {
     0, 1, 2, 3, MCW + 2, MCW + 3, (MCW * 2) + 2, (MCW * 2) + 3, REFRESH_EOL};
-/* TSWEAP: the Mk. II arrives by dropship bay now, so the hangar no longer
-** passes a 40px sprite. The 70x44 hangar art is anchored on the west-3x2
-** block, and its drawn SW corner spills into front-row cols 0-1 -- those two
-** cells are BLOCKED so units path around the hangar instead of driving over
-** its wall. The door corridor (front-row cols 2-3) and the east pad column
-** stay walkable concrete: veto'd by Is_TS_Apron_Cell, in the overlap list
-** for redraw, and included in the 4x3 PLACEMENT grid so the ghost covers
-** building + pad (Luke). */
-/*
-**	The deployed Mobile War Factory (TSDWEAP, 5x3): the hangar occupies rows 0-1 x cols 0-3. Row 2
-**	(the door's front row) and col 4 are walkable concrete; the roof art
-**	overhangs the row above the plot (overlap only).
-*/
-static short const TsWeapList[] = {0, 1, 2, 3,
-                                   (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, (MCW * 1) + 3,
-                                   REFRESH_EOL};
-static short const TsWeapOList[] = {-MCW, -MCW + 1, -MCW + 2, -MCW + 3,
-                                    4, (MCW * 1) + 4,
-                                    (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3, (MCW * 2) + 4,
-                                    REFRESH_EOL};
-/*
-**	Departure cells for the TS bay. The vehicle spawns at the door mouth over
-**	cell (2.3, 1.9) of the descaled hangar; XYCELL(2,2) is the concrete
-**	directly under the door -- the natural first roll-out -- then the fan
-**	spreads south and south-east across the apron and off the plot.
-*/
-static short const TsWeapExit[] = {XYCELL(3, 2), XYCELL(3, 3), XYCELL(4, 2), XYCELL(2, 2),
-                                   XYCELL(4, 3), XYCELL(2, 3), XYCELL(4, 1), XYCELL(1, 2),
-                                   REFRESH_EOL};
 /*
 **	The TS War Factory, 3x4: RA's 3x3 war factory slot with an empty row behind it, which centres the
 **	selection box over the roof and is otherwise ordinary ground. The hall fills rows 1-2 and row 3 is
@@ -1419,13 +1390,13 @@ static BuildingTypeClass const ClassTsFsdf(STRUCT_TSFSDF,
                                            (short const*)List1,
                                            (short const*)NULL);
 
-// The Mobile War Factory deployed (Firestorm DGWEAP): a TS war factory on TSWEAP's plot, exits
-// and seats. Never built from the sidebar; the deploy order packs it into UNIT_TSMWAR.
+// The Mobile War Factory deployed (Firestorm DGWEAP): a TS war factory on TSWEAP's 3x4 plot and exits, its
+// door 20 leptons deeper. Never built from the sidebar; the deploy order packs it into UNIT_TSMWAR.
 static BuildingTypeClass const ClassTsDweap(STRUCT_TSDWEAP,
                                             TXT_NONE,
                                             "TSDWEAP",
                                             FACING_NONE,
-                                            TSWEAP_SEAT_MOUTH,
+                                            TSDWEAP_SEAT,
                                             REMAP_ALTERNATE,
                                             0x0000, 0x0000, 0x0000,
                                             false,
@@ -1434,10 +1405,10 @@ static BuildingTypeClass const ClassTsDweap(STRUCT_TSDWEAP,
                                             true, true, false, false, false, true,
                                             RTTI_UNITTYPE,      // Vehicle factory.
                                             DIR_N,
-                                            BSIZE_53,
-                                            (short const*)TsWeapExit,
-                                            (short const*)TsWeapList,
-                                            (short const*)TsWeapOList);
+                                            BSIZE_34,
+                                            (short const*)TsWeap3Exit,
+                                            (short const*)TsWeap3List,
+                                            (short const*)TsWeap3OList);
 
 static BuildingTypeClass const ClassTsRadr(STRUCT_TSRADR,
                                            TXT_NONE,
@@ -5476,7 +5447,7 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSPILE, BSTATE_IDLE, 0, 56, 4},  // HD barracks: flag (7) x entrance lamps and beacon (8)
         {STRUCT_TSPROC, BSTATE_IDLE, 0, 16, 3}, // NAREFN _C deck lights (fireball + lid are event layers)
         {STRUCT_TSPROC, BSTATE_FULL, 0, 16, 3}, // customer approaching: lights keep cycling
-        {STRUCT_TSDWEAP, BSTATE_IDLE, 0, 1, 0},  // MWAR has no idle animation
+        {STRUCT_TSDWEAP, BSTATE_IDLE, 0, 120, 3}, // MWAR _A fans (5) + _B lights (12) + _C lamps (8) -> LCM 120
         {STRUCT_TSWEAP, BSTATE_IDLE, 0, 32, 3},  // GAWEAP _A/_B (Rate 400) + _C (Rate 800) baked at 32 steps  // GAWEAP halved windows _A(8)+_B(4)+_C(2) -> LCM 8, swept fwd+back (ping-pong, packer order)
         {STRUCT_TSRADR, BSTATE_IDLE, 0, 28, 3},  // GARADR _A dish: 15-frame half-sweep baked as fwd+reverse ping-pong (28); damaged = torn-dish run at +28
         {STRUCT_TSHPAD, BSTATE_IDLE, 0, 8, 3},   // GAHPAD _A halved (8 healthy + 8 damaged)
@@ -6028,7 +5999,7 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
                                                REFRESH_EOL};
         return (_ts_proc_place);
     }
-    if (placement && Type == STRUCT_TSWEAP) {
+    if (placement && (Type == STRUCT_TSWEAP || Type == STRUCT_TSDWEAP)) {
         // The ghost covers the hall and the concrete in front of it. The plot's back row only
         // centres the selection box over the roof; nothing of the building stands there.
         static short const _ts_weap3_place[] = {MAP_CELL_W,
@@ -6042,16 +6013,6 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
                                                 MAP_CELL_W * 3 + 2,
                                                 REFRESH_EOL};
         return (_ts_weap3_place);
-    }
-    if (placement && Type == STRUCT_TSDWEAP) {
-        // The ghost follows the art: the hangar cells plus every cell the pad
-        // lands on -- the whole 5x3 except the bottom-left cell (0,2), which
-        // carries no concrete.
-        static short const _ts_weap_place[] = {0, 1, 2, 3, 4,
-                                               MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W + 2, MAP_CELL_W + 3, MAP_CELL_W + 4,
-                                               MAP_CELL_W * 2 + 1, MAP_CELL_W * 2 + 2, MAP_CELL_W * 2 + 3, MAP_CELL_W * 2 + 4,
-                                               REFRESH_EOL};
-        return (_ts_weap_place);
     }
 
     /*
