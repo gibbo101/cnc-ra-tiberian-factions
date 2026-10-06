@@ -691,7 +691,7 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
     // TF: the Disruptor's band leaves the horn on its aft-seated turret (Sonic_Turret_Seat), worked out
     // in screen pixels as the turret is drawn. PrimaryOffset and VerticalOffset are unused for it.
     if (What_Am_I() == RTTI_UNIT && ((UnitClass const*)this)->Class->Type == UNIT_TSSONIC) {
-        enum { HORN_FWD_PX = 9, HORN_LIFT_PX = 11, PITCH_PCT = 61 };
+        enum { HORN_FWD_PX = 10, HORN_LIFT_PX = 11, PITCH_PCT = 61 };
         int sx = 0, sy = 0;
         ((UnitClass const*)this)->Class->Sonic_Turret_Seat(PrimaryFacing.Current(), sx, sy);
         double t = (double)(unsigned char)dir * (6.28318530718 / 256.0);

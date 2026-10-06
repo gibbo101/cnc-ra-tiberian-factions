@@ -42,6 +42,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DROPS_JSON = os.path.join(REPO, "scripts", "unit_art_drop.json")
 HEADER = os.path.join(REPO, "redalert", "unit_art_drop.h")
 C3_HEADER = os.path.join(REPO, "redalert", "c3tanks.h")
+UDATA = os.path.join(REPO, "redalert", "udata.cpp")
 
 UNIT_DENSITY = 8.0  # canvas px per classic px for packed units (canvas = ShapeSize x 8)
 BUILDING_DENSITY = 256 / 48  # the deployed sensor's density (256 x 416 over a 48 x 78 stub)
@@ -81,24 +82,10 @@ def c3_seats(name):
 
 
 def sonic_seats():
-    """UnitTypeClass::Sonic_Turret_Seat per facing, classic px (C integer division)."""
-    mx = [0, -2, -3, -5, -5, -7, -8, -9, -9, -8, -7, -6, -5, -5, -3, -2, 0, 2, 3, 5, 5, 6, 7, 8, 9, 8, 8, 7, 5,
-          5, 3, 2]
-    my = [1, 0, 0, -1, -1, -2, -3, -4, -6, -7, -8, -8, -9, -9, -9, -10, -10, -9, -9, -9, -9, -8, -8, -6, -5,
-          -4, -3, -2, -1, -1, 0, 0]
-    aft, mount = 6, 9
-
-    def cdiv(a, b):
-        q = abs(a) // abs(b)
-        return q if (a < 0) == (b < 0) else -q
-
-    seats = []
-    for i in range(32):
-        ax = cdiv(mx[i] * aft * 2 + (-mount if mx[i] < 0 else mount), mount * 2)
-        ay2 = my[i] * 2 + 9
-        ay = cdiv(ay2 * aft + (-mount if ay2 < 0 else mount), mount * 2)
-        seats.append((ax, ay))
-    return seats
+    """UnitTypeClass::Sonic_Turret_Seat per hull frame, classic px, read from udata.cpp."""
+    text = open(UDATA).read()
+    m = re.search(r"void UnitTypeClass::Sonic_Turret_Seat.*?_seat\[32\]\[2\] = \{(.*?)\};", text, re.S)
+    return [tuple(int(v) for v in p) for p in re.findall(r"\{(-?\d+), (-?\d+)\}", m.group(1))]
 
 
 def seats_for(key):
