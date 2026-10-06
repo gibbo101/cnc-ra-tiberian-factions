@@ -345,11 +345,10 @@ A unit here is done: no open art, geometry or behaviour work.
 | Unit | Notes |
 |---|---|
 | Hover MLRS | HD v2: rack on a pad on its back, seated per hull frame |
-| Mammoth Mk. II | railgun from TS's own particle numbers; bay-delivered, capped |
+| Mammoth Mk. II | HD v3: railgun from the side pods, missiles from the rear pods, alternating sides (`scripts/ts_hmec_muzzle.py`); hull keeps 40% of TS's walk roll; bay-delivered, capped |
 | Titan | signed off once the fixed 6 px shadow throw replaced the width fraction |
 | Wolverine | cameo, TS firing animation, TSGUN4, canopy dot |
 | TS MCV | 32° render; `Speed=5` to match the TD MCV family |
-| Disruptor | final band (no pulse), WaveClass firing behaviour, horn-rooted muzzle |
 | Amphibious APC | unload fix, water hull, `SPEED_AMPHIBIOUS` |
 | TS Harvester | docks at the TS, TD and RA refineries; war factory door seat |
 
