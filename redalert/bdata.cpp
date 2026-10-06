@@ -1525,13 +1525,13 @@ static BuildingTypeClass const ClassTsDrop(STRUCT_TSDROP,
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,
-                                           false,              // no anim to regulate
+                                           true,               // anim regulated (dish and pad lights)
                                            false, false, false, false,
                                            true, true, false, false, false, true,
                                            RTTI_UNITTYPE,      // Vehicle factory: orders arrive by drop pod.
                                            DIR_N,
-                                           BSIZE_32,           // The deck's 3x2; the cargo disembarks across the
-                                                               // walkable bib row below.
+                                           BSIZE_32,           // The deck's 3x2 (its 3x3 art's north row is
+                                                               // antennas); the cargo comes down the ramp below it.
                                            NULL,
                                            (short const*)ListWeap, // BLOCKING footprint = the deck's 3x2 = the plot.
                                            NULL);
@@ -5487,6 +5487,7 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSDEPT, BSTATE_IDLE, 0, 35, 3},  // GADEPT _A halved(5)+_B whole(7, odd=no damaged half) -> LCM 35
         {STRUCT_TSDEPT, BSTATE_ACTIVE, 0, 35, 3}, // repairing: the same lights, the pad glow on top (TSDEPTRP)
         {STRUCT_TSPLUG, BSTATE_IDLE, 0, 40, 3},  // GAPLUG windows _A(10)+_B(8)+_C(4) -> LCM 40
+        {STRUCT_TSDROP, BSTATE_IDLE, 0, 20, 3},  // GTDROP _A dish + _B pad lights (20 healthy + 20 damaged)
         // TSSILO is static (no TS idle anim): shape 0 healthy, 1 damaged.
     };
 
@@ -6182,12 +6183,7 @@ int BuildingTypeClass::Width(void) const
 int BuildingTypeClass::Height(bool bib) const
 {
     static int height[BSIZE_COUNT] = {1, 1, 2, 2, 3, 2, 3, 2, 5, 3, 4, 3, 1, 3, 4};
-    /*
-    **	The dropship bay's slab sits INSIDE its 3x3 (see Bib_And_Offset), so the
-    **	placement grid must not grow a bib row -- the art already owns the space
-    **	(Luke, 2026-08-12).
-    */
-    return (height[Size] + ((bib && IsBibbed && Type != STRUCT_TSDROP) ? 1 : 0));
+    return (height[Size] + ((bib && IsBibbed) ? 1 : 0));
 }
 
 /***********************************************************************************************
