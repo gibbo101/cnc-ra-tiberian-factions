@@ -17,6 +17,29 @@ DARK = np.array([30, 30, 34.])
 LENS_OFF = np.array([176, 176, 168.])
 
 
+EAGLE_R = 0.37   # the emblem's outer radius, in flag heights
+
+
+def _eagle(eu, ev):
+    """The emblem's coverage (0..1) at flag coordinates (eu, ev), sampled bilinearly from gdi_eagle.png."""
+    from PIL import Image
+    import os
+    if not hasattr(_eagle, 'img'):
+        here = os.path.dirname(os.path.abspath(__file__))
+        _eagle.img = np.asarray(Image.open(os.path.join(here, 'gdi_eagle.png')).convert('L'), np.float32) / 255
+    img = _eagle.img
+    n = img.shape[0]
+    sx = (eu / EAGLE_R * 0.5 + 0.5) * (n - 1)
+    sy = (ev / EAGLE_R * 0.5 + 0.5) * (n - 1)
+    inside = (sx >= 0) & (sx <= n - 1) & (sy >= 0) & (sy <= n - 1)
+    x0 = np.clip(np.floor(sx).astype(int), 0, n - 2)
+    y0 = np.clip(np.floor(sy).astype(int), 0, n - 2)
+    fx, fy = np.clip(sx - x0, 0, 1), np.clip(sy - y0, 0, 1)
+    v = (img[y0, x0] * (1 - fx) * (1 - fy) + img[y0, x0 + 1] * fx * (1 - fy)
+         + img[y0 + 1, x0] * (1 - fx) * fy + img[y0 + 1, x0 + 1] * fx * fy)
+    return np.where(inside, v, 0.0)
+
+
 def mix(a, b, t):
     t = np.asarray(t, np.float32)[..., None]
     return a * (1 - t) + b * t
@@ -100,11 +123,13 @@ def materials(r, p=PL.P, occ=None, lights=None, beacon=None, flag_t=None):
     put(berm & ~band, bc)
     bb = (berm & ~band).astype(np.float32)
     bz += 0.3 * ((bj | cj).astype(np.float32) - 0.2) * bb
-    # corrugated panels part-way up the long faces and strips between the east ends' hatches, in house
-    # colour; a dark foot
+    # red-brown corrugated panels part-way up the long faces, strips between the east ends' hatches; a dark foot
     rib = np.sin(along * 2 * np.pi / 3.0)
-    pc = house * (1 + 0.08 * rib)[..., None]
-    pc = np.where((phase(along, 24.0, 0.0) < 0.7)[..., None], pc * 0.7, pc)
+    # v2 (Luke): the panels in house green (they were red-brown), seams between them and along their edges; red-brown
+    # only while they go in (the build-up: they turn green with the hatches, as TS's hatches do)
+    pseam = (phase(along, 24.0, 0.0) < 0.7) | (np.abs(z - pz0) < 0.7) | (np.abs(z - pz1) < 0.7)
+    pc_red = BAND_C * g1 * (1 + 0.08 * rib)[..., None] * (1 - 0.3 * pseam)[..., None]
+    pc = mix(pc_red, house * (1 - 0.28 * pseam)[..., None], r.field('hatches', 1.0))
     put(panel, pc)
     put(band, np.array([104, 90, 64.]) * g1)
     bands = panel.astype(np.float32)
@@ -169,13 +194,37 @@ def materials(r, p=PL.P, occ=None, lights=None, beacon=None, flag_t=None):
 
     # ---------------------------------------------------------------- the spine: dark deck, two green hatches
     sp = comp == PL.SPINE
-    spt = sp & top
-    s = p['spine']
-    sh = spt & (((x >= s['x0'] + 6) & (x <= -6)) | ((x >= 6) & (x <= s['x1'] - 6))) & (np.abs(y - (s['y0'] + s['y1']) / 2) <= 14)
-    shf = sh & ((phase(x, 8.0, 0.0) < 0.9) | (np.abs(np.abs(y - (s['y0'] + s['y1']) / 2) - 14) < 1.2))
-    put(spt, np.array([122, 116, 102.]) * g1 * (1 - 0.15 * (phase(x + y, 12.0, 0.0) < 0.7))[..., None])
-    put(sh, mix(BAND_C * g1, house * (1 - 0.28 * shf)[..., None], r.field('hatches', 1.0)))
-    put(sp & ~top, BAND_C * g1 * (1 + 0.08 * np.sin(np.where(np.abs(nx) > np.abs(ny), y, x) * 2 * np.pi / 3.0))[..., None])
+    if sp.any() and p.get('spine'):                          # v1 only: v2's yard is empty
+        spt = sp & top
+        s = p['spine']
+        sh = spt & (((x >= s['x0'] + 6) & (x <= -6)) | ((x >= 6) & (x <= s['x1'] - 6))) & (np.abs(y - (s['y0'] + s['y1']) / 2) <= 14)
+        shf = sh & ((phase(x, 8.0, 0.0) < 0.9) | (np.abs(np.abs(y - (s['y0'] + s['y1']) / 2) - 14) < 1.2))
+        put(spt, np.array([122, 116, 102.]) * g1 * (1 - 0.15 * (phase(x + y, 12.0, 0.0) < 0.7))[..., None])
+        put(sh, mix(BAND_C * g1, house * (1 - 0.28 * shf)[..., None], r.field('hatches', 1.0)))
+        put(sp & ~top, BAND_C * g1 * (1 + 0.08 * np.sin(np.where(np.abs(nx) > np.abs(ny), y, x) * 2 * np.pi / 3.0))[..., None])
+
+    # ---------------------------------------------------------------- v2: the corridors (TS's grey tubes)
+    co = comp == PL.CORR
+    if co.any():
+        cd = p['corridors']
+        xm_ = np.zeros(shape, np.float32); hw_ = np.ones(shape, np.float32); zc_ = np.zeros(shape, np.float32)
+        for (cx0, cx1, zc, crown) in cd['tubes']:
+            on = (x >= cx0 - 2) & (x <= cx1 + 2)
+            xm_ = np.where(on, (cx0 + cx1) / 2.0, xm_); hw_ = np.where(on, (cx1 - cx0) / 2.0, hw_)
+            zc_ = np.where(on, zc, zc_)
+        roofm = co & (z >= zc_ - 0.4)
+        wall = co & ~roofm
+        # the roof: steel, ribbed round the tube every 6 units (a Quonset's), a seam along the eaves
+        rib = (phase(y, 6.0, 0.0) < 0.55)
+        eave = z < zc_ + 0.6
+        put(roofm, np.array([134, 136, 144.]) * g1 * (1 - 0.07 * rib - 0.18 * eave)[..., None])
+        by += 0.18 * (rib.astype(np.float32) - 0.3) * roofm
+        # the walls: darker panels with a row of dark windows; a plinth
+        wp = phase(y, 12.0, 0.0) < 0.6
+        put(wall, np.array([118, 120, 128.]) * g1 * (1 - 0.18 * wp)[..., None])
+        win = wall & (z >= zc_ - 13.0) & (z <= zc_ - 5.0) & (phase(y, 12.0, 4.0) < 6.5)
+        put(win, DARK * g1)
+        put(wall & (z < p['slab_h'] + 3.0), STEEL_D * g1)
 
     # ---------------------------------------------------------------- machinery
     vent = comp == PL.VENT
@@ -219,40 +268,28 @@ def materials(r, p=PL.P, occ=None, lights=None, beacon=None, flag_t=None):
         v = (top_z - z) / f['h']
         eu = (u - 0.47) * f['len'] / f['h']
         ev = v - 0.5
-        emb = eagle(eu, ev, 0.33)
+        # TS GDI's eagle in its ring, stencilled from the faction emblem (gdi_eagle.png: white = emblem)
+        emb = _eagle(eu, ev)
         fc = house * (1 - 0.55 * emb)[..., None]
-        fc = mix(fc, np.array([10, 60, 10.]), emb.astype(np.float32) * 0.6)
+        fc = mix(fc, np.array([10, 60, 10.]), np.asarray(emb, np.float32) * 0.6)
         hem = (v < 0.03) | (v > 0.97)
         fc = fc * (1 - 0.2 * hem)[..., None]
         put(fl, fc)
 
     # build-up: the bunkers go up in bare grey block before they are faced (TS's GTPILEMK)
     paint = r.field('paint', 1.0)
-    bare = np.isin(comp, [PL.BERM, PL.ROOF, PL.SPINE, PL.STEP, PL.PORCH]) & (paint < 1.0)
+    bare = np.isin(comp, [PL.BERM, PL.ROOF, PL.SPINE, PL.STEP, PL.PORCH, PL.CORR]) & (paint < 1.0)
     if bare.any():
         lum = (alb * np.array([0.3, 0.59, 0.11])).sum(axis=2, keepdims=True)
         grey = lum * 0.8 + np.array([46, 46, 48.]) * 0.4
-        alb = np.where(bare[..., None], mix(grey, alb, paint), alb)
+        # house-coloured parts switch at once (grey until the facing is done, then house green): no half-grey green
+        hpx = (alb[..., 1] > 1.6 * np.maximum(alb[..., 0], alb[..., 2])) & (alb[..., 1] > 40)
+        t = np.where(hpx, (paint >= 1.0).astype(np.float32), paint)
+        alb = np.where(bare[..., None], mix(grey, alb, t), alb)
+    # the house-painted pixels (hatches, panels, the coping, the corridors' roofs, the flag): the damage keeps soot,
+    # dust and cracks off them
+    r.house_px = r.hitmask & (alb[..., 1] > 1.6 * np.maximum(alb[..., 0], alb[..., 2])) & (alb[..., 1] > 40)
     return alb, (bx, by, bz), emit
-
-
-_EAGLE = None
-
-
-def eagle(eu, ev, radius):
-    """TS GDI's eagle in its ring (gdi_eagle.png, white = emblem), as coverage 0..1 at flag
-    coordinates centred on the emblem, `radius` the ring's outer radius; the head faces +eu."""
-    global _EAGLE
-    if _EAGLE is None:
-        import os
-        from PIL import Image
-        _EAGLE = np.asarray(Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                    'gdi_eagle.png')).convert('L'), np.float32) / 255.0
-    from scipy import ndimage
-    n = _EAGLE.shape[0] - 1
-    mx = (eu / radius * 0.5 + 0.5) * n
-    my = (ev / radius * 0.5 + 0.5) * n
-    return ndimage.map_coordinates(_EAGLE, [my, mx], order=1, mode='constant', cval=0.0)
 
 
 def trim_mask(r, alb):
