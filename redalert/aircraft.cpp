@@ -420,7 +420,8 @@ int AircraftClass::Shape_Number(void) const
     **	If there is a door on this aircraft (Chinook), then adjust the
     **	shape number to match the door open state.
     */
-    if (!Is_Door_Closed()) {
+    // TF: the Orca Transport's art has no door frames; its door still times the unload.
+    if (!Is_Door_Closed() && *this != AIRCRAFT_TSORCATRAN) {
         shapenum = Class->Rotation + Door_Stage();
     }
 
@@ -3753,11 +3754,11 @@ DirType AircraftClass::Desired_Load_Dir(ObjectClass* object, CELL& moveto) const
 
 /*
 **	The TS aircraft announce leaving and reaching the ground (TS AuxSound1/AuxSound2): the
-**	Orcas with ORCAUP1/ORCADWN1, the Carryall with the dropship's DROPUP1/DROPDWN1.
+**	Orcas and the Orca Transport with ORCAUP1/ORCADWN1, the Carryall with the dropship's DROPUP1/DROPDWN1.
 */
 static void TF_TS_Aircraft_Aux_Sound(AircraftClass const* air, bool up)
 {
-    if (*air == AIRCRAFT_TSORCA || *air == AIRCRAFT_TSORCAB) {
+    if (*air == AIRCRAFT_TSORCA || *air == AIRCRAFT_TSORCAB || *air == AIRCRAFT_TSORCATRAN) {
         Sound_Effect(up ? VOC_TS_ORCAUP1 : VOC_TS_ORCADWN1, air->Center_Coord());
     } else if (*air == AIRCRAFT_TSCARRY) {
         Sound_Effect(up ? VOC_TS_DROPUP1 : VOC_TS_DROPDWN1, air->Center_Coord());
@@ -4795,6 +4796,13 @@ int AircraftClass::Mission_Guard_Area(void)
     return (FootClass::Mission_Guard_Area());
 }
 
+// True for the TS aircraft flown by the Orca pilot (TS voice set 30): the Orcas, the Carryall and the Orca Transport.
+static bool TF_Is_TS_Orca_Pilot(AircraftClass const* air)
+{
+    return (*air == AIRCRAFT_TSORCA || *air == AIRCRAFT_TSORCAB || *air == AIRCRAFT_TSCARRY
+            || *air == AIRCRAFT_TSORCATRAN);
+}
+
 /***********************************************************************************************
  * AircraftClass::Response_Attack -- Gives audio response to attack order.                     *
  *                                                                                             *
@@ -4814,7 +4822,7 @@ void AircraftClass::Response_Attack(void)
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
     // TF: the TS aircraft answer in the Orca pilot's voice (TS voice set 30), whoever owns them.
-    if (*this == AIRCRAFT_TSORCA || *this == AIRCRAFT_TSORCAB || *this == AIRCRAFT_TSCARRY) {
+    if (TF_Is_TS_Orca_Pilot(this)) {
         static VocType _ts[] = {VOC_TS_30I022, VOC_TS_30I030, VOC_TS_30I034, VOC_TS_30I036};
         if (AllowVoice) {
             Sound_Effect(_ts[Sim_Random_Pick(0, ARRAY_SIZE(_ts) - 1)], fixed(1), -(ID + 1));
@@ -4848,7 +4856,7 @@ void AircraftClass::Response_Move(void)
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
     // TF: the TS aircraft answer in the Orca pilot's voice (TS voice set 30), whoever owns them.
-    if (*this == AIRCRAFT_TSORCA || *this == AIRCRAFT_TSORCAB || *this == AIRCRAFT_TSCARRY) {
+    if (TF_Is_TS_Orca_Pilot(this)) {
         static VocType _ts[] = {VOC_TS_30I014, VOC_TS_30I016, VOC_TS_30I018, VOC_TS_30I022};
         if (AllowVoice) {
             Sound_Effect(_ts[Sim_Random_Pick(0, ARRAY_SIZE(_ts) - 1)], fixed(1), -(ID + 1));
@@ -4882,7 +4890,7 @@ void AircraftClass::Response_Select(void)
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
     // TF: the TS aircraft answer in the Orca pilot's voice (TS voice set 30), whoever owns them.
-    if (*this == AIRCRAFT_TSORCA || *this == AIRCRAFT_TSORCAB || *this == AIRCRAFT_TSCARRY) {
+    if (TF_Is_TS_Orca_Pilot(this)) {
         static VocType _ts[] = {VOC_TS_30I000, VOC_TS_30I002, VOC_TS_30I004, VOC_TS_30I006};
         if (AllowVoice) {
             Sound_Effect(_ts[Sim_Random_Pick(0, ARRAY_SIZE(_ts) - 1)], fixed(1), -(ID + 1));

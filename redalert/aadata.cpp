@@ -344,6 +344,29 @@ static AircraftTypeClass const TsCarry(AIRCRAFT_TSCARRY, // What kind of aircraf
                                       MISSION_GUARD      // Default mission for aircraft.
 );
 
+// TS Orca Transport (AIRCRAFT_TSORCATRAN), TS rules [ORCATRAN]: an unarmed VTOL that carries five infantry and lands
+// to load and unload them, as the Chinook does.
+static AircraftTypeClass const TsOrcaTran(AIRCRAFT_TSORCATRAN, // What kind of aircraft is this.
+                                          TXT_ORCA,            // Translated text (placeholder; rules.ini Name= names it).
+                                          "TSORCATRAN",        // INI name (matches the TSORCATRAN tileset).
+                                          0x0000,              // Vertical offset.
+                                          0x0000,              // Primary weapon offset.
+                                          0x0000,              // Primary weapon lateral offset.
+                                          false,               // Fixed wing aircraft? (no -- VTOL)
+                                          false,               // Equipped with a rotor? (no -- jet VTOL)
+                                          false,               // Custom rotor sets for each facing?
+                                          true,                // Can this aircraft land on clear terrain?
+                                          false,               // Is it invisible on radar? (TS RadarInvisible=no)
+                                          true,                // Can the player select it so as to give it orders?
+                                          true,                // Can it be assigned as a target for attack.
+                                          false,               // Is it insignificant (won't be announced)?
+                                          false,               // Is it immune to normal combat damage?
+                                          STRUCT_NONE,         // Preferred landing building (none, as the Chinook).
+                                          0xFF,                // Landing speed
+                                          32,                  // Number of rotation stages (32 facings).
+                                          MISSION_GUARD        // Default mission for aircraft.
+);
+
 // TD Apache (AIRCRAFT_TDAPACHE), ported from TD's AttackHeli; Nod only. RA's attack-heli AI flies it, drawn with
 // HIND's single rotor, firing TDApacheGun (docs/td-attack-heli-deep-dive.md).
 static AircraftTypeClass const TdApacheHeli(AIRCRAFT_TDAPACHE, // What kind of aircraft is this.
@@ -561,6 +584,7 @@ void AircraftTypeClass::Init_Heap(void)
     new AircraftTypeClass(TsOrca);          // MUST follow TsHunt to match the AIRCRAFT_TSORCA slot.
     new AircraftTypeClass(TsOrcaB);         // MUST follow TsOrca to match the AIRCRAFT_TSORCAB slot.
     new AircraftTypeClass(TsCarry);         // MUST follow TsOrcaB to match the AIRCRAFT_TSCARRY slot.
+    new AircraftTypeClass(TsOrcaTran);      // MUST follow TsCarry to match the AIRCRAFT_TSORCATRAN slot.
 }
 
 /***********************************************************************************************
@@ -885,6 +909,9 @@ void AircraftTypeClass::Dimensions(int& width, int& height) const
         // TF: two cells high, as the launcher centres the box on the aircraft and the hull rises above a shorter one.
         width = 40;
         height = 48;
+    } else if (Type == AIRCRAFT_TSORCATRAN) {
+        width = 44;
+        height = 28;
     } else if (Type == AIRCRAFT_TSORCAB) {
         width = 34;
         height = 20;

@@ -102,6 +102,7 @@ superweapon payload, or dormant.
 | TSORCA | ORCA | 5 | 1000 | 200 | TSHPAD |
 | TSORCAB | ORCAB | 8 | 1600 | 260 | TSHPAD, TSTECH |
 | TSCARRY | TRNSPORT | 9 | 750 | 175 | TSHPAD, TSDEPT |
+| TSORCATRAN | ORCATRAN | 5 | 1200 | 200 | TSPILE, TSHPAD |
 
 ---
 
