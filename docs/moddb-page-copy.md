@@ -277,6 +277,10 @@ Soviet base with the Tesla gate. Not captured: an EMP pulse.
 media only takes YouTube links). The 1080p MP4 for ModDB is rendered from the intro pipeline's own
 frames and music (`intro_cut.py ... frames`, then H.264 CRF 16 + AAC), not decoded from the Bink.
 
+**HD showcase GIFs:** `scripts/moddb_showcase.py OUT_DIR [SUBJECT ...]` cuts the TS GDI art as the
+game draws it, in GDI gold: the release's TS-era frames (`--old-rev`, default main) beside the HD
+frames, and the HD frames alone. Only art signed off as final goes in a cut.
+
 ## Per-release update checklist (in the browser)
 
 1. Edit the mod page: replace the description, refresh the limitations list.
