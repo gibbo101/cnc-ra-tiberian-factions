@@ -413,10 +413,10 @@ ts_stub TSHPAD "$TMPDIR/tshpad_stub.shp" 48 48 2
 PACK_ARGS+=("$TMPDIR/tshpad_stub.shp:TSHPAD.SHP")
 ts_stub TSHPAD "$TMPDIR/tshpadmk_stub.shp" 48 48 24
 PACK_ARGS+=("$TMPDIR/tshpadmk_stub.shp:TSHPADMAKE.SHP")
-# TSDROP 72x48 = the HD dropship bay's 384x256 canvas, its 3x2 plot.
-ts_stub TSDROP "$TMPDIR/tsdrop_stub.shp" 72 48 2
+# TSDROP 99x96 = the HD dropship bay's 528x512 canvas centred on the deck's 3x2 plot.
+ts_stub TSDROP "$TMPDIR/tsdrop_stub.shp" 99 96 2
 PACK_ARGS+=("$TMPDIR/tsdrop_stub.shp:TSDROP.SHP")
-ts_stub TSDROP "$TMPDIR/tsdropmk_stub.shp" 72 48 19
+ts_stub TSDROP "$TMPDIR/tsdropmk_stub.shp" 99 96 19
 PACK_ARGS+=("$TMPDIR/tsdropmk_stub.shp:TSDROPMAKE.SHP")
 # TSPOWR 48x51 = the HD rebuild's 256x272 canvas: the 2x2 plot centred, the cooling
 # tower rising into the headroom above it.
