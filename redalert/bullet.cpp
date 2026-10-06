@@ -130,8 +130,14 @@ BulletClass::BulletClass(BulletType id,
 static UnitType const _mech_division[] = {UNIT_TSTITN, UNIT_TSTITN, UNIT_TSTITN, UNIT_TSSMEC, UNIT_TSSMEC};
 int const MECH_DIVISION_COUNT = (int)(sizeof(_mech_division) / sizeof(_mech_division[0]));
 
-// Spawns one unit at the landed dropship's exit, under the hull on the bay's front row, and walks it to the bay's
-// rally point or two rows clear. The paced Mech Division unload and Deliver_Cargo both use it.
+// Where a dropship bay's cargo sets down: the foot of the bay's ramp, on the row south of its plot.
+static COORDINATE TF_Bay_Ramp_Foot(BuildingClass const* deck)
+{
+    return Coord_Add(deck->Center_Coord(), XY_Coord(0x0072, 0x014C));
+}
+
+// Spawns one unit at the landed dropship's exit, the foot of the bay's ramp, and walks it to the bay's rally point
+// or two rows clear. The paced Mech Division unload and Deliver_Cargo both use it.
 void BulletClass::TF_Disembark(HouseClass* owner, UnitType type)
 {
     if (owner == NULL) {
@@ -146,8 +152,7 @@ void BulletClass::TF_Disembark(HouseClass* owner, UnitType type)
     BuildingClass* deck = Map[wcell].Cell_Building();
     COORDINATE spot = Coord;
     if (deck != NULL && *deck == STRUCT_TSDROP) {
-        CELL front = (CELL)(Coord_Cell(deck->Center_Coord()) + MAP_CELL_W);
-        spot = Coord_Move(Cell_Coord(front), DIR_N, 0x0060);
+        spot = TF_Bay_Ramp_Foot(deck);
     }
     if (member->Can_Enter_Cell(Coord_Cell(spot)) != MOVE_OK) {
         spot = Cell_Coord(Map.Nearby_Location(Coord_Cell(spot), member->Class->Speed));
@@ -163,8 +168,8 @@ void BulletClass::TF_Disembark(HouseClass* owner, UnitType type)
     }
 }
 
-// Sets a dropship pod's cargo down on the bay's front row and walks it clear; never on the deck, as a unit on
-// building cells can't path off them. Safe to call more than once: only the first call delivers.
+// Sets a dropship pod's cargo down at the foot of the bay's ramp and walks it clear; never on the deck, as a unit
+// on building cells can't path off them. Safe to call more than once: only the first call delivers.
 void BulletClass::Deliver_Cargo(void)
 {
     if (Payback == NULL || Payback->What_Am_I() != RTTI_UNIT || !Payback->IsInLimbo) {
@@ -179,8 +184,7 @@ void BulletClass::Deliver_Cargo(void)
     CELL wcell = Coord_Cell(where);
     BuildingClass* deck = Map[wcell].Cell_Building();
     if (deck != NULL && *deck == STRUCT_TSDROP) {
-        CELL front = (CELL)(Coord_Cell(deck->Center_Coord()) + MAP_CELL_W);
-        where = Coord_Move(Cell_Coord(front), DIR_N, 0x0060);
+        where = TF_Bay_Ramp_Foot(deck);
     }
     // The Mech Division token is an order, never a unit: it must not reach the map. TFUnloaded stops this backstop
     // and the paced unload in AI from delivering a member twice.

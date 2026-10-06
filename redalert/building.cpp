@@ -3539,8 +3539,8 @@ int BuildingClass::Exit_Object(TechnoClass* base)
         switch (Class->Type) {
         case STRUCT_TSDROP: {
             // TF: the dropship bay puts nothing on the map: the finished vehicle rides a drop pod down in limbo and
-            // is set down when it lands. The pod sinks straight onto the deck (BulletClass::AI).
-            COORDINATE pad = Coord_Move(Center_Coord(), DIR_N, 0x0020);
+            // is set down when it lands. The pod sinks straight onto the pad drawn on the deck (BulletClass::AI).
+            COORDINATE pad = Coord_Add(Center_Coord(), XY_Coord(0x008B, 0x002B));
             CELL dest = Coord_Cell(pad);
 
             BulletClass* pod =

@@ -56,9 +56,7 @@ It feeds the radar crest (`crest_atlas_paint.py`), the picker plate and map badg
 (`picker_emblems_paint.py`), every TS-badged cameo (`cameo_badge_build.py`) and the Hunter
 Seeker's badged cameo (`ts_pack_seeker.py`; without the raw TS art, composite the emblem at 90 px
 onto `BuildIcon_SW_TSHUNT.tga` at (12,12), which reproduces the shipped file exactly). Changing
-it means re-running those and deploying the atlas plus the changed cameos. The dropship pad
-stencils its own copy of the older weathered eagle (`resources/custom-cameos/ts-gdi-logo.png`)
-on purpose. `tsnod.png` is the matching Nod hexagon from the same icon, trimmed to its silver
+it means re-running those and deploying the atlas plus the changed cameos. `tsnod.png` is the matching Nod hexagon from the same icon, trimmed to its silver
 frame, for TS Nod.
 
 ---

@@ -238,9 +238,11 @@ HEAVY, and `GTWEAP_D` frames 9-17 are magenta placeholders.
 The TS Dropship (DSHP.VXL at TS's 6.4 px/voxel) descends vertically over the deck: a three-stage
 machine in `BulletClass::AI` (descend and flare, 4 s dwell, climb out), with no map motion, so its
 shadow sits on the pad and grows (shapes 1-3, pre-scaled silhouettes picked by Height). TS's
-DROPDWN1 and DROPUP1 play at touchdown and liftoff. The Mk. II walks out from under the hull to the
-bay's rally point (`Rally_Unit`; the bay is a real factory) or two rows out. The landing point is
-the deck's visual centre, 0x20 (32) leptons north of the 3x2 plot centre.
+DROPDWN1 and DROPUP1 play at touchdown and liftoff. The landing point is the pad drawn on the deck,
+(+139, +43) leptons from the 3x2 plot centre; the cargo sets down at the foot of the ramp, on the row
+south of the plot (`TF_Bay_Ramp_Foot`), and walks to the bay's rally point (`Rally_Unit`; the bay is
+a real factory) or two rows out. The art is drawn on a 3x3 whose north row holds only antennas, so
+the plot is the deck's 3x2 and the canvas is padded to centre on it.
 
 - **Mech Division** (`UNIT_TSMDIV`) is a token the pod expands into 3 Titans + 2 Wolverines, single
   file every 9 frames. **The Mk. II field cap** (`TF_MK2_CAP` in `house.cpp`) is heap-counted:
