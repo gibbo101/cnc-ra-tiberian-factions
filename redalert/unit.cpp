@@ -7678,13 +7678,13 @@ StructType UnitClass::TF_Deploys_Into(void) const
     return (STRUCT_NONE);
 }
 
-// The cell the deployed building's plot starts at: the vehicle's own cell, or for the Mobile War Factory two
-// west and one north, so its 5x3 plot centres on the vehicle, where the build-up's first frame draws it.
+// The cell the deployed building's plot starts at: the vehicle's own cell, or for the Mobile War Factory one
+// west and two north, so the vehicle stands in its hall's middle cell, where the build-up's first frame draws it.
 CELL UnitClass::TF_Deploy_Origin(void) const
 {
     CELL cell = Coord_Cell(Center_Coord());
     if (*this == UNIT_TSMWAR) {
-        return (cell - MAP_CELL_W - 2);
+        return (cell - MAP_CELL_W * 2 - 1);
     }
     return (cell);
 }

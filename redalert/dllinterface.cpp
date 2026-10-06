@@ -6688,16 +6688,15 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     /*
     **  TS war factories: the near face and the roll-up door sort south of a
     **  vehicle seated in the bay, so they draw over it while it waits, and north
-    **  of anything standing on the concrete in front. The deployed Mobile War
-    **  Factory's sort point is its 5x3 plot's centre (row 1.5), the near face
-    **  +192 leptons (row 2.25). The War Factory's is its 3x4 plot's centre
-    **  (row 2.0), the near face +320 (row 3.25): 0.75 rows past its door's
-    **  threshold (row 2.91), the vehicle seat sorting at the threshold.
+    **  of anything standing on the concrete in front. The War Factory's sort
+    **  point is its 3x4 plot's centre (row 2.0), the near face +320 (row 3.25):
+    **  0.75 rows past its door's threshold (row 2.91), the vehicle seat sorting at
+    **  the threshold. The deployed Mobile War Factory's door is 20 leptons deeper.
     */
     if (shape_file_name != NULL
         && (strcmp(shape_file_name, "TSDWEAPNF") == 0 || strcmp(shape_file_name, "TSDWEAPNU") == 0)) {
         new_object.SortOrder =
-            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 192)) >> 3);
+            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 340)) >> 3);
     }
     if (shape_file_name != NULL
         && (strcmp(shape_file_name, "TSWEAPNF") == 0 || strcmp(shape_file_name, "TSWEAPNU") == 0)) {
@@ -6715,7 +6714,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     }
     if (shape_file_name != NULL && strcmp(shape_file_name, "TSDWEAPDR") == 0) {
         new_object.SortOrder =
-            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 200)) >> 3);
+            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 348)) >> 3);
     }
     if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAPDR") == 0) {
         new_object.SortOrder =
@@ -6748,19 +6747,21 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         }
 
         /*
-        **  A unit riding out of the War Factory's door on its rail sorts just under the near face
-        **  and the door (Sort_Y +320 / +328) until its body has cleared the threshold, so the
-        **  doorway's frame keeps drawing over the part of it still inside. Its upper body and turret
-        **  take their keys from this one.
+        **  A unit riding out of a TS war factory's door on its rail sorts just under the near face
+        **  and the door (Sort_Y +320 / +328, 20 deeper for the Mobile War Factory) until its body has
+        **  cleared the threshold, so the doorway's frame keeps drawing over the part of it still
+        **  inside. Its upper body and turret take their keys from this one.
         */
         TechnoClass const* host = drive->In_Radio_Contact() ? drive->Contact_With_Whom() : NULL;
-        if (host != NULL && host->What_Am_I() == RTTI_BUILDING && *(BuildingClass const*)host == STRUCT_TSWEAP
+        if (host != NULL && host->What_Am_I() == RTTI_BUILDING && ((BuildingClass const*)host)->Is_TS_War_Factory()
             && drive->On_Rail()) {
+            bool mobile = (*(BuildingClass const*)host == STRUCT_TSDWEAP);
             UnitType ut = *(UnitClass const*)object;
             bool walker = (ut == UNIT_TSTITN || ut == UNIT_TSSMEC || ut == UNIT_TSHMEC);
             int below = (int)Coord_Y(object->Coord) - (int)Coord_Y(host->Coord);
-            if (!walker || below < TSWEAP3_WALKER_CLEAR) {
-                int clamp = (ExportLayer << 29) + (Coord_Add(host->Sort_Y(), XY_Coord(0, 304)) >> 3);
+            if (!walker || below < (mobile ? TSDWEAP_WALKER_CLEAR : TSWEAP3_WALKER_CLEAR)) {
+                int clamp =
+                    (ExportLayer << 29) + (Coord_Add(host->Sort_Y(), XY_Coord(0, mobile ? 324 : 304)) >> 3);
                 if (new_object.SortOrder > clamp) {
                     new_object.SortOrder = clamp;
                 }
@@ -7069,19 +7070,10 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             // (3 across the building's row and the dome's row) and TSPROC
             // (4 across and 3 high over the whole plot).
             case STRUCT_TSWEAP:
+            case STRUCT_TSDWEAP:
                 // 3 cells across; from the roof's top down to the concrete in front of the door.
                 dimx = 70;
                 dimy = 74;
-                break;
-            case STRUCT_TSDWEAP:
-                // Ensemble bbox (2026-08-17 evening): the hand-tucked pad
-                // centres the ensemble on the 4x3 plot, so the plot-centred
-                // box hugs the art with a size dial alone -- art 510x262
-                // canvas px = 96x49 classic. Position is launcher-owned on
-                // BOTH axes (six falsified probes; CenterCoordX was the
-                // sixth) -- size is the only dial.
-                dimx = 80; // body 76x56 classic px on the 5x3 plot
-                dimy = 58;
                 break;
             case STRUCT_TSPILE:
                 dimy = 38; // 2x2 box, approved 2026-08-13
@@ -10961,7 +10953,7 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             int probe;        // a cell the building occupies, relative to its origin cell
         } _aprons[] = {
             {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 0, 1, MAP_CELL_W}, // rows 1-3 of the 3x4 plot; its back row is open: probe (0,1)
-            {STRUCT_TSDWEAP, SMUDGE_TSDWEAPBB, 1, 0, 0},
+            {STRUCT_TSDWEAP, SMUDGE_TSDWEAPBB, 0, 1, MAP_CELL_W}, // as the War Factory's
             {STRUCT_TSPROC, SMUDGE_TSPROCBB, 0, 0, MAP_CELL_W}, // its north row is open: probe (0,1)
         };
         for (int a = 0; a < (int)(sizeof(_aprons) / sizeof(_aprons[0])); a++) {

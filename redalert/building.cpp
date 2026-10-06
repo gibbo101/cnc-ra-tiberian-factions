@@ -3645,9 +3645,8 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 **	TS (OpenTS Exit_Object): the vehicle exists from the moment
                 **	production completes, seated in the bay behind the shut door,
                 **	facing out. It is not drawn until the door is fully up
-                **	(UnitClass::Draw_It), then rides the exit rail onto the doorstep:
-                **	straight south from the War Factory, south-east from the deployed
-                **	Mobile War Factory.
+                **	(UnitClass::Draw_It), then rides the exit rail straight south onto the
+                **	doorstep.
                 */
                 bool is_mech = false;
                 bool is_titan = false;
@@ -3656,19 +3655,18 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                     is_mech = (ut == UNIT_TSTITN || ut == UNIT_TSSMEC || ut == UNIT_TSHMEC);
                     is_titan = (ut == UNIT_TSTITN);
                 }
-                bool slot3 = (*this == STRUCT_TSWEAP);
                 COORDINATE seat;
-                if (slot3) {
+                if (*this == STRUCT_TSWEAP) {
                     seat = Coord_Add(Coord, is_mech ? TSWEAP3_SEAT_MECH : TSWEAP3_SEAT);
                 } else {
-                    seat = Coord_Add(Coord, is_mech ? TSWEAP_SEAT_MOUTH_MECH : TSWEAP_SEAT_MOUTH);
+                    seat = Coord_Add(Coord, is_mech ? TSDWEAP_SEAT_MECH : TSDWEAP_SEAT);
                 }
                 /*
-                **	The deployed Mobile War Factory's back roof sits lower than the War
-                **	Factory's, so the Titan seats 4 classic px south to keep its antenna under it.
+                **	The deployed Mobile War Factory's lintel sits 18 leptons lower against its
+                **	threshold than the War Factory's, so the Titan seats that much further south.
                 */
                 if (is_titan && *this == STRUCT_TSDWEAP) {
-                    seat = Coord_Add(seat, XY_Coord(0, 43));
+                    seat = Coord_Add(seat, XY_Coord(0, 18));
                 }
                 /*
                 **	Facing = the exit rail's own direction (seat -> exit cell), so the
@@ -5637,7 +5635,7 @@ bool Is_TS_Weap_Exit_Cell(CELL cell)
         int probe;
     } _doorsteps[] = {
         {STRUCT_TSWEAP, 1, 3, MAP_CELL_W},
-        {STRUCT_TSDWEAP, 4, 3, 0},
+        {STRUCT_TSDWEAP, 1, 3, MAP_CELL_W},
     };
     for (int i = 0; i < (int)(sizeof(_doorsteps) / sizeof(_doorsteps[0])); i++) {
         int x = Cell_X(cell) - _doorsteps[i].dx;
@@ -5793,19 +5791,14 @@ bool Is_TS_Apron_Cell(CELL cell)
         {STRUCT_TSPROC, 0 - MAP_CELL_W},
         {STRUCT_TSPROC, 1 - MAP_CELL_W},
 
-        // The War Factory, 3x4: centre = row 2 col 1 (the hall). Walkable, never buildable: the
-        // concrete in front of the door (row 3, the door's lane down its middle).
+        // The War Factory and the deployed Mobile War Factory, 3x4: centre = row 2 col 1 (the hall).
+        // Walkable, never buildable: the concrete in front of the door (row 3, the door's lane down its middle).
         {STRUCT_TSWEAP, MAP_CELL_W - 1},
         {STRUCT_TSWEAP, MAP_CELL_W},
         {STRUCT_TSWEAP, MAP_CELL_W + 1},
-        // The deployed Mobile War Factory, 5x3: centre = row 1 col 2. Walkable, never buildable:
-        // the front row's concrete (row 2, cols 1-4) and the east column (col 4, rows 0-1).
         {STRUCT_TSDWEAP, MAP_CELL_W - 1},
         {STRUCT_TSDWEAP, MAP_CELL_W},
         {STRUCT_TSDWEAP, MAP_CELL_W + 1},
-        {STRUCT_TSDWEAP, MAP_CELL_W + 2},
-        {STRUCT_TSDWEAP, 2 - MAP_CELL_W},
-        {STRUCT_TSDWEAP, 2},
     };
 
     for (int i = 0; i < (int)(sizeof(_to_centre) / sizeof(_to_centre[0])); i++) {
@@ -7723,7 +7716,7 @@ static void TF_Pack_Up(BuildingClass* mine)
 {
     CELL cell = Coord_Cell(mine->Coord);
     if (*mine == STRUCT_TSDWEAP) {
-        cell += MAP_CELL_W + 2; // the plot's centre, where the vehicle deployed
+        cell += MAP_CELL_W * 2 + 1; // the hall's middle cell, where the vehicle deployed
     }
     fixed ratio = mine->Health_Ratio();
     TARGET nav = mine->TFPackNav;

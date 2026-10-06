@@ -200,13 +200,13 @@ static SmudgeTypeClass const TsProcBib(SMUDGE_TSPROCBB,
 );
 
 /*
-**	The Mobile War Factory's concrete, on the war factory's own 4x3 pad grid.
+**	The Mobile War Factory's concrete, on the War Factory's 3x3 slot.
 */
 static SmudgeTypeClass const TsDweapBib(SMUDGE_TSDWEAPBB,
                                         "TSDWEAPBB",
                                         TXT_BIB,
-                                        4,
-                                        3,    // Width and height of smudge (in icons): the 4x3 pad grid.
+                                        3,
+                                        3,    // Width and height of smudge (in icons): the War Factory's 3x3 slot.
                                         true, // Is this a building bib?
                                         false // Is this a crater smudge?
 );

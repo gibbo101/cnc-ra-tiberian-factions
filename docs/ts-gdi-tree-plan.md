@@ -172,35 +172,30 @@ front of a vehicle in the bay, and the roll-up shutter `TSWEAPDR` (`DoorAnim=GAW
 `DoorStages=9`, then the damaged run) draws over that. GTWEAP frames 0/1/2 are healthy / LIGHT /
 HEAVY, and `GTWEAP_D` frames 9-17 are magenta placeholders.
 
-- **Exit seats:** `TSWEAP_SEAT_MOUTH_MECH` for walkers and `TSWEAP_SEAT_MOUTH` for tracked and
-  wheeled hulls (`building.cpp`, `bdata.cpp`), dialled by eye one build per nudge; do not
-  re-derive them. One shared seat put hulls too deep, because a walker's sprite centre sits well
-  above its feet.
-- **Exit rails:** `Force_Track` plays a generated straight rail per type (Track19 for the default
-  seat, Track20 for the Titan) ending on the handover cell, plot cell (3,2).
-  `scripts/wf_spawn_preview.py` reads the spawn markers from the Aseprite sheet and writes
-  `tsweap_exit_track{,_titan}.inc` and `tsweap_exit_seats.inc`, used by both `bdata.cpp` and
-  `building.cpp`; it errors on any seat drift.
-- **No exit sort clamp:** the rail runs unclamped. The near face has no pixels along the exit path
-  below the awning, and a pinned sort key put the unit under the front-row pad tile.
-  (`TsExitSortClamp` is no longer assigned.) The Titan's rail releases 32 leptons south of the bay
-  mouth (`On_TS_Titan_Exit_Track()`).
+- **Exit seats** (`tsweap_exit_seats.inc`): on the door's centre line, `TSWEAP3_SEAT` for tracked
+  and wheeled hulls (half a cell inside the threshold) and `TSWEAP3_SEAT_MECH` for walkers (deeper,
+  their feet on it), because a walker's sprite centre sits well above its feet. The Mobile War
+  Factory's door is 20 leptons deeper, so `TSDWEAP_SEAT` and `TSDWEAP_SEAT_MECH` are too.
+- **Exit rails:** the vehicle leaves its seat on `Rail_To`, straight south onto the exit cell's
+  centre, plot cell (1,3) (`TS_Weap_Exit_Offset`), for both factories.
+- **Exit sort clamp:** a unit on the rail sorts just under the near face and the door until its body
+  has cleared the threshold (`dllinterface.cpp`, `TSWEAP3_WALKER_CLEAR` / `TSDWEAP_WALKER_CLEAR` for
+  walkers), so the doorway's frame keeps drawing over the part still inside.
 - **The factory keeps its centred sort** (`Sort_Y`): sorting the whole factory south covers every
   poke-through but hides a vehicle in the bay.
 - **Sort** (`dllinterface.cpp`'s draw intercept): the near face and shutter sort just south of the
-  door-mouth seat (`NF`/`NU` at Sort_Y + 192, `DR` at + 200), so the shut door covers a seated
-  vehicle and the rising door reveals it. The back wall sorts at the plot's north edge
-  (Sort_Y − 384), under anything in the bay. The under-door floor keeps the building's own line
-  (Sort_Y, the plot centre), so it draws under a vehicle that has rolled forward of centre and over
-  one behind it. A vehicle on the way out draws over the shutter once its own sort line passes
-  Sort_Y + 192.
+  door's threshold (`NF`/`NU` at Sort_Y + 320, `DR` at + 328; + 340 / + 348 for the Mobile War
+  Factory), so the shut door covers a seated vehicle and the rising door reveals it. The back wall
+  sorts at the plot's north edge (Sort_Y − 384), under anything in the bay.
 - **Four coupled constraints** for any resize, solved on paper before one build: containment (art
   at least as tall as the tallest exiting unit; the Titan is 52.2 classic px), the box (centred on
   the plot), ghost honesty (the ghost covers every cell the ground art touches; hard-clipping the
   pad looks wrong), and spawning inside (units spawn hidden and drive out; materialising at the
   open door was rejected).
-- The Mobile War Factory deploys into `STRUCT_TSDWEAP`, a TS war factory to the code
-  (`emp-cannon-design.md`).
+- The Mobile War Factory deploys into `STRUCT_TSDWEAP`, a TS war factory to the code on the same
+  3x4 plot, layers, exits and box, with its own art and a 12-stage door 20 leptons deeper. The truck
+  stands in the hall's middle cell, plot cell (1,2), where the build-up's first frame draws it
+  (`TF_Deploy_Origin`, `TF_Pack_Up`; `emp-cannon-design.md`).
 
 ### Refinery (TSPROC) and its dock
 

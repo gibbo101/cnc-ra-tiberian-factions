@@ -132,7 +132,7 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   building becomes ground) and square-grid ground art, since TS's is isometric (the Firestorm
   panels were rebuilt the same way, `scripts/ts_pack_fsdf.py`).
 - **The TS HD rebuild:** branch `ts-buildings-hd`, worktree `../worktrees/tf-ts-hd`, skill
-  `ts-to-ra-hd-art`. TSDWEAP is the last building.
+  `ts-to-ra-hd-art`.
 - **A real TS sidebar** (TS uses TD's HUD scene with its own crest for now). Probes, cheapest
   first: (1) can a tactical scene widget take a standalone loose DDS instead of an atlas region;
   (2) is a third scene loadable (copy `Tactical_UI.bui` under a new name and point one faction at

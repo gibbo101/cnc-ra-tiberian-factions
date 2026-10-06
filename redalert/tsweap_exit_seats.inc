@@ -5,18 +5,6 @@
 #define TSWEAP_SEAT_TSTITN  XYP_COORD(48, 19)
 
 /*
-**	08-28 rebuild: door-mouth seat, leptons from the plot origin -- the packed
-**	shutter's centre column (2.38 cells, moved west 08-29) and a unit centre just inside the
-**	doorway (1.10 rows: the vehicle stands in the opening, its top under the raised shutter). The generated seats above are the old bay's.
-*/
-#define TSWEAP_SEAT_MOUTH XY_Coord(573, 219)  // TRACKED/WHEELED vehicles, from the building's Coord (the plot's north-west corner): dialled by eye 08-29, SIGNED OFF -- do not re-derive
-/*
-**	Per-unit seats: the Titan stands two cells tall, so it seats deeper (row 0.40)
-**	with its feet at the threshold; everything else takes the mouth seat.
-*/
-#define TSWEAP_SEAT_MOUTH_MECH XY_Coord(597, 123)  // WALKERS (Titan, Wolverine, Mk. II): dialled by eye 08-29, SIGNED OFF -- do not re-derive
-
-/*
 **	The TS War Factory on its 3x4 plot (STRUCT_TSWEAP), door south: seats on the door's centre line,
 **	leptons from the building's Coord (the plot's north-west corner). The door's threshold is 746
 **	leptons below the plot's north edge. A vehicle waits half a cell inside it; a walker's art stands
@@ -32,3 +20,11 @@
 **	the threshold).
 */
 #define TSWEAP3_WALKER_CLEAR 624
+
+/*
+**	The deployed Mobile War Factory on the same 3x4 plot (STRUCT_TSDWEAP): its door on the same centre line,
+**	its threshold 20 leptons deeper (766), so its seats and its walker clearance sit 20 deeper.
+*/
+#define TSDWEAP_SEAT XY_Coord(384, 638)
+#define TSDWEAP_SEAT_MECH XY_Coord(384, 550)
+#define TSDWEAP_WALKER_CLEAR 644

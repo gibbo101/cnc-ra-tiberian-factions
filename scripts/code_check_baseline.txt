@@ -1,9 +1,6 @@
 common/keyframe.cpp	a date	mrparrot 2021-11-22: A better alternative to disabling bigshapebuffer
 redalert/aircraft.cpp	a date	** helipad", 2026-08-01). A live parked plane implies MISSION_ENTER at touchdown
 redalert/aircraft.cpp	a date	Diagnostic 2026-05-21: unload log is unexpectedly empty — log file
-redalert/bdata.cpp	a date	** (Luke, 2026-08-12).
-redalert/bdata.cpp	a personal name	** (Luke, 2026-08-12).
-redalert/bdata.cpp	a personal name	** building + pad (Luke).
 redalert/building.cpp	a date	2026-05-25 to diagnose TDHPAD's missing helicopter cameos. Per
 redalert/building.cpp	a date	Diagnostic 2026-05-20: capture vehicle-exit data for TD-mod
 redalert/building.cpp	a date	result logging (stubbed). Re-enabled 2026-05-25 to diagnose
@@ -18,7 +15,6 @@ redalert/dllinterface.cpp	a date	Apron emission ground truth (2026-08-17): the W
 redalert/dllinterface.cpp	a date	Diagnostic 2026-05-19 for TDNUK2 sidebar invisibility.
 redalert/dllinterface.cpp	a date	Diagnostic 2026-05-19: log Draw calls for every TD-prefixed building
 redalert/dllinterface.cpp	a date	Diagnostic 2026-05-19: log the *final* AssetName the launcher
-redalert/dllinterface.cpp	a date	Ensemble bbox (2026-08-17 evening): the hand-tucked pad
 redalert/dllinterface.cpp	a date	Phase 1e proxy (donor IniName → launcher) — DISABLED 2026-05-18.
 redalert/dllinterface.cpp	a date	Resolved 2026-06-10 (bibs render fine with ground suppression); flip \
 redalert/dllinterface.cpp	a date	TF DIAG (2026-05-31 MCV-crash hunt) — OFF for release; per-object/per-frame log.
