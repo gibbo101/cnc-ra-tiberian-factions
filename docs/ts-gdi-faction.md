@@ -56,7 +56,10 @@ It feeds the radar crest (`crest_atlas_paint.py`), the picker plate and map badg
 (`picker_emblems_paint.py`), every TS-badged cameo (`cameo_badge_build.py`) and the Hunter
 Seeker's badged cameo (`ts_pack_seeker.py`; without the raw TS art, composite the emblem at 90 px
 onto `BuildIcon_SW_TSHUNT.tga` at (12,12), which reproduces the shipped file exactly). Changing
-it means re-running those and deploying the atlas plus the changed cameos. `tsnod.png` is the matching Nod hexagon from the same icon, trimmed to its silver
+it means re-running those and deploying the atlas plus the changed cameos. The barracks flag and
+the dropship bay's console carry the eagle rendered into their art from `gdi_eagle.png`; the patched
+renderer file beside it (`resources/custom-art/ts-buildings-hd/tspile/src/`, `tsdrop/src/`) goes over
+the art package's `src/` to render it again when that art is redone. `tsnod.png` is the matching Nod hexagon from the same icon, trimmed to its silver
 frame, for TS Nod.
 
 ---
