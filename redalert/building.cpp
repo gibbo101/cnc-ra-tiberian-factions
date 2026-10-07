@@ -5786,6 +5786,24 @@ bool Is_TS_Apron_Smudge(SmudgeType smudge)
     return (smudge == SMUDGE_TSWEAPBB || smudge == SMUDGE_TSPROCBB || smudge == SMUDGE_TSDWEAPBB);
 }
 
+// True when the cell is a TS Helipad's north-west headroom, under its tower's top: buildings may stand there,
+// units may not.
+bool TF_Is_Helipad_Tower_Cell(CELL cell)
+{
+    if ((unsigned)cell >= MAP_CELL_TOTAL) {
+        return (false);
+    }
+    CellClass const& here = Map[cell];
+    for (int i = 0; i < (int)(sizeof(here.Overlapper) / sizeof(here.Overlapper[0])); i++) {
+        ObjectClass const* o = here.Overlapper[i];
+        if (o != NULL && o->What_Am_I() == RTTI_BUILDING && *(BuildingClass const*)o == STRUCT_TSHPAD
+            && Coord_Cell(o->Coord) == cell) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
 // True when the cell is a TS building's walkable apron or the Service Depot's empty corner, where
 // Is_Clear_To_Build allows no building. The table lists each apron cell as an offset back to its building's centre.
 bool Is_TS_Apron_Cell(CELL cell)

@@ -1559,6 +1559,11 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType) const
         return (MOVE_NO);
     }
 
+    // TF: no soldier stands under a TS Helipad's tower.
+    if (TF_Is_Helipad_Tower_Cell(cell)) {
+        return (MOVE_NO);
+    }
+
     /*
     **	Infantry never leave the TS war factory, so they are simply kept off
     **	its doorstep -- an idle guard standing there is exactly what makes a
