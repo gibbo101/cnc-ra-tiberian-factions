@@ -406,4 +406,19 @@
 			<BuildIcon>BuildIcon_TS_OrcaTransport</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSTTNK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSTTNK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSTTNK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_TickTank</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSTICK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSTICK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSTICK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_TickTank</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 </ObjectTypeList>
