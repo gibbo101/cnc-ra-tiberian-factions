@@ -112,8 +112,6 @@ static short const List010111100[] = {1, (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2
 static short const List0111[] = {1, (MCW * 1), (MCW * 1) + 1, REFRESH_EOL};
 static short const List1000[] = {0, REFRESH_EOL};
 static short const List101000011[] = {0, 2, (MCW * 2) + 1, (MCW * 2) + 2, REFRESH_EOL};
-// TF: a whole 2x3 plot (TS's Upgrade Center).
-static short const List23[] = {0, 1, MCW, MCW + 1, (MCW * 2), (MCW * 2) + 1, REFRESH_EOL};
 /* TSPROC (4x3): the umbrella stands on the west half of the south two rows, so those four cells block.
 ** The north row is headroom units walk behind (the stacks and the back of the deck rise into it); the dock
 ** pad (2,1), the east column and the lane mouth (2,2) stay open for the harvesters. The placement list
@@ -2026,8 +2024,8 @@ static BuildingTypeClass const ClassTDNGATEV(STRUCT_TDNGATEV,
                                             (short const*)NULL);
 
 
-// TS Upgrade Centre ([GAPLUG]): the two-slot host for the Ion Cannon, Drop Pod and Seeker plugs, on
-// TS's 2x3 foundation, sockets to the south. A scanner, as in TS: it detects cloaked units in its sight range.
+// TS Upgrade Centre ([GAPLUG]): the two-slot host for the Ion Cannon, Drop Pod and Seeker plugs, on a 2x2 plot
+// with a bib row (TS's 2x3), sockets to the south. A scanner, as in TS: it detects cloaked units in its sight range.
 static BuildingTypeClass const ClassTsPlug(STRUCT_TSPLUG,
                                            TXT_NONE,
                                            "TSPLUG",
@@ -2041,9 +2039,9 @@ static BuildingTypeClass const ClassTsPlug(STRUCT_TSPLUG,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,
                                            DIR_N,
-                                           BSIZE_23,
+                                           BSIZE_22,
                                            NULL,
-                                           (short const*)List23,
+                                           (short const*)List22,
                                            NULL);
 
 // Ion Cannon Uplink ([GAPLUG3]): a TSPLUG plug that never stands on the map. While one is installed the
