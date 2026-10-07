@@ -138,7 +138,7 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 - **The TS HD rebuild:** branch `ts-buildings-hd`, worktree `../worktrees/tf-ts-hd`, skill
   `ts-to-ra-hd-art`.
 - **Big units show through a TS war factory's shut door:** a Titan or a harvester waiting in the bay draws
-  over the door before it rolls up; their sort lines fall south of the door's (`NF`/`DR` sort offsets in
+  over the door before it rolls up, at the War Factory and the deployed Mobile War Factory alike; their sort lines fall south of the door's (`NF`/`DR` sort offsets in
   `dllinterface.cpp`). Smaller vehicles stay hidden behind it. A spawn and draw-order bug, not the art.
 - **The deployed Mobile War Factory loses units:** of three APCs ordered one after another, only the third
   rolled out; Titans have teleported or never arrived, and a finished unit can wait seconds for the doors.
