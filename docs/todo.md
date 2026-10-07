@@ -137,6 +137,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   panels were rebuilt the same way, `scripts/ts_pack_fsdf.py`).
 - **The TS HD rebuild:** branch `ts-buildings-hd`, worktree `../worktrees/tf-ts-hd`, skill
   `ts-to-ra-hd-art`.
+- **Big units show through a TS war factory's shut door:** a Titan or a harvester waiting in the bay draws
+  over the door before it rolls up; their sort lines fall south of the door's (`NF`/`DR` sort offsets in
+  `dllinterface.cpp`). Smaller vehicles stay hidden behind it. A spawn and draw-order bug, not the art.
 - **The Upgrade Center's plugs turning in their sockets:** the Ion Cannon Uplink's dish and the Seeker
   Control's camera have idle frames, but the TSPLUG loops bake each plug at frame 0, and the plug frames'
   128 px boxes clip the uplink's dish. Needs the art chat's idle frames on the Upgrade Center's own canvas
