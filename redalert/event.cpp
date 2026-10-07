@@ -825,6 +825,13 @@ void EventClass::Execute(void)
     */
     case IDLE:
         techno = Data.Target.Whom.As_Techno();
+        // TF: the dug-in Tick Tank drops its target and guards, unless it is packing up.
+        if (techno != NULL && techno->IsActive && techno->What_Am_I() == RTTI_BUILDING
+            && ((BuildingClass*)techno)->Is_Dug_In_Tank() && techno->Get_Mission() != MISSION_UNLOAD) {
+            techno->Assign_Target(TARGET_NONE);
+            techno->Assign_Mission(MISSION_GUARD);
+            break;
+        }
         if (techno != NULL && techno->IsActive && !techno->IsInLimbo && !techno->IsTethered
             && techno->What_Am_I() != RTTI_BUILDING && !techno->Is_Immobilized()) {
             // TF: Stop ends attack-move, sending a minelayer home, and is the one order that cancels a dig: mid-ladder

@@ -454,6 +454,11 @@ public:
     {
         return (*this == STRUCT_TSWEAP || *this == STRUCT_TSDWEAP);
     }
+    // The dug-in Tick Tank: a tank set down, which takes a tank's stop and force-fire orders.
+    bool Is_Dug_In_Tank(void) const
+    {
+        return (*this == STRUCT_TSTICK);
+    }
     int TS_Door_Stages(void) const
     {
         return (*this == STRUCT_TSDWEAP) ? 12 : 9;
