@@ -1587,7 +1587,7 @@ static BuildingTypeClass const ClassTsVulc(STRUCT_TSVULC,
                                            true,                // rotating turret
                                            true,                // remappable
                                            RTTI_NONE,
-                                           (DirType)208,        // Match TURRET starting facing.
+                                           DIR_SE,              // Faces south-east when placed.
                                            BSIZE_11,
                                            NULL,
                                            (short const*)List1,
@@ -1616,7 +1616,7 @@ static BuildingTypeClass const ClassTsRock(STRUCT_TSROCK,
                                            true,                // rotating turret
                                            true,                // remappable
                                            RTTI_NONE,
-                                           (DirType)208,        // Match TURRET starting facing.
+                                           DIR_SE,              // Faces south-east when placed.
                                            BSIZE_11,
                                            NULL,
                                            (short const*)List1,
@@ -1644,7 +1644,7 @@ static BuildingTypeClass const ClassTsCsam(STRUCT_TSCSAM,
                                            true,                // rotating turret
                                            true,                // remappable
                                            RTTI_NONE,
-                                           (DirType)208,        // Match TURRET starting facing.
+                                           DIR_SE,              // Faces south-east when placed.
                                            BSIZE_11,
                                            NULL,
                                            (short const*)List1,
