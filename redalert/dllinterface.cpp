@@ -7108,7 +7108,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 break;
             case STRUCT_TSTICK:
                 // The dug-in tank: as wide as its mound, and tall enough that the bar clears the turret.
-                dimx = 28;
+                dimx = 24;
                 dimy = 23;
                 break;
             default:
