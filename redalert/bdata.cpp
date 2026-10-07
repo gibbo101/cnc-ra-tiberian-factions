@@ -1560,10 +1560,10 @@ static BuildingTypeClass const ClassTsCtwr(STRUCT_TSCTWR,
                                            true,                // remappable
                                            RTTI_NONE,
                                            DIR_N,
-                                           BSIZE_11,
-                                           NULL,
-                                           (short const*)List1,
-                                           (short const*)NULL);
+                                           BSIZE_12,            // The tower's cell, headroom above it, as a fitted
+                                           NULL,                // tower's, so both carry the same box.
+                                           (short const*)List12,
+                                           (short const*)OList12);
 
 static BuildingTypeClass const ClassTsVulc(STRUCT_TSVULC,
                                            TXT_NONE,
@@ -6176,7 +6176,7 @@ int BuildingTypeClass::Height(bool bib) const
 int BuildingTypeClass::Placement_Ghost_Rows_Above(void) const
 {
     if (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR || Type == STRUCT_TSTECH || Type == STRUCT_TSFGEN
-        || Type == STRUCT_TSHPAD) {
+        || Type == STRUCT_TSHPAD || Type == STRUCT_TSCTWR) {
         return (1);
     }
     return (0);
