@@ -33,7 +33,7 @@ License: GPL v3.
 """
 import io, json, math, os, re, sys, zipfile
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 
 import asset_packs
 from ts_reshadow import drop_shadow, EA_DX, EA_DY
@@ -50,9 +50,9 @@ HAZE_ALPHA = 4
 OUTLINE_PX = 2
 CAST_SHADOW_MIN_PX = 500
 
-# The launcher recolours every green of a building to its owner's colour, so Tiberium seen in a
-# building is drawn in the yellow-green TD's silo shows in game (hue ~77), luminance kept.
-TIBERIUM = np.array([191.0, 231.0, 90.0])
+# The launcher recolours every green of a building to its owner's colour, so Tiberium seen in a building is
+# drawn in the lime TD's silo shows in game (hue ~80): its fill's dark, middle and light tones.
+TIBERIUM_RAMP = np.array([[93.0, 134.0, 28.0], [161.0, 213.0, 53.0], [190.0, 239.0, 91.0]])
 
 
 # The war factory's hazard stripes, on the lane from its door (x 160-316, y 370-416 of its source canvas).
@@ -78,11 +78,23 @@ def lane_gold(img):
 
 
 def tiberium(img):
+    """Tiberium as TD's silo shows it: a smooth glow, darker towards its edge, on TD's ramp. A median
+    filter takes out the render's grain and keeps the glass's panel lines."""
     a = np.asarray(img).astype(np.float32)
-    lum = a[..., :3] @ np.array([0.299, 0.587, 0.114], np.float32)
-    rgb = TIBERIUM[None, None, :] * (lum / (TIBERIUM @ np.array([0.299, 0.587, 0.114])))[..., None]
-    a[..., :3] = np.clip(rgb, 0, 255)
-    return Image.fromarray(a.round().astype(np.uint8), "RGBA")
+    body = a[..., 3] > 0
+    if not body.any():
+        return img
+    lum = np.clip(a[..., :3] @ np.array([0.299, 0.587, 0.114], np.float32), 0, 255).astype(np.uint8)
+    lum = np.asarray(Image.fromarray(lum).filter(ImageFilter.MedianFilter(5))).astype(np.float32)
+    lo, hi = np.percentile(lum[body], [5, 95])
+    t = np.clip((lum - lo) / max(hi - lo, 1.0), 0, 1)
+    soft = Image.fromarray((body * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(9))
+    rim = np.clip((np.asarray(soft).astype(np.float32) / 255 - 0.5) * 2, 0, 1)
+    t = np.clip(0.1 + 0.55 * t + 0.3 * rim, 0, 1)[..., None]
+    lower = TIBERIUM_RAMP[0] + (TIBERIUM_RAMP[1] - TIBERIUM_RAMP[0]) * (t / 0.5)
+    upper = TIBERIUM_RAMP[1] + (TIBERIUM_RAMP[2] - TIBERIUM_RAMP[1]) * ((t - 0.5) / 0.5)
+    a[..., :3] = np.where(t < 0.5, lower, upper)
+    return Image.fromarray(np.clip(a.round(), 0, 255).astype(np.uint8), "RGBA")
 
 
 # ini: the source folder, the build-up as (path prefix, frames) or None, and the tileset
@@ -133,10 +145,11 @@ BUILDINGS = {
     # Idle: the dome's panels pulse (8), healthy then damaged.
     "TSTECH": dict(src="tstech", make=("build-up/tech-center-build", 24),
                    frames=("loop/tech-center-loop", 16), pad_top=128),
-    # The silo stands on its 2x1 plot row with the bib row in front, seated like the barracks.
+    # The silo on its 2x2 plot, as the power plant: it stands on the south row, the dome rising into the north
+    # row, the bib row in front.
     "TSSILO": dict(src="tssilo", make=("build-up/silo-build", 24), base="silo/silo",
                    blocks=[[("A-tiberium/silo-tiberium", [lv], [lv + 4], tiberium)] for lv in range(4)],
-                   runs=[(16, [("B-lamps/silo-lamps", range(0, 16), range(16, 32))])], pad_bottom=128),
+                   runs=[(16, [("B-lamps/silo-lamps", range(0, 16), range(16, 32))])]),
     # The refinery turned 22.5 degrees on its 4x3 plot. Idle: the dock lamps (16), healthy then
     # damaged; the flare stack's fire is its own layer (20 lit frames, then 20 empty).
     "TSPROC": dict(src="tsproc", make=("build-up/refinery-build", 24), frames=("loop/refinery-loop", 32)),
