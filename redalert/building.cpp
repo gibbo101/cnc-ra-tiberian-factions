@@ -3644,6 +3644,9 @@ int BuildingClass::Exit_Object(TechnoClass* base)
         case STRUCT_TSWEAP:
         case STRUCT_TSDWEAP:
             if (Mission == MISSION_UNLOAD) {
+#if TF_DEV_BUILD
+                TF_WF_Log(this, "exit %s#%d: busy, 1", base->Class_Of().IniName, base->ID);
+#endif
                 return (1); // busy with the previous vehicle
             }
             ScenarioInit++;
@@ -3708,8 +3711,16 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                     Transmit_Message(RADIO_TETHER);
                     Assign_Mission(MISSION_UNLOAD);
                     ScenarioInit--;
+#if TF_DEV_BUILD
+                    TF_WF_Log(this, "exit %s#%d: seated at (%d,%d), 2", base->Class_Of().IniName, base->ID,
+                              Coord_X(seat), Coord_Y(seat));
+#endif
                     return (2);
                 }
+#if TF_DEV_BUILD
+                TF_WF_Log(this, "exit %s#%d: unlimbo at (%d,%d) failed", base->Class_Of().IniName, base->ID,
+                          Coord_X(seat), Coord_Y(seat));
+#endif
             }
             ScenarioInit--;
             break;
@@ -5806,6 +5817,57 @@ bool Is_TS_Apron_Smudge(SmudgeType smudge)
     return (smudge == SMUDGE_TSWEAPBB || smudge == SMUDGE_TSPROCBB || smudge == SMUDGE_TSDWEAPBB);
 }
 
+#if TF_DEV_BUILD
+// Logs a TS war factory's hand-offs and unload steps to Documents/CnCRemastered/tf_mwf.log, for the Mobile War
+// Factory losing units (docs/todo.md). Capped at 5000 lines a session.
+void TF_WF_Log(BuildingClass const* wf, char const* fmt, ...)
+{
+    static FILE* log = NULL;
+    static bool tried = false;
+    static int lines = 0;
+    if (!tried) {
+        tried = true;
+        char const* h = getenv("USERPROFILE");
+        if (h == NULL) {
+            h = getenv("HOME");
+        }
+        if (h != NULL) {
+            char p[512];
+            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_mwf.log", h);
+            log = fopen(p, "a");
+            if (log != NULL) {
+                fprintf(log, "--- session\n");
+            }
+        }
+    }
+    if (log == NULL || wf == NULL || lines >= 5000) {
+        return;
+    }
+    lines++;
+    TechnoClass const* who = wf->Contact_With_Whom();
+    fprintf(log,
+            "f=%d %s#%d mission=%s status=%d door=%d tethered=%d contact=",
+            (int)Frame,
+            wf->Class->IniName,
+            wf->ID,
+            MissionClass::Mission_Name(wf->Mission),
+            wf->Status,
+            wf->Door_Stage(),
+            wf->IsTethered ? 1 : 0);
+    if (who != NULL) {
+        fprintf(log, "%s#%d@(%d,%d) ", who->Class_Of().IniName, who->ID, Coord_X(who->Coord), Coord_Y(who->Coord));
+    } else {
+        fprintf(log, "none ");
+    }
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(log, fmt, ap);
+    va_end(ap);
+    fprintf(log, "\n");
+    fflush(log);
+}
+#endif
+
 // True when the cell is a TS building's walkable apron or the Service Depot's empty corner, where
 // Is_Clear_To_Build allows no building. The table lists each apron cell as an offset back to its building's centre.
 bool Is_TS_Apron_Cell(CELL cell)
@@ -7885,9 +7947,20 @@ int BuildingClass::Mission_Unload(void)
             }
             Open_Door(DOOR_RATE, DOOR_STAGES);
             Status = CLEAR_BIB;
+#if TF_DEV_BUILD
+            TF_WF_Log(this, "unload: door opening");
+#endif
             break;
         case CLEAR_BIB:
             if (cellptr != NULL && cellptr->Cell_Techno()) {
+#if TF_DEV_BUILD
+                static long tf_held_logged = -1000;
+                if (Frame - tf_held_logged >= 30) {
+                    tf_held_logged = Frame;
+                    TF_WF_Log(this, "unload: doorstep held by %s#%d", cellptr->Cell_Techno()->Class_Of().IniName,
+                              cellptr->Cell_Techno()->ID);
+                }
+#endif
                 cellptr->Incoming(0, true, true);
                 for (FacingType f = FACING_FIRST; f < FACING_COUNT; f++) {
                     CellClass* cptr = cellptr->Adjacent_Cell(f);
@@ -7897,6 +7970,9 @@ int BuildingClass::Mission_Unload(void)
                 }
             } else {
                 Status = OPEN;
+#if TF_DEV_BUILD
+                TF_WF_Log(this, "unload: doorstep clear");
+#endif
             }
             break;
         case OPEN:
@@ -7921,9 +7997,16 @@ int BuildingClass::Mission_Unload(void)
                         }
                     }
                     Status = LEAVE;
+#if TF_DEV_BUILD
+                    TF_WF_Log(this, "unload: rail from (%d,%d) to (%d,%d)", Coord_X(unit->Coord), Coord_Y(unit->Coord),
+                              Coord_X(coord), Coord_Y(coord));
+#endif
                 } else {
                     Close_Door(DOOR_RATE, DOOR_STAGES);
                     Status = CLOSE;
+#if TF_DEV_BUILD
+                    TF_WF_Log(this, "unload: door open with no vehicle, closing");
+#endif
                 }
             }
             break;
@@ -7931,10 +8014,16 @@ int BuildingClass::Mission_Unload(void)
             if (!IsTethered) {
                 Close_Door(DOOR_RATE, DOOR_STAGES);
                 Status = CLOSE;
+#if TF_DEV_BUILD
+                TF_WF_Log(this, "unload: untethered, closing");
+#endif
             }
             break;
         case CLOSE:
             if (Is_Door_Closed()) {
+#if TF_DEV_BUILD
+                TF_WF_Log(this, "unload: door shut, idle");
+#endif
                 Enter_Idle_Mode();
             }
             break;
@@ -8864,7 +8953,13 @@ void BuildingClass::Factory_AI(void)
         RTTIType product_rtti = product->What_Am_I();
         StructType product_struct = (product_rtti == RTTI_BUILDING) ? ((BuildingClass*)product)->Class->Type : STRUCT_NONE;
 
-        switch (Exit_Object(product)) {
+        int tf_exit = Exit_Object(product);
+#if TF_DEV_BUILD
+        if (Is_TS_War_Factory()) {
+            TF_WF_Log(this, "AI product: Exit_Object=%d", tf_exit);
+        }
+#endif
+        switch (tf_exit) {
 
         /*
         **	If the object could not leave the factory, then either request

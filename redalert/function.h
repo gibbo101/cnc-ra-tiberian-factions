@@ -107,6 +107,9 @@ bool TF_Orbit_Probe(void);             // dev: from-orbit arrival probe, armed b
 bool TF_Dev_Rich_Start(void);          // dev: 1,000,000 credits at skirmish start, armed by tf_cheap.flag
 bool Is_TS_Weap_Exit_Cell(CELL cell);  // TS war factory doorstep: kept clear for the leaving vehicle
 bool Is_TS_Apron_Cell(CELL cell);      // TS building apron: walkable, never buildable
+#if TF_DEV_BUILD
+void TF_WF_Log(class BuildingClass const* wf, char const* fmt, ...); // TS war factory hand-offs (tf_mwf.log)
+#endif
 bool Is_TS_Apron_Smudge(SmudgeType smudge); // ...and the ground art that draws it
 bool Is_Refinery_Dock_Busy(CELL cell); // dock pad closed while a truck is attached
 class BuildingClass* TS_Refinery_Lane_Owner(CELL cell); // TS refinery dock lane: its docking truck only

@@ -4976,7 +4976,17 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
 #endif
 #endif
                 TechnoTypeClass const* object_type = pending->Techno_Type_Class();
-                if (builder != NULL && builder->Exit_Object(pending)) {
+                // TF: the exit result is kept for the war factory log; the test is unchanged.
+                int tf_exit = (builder != NULL) ? builder->Exit_Object(pending) : 0;
+#if TF_DEV_BUILD
+                if (builder != NULL && builder->What_Am_I() == RTTI_BUILDING
+                    && ((BuildingClass*)builder)->Is_TS_War_Factory()) {
+                    TF_WF_Log((BuildingClass*)builder, "player product %s#%d: Exit_Object=%d -> %s",
+                              pending->Class_Of().IniName, pending->ID, tf_exit,
+                              tf_exit ? "production marked done" : "kept, retry");
+                }
+#endif
+                if (tf_exit) {
 
                     /*
                     **	Since the object has left the factory under its own power, delete
