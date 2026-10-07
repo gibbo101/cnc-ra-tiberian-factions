@@ -137,9 +137,10 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   panels were rebuilt the same way, `scripts/ts_pack_fsdf.py`).
 - **The TS HD rebuild:** branch `ts-buildings-hd`, worktree `../worktrees/tf-ts-hd`, skill
   `ts-to-ra-hd-art`.
-- **Big units show through a TS war factory's shut door:** a Titan or a harvester waiting in the bay draws
-  over the door before it rolls up, at the War Factory and the deployed Mobile War Factory alike; their sort lines fall south of the door's (`NF`/`DR` sort offsets in
-  `dllinterface.cpp`). Smaller vehicles stay hidden behind it. A spawn and draw-order bug, not the art.
+- **Big units show through a TS war factory's shut door (fix in test):** the HD harvester, Mobile War Factory,
+  Titan and Juggernaut reached past the door from the shared bay seats, so they now wait deeper (`building.cpp`,
+  the bay seat). The depths come from `scripts/probes/wf_bay_sim.py`, which composites a unit behind the near
+  face and door; the Juggernaut, taller than the bay, shows its antenna tip over the roof.
 - **The Mammoth Mk. III's pods fire two rockets, not their Burst=4:** RA makes any Burst above one a pair
   (`techno.cpp`, `Is_Two_Shooter`). The Juggernaut's salvo counter (`BurstShot`) could run them too, which
   doubles the volley: a balance call before it is switched on.
