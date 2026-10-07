@@ -14,9 +14,12 @@ GREEN = np.array([0, 214, 0.])
 CONC = np.array([172, 172, 174.])           # TS's deck 113-137 grey
 CONC_D = np.array([150, 150, 152.])
 FOOTC = np.array([140, 122, 88.])           # TS 89,80,60 / 97,89,64
-STEPC = np.array([214, 170, 92.])           # TS 153,121,56 / 141,121,80
-TAN = np.array([210, 174, 104.])            # the roof: TS 133-153, 109-121, 56
-TAN_D = np.array([176, 142, 82.])
+STEPC = np.array([196, 162, 100.])          # TS 153,121,56 / 141,121,80 (v2: a plain tan bar; v1 214,170,92 ribbed)
+TAN = np.array([196, 156, 90.])             # the roof: TS 133-153, 109-121, 56 (v2 browner; v1 210,174,104)
+TAN_D = np.array([158, 120, 70.])           # (v1 176,142,82)
+ROOFRED = np.array([150, 104, 68.])         # v2: TS's red-brown streaks along the roof (TS 129,80,64 / 113,76,40)
+JOINTC = np.array([34, 38, 34.])            # v2: the dark joints between the slope's panes
+HOLEC = np.array([22, 22, 26.])             # v2: the sockets' holes
 LIPC = np.array([240, 212, 146.])           # TS 190,165,105 / 206,182,113
 BANDC = np.array([106, 106, 198.])          # TS 85,85,157
 GREYL = np.array([150, 150, 150.])          # TS 113 grey lines either side of the band
@@ -29,7 +32,7 @@ CAPC = np.array([246, 246, 236.])
 SLOTC = np.array([26, 24, 22.])
 PLATEC = np.array([166, 166, 168.])         # TS 113-137
 BOLTC = np.array([236, 236, 250.])          # TS 198,198,222
-ANTC = np.array([112, 112, 146.])           # TS 76,76,101 / 101,101,125
+ANTC = np.array([138, 138, 174.])           # TS 76,76,101 / 101,101,125 / 125,125,149 (v2 lighter; v1 112,112,146)
 # the plugs
 FLANGEC = np.array([156, 156, 158.])        # TS 97-113 grey
 PODC = np.array([150, 124, 74.])            # D's casing: TS 113,93,48 / 97,76,40 / 133,109,56
@@ -149,12 +152,15 @@ def materials(r, p=None, occ=None, slot_t=None, ant_t=None, level=0, **kw):
     put(comp == M.FOOT, mix(FOOTC * g1, DIRT * g1, 0.4 * low))
     stp = comp == M.STEP
     groove = phase(x - p['step']['x'][0], (p['step']['x'][1] - p['step']['x'][0]) / p['step']['n'], 0.0) < 1.6
-    put(stp, np.where(groove[..., None], STEPC * 0.62 * g1, mix(STEPC * g1, DIRT * g1, 0.3 * grime)))
+    put(stp, mix(STEPC * g1, DIRT * g1, 0.3 * grime))          # v2: plain (v1 had grooves across it)
     # ---- the block: the roof (stripes along it), the bevel, the band face (band between grey lines, tan, brown)
     roof = (comp == M.BLOCK) | (comp == M.RIDGE)
     yy = (y - b['yn']) / (b['lip'][0] - b['yn'])             # 0 at the north edge, 1 at the bevel
     stripe = smoothstep(0.30, 0.40, yy) * (1 - smoothstep(0.78, 0.86, yy))
     rcol = mix(TAN_D * g1, TAN * g1, 0.45 + 0.55 * stripe)
+    # v2: red-brown streaks running along the roof (TS's roof is streaky)
+    rstreak = smoothstep(0.35, 0.85, sample(NOISE_MOTTLE, x * 0.05 + 3.0, y * 0.85 + 11.0))
+    rcol = mix(rcol, ROOFRED * g1, 0.42 * rstreak)
     # the rust-red rim along the north edge
     rcol = np.where((y < b['yn'] + 2.5)[..., None], RIMC * g1, rcol)
     put(roof, mix(rcol, DIRT * g1, 0.25 * grime))
@@ -166,6 +172,15 @@ def materials(r, p=None, occ=None, slot_t=None, ant_t=None, level=0, **kw):
     put(fc, fcol)
     put(comp == M.LEDGE, LEDGEC * g1)
     put(comp == M.FRONT, BROWN * g1)
+    # v2: TS's band turns the block's south-east corner and runs north along its east face (until the ramp covers it);
+    # the east face brown above and below it, as TS's (v1 left the east face plain tan)
+    xe_ = b['x_roof'][1]
+    east = (np.abs(x - xe_) < 1.4) & (lnx > 0.6) & (y < b['lip'][1] + 0.6) & (y > b['yn']) & (z < b['z'] - 0.8) & \
+        np.isin(comp, [M.BLOCK, M.LIP, M.LEDGE, M.FACE, M.FRONT, M.RIDGE])
+    gl_e = ((z > b['band'][1] - 0.6) & (z <= b['band'][1] + 1.8)) | ((z < b['band'][0]) & (z >= b['band'][0] - 2.6))
+    ecol = np.where(bnd[..., None], BANDC * g1, np.where(gl_e[..., None], GREYL * g1,
+                    np.where((z > b['band'][1])[..., None], RAMPC * 1.12 * g1, BROWN * g1)))
+    put(east, ecol)
     # ---- the slope: house green, nothing else on it (the build-up: bare light frames, then grey panes, then green)
     put(comp == M.SOCK, house)
     sp = (comp == M.PANEL) | (comp == M.PFRAME)
@@ -182,7 +197,29 @@ def materials(r, p=None, occ=None, slot_t=None, ant_t=None, level=0, **kw):
     streak = sample(NOISE_MOTTLE, (x + y) * 0.9 + 5, z * 0.25 + 9)
     rcol = mix(RAMPC * g1, RAMPC * 0.72 * g1, smoothstep(0.1, 0.9, streak) * 0.6)
     u, v, zr = M.ramp_uv(x, y, p['ramp'])
-    rim = rp & (u < 0.035) & (z > d['zt'] + 2)
+    if p.get('endwall'):
+        # v4: the hip's top edge (where it meets the roof) and the end wall's top edge rust-red
+        ew_ = p['endwall']
+        rim = rp & (((np.abs(x - ew_['x0']) < 2.0) & (z > p['block']['z'] - 4.0)) |
+                    ((np.abs(x - ew_['xw']) < 1.6) & (np.abs(z - ew_['zw']) < 1.8)))
+        bw_ = ew_.get('back')
+        if bw_:                             # v5: and the wedge's falling top edge (TS's rust-red rim down to the deck)
+            zbk_ = d['zt'] + (ew_['zw'] - d['zt']) * np.clip((y - bw_['y0']) / (b['yn'] - bw_['y0']), 0, 1)
+            rim |= rp & (np.abs(x - ew_['xw']) < 1.6) & (y < b['yn'] + 0.5) & (np.abs(z - zbk_) < 2.2)
+        hw_ = b.get('hipw')
+        if hw_:                             # v6: the west hip's edges rust-red as the east one's
+            rim |= rp & (((np.abs(x - hw_['x0']) < 2.0) & (z > b['z'] - 4.0)) |
+                         ((np.abs(x - hw_['x1']) < 1.6) & (np.abs(z - hw_['zw']) < 1.8)))
+        # v5: TS's purple band turns the south-east corner onto the end wall and runs north to the lamp column
+        ewall = (np.abs(x - ew_['xw']) < 1.4) & (lnx > 0.6) & (y < b['lip'][1] + 0.6) & \
+            (y > ew_['light']['c'][1] + ew_['light']['r'] + 3.0) & (z > b['band'][0] - 2.6) & (z <= b['band'][1] + 1.8) & \
+            ~np.isin(comp, [M.PIPE, M.PCAP])
+        bnd_e = (z >= b['band'][0]) & (z <= b['band'][1] - 0.6)
+        put(ewall, np.where(bnd_e[..., None], BANDC * g1, GREYL * g1))
+        rp = rp & ~ewall
+        rim &= ~ewall
+    else:
+        rim = rp & (u < 0.035) & (z > d['zt'] + 2)
     put(rp, mix(rcol, DIRT * g1, 0.3 * low))
     put(rim, RIMC * g1)
     slot = np.zeros(shape, bool)
@@ -202,6 +239,8 @@ def materials(r, p=None, occ=None, slot_t=None, ant_t=None, level=0, **kw):
     # ---- sockets: grey plates, white bolts
     put(comp == M.PLATE, PLATEC * g1)
     put(comp == M.BOLT, BOLTC * g1)
+    put(comp == M.HOLE, HOLEC * g1)
+    put(comp == M.JOINT, JOINTC * g1)
     # ---- the roof's kit; the tallest antenna's lamps (GTPLUG_B frame ant_t lights them)
     put(comp == M.ANT, ANTC * g1)
     lamp = comp == M.LAMP
@@ -214,6 +253,11 @@ def materials(r, p=None, occ=None, slot_t=None, ant_t=None, level=0, **kw):
             emit = np.where(lamp[..., None], col * (0.25 + 0.75 * lv), emit)
     put(comp == M.DMOUNT, MOUNTC * g1)
     put(comp == M.DISH, DISHC * g1)
+    if p.get('endwall'):
+        # v5: the solid core's faces under the deck (where the gap under its edge shows them) are the deck's concrete
+        # in its shade, never the colour of the part on top (v4 showed green under the slope's east end)
+        und = (z < d['zb'] - 0.5) & ~np.isin(comp, [M.FOOT, M.DEBRIS, M.DEB_IN, M.DEB_BURNT])
+        put(und, CONC_D * 0.8 * g1)
 
     # ---- the plugs (TS's GTPLUG_D/E/F colours, redrawn)
     put(comp == PG.PG_FLANGE, FLANGEC * g1)

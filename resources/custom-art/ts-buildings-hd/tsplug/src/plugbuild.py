@@ -3,7 +3,7 @@
   05-08   the block rises out of the deck with its ramp, the slope's frames bare (TS 05-07)
   06-16   the sockets' collars grow round from their fronts (TS 06-12)
   12-21   the antennas grow up out of the roof (TS 09-15); the dish's post (14), the dish (15)
-  16-17   the sockets' plates go in (16), their bolts (17) (TS 12-13)
+  16-17   the sockets' plates go in (16), their holes (17; v1 bolts) (TS 12-13)
   20      the pipes (TS 15); the slope's panes grey (TS 15)
   23      the panes go green: the finished building (TS 16)"""
 

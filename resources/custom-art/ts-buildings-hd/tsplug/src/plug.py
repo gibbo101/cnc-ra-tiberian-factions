@@ -9,12 +9,14 @@ at frame px (60, 90)).  Depth along TS's view ray is fixed by the feet (on the g
   block     a long tan block along the deck's north part: a flat roof with a raised panel, a bright bevel along its south
             edge, under it a vertical face with the purple band at the top (the band turns the south-east corner and runs
             north along the east face until the ramp covers it)
-  slope     TS's 'greenhouse': a house-green slope from the face's foot down to the deck, framed panes with a sill
+  slope     TS's 'greenhouse': a house-green slope from the face's foot down to the deck, framed panes with a sill; v2:
+            the panes separate panels with dark joints between them (v1: raised green ribs)
   ramp      a steep brown hip at the east end, from the block's north-east corner down to the deck's north-east corner
-            and the deck's east edge; a dark slot down it (GTPLUG_C runs a light in it); three tall grey pipes stand in
-            front of it at the deck's east edge
-  sockets   two round plug sockets on the deck's south part, one cell apart: house-green collars round grey plates with
-            four bolts (the plugs GTPLUG_D/E/F stand in them)
+            and the deck's east edge; a dark slot down it (GTPLUG_C runs a light in it); three grey pipes run up it from
+            the deck's east edge and into the building (v2, Luke: TS's pipes go up the side wall then into the building;
+            v1 had them standing free in front of it on a plinth)
+  sockets   two round plug sockets on the deck's south part, one cell apart: low, round-topped house-green collars round
+            grey plates with four holes for the plugs to slot into (v2; v1 had four bolts and taller flat collars)
   roof      antennas (the tallest at the west end carries GTPLUG_B's lights; a fork in the middle), a dish on a box at
             the north edge (GTPLUG_A turns it)
 """
@@ -98,7 +100,7 @@ def pack_slabs(accs, shape, gap=10):
 import plugs as PG, wnoise as WN
 
 (PLAT, FOOT, BLOCK, LIP, FACE, ROOF, PANEL, PFRAME, SOCK, PLATE, BOLT, RAMP, PIPE, PCAP, ANT, DISH, DMOUNT, LAMP,
- SLAB, STEP, SLOT, RIDGE, LEDGE, FRONT, CORE, BEAM) = range(1, 27)
+ SLAB, STEP, SLOT, RIDGE, LEDGE, FRONT, CORE, BEAM, JOINT, HOLE) = range(1, 29)
 DEBRIS, DEB_IN, DEB_BURNT = 40, 41, 42
 HOUSE = {PANEL, PFRAME, SOCK} | PG.PG_HOUSE
 
@@ -116,21 +118,39 @@ P = dict(
     block=dict(yn=-86.2, z=89.5, lip=(-0.9, 8.6), face=(80.0, 67.0), ledge=(19.3, 67.0), front=60.5,
                x_roof=(-127.0, 78.0), x_ledge=(-131.0, 78.0), x_low=-98.0,
                band=(71.3, 80.0), strip=(67.0, 71.3),
-               ridge=dict(y=(-60.0, -16.0), x=(-118.0, 66.0), h=0.0, cham=3.0)),
+               ridge=dict(y=(-60.0, -16.0), x=(-118.0, 66.0), h=0.0, cham=3.0),
+               # v2: ribs along the roof (TS's roof is ridged along its length): period across y, height
+               ribs=dict(per=7.0, h=0.7)),
     # the slope: panes from the front face's foot to (y, z), then the sill down to the deck at y_foot
     # east of the block (x > 78) the slope runs on over the ramp to x 112, its top edge rising to y 8 there
-    slope=dict(x=(-98.0, 108.0), pane=(39.3, 39.5), foot=49.3, ribs=50.5, rib0=-87.0, rib_w=4.0, rib_h=2.4,
-               east=(78.0, 108.0, 9.0)),
+    # v2 (Luke 5 Oct: 'our green bit overhangs'): the slope stops at the block's east end (x 78; v1 ran it on to x 108
+    # with its top edge rising, a green wedge standing out over the ramp); east of it the green lies ON the ramp: TS's
+    # green there is on the ramp's surface (its tip at TS px (82, 83) = ramp (88, -29, 54)), a skin from the block's
+    # east face out to the line TS's green ends on (ramp (88, -29) to (101, 38))
+    slope=dict(x=(-98.0, 78.0), pane=(39.3, 39.5), foot=49.3, ribs=50.5, rib0=-87.0, rib_w=4.0, rib_h=2.4,
+               east=(78.0, 108.0, 9.0),
+               onramp=dict(poly=((77.0, -11.3), (87.9, -29.3), (100.6, 38.4), (96.0, 49.3), (77.0, 49.3)), lift=0.9,
+                           rim=3.0,
+                           # its west part leans on the block's east face (TS's green wraps the corner a little) and the
+                           # slope's end is bevelled down onto the ramp: z = top(y) - bevel * (x - 78)
+                           lean=dict(z=(53.0, 60.0), y=(-11.3, 19.3), bevel=0.6)),
+               # v2: the ribs between the panes are dark joints sunk into the slope (TS: separate panels)
+               joint=dict(w=3.6, d=2.6)),
     # the ramp: a bilinear patch over the quad A (block's north-east top corner), B (deck's north-east corner),
     # C (deck's east edge, south), D (block's east face, south); (x, y, z) each
     ramp=dict(A=(78.0, -86.2, 89.5), B=(121.0, -124.0, 33.5), C=(121.0, 46.0, 33.5), D=(78.0, 30.0, 33.0),
               skirt=(117.0, 123.5), skirt_y=(-124.0, 50.0)),
     # the slot down the ramp (two points on it, found from TS's px (85, 81) and (85, 89)), its half width
     slot=dict(w=2.2),
-    pipes=dict(pts=((121.0, -34.0, 99.0), (121.0, -53.0, 92.0), (121.0, -71.0, 79.0)), r=5.8, cap=3.0,
-               plinth=dict(x=(114.0, 127.0), y=(-86.0, -24.0), z=33.5)),
+    # v2: the pipes lie on the ramp: each runs from the deck's east edge up the ramp along the line TS draws straight
+    # up (TS screen x 89.5, 92.5, 95.5) to TS screen y `top`, then turns into the ramp (into the building)
+    pipes=dict(screen=((89.5, 74.5), (92.5, 74.5), (95.5, 75.5)), r=4.6, foot=1.6,
+               pts=((121.0, -34.0, 99.0), (121.0, -53.0, 92.0), (121.0, -71.0, 79.0)), cap=3.0,       # v1 (free-standing)
+               plinth=None),
     sockets=dict(c=((-68.0, 111.0), (59.0, 112.0)), r_out=48.5, r_in=37.5, z=47.5, plate=43.5, bolts=21.0,
-                 bolt_r=2.6, bolt_h=1.8),
+                 bolt_r=2.6, bolt_h=1.8,
+                 # v2: holes for the plugs (where v1's bolts were) and a lower, round-topped collar
+                 holes=dict(r=3.6, d=5.0), round=dict(base=39.0, top=45.0)),
     # antennas on the roof: (x, y, top z, radius); the tallest one carries GTPLUG_B's lights
     ants=((-112.0, -21.0, 259.0, 2.3), (-110.0, -46.0, 163.0, 1.5), (-110.0, -62.0, 200.0, 1.6),
           (45.0, -35.0, 178.0, 1.5), (77.0, -56.0, 217.0, 1.6), (74.0, -80.0, 198.0, 1.6)),
@@ -144,22 +164,66 @@ P = dict(
 
 # the damaged state (GTPLUG 1): where TS breaks it
 DMG = dict(
-    hole=(40.0, -42.0, 54.0, 38.0, 0.3),       # the roof caved in over its east half: centre, half sizes, roughness
+    hole=(40.0, -42.0, 56.0, 40.0, 0.3),       # the roof caved in over its east half: centre, half sizes, roughness
     lipcut=(-8.0, 64.0),                        # the bevel and band broken along x (where the hole reaches the face)
-    floor=70.0,                                 # the burnt-out inside
+    floor=70.0,                                 # the burnt-out inside (v1 everywhere; v2 only in the `pits`)
+    # v2 (TS burns the east half fairly flat): the roof burnt and sunk a little over the hole, deeper only in pits
+    burnt=83.0, pits=((28.0, -40.0, 14.0, 11.0), (58.0, -58.0, 10.0, 9.0), (6.0, -62.0, 8.0, 7.0)),
     beams=(((-14.0, -72.0, 86.0), (74.0, -50.0, 80.0)), ((2.0, -12.0, 84.0), (44.0, -80.0, 66.0)),
            ((46.0, -6.0, 76.0), (76.0, -44.0, 88.0)), ((20.0, -30.0, 70.0), (60.0, -20.0, 86.0))),
     beam_r=1.8,
     ants_gone=(3, 4),                           # antennas knocked off the roof (TS's x 75 and 85)
     lean=(-5.0, 3.0),                           # the tallest antenna bent: its top moved by (x, y)
-    pipes=((121.0, -34.0, 63.0), (121.0, -53.0, 74.0), (121.0, -71.0, 79.0)),   # snapped short; the third bent over
+    pipes=((121.0, -34.0, 63.0), (121.0, -53.0, 74.0), (121.0, -71.0, 79.0)),   # v1: snapped short; the third bent over
     bent=((121.0, -71.0, 40.0), (138.0, -64.0, 70.0)),
-    fallen=((112.0, -44.0, 44.0), (132.0, -18.0, 30.0)),                      # a broken pipe length leaning on the ramp
-    pane=(27.0, 27.0, 11.0, 7.0),               # a hole knocked in the slope: x, y, half sizes
+    fallen=((112.0, -44.0, 44.0), (132.0, -18.0, 30.0)),                      # v1: a broken pipe length on the ramp
+    # v2 (pipes on the ramp, TS frame 1): the west two snapped near their feet, the east one whole; a length bent out
+    # from the middle one's stump (TS draws it leaning up and east, screen (90, 90) to (97, 80))
+    pipe_frac=(0.26, 0.2, 1.0), bent2=((119.0, -50.0, 40.0), (129.0, -72.0, 68.0)),
+    pane=(30.0, 27.0, 21.0, 13.0),              # a hole knocked in the slope: x, y, half sizes (v2: TS's whole pane)
     sock=(-20.0, 55.0),                         # socket 1's collar broken off over these angles (deg, from east)
 )
 
-LAYOUTS = {'ts': dict(turn=False), 'ra': dict(turn=True), 'ra1': dict(turn=True, flip=True)}
+# the Dropship Bay (gdrop.py) reuses this model as its east half with v3's shapes: a frozen copy of them for it
+import copy as _copy
+P_BAY = _copy.deepcopy(P)
+# v4 (Luke, 6 Oct 2026, the RA grid facing south: "pipes and lights on the right in ts angle all straight, in ra angle
+# walls suddenly not flush with the building and whats the gap on the left?" / "like a rectangle morphed into a
+# parallelogram"): one model for both views -
+#  - the east end: the block's whole cross-section (roof, bevel, band, ledge, the green slope) runs on east of x 78 under
+#    a hip falling east to a vertical end wall at xw: flush with the block from front to back, rectangular in plan
+#    (v1-v3: TS's twisted ramp patch, which only read right from TS's camera);
+#  - the three pipes stand straight up from the deck in front of the end wall and turn into the hip at its foot;
+#    GTPLUG_C's light runs down a vertical lamp column beside them;
+#  - the west end flush: the deck's north part, the lower body and the green slope run out to the roof's west end
+#    (v1-v3: TS's notch under the roof's west end, where TS joins it to the Dropship Bay).
+P['endwall'] = dict(x0=78.0, xw=108.0, zw=82.0,
+                    # v5: the pipes where TS draws them (screen x 89, 92, 95: south to north, 16 apart), their bends
+                    # stepping down northwards (84, 80.5, 77) so their tops read level from TS's camera as TS's do;
+                    # damaged: the south two lose their lower parts (TS frame 1: their tops hang from the bends)
+                    pipes=dict(ys=(-40.9, -56.9, -72.9), x=113.8, zb=(84.0, 80.5, 77.0), into=100.0,
+                               stub=(68.0, 65.0),
+                               # damaged: the broken-off length lying from the deck up against the whole pipe (TS
+                               # frame 1: screen (90, 90) to (97, 80))
+                               bent=((118.0, -42.0, 35.0), (120.0, -77.3, 61.0))),
+                    # GTPLUG_C's lamp column where TS's slot is (screen x 85, y 81-89)
+                    light=dict(c=(113.8, -19.5), r=2.8, z=(40.0, 79.0)),
+                    # v5: TS's brown end face runs on north past the block's back to the deck's north edge, its top
+                    # falling to the deck there: a wedge behind the block, x0 .. xw, from the deck's north edge y0 to the
+                    # block's back (hidden from the RA camera; from TS's only its east face shows, TS's brown triangle
+                    # right of the pipes)
+                    back=dict(x0=78.0, y0=-124.0))
+P['deck']['x0n'] = -120.0
+P['block']['hipw'] = dict(x0=-90.0, x1=-120.0, zw=82.0)        # v6: the west end hips down as the east end does
+P['block']['x_roof'] = (-120.0, P['block']['x_roof'][1])
+P['block']['x_ledge'] = (-120.0, P['block']['x_ledge'][1])
+P['block']['x_low'] = -120.0
+P['slope']['x'] = (-120.0, P['slope']['x'][1])
+P['feet']['pts'] = ((-110.0, 166.0), (86.0, 166.0), (93.0, 29.0), (-109.0, 29.0), (93.0, -112.0), (-109.0, -112.0))
+
+# v3 (Luke, 6 Oct 2026: 'upgrade center id like the plugs facing south'): the RA grid TS's way round ('ra0': not turned,
+# the sockets and plugs to the south, on a 2x3 plot); 'ra' (turned a quarter, TS east to the south) was v1-v2's
+LAYOUTS = {'ts': dict(turn=False), 'ra': dict(turn=True), 'ra1': dict(turn=True, flip=True), 'ra0': dict(turn=False)}
 
 
 def to_local(X, Y, layout='ts'):
@@ -205,8 +269,13 @@ def ramp_point(r, u, v):
 
 
 def slot_ends(p=None):
-    """the slot's two ends on the ramp: the points whose TS-screen position is (85, 81) and (85, 89)."""
+    """the slot's two ends on the ramp: the points whose TS-screen position is (85, 81) and (85, 89).  v4: the lamp
+    column's axis, top then bottom."""
     p = P if p is None else p
+    ew = p.get('endwall')
+    if ew:
+        lt = ew['light']
+        return [np.array([lt['c'][0], lt['c'][1], lt['z'][1]]), np.array([lt['c'][0], lt['c'][1], lt['z'][0]])]
     r = p['ramp']
     A, B, C, D = (np.array(r[k]) for k in 'ABCD')
     u, v = np.meshgrid(np.linspace(0, 1, 401), np.linspace(0, 1, 401))
@@ -219,6 +288,81 @@ def slot_ends(p=None):
         i = np.unravel_index(np.argmin(d), d.shape)
         out.append(q[i])
     return out
+
+
+_PIPE_CACHE = {}
+
+
+def pipe_axes(p=None):
+    """v2: the pipes' axes on the ramp, one polyline each: up from inside the deck, along the ramp (offset by the radius
+    from its surface) on the line TS draws straight up at screen x `xs`, to TS screen y `top`, then turning into the
+    ramp."""
+    p = P if p is None else p
+    pp = p['pipes']; r_ = pp['r']
+    key = (tuple(tuple(p['ramp'][k]) for k in 'ABCD'), tuple(pp['screen']), r_, pp.get('foot', 1.6))
+    if key in _PIPE_CACHE:
+        return _PIPE_CACHE[key]
+    A, B, C, D = (np.array(p['ramp'][k]) for k in 'ABCD')
+    u, v = np.meshgrid(np.linspace(0, 1, 801), np.linspace(0, 1, 801))
+    U = u[..., None]; V = v[..., None]
+    q = (1 - V) * ((1 - U) * A + U * D) + V * ((1 - U) * B + U * C)
+    sx = 60 + 0.1875 * (q[..., 0] - q[..., 1]); sy = 90 + 0.09375 * (q[..., 0] + q[..., 1]) - 0.2297 * q[..., 2]
+    du = (1 - V) * (D - A) + V * (C - B); dv = (1 - U) * (B - A) + U * (C - D)
+    n = np.cross(du, dv); n = n / np.linalg.norm(n, axis=-1, keepdims=True); n = np.where(n[..., 2:3] < 0, -n, n)
+    out = []
+    for xs, ytop in pp['screen']:
+        sel = np.abs(sx - xs) < 0.03
+        ys = sy[sel]; Q = q[sel]; N = n[sel]
+        tg = np.linspace(ys.max() - pp.get('foot', 1.6), ytop, 6)
+        pts = []
+        for t_ in tg:
+            i = int(np.argmin(np.abs(ys - t_)))
+            pts.append(Q[i] + N[i] * (r_ + 0.4))
+        a1 = pts[0]
+        foot = np.array([a1[0], a1[1], p['deck']['zt'] - 1.0])
+        i = int(np.argmin(np.abs(ys - ytop)))
+        qt, nt = Q[i], N[i]
+        up = pts[-1] - pts[-2]; up = up / np.linalg.norm(up)
+        elbow = pts[-1] + up * r_ * 0.9 - nt * r_ * 0.5
+        into = qt + up * r_ * 1.4 - nt * (r_ + 2.5)
+        out.append([foot] + pts + [elbow, into])
+    _PIPE_CACHE[key] = out
+    return out
+
+
+def add_pipe(acc, x, y, pts, r, comp, name='pipe'):
+    """a pipe along a polyline: rods between the points, balls at the bends."""
+    for a_, b_ in zip(pts[:-1], pts[1:]):
+        lo, hi, mm = rod_interval(x, y, a_, b_, r)
+        acc.add(lo, hi, comp, mm, name)
+    for c_ in pts[1:-1]:
+        d2 = (x - c_[0]) ** 2 + (y - c_[1]) ** 2
+        mm = d2 <= r * r
+        h_ = np.sqrt(np.clip(r * r - d2, 0, None))
+        acc.add(c_[2] - h_, c_[2] + h_, comp, mm, name)
+
+
+def cut_polyline(pts, frac):
+    """the polyline from its start to `frac` of its length."""
+    seg = [np.linalg.norm(np.asarray(b_) - np.asarray(a_)) for a_, b_ in zip(pts[:-1], pts[1:])]
+    L = sum(seg) * frac
+    out = [np.asarray(pts[0])]
+    for (a_, b_), sl_ in zip(zip(pts[:-1], pts[1:]), seg):
+        if L <= sl_:
+            out.append(np.asarray(a_) + (np.asarray(b_) - np.asarray(a_)) * (L / max(sl_, 1e-9)))
+            break
+        out.append(np.asarray(b_)); L -= sl_
+    return out
+
+
+def hip_west(x, b):
+    """v6: the roof's west hip - the height cap west of hipw['x0'], falling to hipw['zw'] at hipw['x1'] (inf where
+    there is none)."""
+    hw = b.get('hipw')
+    if not hw:
+        return np.full(np.shape(x), np.inf, np.float32)
+    k = (b['z'] - hw['zw']) / (hw['x0'] - hw['x1'])
+    return np.where(x < hw['x0'], b['z'] - k * (hw['x0'] - x), np.inf).astype(np.float32)
 
 
 def block_z(y, b):
@@ -277,6 +421,11 @@ def scene(X, Y, p=None, layout='ts', prog=None, parts=None, level=0, merge=True,
     bk = p['block']; slp = p['slope']
     core |= inbox(x, y, (bk['x_low'], bk['x_roof'][1]), (bk['yn'], bk['ledge'][0]))
     core |= inbox(x, y, slp['x'], (bk['ledge'][0] - 15.0, slp['foot']))
+    ew = p.get('endwall')
+    if ew:
+        core |= inbox(x, y, (ew['x0'], ew['xw']), (bk['yn'], slp['foot']))
+        if ew.get('back'):
+            core |= inbox(x, y, (ew['back']['x0'], ew['xw']), (ew['back']['y0'], bk['yn']))
     put(np.where(deck, dtop, 0.0), PLAT, deck)
     ft = p['feet']
     feet = np.zeros(X.shape, bool)
@@ -299,13 +448,23 @@ def scene(X, Y, p=None, layout='ts', prog=None, parts=None, level=0, merge=True,
     b = p['block']
     zb_ = block_z(y, b)
     l0, l1 = b['lip']; ly, lz = b['ledge']
+    if b.get('ribs'):                                   # v2: ribs along the roof
+        rb = b['ribs']
+        onroof = y <= l0 - 1.5
+        zb_ = zb_ + np.where(onroof, rb['h'] * (0.5 + 0.5 * np.cos(2 * np.pi * (y - b['yn']) / rb['per'])), 0.0)
     comp = np.where(y <= l0, BLOCK, np.where(y <= l1, LIP, LEDGE))
+    # v6 (Luke, 7 Oct 2026: 'the roof on the left is a hard cutoff. Can we mirror the slope on the right?'): the roof's
+    # west end hips down like the east end's: west of hipw['x0'] the top falls to hipw['zw'] at the roof's west end
+    zcapw = hip_west(x, b)
+    capw = zb_ > zcapw + 0.05
+    zb_ = np.minimum(zb_, zcapw)
+    comp = np.where(capw, RAMP, comp)
     xr = np.where(y <= l1, b['x_roof'][0], b['x_ledge'][0])
     xe = np.where(y <= l1, b['x_roof'][1], b['x_ledge'][1])
     inb = (x >= xr) & (x <= xe) & (y >= b['yn']) & (y <= ly)
     low = inb & (x >= b['x_low'])
     up = (zb_ - sink) > zt + 0.3                  # what has risen out of the deck so far
-    for k in (BLOCK, LIP, LEDGE):
+    for k in (BLOCK, LIP, LEDGE, RAMP):
         put(np.where(low, zb_ - sink, 0.0), k, low & (comp == k) & up)
     # the band face: a thin strip just north of the face line (its south side is the face); the front face likewise
     for (yy, ztop, k) in ((l1, b['face'][0], FACE), (ly, lz, FRONT)):
@@ -317,11 +476,18 @@ def scene(X, Y, p=None, layout='ts', prog=None, parts=None, level=0, merge=True,
     zov = np.where((y > ly - 2.0) & (y <= ly), np.maximum(zov, lz), zov)
     cov = np.where((y > l1 - 2.0) & (y <= l1), FACE, np.where((y > ly - 2.0) & (y <= ly), FRONT, comp))
     zov = zov - sink
-    for k in (BLOCK, LIP, LEDGE, FACE, FRONT):
+    for k in (BLOCK, LIP, LEDGE, FACE, FRONT, RAMP):
         acc.add(max(b['front'] - sink, zt), zov, k, ov & (cov == k) & (zov > zt + 0.3), 'overhang')
+    # v6 (the Dropship Bay, Luke: 'maybe a support pillar under the overhang in the left corner'): a square pillar
+    # from the ground to the overhang's underside
+    pil = b.get('pillar')
+    if pil:
+        (pcx, pcy), pa = pil['c'], pil['a']
+        mp = inbox(x, y, (pcx - pa, pcx + pa), (pcy - pa, pcy + pa))
+        acc.add(pil.get('z0', 0.0), max(b['front'] - sink, zt) + 0.5, LEDGE, mp & (b['front'] - sink > zt + 0.3), 'pillar')
     # the raised panel on the roof
     rg = b['ridge']
-    m2 = inbox(x, y, rg['x'], rg['y'])
+    m2 = inbox(x, y, rg['x'], rg['y']) & ~capw
     e2 = np.minimum(np.minimum(x - rg['x'][0], rg['x'][1] - x), np.minimum(y - rg['y'][0], rg['y'][1] - y))
     zrg = b['z'] + np.clip(e2 / rg['cham'], 0, 1) * rg['h'] - sink
     put(np.where(m2 & (x >= b['x_low']) & (zrg > zt + 0.3), zrg, 0.0), RIDGE)
@@ -334,16 +500,48 @@ def scene(X, Y, p=None, layout='ts', prog=None, parts=None, level=0, merge=True,
     m = (x >= sl['x'][0]) & (x <= sl['x'][1]) & (y > ytop) & (y <= sl['foot'])
     zs = slope_z(y, sl, b)
     ph = (x - sl['rib0']) % sl['ribs']
-    rib = (np.minimum(ph, sl['ribs'] - ph) < sl['rib_w'] / 2) | (x - sl['x'][0] < sl['rib_w']) | \
-          (sl['x'][1] - x < sl['rib_w']) | ((x > ex0) & (y - ytop < sl['rib_w']))
+    jt = sl.get('joint')
+    inner = np.minimum(ph, sl['ribs'] - ph) < (jt['w'] if jt else sl['rib_w']) / 2
+    outer = (x - sl['x'][0] < sl['rib_w']) | (sl['x'][1] - x < sl['rib_w']) | ((x > ex0) & (y - ytop < sl['rib_w']))
     sill = y > sl['pane'][0]
-    zr = zs + np.where(rib & ~sill, sl['rib_h'], 0.0) - sink
+    if jt:                                  # v2: dark joints sunk between the panes; the outer frame stays raised
+        joint = inner & ~outer & ~sill
+        rib = outer
+    else:
+        joint = np.zeros(X.shape, bool)
+        rib = inner | outer
+    zr = zs + np.where(rib & ~sill, sl['rib_h'], 0.0) - np.where(joint, jt['d'] if jt else 0.0, 0.0) - sink
     m &= zr > zt + 0.3
-    put(np.where(m, zr, 0.0), PANEL, m & ~rib & ~sill)
+    put(np.where(m, zr, 0.0), PANEL, m & ~rib & ~sill & ~joint)
     put(np.where(m, zr, 0.0), PFRAME, m & (rib | sill))
+    if jt:
+        H = np.where(m & joint, zr, H); C = np.where(m & joint, JOINT, C)
 
+    # ---- v4: the east end - the block's cross-section running on east under a hip down to a vertical end wall
+    if ew and bl > 0:
+        k_h = (b['z'] - ew['zw']) / (ew['xw'] - ew['x0'])
+        reg = (x > ew['x0'] - 0.5) & (x <= ew['xw']) & (y >= b['yn']) & (y <= sl['foot'])
+        prof = np.where(y <= ly, block_z(y, b), slope_z(y, sl, b))
+        pcomp = np.where(y <= l0, BLOCK, np.where(y <= l1, LIP, np.where(y <= ly, LEDGE, PANEL)))
+        # the band face and the front face carry on as the steps of the profile (their thin strips)
+        pcomp = np.where((y > l1 - 2.0) & (y <= l1), FACE, np.where((y > ly - 2.0) & (y <= ly), FRONT, pcomp))
+        prof = np.where((y > l1 - 2.0) & (y <= l1), b['face'][0], np.where((y > ly - 2.0) & (y <= ly), np.maximum(prof, lz), prof))
+        zh = b['z'] - k_h * (x - ew['x0'])
+        zend = np.minimum(prof, zh) - sink
+        cend = np.where(zh < prof - 0.05, RAMP, pcomp)
+        m = reg & (zend > zt + 0.3)
+        put(np.where(m, zend, 0.0), RAMP, m & (cend == RAMP))
+        for k in (BLOCK, LIP, LEDGE, FACE, FRONT, PANEL):
+            put(np.where(m, zend, 0.0), k, m & (cend == k))
+        bw = ew.get('back')
+        if bw:                                  # v5: the wedge behind the block, its top falling north to the deck
+            regb = (x >= bw['x0']) & (x <= ew['xw']) & (y >= bw['y0']) & (y < b['yn'] + 0.5)
+            zbk = zt + (zh - zt) * np.clip((y - bw['y0']) / (b['yn'] - bw['y0']), 0, 1) - sink
+            mb = regb & (zbk > zt + 0.3)
+            put(np.where(mb, zbk, 0.0), RAMP, mb)
+        extra['slot'] = tuple(tuple(v_) for v_ in slot_ends(p))
     # ---- the ramp: the patch over its quad, down to the deck; brown over the deck's east face under it
-    if bl > 0:
+    if bl > 0 and not ew:
         r = p['ramp']
         A, B, Cc, D = r['A'], r['B'], r['C'], r['D']
         quad = [(A[0], A[1]), (B[0], B[1]), (Cc[0], Cc[1]), (D[0], D[1])]
@@ -351,6 +549,27 @@ def scene(X, Y, p=None, layout='ts', prog=None, parts=None, level=0, merge=True,
         u, v, zr = ramp_uv(x, y, r)
         zr = zr - sink
         acc.add(d['zb'], zr, RAMP, m & (zr > d['zt'] - 0.5), 'ramp')
+        orr = p['slope'].get('onramp')
+        if orr:                             # v2: the green skin on the ramp, east of the slope
+            # the lean: against the block's east face north of the corner, the slope's own surface south of it,
+            # bevelled down eastwards; the skin is whichever is higher, the ramp or the lean
+            ln = orr['lean']
+            zt_lean = np.where(y >= ln['y'][1], slope_z(y, p['slope'], p['block']),
+                               ln['z'][0] + (ln['z'][1] - ln['z'][0]) * np.clip((y - ln['y'][0]) / (ln['y'][1] - ln['y'][0]), 0, 1))
+            z_lean = zt_lean - ln['bevel'] * np.maximum(x - 78.3, 0.0) - sink
+            inpoly = in_poly(x, y, list(orr['poly']))
+            zr_on = np.where(m, zr, d['zt'])            # the ramp where it is, else the deck
+            zr = np.where(inpoly, np.maximum(zr_on, z_lean), zr)
+            mo = inpoly & (zr > d['zt'] - 0.5) & (x >= 78.3)       # clear of the slope's own surface (no z-fight)
+            # its rim: along the edges away from the block (the top edge and the east edge)
+            pts_ = np.array(orr['poly'])
+            rim = np.zeros(X.shape, bool)
+            for (ax_, ay_), (bx_, by_) in ((pts_[0], pts_[1]), (pts_[1], pts_[2])):
+                dx_, dy_ = bx_ - ax_, by_ - ay_; L_ = np.hypot(dx_, dy_)
+                t_ = np.clip(((x - ax_) * dx_ + (y - ay_) * dy_) / (L_ * L_), 0, 1)
+                rim |= np.hypot(x - ax_ - t_ * dx_, y - ay_ - t_ * dy_) < orr['rim']
+            acc.add(np.where(m, zr, d['zt']) - 0.5, zr + orr['lift'] + np.where(rim, 1.2, 0.0),
+                    np.where(rim, PFRAME, PANEL).astype(np.int16), mo, 'skin')
         sk = r['skirt']
         m = (x >= sk[0]) & (x <= sk[1]) & (y >= r['skirt_y'][0]) & (y <= r['skirt_y'][1]) & deck
         C = np.where(m & (C == PLAT), RAMP, C)
@@ -371,6 +590,11 @@ def scene(X, Y, p=None, layout='ts', prog=None, parts=None, level=0, merge=True,
         onblk = np.isin(C, (BLOCK, LIP, RIDGE, DMOUNT)) & (x >= b['x_low'])
         hole = (eh < 0) & onblk
         floor = dm['floor'] + 3.0 * WN.noise(x, y, 9.0, 2102)
+        if dm.get('burnt'):                 # v2: burnt and sunk a little all over, deep only in the pits
+            pit = np.zeros(X.shape, bool)
+            for i_, (qx, qy, qrx, qry) in enumerate(dm['pits']):
+                pit |= dblob(x, y, qx, qy, qrx, qry, 0.35, 2160 + i_, feat=6.0) < 0
+            floor = np.where(pit, floor, dm['burnt'] + 1.6 * WN.noise(x, y, 7.0, 2163))
         H = np.where(hole, np.minimum(H, floor), H); C = np.where(hole, DEB_BURNT, C)
         lc = (x > dm['lipcut'][0] + 4 * WN.noise(x, y, 6.0, 2103)) & (x < dm['lipcut'][1] + 4 * WN.noise(x, y, 6.0, 2104))
         lipm = lc & np.isin(C, (LIP, FACE)) & (y > l0 - 3.0)
@@ -378,7 +602,7 @@ def scene(X, Y, p=None, layout='ts', prog=None, parts=None, level=0, merge=True,
         C = np.where(lipm & (C == LIP), DEB_BURNT, C)
         px_, py_, prx, pry = dm['pane']
         ep = dblob(x, y, px_, py_, prx, pry, 0.4, 2106, feat=5.0)
-        pane = (ep < 0) & np.isin(C, (PANEL, PFRAME))
+        pane = (ep < 0) & np.isin(C, (PANEL, PFRAME, JOINT))
         H = np.where(pane, H - 7.0, H); C = np.where(pane, DEB_IN, C)
 
     # ---- everything ground-attached so far stands on the deck: outside the deck's solid core it becomes a slab from
@@ -396,6 +620,10 @@ def scene(X, Y, p=None, layout='ts', prog=None, parts=None, level=0, merge=True,
         rr = np.hypot(x - cx, y - cy)
         ring = (rr <= sk['r_out']) & (rr > sk['r_in'])
         ztop = np.full(X.shape, sk['z'], np.float32)
+        if sk.get('round'):                 # v2: a lower collar with a rounded top
+            rc_ = 0.5 * (sk['r_in'] + sk['r_out']); hw_ = 0.5 * (sk['r_out'] - sk['r_in'])
+            prof = np.sqrt(np.clip(1 - ((rr - rc_) / hw_) ** 2, 0, None))
+            ztop = (sk['round']['base'] + (sk['round']['top'] - sk['round']['base']) * prof).astype(np.float32)
         if level >= 1 and i_s == 0:
             a0, a1 = DMG['sock']
             ang = np.rad2deg(np.arctan2(y - cy, x - cx))
@@ -410,11 +638,15 @@ def scene(X, Y, p=None, layout='ts', prog=None, parts=None, level=0, merge=True,
         if g['plates'] > 0:
             pl = rr <= sk['r_in']
             bolt = np.zeros(X.shape, bool)
+            hl = sk.get('holes')
             if g['plates'] >= 1:
                 for (bx_, by_) in ((sk['bolts'], 0), (-sk['bolts'], 0), (0, sk['bolts']), (0, -sk['bolts'])):
-                    bolt |= np.hypot(x - cx - bx_, y - cy - by_) <= sk['bolt_r']
+                    bolt |= np.hypot(x - cx - bx_, y - cy - by_) <= (hl['r'] if hl else sk['bolt_r'])
             acc.add(zt - 1.0, sk['plate'], PLATE, pl & ~bolt, 'plate')
-            acc.add(zt - 1.0, sk['plate'] + sk['bolt_h'], BOLT, pl & bolt, 'plate')
+            if hl:                          # v2: holes for the plugs to slot into
+                acc.add(zt - 1.0, sk['plate'] - hl['d'], HOLE, pl & bolt, 'plate')
+            else:
+                acc.add(zt - 1.0, sk['plate'] + sk['bolt_h'], BOLT, pl & bolt, 'plate')
     # ---- the plugs standing in the sockets (west, east)
     pacc = {}
 
@@ -431,8 +663,40 @@ def scene(X, Y, p=None, layout='ts', prog=None, parts=None, level=0, merge=True,
     # ---- the pipes at the deck's east edge on a brown plinth from the ground; bright caps
     pp = p['pipes']
     pl_ = pp['plinth']
-    acc.add(0.0, pl_['z'], RAMP, inbox(x, y, pl_['x'], pl_['y']), 'plinth')
-    pts = (DMG['pipes'] if level >= 1 else pp['pts']) if g['pipes'] >= 1 else ()
+    if pl_:
+        acc.add(0.0, pl_['z'], RAMP, inbox(x, y, pl_['x'], pl_['y']), 'plinth')
+    if ew and g['pipes'] >= 1:                    # v4: straight up in front of the end wall, then into the hip
+        ep = ew['pipes']
+        for k_p, py_ in enumerate(ep['ys']):
+            zb_p = ep['zb'][k_p]
+            path = [np.array([ep['x'], py_, zt - 1.0]), np.array([ep['x'], py_, zb_p - 10.0]),
+                    np.array([ep['x'] - 3.0, py_, zb_p - 2.0]), np.array([ep['into'], py_, zb_p])]
+            if level >= 1 and k_p < len(ep['stub']):
+                # v5 (TS frame 1): snapped low down, the top left hanging from its bend; a jagged end
+                path[0] = np.array([ep['x'], py_, ep['stub'][k_p]])
+                rr_ = np.hypot(x - ep['x'], y - py_)
+                jag = ep['stub'][k_p] - 3.5 * np.clip(WN.noise(x, y, 2.5, 2170 + k_p), 0, 1)
+                acc.add(jag, ep['stub'][k_p] + 0.5, PIPE, rr_ <= pp['r'], 'pipe')
+            add_pipe(acc, x, y, path, pp['r'], PIPE)
+        if level >= 1:                            # the broken-off length leaning on the whole pipe
+            lo, hi, mb = rod_interval(x, y, ep['bent'][0], ep['bent'][1], pp['r'])
+            acc.add(lo, hi, PIPE, mb, 'pipe')
+    if ew and g['pipes'] >= 1:                    # the lamp column (GTPLUG_C runs its light down it)
+        lt = ew['light']
+        rr = np.hypot(x - lt['c'][0], y - lt['c'][1])
+        acc.add(zt - 1.0, lt['z'][1], RAMP, rr <= lt['r'], 'lamp')
+        acc.add(lt['z'][1], lt['z'][1] + 2.0, PIPE, rr <= lt['r'] + 0.6, 'lamp')
+    elif pp.get('screen') and g['pipes'] >= 1:       # v2: the pipes up the ramp and into the building
+        for k_p, path in enumerate(pipe_axes(p)):
+            if level >= 1:
+                fr = DMG['pipe_frac'][k_p]
+                if fr < 1:
+                    path = cut_polyline(path, fr)
+            add_pipe(acc, x, y, path, pp['r'], PIPE)
+        if level >= 1:
+            lo, hi, mb = rod_interval(x, y, DMG['bent2'][0], DMG['bent2'][1], pp['r'])
+            acc.add(lo, hi, PIPE, mb, 'pipe')
+    pts = (DMG['pipes'] if level >= 1 else pp['pts']) if (g['pipes'] >= 1 and not pp.get('screen')) else ()
     for k_p, (px_, py_, pz) in enumerate(pts):
         rr = np.hypot(x - px_, y - py_)
         mm = rr <= pp['r']
@@ -446,7 +710,7 @@ def scene(X, Y, p=None, layout='ts', prog=None, parts=None, level=0, merge=True,
         else:
             acc.add(0.0, pz - pp['cap'], PIPE, mm, 'pipe')
             acc.add(pz - pp['cap'], pz, PCAP, mm & (rr <= pp['r'] - 0.6), 'pcap')
-    if level >= 1:
+    if level >= 1 and not pp.get('screen'):
         lo, hi, mb = rod_interval(x, y, DMG['fallen'][0], DMG['fallen'][1], pp['r'] * 0.95)
         acc.add(lo, hi, PIPE, mb, 'pipe')
 
@@ -466,7 +730,7 @@ def scene(X, Y, p=None, layout='ts', prog=None, parts=None, level=0, merge=True,
                 lx, ly_ = DMG['lean'] if level >= 1 else (0.0, 0.0)
                 fz = (tl['thin_from'] - zroof) / (az_ - zroof)
                 mid = (ax + lx * fz, ay + ly_ * fz, tl['thin_from'])
-                lo, hi, mm = rod_interval(x, y, (ax, ay, zroof - 1), mid, ar)
+                lo, hi, mm = rod_interval(x, y, (ax, ay, min(zroof, float(hip_west(ax, b))) - 1), mid, ar)
                 acc_a.add(lo, hi, ANT, mm, 'ant')
                 lo, hi, mm = rod_interval(x, y, mid, (ax + lx, ay + ly_, az_), tl['thin_r'])
                 acc_a.add(lo, hi, ANT, mm, 'ant')
@@ -478,7 +742,7 @@ def scene(X, Y, p=None, layout='ts', prog=None, parts=None, level=0, merge=True,
                         lo, hi, mm = rod_interval(x, y, (lc_[0], lc_[1], lz_ - 2.6), (lc_[0], lc_[1], lz_ + 2.6), 2.6)
                         acc_l.add(lo, hi, LAMP, mm, 'lamp')
             else:
-                lo, hi, mm = rod_interval(x, y, (ax, ay, zroof - 1), (ax, ay, az_), ar)
+                lo, hi, mm = rod_interval(x, y, (ax, ay, min(zroof, float(hip_west(ax, b))) - 1), (ax, ay, az_), ar)
                 acc_a.add(lo, hi, ANT, mm, 'ant')
         tb = dict(p['tbar'], z=tuple(hz(zz) for zz in p['tbar']['z']))
         ax, ay = p['ants'][2][:2]
@@ -501,6 +765,8 @@ def scene(X, Y, p=None, layout='ts', prog=None, parts=None, level=0, merge=True,
     # ---- damaged: bare roof beams across the hole
     if level >= 1:
         for (b0, b1) in DMG['beams']:
+            if DMG.get('burnt'):            # v2: on the burnt roof, not down in a crater
+                b0 = (b0[0], b0[1], max(b0[2], DMG['burnt'] + 2.0)); b1 = (b1[0], b1[1], max(b1[2], DMG['burnt'] + 2.0))
             lo, hi, mm = rod_interval(x, y, b0, b1, DMG['beam_r'])
             acc_a.add(lo, hi, BEAM, mm, 'beam')
 
@@ -527,5 +793,6 @@ FLAT = {PLAT: (150, 150, 150), FOOT: (110, 100, 80), BLOCK: (190, 160, 100), LIP
         SOCK: (0, 210, 0), PLATE: (140, 140, 140), BOLT: (230, 230, 230), RAMP: (130, 100, 60), PIPE: (190, 190, 190),
         PCAP: (240, 240, 230), ANT: (90, 90, 130), DISH: (60, 60, 70), DMOUNT: (110, 110, 140), LAMP: (255, 255, 255),
         SLAB: (150, 150, 150), STEP: (200, 150, 70), SLOT: (20, 20, 20), LEDGE: (175, 150, 95), FRONT: (100, 80, 45),
-        CORE: (60, 60, 60), BEAM: (150, 150, 156), DEB_BURNT: (60, 40, 30), DEB_IN: (30, 30, 30), DEBRIS: (120, 110, 90)}
+        CORE: (60, 60, 60), BEAM: (150, 150, 156), DEB_BURNT: (60, 40, 30), DEB_IN: (30, 30, 30), DEBRIS: (120, 110, 90),
+        JOINT: (20, 40, 20), HOLE: (20, 20, 22)}
 FLAT.update(PG.FLAT)

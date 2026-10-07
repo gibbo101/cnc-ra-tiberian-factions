@@ -2,9 +2,9 @@
   TS angle (iso): TS's own layout at the mod's scale and place on the mod's 384x384 canvas (TS frame x3.695, TS px (0, 0)
                   at canvas (-15, -112); TS's ground centre at frame px (60, 90)).  Like the mod's frames now, the
                   tallest antennas run off the canvas's top.
-  RA grid  (ra):  RA's camera (32 degrees, looking north), turned a quarter (TS east -> RA south: the ramp and pipes to the
-                  camera) to sit on the 3x2 plot; the plot x 0-384, its south edge HEAD + 256 px down the canvas; the
-                  canvas grown by HEAD px top and bottom so the tallest antenna fits."""
+  RA grid  (ra):  RA's camera (32 degrees, looking north), TS's way round (v3: the sockets and plugs to the south; v1-v2
+                  stood it turned a quarter, TS east to the south, on a 3x2 plot): the 2x3 plot x 64-320, y HEAD to
+                  HEAD + 384, centred in the 384 x (384 + 2 HEAD) canvas (HEAD 32: 384x448, as before)."""
 import os, sys, time
 import numpy as np
 from PIL import Image
@@ -12,12 +12,14 @@ import hd, brender as BR, plug as M
 
 ISO_K, ISO_O, TS_GROUND = 3.695, (-15.0, -112.0), (60.0, 90.0)
 HEAD = int(os.environ.get('PLUG_HEAD', '32'))
-CANVAS = {'iso': (384, 384), 'ra': (384, 256 + 2 * HEAD)}
-PLOT = {'iso': (0, 64, 384, 320), 'ra': (0, HEAD, 384, HEAD + 256)}
-WIN = {'iso': (0, 0, 384, 384), 'ra': (0, 0, 384, 256 + 2 * HEAD)}
+RA_CELLS = (2, 3)                     # v3: TS's way round (v1-v2: (3, 2), turned)
+_rw, _rh = RA_CELLS[0] * 128, RA_CELLS[1] * 128
+CANVAS = {'iso': (384, 384), 'ra': (384, _rh + 2 * HEAD)}
+PLOT = {'iso': (0, 64, 384, 320), 'ra': ((384 - _rw) // 2, HEAD, (384 + _rw) // 2, HEAD + _rh)}
+WIN = {'iso': (0, 0, 384, 384), 'ra': (0, 0, 384, _rh + 2 * HEAD)}
 BOUNDS = {'iso': ((-280, 280), (-280, 280), 270), 'ra': ((-280, 280), (-280, 280), 270)}
 ZMAX = 270.0
-LAYOUT = {'iso': 'ts', 'ra': 'ra'}
+LAYOUT = {'iso': 'ts', 'ra': 'ra0'}
 
 
 def base(vname):
@@ -32,7 +34,7 @@ def origin(vname):
     if base(vname) == 'iso':
         return TS_GROUND[0] * ISO_K + ISO_O[0], TS_GROUND[1] * ISO_K + ISO_O[1]
     x0, y0, x1, y1 = PLOT['ra']
-    return (x0 + x1) / 2.0, y1 - np.sin(np.deg2rad(32.0)) * 128.0
+    return (x0 + x1) / 2.0, y1 - np.sin(np.deg2rad(32.0)) * RA_CELLS[1] * 64.0
 
 
 def view(vname, ss=hd.SS, win=None):

@@ -16,8 +16,8 @@ from walls2 import smoothstep
 from weapdamage import Chunks
 
 SOOT = np.array([30, 29, 28.])
-CHAR = np.array([84, 50, 38.])             # burnt brown (TS draws it dark red-brown: 113,40,32)
-CHAR_D = np.array([34, 24, 20.])
+CHAR = np.array([98, 42, 24.])             # burnt dark red-brown, as TS's (68,20,4 / 80,32,16 / 52,4,0); v1 84,50,38
+CHAR_D = np.array([44, 18, 10.])            # (v1 34,24,20)
 BARE = np.array([150, 148, 142.])
 DUST = np.array([116, 106, 84.])
 DEEP = np.array([26, 26, 28.])

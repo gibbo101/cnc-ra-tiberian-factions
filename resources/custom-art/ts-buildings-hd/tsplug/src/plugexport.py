@@ -6,8 +6,8 @@
 Markers: "socket-west", "socket-east" (the sockets' centres on their plates), "dish-pivot" (the dish turns about the
 vertical through it), "slot-top" / "slot-bottom" (GTPLUG_C's running light runs down the ramp between them),
 "lamp-low" / "lamp-high" (GTPLUG_B's two lamps on the tallest antenna).
-Cameras: "camera-ts-angle" (384 x 384 = ts-angle/ frames), "camera-ra-grid" (384 x 448 = ra-grid/ frames; the model
-turned a quarter: TS east to the camera).
+Cameras: "camera-ts-angle" (384 x 384 = ts-angle/ frames), "camera-ra-grid" (384 x 448 = ra-grid/ frames; v3: TS's
+way round, looking north).
 
     python3 plugexport.py [h]"""
 import os, sys, time
@@ -83,15 +83,21 @@ def export(h=1.25):
     oxr, oyr = RR.origin('ra')
     s32 = np.sin(np.radians(32.0))
     Xw, Yw = Wr / 2 - oxr, (Hr / 2 - oyr) / s32                 # the world ground point under the canvas centre
-    xl, yl = M.to_local(Xw, Yw, 'ra')
-    g.camera('camera-ra-grid', 270.0, 32.0, np.array(gl_point(xl, yl, 0.0)), Wr / 2 / 128.0, Hr / 2 / 128.0,
-             extras=dict(note=f'RA grid: orthographic, 32 degrees, looking at the model from its east (it stands turned a '
-                              f'quarter on the RA grid: TS east to the camera); render {Wr} x {Hr} px = ra-grid/ frames'))
+    lay = RR.LAYOUT['ra']
+    xl, yl = M.to_local(Xw, Yw, lay)
+    turned = M.LAYOUTS[lay]['turn']
+    g.camera('camera-ra-grid', 270.0 if turned else 0.0, 32.0, np.array(gl_point(xl, yl, 0.0)), Wr / 2 / 128.0,
+             Hr / 2 / 128.0,
+             extras=dict(note=(f'RA grid: orthographic, 32 degrees, looking at the model from its east (it stands turned a '
+                               f'quarter on the RA grid: TS east to the camera); render {Wr} x {Hr} px = ra-grid/ frames')
+                         if turned else
+                         (f'RA grid: orthographic, 32 degrees, looking north (TS\'s way round: the sockets and plugs to '
+                          f'the south); render {Wr} x {Hr} px = ra-grid/ frames')))
     os.makedirs(f'{PKG}/3d', exist_ok=True)
     g.save(f'{PKG}/3d/upgrade-center.glb', extras=dict(
         units='1 = one cell (128 px on the RA grid); x east, y up, z south; origin = the 2x3 foundation centre on the ground',
-        foundation="TS's 2 x 3 cells (x -1..1, z -1.5..1.5), TS's way round; on the RA grid it stands turned a quarter "
-                   "on a 3 x 2 plot (TS east to the south)"))
+        foundation="TS's 2 x 3 cells (x -1..1, z -1.5..1.5), TS's way round; on the RA grid the same way round on a "
+                   "2 x 3 plot (v3: the sockets and plugs to the south)"))
 
 
 if __name__ == '__main__':
