@@ -140,6 +140,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 - **Big units show through a TS war factory's shut door:** a Titan or a harvester waiting in the bay draws
   over the door before it rolls up, at the War Factory and the deployed Mobile War Factory alike; their sort lines fall south of the door's (`NF`/`DR` sort offsets in
   `dllinterface.cpp`). Smaller vehicles stay hidden behind it. A spawn and draw-order bug, not the art.
+- **The Mammoth Mk. III's pods fire two rockets, not their Burst=4:** RA makes any Burst above one a pair
+  (`techno.cpp`, `Is_Two_Shooter`). The Juggernaut's salvo counter (`BurstShot`) could run them too, which
+  doubles the volley: a balance call before it is switched on.
 - **The deployed Mobile War Factory loses units:** of three APCs ordered one after another, only the third
   rolled out; Titans have teleported or never arrived, and a finished unit can wait seconds for the doors.
   The exit runs on the per-unit rail (`drive.cpp`) and the doorstep table in `building.cpp`; log each
