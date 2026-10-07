@@ -137,6 +137,10 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   panels were rebuilt the same way, `scripts/ts_pack_fsdf.py`).
 - **The TS HD rebuild:** branch `ts-buildings-hd`, worktree `../worktrees/tf-ts-hd`, skill
   `ts-to-ra-hd-art`.
+- **The Upgrade Center's plugs turning in their sockets:** the Ion Cannon Uplink's dish and the Seeker
+  Control's camera have idle frames, but the TSPLUG loops bake each plug at frame 0, and the plug frames'
+  128 px boxes clip the uplink's dish. Needs the art chat's idle frames on the Upgrade Center's own canvas
+  at each socket, uncropped; the packer then plays them in the combinations' loops.
 - **The Orca Bomber's attack run:** its HD model is final, but the run needs work. It flies RA's
   helicopter path and drops from where it hovers (`[TSBomb]` Range 1.5 in rules.ini), where TS's
   Orca Bomber makes a straight pass over the target and lays its bombs along it.
