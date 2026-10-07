@@ -7085,6 +7085,13 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 dimx = 80;
                 dimy = 56;
                 break;
+            case STRUCT_TSVULC:
+            case STRUCT_TSROCK:
+            case STRUCT_TSCSAM:
+                // The tower with its head, from just above the head to the base.
+                dimx = 26;
+                dimy = 34;
+                break;
             case STRUCT_TSSILO:
                 // From the dome's top to the silo's base: 30 classic px, centred on its plot row.
                 dimy = 30;
