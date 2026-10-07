@@ -374,6 +374,7 @@ public:
     */
     virtual void Active_Click_With(ActionType action, ObjectClass* object);
     virtual void Active_Click_With(ActionType action, CELL cell);
+    virtual void Response_Select(void);
 
     /*
     **	Combat related.

@@ -3130,6 +3130,10 @@ void BuildingClass::Active_Click_With(ActionType action, ObjectClass* object)
 
     if (action == ACTION_ATTACK && object != NULL) {
         Player_Assign_Mission(MISSION_ATTACK, object->As_Target());
+        // TF: the dug-in Tick Tank answers its orders as its tank does.
+        if (Is_Dug_In_Tank()) {
+            TF_Vehicle_Voice(TF_VOICE_ATTACK, -(ID + 1));
+        }
     }
 
     if (action == ACTION_TOGGLE_PRIMARY && Class->Is_Factory()) {
@@ -3144,6 +3148,14 @@ void BuildingClass::Active_Click_With(ActionType action, ObjectClass* object)
     // TF: rally points (CFE Patch Redux port): a force-move click on a unit or building rallies onto it.
     if (action == ACTION_MOVE && object != NULL && Can_Have_Rally_Point()) {
         Player_Set_Rally_Point(object->As_Target());
+    }
+}
+
+// The dug-in Tick Tank answers a selection as its tank does; other buildings stay silent.
+void BuildingClass::Response_Select(void)
+{
+    if (Is_Dug_In_Tank()) {
+        TF_Vehicle_Voice(TF_VOICE_SELECT, -(ID + 1));
     }
 }
 
@@ -3246,6 +3258,11 @@ void BuildingClass::Active_Click_With(ActionType action, CELL cell)
 
     if (action == ACTION_ATTACK) {
         Player_Assign_Mission(MISSION_ATTACK, ::As_Target(cell));
+    }
+
+    // TF: the dug-in Tick Tank answers its orders as its tank does.
+    if (Is_Dug_In_Tank() && (action == ACTION_ATTACK || action == ACTION_MOVE)) {
+        TF_Vehicle_Voice((action == ACTION_ATTACK) ? TF_VOICE_ATTACK : TF_VOICE_MOVE, -(ID + 1));
     }
 
     if (action == ACTION_MOVE && Class->Is_Construction_Yard()) {
