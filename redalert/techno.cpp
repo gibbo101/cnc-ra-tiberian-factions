@@ -3916,7 +3916,9 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             **	now.
             */
             if (a != ANIM_NONE) {
-                AnimClass* anim = new AnimClass(a, Fire_Coord(which));
+                // TF: the Juggernaut has moved on to its next barrel by now; the flash marks the one that fired.
+                bool jugg = (What_Am_I() == RTTI_UNIT && ((UnitClass*)this)->Class->Type == UNIT_TSJUGG);
+                AnimClass* anim = new AnimClass(a, jugg ? fire_coord : Fire_Coord(which));
                 if (anim != NULL) {
                     anim->Attach_To(this);
                 }
