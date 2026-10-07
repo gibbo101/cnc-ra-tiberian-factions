@@ -635,6 +635,12 @@ after four one-per-launch theories had failed. Check any verification against a 
 before trusting a negative: a `.LOC` decoded wholly as UTF-16 finds no key at all (keys are ASCII,
 values UTF-16; use `loc_edit.py get`), and that guaranteed zero was once recorded as proof.
 
+### 3.32 — A turreted deployer's pack-up never ends unless its mission is in `Animation_AI`'s test
+
+`BuildingClass::Animation_AI` skips the end-of-animation step for a turret building outside build and sale. A
+turret building that packs up (the dug-in Tick Tank, in `MISSION_UNLOAD`) needs its pack-up mission added to that
+test, or its reversed build-up runs past its last frame (a white box) and never signals the pack-up.
+
 ---
 
 ## 4. Templates to copy
