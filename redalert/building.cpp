@@ -812,13 +812,15 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
 
         // TF: a component tower draws its wall ends, links, connectors and couplings over the body, then its
         // turret and, while the house has power, its door lamp. Layer frames: scripts/ts_pack_ctwr_hd.py.
+        // A fitted tower stands on its plot's south cell and draws the layers packed for its taller canvas.
         if (TF_Is_Wall_Tower(Class->Type) && Strength > 0) {
             static const FacingType sides[4] = {FACING_N, FACING_E, FACING_S, FACING_W};
             int dmg = (Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0;
             int kind[4];
             int link[4];
             bool gate_end[4];
-            CELL cell = Coord_Cell(Coord);
+            CELL cell = (CELL)(Coord_Cell(Coord) + *Class->Occupy_List());
+            char const* layers = (*this == STRUCT_TSCTWR) ? "TSCTWRX" : "TSCTWRXP";
             for (int i = 0; i < 4; i++) {
                 CELL adj = Adjacent_Cell(cell, sides[i]);
                 OverlayType o = Map.In_Radar(adj) ? Map[adj].Overlay : OVERLAY_NONE;
@@ -833,19 +835,19 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
             }
             void const* shp = Get_Image_Data();
             if (kind[0] >= 0) {
-                Techno_Draw_Object_Virtual(shp, 14 + kind[0] * 2 + dmg, x, y, window, DIR_N, 0x0100, "TSCTWRX");
+                Techno_Draw_Object_Virtual(shp, 14 + kind[0] * 2 + dmg, x, y, window, DIR_N, 0x0100, layers);
             }
             for (int i = 0; i < 4; i++) {
                 if (link[i] >= 0) {
-                    Techno_Draw_Object_Virtual(shp, 26 + i * 4 + dmg * 2 + link[i], x, y, window, DIR_N, 0x0100, "TSCTWRX");
+                    Techno_Draw_Object_Virtual(shp, 26 + i * 4 + dmg * 2 + link[i], x, y, window, DIR_N, 0x0100, layers);
                 } else if (gate_end[i]) {
-                    Techno_Draw_Object_Virtual(shp, 42 + i * 2 + dmg, x, y, window, DIR_N, 0x0100, "TSCTWRX");
+                    Techno_Draw_Object_Virtual(shp, 42 + i * 2 + dmg, x, y, window, DIR_N, 0x0100, layers);
                 } else if (kind[i] >= 0) {
-                    Techno_Draw_Object_Virtual(shp, i * 2 + dmg, x, y, window, DIR_N, 0x0100, "TSCTWRX");
+                    Techno_Draw_Object_Virtual(shp, i * 2 + dmg, x, y, window, DIR_N, 0x0100, layers);
                 }
             }
             if (kind[2] >= 0) {
-                Techno_Draw_Object_Virtual(shp, 8 + kind[2] * 2 + dmg, x, y, window, DIR_N, 0x0100, "TSCTWRX");
+                Techno_Draw_Object_Virtual(shp, 8 + kind[2] * 2 + dmg, x, y, window, DIR_N, 0x0100, layers);
             }
             char const* turret = (*this == STRUCT_TSVULC) ? "TSVULCT"
                                  : (*this == STRUCT_TSROCK) ? "TSROCKT"
@@ -855,7 +857,7 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
                 Techno_Draw_Object_Virtual(shp, Shape_Number(), x, y, window, DIR_N, 0x0100, turret);
             }
             if (House->Power_Fraction() >= 1) {
-                Techno_Draw_Object_Virtual(shp, 20 + 1 + (Frame / 4) % 5, x, y, window, DIR_N, 0x0100, "TSCTWRX");
+                Techno_Draw_Object_Virtual(shp, 20 + 1 + (Frame / 4) % 5, x, y, window, DIR_N, 0x0100, layers);
             }
         }
 
@@ -2265,6 +2267,9 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
         bool swapped = false;
         if (host != NULL && *host == STRUCT_TSCTWR && host->Can_Upgrade(Class, House)) {
             coord = host->Coord;
+            if (*Class->Occupy_List() == MAP_CELL_W && Coord_Y(coord) >= CELL_LEPTON_H) {
+                coord = XY_Coord(Coord_X(coord), Coord_Y(coord) - CELL_LEPTON_H);
+            }
             fixed ratio = host->Health_Ratio();
             host->Transmit_Message(RADIO_OVER_OUT);
             host->Limbo();
@@ -5478,6 +5483,11 @@ COORDINATE BuildingClass::Sort_Y(void) const
     */
     if (*this == STRUCT_AVMINE || *this == STRUCT_APMINE || *this == STRUCT_TSDLIMP || *this == STRUCT_TSFSDF) {
         return (Coord_Move(Center_Coord(), DIR_N, CELL_LEPTON_H));
+    }
+
+    // TF: a fitted tower sorts as the bare tower on its south cell, so its links and neighbours layer as before.
+    if (*this == STRUCT_TSVULC || *this == STRUCT_TSROCK || *this == STRUCT_TSCSAM) {
+        return (Coord_Add(Center_Coord(), XY_Coord(0, CELL_LEPTON_H / 2 + CELL_LEPTON_H / 3)));
     }
 
     /*
@@ -8781,7 +8791,7 @@ COORDINATE BuildingClass::Target_Coord(void) const
         return XY_Coord(Coord_X(coord) - CELL_LEPTON_W, Coord_Y(coord));
     }
     if (*this == STRUCT_TSPOWR || *this == STRUCT_TSRADR || *this == STRUCT_TSTECH || *this == STRUCT_TSFGEN
-        || *this == STRUCT_TSHPAD) {
+        || *this == STRUCT_TSHPAD || *this == STRUCT_TSVULC || *this == STRUCT_TSROCK || *this == STRUCT_TSCSAM) {
         // The south row is the only real footprint.
         return XY_Coord(Coord_X(coord), Coord_Y(Cell_Coord((CELL)(Coord_Cell(Coord) + MAP_CELL_W))));
     }

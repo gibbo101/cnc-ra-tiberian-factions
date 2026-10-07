@@ -673,8 +673,8 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
         return XY_Coord((int)Coord_X(centre) + seat[0] + m[0], (int)Coord_Y(centre) + seat[1] + m[1]);
     }
 
-    // TF: the TS component tower plugs fire from the muzzles drawn in each turret frame (tsctwr_muzzle.h): the
-    // Vulcan and RPG alternate sides shot by shot, the SAM fires from the middle of its launch face.
+    // TF: the TS component tower plugs fire from the muzzles drawn in each turret frame (tsctwr_muzzle.h), measured
+    // from the tower's cell, the south one of its plot: the Vulcan and RPG alternate sides, the SAM fires mid-face.
     if (What_Am_I() == RTTI_BUILDING) {
         StructType stype = ((BuildingClass const*)this)->Class->Type;
         if (stype == STRUCT_TSVULC || stype == STRUCT_TSROCK || stype == STRUCT_TSCSAM) {
@@ -683,7 +683,7 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
             short const* m = (stype == STRUCT_TSVULC)   ? _tsvulc_fire[fi][side]
                              : (stype == STRUCT_TSROCK) ? _tsrock_fire[fi][side]
                                                         : _tscsam_fire[fi][0];
-            COORDINATE centre = centre_art;
+            COORDINATE centre = Coord_Add(centre_art, XY_Coord(0, CELL_LEPTON_H / 2));
             return XY_Coord((int)Coord_X(centre) + m[0], (int)Coord_Y(centre) + m[1]);
         }
     }
