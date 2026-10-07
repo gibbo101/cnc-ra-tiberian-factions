@@ -2966,7 +2966,13 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
         /*
         **	Actually perform the draw. Overlay an optional shimmer effect as necessary.
         */
-        Techno_Draw_Object(shapefile, shapenum, x, y, window, rotation, scale);
+        // TF: a Juggernaut deep in a TS war factory's bay walks south on its antenna-less frames (TSJUGGBAY).
+        bool bay_frames = TF_Hides_Antenna();
+        if (bay_frames && *this == UNIT_TSJUGG && shapenum >= 60 && shapenum < 75) {
+            Techno_Draw_Object_Virtual(shapefile, shapenum - 60, x, y, window, rotation, scale, "TSJUGGBAY");
+        } else {
+            Techno_Draw_Object(shapefile, shapenum, x, y, window, rotation, scale);
+        }
 
         /*
         **	If there is a rotating radar dish, draw it now.
@@ -3071,8 +3077,13 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
             /*
             **	Actually perform the draw. Overlay an optional shimmer effect as necessary.
             */
-            // TF: the turret draws at the body's scale, so a scaled unit's turret matches its hull.
-            Techno_Draw_Object(shapefile, shapenum, xx, yy, window, rotation, scale);
+            // TF: the turret draws at the body's scale, so a scaled unit's turret matches its hull. A Titan deep in a
+            // TS war factory's bay faces south on its antenna-less upper body (TSTITNBAY).
+            if (bay_frames && *this == UNIT_TSTITN && shapenum == 112) {
+                Techno_Draw_Object_Virtual(shapefile, 0, xx, yy, window, rotation, scale, "TSTITNBAY");
+            } else {
+                Techno_Draw_Object(shapefile, shapenum, xx, yy, window, rotation, scale);
+            }
         }
     }
 
@@ -7723,6 +7734,22 @@ COORDINATE UnitClass::TF_Pick_Coord(COORDINATE point) const
     }
     int y = Bound((int)Coord_Y(point), (int)Coord_Y(centre) - 192, (int)Coord_Y(centre) + 213);
     return (XY_Coord(Coord_X(centre), y));
+}
+
+// True while a Titan or Juggernaut is so deep in a TS war factory's bay that its antenna would show over the roof;
+// it draws its antenna-less bay frames until then. Depths below the plot's north edge: scripts/probes/wf_bay_sim.py.
+bool UnitClass::TF_Hides_Antenna(void) const
+{
+    if (*this != UNIT_TSTITN && *this != UNIT_TSJUGG) {
+        return (false);
+    }
+    BuildingClass const* factory = Map[Coord_Cell(Coord)].Cell_Building();
+    if (factory == NULL || !factory->Is_TS_War_Factory()) {
+        return (false);
+    }
+    bool mobile = (*factory == STRUCT_TSDWEAP);
+    int depth = (*this == UNIT_TSTITN) ? (mobile ? 249 : 259) : (mobile ? 273 : 279);
+    return ((int)Coord_Y(Coord) - (int)Coord_Y(factory->Coord) < depth);
 }
 
 // Discharges the Mobile EM-Pulse on a full charge unless it is stunned: a small pulse round the vehicle,
