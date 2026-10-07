@@ -9402,8 +9402,9 @@ void BuildingClass::Animation_AI(void)
     if ((*this == STRUCT_SAM || *this == STRUCT_TDSAM) && stagechange)
         Mark(MARK_CHANGE);
 
+    // TF: a turreted deployed TS building packing itself up runs its build-up to the end too.
     if ((!Class->IsTurretEquipped && *this != STRUCT_TESLA && *this != STRUCT_TDOBLI) || Mission == MISSION_CONSTRUCTION
-        || Mission == MISSION_DECONSTRUCTION) {
+        || Mission == MISSION_DECONSTRUCTION || (Mission == MISSION_UNLOAD && TF_Packs_Into(this) != UNIT_NONE)) {
         if (stagechange) {
 
             /*
