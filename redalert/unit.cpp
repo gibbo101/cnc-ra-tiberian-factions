@@ -2181,6 +2181,13 @@ bool UnitClass::Try_To_Deploy(void)
                 IsDeploying = true;
                 return (true);
             }
+            if (Class->IsTurretEquipped && SecondaryFacing.Current() != deploy_facing) {
+                Assign_Target(TARGET_NONE);
+                SecondaryFacing.Set_Desired(deploy_facing);
+                Mark(MARK_DOWN);
+                IsDeploying = true;
+                return (true);
+            }
             TF_LIMP_TRACE("placement legal");
             BuildingClass* building = new BuildingClass(into, House->Class->House);
             TF_LIMP_TRACE("mine constructed");
@@ -4294,6 +4301,15 @@ int UnitClass::Mission_Unload(void)
             break;
 
         case 2:
+            // TF: a turreted TS deployer's turn can end on a tick its turret is still turning, which skips the
+            // rotation callback that resumes the deploy, so the deploy resumes here once both have stopped.
+            if (IsDeploying && TF_Deploys_Into() != STRUCT_NONE && !PrimaryFacing.Is_Rotating()
+                && !SecondaryFacing.Is_Rotating()) {
+                Try_To_Deploy();
+                if (!IsActive) {
+                    return (1);
+                }
+            }
             if (!IsDeploying) {
                 Assign_Mission(MISSION_GUARD);
             }

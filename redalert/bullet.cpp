@@ -1169,9 +1169,11 @@ void BulletClass::AI(void)
         **	maintenance (usually nothing). Otherwise, explode and then
         **	delete the bullet.
         */
-        // TF: the Juggernaut shell and the EMP pulse ball have no proximity fuse: only the arc's end brings them down.
+        // TF: the TS shells (Juggernaut, Tick Tank) and the EMP pulse ball have no proximity fuse: only the arc's end
+        // brings them down.
         if (!forced
-            && (Class->IsDropping || *this == BULLET_TSBALLISTIC2 || *this == BULLET_TSPULSBALL || !Fuse_Checkup(Coord))) {
+            && (Class->IsDropping || *this == BULLET_TSBALLISTIC2 || *this == BULLET_TSCANNON || *this == BULLET_TSPULSBALL
+                || !Fuse_Checkup(Coord))) {
             /*
             **	Certain projectiles lose strength when they travel.
             */
@@ -1590,9 +1592,9 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
             Riser = ((Distance(tcoord) / 2) / (speed + 1)) * Rule.Gravity;
             Riser = max(Riser, 10);
 
-            // TF: the Juggernaut's shell and the EMP pulse ball fly the true distance to their aim in whole frames and
-            // land on the last. The stock arithmetic and ::Distance's diagonal overstatement would land them wide.
-            if (*this == BULLET_TSBALLISTIC2 || *this == BULLET_TSPULSBALL) {
+            // TF: the TS shells (Juggernaut, Tick Tank) and the EMP pulse ball fly the true distance to their aim in
+            // whole frames and land on the last. The stock arithmetic and ::Distance's diagonal overstatement land wide.
+            if (*this == BULLET_TSBALLISTIC2 || *this == BULLET_TSCANNON || *this == BULLET_TSPULSBALL) {
                 double adx = (double)((int)Coord_X(tcoord) - (int)Coord_X(Coord));
                 double ady = (double)((int)Coord_Y(tcoord) - (int)Coord_Y(Coord));
                 int dist = (int)(sqrt(adx * adx + ady * ady) + 0.5);
@@ -1601,7 +1603,7 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
                 Fly_Speed(255, (MPHType)speed);
                 Riser = max(1, (Rule.Gravity * (frames - 1)) / 2 - 1);
 #if TF_DEV_BUILD
-                {
+                if (*this == BULLET_TSBALLISTIC2) {
                     const char* prof = getenv("USERPROFILE");
                     char path[512];
                     snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", prof ? prof : ".");
@@ -2120,9 +2122,10 @@ bool BulletClass::Is_Forced_To_Explode(COORDINATE& coord) const
  *=============================================================================================*/
 void BulletClass::Bullet_Explodes(bool forced)
 {
-    // TF: the Juggernaut's shell and the EMP pulse ball burst on their aim point when the arc ends within a cell of
-    // it, so the flight's rounding never moves the burst (for the Juggernaut, the point its scatter rolled).
-    if ((*this == BULLET_TSBALLISTIC2 || *this == BULLET_TSPULSBALL) && forced && Fuse_Target() != 0
+    // TF: the TS shells (Juggernaut, Tick Tank) and the EMP pulse ball burst on their aim point when the arc ends within
+    // a cell of it, so the flight's rounding never moves the burst (for the Juggernaut, the point its scatter rolled).
+    if ((*this == BULLET_TSBALLISTIC2 || *this == BULLET_TSCANNON || *this == BULLET_TSPULSBALL) && forced
+        && Fuse_Target() != 0
         && ::Distance(Coord, Fuse_Target()) < CELL_LEPTON_W) {
         Coord = Fuse_Target();
     }
