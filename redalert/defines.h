@@ -1413,6 +1413,7 @@ typedef enum BulletType : char
     BULLET_TSBOMBSHELL,     // TS [Cannon2] as the Orca Bomber drops it: a falling bomb with the TD bomblet art.
     BULLET_TSBALLISTIC2,    // Firestorm [Ballistic2]: the Juggernaut's arcing, inaccurate 120MM shell.
     BULLET_TSPULSBALL,      // TS [PulsPr]: the EMP Cannon's pulse ball. It lands as an E.M. Pulse, doing no damage.
+    BULLET_TSCANNON,        // TS [Cannon]: the Tick Tank's arcing 120MM shell.
 
     BULLET_COUNT,
     BULLET_FIRST = 0
@@ -1629,6 +1630,7 @@ typedef enum StructType : short
     STRUCT_TDGGATEV, // TD GDI Gate, north-south "TDGGATEV" (1x3).
     STRUCT_TDNGATEH, // TD Nod Laser Gate, east-west "TDNGATEH" (3x1): a gate like TSGATEH, its own art and door timing.
     STRUCT_TDNGATEV, // TD Nod Laser Gate, north-south "TDNGATEV" (1x3).
+    STRUCT_TSTICK,   // TS Tick Tank dug in "TSTICK" ([GATICK], 1x1): UNIT_TSTTNK deployed, a turret building; the deploy order packs it back. Art: ts_pack_hd_buildings.py.
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
 
@@ -1897,6 +1899,7 @@ typedef enum UnitType : char
     UNIT_TSMWAR,            // TS Mobile War Factory (Firestorm [MOBWARG]): slow, unarmed tracked vehicle, one at a time. Art = MWAR_NOD.VXL, 32 facings (scripts/ts_pack_mwf.py).
     UNIT_C3MK3,             // C&C3 Mammoth Tank, "Mk. III" (Tiberium Wars GDIMammoth): twin cannon + AA/AG rocket pods. Art = GUMAMM hull 32 facings x 3 tread steps (0-95) + turret 96-127 (scripts/c3_pack_tanks.py).
     UNIT_C3PRED,            // C&C3 Predator Tank (Tiberium Wars GDIPredator): single cannon, turret seated aft of the hull centre. Art = GUPREDTANK, same layout as UNIT_C3MK3.
+    UNIT_TSTTNK,            // TS Tick Tank ([TTNK]): Nod's turret tank, found only in crates; turns south and digs in as STRUCT_TSTICK. Art: ts_pack_hd_buildings.py.
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -3406,6 +3409,7 @@ typedef enum WarheadType : char
     WARHEAD_TSLIMPY,  // Firestorm [LIMPY]: the Limpet's shot, which attaches the drone instead of doing damage.
     WARHEAD_R2APOCAP, // YR [ApocAP], the Apocalypse cannon's. Registered "R2ApocAP".
     WARHEAD_R2COMET,  // YR [CometWH], the Prism Tank beam's. Registered "R2Comet".
+    WARHEAD_TSAP,     // TS [AP] armour piercing, the Tick Tank's. Registered "TSAP".
 
     WARHEAD_COUNT,
     WARHEAD_FIRST = 0
@@ -3527,6 +3531,7 @@ typedef enum WeaponType : char
     WEAPON_C3MK3CANNON,    // C&C3 Mammoth twin cannon (GDIMammothTankGun) at RA scale. Registered "C3Mk3Cannon".
     WEAPON_C3MK3PODS,      // C&C3 Mammoth rocket pods (GDIMammothTankRocketPods), air and ground.
     WEAPON_C3PREDCANNON,   // C&C3 Predator cannon (GDIPredatorTankCannon) at RA scale. Registered "C3PredCannon".
+    WEAPON_TS90MM,         // TS [90mm], the Tick Tank's gun, dug in or not. Registered "TS90mm".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
