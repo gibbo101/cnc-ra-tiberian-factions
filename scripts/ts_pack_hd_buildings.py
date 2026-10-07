@@ -159,13 +159,14 @@ BUILDINGS = {
     "TSWEAPDR": dict(src="tsweap", make=None, frames=("D-door/war-factory-door", 9), repeat=2),
     "TSWEAPUD": dict(src="tsweap", make=None, frames=("1-under-door/war-factory-under", 2), repeat=2),
     # The deployed Mobile War Factory on the War Factory's 3x4 plot, the door south on the middle cell, in the
-    # same layers. Idle on the near face: fans (5), window lights (12) and roof lamps (8), 120 steps.
+    # same layers. Idle on the near face: fans (5), the side lights steady and the roof lamps lighting in a line (8),
+    # re-timed by ts_light_runs.py; 120 steps.
     "TSDWEAP": dict(src="tsdweap", make=("build-up/mobile-war-factory-build", 19),
                     base="building-bay/mobile-war-factory-bay", runs=[(120, [])]),
     "TSDWEAPNF": dict(src="tsdweap", make=None, base="2-over-units/mobile-war-factory-over", runs=[
         (120, [("A-fans/mobile-war-factory-fans", range(0, 5), range(5, 10)),
-               ("B-lights/mobile-war-factory-lights", range(0, 12), range(12, 24)),
-               ("C-lamps/mobile-war-factory-lamps", range(0, 8), range(8, 16))]),
+               ("B-lights-run/mobile-war-factory-lights", range(0, 12), range(12, 24)),
+               ("C-lamps-run/mobile-war-factory-lamps", range(0, 8), range(8, 16))]),
     ]),
     "TSDWEAPDR": dict(src="tsdweap", make=None, frames=("D-door/mobile-war-factory-door", 12), repeat=2),
     "TSDWEAPUD": dict(src="tsdweap", make=None, frames=("1-under-door/mobile-war-factory-under", 2), repeat=2),
