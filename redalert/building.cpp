@@ -3754,6 +3754,14 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 ScenarioInit++;
                 if (base->Unlimbo(start, dir)) {
 
+                    // TF: a TS Barracks soldier steps out of the door's middle, not the standing spot Unlimbo snapped
+                    // it to beside the door.
+                    if (*this == STRUCT_TSPILE) {
+                        base->Mark(MARK_UP);
+                        base->Coord = start;
+                        base->Mark(MARK_DOWN);
+                    }
+
                     base->Assign_Mission(MISSION_MOVE);
 
                     /*
