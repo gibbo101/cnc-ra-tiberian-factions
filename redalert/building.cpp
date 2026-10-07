@@ -3551,6 +3551,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             BulletClass* pod =
                 new BulletClass(BULLET_TSDROPPOD, ::As_Target(dest), base, 0, WARHEAD_NONE, MPH_MEDIUM_FAST);
             if (pod != NULL) {
+                pod->TFPodHouse = House->Class->House;
                 if (pod->Unlimbo(pad, DIR_S)) {
                     // Lift the pod to its ceiling between Remove and Submit: a height change moves it to another
                     // display layer.

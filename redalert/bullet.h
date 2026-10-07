@@ -66,13 +66,11 @@ public:
     int TFStage;
     int TFDwell;
     int TFUnloaded;
-    // TF: TSPODDROP: the trooper's house (the pod has no Payback techno, as the granting plug never stands on
-    // the map), the direction the pod slides in from, and the trooper's type.
+    // TF: the house it delivers for (TSDROPPOD: the bay's; TSPODDROP: the trooper's, as the granting plug never
+    // stands on the map), and for TSPODDROP the direction the pod slides in from and the trooper's type.
     HousesType TFPodHouse;
     DirType TFPodApproach;
     InfantryType TFPodType;
-    // TF: the house of the techno that fired it, HOUSE_NONE when none did.
-    HousesType TF_Payback_House(void) const;
     /*
     **	TSLOBBED: how many times the disc has touched down; it goes off on the third.
     **	Zero and unused for every other bullet type.
