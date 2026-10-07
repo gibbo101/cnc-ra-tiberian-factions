@@ -3674,6 +3674,26 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 if (is_titan && *this == STRUCT_TSDWEAP) {
                     seat = Coord_Add(seat, XY_Coord(0, 18));
                 }
+                // TF: these units' HD art reaches past the shut door from the seat, so they wait deeper, in leptons
+                // measured behind the door; the Juggernaut, taller than the bay, shows only its antenna tip.
+                if (base->What_Am_I() == RTTI_UNIT) {
+                    int pull = 0;
+                    switch (((UnitClass*)base)->Class->Type) {
+                    case UNIT_TSHARV:
+                    case UNIT_TSMWAR:
+                        pull = 48;
+                        break;
+                    case UNIT_TSTITN:
+                        pull = (*this == STRUCT_TSDWEAP) ? 90 : 72;
+                        break;
+                    case UNIT_TSJUGG:
+                        pull = 144;
+                        break;
+                    default:
+                        break;
+                    }
+                    seat = Coord_Add(seat, XY_Coord(0, -pull));
+                }
                 /*
                 **	Facing = the exit rail's own direction (seat -> exit cell), so the
                 **	vehicle points exactly along the line it will drive.
