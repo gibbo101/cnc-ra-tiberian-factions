@@ -3644,9 +3644,8 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 /*
                 **	TS (OpenTS Exit_Object): the vehicle exists from the moment
                 **	production completes, seated in the bay behind the shut door,
-                **	facing out. It is not drawn until the door is fully up
-                **	(UnitClass::Draw_It), then rides the exit rail straight south onto the
-                **	doorstep.
+                **	facing out, hidden by the door and revealed as it rolls up, then rides the
+                **	exit rail straight south onto the doorstep.
                 */
                 bool is_mech = false;
                 bool is_titan = false;

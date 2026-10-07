@@ -7513,15 +7513,6 @@ bool DLLExportClass::Get_Layer_State(uint64 player_id, unsigned char* buffer_in,
                     }
 
                     /*
-                    **  A unit waiting in a TS war factory's bay is not drawn until the door is fully up.
-                    */
-                    if ((object->What_Am_I() != RTTI_BUILDING) && (contact_object != nullptr)
-                        && (contact_object->What_Am_I() == RTTI_BUILDING) && contact_object->IsTethered
-                        && ((BuildingClass*)contact_object)->Is_TS_War_Factory() && !contact_object->Is_Door_Open()) {
-                        continue;
-                    }
-
-                    /*
                     **  Skip units tethered to vessels, since the vessel will draw them itself
                     */
                     if ((contact_object != nullptr) && (contact_object->What_Am_I() == RTTI_VESSEL)
