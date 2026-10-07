@@ -7085,10 +7085,11 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 dimx = 80;
                 dimy = 56;
                 break;
+            case STRUCT_TSCTWR:
             case STRUCT_TSVULC:
             case STRUCT_TSROCK:
             case STRUCT_TSCSAM:
-                // The tower with its head, from just above the head to the base.
+                // The component tower, from just above a fitted head to the base, with or without one.
                 dimx = 26;
                 dimy = 34;
                 break;
