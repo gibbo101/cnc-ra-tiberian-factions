@@ -1440,8 +1440,8 @@ static BuildingTypeClass const ClassTsHpad(STRUCT_TSHPAD,
                                            true, true, false, false, false, true,
                                            RTTI_AIRCRAFTTYPE,  // Aircraft factory.
                                            DIR_N,
-                                           BSIZE_22,           // The pad's south row is footprint; the north row is
-                                           NULL,               // headroom units walk through, behind the tower.
+                                           BSIZE_22,           // The pad's south row is footprint and the bib row lies in
+                                           NULL,               // front; the north row is headroom, as the power plant's.
                                            (short const*)List22_0011,
                                            (short const*)List22_1100);
 
@@ -6014,12 +6014,7 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
     **	on its top row, and the headroom row is demanded clear at placement
     **	(the radar height trick); blocking stays south-row-only.
     */
-    // TF: the TS Helipad occupies its south row; its ghost and placement span the whole 2x2.
-    if (placement && Type == STRUCT_TSHPAD) {
-        static short const _ts_hpad_place[] = {0, 1, MAP_CELL_W, MAP_CELL_W + 1, REFRESH_EOL};
-        return (_ts_hpad_place);
-    }
-    if (placement && (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR)) {
+    if (placement && (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR || Type == STRUCT_TSHPAD)) {
         /*
         **	Legality spans headroom + pads + bib: three rows from the plot
         **	origin. The GHOST the launcher draws is only the two ground rows
@@ -6168,7 +6163,8 @@ int BuildingTypeClass::Height(bool bib) const
 */
 int BuildingTypeClass::Placement_Ghost_Rows_Above(void) const
 {
-    if (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR || Type == STRUCT_TSTECH || Type == STRUCT_TSFGEN) {
+    if (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR || Type == STRUCT_TSTECH || Type == STRUCT_TSFGEN
+        || Type == STRUCT_TSHPAD) {
         return (1);
     }
     return (0);
