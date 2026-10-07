@@ -8,6 +8,8 @@ frames/     tstitn-0000.png ... tstitn-0127.png, the mod's 128 frames on its 448
               96-127  the upper body with the cannon, 32 facings counter-clockwise from north (96 N, 104 W,
                       112 S, 120 E).
             Legs and upper body laid over each other at the same canvas position give the assembled Titan.
+bay/        tstitn-bay-0000.png, the upper body facing south (frame 112) without the antenna: drawn while the
+            Titan waits deep in a TS war factory's bay, where the antenna would show over the roof
 previews/   standing-8-facings.png   TS's sprite, the mod's current frames and HD, the 8 facings
             walk-east.gif, walk-south.gif   the walk, the mod's current frames beside HD (3 ticks a step)
             turn.gif                 the upper body turning through its 32 facings over the standing legs
@@ -125,6 +127,7 @@ wnoise.py, pfinal.py, export3d.py) are included.
   legfit.py, gait.py      the legs and their walk;  torso2.py  the upper body;  barrel.py  the cannon
   titan.py                the assembled Titan, the mod's frame layout
   titanmat.py             materials;  titanrender.py  one frame;  finalrender.py  all 128 frames
+  bayrender.py            bay/, the upper body facing south without the antenna
   titanexport.py          the .glb;  glbcheck.py  draws the .glb through its camera to check it
   makepreviews.py         the previews;  paths.py  where the hand-off folders are (TITAN_HANDOFF)
   legs_final.json, torso_final.json, shell_planes28.npy   the fitted model

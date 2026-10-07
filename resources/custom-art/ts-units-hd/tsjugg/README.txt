@@ -9,6 +9,8 @@ frames/     tsjugg-0000.png ... tsjugg-0201.png, the mod's 202 frames on its 448
               152-183  deployed and aiming: the barrels raised 45 degrees about their breech
               184-201  the deploy, 18 frames facing south-west, 2 ticks a frame (played backwards to pack up);
                        184 is walk frame 45 and 201 rest frame 132, copied, so nothing pops either end
+bay/        tsjugg-bay-0000.png ... -0014.png, the south walk (frames 60-74) without the antenna: drawn while
+            the Juggernaut waits deep in a TS war factory's bay, where the antenna would show over the roof
 previews/   walk-east.gif, walk-south.gif   the walk, the mod's frames beside HD
             deploy.gif                the deploy, the mod's frames beside HD, held at both ends
             turn.gif                  the deployed cabin turning through its 32 facings at rest, beside the mod's
@@ -181,6 +183,7 @@ the folder holding 04-TSJUGG/, 00-TSHARV-example/ and renderer/).
                          (fit_bar_rest.json, fit_bar_aim.json);  jmap.py  how the mod scales and places TS's sprites
   jtrender.py            a walk frame, and the Titan legs' lighting in every frame;  jrender.py  the camera, the
                          body's materials;  jdeprender.py, jdeployed.py  a deployed frame;  jdeploy.py  a deploy frame
+  jbay.py                bay/, the south walk without the antenna
   jfinal.py              all 202 frames;  jcheck.py  the checks above;  jtips.py  muzzle.txt
   jpreviews.py, jshapecheck.py   the previews;  jexport.py  the .glb files;  glbcheck.py  draws a .glb through its
                          camera to check it;  jpackage.py  this README, src/ and the zips
