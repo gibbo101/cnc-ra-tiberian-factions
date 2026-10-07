@@ -7173,6 +7173,11 @@ int BuildingClass::Mission_Repair(void)
                 return (1);
             }
 
+            // TF: the TS depot steps at TS's URepairRate (.016 minutes), not at the end of its 105-tick light loop.
+            if (*this == STRUCT_TSDEPT) {
+                IsReadyToCommence = true;
+            }
+
             /*
             **	Check to see if the repair light blink has completed and the attached
             **	unit is not doing something else. If these conditions are favorable,
@@ -7253,7 +7258,7 @@ int BuildingClass::Mission_Repair(void)
                     break;
                 }
             }
-            return (1);
+            return ((*this == STRUCT_TSDEPT) ? (int)(Rule.RepairRate * TICKS_PER_MINUTE) : 1);
 
         default:
             break;
