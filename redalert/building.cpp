@@ -1567,6 +1567,12 @@ void BuildingClass::AI(void)
     */
     Animation_AI();
 
+    // TF: a deployed TS building's pack-up order starts at once, not at the end of its idle loop (24 seconds on the
+    // Mobile War Factory).
+    if (MissionQueue == MISSION_UNLOAD && TF_Packs_Into(this) != UNIT_NONE) {
+        IsReadyToCommence = true;
+    }
+
     /*
     **	If now is a good time to act on a new mission, then do so. This process occurs
     **	here because some outside event may have requested a mission change for the building.
