@@ -448,6 +448,8 @@ A unit here is done: no open art, geometry or behaviour work.
 - **Hand-made cameos in `resources/custom-cameos/` win:** both packers prefer them, and
   `scripts/apply_custom_cameos.py` re-asserts every override; run it after any SRGB-touching packer
   and before `ts_mk2_cooldown_cameos.py`.
+- **TS's blank cameo scene** (rock wall, dark band, dirt floor) is rebuilt from 21 TS cameos by
+  `scripts/ts_cameo_background.py`: TS ships no empty one. New cameos are composed on it.
 - **Anything inserted after the last ObjectTypeClass in `RABUILDABLES.XML` lands inside the
   countdown generator's block,** and its next run eats it; insert before the BEGIN marker.
 - **Two Blender traps:** a world made through the API has a near-black default colour, so
