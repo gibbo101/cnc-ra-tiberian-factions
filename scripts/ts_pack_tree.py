@@ -1277,7 +1277,7 @@ WAVE2 = [
     # beside it. Passing only the plate leaves nothing to patch, since the
     # gantry never overlaps the deck. No anims -- a static pad by design.
     ("TSDROP", "shp_gtdeptbb", [],
-     "shp_gtdeptmk", 19, (384, 256), 382, "shp_fixicon", "Dropship Bay", "Receives the Mammoth Mk. II by dropship."),
+     "shp_gtdeptmk", 19, (384, 256), 382, "shp_gbayicon", "Dropship Bay", "Receives the Mammoth Mk. II by dropship."),
 ]
 
 # TSPROC/TSWEAP carry no apron plates: structure-only composites fill the box,
