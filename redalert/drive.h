@@ -154,7 +154,7 @@ public:
         OUT_OF_REFINERY_SE_TD,     // TS refinery, TDHARV variant.
         OUT_OF_WEAPON_FACTORY_TS,      // TS war factory default seat's rail (generated table); never driven.
         OUT_OF_WEAPON_FACTORY_TS_TITAN, // TS war factory Titan seat's rail (generated table); never driven.
-        ROLL_OFF_DOCK_SEAT             // Runtime straight rail between an off-centre seat and a cell (Track21).
+        ROLL_OFF_DOCK_SEAT             // Runtime straight rail between an off-centre seat and a cell (Set_Rail).
     };
 
     /****************************************************************************
@@ -209,6 +209,16 @@ private:
     int TrackNumber;
     int TrackIndex;
 
+    // TF: this unit's own straight rail (ROLL_OFF_DOCK_SEAT): its first waypoint's offset from the rail's end in
+    // leptons, its length in waypoints, its facing at the end and its facing turn along it.
+    short RailEx;
+    short RailNy;
+    short RailSteps;
+    DirType RailFace;
+    signed char RailTurn;
+    void Set_Rail(int ex, int ny, int steps, DirType face, int turn);
+    TrackType Rail_Step(int index) const;
+
     // TF: the cell this unit last stamped a ChokeClaim from, -1 = never. It re-stamps only on entering a new cell,
     // so a stalled unit's claim ages out. mutable: the const Give_Way_Decision writes it.
     mutable CELL LastClaimCell;
@@ -243,7 +253,6 @@ private:
     static TrackType const Track18[];
     static TrackType const Track19[];
     static TrackType const Track20[];
-    static TrackType Track21[64]; // ROLL_OFF_DOCK_SEAT, filled per use by Roll_Off_Seat, Roll_On_Seat and Rail_To.
     static TrackType const Track12[];
     static TrackType const Track11[];
     static TrackType const Track10[];

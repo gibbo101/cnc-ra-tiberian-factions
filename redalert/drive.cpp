@@ -441,6 +441,34 @@ void DriveClass::Force_Track(int track, COORDINATE coord, int index)
     }
 }
 
+// The longest runtime rail, in waypoints (1 px each).
+static int const RAIL_MAX_STEPS = 63;
+
+// Sets this unit's straight rail: its first waypoint ex, ny leptons off the rail's end, steps waypoints long (at
+// most RAIL_MAX_STEPS), turning by turn to face at the end.
+void DriveClass::Set_Rail(int ex, int ny, int steps, DirType face, int turn)
+{
+    if (steps > RAIL_MAX_STEPS) {
+        steps = RAIL_MAX_STEPS;
+    }
+    RailEx = (short)ex;
+    RailNy = (short)ny;
+    RailSteps = (short)steps;
+    RailFace = face;
+    RailTurn = (signed char)turn;
+}
+
+// The rail's waypoint index: its offset from the rail's end, zero from the last waypoint on, and its facing.
+DriveClass::TrackType DriveClass::Rail_Step(int index) const
+{
+    TrackType step;
+    int steps = (RailSteps > 0) ? RailSteps : 1;
+    int left = (index < steps) ? steps - index : 0;
+    step.Offset = (left > 0) ? XY_Coord((LEPTON)(short)(RailEx * left / steps), (LEPTON)(short)(RailNy * left / steps)) : 0;
+    step.Facing = (DirType)(RailFace - RailTurn + RailTurn * ((index < steps) ? index : steps) / steps);
+    return (step);
+}
+
 // Puts a unit parked px_east, px_north pixels off its cell centre on a straight rail back to the centre, facing
 // held, so normal pathing takes over with no snap. False for a zero offset.
 bool DriveClass::Roll_Off_Seat(int px_east, int px_north)
@@ -453,17 +481,7 @@ bool DriveClass::Roll_Off_Seat(int px_east, int px_north)
     int ex = px_east * PIXEL_LEPTON_W;
     int ny = -px_north * PIXEL_LEPTON_W;
     int steps = (abs(px_east) > abs(px_north)) ? abs(px_east) : abs(px_north);
-    if (steps > (int)(sizeof(Track21) / sizeof(Track21[0])) - 1) {
-        steps = (int)(sizeof(Track21) / sizeof(Track21[0])) - 1;
-    }
-    DirType face = PrimaryFacing.Current();
-    for (int i = 0; i <= steps; i++) {
-        int sx = ex * (steps - i) / steps;
-        int sy = ny * (steps - i) / steps;
-        Track21[i].Offset = XY_Coord((LEPTON)(short)sx, (LEPTON)(short)sy);
-        Track21[i].Facing = face;
-    }
-    Track21[steps].Offset = 0;
+    Set_Rail(ex, ny, steps, PrimaryFacing.Current(), 0);
     Force_Track(ROLL_OFF_DOCK_SEAT, Cell_Coord(Coord_Cell(Coord)));
     Set_Speed(128);
     return (true);
@@ -482,15 +500,8 @@ bool DriveClass::Rail_To(COORDINATE dest, DirType face, int from_face)
     if (steps < 1) {
         return (false);
     }
-    if (steps > (int)(sizeof(Track21) / sizeof(Track21[0])) - 1) {
-        steps = (int)(sizeof(Track21) / sizeof(Track21[0])) - 1;
-    }
     int turn = (from_face < 0) ? 0 : (int)(signed char)(face - (DirType)from_face);
-    for (int i = 0; i <= steps; i++) {
-        Track21[i].Offset = XY_Coord((LEPTON)(short)(ex * (steps - i) / steps), (LEPTON)(short)(ny * (steps - i) / steps));
-        Track21[i].Facing = (DirType)(face - turn + turn * i / steps);
-    }
-    Track21[steps].Offset = 0;
+    Set_Rail(ex, ny, steps, face, turn);
     Force_Track(ROLL_OFF_DOCK_SEAT, dest);
     Set_Speed(128);
     return (true);
@@ -508,18 +519,8 @@ bool DriveClass::Roll_On_Seat(int px_east, int px_north)
     int ex = px_east * PIXEL_LEPTON_W;
     int ny = -px_north * PIXEL_LEPTON_W;
     int steps = (abs(px_east) > abs(px_north)) ? abs(px_east) : abs(px_north);
-    if (steps > (int)(sizeof(Track21) / sizeof(Track21[0])) - 1) {
-        steps = (int)(sizeof(Track21) / sizeof(Track21[0])) - 1;
-    }
-    DirType face = PrimaryFacing.Current();
     COORDINATE seat = Coord_Add(Cell_Coord(Coord_Cell(Coord)), XY_Coord((LEPTON)(short)ex, (LEPTON)(short)ny));
-    for (int i = 0; i <= steps; i++) {
-        int sx = -ex * (steps - i) / steps;
-        int sy = -ny * (steps - i) / steps;
-        Track21[i].Offset = XY_Coord((LEPTON)(short)sx, (LEPTON)(short)sy);
-        Track21[i].Facing = face;
-    }
-    Track21[steps].Offset = 0;
+    Set_Rail(-ex, -ny, steps, PrimaryFacing.Current(), 0);
     Force_Track(ROLL_OFF_DOCK_SEAT, seat);
     Set_Speed(128);
     return (true);
@@ -552,6 +553,11 @@ DriveClass::DriveClass(RTTIType rtti, int id, HousesType house)
     , MoebiusCell(0)
     , TrackNumber(-1)
     , TrackIndex(0)
+    , RailEx(0)
+    , RailNy(0)
+    , RailSteps(0)
+    , RailFace(DIR_N)
+    , RailTurn(0)
     , LastClaimCell(-1)
     , StuckFrames(0)
     , HoldFrames(0)
@@ -801,9 +807,11 @@ bool DriveClass::While_Moving(void)
 
             actual -= PIXEL_LEPTON_W;
 
-            offset = ptr[TrackIndex].Offset;
+            // TF: the runtime rail is the unit's own (Rail_Step), so units on rails at once never share waypoints.
+            TrackType const step = (TrackNumber == ROLL_OFF_DOCK_SEAT) ? Rail_Step(TrackIndex) : ptr[TrackIndex];
+            offset = step.Offset;
             if (offset || !TrackIndex) {
-                dir = ptr[TrackIndex].Facing;
+                dir = step.Facing;
                 COORDINATE prev_coord_diag = Coord;
                 Coord = Smooth_Turn(offset, dir);
 
@@ -3121,10 +3129,6 @@ DriveClass::TrackType const DriveClass::Track20[] = {
 #include "tsweap_exit_track_titan.inc"
 };
 
-// Track21 (ROLL_OFF_DOCK_SEAT) is filled at run time by Roll_Off_Seat, Roll_On_Seat and Rail_To: a straight line,
-// 1 px per waypoint, that moves a unit between an off-centre seat and a cell with no snap.
-DriveClass::TrackType DriveClass::Track21[64];
-
 DriveClass::RawTrackType const DriveClass::RawTracks[21] = {{Track1, -1, 0, -1},
                                                             {Track2, -1, 0, -1},
                                                             {Track3, 37, 12, 22},
@@ -3145,7 +3149,7 @@ DriveClass::RawTrackType const DriveClass::RawTracks[21] = {{Track1, -1, 0, -1},
                                                             {Track18, -1, 0, -1},
                                                             {Track19, -1, 0, -1},
                                                             {Track20, -1, 0, -1},
-                                                            {Track21, -1, 0, -1}};
+                                                            {NULL, -1, 0, -1}}; // ROLL_OFF_DOCK_SEAT: per unit (Rail_Step)
 
 /***************************************************************************
 **	Smooth turning control table. Given two directions in a path list, this
@@ -3230,5 +3234,5 @@ DriveClass::TurnTrackType const DriveClass::TrackControl[75] = {
 
     {19, 19, DIR_SE, F_},      // TS war factory: default seat's SE exit rail to tile 13 (generated).
     {20, 20, DIR_SE, F_},      // TS war factory: the Titan's own SE exit rail to tile 13 (generated).
-    {21, 21, DIR_SW, F_}       // Runtime rail filled by Roll_Off_Seat, Roll_On_Seat and Rail_To.
+    {21, 21, DIR_SW, F_}       // Runtime rail, each unit's own (Set_Rail).
 };
