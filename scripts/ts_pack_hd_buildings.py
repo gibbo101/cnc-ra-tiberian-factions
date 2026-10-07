@@ -81,6 +81,31 @@ def lane_gold(img):
     return Image.fromarray(a, "RGBA")
 
 
+# The Mobile War Factory's lane in front of its door (x 177-305, y 384-415 of its source canvas), drawn as white
+# squares on its apron, under-door floor and last build-up frame; it takes the War Factory's stripes, cut from
+# inside their painted area (x 164-312, y 376-412).
+MWF_LANE = (177, 384, 306, 416)
+WEAP_STRIPES_ORIGIN = (165, 377)
+
+
+def mwf_lane(img):
+    """The white lane squares painted with the War Factory's gold-and-black lane, keeping the light and shadow on
+    them; the thin seams between squares don't darken the stripes. Frames without the squares pass unchanged."""
+    a = np.asarray(img).astype(np.float32)
+    x0, y0, x1, y1 = MWF_LANE
+    box = a[y0:y1, x0:x1]
+    lum = box[..., :3].mean(-1)
+    if not (lum > 240).any():
+        return img
+    light = np.max([np.roll(np.pad(lum, ((0, 0), (3, 3)), mode="edge"), d, axis=1)[:, 3:-3] for d in range(-3, 4)],
+                   axis=0) / 255
+    weap = np.asarray(lane_gold(Image.open(os.path.join(SRC, "tsweap", "bib", "war-factory-bib-00.png"))
+                                .convert("RGBA")), np.float32)
+    wx, wy = WEAP_STRIPES_ORIGIN
+    box[..., :3] = weap[wy:wy + y1 - y0, wx:wx + x1 - x0, :3] * light[..., None]
+    return Image.fromarray(np.clip(a, 0, 255).round().astype(np.uint8), "RGBA")
+
+
 def glass_lines(path):
     """How much the dark panel lines on a building's glass darken what lies under them, per pixel (1 where
     there is no line): a stroke darker than its surroundings, the glass's fainter texture left out."""
@@ -194,7 +219,7 @@ BUILDINGS = {
     # The deployed Mobile War Factory on the War Factory's 3x4 plot, the door south on the middle cell, in the
     # same layers. Idle on the near face: fans (5), the side lights steady and the roof lamps lighting in a line (8),
     # re-timed by ts_light_runs.py; 120 steps.
-    "TSDWEAP": dict(src="tsdweap", make=("build-up/mobile-war-factory-build", 19),
+    "TSDWEAP": dict(src="tsdweap", make=("build-up/mobile-war-factory-build", 19), make_recolour=mwf_lane,
                     base="building-bay/mobile-war-factory-bay", runs=[(120, [])], pad_bottom=128),
     "TSDWEAPNF": dict(src="tsdweap", make=None, base="2-over-units/mobile-war-factory-over", runs=[
         (120, [("A-fans/mobile-war-factory-fans", range(0, 5), range(5, 10)),
@@ -202,7 +227,8 @@ BUILDINGS = {
                ("C-lamps-run/mobile-war-factory-lamps", range(0, 8), range(8, 16))]),
     ], pad_bottom=128),
     "TSDWEAPDR": dict(src="tsdweap", make=None, frames=("D-door/mobile-war-factory-door", 12), repeat=2, pad_bottom=128),
-    "TSDWEAPUD": dict(src="tsdweap", make=None, frames=("1-under-door/mobile-war-factory-under", 2), repeat=2, pad_bottom=128),
+    "TSDWEAPUD": dict(src="tsdweap", make=None, frames=("1-under-door/mobile-war-factory-under", 2), repeat=2,
+                      pad_bottom=128, recolour=mwf_lane),
     # The radar on its 2x2 plot, the tower and its antennas rising into the headroom above. Idle: the dish
     # turning there and back (28), healthy then damaged.
     "TSRADR": dict(src="tsradr", make=("build-up/radar-build", 26), frames=("loop/radar-loop", 56)),
@@ -325,7 +351,8 @@ APRONS = {
     "TSPROCBB": dict(src="tsproc", layer="bib/refinery-bib-00", origin=(112, 272), cells=(5, 3)),
     "TSWEAPBB": dict(src="tsweap", layer="bib/war-factory-bib-00", origin=(48, 128), cells=(3, 3),
                      recolour=lane_gold),
-    "TSDWEAPBB": dict(src="tsdweap", layer="bib/mobile-war-factory-bib-00", origin=(48, 128), cells=(3, 3)),
+    "TSDWEAPBB": dict(src="tsdweap", layer="bib/mobile-war-factory-bib-00", origin=(48, 128), cells=(3, 3),
+                      recolour=mwf_lane),
 }
 
 
