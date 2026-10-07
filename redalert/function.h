@@ -174,6 +174,7 @@ extern bool TF_DeployKeyBatch; // the deploy key is running its selected-object 
 extern bool TF_Limpet_Attach(TechnoClass* mine, int which); // a limpet mine's shot attaches its drone to the vehicle it targets (techno.cpp)
 extern bool TF_Heal_Affects(TechnoClass const* healer, ObjectClass const* target); // the healer's heal changes the target's strength (techno.cpp)
 extern bool TF_Mwar_At_Cap(HouseClass const* house); // House already fields its Mobile War Factory (house.cpp; heap-counted)
+extern bool TF_Plug_At_Cap(HouseClass const* house); // House already has its Upgrade Center standing (house.cpp)
 extern bool TF_Ghost_At_Cap(HouseClass const* house); // House already fields its Ghost Stalker (house.cpp; heap-counted)
 // Begin_Production would turn this order away (bay reloading, or the Mk. II, Ghost Stalker or Mobile War
 // Factory cap); gates the EVA ack too (house.cpp)

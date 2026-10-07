@@ -6390,6 +6390,13 @@
 			<BuildIcon>BuildIcon_TSMWAR_LK</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSPLUG_LK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSPLUG</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPLUG_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSPLUG_LK</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<!-- END generated Mk2 cooldown countdown cameos -->
 	<!-- Hand-written entries: keep OUTSIDE the generated block above -->
 

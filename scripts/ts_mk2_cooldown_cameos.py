@@ -41,14 +41,15 @@ UNITS = {
     "TSMDIV": "BuildIcon_TS_MechDivision",
 }
 
-# Units whose cameo also gets a field-cap LOCKED variant: IniName -> its
-# pristine BuildIcon. Must mirror the TF_Mk2_At_Cap / TF_Ghost_At_Cap / TF_Mwar_At_Cap
-# sidebar swaps in dllinterface.cpp (the Mk. II field cap, the one-per-house Ghost
-# Stalker and Mobile War Factory), not everything the bay delivers.
+# Types whose cameo also gets a capped LOCKED variant: IniName -> (its pristine BuildIcon, its text ID
+# prefix). Must mirror the TF_Mk2_At_Cap / TF_Ghost_At_Cap / TF_Mwar_At_Cap / TF_Plug_At_Cap sidebar swaps in
+# dllinterface.cpp (the Mk. II field cap, the one-per-house Ghost Stalker, Mobile War Factory and Upgrade
+# Center), not everything the bay delivers.
 LOCKED = {
-    "TSHMEC": UNITS["TSHMEC"],
-    "TSGHOST": "BuildIcon_TS_Ghost",
-    "TSMWAR": "BuildIcon_TS_MobileWarFactory",
+    "TSHMEC": (UNITS["TSHMEC"], "TEXT_UNIT"),
+    "TSGHOST": ("BuildIcon_TS_Ghost", "TEXT_UNIT"),
+    "TSMWAR": ("BuildIcon_TS_MobileWarFactory", "TEXT_UNIT"),
+    "TSPLUG": ("BuildIcon_TS_Plug", "TEXT_STRUCTURE"),
 }
 
 SECONDS = 300  # 5:00
@@ -61,8 +62,8 @@ END = "\t<!-- END generated Mk2 cooldown countdown cameos -->"
 
 TEMPLATE = """\t<ObjectTypeClass Name="RA_{ini}_{tag}" Classification="CNCBuildableObject" CanInstantiate="False">
 \t\t<CNCEncyclopediaComponent>
-\t\t\t<ObjectNameTextID>TEXT_UNIT_{ini}</ObjectNameTextID>
-\t\t\t<ObjectDescriptionTextID>TEXT_UNIT_{ini}_DESC</ObjectDescriptionTextID>
+\t\t\t<ObjectNameTextID>{text}_{ini}</ObjectNameTextID>
+\t\t\t<ObjectDescriptionTextID>{text}_{ini}_DESC</ObjectDescriptionTextID>
 \t\t\t<BuildIcon>BuildIcon_{ini}_{tag}</BuildIcon>
 \t\t</CNCEncyclopediaComponent>
 \t</ObjectTypeClass>
@@ -89,7 +90,7 @@ def bake_art():
 
 
 def bake_locked():
-    for ini, icon in LOCKED.items():
+    for ini, (icon, _) in LOCKED.items():
         base = Image.open(asset_packs.cameo_tga(icon)).convert("RGBA")
         img = ImageEnhance.Brightness(base).enhance(0.40)
         draw = ImageDraw.Draw(img)
@@ -107,10 +108,10 @@ def bake_locked():
 
 
 def inject_xml():
-    entries = "".join(TEMPLATE.format(ini=ini, tag=f"CD{secs:03d}")
+    entries = "".join(TEMPLATE.format(ini=ini, tag=f"CD{secs:03d}", text="TEXT_UNIT")
                       for ini in UNITS
                       for secs in range(1, SECONDS + 1))
-    entries += "".join(TEMPLATE.format(ini=ini, tag="LK") for ini in LOCKED)
+    entries += "".join(TEMPLATE.format(ini=ini, tag="LK", text=text) for ini, (_, text) in LOCKED.items())
     block = f"{BEGIN}\n{entries}{END}\n"
     text = XML.read_text()
     if BEGIN in text:

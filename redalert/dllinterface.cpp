@@ -8710,6 +8710,12 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                                  "%s_LK", tech->IniName);
                     }
 
+                    if (tech != NULL && sidebar_entry.Type == BUILDING_TYPE
+                        && ((BuildingTypeClass const*)tech)->Type == STRUCT_TSPLUG && TF_Plug_At_Cap(PlayerPtr)) {
+                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
+                                 "%s_LK", tech->IniName);
+                    }
+
                     if (factory) {
                         if (factory->Is_Building()) {
                             sidebar_entry.Constructing = true;
@@ -8923,6 +8929,12 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
 
                         if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
                             && ((UnitTypeClass const*)tech)->Type == UNIT_TSMWAR && TF_Mwar_At_Cap(PlayerPtr)) {
+                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
+                                     "%s_LK", tech->IniName);
+                        }
+
+                        if (tech != NULL && sidebar_entry.Type == BUILDING_TYPE
+                            && ((BuildingTypeClass const*)tech)->Type == STRUCT_TSPLUG && TF_Plug_At_Cap(PlayerPtr)) {
                             snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
                                      "%s_LK", tech->IniName);
                         }
@@ -9693,7 +9705,7 @@ bool DLLExportClass::Construction_Action(SidebarRequestEnum construction_action,
 
                             default:
                                 // TF: an order Begin_Production will refuse (bay reloading, or the Mk. II,
-                                // Ghost Stalker or Mobile War Factory cap) gets a scold, not "Building".
+                                // Ghost Stalker, Mobile War Factory or Upgrade Center cap) gets a scold, not "Building".
                                 if (TF_Delivery_Order_Refused(
                                         PlayerPtr, (RTTIType)buildable_type, buildable_id)) {
                                     On_Speech(PlayerPtr, VOX_NO_FACTORY); // "Cannot comply"

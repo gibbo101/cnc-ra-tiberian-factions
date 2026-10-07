@@ -1204,6 +1204,18 @@ bool TF_Mwar_At_Cap(HouseClass const* house)
 }
 
 
+// True once the house has an Upgrade Center standing: one per house. One still in production does not count.
+bool TF_Plug_At_Cap(HouseClass const* house)
+{
+    for (int index = 0; index < Buildings.Count(); index++) {
+        BuildingClass const* building = Buildings.Ptr(index);
+        if (building != NULL && building->IsActive && !building->IsInLimbo && building->House == house
+            && *building == STRUCT_TSPLUG) {
+            return (true);
+        }
+    }
+    return (false);
+}
 
 // True for sandbags, the shared wall a TS construction yard builds beside the TS tree's own walls. A standing
 // TS yard satisfies Can_Build's ownership test for them, whoever holds it.
@@ -1478,7 +1490,7 @@ int HouseClass::Yard_Factions(void) const
 }
 
 // True when a capped order would be refused: the dropship bay is reloading, or the house is at its Mk. II,
-// Ghost Stalker or Mobile War Factory cap. Sidebar clicks ask first so EVA never acknowledges a refused order.
+// Ghost Stalker, Mobile War Factory or Upgrade Center cap. Sidebar clicks ask first so EVA never acknowledges a refused order.
 bool TF_Delivery_Order_Refused(HouseClass const* house, RTTIType type, int id)
 {
     if (house == NULL) {
@@ -1487,6 +1499,10 @@ bool TF_Delivery_Order_Refused(HouseClass const* house, RTTIType type, int id)
     if (type == RTTI_INFANTRYTYPE) {
         InfantryTypeClass const* itype = (InfantryTypeClass const*)Fetch_Techno_Type(type, id);
         return (itype != NULL && itype->Type == INFANTRY_TSGHOST && TF_Ghost_At_Cap(house));
+    }
+    if (type == RTTI_BUILDINGTYPE) {
+        BuildingTypeClass const* btype = (BuildingTypeClass const*)Fetch_Techno_Type(type, id);
+        return (btype != NULL && btype->Type == STRUCT_TSPLUG && TF_Plug_At_Cap(house));
     }
     if (type != RTTI_UNITTYPE) {
         return (false);
