@@ -354,35 +354,35 @@ PACK_ARGS+=("$TMPDIR/tsprocld_stub.shp:TSPROCLD.SHP")
 # the dock lane.
 ts_stub TSPROC "$TMPDIR/tsprocnf_stub.shp" 138 174 32
 PACK_ARGS+=("$TMPDIR/tsprocnf_stub.shp:TSPROCNF.SHP")
-# TSWEAP 90x96 = the HD war factory's 480x512 canvas centred on its 3x4 plot (72x96 classic): RA's 3x3
-# war factory slot with an empty row behind, which the build-up's raised poles reach into; the shadow and
-# debris reach past the sides.
-ts_stub TSWEAP "$TMPDIR/tsweap_stub.shp" 90 96 2
+# TSWEAP 90x120 = the HD war factory's 480x640 canvas centred on its 3x3 plot: RA's war factory slot, the
+# roof and the build-up's raised poles reaching into the row behind; the shadow and debris reach past the
+# sides.
+ts_stub TSWEAP "$TMPDIR/tsweap_stub.shp" 90 120 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")
-ts_stub TSWEAP "$TMPDIR/tsweapmk_stub.shp" 90 96 26
+ts_stub TSWEAP "$TMPDIR/tsweapmk_stub.shp" 90 120 26
 # The door, under-door and near-face layers share the building's canvas.
-ts_stub TSWEAP "$TMPDIR/tsweapdr_stub.shp" 90 96 18
+ts_stub TSWEAP "$TMPDIR/tsweapdr_stub.shp" 90 120 18
 PACK_ARGS+=("$TMPDIR/tsweapdr_stub.shp:TSWEAPDR.SHP")
-ts_stub TSWEAP "$TMPDIR/tsweapud_stub.shp" 90 96 4
+ts_stub TSWEAP "$TMPDIR/tsweapud_stub.shp" 90 120 4
 PACK_ARGS+=("$TMPDIR/tsweapud_stub.shp:TSWEAPUD.SHP")
 # The near face (the building but for its door bay), the idle cycle x healthy/damaged.
-ts_stub TSWEAP "$TMPDIR/tsweapnf_stub.shp" 90 96 64
+ts_stub TSWEAP "$TMPDIR/tsweapnf_stub.shp" 90 120 64
 PACK_ARGS+=("$TMPDIR/tsweapnf_stub.shp:TSWEAPNF.SHP")
-ts_stub TSWEAP "$TMPDIR/tsweapnu_stub.shp" 90 96 64
+ts_stub TSWEAP "$TMPDIR/tsweapnu_stub.shp" 90 120 64
 PACK_ARGS+=("$TMPDIR/tsweapnu_stub.shp:TSWEAPNU.SHP")
-# The deployed Mobile War Factory, on TSWEAP's 90x96 stub and 3x4 plot: a 120-step idle cycle on the near
+# The deployed Mobile War Factory, on TSWEAP's 90x120 stub and 3x3 plot: a 120-step idle cycle on the near
 # face, a 12-stage shutter.
-ts_stub TSDWEAP "$TMPDIR/tsdweap_stub.shp" 90 96 2
+ts_stub TSDWEAP "$TMPDIR/tsdweap_stub.shp" 90 120 2
 PACK_ARGS+=("$TMPDIR/tsdweap_stub.shp:TSDWEAP.SHP")
-ts_stub TSDWEAP "$TMPDIR/tsdweapmk_stub.shp" 90 96 19
+ts_stub TSDWEAP "$TMPDIR/tsdweapmk_stub.shp" 90 120 19
 PACK_ARGS+=("$TMPDIR/tsdweapmk_stub.shp:TSDWEAPMAKE.SHP")
-ts_stub TSDWEAP "$TMPDIR/tsdweapdr_stub.shp" 90 96 24
+ts_stub TSDWEAP "$TMPDIR/tsdweapdr_stub.shp" 90 120 24
 PACK_ARGS+=("$TMPDIR/tsdweapdr_stub.shp:TSDWEAPDR.SHP")
-ts_stub TSDWEAP "$TMPDIR/tsdweapud_stub.shp" 90 96 4
+ts_stub TSDWEAP "$TMPDIR/tsdweapud_stub.shp" 90 120 4
 PACK_ARGS+=("$TMPDIR/tsdweapud_stub.shp:TSDWEAPUD.SHP")
-ts_stub TSDWEAP "$TMPDIR/tsdweapnf_stub.shp" 90 96 240
+ts_stub TSDWEAP "$TMPDIR/tsdweapnf_stub.shp" 90 120 240
 PACK_ARGS+=("$TMPDIR/tsdweapnf_stub.shp:TSDWEAPNF.SHP")
-ts_stub TSDWEAP "$TMPDIR/tsdweapnu_stub.shp" 90 96 240
+ts_stub TSDWEAP "$TMPDIR/tsdweapnu_stub.shp" 90 120 240
 PACK_ARGS+=("$TMPDIR/tsdweapnu_stub.shp:TSDWEAPNU.SHP")
 # TSPILE 60x72 = the HD barracks' 320x384 canvas centred on its 2x1 plot: the flag in the 32 px either
 # side, the masts and flag in the row behind, empty canvas over the bib row in front.
