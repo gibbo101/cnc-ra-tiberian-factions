@@ -13,7 +13,6 @@ the bay's own parts are coloured here, after Luke's high-res picture of the bay,
   notch     TS's grey slope: concrete with tan dirt
   ledge     the tan beam along the deck's south-west edge and its column
 House green exactly 0,214,0 x (1 + 1.1 grain)."""
-import os
 import numpy as np
 from walls2 import sample, smoothstep, phase, NOISE_FINE, NOISE_MOTTLE, NOISE_GRIME
 import gdrop as M, plug as PL, plugmat as PM
@@ -85,29 +84,6 @@ class Shifted:
 
     def __getattr__(self, k):
         return getattr(self._r, k)
-
-
-EAGLE_EAST = (14.0, 95.0, 24.0)     # the emblem's centre (y, z) and radius on the console's east face, model units
-EAGLE_SOUTH = (-146.5, 32.0, 27.0)  # its centre (x, z) and radius on the tower's south wall
-EAGLEC = np.array([92.0, 70.0, 44.0])
-
-
-def _eagle(u, v):
-    """The emblem's coverage (0..1) at (u, v) in -1..1 across its circle, sampled bilinearly from gdi_eagle.png."""
-    from PIL import Image
-    if not hasattr(_eagle, 'img'):
-        here = os.path.dirname(os.path.abspath(__file__))
-        _eagle.img = np.asarray(Image.open(os.path.join(here, 'gdi_eagle.png')).convert('L'), np.float32) / 255
-    img = _eagle.img
-    n = img.shape[0]
-    sx, sy = (u * 0.5 + 0.5) * (n - 1), (v * 0.5 + 0.5) * (n - 1)
-    inside = (sx >= 0) & (sx <= n - 1) & (sy >= 0) & (sy <= n - 1)
-    x0 = np.clip(np.floor(sx).astype(int), 0, n - 2)
-    y0 = np.clip(np.floor(sy).astype(int), 0, n - 2)
-    fx, fy = np.clip(sx - x0, 0, 1), np.clip(sy - y0, 0, 1)
-    val = (img[y0, x0] * (1 - fx) * (1 - fy) + img[y0, x0 + 1] * fx * (1 - fy)
-           + img[y0 + 1, x0] * (1 - fx) * fy + img[y0 + 1, x0 + 1] * fx * fy)
-    return np.where(inside, val, 0.0)
 
 
 def mix(a, b, t):
@@ -220,19 +196,6 @@ def materials(r, p=None, occ=None, level=0, lightsB=None, **kw):
     put(vm, np.where(slat[..., None], VENTC * 1.9 * g1, VENTC * g1))
     put(comp == M.WROOFG, house if bp >= 1 else bare)
     put(comp == M.PIPEW, STEELC * g1)
-    # ---- TS GDI's eagle (gdi_eagle.png) painted on the tower, as the concept art has GDI's emblem there:
-    # GDROP_EAGLE=east on the console's sloped east face, south on the tower's south wall, none for none
-    face = os.environ.get('GDROP_EAGLE', 'east')
-    if face != 'none':
-        if face == 'east':
-            xc = 0.5 * (w['x'][0] + w['x'][1])
-            em = (comp == M.WCROWN) & (x > xc + 2.0)
-            u, v = -(y - EAGLE_EAST[0]) / EAGLE_EAST[2], -(z - EAGLE_EAST[1]) / EAGLE_EAST[2]
-        else:
-            em = (comp == M.WBODY) & (y > w['y'][1] - 1.5) & (z < w['z'] - 1.0)
-            u, v = (x - EAGLE_SOUTH[0]) / EAGLE_SOUTH[2], -(z - EAGLE_SOUTH[1]) / EAGLE_SOUTH[2]
-        cov = np.where(em, _eagle(u, v), 0.0)
-        alb = mix(alb, EAGLEC * g1, cov * 0.85)
     # ---- TS's grey slope in the notch: concrete with tan dirt
     nwm = comp == M.NWALL
     dirt = smoothstep(0.3, 0.9, sample(NOISE_MOTTLE, x * 0.9 + 21, (y + z) * 0.9 + 5))

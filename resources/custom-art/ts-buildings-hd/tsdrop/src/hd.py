@@ -288,7 +288,7 @@ def fade_edges(im, band=14.0):
 class Render:
     """ray-cast a model in a view; exposes the per-pixel geometry for materials, overlays and masks."""
 
-    def __init__(self, model, view, bounds, zmax, shadow_ppu=1.25, smooth_px=0.5, **mk):
+    def __init__(self, model, view, bounds, zmax, shadow_ppu=1.25, smooth_px=0.5, shadow_mk=None, **mk):
         self.view = v = view
         self.model, self.mk = model, mk
         ss = v.ss
@@ -326,7 +326,9 @@ class Render:
         self.comp = comp
         self.surface = np.zeros(hit.shape, np.int8)       # 0 top/ground field, 1 slab top, 2 slab bottom, 3 slab side
         self._normals(sc, zs, k)
-        self.sm = ShadowMap(model, v, bounds, ppu=shadow_ppu, **mk)
+        # shadow_mk: extra keywords for the light's and the sky's passes (e.g. leave thin masts out of the shadows)
+        self.shadow_mk = dict(shadow_mk or {})
+        self.sm = ShadowMap(model, v, bounds, ppu=shadow_ppu, **dict(mk, **self.shadow_mk))
         self.bounds = bounds
 
     def _normals(self, sc, zs, k):
@@ -347,6 +349,13 @@ class Render:
             kk = k[m]
             near_top = np.abs(tf[r, c] - kk) <= 2.0 * 1.0 + 1e-3
             near_bot = (np.abs(bf[r, c] - kk) <= 2.0) & ~near_top
+            if sc.slabs[s_i].name.startswith('L:'):
+                # a lathed or rounded part (opt-in): inside its outline a hit is on its top or bottom, never a wall
+                # (its steep flanks otherwise flicker between top and wall normals in rings)
+                inner = ndimage.binary_erosion(valid, iterations=max(1, v.ss))[r, c]
+                mid = 0.5 * (tf[r, c] + bf[r, c])
+                near_top = near_top | (inner & (kk >= mid))
+                near_bot = (near_bot | (inner & (kk < mid))) & ~near_top
             side = ~near_top & ~near_bot
             tX, tY = grad_world(v, tf)
             bX, bY = grad_world(v, bf)
@@ -386,7 +395,7 @@ class Render:
             d = np.array(d) / np.linalg.norm(d)
             fake = View(v.F, np.rad2deg(v.E), v.ppu, (v.W, v.Hc), (v.ox, v.oy))
             fake.Ls = d
-            sm = ShadowMap(self.model, fake, self.bounds, ppu=ppu, **self.mk)
+            sm = ShadowMap(self.model, fake, self.bounds, ppu=ppu, **dict(self.mk, **getattr(self, 'shadow_mk', {})))
             facing = (self.nx * d[0] + self.ny * d[1] + self.nz * d[2]) > 0.05
             b = sm.test(self.x + self.nx * 1.5, self.y + self.ny * 1.5, self.z + self.nz * 1.5, bias=1.5, pcf=0)
             blocked += facing * b

@@ -12,8 +12,10 @@ foundation, X -192..192, Y -192..192), read from GTDEPT / GTDEPTBB / GTDEPTMK / 
   gantry   GTDEPT, along the foundation's west edge: a green base plate on the ground; a wall standing on its west
            edge (a house-green panel in a frame, grey ends, a dark top rail with lamps on it; its top slopes down at
            the south end, a green edge there)
-  machine  in front of the wall: a dark block with two white arched hoods facing the pad (GTDEPT_B lights the inside
-           of the south one); the repair arm folds down into it
+  machine  in front of the wall: a dark block with two white guide rails standing out of it towards the pad (v3;
+           each a slim upright post with a flat top, its top running back over the block, the corner rounded), the
+           repair arm riding in the slot between them; a lamp on the block's face south of the rails (GTDEPT_B lights
+           it); the arm folds down into the block
   arm      GTDEPT_C: a green lattice boom rises out of the machine, swings over towards the pad and lowers a grey tool
            onto the vehicle (a spark), then swings back up and sinks into the machine
   odds     a small box with a red light north of the machine; a brown reel at the wall's south end
@@ -23,14 +25,15 @@ import hd
 from radr import Acc, rod_interval, in_poly, inbox
 
 (PAD, SKIRT, RIM, BAND, GRATE, GAP, LINE, LAMP, BASE, WALL, PANEL, FRAME, POST, RAIL, STUD, MACH, HOOD, HOODIN, BOX,
- REDL, BROWN, ARM, TOOL, SPARK, SLAB, GTRIM, MKFRAME) = range(1, 28)
+ REDL, BROWN, ARM, TOOL, SPARK, SLAB, GTRIM, MKFRAME, GUIDE, LITE) = range(1, 30)
 DEBRIS, DEB_IN, DEB_BURNT = 40, 41, 42
 HOUSE = {BAND, BASE, PANEL, GTRIM, ARM, FRAME, MKFRAME}
 
 P = dict(
     pad=dict(c=(12.25, 12.25), d=126.0, k2=1.02, w=8.0, h=10.0, band=(101.0, 114.0),
              # the two steel gratings along the west side (x relative to the pad's centre) and the dark gap between
-             grates=((-97.0, -79.0), (-59.0, -39.0)), gap=(-74.0, -64.0),
+             # v2 (Luke 4 Oct: they read as tyre marks): gone. v1 had grates ((-97, -79), (-59, -39)), gap (-74, -64)
+             grates=(), gap=None,
              # painted guide lines (relative to the pad's centre): (x0, y0, x1, y1); lamps every `every` along them
              lines=((-3.0, -100.0, -3.0, -35.0), (-28.0, -12.0, 60.0, -12.0), (28.0, -55.0, 90.0, -55.0),
                     (28.0, -35.0, 92.0, -35.0), (38.0, 7.0, 72.0, 7.0), (29.0, 7.0, 29.0, 95.0)),
@@ -42,12 +45,24 @@ P = dict(
               rail=dict(z=(57.0, 70.0), out=2.5),
               studs=dict(y0=-76.0, every=11.0, r=2.0, h=3.5),
               north=(-80.0, -42.0), south=(42.0, 80.0), edge=4.0),
+    # v2 (Luke 4 Oct: in TS the arm sits wedged between two rails; v1's two chunky hoods side by side didn't read):
+    # two slim white rails (inverted-U frames) with an 18-unit gap between them, the arm's pivot in the gap.
+    # v1: hoods ys (28, 2), w 23, t 4, x (-138, -126)
+    # v3 (Luke 5 Oct: v2's rails still read as two arches; TS's are rails): read from TS's pixels, two straight guide
+    # rails standing out of the block towards the pad, 27 apart, 5 thick: an upright post at the front (flat top, the
+    # corner rounded), its top running back over the block (TS's white top edges and white front edges, the slot
+    # dark between them). The arm rides in the slot. `hoods` is v2's (used only when `rails` is None).
     mach=dict(x=(-156.0, -138.0), y=(-12.0, 40.0), z=36.0,
-              hoods=dict(ys=(28.0, 2.0), w=23.0, t=4.0, x=(-138.0, -126.0), z=(5.0, 52.0)), inner=-142.0),
+              hoods=dict(ys=(31.0, -1.0), w=14.0, t=3.0, x=(-136.0, -128.0), z=(5.0, 52.0)), inner=-142.0,
+              rails=dict(ys=(27.0, 0.0), t=5.0, post=(-131.5, -125.5), back=-156.0, z=(5.0, 47.0), beam=11.0,
+                         bend=6.0, fillet=4.0),
+              # GTDEPT_B's lamp: on the block's east face, south of the rails (TS's B lights x 37-39, y 91-96)
+              lite=dict(y=(32.0, 39.0), z=(12.0, 33.0), out=1.2)),
     box=dict(x=(-150.0, -130.0), y=(-58.0, -40.0), z=18.0, lamp=(-140.0, -49.0, 21.0, 3.0)),
-    brown=dict(c=(-154.0, 92.0), r=11.0, z=(2.0, 22.0), axis='y', len=(80.0, 104.0)),
+    # the brown reel at the wall's south foot (TS's red-brown blob); v2: show False = taken off (Luke: it read as a barrel)
+    brown=dict(c=(-154.0, 92.0), r=11.0, z=(2.0, 22.0), axis='y', len=(80.0, 104.0), show=False),
     # the repair arm: pivot, boom length and section, the tool hung from its end, the spark at the tool's tip
-    arm=dict(p0=(-135.5, 12.5, 39.0), L=100.0, w=14.0, tool=46.0, tw=9.0, spark=4.5),
+    arm=dict(p0=(-132.0, 13.5, 39.0), L=100.0, w=14.0, tool=46.0, tw=9.0, spark=4.5),     # v1 p0 (-135.5, 12.5, 39), v2 y 15
 )
 
 # 'ra': turned a quarter (TS east -> RA south), so the gantry stands along the plot's north edge facing the camera
@@ -194,8 +209,9 @@ def scene(X, Y, p=None, layout='ts', prog=None, parts=None, level=0, merge=True,
             for (ga, gb_) in q['grates']:
                 gm = inner & (x - cx >= ga) & (x - cx <= gb_)
                 C = np.where(gm, GRATE, C); H = np.where(gm, H - 1.2, H)
-            gm = inner & (x - cx >= q['gap'][0]) & (x - cx <= q['gap'][1])
-            C = np.where(gm, GAP, C); H = np.where(gm, H - 2.0, H)
+            if q.get('gap'):
+                gm = inner & (x - cx >= q['gap'][0]) & (x - cx <= q['gap'][1])
+                C = np.where(gm, GAP, C); H = np.where(gm, H - 2.0, H)
             extra['dist'] = dist.astype(np.float32)
             extra['padtex'] = np.full(X.shape, float(g['padtex']) if building else 1.0, np.float32)
     # ------------------------------------------------------------------------------------------------ the gantry
@@ -254,8 +270,30 @@ def scene(X, Y, p=None, layout='ts', prog=None, parts=None, level=0, merge=True,
         mc = p['mach']
         fm = float(np.clip(g['mach'], 0, 1)) if building else 1.0
         put(np.where(inbox(x, y, mc['x'], mc['y']), mc['z'] * fm, 0.0), MACH)
+        rl = mc.get('rails')
+        if rl:
+            z0, z1 = rl['z']
+            zt = z0 + (z1 - z0) * fm                       # the rails' top (they grow with the block in the build-up)
+            px0, px1 = rl['post']; b = rl['bend']
+            rr = rl['t'] / 2; ri = rl.get('fillet', 4.0)
+            for yc in rl['ys']:
+                dy = np.abs(y - yc)
+                drop = rr - np.sqrt(np.clip(rr * rr - dy * dy, 0, None))        # a round bar: its section rounded
+                # in plan: the post's front rounded
+                m = inbox(x, y, (rl['back'], px1), (yc - rr, yc + rr)) & (x <= px1 - rr + np.sqrt(np.clip(rr * rr - dy * dy, 0, None)))
+                # the post up the front, bent over at the top (the corner rounded), running back over the block
+                top = np.where(x > px1 - b, zt - b + np.sqrt(np.clip(b * b - (x - (px1 - b)) ** 2, 0, None)), zt) - drop
+                bot = np.where(x >= px0, z0, np.maximum(zt - rl['beam'], z0))
+                # a fillet in the inside corner, under the bend
+                cx, cz = px0 - ri, zt - rl['beam'] - ri
+                fil = (x >= cx) & (x < px0)
+                bot = np.where(fil, np.minimum(bot, cz + np.sqrt(np.clip(ri * ri - (x - cx) ** 2, 0, None))), bot)
+                acc.add(bot, top, GUIDE, m & (top > bot), 'guide')
+            lt = mc['lite']
+            ml = inbox(x, y, (mc['x'][1] - 0.5, mc['x'][1] + lt['out']), lt['y'])
+            acc.add(np.full(X.shape, lt['z'][0] * fm), np.full(X.shape, lt['z'][1] * fm), LITE, ml, 'lite')
         hd_ = mc['hoods']
-        for yc in hd_['ys']:
+        for yc in (hd_['ys'] if not rl else ()):
             # an arched hood: an inverted U (a half-pipe on two legs) facing east, its inside dark
             r_out = hd_['w'] / 2; r_in = r_out - hd_['t']
             z0, z1 = hd_['z']
@@ -276,7 +314,7 @@ def scene(X, Y, p=None, layout='ts', prog=None, parts=None, level=0, merge=True,
         lx, ly, lz, lr = bx['lamp']
         rr = np.hypot(x - lx, y - ly)
         put(np.where(rr <= lr, lz + 1.2 * np.sqrt(np.clip(1 - (rr / lr) ** 2, 0, None)), 0.0), REDL)
-    if want('brown') and (not building or g['brown'] > 0):
+    if want('brown') and (not building or g['brown'] > 0) and p['brown'].get('show', True):
         br = p['brown']
         cx_, zc_ = br['c'][0], (br['z'][0] + br['z'][1]) / 2
         r = br['r']
@@ -311,5 +349,6 @@ FLAT = {PAD: (150, 150, 176), SKIRT: (200, 200, 200), RIM: (170, 150, 110), BAND
         GAP: (20, 20, 20), LINE: (220, 220, 220), LAMP: (255, 255, 255), BASE: (0, 190, 0), WALL: (150, 150, 150),
         PANEL: (0, 160, 0), FRAME: (0, 220, 0), POST: (190, 190, 190), RAIL: (30, 30, 30), STUD: (200, 160, 100),
         MACH: (60, 60, 64), HOOD: (230, 230, 230), HOODIN: (30, 30, 40), BOX: (110, 110, 110), REDL: (220, 30, 20),
+        GUIDE: (232, 232, 232), LITE: (90, 90, 100),
         BROWN: (120, 60, 40), ARM: (0, 210, 0), TOOL: (120, 120, 140), SPARK: (255, 255, 255), SLAB: (150, 150, 150),
         GTRIM: (0, 230, 0), MKFRAME: (0, 200, 0)}

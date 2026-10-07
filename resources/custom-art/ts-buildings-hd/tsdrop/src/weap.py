@@ -25,7 +25,8 @@ west side's slope (panel, frame, poles, roof beam, sill), its fender and the fas
 four lamps on the door beam (the end one over the old fender goes); the apron symmetric (its west half mirrored), no grey
 patch; the build-up's slab = the apron (+ the hall's footprint, hidden under the hall); the build-up's poles lie along
 the slope's foot (the back one pointing north, the front one south) and stand up there, so nothing leaves the canvas.
-The one-offs stay where they are: the green unit, the west block and its machinery, the roof's machinery.
+The one-offs stay where they are: the west block and its machinery, the roof's machinery. The green unit on the
+south fender is mirrored too (Luke, 08:19), onto the east twin fender between the twin slope and the door.
 'ra1' is the first round's RA layout (TS's sides, not mirrored).
 """
 import numpy as np
@@ -89,8 +90,19 @@ P = dict(
                     (-176.0, 192.0), (-250.0, 150.0)), h=2.0),
 )
 
-LAYOUTS = {'ts': dict(turn=False), 'ra': dict(turn=True, sym=True), 'ra1': dict(turn=True)}
+LAYOUTS = {'ts': dict(turn=False), 'ra': dict(turn=True, sym=True), 'ra1': dict(turn=True),
+           'ts-sym': dict(turn=False, sym=True)}       # round 2's RA model in its own frame (the door east): the 3D export
 YC = 1.5                    # the door's centre line (local y): the bay runs y -73..76
+
+
+def lamp_y(p, k, sym=False):
+    """the y of GTWEAP_A's lamp k on the beam over the door.  Round 2 (sym): the four that stay (1-4) centred on the
+    door's centre line (Luke, 09:12: their middle was 3.5 east of it)."""
+    la = p['lampsA']
+    y = la['y0'] + k * la['dy']
+    if sym:
+        y += YC - (2 * la['y0'] + 5 * la['dy']) / 2.0          # the middle of lamps 1 and 4 onto YC
+    return y
 
 
 def to_local(X, Y, layout='ts'):
@@ -298,7 +310,7 @@ def scene(X, Y, p=None, layout='ts', prog=None, pad=False, door=0.0, merge=True)
     ks = (1, 2, 3, 4) if sym else (0, 1, 2, 3, 4)                         # round 2: four (the end one over the fender goes)
     for i_, k in enumerate(ks):
         if g['lampsA'] * len(ks) > i_:
-            cy = la['y0'] + k * la['dy']
+            cy = lamp_y(p, k, sym)
             rr = np.hypot(x - la['x'], y - cy)
             dome = la['z'] - la['r'] + np.sqrt(np.clip(la['r'] ** 2 - rr ** 2, 0, None)) * 1.6
             slab(dome, np.full_like(X, p['beam']['z'] - 4.0), LAMPA, rr <= la['r'], 'lampA')
@@ -431,11 +443,13 @@ def scene(X, Y, p=None, layout='ts', prog=None, pad=False, door=0.0, merge=True)
     # ---- the green unit on the south fender, on a dark bracket, a red band round it
     gb = p['gblock']
     if g['ncap'] > 0:
-        u_ = ((x - gb['c'][0]) + (y - gb['c'][1])) / np.sqrt(2)          # towards TS's camera (south-east)
-        v_ = ((x - gb['c'][0]) - (y - gb['c'][1])) / np.sqrt(2)          # across it (north-east)
+        # round 2 (Luke, 08:19): the unit is mirrored too, onto the east twin fender between the twin slope and the door
+        yg = ym if sym else y
+        u_ = ((x - gb['c'][0]) + (yg - gb['c'][1])) / np.sqrt(2)         # towards TS's camera (south-east)
+        v_ = ((x - gb['c'][0]) - (yg - gb['c'][1])) / np.sqrt(2)         # across it (north-east)
         gm = (np.abs(u_) <= gb['d'] / 2) & (np.abs(v_) <= gb['w'] / 2)
         bxx, byy, bzz = gb['bracket']
-        slab(np.full_like(X, bzz[1]), np.full_like(X, bzz[0]), PLINTH, inbox(x, y, bxx, byy), 'bracket')
+        slab(np.full_like(X, bzz[1]), np.full_like(X, bzz[0]), PLINTH, inbox(x, yg, bxx, byy), 'bracket')
         slab(np.full_like(X, gb['z'][1]), np.full_like(X, gb['z'][0]), GBLOCK, gm, 'gblock')
         gt = gb['top']
         gtm = (np.abs(u_ - gt['off']) <= gt['d'] / 2) & (np.abs(v_) <= gt['w'] / 2)

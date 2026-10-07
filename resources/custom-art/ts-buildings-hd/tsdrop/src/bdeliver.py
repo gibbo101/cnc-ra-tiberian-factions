@@ -105,7 +105,7 @@ class Pack:
         z = self.Z if z is None else z
         W = int(round(max(i.width for i in ims) * z))
         H = int(round(max(i.height for i in ims) * z))
-        S = Image.new('RGBA', (3 * W + 24, H + 34), DARK)
+        S = Image.new('RGBA', (len(ims) * (W + 12) - 12, H + 34), DARK)
         d = ImageDraw.Draw(S)
         for k, im in enumerate(ims):
             t = self.zoom(im, z, nearest=(k == 0))
@@ -129,9 +129,23 @@ class Pack:
         q = [f.convert('RGB').quantize(colors=255, method=Image.MEDIANCUT, dither=Image.FLOYDSTEINBERG) for f in frames]
         q[0].save(path, save_all=True, append_images=q[1:], duration=ms, loop=0, optimize=True)
 
+    def has(self, view):
+        """spec views=('ra',): the package delivers only those views (Luke, 6 Oct 2026: the RA grid only, the TS angle
+        can be rebuilt from the 3D model); the previews then show TS's original next to them."""
+        return view in self.s.get('views', ('iso', 'ra'))
+
+    def cols(self, ts_im, iso_fn, ra_fn):
+        """TS's original, then each delivered view (iso_fn / ra_fn are only called for a delivered view)."""
+        return [ts_im] + ([iso_fn()] if self.has('iso') else []) + ([ra_fn()] if self.has('ra') else [])
+
     def T3(self):
         iw, ih = self.s['iso_size']; rw, rh = self.s['ra_size']
-        return (f"TS original (x{self.s['K']:.2f}, the mod's canvas)", f'HD, TS angle ({iw}x{ih})', f'HD, RA grid ({rw}x{rh})')
+        t = [f"TS original (x{self.s['K']:.2f}, the mod's canvas)"]
+        if self.has('iso'):
+            t.append(f'HD, TS angle ({iw}x{ih})')
+        if self.has('ra'):
+            t.append(f'HD, RA grid ({rw}x{rh})')
+        return tuple(t)
 
     # ------------------------------------------------------------------ RA scene
     def ra_scene(self, level=0, t=0):
@@ -168,21 +182,34 @@ class Pack:
         ra_c = lambda im: self.crop('ra', im)
         iw, ih = s['iso_size']; rw, rh = s['ra_size']
         # on its own (with what is drawn under it)
-        a, b = self.zoom(iso_c(self.base('iso')), Zp), self.zoom(ra_c(self.base('ra')), Zp)
-        W = Image.new('RGBA', (a.width + b.width + 16, max(a.height, b.height) + 30), DARK)
-        W.paste(a, (0, 30)); W.paste(b, (a.width + 16, 30))
-        P.label(W, f'TS angle, {Zp:g}x', (6, 8))
-        P.label(W, f"RA grid, {Zp:g}x (the {s['cells'][0]}x{s['cells'][1]} plot is y {s['ra_head']}-{s['ra_head'] + s['cells'][1] * 128} of the canvas)", (a.width + 22, 8))
+        ra_lab = f"RA grid, {Zp:g}x (the {s['cells'][0]}x{s['cells'][1]} plot is y {s['ra_head']}-{s['ra_head'] + s['cells'][1] * 128} of the canvas)"
+        if self.has('iso'):
+            a, b = self.zoom(iso_c(self.base('iso')), Zp), self.zoom(ra_c(self.base('ra')), Zp)
+            W = Image.new('RGBA', (a.width + b.width + 16, max(a.height, b.height) + 30), DARK)
+            W.paste(a, (0, 30)); W.paste(b, (a.width + 16, 30))
+            P.label(W, f'TS angle, {Zp:g}x', (6, 8))
+            P.label(W, ra_lab, (a.width + 22, 8))
+        else:
+            b = self.zoom(ra_c(self.base('ra')), Zp)
+            W = Image.new('RGBA', (max(b.width, 560), b.height + 30), DARK)
+            W.paste(b, (0, 30)); P.label(W, ra_lab, (6, 8))
         W.save(f'{out}/{nm}-on-its-own.png')
         # states vs TS (the idle overlays at frame 0 on both)
-        rows = [self.three_up([iso_c(self.ts_building(lv, 0)), iso_c(self.scene('iso', lv, 0)), ra_c(self.scene('ra', lv, 0))], self.T3(),
+        rows = [self.three_up(self.cols(iso_c(self.ts_building(lv, 0)), lambda: iso_c(self.scene('iso', lv, 0)),
+                                        lambda: ra_c(self.scene('ra', lv, 0))), self.T3(),
                               f'{("healthy", "damaged")[lv]} (frame {lv:02d}) with its idle overlays at frame 00') for lv in (0, 1)]
         self.stack(rows).save(f'{out}/{nm}-states-vs-original.png')
         # the mod's frames vs ours
         rows = []
-        for entry in s['inmod']:
+        for entry in (s['inmod'] if self.has('iso') else []):        # (the mod's frames are on the TS angle's canvas)
             fn, lv, t = entry[:3]
-            im = iso_c(Image.open(f"{s['hand']}/in-mod/{fn}").convert('RGBA'))
+            im = Image.open(f"{s['hand']}/in-mod/{fn}").convert('RGBA')
+            if im.size != tuple(s['iso_size']):         # our canvas grown evenly round the mod's: centre theirs on it
+                c_ = Image.new('RGBA', tuple(s['iso_size']), (0, 0, 0, 0))
+                c_.paste(im, ((s['iso_size'][0] - im.width) // 2, (s['iso_size'][1] - im.height) // 2))
+                im = c_
+            ic = iso_c if s.get('crop_inmod', True) else (lambda im_: im_)   # (crop_inmod False: whole canvases)
+            im = ic(im)
             if len(entry) > 3:                      # (file, level, t, (folder, frame name)): compare with that frame
                 sub, fname = entry[3]
                 ours = self.fr('iso', sub, fname)
@@ -193,28 +220,35 @@ class Pack:
             else:
                 ours = self.building('iso', lv)
                 lab = f"HD, TS angle: {s['state_dir']}/{nm}-{lv:02d}"
-            ours = iso_c(ours)
+            ours = ic(ours)
             za, zb = self.zoom(im, Zp, nearest=True), self.zoom(ours, Zp)
             r = Image.new('RGBA', (za.width + zb.width + 12, max(za.height, zb.height) + 28), DARK)
             r.paste(za, (0, 28)); r.paste(zb, (za.width + 12, 28))
             P.label(r, f'In the mod now: {fn} ({Zp:g}x)', (6, 8)); P.label(r, lab + f' ({Zp:g}x)', (za.width + 18, 8))
             rows.append(r)
-        self.stack(rows).save(f'{out}/in-mod-vs-hd.png')
+        if rows:
+            self.stack(rows).save(f'{out}/in-mod-vs-hd.png')
         # RA scene
         self.ra_scene(0).save(f'{out}/{nm}-with-yard-plant-tower-and-walls.png')
         self.ra_scene(1).save(f'{out}/{nm}-damaged-with-yard-plant-tower-and-walls.png')
         # house colour next to the yard's
-        y_iso = Image.open(f'{YARD}/ts-angle/yard/construction-yard-00.png').convert('RGBA')
         y_ra = Image.open(f'{YARD}/ra-grid/yard/construction-yard-00.png').convert('RGBA')
         zg = s.get('green_zoom', 2)
-        t1 = [self.zoom(y_iso, zg), self.zoom(iso_c(self.scene('iso', 0, 0)), zg)]
         t2 = [self.zoom(y_ra, zg), self.zoom(ra_c(self.scene('ra', 0, 0)), zg)]
-        h1, h2 = max(t.height for t in t1), max(t.height for t in t2)
-        g = Image.new('RGBA', (max(t1[0].width + t1[1].width, t2[0].width + t2[1].width) + 12, h1 + h2 + 12 + 56), DARK)
-        g.paste(t1[0], (0, 28)); g.paste(t1[1], (t1[0].width + 12, 28))
-        g.paste(t2[0], (0, h1 + 12 + 56)); g.paste(t2[1], (t2[0].width + 12, h1 + 12 + 56))
-        P.label(g, f"House colour: Construction Yard (left) and {s['title']} (right), TS angle, {zg:g}x", (6, 8))
-        P.label(g, f'RA grid, {zg:g}x', (6, h1 + 12 + 36))
+        h2 = max(t.height for t in t2)
+        if self.has('iso'):
+            y_iso = Image.open(f'{YARD}/ts-angle/yard/construction-yard-00.png').convert('RGBA')
+            t1 = [self.zoom(y_iso, zg), self.zoom(iso_c(self.scene('iso', 0, 0)), zg)]
+            h1 = max(t.height for t in t1)
+            g = Image.new('RGBA', (max(t1[0].width + t1[1].width, t2[0].width + t2[1].width) + 12, h1 + h2 + 12 + 56), DARK)
+            g.paste(t1[0], (0, 28)); g.paste(t1[1], (t1[0].width + 12, 28))
+            g.paste(t2[0], (0, h1 + 12 + 56)); g.paste(t2[1], (t2[0].width + 12, h1 + 12 + 56))
+            P.label(g, f"House colour: Construction Yard (left) and {s['title']} (right), TS angle, {zg:g}x", (6, 8))
+            P.label(g, f'RA grid, {zg:g}x', (6, h1 + 12 + 36))
+        else:
+            g = Image.new('RGBA', (t2[0].width + t2[1].width + 12, h2 + 28), DARK)
+            g.paste(t2[0], (0, 28)); g.paste(t2[1], (t2[0].width + 12, 28))
+            P.label(g, f"House colour: Construction Yard (left) and {s['title']} (right), RA grid, {zg:g}x", (6, 8))
         g.save(f'{out}/house-green-vs-yard.png')
         # build-up
         n = s['build_n']
@@ -225,31 +259,36 @@ class Pack:
         pick = s.get('build_pick') or tuple(int(round(k * (n - 1) / 11)) for k in range(12))
         w = s.get('strip_w', 192)
         half = (len(pick) + 1) // 2
-        S = Image.new('RGB', (half * (w + 4), 6 * (w + 18)), (30, 30, 30))
+        nc = 1 + self.has('iso') + self.has('ra')
+        labs = ['TS'] + (['TS angle'] if self.has('iso') else []) + (['RA grid'] if self.has('ra') else [])
+        S = Image.new('RGB', (half * (w + 4), 2 * nc * (w + 18)), (30, 30, 30))
         d = ImageDraw.Draw(S)
         for m, i in enumerate(pick):
             col, blk = m % half, m // half
             j = ts_i(i)
-            for k, im in enumerate((iso_c(tsmk(j)), iso_c(bld('iso', i)), ra_c(bld('ra', i)))):
+            for k, im in enumerate(self.cols(iso_c(tsmk(j)), lambda: iso_c(bld('iso', i)), lambda: ra_c(bld('ra', i)))):
                 h = int(round(w * im.height / im.width))
                 tile = P.on_bg(im).resize((w, h), Image.NEAREST if (k == 0 and w >= im.width) else Image.LANCZOS).convert('RGB')
                 if h > w:
                     tile = tile.crop((0, (h - w) // 2, w, (h - w) // 2 + w))
-                y = (blk * 3 + k) * (w + 18)
+                y = (blk * nc + k) * (w + 18)
                 S.paste(tile, (col * (w + 4), y + 16 + (w - tile.height) // 2))
-                d.text((col * (w + 4) + 4, y + 2), (f'TS {j:02d}', f'HD {i:02d} TS angle', f'HD {i:02d} RA grid')[k], fill=(255, 255, 0))
+                d.text((col * (w + 4) + 4, y + 2), f'TS {j:02d}' if k == 0 else f'HD {i:02d} {labs[k]}', fill=(255, 255, 0))
         S.save(f'{out}/build-up-strip-vs-original.png')
         zgif = s.get('gif_zoom', Zp)
         frs = []
         for i in list(range(n)) + [n - 1] * 8:
             j = ts_i(i)
-            frs.append(self.three_up([iso_c(tsmk(j)), iso_c(bld('iso', i)), ra_c(bld('ra', i))],
-                                     (f"TS {s.get('ts_mk', s['ts'] + 'MK')} {j:02d}/{s['ts_mk_n'] - 1}", 'HD, TS angle', 'HD, RA grid'), f'build-up {i:02d}/{n - 1}', z=zgif))
+            frs.append(self.three_up(self.cols(iso_c(tsmk(j)), lambda: iso_c(bld('iso', i)), lambda: ra_c(bld('ra', i))),
+                                     tuple([f"TS {s.get('ts_mk', s['ts'] + 'MK')} {j:02d}/{s['ts_mk_n'] - 1}"] +
+                                           (['HD, TS angle'] if self.has('iso') else []) + (['HD, RA grid'] if self.has('ra') else [])),
+                                     f'build-up {i:02d}/{n - 1}', z=zgif))
         self.gif(frs, f'{out}/build-up-vs-original.gif', 120)
         # idle loops vs TS
         ln = s['idle_n']
         for lv in (0, 1):
-            frs = [self.three_up([iso_c(self.ts_building(lv, t)), iso_c(self.scene('iso', lv, t)), ra_c(self.scene('ra', lv, t))], self.T3(),
+            frs = [self.three_up(self.cols(iso_c(self.ts_building(lv, t)), lambda: iso_c(self.scene('iso', lv, t)),
+                                           lambda: ra_c(self.scene('ra', lv, t))), self.T3(),
                                  f"{('healthy', 'damaged')[lv]} idle {t:02d}: {s['idle_label']}", z=zgif) for t in range(ln)]
             self.gif(frs, f"{out}/idle-{('healthy', 'damaged')[lv]}-vs-original.gif", s.get('idle_ms', 110))
         for extra in s.get('extra_previews', []):
@@ -263,7 +302,8 @@ class Pack:
         d = f"{self.s['pkg']}/src"
         os.makedirs(d, exist_ok=True)
         for f in self.s['src']:
-            shutil.copy(f'/home/claude/work/r/{f}', d)
+            os.makedirs(os.path.dirname(os.path.join(d, f)), exist_ok=True)
+            shutil.copy(f'/home/claude/work/r/{f}', os.path.join(d, f))
 
     def zipit(self, limit=29.5 * 2 ** 20):
         import zipfile

@@ -23,7 +23,7 @@ import hd
 import wnoise as WN
 
 (PLINTH, TAN, GREEN, DARK, GREY, ROT, DOME, POST, RAMP, HOOP, DECK, DECKS, LEG, MACH, TURRET, MAST, MASTTIP, DISH,
- STRUT, FEED, ROD, ARM, GTOP, SBOX, RAMPG, PIPE, SLAB, RED) = range(1, 29)
+ STRUT, FEED, ROD, ARM, GTOP, SBOX, RAMPG, PIPE, SLAB, RED, LIFT) = range(1, 30)
 DEBRIS, DEB_IN, DEB_BURNT = 40, 41, 42              # damage: rubble, the dark inside of a hole, burnt
 HOUSE = {GREEN, GTOP, SBOX, RAMPG}
 
@@ -48,15 +48,34 @@ P = dict(
                box=dict(x=(-100.0, -70.0), y=(0.0, 40.0), z=(55.0, 80.0)),
                ledge=dict(x=(-80.0, -30.0), y=(0.0, 45.0), z=(92.0, 112.0)),
                pipe=dict(x=-27.0, y=(-15.0, 22.0), z=75.0, r=8.0)),
-    deck=dict(x=(-77.0, 17.0), y=(-84.0, 42.0), z=(112.0, 140.0)),
+    deck=dict(x=(-77.0, 17.0), y=(-84.0, 42.0), z=(112.0, 140.0),
+              # v2 (Luke 4 Oct): the deck is the command room: walls with a big dark window band all round (TS's black
+              # line round it), a flat roof (v1's ribbed top read as a wooden pallet)
+              window=(117.0, 132.0), mullion=12.0),
+    # v2 (Luke 4 Oct): under the command room pillars and supports and a lift going up to it, in place of v1's
+    # machinery (the dark core, the tank, the boxes, the ledge, the pipe): six steel pillars, X-bracing between them
+    # on every side in two tiers with a ring beam, and an open lift shaft (corner posts, frames) with its car
+    frame=dict(pillars=((-70.0, -77.0), (-30.0, -77.0), (10.0, -77.0), (-70.0, 35.0), (-30.0, 35.0), (10.0, 35.0)),
+               pw=5.0, brace_r=1.9, tiers=(0.38, 0.97),
+               # the lift: an enclosed shaft from the plinth up into the command room, behind the south bracing; a glass
+               # slot up its south face shows the car; a door at its foot
+               lift=dict(x=(-24.0, -4.0), y=(12.0, 30.0), car=(58.0, 76.0), slot=5.0, door=(5.0, 24.0))),
     upper=dict(x=(-77.0, -10.0), y=(-84.0, -20.0), z=163.0),
     upperw=dict(x=(-77.0, -52.0), y=(-22.0, 34.0), z=180.0),
     turret=dict(c=(8.0, -67.0), r=14.0, z=(105.0, 148.0)),
     # antennas: (x, y, base z, thick-body top z, thin top z, thick radius)
-    masts=dict(pts=((-70.0, 26.0, 180.0, 308.0, 348.0, 4.6), (-76.0, -7.0, 180.0, 0.0, 275.0, 0.0),
-                    (-75.0, -16.0, 180.0, 0.0, 294.0, 0.0), (-64.0, -80.0, 163.0, 285.0, 359.0, 4.6),
-                    (-56.0, -82.0, 163.0, 0.0, 322.0, 0.0), (-20.0, -84.0, 163.0, 290.0, 330.0, 4.6),
-                    (-5.0, -80.0, 163.0, 0.0, 313.0, 0.0)), r=2.2),
+    # v2 (Luke 4 Oct: the antennas clipped through the dish as it swept): each antenna the dish passed through slid
+    # back along TS's view ray (x, y -1.225 s, z -s: the same TS pixels) until the dish clears it by >= 4 units over
+    # its whole sweep (radrclear.py): 0 by 18, 1 and 2 by 12, 5 by 6, 6 by 10; 3 and 4 were clear. The west three
+    # stand on a bracket off the tower's west side, the north two on one off its back (mbrackets). v1's:
+    # ((-70, 26, 180, 308, 348, 4.6), (-76, -7, 180, 0, 275, 0), (-75, -16, 180, 0, 294, 0), (-64, -80, 163, 285, 359, 4.6),
+    #  (-56, -82, 163, 0, 322, 0), (-20, -84, 163, 290, 330, 4.6), (-5, -80, 163, 0, 313, 0))
+    masts=dict(pts=((-92.0, 4.0, 162.0, 290.0, 330.0, 4.6), (-90.7, -21.7, 162.0, 0.0, 263.0, 0.0),
+                    (-89.7, -30.7, 162.0, 0.0, 282.0, 0.0), (-64.0, -80.0, 163.0, 285.0, 359.0, 4.6),
+                    (-56.0, -82.0, 163.0, 0.0, 322.0, 0.0), (-27.4, -91.4, 153.0, 284.0, 324.0, 4.6),
+                    (-17.2, -92.2, 153.0, 0.0, 303.0, 0.0)), r=2.2),
+    # the antennas' brackets: steel platforms bolted to the tower's west side and its back, (x0, x1), (y0, y1), (z0, z1)
+    mbrackets=(((-98.0, -76.0), (-37.0, 10.0), (155.0, 162.0)), ((-33.0, -11.0), (-98.0, -83.0), (146.0, 153.0))),
     # the dish: rim centre orbits the turret axis at rho, at height zc; tilt (elevation of its axis), azimuth per frame
     dish=dict(rho=59.7, zc=253.0, R=88.2, depth=23.0, t=4.5, elev=59.0, az=(92.3, 62.5), feed=77.0,
               strut_r=1.6, nstruts=6, rod=dict(elev=70.0, L=80.0, r=1.8), hub_r=6.0, arm_r=5.0),
@@ -92,6 +111,36 @@ def inbox(x, y, bx, by):
 
 
 # ------------------------------------------------------------------------------------- solids as vertical intervals
+def grid_window(x, y, xr, yr, pad=2.0):
+    """the (row, col) window of the ground grid x, y (affine in its indices: hd's screen-aligned grid) that holds the
+    world box xr x yr (padded), or None if it is off the grid."""
+    if x.ndim != 2 or x.shape[0] < 2 or x.shape[1] < 2:
+        return (slice(None), slice(None))
+    x00, y00 = float(x[0, 0]), float(y[0, 0])
+    A = np.array([[x[1, 0] - x00, x[0, 1] - x00], [y[1, 0] - y00, y[0, 1] - y00]], float)
+    try:
+        Ai = np.linalg.inv(A)
+    except np.linalg.LinAlgError:
+        return (slice(None), slice(None))
+    xs_ = (xr[0] - pad, xr[1] + pad); ys_ = (yr[0] - pad, yr[1] + pad)
+    rc = np.array([Ai @ np.array([cx - x00, cy - y00]) for cx in xs_ for cy in ys_])
+    r0 = int(np.floor(rc[:, 0].min())) - 1; r1 = int(np.ceil(rc[:, 0].max())) + 2
+    c0 = int(np.floor(rc[:, 1].min())) - 1; c1 = int(np.ceil(rc[:, 1].max())) + 2
+    r0, c0 = max(r0, 0), max(c0, 0); r1, c1 = min(r1, x.shape[0]), min(c1, x.shape[1])
+    if r1 <= r0 or c1 <= c0:
+        return None
+    return (slice(r0, r1), slice(c0, c1))
+
+
+def add_rod(acc, x, y, p0, p1, r, comp, name=''):
+    """rod_interval + acc.add over just the rod's own window of the grid."""
+    w = grid_window(x, y, (min(p0[0], p1[0]) - r, max(p0[0], p1[0]) + r), (min(p0[1], p1[1]) - r, max(p0[1], p1[1]) + r))
+    if w is None:
+        return
+    lo, hi, m = rod_interval(x[w], y[w], p0, p1, r)
+    acc.add(lo, hi, comp, m, name, win=w)
+
+
 def rod_interval(x, y, p0, p1, r):
     """a cylinder of radius r from p0 to p1 (3D, local frame): (bot, top, mask) of Z over each ground point."""
     p0 = np.asarray(p0, float); p1 = np.asarray(p1, float)
@@ -201,8 +250,8 @@ def dish_rods(p, df):
 MAST_DMG = ((38.0, 160.0, 0.78), (34.0, 150.0, 0.62), (0.0, 0.0, 0.22), (10.0, 175.0, 1.0), (0.0, 0.0, 0.08),
             (0.0, 0.0, 1.0), (7.0, 20.0, 0.85))
 # the RA grid view leans them less and further back (TS's leans would carry the west masts out of the RA canvas)
-MAST_DMG_RA = ((24.0, 200.0, 0.62), (22.0, 195.0, 0.62), (0.0, 0.0, 0.22), (8.0, 190.0, 1.0), (0.0, 0.0, 0.08),
-               (0.0, 0.0, 1.0), (6.0, 20.0, 0.85))
+MAST_DMG_RA = ((24.0, 232.0, 0.62), (22.0, 228.0, 0.62), (0.0, 0.0, 0.22), (8.0, 190.0, 1.0), (0.0, 0.0, 0.08),
+               (0.0, 0.0, 1.0), (6.0, 20.0, 0.85))      # v2: the west two lean further back (they stand further west now)
 BROKEN_PHI = (-80.0, 52.0)                      # the dish's broken-away part, degrees round its rim (0 = its right)
 
 
@@ -271,26 +320,29 @@ class Acc:
         self.comp = [np.zeros(shape, np.int16) for _ in range(n)]
         self.names = [[] for _ in range(n)]
 
-    def add(self, bot, top, comp, mask, name=''):
+    def add(self, bot, top, comp, mask, name='', win=None):
+        """win: (row slice, col slice) when bot/top/mask cover only that window of the grid (a small part: fast)."""
         bot = np.broadcast_to(np.asarray(bot, np.float32), mask.shape)
         top = np.broadcast_to(np.asarray(top, np.float32), mask.shape)
         left = mask & (top > bot)
+        W_ = win if win is not None else (slice(None), slice(None))
         for i in range(len(self.top)):
             if not left.any():
                 break
-            have = self.top[i] >= 0
-            ov = left & have & (bot <= self.top[i] + 1.0) & (top >= self.bot[i] - 1.0)
+            T_, B_, C_ = self.top[i][W_], self.bot[i][W_], self.comp[i][W_]
+            have = T_ >= 0
+            ov = left & have & (bot <= T_ + 1.0) & (top >= B_ - 1.0)
             if ov.any():
                 # merged: the comp of whichever reaches higher (the one seen from above)
-                hi = top > self.top[i]
-                self.comp[i] = np.where(ov & hi, comp, self.comp[i]).astype(np.int16)
-                self.bot[i] = np.where(ov, np.minimum(bot, self.bot[i]), self.bot[i])
-                self.top[i] = np.where(ov, np.maximum(top, self.top[i]), self.top[i])
+                hi = top > T_
+                C_[...] = np.where(ov & hi, comp, C_).astype(np.int16)
+                B_[...] = np.where(ov, np.minimum(bot, B_), B_)
+                T_[...] = np.where(ov, np.maximum(top, T_), T_)
                 left &= ~ov
             free = left & ~have
             if free.any():
-                self.top[i] = np.where(free, top, self.top[i]); self.bot[i] = np.where(free, bot, self.bot[i])
-                self.comp[i] = np.where(free, comp, self.comp[i]).astype(np.int16)
+                T_[...] = np.where(free, top, T_); B_[...] = np.where(free, bot, B_)
+                C_[...] = np.where(free, comp, C_).astype(np.int16)
                 self.names[i].append(name)
                 left &= ~free
 
@@ -358,6 +410,8 @@ def build_params(p, g):
         f = float(np.clip(g['masts'], 0, 1))
         q['masts']['pts'] = tuple((mx, my, zb + dz, (zb + dz + (zt - zb) * f) if zt > 0 else 0.0, zb + dz + (zt2 - zb) * f, rt)
                                   for (mx, my, zb, zt, zt2, rt) in p['masts']['pts'])
+        # their brackets ride up with the deck
+        q['mbrackets'] = tuple((bx_, by_, (bz_[0] + dz, bz_[1] + dz)) for (bx_, by_, bz_) in p.get('mbrackets', ()))
     if g['sbox'] > 0:
         parts.append('sbox')
         q['sbox']['z'] = p['plinth']['h'] + (p['sbox']['z'] - p['plinth']['h']) * float(np.clip(g['sbox'], 0.1, 1))
@@ -492,7 +546,36 @@ def scene(X, Y, p=None, layout='ts', prog=None, dish_t=0.0, dish_az=None, merge=
     if want('ramp') and p['eastbase']['z'] > 0:
         eb = p['eastbase']
         put(np.where(inbox(x, y, eb['x'], eb['y']), eb['z'], 0.0), TAN)
-    if want('tower'):
+    if want('tower') and p.get('frame'):
+        # v2: pillars, bracing, the lift
+        tw = p['tower']; fr = p['frame']
+        ztop = tw['z']
+        z0 = 4.0
+        pw = fr['pw']
+        for (lx, ly) in fr['pillars']:
+            put(np.where(inbox(x, y, (lx - pw, lx + pw), (ly - pw, ly + pw)), ztop, 0.0), LEG)
+        if ztop > 30.0:
+            pil = fr['pillars']
+            # the four sides' bays (neighbouring pillars along x at each y, and along y at each x)
+            bays = []
+            for yy in sorted({q[1] for q in pil}):
+                xs_ = sorted(q[0] for q in pil if q[1] == yy)
+                bays += [((xa, yy), (xb, yy)) for xa, xb in zip(xs_[:-1], xs_[1:])]
+            for xx in sorted({q[0] for q in pil}):
+                ys_ = sorted(q[1] for q in pil if q[0] == xx)
+                bays += [((xx, ya), (xx, yb)) for ya, yb in zip(ys_[:-1], ys_[1:])]
+            zt = [z0 + (ztop - 6.0 - z0) * f for f in fr['tiers']]
+            for (a, b) in bays:
+                for k in range(len(zt) - 1):
+                    for (za, zb) in ((zt[k], zt[k + 1]), (zt[k + 1], zt[k])):
+                        add_rod(acc, x, y, (a[0], a[1], za), (b[0], b[1], zb), fr['brace_r'], LEG, 'brace')
+                for zb_ in zt[1:]:
+                    add_rod(acc, x, y, (a[0], a[1], zb_), (b[0], b[1], zb_), fr['brace_r'] + 0.6, LEG, 'beam')
+        # the lift: an enclosed shaft from the plinth up to the command room (materials draw its glass slot, the car
+        # seen through it, its door)
+        lf = fr['lift']
+        put(np.where(inbox(x, y, lf['x'], lf['y']), ztop, 0.0), LIFT)
+    if want('tower') and not p.get('frame'):
         tw = p['tower']
         for (lx, ly) in tw['legs']:
             put(np.where(inbox(x, y, (lx - tw['leg'], lx + tw['leg']), (ly - tw['leg'], ly + tw['leg'])), tw['z'], 0.0), LEG)
@@ -531,6 +614,8 @@ def scene(X, Y, p=None, layout='ts', prog=None, dish_t=0.0, dish_az=None, merge=
                 np.hypot(x - tu['c'][0], y - tu['c'][1]) <= tu['r'], 'turret')
     if want('masts'):
         ms = p['masts']
+        for (bx_, by_, bz_) in p.get('mbrackets', ()):
+            acc.add(np.full(X.shape, bz_[0]), np.full(X.shape, bz_[1]), MACH, inbox(x, y, bx_, by_), 'mbracket')
         for i, (mx, my, zb, zt, ztop, rt) in enumerate(ms['pts']):
             if dmg:
                 # TS 01: the two west masts snapped and leaning far over to the west, the tall one leaning a little,
@@ -592,4 +677,4 @@ FLAT = {PLINTH: (150, 120, 80), TAN: (190, 160, 110), GREEN: (0, 200, 0), DARK: 
         DECK: (180, 150, 100), DECKS: (90, 70, 50), LEG: (100, 100, 110), MACH: (140, 110, 80), TURRET: (90, 90, 95),
         MAST: (120, 120, 150), MASTTIP: (180, 120, 60), DISH: (210, 200, 170), STRUT: (50, 45, 40), FEED: (60, 60, 60),
         ROD: (40, 40, 40), ARM: (80, 80, 85), GTOP: (0, 220, 0), SBOX: (0, 200, 0), RAMPG: (0, 190, 0), PIPE: (150, 150, 150),
-        SLAB: (150, 150, 150), RED: (200, 40, 20)}
+        SLAB: (150, 150, 150), RED: (200, 40, 20), LIFT: (200, 196, 170)}

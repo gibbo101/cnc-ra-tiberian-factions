@@ -134,8 +134,12 @@ def damage_scene(sc, X, Yy, level, p=M.P, layout='ts'):
     soot = np.maximum(soot, 0.7 * np.exp(-((x - wx) ** 2 + (y - wy + 8.0) ** 2) / 30.0 ** 2))
     # ---- the green unit crumpled: its top pushed down at the front, dented, scorched
     gb = p['gblock']
-    u_ = ((x - gb['c'][0]) + (y - gb['c'][1])) / np.sqrt(2)
-    v_ = ((x - gb['c'][0]) - (y - gb['c'][1])) / np.sqrt(2)
+    # RA round 2: the unit's mirrored twin on the east fender is dented and sooted, not crushed (TS's crush stays west)
+    gsym = M.LAYOUTS[layout].get('sym', False)
+    yg = np.where(y < M.YC, 2 * M.YC - y, y) if gsym else y
+    gtwin = (y < M.YC) if gsym else np.zeros(y.shape, bool)
+    u_ = ((x - gb['c'][0]) + (yg - gb['c'][1])) / np.sqrt(2)
+    v_ = ((x - gb['c'][0]) - (yg - gb['c'][1])) / np.sqrt(2)
     front = np.clip((u_ + gb['d'] / 2) / gb['d'], 0, 1)
     lump = WN.noise(x, y, 7.0, 905)
     prox = np.maximum(np.abs(u_) / (gb['d'] / 2), np.abs(v_) / (gb['w'] / 2))      # 1 at the unit's sides
@@ -145,17 +149,19 @@ def damage_scene(sc, X, Yy, level, p=M.P, layout='ts'):
     for s in sc.slabs:
         ok = s.top >= 0
         if s.name == 'gblock':
-            top = np.maximum(s.top - push - dent, s.bot + 3.0)
-            bot = np.maximum(s.bot - 6.0 * front, 0.0)
-            keep = ok & ~rag
+            top = np.where(gtwin, np.maximum(s.top - 0.35 * dent, s.bot + 3.0), np.maximum(s.top - push - dent, s.bot + 3.0))
+            bot = np.where(gtwin, s.bot, np.maximum(s.bot - 6.0 * front, 0.0))
+            keep = ok & (gtwin | ~rag)
             s.top = np.where(keep, top, -1.0)
             s.bot = np.where(keep, bot, s.bot)
         elif s.name == 'gtop':                       # the small box on top rides down with the crushed top
-            drop = push + dent
-            s.top = np.where(ok, s.top - drop - 2.0 * lump, s.top)
-            s.bot = np.where(ok, np.maximum(s.bot - drop - 5.0, 0.0), s.bot)
-    sc.extra['nostripe'] = np.ones_like(H, np.float32)
+            drop = np.where(gtwin, 0.35 * dent, push + dent)
+            s.top = np.where(ok, s.top - drop - 2.0 * lump * ~gtwin, s.top)
+            s.bot = np.where(ok, np.maximum(s.bot - drop - np.where(gtwin, 0.0, 5.0), 0.0), s.bot)
+    sc.extra['nostripe'] = np.where(gtwin, 0.0, 1.0).astype(np.float32)    # the twin keeps its red band
     soot = np.maximum(soot, 0.6 * np.exp(-((x - gb['c'][0]) ** 2 + (y - gb['c'][1]) ** 2) / 38.0 ** 2))
+    if gsym:
+        soot = np.maximum(soot, 0.4 * np.exp(-((x - gb['c'][0] - 6.0) ** 2 + (y - (2 * M.YC - gb['c'][1]) + 4.0) ** 2) / 26.0 ** 2))
     # ---- the roof: scorch patches, a burnt-out housing (sunk, dark); the door's lower half sooted
     htop = H.copy()                                  # the roof's top, slabs included (the roof over the bay is slabs)
     for s_ in sc.slabs:

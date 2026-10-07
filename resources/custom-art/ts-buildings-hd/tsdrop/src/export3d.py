@@ -108,7 +108,7 @@ def solid_mesh(sc, xs, ys, h, zmax, smooth=0.6):
 
 def colours(sc, verts, n, comp, surf, ij, mats, mk, damage=None, level=0, mat_kw=None):
     i, j = ij
-    fields = {k: (v[i, j] if getattr(v, 'ndim', 0) == 2 else v[i, j]) for k, v in sc.extra.items()}
+    fields = {k: (v[i, j] if isinstance(v, np.ndarray) else v) for k, v in sc.extra.items()}
     r = FakeRender(verts[:, 0], verts[:, 1], verts[:, 2], n, comp, surf, fields, mk)
     alb, _, _ = mats.materials(r, occ=None, **(mat_kw or {}))
     if damage is not None and level:
