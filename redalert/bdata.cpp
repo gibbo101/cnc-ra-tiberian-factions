@@ -161,6 +161,8 @@ static short const TsList33[] = {0,       1,           2,
                                  MCW,     MCW + 1,     MCW + 2,
                                  MCW * 2, MCW * 2 + 1, MCW * 2 + 2, REFRESH_EOL};
 static short const ListWeap[] = {0, 1, 2, (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, REFRESH_EOL};
+static short const TsDeptList[] = {0, MCW, MCW + 1, MCW + 2, MCW * 2, MCW * 2 + 1, MCW * 2 + 2, REFRESH_EOL};
+static short const TsDeptOList[] = {1, 2, REFRESH_EOL};
 static short const ListWestwood[] = {1, 2, 3, MCW + 1, MCW + 2, MCW + 3, REFRESH_EOL};
 static short const OListSAM[] = {-MCW, -(MCW - 1), REFRESH_EOL};
 
@@ -1481,10 +1483,10 @@ static BuildingTypeClass const ClassTsDept(STRUCT_TSDEPT,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,          // Repair bay (not a factory).
                                            DIR_N,
-                                           BSIZE_33,           // TS Foundation=3x3: the bay art fills
-                                           NULL,               // the whole plot, so the corners are
-                                           (short const*)TsList33, // occupied, not free ground.
-                                           NULL);
+                                           BSIZE_33,           // TS Foundation=3x3, drawn at TS's angle: the two
+                                           NULL,               // north-east cells hold only shadow, so units pass.
+                                           (short const*)TsDeptList,
+                                           (short const*)TsDeptOList);
 
 // TS Dropship Bay (Westwood's cut GADROP): a vehicle factory whose orders land by drop pod on its deck.
 // Deliberately not a helipad, which would grant a free helicopter (docs/ts-gdi-tree-plan.md).
@@ -6027,6 +6029,10 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
         static short const _ts_tall22_place[] = {0, 1, MAP_CELL_W, MAP_CELL_W + 1,
                                                   MAP_CELL_W * 2, MAP_CELL_W * 2 + 1, REFRESH_EOL};
         return (_ts_tall22_place);
+    }
+    // TF: the TS Service Depot's ghost is its whole 3x3, the free north-east cells included.
+    if (placement && Type == STRUCT_TSDEPT) {
+        return (TsList33);
     }
     if (placement && (Type == STRUCT_TSTECH || Type == STRUCT_TSFGEN)) {
         static short const _ts_tall32_place[] = {0, 1, 2, MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W + 2,
