@@ -137,6 +137,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   panels were rebuilt the same way, `scripts/ts_pack_fsdf.py`).
 - **The TS HD rebuild:** branch `ts-buildings-hd`, worktree `../worktrees/tf-ts-hd`, skill
   `ts-to-ra-hd-art`.
+- **The Orca Bomber's attack run:** its HD model is final, but the run needs work. It flies RA's
+  helicopter path and drops from where it hovers (`[TSBomb]` Range 1.5 in rules.ini), where TS's
+  Orca Bomber makes a straight pass over the target and lays its bombs along it.
 - **A real TS sidebar** (TS uses TD's HUD scene with its own crest for now). Probes, cheapest
   first: (1) can a tactical scene widget take a standalone loose DDS instead of an atlas region;
   (2) is a third scene loadable (copy `Tactical_UI.bui` under a new name and point one faction at
