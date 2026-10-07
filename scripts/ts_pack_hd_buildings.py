@@ -77,9 +77,24 @@ def lane_gold(img):
     return Image.fromarray(a, "RGBA")
 
 
+def glass_lines(path):
+    """How much the dark panel lines on a building's glass darken what lies under them, per pixel (1 where
+    there is no line): a stroke darker than its surroundings, the glass's fainter texture left out."""
+    a = np.asarray(Image.open(path).convert("RGBA")).astype(np.float32)
+    lum = np.clip(a[..., :3] @ np.array([0.299, 0.587, 0.114], np.float32), 0, 255).astype(np.uint8)
+    med = Image.fromarray(lum).filter(ImageFilter.MedianFilter(3))
+    m = np.asarray(med).astype(np.float32)
+    around = np.asarray(med.filter(ImageFilter.GaussianBlur(3))).astype(np.float32)
+    depth = np.clip(around - m, 0, None) / np.maximum(around, 1) - 0.05
+    return np.clip(1 - 4 * np.clip(depth, 0, None), 0.2, 1)
+
+
+SILO_GLASS_LINES = glass_lines(os.path.join(SRC, "tssilo", "silo", "silo-00.png"))
+
+
 def tiberium(img):
     """Tiberium as TD's silo shows it: a smooth glow, darker towards its edge, on TD's ramp. A median
-    filter takes out the render's grain and keeps the glass's panel lines."""
+    filter takes out the render's grain; the silo glass's panel lines lie over it."""
     a = np.asarray(img).astype(np.float32)
     body = a[..., 3] > 0
     if not body.any():
@@ -93,7 +108,7 @@ def tiberium(img):
     t = np.clip(0.1 + 0.55 * t + 0.3 * rim, 0, 1)[..., None]
     lower = TIBERIUM_RAMP[0] + (TIBERIUM_RAMP[1] - TIBERIUM_RAMP[0]) * (t / 0.5)
     upper = TIBERIUM_RAMP[1] + (TIBERIUM_RAMP[2] - TIBERIUM_RAMP[1]) * ((t - 0.5) / 0.5)
-    a[..., :3] = np.where(t < 0.5, lower, upper)
+    a[..., :3] = np.where(t < 0.5, lower, upper) * SILO_GLASS_LINES[..., None]
     return Image.fromarray(np.clip(a.round(), 0, 255).astype(np.uint8), "RGBA")
 
 
@@ -145,11 +160,11 @@ BUILDINGS = {
     # Idle: the dome's panels pulse (8), healthy then damaged.
     "TSTECH": dict(src="tstech", make=("build-up/tech-center-build", 24),
                    frames=("loop/tech-center-loop", 16), pad_top=128),
-    # The silo on its 2x2 plot, as the power plant: it stands on the south row, the dome rising into the north
-    # row, the bib row in front.
+    # The silo on a 2x2 plot of its own row and the bib row in front: drawn on a 2x2 with its foundation's south
+    # edge on the south edge, so 256 px under it centre the canvas a row lower.
     "TSSILO": dict(src="tssilo", make=("build-up/silo-build", 24), base="silo/silo",
                    blocks=[[("A-tiberium/silo-tiberium", [lv], [lv + 4], tiberium)] for lv in range(4)],
-                   runs=[(16, [("B-lamps/silo-lamps", range(0, 16), range(16, 32))])]),
+                   runs=[(16, [("B-lamps/silo-lamps", range(0, 16), range(16, 32))])], pad_bottom=256),
     # The refinery turned 22.5 degrees on its 4x3 plot. Idle: the dock lamps (16), healthy then
     # damaged; the flare stack's fire is its own layer (20 lit frames, then 20 empty).
     "TSPROC": dict(src="tsproc", make=("build-up/refinery-build", 24), frames=("loop/refinery-loop", 32)),
