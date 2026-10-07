@@ -3718,6 +3718,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                     Transmit_Message(RADIO_HELLO, base);
                     Transmit_Message(RADIO_TETHER);
                     Assign_Mission(MISSION_UNLOAD);
+                    IsReadyToCommence = true;
                     ScenarioInit--;
 #if TF_DEV_BUILD
                     TF_WF_Log(this, "exit %s#%d: seated at (%d,%d), 2", base->Class_Of().IniName, base->ID,
@@ -8036,6 +8037,9 @@ int BuildingClass::Mission_Unload(void)
                 TF_WF_Log(this, "unload: door shut, idle");
 #endif
                 Enter_Idle_Mode();
+                // Trap: a mission change otherwise waits for the idle loop's end (the deployed MWF's runs 24
+                // seconds), and Exit_Object refuses every vehicle while the factory is still in Unload.
+                IsReadyToCommence = true;
             }
             break;
         default:
