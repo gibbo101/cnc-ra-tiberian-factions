@@ -1682,8 +1682,6 @@ static bool TF_Limpet_Voice(UnitClass const* unit, VocType a, VocType b)
 
 // The RA2 and C&C3 tanks answer in their own crews' voices, whoever owns them; a move order also spools an RA2
 // tank's engine up. False for every other unit.
-enum TFVoiceKind { TF_VOICE_SELECT, TF_VOICE_MOVE, TF_VOICE_ATTACK };
-
 static bool TF_RA2_Voice(UnitClass const* unit, TFVoiceKind kind)
 {
     static VocType const _apoc[3][6] = {
@@ -1738,6 +1736,35 @@ static bool TF_RA2_Voice(UnitClass const* unit, TFVoiceKind kind)
 
 // Vehicle voice replies: the Limpet, RA2 and C&C3 tanks speak for themselves, a GDI or Nod player hears TD's
 // vehicle takes, and anyone else DriveClass's RA voices, which these overrides would otherwise silence.
+// A vehicle's answer when it has no voice of its own: TD's vehicle voices for a TD player, RA's otherwise. tag is the
+// speaker's sound tag, -(ID + 1).
+void TF_Vehicle_Voice(TFVoiceKind kind, int tag)
+{
+    if (PlayerPtr->ActLike == HOUSE_GOOD || PlayerPtr->ActLike == HOUSE_BAD) {
+        if (!AllowVoice) {
+            return;
+        }
+        static VocType _td_vsel[] = {VOC_VEHIC, VOC_TD_UNIT1, VOC_REPORT, VOC_YESSIR, VOC_AWAIT};
+        static VocType _td_vmove[] = {VOC_ACKNOWL, VOC_AFFIRM, VOC_TD_MOVEOUT};
+        static VocType _td_vattack[] = {VOC_ACKNOWL, VOC_AFFIRM};
+        VocType voc = (kind == TF_VOICE_SELECT) ? _td_vsel[Sim_Random_Pick(0, ARRAY_SIZE(_td_vsel) - 1)]
+                      : (kind == TF_VOICE_MOVE) ? _td_vmove[Sim_Random_Pick(0, ARRAY_SIZE(_td_vmove) - 1)]
+                                                : _td_vattack[Sim_Random_Pick(0, ARRAY_SIZE(_td_vattack) - 1)];
+        Sound_Effect(voc, fixed(1), tag, 0, PlayerPtr->ActLike);
+        return;
+    }
+    // Trap: RA's lists (DriveClass::Response_*) draw the random pick before testing AllowVoice; keep that order.
+    static VocType _vsel[] = {VOC_VEHIC, VOC_REPORT, VOC_YESSIR, VOC_YESSIR, VOC_YESSIR, VOC_AWAIT};
+    static VocType _vmove[] = {VOC_ACKNOWL, VOC_AFFIRM};
+    static VocType _vattack[] = {VOC_AFFIRM, VOC_ACKNOWL};
+    VocType voc = (kind == TF_VOICE_SELECT) ? _vsel[Sim_Random_Pick(0, ARRAY_SIZE(_vsel) - 1)]
+                  : (kind == TF_VOICE_MOVE) ? _vmove[Sim_Random_Pick(0, ARRAY_SIZE(_vmove) - 1)]
+                                            : _vattack[Sim_Random_Pick(0, ARRAY_SIZE(_vattack) - 1)];
+    if (AllowVoice) {
+        Sound_Effect(voc, fixed(1), tag);
+    }
+}
+
 void UnitClass::Response_Select(void)
 {
     if (TF_Limpet_Voice(this, VOC_TS_LIMPQ3, VOC_TS_LIMPQ4)) {
@@ -1746,15 +1773,7 @@ void UnitClass::Response_Select(void)
     if (TF_RA2_Voice(this, TF_VOICE_SELECT)) {
         return;
     }
-    if (PlayerPtr->ActLike == HOUSE_GOOD || PlayerPtr->ActLike == HOUSE_BAD) {
-        if (!AllowVoice) {
-            return;
-        }
-        static VocType _td_vsel[] = {VOC_VEHIC, VOC_TD_UNIT1, VOC_REPORT, VOC_YESSIR, VOC_AWAIT};
-        Sound_Effect(_td_vsel[Sim_Random_Pick(0, ARRAY_SIZE(_td_vsel) - 1)], fixed(1), -(ID + 1), 0, PlayerPtr->ActLike);
-    } else {
-        DriveClass::Response_Select();
-    }
+    TF_Vehicle_Voice(TF_VOICE_SELECT, -(ID + 1));
 }
 
 void UnitClass::Response_Move(void)
@@ -1765,15 +1784,7 @@ void UnitClass::Response_Move(void)
     if (TF_RA2_Voice(this, TF_VOICE_MOVE)) {
         return;
     }
-    if (PlayerPtr->ActLike == HOUSE_GOOD || PlayerPtr->ActLike == HOUSE_BAD) {
-        if (!AllowVoice) {
-            return;
-        }
-        static VocType _td_vmove[] = {VOC_ACKNOWL, VOC_AFFIRM, VOC_TD_MOVEOUT};
-        Sound_Effect(_td_vmove[Sim_Random_Pick(0, ARRAY_SIZE(_td_vmove) - 1)], fixed(1), -(ID + 1), 0, PlayerPtr->ActLike);
-    } else {
-        DriveClass::Response_Move();
-    }
+    TF_Vehicle_Voice(TF_VOICE_MOVE, -(ID + 1));
 }
 
 void UnitClass::Response_Attack(void)
@@ -1784,15 +1795,7 @@ void UnitClass::Response_Attack(void)
     if (TF_RA2_Voice(this, TF_VOICE_ATTACK)) {
         return;
     }
-    if (PlayerPtr->ActLike == HOUSE_GOOD || PlayerPtr->ActLike == HOUSE_BAD) {
-        if (!AllowVoice) {
-            return;
-        }
-        static VocType _td_vattack[] = {VOC_ACKNOWL, VOC_AFFIRM};
-        Sound_Effect(_td_vattack[Sim_Random_Pick(0, ARRAY_SIZE(_td_vattack) - 1)], fixed(1), -(ID + 1), 0, PlayerPtr->ActLike);
-    } else {
-        DriveClass::Response_Attack();
-    }
+    TF_Vehicle_Voice(TF_VOICE_ATTACK, -(ID + 1));
 }
 
 /***********************************************************************************************

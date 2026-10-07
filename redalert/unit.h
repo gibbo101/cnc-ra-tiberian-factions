@@ -423,4 +423,12 @@ public:
     bool Save(Pipe& file) const;
 };
 
+enum TFVoiceKind
+{
+    TF_VOICE_SELECT,
+    TF_VOICE_MOVE,
+    TF_VOICE_ATTACK
+};
+void TF_Vehicle_Voice(TFVoiceKind kind, int tag);
+
 #endif
