@@ -55,6 +55,10 @@ CAST_SHADOW_MIN_PX = 500
 TIBERIUM_RAMP = np.array([[93.0, 134.0, 28.0], [161.0, 213.0, 53.0], [190.0, 239.0, 91.0]])
 
 
+# How far (0-255, any channel) a plug combination's base must differ from the plugless one to count as plug.
+PLUG_CUT_LEVEL = 8
+
+
 # The war factory's hazard stripes, on the lane from its door (x 160-316, y 370-416 of its source canvas).
 # The apron under them is ground art, which the launcher never recolours, so the stripes there and on the
 # build-up that shows the same lane are all burnt to the gold the launcher makes of that green ramp,
@@ -390,15 +394,21 @@ def frames(src, spec):
         tiles = [load(path, i) for i in spec.get("pick", range(count))] * spec.get("repeat", 1)
     elif "combos" in spec:
         # One block per combination: its base (healthy, then damaged) with the idle overlays looping
-        # over it, each overlay's damaged frames following its healthy ones.
+        # over it, each overlay's damaged frames following its healthy ones. The plugs stand in front of
+        # the overlays, so each overlay is cut where the base differs from the plugless one.
         tiles = []
+        combo_none = spec["combos"][0]
         for combo in spec["combos"]:
             for state in (0, 1):
                 base = load(spec["base"].format(combo=combo), state)
+                plain = np.asarray(load(spec["base"].format(combo=combo_none), state)).astype(int)
+                plugs = np.abs(np.asarray(base).astype(int) - plain).max(axis=-1) > PLUG_CUT_LEVEL
                 for t in range(spec["loop"]):
                     img = base.copy()
                     for path, n in spec["overlays"]:
-                        img.alpha_composite(load(path, t % n + n * state))
+                        layer = np.array(load(path, t % n + n * state))
+                        layer[plugs] = 0
+                        img.alpha_composite(Image.fromarray(layer))
                     tiles.append(img)
     else:
         tiles = []
