@@ -3695,7 +3695,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                         pull = 48;
                         break;
                     case UNIT_TSTITN:
-                        pull = (*this == STRUCT_TSDWEAP) ? 90 : 72;
+                        pull = (*this == STRUCT_TSDWEAP) ? 89 : 71;
                         break;
                     case UNIT_TSJUGG:
                         pull = 134;
