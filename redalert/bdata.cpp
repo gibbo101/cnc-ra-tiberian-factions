@@ -1319,9 +1319,10 @@ static BuildingTypeClass const ClassTsSilo(STRUCT_TSSILO,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,
                                            DIR_N,
-                                           BSIZE_22,           // The silo's row and the bib row in front of it, so
-                                           NULL,               // the selection box centres a row lower than its own.
-                                           (short const*)List22_1100,
+                                           BSIZE_21,           // 2x1 with the bib row in front, like the TD silo:
+                                                                // the silo stands on the plot row.
+                                           NULL,
+                                           (short const*)List21,
                                            (short const*)NULL);
 
 static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
@@ -6205,8 +6206,7 @@ bool BuildingTypeClass::Bib_And_Offset(SmudgeType& bib, CELL& cell) const
         **	Adjust the bib position for special buildings that have the bib as part
         **	of the building art itself.
         */
-        // TF: the TS Silo's plot takes in its bib row, so its bib starts on the plot's first row.
-        if (bib != SMUDGE_NONE && Type != STRUCT_TSSILO) {
+        if (bib != SMUDGE_NONE) {
             cell += ((Height() - 1) * MAP_CELL_W);
         }
     }
