@@ -58,13 +58,16 @@ public:
     /*
     **	TS Service Depot: its pad lies south-east of the gantry, the ring's centre this many leptons
     **	east and south of the plot's centre (in the middle cell); units sit and aircraft land there.
+    **	A Titan stops this much further north, so its feet stand there rather than its hull.
     */
     enum
     {
         TS_DEPOT_SEAT_X_LEP = 61,
-        TS_DEPOT_SEAT_Y_LEP = 89
+        TS_DEPOT_SEAT_Y_LEP = 89,
+        TS_DEPOT_WALKER_LIFT_LEP = 128
     };
     int TF_Depot_Reach(TechnoClass const* customer) const;
+    COORDINATE TF_Depot_Seat(TechnoClass const* customer) const;
     bool TF_Depot_Is_Gantry(CELL cell) const;
 
     /*

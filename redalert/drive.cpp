@@ -2014,8 +2014,8 @@ bool DriveClass::Start_Of_Move(void)
     dir = Facing_Dir(facing);
 
     /*
-    **	TS Service Depot: the pad is drawn in front of the gantry, off its cell's centre (BuildingClass::
-    **	Docking_Coord). A vehicle docking there takes the cell before the pad as a straight
+    **	TS Service Depot: the pad is drawn beside the gantry, off its cell's centre (BuildingClass::
+    **	TF_Depot_Seat). A vehicle docking there takes the cell before the pad as a straight
     **	step, never a two-cell curve, then drives its last step straight onto the pad, steering
     **	on to it as it goes. A vehicle standing on the pad turns to its next cell and drives
     **	straight off, steering back onto the path's heading by the time it gets there.
@@ -2026,15 +2026,15 @@ bool DriveClass::Start_Of_Move(void)
     if (What_Am_I() == RTTI_UNIT) {
         BuildingClass* here = Map[Coord].Cell_Building();
         TechnoClass* contact = Contact_With_Whom();
-        if (here != NULL && *here == STRUCT_TSDEPT && Coord == here->Docking_Coord()) {
+        if (here != NULL && *here == STRUCT_TSDEPT && Coord == here->TF_Depot_Seat(this)) {
             rail_end = dest;
             dir = Desired_Facing256(Coord_X(Coord), Coord_Y(Coord), Coord_X(rail_end), Coord_Y(rail_end));
         } else if (Mission == MISSION_ENTER && contact != NULL && contact->What_Am_I() == RTTI_BUILDING
                    && *(BuildingClass*)contact == STRUCT_TSDEPT
-                   && As_Cell(NavCom) == Coord_Cell(((BuildingClass*)contact)->Docking_Coord())) {
+                   && As_Cell(NavCom) == Coord_Cell(((BuildingClass*)contact)->TF_Depot_Seat(this))) {
             CELL padcell = As_Cell(NavCom);
             if (Coord_Cell(dest) == padcell) {
-                rail_end = ((BuildingClass*)contact)->Docking_Coord();
+                rail_end = ((BuildingClass*)contact)->TF_Depot_Seat(this);
                 rail_face = Desired_Facing256(Coord_X(Coord), Coord_Y(Coord), Coord_X(rail_end), Coord_Y(rail_end));
                 dir = (abs((int)(signed char)(rail_face - PrimaryFacing.Current())) <= 64) ? PrimaryFacing.Current()
                                                                                              : rail_face;

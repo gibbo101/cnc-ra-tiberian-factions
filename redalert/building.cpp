@@ -6868,12 +6868,24 @@ int BuildingClass::TF_Depot_Reach(TechnoClass const* customer) const
 {
     int reach = Distance(customer);
     if (*this == STRUCT_TSDEPT) {
-        int seat = ::Distance(Docking_Coord(), customer->Center_Coord());
+        int seat = ::Distance(TF_Depot_Seat(customer), customer->Center_Coord());
         if (seat < reach) {
             reach = seat;
         }
     }
     return (reach);
+}
+
+// Where a customer stops on the TS Service Depot's pad: the seat, a Titan lifted so its feet stand on the
+// pad's centre.
+COORDINATE BuildingClass::TF_Depot_Seat(TechnoClass const* customer) const
+{
+    COORDINATE seat = Docking_Coord();
+    if (customer != NULL && customer->What_Am_I() == RTTI_UNIT
+        && ((UnitClass const*)customer)->Class->Type == UNIT_TSTITN) {
+        seat = Coord_Move(seat, DIR_N, TS_DEPOT_WALKER_LIFT_LEP);
+    }
+    return (seat);
 }
 
 /***********************************************************************************************
