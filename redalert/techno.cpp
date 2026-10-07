@@ -4581,7 +4581,8 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         /*
         **	Disable recognizing the <CTRL> key forced fire option when dealing with buildings.
         */
-        if (What_Am_I() == RTTI_BUILDING)
+        // TF: except the dug-in Tick Tank, a tank set down, which force-fires as it did on the move.
+        if (What_Am_I() == RTTI_BUILDING && ((BuildingClass const*)this)->Class->Type != STRUCT_TSTICK)
             ctrldown = false;
 
         /*
