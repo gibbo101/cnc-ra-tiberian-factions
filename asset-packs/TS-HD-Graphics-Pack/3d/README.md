@@ -21,17 +21,18 @@ All files are glTF 2.0 binary (`.glb`), which Blender, Godot and most engines op
 | `radar.glb` | GARADR (art GTRADR) | TSRADR | radar, antennas, dish, each with -damaged | dish-pivot (the dish turns about its vertical axis), dish-centre |
 | `helipad.glb` | GAHPAD (art GTHPAD) | TSHPAD | pad, helipad (the machinery), each with -damaged | landing (the landing circle's centre), light-1..17 |
 | `service-depot.glb` | GADEPT (art GTDEPT) | TSDEPT | pad, depot (the gantry), each with -damaged; arm | arm-pivot, pad-centre |
-| `dropship-bay.glb` | GADROP (cut from the game) | TSDROP | pad, pad-damaged | pad-centre |
+| `dropship-bay.glb` | GADROP (cut from the game) | TSDROP | dropship-bay, -damaged (the dish at its first frame) | pad-centre, ramp-foot, dish-pivot, light-west, light-north, light-east, light-south, guard |
 | `sensor-array.glb` | GADPSA (art GTDPSA) | TSDPSA | sensor-array, -damaged (deployed), sensor-array-stowed (mast down, outriggers in) | mast-pivot (the mast swings about the north-south axis through it), dish-centre |
 | `upgrade-center.glb` | GAPLUG (art GTPLUG) | TSPLUG, with TSPION, TSPODS, TSSEEK | upgrade-center, -damaged (with the dish); plug-drop-pod-node, plug-seeker-control, plug-ion-cannon-uplink (each in the east socket; 1.0 west for the west socket) | socket-west, socket-east, dish-pivot, slot-top, slot-bottom, lamp-low, lamp-high |
 | `pulse-cannon.glb` | NAPULS | TSPULS, TSPULST | pulse-cannon, -damaged (both without the head); head | head-pivot (the head turns on the drum about its vertical axis) |
 | `firestorm-generator.glb` | GAFIRE (art GTFIRE) | TSFGEN | firestorm-generator, -damaged (both without the arm and dome); arm-dome (closed over the pit) | arm-pivot, pit (the emitter's tip), lamp-1, lamp-2 |
 | `firestorm-wall.glb` | GAFSDF (art GTFSDF) | TSFSDF | section-alone, -end, -straight, -corner, -tee, -cross, each on its own cell 1.5 cells apart along x | |
+| `tick-tank-dug-in.glb` | GATICK (art GTTICK) | TSTICK, TSTICKT | base, base-damaged; turret (a node at its pivot) | turret-pivot, muzzle (on the turret), cell-centre |
 | `limpet-mine.glb` | DLIMPET (the Limpet Drone dug in) | TSDLIMP | limpet-mine (dug in), -damaged; limpet-drone (hovering, its claws out, as in the build-up before it digs in) | lens (the top that flashes), lamp |
 
 The war factory is Tiberian Sun's own shape, its door facing east (+x). The refinery's dock is on its east side,
-as in Tiberian Sun. The dropship bay's deck carries GDI's weathered eagle in its vertex colours, where the game
-draws it, across the deck inside the band; on the damaged pad it is burnt away in the blast. The radar's dish sweep and the war factory door's track (straight up 40 units, then a quarter
+as in Tiberian Sun. The dropship bay is Tiberian Sun's cut bay: the Upgrade Center's block with the tower to its west,
+the landing pad, the jet blast guard and the ramp; its markers are where a dropship lands. The radar's dish sweep and the war factory door's track (straight up 40 units, then a quarter
 circle of radius 49 into the roof) are in each file's extras. So are the Firestorm generator's dome lift (68 units
 over the 20 frames of GTFIRE_A) and the Firestorm wall's frame numbering: a section's frame is its neighbours as a
 mask (north 1, east 2, south 4, west 8), plus 16 damaged and 32 with the field on. The six meshes are masks 0, 1, 5,
@@ -63,6 +64,7 @@ mask (north 1, east 2, south 4, west 8), plus 16 damaged and 32 with the field o
 | `juggernaut.glb` | JUGG (walking) | TSJUGG | body (with the barrel housings), legs | walk (15 steps, 0.2 s each, looping) |
 | `juggernaut-deployed.glb` | JUGG (deployed) | TSJUGG | base (as deployed facing south-west), cabin turned east, barrels on a hinge; muzzle_left, muzzle_middle and muzzle_right markers | aim (the barrels raised to 45 degrees and back) |
 | `hunter-seeker.glb` | GHUNTER | TSHUNT | the droid | |
+| `tick-tank.glb` | TTNK | TSTTNK | hull; turret (a node at its pivot, with a muzzle marker) | |
 | `limpet-drone.glb` | LIMPET | TSLIMP | the drone; light_left and light_right markers | |
 
 ## Infantry
