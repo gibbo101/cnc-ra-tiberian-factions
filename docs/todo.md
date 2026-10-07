@@ -140,6 +140,10 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 - **Big units show through a TS war factory's shut door:** a Titan or a harvester waiting in the bay draws
   over the door before it rolls up; their sort lines fall south of the door's (`NF`/`DR` sort offsets in
   `dllinterface.cpp`). Smaller vehicles stay hidden behind it. A spawn and draw-order bug, not the art.
+- **The deployed Mobile War Factory loses units:** of three APCs ordered one after another, only the third
+  rolled out; Titans have teleported or never arrived, and a finished unit can wait seconds for the doors.
+  The exit runs on the per-unit rail (`drive.cpp`) and the doorstep table in `building.cpp`; log each
+  delivery's seat, rail and doorstep before changing either.
 - **TS Barracks infantry appear left of the door:** they snap to the nearest of their cell's five spots
   (`Closest_Free_Spot`), and the exit point `XYP_COORD(32, 26)` in `ClassTsPile` still lands them off the
   door's centre line in play. Measure where one appears against the doorway before moving the point.
