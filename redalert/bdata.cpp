@@ -1264,9 +1264,9 @@ static BuildingTypeClass const ClassTsPile(STRUCT_TSPILE,
                                            TXT_NONE,
                                            "TSPILE",
                                            FACING_NONE,
-                                           // The foot of the entrance steps, classic px from the plot's top-left corner: in the
-                                           // row in front, as infantry snap to their cell's nearest free spot.
-                                           XYP_COORD(32, 26),
+                                           // The foot of the entrance steps, classic px from the plot's top-left corner: on a
+                                           // column of infantry spots, so soldiers walk straight out (ts_pack_hd_buildings.py).
+                                           XYP_COORD(30, 26),
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,              // fake
@@ -1442,10 +1442,10 @@ static BuildingTypeClass const ClassTsHpad(STRUCT_TSHPAD,
                                            true, true, false, false, false, true,
                                            RTTI_AIRCRAFTTYPE,  // Aircraft factory.
                                            DIR_N,
-                                           BSIZE_22,           // The pad's south row is footprint and the bib row lies in
-                                           NULL,               // front; the north row is headroom, the tower's cell closed
-                                           (short const*)List22_0011, // to units (TF_Is_Helipad_Tower_Cell).
-                                           (short const*)List22_1100);
+                                           BSIZE_22,           // The whole 2x2 is footprint, the bib row in front: the art
+                                           NULL,               // is raised half a cell so the pad sits over the plot.
+                                           (short const*)List22,
+                                           (short const*)NULL);
 
 static BuildingTypeClass const ClassTsTech(STRUCT_TSTECH,
                                            TXT_NONE,
@@ -6016,7 +6016,7 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
     **	on its top row, and the headroom row is demanded clear at placement
     **	(the radar height trick); blocking stays south-row-only.
     */
-    if (placement && (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR || Type == STRUCT_TSHPAD)) {
+    if (placement && (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR)) {
         /*
         **	Legality spans headroom + pads + bib: three rows from the plot
         **	origin. The GHOST the launcher draws is only the two ground rows
@@ -6174,7 +6174,7 @@ int BuildingTypeClass::Height(bool bib) const
 int BuildingTypeClass::Placement_Ghost_Rows_Above(void) const
 {
     if (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR || Type == STRUCT_TSTECH || Type == STRUCT_TSFGEN
-        || Type == STRUCT_TSHPAD || Type == STRUCT_TSCTWR) {
+        || Type == STRUCT_TSCTWR) {
         return (1);
     }
     return (0);
