@@ -1588,10 +1588,10 @@ static BuildingTypeClass const ClassTsVulc(STRUCT_TSVULC,
                                            true,                // remappable
                                            RTTI_NONE,
                                            DIR_SE,              // Faces south-east when placed.
-                                           BSIZE_11,
-                                           NULL,
-                                           (short const*)List1,
-                                           (short const*)NULL);
+                                           BSIZE_12,            // The tower's cell, the head's headroom above it
+                                           NULL,                // (as the Tesla Coil), so the box takes in the head.
+                                           (short const*)List12,
+                                           (short const*)OList12);
 
 // TSROCK / TSCSAM: the RPG and SAM plugs, same shape as TSVULC (docs above).
 static BuildingTypeClass const ClassTsRock(STRUCT_TSROCK,
@@ -1617,10 +1617,10 @@ static BuildingTypeClass const ClassTsRock(STRUCT_TSROCK,
                                            true,                // remappable
                                            RTTI_NONE,
                                            DIR_SE,              // Faces south-east when placed.
-                                           BSIZE_11,
-                                           NULL,
-                                           (short const*)List1,
-                                           (short const*)NULL);
+                                           BSIZE_12,            // The tower's cell, the head's headroom above it
+                                           NULL,                // (as the Tesla Coil), so the box takes in the head.
+                                           (short const*)List12,
+                                           (short const*)OList12);
 
 static BuildingTypeClass const ClassTsCsam(STRUCT_TSCSAM,
                                            TXT_NONE,
@@ -1645,10 +1645,10 @@ static BuildingTypeClass const ClassTsCsam(STRUCT_TSCSAM,
                                            true,                // remappable
                                            RTTI_NONE,
                                            DIR_SE,              // Faces south-east when placed.
-                                           BSIZE_11,
-                                           NULL,
-                                           (short const*)List1,
-                                           (short const*)NULL);
+                                           BSIZE_12,            // The tower's cell, the head's headroom above it
+                                           NULL,                // (as the Tesla Coil), so the box takes in the head.
+                                           (short const*)List12,
+                                           (short const*)OList12);
 
 // TS GDI Concrete Wall ([GAWALL]): a wall type like BRIK. It never stands on the map: placing it lays
 // OVERLAY_TSWALL in the cell.
@@ -6029,6 +6029,10 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
         static short const _ts_tall22_place[] = {0, 1, MAP_CELL_W, MAP_CELL_W + 1,
                                                   MAP_CELL_W * 2, MAP_CELL_W * 2 + 1, REFRESH_EOL};
         return (_ts_tall22_place);
+    }
+    // TF: a weapon plug is placed on the tower it fits, one cell; it unlimbos with its headroom above.
+    if (placement && (Type == STRUCT_TSVULC || Type == STRUCT_TSROCK || Type == STRUCT_TSCSAM)) {
+        return (List1);
     }
     // TF: the TS Service Depot's ghost is its whole 3x3, the free north-east cells included.
     if (placement && Type == STRUCT_TSDEPT) {
