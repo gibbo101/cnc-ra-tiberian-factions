@@ -95,7 +95,8 @@ def tiberium(img):
 # centres on the building's plot); crop=(x0, y0, x1, y1) cuts every frame to that box, which holds all the art. repeat=n plays the frames n times over (one set for both states), and
 # recolour / make_recolour apply a function to every tileset / build-up frame as it loads.
 # make_pick takes those build-up frames, in that order, instead of all of them.
-# then=(path prefix, count) appends those frames after the tileset.
+# then=(path prefix, count) appends those frames after the tileset; then_over=(path prefix, frame) draws that
+# one frame over each of them.
 # Paths take -NN.png.
 BUILDINGS = {
     "TSFACT": dict(src="tsfact", make=("build-up/construction-yard-build", 32),
@@ -216,9 +217,11 @@ BUILDINGS = {
     # TSPULS_TURRET_Y (10 classic px, 53 canvas px) lower than the mound, so it is packed 53 px higher.
     "TSPULST": dict(src="tspuls", make=None, frames=("head/pulse-cannon-head", 32), crop_top=53, pad_bottom=53),
     # The Firestorm generator on its 3x2 plot: the dome raised, the pit's lightning and the fins' lamps
-    # playing (48), healthy then damaged; then the building still, healthy and damaged, for low power.
+    # playing (48), healthy then damaged; then the building still with the dome closed, healthy and damaged, for
+    # low power.
     "TSFGEN": dict(src="tsfgen", make=("build-up/firestorm-generator-build", 19),
-                   frames=("loop/firestorm-generator-loop", 96), then=("building/firestorm-generator", 2)),
+                   frames=("loop/firestorm-generator-loop", 96), then=("building/firestorm-generator", 2),
+                   then_over=("A-dome/firestorm-generator-dome", 0)),
     # A Firestorm wall section on its cell, in the wall view: the neighbour mask (N1 E2 S4 W8), +16
     # damaged, +32 with the field on.
     "TSFSDF": dict(src="tsfsdf", make=None, frames=("wall/firestorm-wall", 64)),
@@ -384,7 +387,12 @@ def frames(src, spec):
                         tiles.append(img)
     if spec.get("then"):
         path, count = spec["then"]
-        tiles += [load(path, i) for i in range(count)]
+        extra = [load(path, i) for i in range(count)]
+        if spec.get("then_over"):
+            over_path, over_frame = spec["then_over"]
+            for img in extra:
+                img.alpha_composite(load(over_path, over_frame))
+        tiles += extra
     make = []
     if spec["make"]:
         path, count = spec["make"]
