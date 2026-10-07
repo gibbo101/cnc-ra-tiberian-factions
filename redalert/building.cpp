@@ -5771,8 +5771,8 @@ bool Is_TS_Apron_Smudge(SmudgeType smudge)
     return (smudge == SMUDGE_TSWEAPBB || smudge == SMUDGE_TSPROCBB || smudge == SMUDGE_TSDWEAPBB);
 }
 
-// True when the cell is a TS refinery's or war factory's walkable apron, where Is_Clear_To_Build allows no
-// building. The table lists each apron cell as an offset back to its building's centre.
+// True when the cell is a TS building's walkable apron or headroom, where Is_Clear_To_Build allows no
+// building. The table lists each such cell as an offset back to its building's centre.
 bool Is_TS_Apron_Cell(CELL cell)
 {
     if ((unsigned)cell >= MAP_CELL_TOTAL) {
@@ -5830,6 +5830,30 @@ bool Is_TS_Apron_Cell(CELL cell)
         }
         if (b != NULL && *b == _to_centre[i].Type && Coord_Cell(b->Center_Coord()) == centre) {
             return (true);
+        }
+    }
+
+    /*
+    **	A tall building's headroom (the power plant's, radar's, helipad's, tech centre's and firestorm
+    **	generator's back row, the service depot's empty north-east cells): its own overlap list.
+    */
+    CellClass const& here = Map[cell];
+    for (int i = 0; i < (int)(sizeof(here.Overlapper) / sizeof(here.Overlapper[0])); i++) {
+        ObjectClass const* o = here.Overlapper[i];
+        if (o == NULL || o->What_Am_I() != RTTI_BUILDING) {
+            continue;
+        }
+        BuildingClass const* b = (BuildingClass const*)o;
+        if (*b != STRUCT_TSPOWR && *b != STRUCT_TSRADR && *b != STRUCT_TSHPAD && *b != STRUCT_TSTECH
+            && *b != STRUCT_TSFGEN && *b != STRUCT_TSDEPT) {
+            continue;
+        }
+        short const* list = b->Class->Overlap_List();
+        CELL origin = Coord_Cell(b->Coord);
+        for (; list != NULL && *list != REFRESH_EOL; list++) {
+            if ((CELL)(origin + *list) == cell) {
+                return (true);
+            }
         }
     }
     return (false);
