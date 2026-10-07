@@ -16,7 +16,7 @@ on the canvas centre, so they ship as drawn. Frame sets written to the TS-HD-Gra
                     canvas; the RPG and SAM have no recoil pose, so their idle frame stands in).
                     The engine draws it after every other layer, so couplings and links sit
                     behind it
-  TSCTWRX      26   the layers the engine draws over any tower of the family
+  TSCTWRX      50   the layers the engine draws over a bare tower (TSCTWRXP: the same, padded as the armed towers)
                     (BuildingClass::Draw_It):
                       0-7    wall coupling, side N/E/S/W x {healthy, damaged}
                       8-13   south wall end, wall gdi/nod/brik x {healthy, damaged}
@@ -59,6 +59,9 @@ STATES = 2          # healthy, damaged; the destroyed tower is never on the map
 # has an even width and the launcher's half-width offset lands on a whole pixel (an odd 33 drew
 # the tower 2.7 px east of a gate's end). The padding moves nothing on screen.
 SHIP_W = 192
+# A fitted tower's plot is its cell and the headroom cell above (bdata.cpp), so the launcher centres its art half a
+# cell higher: its frames, and its own copy of the extra layers (TSCTWRXP), carry that much more canvas on top.
+FITTED_PAD = 128
 MAKE_FRAMES = 17
 LAMP_FRAMES = 6
 
@@ -160,20 +163,20 @@ def write_muzzles():
     print(f"wrote {MUZZLE_H}")
 
 
-def write_zip(ini, frames):
-    """ts_pack_towers.write_zip on the SHIP_W canvas: each frame centred in it."""
+def write_zip(ini, frames, pad_top=0):
+    """ts_pack_towers.write_zip on the SHIP_W canvas: each frame centred in it, pad_top px added above."""
     pad = (SHIP_W - T.CANVAS_W) // 2
     wide = []
     for f in frames:
-        cv = Image.new("RGBA", (SHIP_W, T.CANVAS_H), (0, 0, 0, 0))
-        cv.paste(f, (pad, 0))
+        cv = Image.new("RGBA", (SHIP_W, T.CANVAS_H + pad_top), (0, 0, 0, 0))
+        cv.paste(f, (pad, pad_top))
         wide.append(cv)
-    w0 = T.CANVAS_W
-    T.CANVAS_W = SHIP_W
+    w0, h0 = T.CANVAS_W, T.CANVAS_H
+    T.CANVAS_W, T.CANVAS_H = SHIP_W, T.CANVAS_H + pad_top
     try:
         T.write_zip(ini, wide)
     finally:
-        T.CANVAS_W = w0
+        T.CANVAS_W, T.CANVAS_H = w0, h0
 
 
 def pack():
@@ -183,13 +186,15 @@ def pack():
     write_zip("TSCTWR", bodies)
     write_zip("TSCTWRMAKE", make)
     for ini, name in TURRETS.items():
-        write_zip(ini, armed(bodies))
-        write_zip(ini + "T", turrets(name))
-        write_zip(ini + "MAKE", make)
+        write_zip(ini, armed(bodies), FITTED_PAD)
+        write_zip(ini + "T", turrets(name), FITTED_PAD)
+        write_zip(ini + "MAKE", make, FITTED_PAD)
     write_zip("TSCTWRX", extra)
+    write_zip("TSCTWRXP", extra, FITTED_PAD)
     dims = json.load(open(W.STUB_MANIFEST))
-    for ini in ("TSCTWR",) + tuple(TURRETS):
-        dims[ini] = [SHIP_W * 3 // 16, T.CANVAS_H * 3 // 16]
+    dims["TSCTWR"] = [SHIP_W * 3 // 16, T.CANVAS_H * 3 // 16]
+    for ini in TURRETS:
+        dims[ini] = [SHIP_W * 3 // 16, (T.CANVAS_H + FITTED_PAD) * 3 // 16]
     json.dump(dims, open(W.STUB_MANIFEST, "w"), indent=1)
     open(W.STUB_MANIFEST, "a").write("\n")
     write_muzzles()

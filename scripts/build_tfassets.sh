@@ -506,21 +506,23 @@ PACK_ARGS+=("$TMPDIR/tdngatevmk_stub.shp:TDNGATEVMAKE.SHP")
 # TS component tower family, same 33x60 canvas family as the wall (176x320 HD):
 # TSCTWR bare tower 2 frames (healthy/damaged) + rising buildup; TSVULC armed
 # tower = 32 facings x {idle, recoil, damaged idle, damaged recoil} like TDGUN.
+# The armed towers are 36x84: a 192x448 canvas centred on their 1x2 plot, the tower's
+# cell and the head's headroom above it.
 ts_stub TSCTWR "$TMPDIR/tsctwr_stub.shp" 36 60 2
 PACK_ARGS+=("$TMPDIR/tsctwr_stub.shp:TSCTWR.SHP")
 ts_stub TSCTWR "$TMPDIR/tsctwrmk_stub.shp" 36 60 17
 PACK_ARGS+=("$TMPDIR/tsctwrmk_stub.shp:TSCTWRMAKE.SHP")
-ts_stub TSVULC "$TMPDIR/tsvulc_stub.shp" 36 60 128
+ts_stub TSVULC "$TMPDIR/tsvulc_stub.shp" 36 84 128
 PACK_ARGS+=("$TMPDIR/tsvulc_stub.shp:TSVULC.SHP")
-ts_stub TSVULC "$TMPDIR/tsvulcmk_stub.shp" 36 60 17
+ts_stub TSVULC "$TMPDIR/tsvulcmk_stub.shp" 36 84 17
 PACK_ARGS+=("$TMPDIR/tsvulcmk_stub.shp:TSVULCMAKE.SHP")
-ts_stub TSROCK "$TMPDIR/tsrock_stub.shp" 36 60 128
+ts_stub TSROCK "$TMPDIR/tsrock_stub.shp" 36 84 128
 PACK_ARGS+=("$TMPDIR/tsrock_stub.shp:TSROCK.SHP")
-ts_stub TSROCK "$TMPDIR/tsrockmk_stub.shp" 36 60 17
+ts_stub TSROCK "$TMPDIR/tsrockmk_stub.shp" 36 84 17
 PACK_ARGS+=("$TMPDIR/tsrockmk_stub.shp:TSROCKMAKE.SHP")
-ts_stub TSCSAM "$TMPDIR/tscsam_stub.shp" 36 60 128
+ts_stub TSCSAM "$TMPDIR/tscsam_stub.shp" 36 84 128
 PACK_ARGS+=("$TMPDIR/tscsam_stub.shp:TSCSAM.SHP")
-ts_stub TSCSAM "$TMPDIR/tscsammk_stub.shp" 36 60 17
+ts_stub TSCSAM "$TMPDIR/tscsammk_stub.shp" 36 84 17
 PACK_ARGS+=("$TMPDIR/tscsammk_stub.shp:TSCSAMMAKE.SHP")
 # TSPLUG 72x108 = the HD upgrade center's 384x576 canvas centred on its 2x2 plot (TS Upgrade
 # Centre, addon host), its bib row in front: the antennas rise into the headroom above the box.
