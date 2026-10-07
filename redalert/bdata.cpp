@@ -1341,7 +1341,7 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            (short const*)TsWeap3List,
                                            (short const*)TsWeap3OList);
 
-// TS Firestorm Generator ([GAFIRE]): the Firestorm Defense's host, on the Tech Center's 3x2 plot.
+// TS Firestorm Generator ([GAFIRE]): the Firestorm Defense's host, on the Tech Center's 3x2 plot and footprint.
 static BuildingTypeClass const ClassTsFgen(STRUCT_TSFGEN,
                                            TXT_NONE,
                                            "TSFGEN",
@@ -1355,10 +1355,10 @@ static BuildingTypeClass const ClassTsFgen(STRUCT_TSFGEN,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,
                                            DIR_N,
-                                           BSIZE_32,           // TS-authentic 3x2.
-                                           NULL,
-                                           (short const*)List32,
-                                           NULL);
+                                           BSIZE_32,           // The south row is footprint and the bib row lies in
+                                           NULL,               // front; the north row is headroom, as the Tech Center's.
+                                           (short const*)List32_000111, // OCCUPYLIST: south row only.
+                                           (short const*)List31);       // OVERLAPLIST: north art row.
 
 // TS Firestorm Wall Section ([GAFSDF]): a flat 1x1 pad, not selectable and insignificant as in TS,
 // with no build-up. BuildingClass::Shape_Number picks the frame from its neighbours.
@@ -6031,7 +6031,7 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
                                                   MAP_CELL_W * 2, MAP_CELL_W * 2 + 1, REFRESH_EOL};
         return (_ts_tall22_place);
     }
-    if (placement && Type == STRUCT_TSTECH) {
+    if (placement && (Type == STRUCT_TSTECH || Type == STRUCT_TSFGEN)) {
         static short const _ts_tall32_place[] = {0, 1, 2, MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W + 2,
                                                   MAP_CELL_W * 2, MAP_CELL_W * 2 + 1, MAP_CELL_W * 2 + 2, REFRESH_EOL};
         return (_ts_tall32_place);
@@ -6168,7 +6168,7 @@ int BuildingTypeClass::Height(bool bib) const
 */
 int BuildingTypeClass::Placement_Ghost_Rows_Above(void) const
 {
-    if (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR || Type == STRUCT_TSTECH) {
+    if (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR || Type == STRUCT_TSTECH || Type == STRUCT_TSFGEN) {
         return (1);
     }
     return (0);
