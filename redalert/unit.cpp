@@ -4907,11 +4907,6 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
         return (MOVE_NO);
     }
 
-    // TF: no vehicle stands under a TS Helipad's tower.
-    if (TF_Is_Helipad_Tower_Cell(cell)) {
-        return (MOVE_NO);
-    }
-
     // TF: a refinery dock pad is for harvesters only, so no other vehicle parks there and blocks unloading;
     // while a harvester is docked, the pad is closed to every unit.
     /*

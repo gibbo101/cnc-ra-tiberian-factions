@@ -5045,10 +5045,10 @@ COORDINATE BuildingClass::Docking_Coord(void) const
 
     if (*this == STRUCT_TSHPAD) {
         /*
-        **	The TS pad's landing circle is drawn across the 2x2 plot's middle, a quarter of a cell
-        **	below its centre.
+        **	The TS pad's landing circle is drawn across the 2x2 plot's middle, the art raised half a
+        **	cell: a quarter of a cell above its centre.
         */
-        return (Coord_Add(Coord, XY_Coord(256, 320)));
+        return (Coord_Add(Coord, XY_Coord(256, 192)));
     }
     if (Class->Is_Helipad()) {
         return (Coord_Add(Coord, XYP_COORD(24, 18)));
@@ -5784,24 +5784,6 @@ bool Is_Refinery_Dock_Busy(CELL cell)
 bool Is_TS_Apron_Smudge(SmudgeType smudge)
 {
     return (smudge == SMUDGE_TSWEAPBB || smudge == SMUDGE_TSPROCBB || smudge == SMUDGE_TSDWEAPBB);
-}
-
-// True when the cell is a TS Helipad's north-west headroom, under its tower's top: buildings may stand there,
-// units may not.
-bool TF_Is_Helipad_Tower_Cell(CELL cell)
-{
-    if ((unsigned)cell >= MAP_CELL_TOTAL) {
-        return (false);
-    }
-    CellClass const& here = Map[cell];
-    for (int i = 0; i < (int)(sizeof(here.Overlapper) / sizeof(here.Overlapper[0])); i++) {
-        ObjectClass const* o = here.Overlapper[i];
-        if (o != NULL && o->What_Am_I() == RTTI_BUILDING && *(BuildingClass const*)o == STRUCT_TSHPAD
-            && Coord_Cell(o->Coord) == cell) {
-            return (true);
-        }
-    }
-    return (false);
 }
 
 // True when the cell is a TS building's walkable apron or the Service Depot's empty corner, where
@@ -8817,7 +8799,7 @@ COORDINATE BuildingClass::Target_Coord(void) const
         return XY_Coord(Coord_X(coord) - CELL_LEPTON_W, Coord_Y(coord));
     }
     if (*this == STRUCT_TSPOWR || *this == STRUCT_TSRADR || *this == STRUCT_TSTECH || *this == STRUCT_TSFGEN
-        || *this == STRUCT_TSHPAD || TF_Is_Wall_Tower(Class->Type)) {
+        || TF_Is_Wall_Tower(Class->Type)) {
         // The south row is the only real footprint.
         return XY_Coord(Coord_X(coord), Coord_Y(Cell_Coord((CELL)(Coord_Cell(Coord) + MAP_CELL_W))));
     }
