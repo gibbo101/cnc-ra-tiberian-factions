@@ -38,8 +38,10 @@ def world_meshes(js, binb):
             parent[c] = i
 
     def xf(i):
+        # the node's local transform (rotation, scale, translation), composed with its parents'
         n = js['nodes'][i]
-        R = qmat(n.get('rotation', [0, 0, 0, 1])); t = np.array(n.get('translation', [0, 0, 0]), float)
+        R = qmat(n.get('rotation', [0, 0, 0, 1])) @ np.diag(np.array(n.get('scale', [1, 1, 1]), float))
+        t = np.array(n.get('translation', [0, 0, 0]), float)
         if i in parent:
             Rp, tp = xf(parent[i])
             return Rp @ R, Rp @ t + tp

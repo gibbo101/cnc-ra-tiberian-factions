@@ -10,6 +10,7 @@ A spec module defines:
   TURN          optional (file name, [frame numbers to lay over each other] for each of the 32 facings as a function)
   LINEUP        (file name, [(label, path pattern or None for HD, frame list, scale)]) for the scale preview
   CROP          the crop round the unit for the sheets
+  INMOD_LABEL   optional: the label of the sheets' left column (default 'in-mod')
   GLB           optional function(path) writing the .glb
   SRC           the unit's own source files to package (besides the shared ones)
 
@@ -75,7 +76,7 @@ def pair_tile(spec, hd_fmt, frames, text):
     crop = spec.CROP
     W, H = crop[2] - crop[0], crop[3] - crop[1]
     t = Image.new('RGB', (2 * W + 6, H + 16), (28, 30, 34))
-    for j, (lab, fmt) in enumerate((('in-mod', spec.INMOD), ('HD', hd_fmt))):
+    for j, (lab, fmt) in enumerate(((getattr(spec, 'INMOD_LABEL', 'in-mod'), spec.INMOD), ('HD', hd_fmt))):
         t.paste(on_bg(layered(fmt, frames)).crop(crop).convert('RGB'), (j * (W + 6), 16))
         label(t, '%s  %s' % (lab, text), (j * (W + 6) + 4, 2))
     return t
@@ -154,7 +155,7 @@ def check(spec, pkg):
 def package_src(spec, pkg, unit_dir):
     """copy the source into PKG/src with the paths made relative (paths.py says where the hand-off is)."""
     vox = os.path.dirname(os.path.abspath(__file__))
-    ren = HANDOFF + '/renderer'
+    ren = '/home/claude/units/ts-units-hd-handoff/renderer'
     S = pkg + '/src'
     os.makedirs(S, exist_ok=True)
     for f in SHARED + getattr(spec, 'SHARED_EXTRA', []):
@@ -171,7 +172,7 @@ def package_src(spec, pkg, unit_dir):
         s = re.sub(r"sys\.path\.insert\(0, ['\"]/home/claude/units/work/vox['\"]\)(;[ \t]*|\n)", "", s)
         s = re.sub(r"sys\.path\.insert\(0, ['\"]/home/claude/units/ts-units-hd-handoff/renderer['\"]\)",
                    "sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))", s)
-        s = s.replace("HANDOFF + '/", "HANDOFF + '/")
+        s = s.replace("'/home/claude/units/ts-units-hd-handoff/", "HANDOFF + '/")
         if "HANDOFF + '/" in s and 'from paths import HANDOFF' not in s:
             s = re.sub(r'^(import [^\n]+\n)', r'\1from paths import HANDOFF\n', s, count=1, flags=re.M)
         if 'os.path.dirname' in s and not re.search(r'^[ \t]*import[ \t]+([\w.]+[ \t]*,[ \t]*)*os\b', s, re.M):
