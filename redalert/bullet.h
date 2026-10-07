@@ -71,6 +71,8 @@ public:
     HousesType TFPodHouse;
     DirType TFPodApproach;
     InfantryType TFPodType;
+    // TF: the house of the techno that fired it, HOUSE_NONE when none did.
+    HousesType TF_Payback_House(void) const;
     /*
     **	TSLOBBED: how many times the disc has touched down; it goes off on the third.
     **	Zero and unused for every other bullet type.

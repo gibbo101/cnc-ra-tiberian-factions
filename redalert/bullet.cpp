@@ -107,6 +107,12 @@ BulletClass::BulletClass(BulletType id,
     Height = FLIGHT_LEVEL;
 }
 
+// The house of the techno that fired this bullet, HOUSE_NONE when none did.
+HousesType BulletClass::TF_Payback_House(void) const
+{
+    return ((Payback != NULL) ? Payback->Owner() : HOUSE_NONE);
+}
+
 /***********************************************************************************************
  * BulletClass::~BulletClass -- Destructor for bullet objects.                                 *
  *                                                                                             *
