@@ -1319,11 +1319,10 @@ static BuildingTypeClass const ClassTsSilo(STRUCT_TSSILO,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,
                                            DIR_N,
-                                           BSIZE_21,           // 2x1 with the bib row in front, like the TD silo:
-                                                                // the silo stands on the plot row.
-                                           NULL,
-                                           (short const*)List21,
-                                           (short const*)NULL);
+                                           BSIZE_22,           // The south row is footprint and the bib row lies in
+                                           NULL,               // front; the dome rises into the north row, headroom.
+                                           (short const*)List22_0011,
+                                           (short const*)List22_1100);
 
 static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            TXT_NONE,
@@ -6018,7 +6017,7 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
     **	on its top row, and the headroom row is demanded clear at placement
     **	(the radar height trick); blocking stays south-row-only.
     */
-    if (placement && (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR || Type == STRUCT_TSHPAD)) {
+    if (placement && (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR || Type == STRUCT_TSHPAD || Type == STRUCT_TSSILO)) {
         /*
         **	Legality spans headroom + pads + bib: three rows from the plot
         **	origin. The GHOST the launcher draws is only the two ground rows
@@ -6172,7 +6171,7 @@ int BuildingTypeClass::Height(bool bib) const
 int BuildingTypeClass::Placement_Ghost_Rows_Above(void) const
 {
     if (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR || Type == STRUCT_TSTECH || Type == STRUCT_TSFGEN
-        || Type == STRUCT_TSHPAD) {
+        || Type == STRUCT_TSHPAD || Type == STRUCT_TSSILO) {
         return (1);
     }
     return (0);
