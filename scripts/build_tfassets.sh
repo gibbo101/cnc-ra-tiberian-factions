@@ -411,10 +411,10 @@ ts_stub TSDEPT "$TMPDIR/tsdept_stub.shp" 72 72 2
 PACK_ARGS+=("$TMPDIR/tsdept_stub.shp:TSDEPT.SHP")
 ts_stub TSDEPT "$TMPDIR/tsdeptmk_stub.shp" 72 72 19
 PACK_ARGS+=("$TMPDIR/tsdeptmk_stub.shp:TSDEPTMAKE.SHP")
-# TSHPAD 48x48 = the HD helipad's 256x256 canvas, its 2x2 plot.
-ts_stub TSHPAD "$TMPDIR/tshpad_stub.shp" 48 48 2
+# TSHPAD 48x72 = the HD helipad's 256x384 canvas centred on its 2x2 plot, the art raised half a cell.
+ts_stub TSHPAD "$TMPDIR/tshpad_stub.shp" 48 72 2
 PACK_ARGS+=("$TMPDIR/tshpad_stub.shp:TSHPAD.SHP")
-ts_stub TSHPAD "$TMPDIR/tshpadmk_stub.shp" 48 48 24
+ts_stub TSHPAD "$TMPDIR/tshpadmk_stub.shp" 48 72 24
 PACK_ARGS+=("$TMPDIR/tshpadmk_stub.shp:TSHPADMAKE.SHP")
 # TSDROP 99x96 = the HD dropship bay's 528x512 canvas centred on the deck's 3x2 plot.
 ts_stub TSDROP "$TMPDIR/tsdrop_stub.shp" 99 96 2

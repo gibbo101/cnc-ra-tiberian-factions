@@ -153,12 +153,13 @@ BUILDINGS = {
     # full the house's storage is
     # the bunkers on the 2x1 plot row: the art is drawn on a 2x2, its foundation's south edge on
     # the south edge, so 128 px under it centres the canvas on the 2x1 with the bib row in front.
-    # Idle: the flag waving (7) under the entrance lamps and the mast's beacon (8): 56 frames
+    # Idle: the flag waving (7) under the entrance lamps and the mast's beacon (8): 56 frames. Moved 11 px
+    # (2 classic px) west, so the door's middle stands on a column of infantry spots and soldiers walk out straight.
     "TSPILE": dict(src="tspile", make=("build-up/barracks-build", 24), base="building/barracks", runs=[
         (56, [("C-flag/barracks-flag", range(0, 7), range(7, 14)),
               ("A-lamps/barracks-lamps", range(0, 8), range(8, 16)),
               ("B-beacon/barracks-beacon", range(0, 8), range(8, 16))]),
-    ], pad_bottom=128),
+    ], pad_bottom=128, shift_x=-11),
     # TS's wedge its own way round, drawn on a 3x1 row: 128 px over it centre the canvas on the 3x2
     # plot, the wedge on the south row, the fins and dome in the north row, the bib row in front.
     # Idle: the dome's panels pulse (8), healthy then damaged.
@@ -214,9 +215,10 @@ BUILDINGS = {
     # damaged; while it repairs, the pad's flash (7 healthy, 7 damaged) is its own layer.
     "TSDEPT": dict(src="tsdept", make=("build-up/depot-build", 19), frames=("loop/depot-loop", 70)),
     "TSDEPTRP": dict(src="tsdept", make=None, frames=("D-flash/depot-flash", 14)),
-    # The helipad on its 2x2 plot, the machinery down the west side. Idle: the pad's lights (8), healthy
-    # then damaged.
-    "TSHPAD": dict(src="tshpad", make=("build-up/helipad-build", 24), frames=("loop/helipad-loop", 16)),
+    # The helipad on its 2x2 plot, the machinery down the west side, raised half a cell: 128 px under it put the
+    # landing circle a quarter cell above the plot's centre. Idle: the pad's lights (8), healthy then damaged.
+    "TSHPAD": dict(src="tshpad", make=("build-up/helipad-build", 24), frames=("loop/helipad-loop", 16),
+                   pad_bottom=128),
     # The upgrade center on a 2x2 plot with a bib row in front (TS's 2x3), its sockets and plugs to the south: its
     # art, drawn on the 2x3, takes 128 px under it so the canvas centres on the 2x2. Its idle loop
     # is baked per plug combination in the order building.cpp's TF_Plug_Art_Block numbers them: none,
@@ -382,6 +384,13 @@ def pad_over(img, px):
 def pad_under(img, px):
     out = Image.new("RGBA", (img.width, img.height + px), (0, 0, 0, 0))
     out.paste(img, (0, 0))
+    return out
+
+
+def shift_across(img, px):
+    """img moved px across its own canvas (negative = west), the canvas unchanged."""
+    out = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    out.paste(img, (px, 0))
     return out
 
 
@@ -669,6 +678,9 @@ def main(argv):
         if spec.get("pad_bottom"):
             tiles = [pad_under(i, spec["pad_bottom"]) for i in tiles]
             make = [pad_under(i, spec["pad_bottom"]) for i in make]
+        if spec.get("shift_x"):
+            tiles = [shift_across(i, spec["shift_x"]) for i in tiles]
+            make = [shift_across(i, spec["shift_x"]) for i in make]
         size = canvas_for(tiles + make)
         pack(ini, tiles, make, size)
         stubs[ini] = [size[0] * 3 // 16, size[1] * 3 // 16]
