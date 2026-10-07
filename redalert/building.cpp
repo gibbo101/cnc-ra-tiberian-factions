@@ -1159,6 +1159,11 @@ int BuildingClass::Shape_Number(void) const
 
     int shapenum = Fetch_Stage();
 
+    // TF: the Firestorm generator stands still on low power, as TS's powered anims do: the frames after its loops.
+    if (*this == STRUCT_TSFGEN && BState != BSTATE_CONSTRUCTION && House->Power_Fraction() < 1) {
+        return (96 + ((Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0));
+    }
+
     // TF: the EMP cannon's body is a static mound, healthy or damaged; Draw_It draws the cannon over it.
     if (*this == STRUCT_TSPULS && BState != BSTATE_CONSTRUCTION) {
         return ((Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0);

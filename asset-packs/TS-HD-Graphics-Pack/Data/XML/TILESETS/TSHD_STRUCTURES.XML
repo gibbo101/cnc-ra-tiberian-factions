@@ -39132,6 +39132,28 @@
 	</Tile>
 	<Tile>
 		<Key>
+			<Name>TSFGEN</Name>
+			<Shape>96</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsfgen\tsfgen-0096.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSFGEN</Name>
+			<Shape>97</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsfgen\tsfgen-0097.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
 			<Name>TSFGENMAKE</Name>
 			<Shape>0</Shape>
 		</Key>
