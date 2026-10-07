@@ -2208,6 +2208,34 @@ static BuildingTypeClass const ClassTsDpsa(STRUCT_TSDPSA,
                                            (short const*)List1,
                                            (short const*)NULL);
 
+// TS Tick Tank dug in (STRUCT_TSTICK), TS [GATICK]: UNIT_TSTTNK deployed. Never built from the sidebar (the tank digs in
+// to it, and the deploy order packs it back). A turret building: its body in the turret layout, the turret TSTICKT.
+static BuildingTypeClass const ClassTsTick(STRUCT_TSTICK,
+                                           TXT_NONE,
+                                           "TSTICK",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_NORMAL,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,               // fake
+                                           false,               // regulated anim
+                                           false,               // always use the given name
+                                           false,               // IsWall
+                                           false,               // simple damage imagery
+                                           false,               // invisible to radar
+                                           true,                // selectable
+                                           true,                // legal target
+                                           false,               // insignificant
+                                           false,               // theater specific
+                                           true,                // rotating turret
+                                           true,                // remappable
+                                           RTTI_NONE,
+                                           DIR_S,               // Its turret faces south as it digs in.
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
 // TD Communications Center, ported from TD's ClassCommand: the 2x2 radar.
 static BuildingTypeClass const ClassTdHq(STRUCT_TDHQ,
                                          TXT_NONE,           // Display name (rules.ini Name= overrides).
@@ -5043,7 +5071,7 @@ bool BuildingTypeClass::Is_Tiberian_Era(void) const
         return (gate->Era != 'R');
     }
     return (Type >= STRUCT_TDOBLI && Type <= STRUCT_TIBERIAN_LAST)
-           || (Type >= STRUCT_TS_TREE_FIRST && Type <= STRUCT_TS_TREE_LAST);
+           || (Type >= STRUCT_TS_TREE_FIRST && Type <= STRUCT_TS_TREE_LAST) || Type == STRUCT_TSTICK;
 }
 
 // True for the TS buildings, gates included. Their placement sounds differ: a PLACE2 slam, then a silent rise
@@ -5055,7 +5083,7 @@ bool BuildingTypeClass::Is_TS_Era(void) const
         return (gate->Era == 'S');
     }
     return (Type == STRUCT_TSPOWR)
-           || (Type >= STRUCT_TS_TREE_FIRST && Type <= STRUCT_TS_TREE_LAST);
+           || (Type >= STRUCT_TS_TREE_FIRST && Type <= STRUCT_TS_TREE_LAST) || Type == STRUCT_TSTICK;
 }
 
 // The house scan-mask bit a building type sets. Types past bit 31 set their vanilla equivalent's bit, or
@@ -5295,6 +5323,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTDGGATEV);
     new BuildingTypeClass(ClassTDNGATEH);
     new BuildingTypeClass(ClassTDNGATEV);
+    new BuildingTypeClass(ClassTsTick);        // STRUCT_TSTICK (TS Tick Tank dug in)
 
     // TF: addon wiring (TS PowersUpBuilding= and Upgrades=). The statics are const, so it is set on the heap
     // copies.
