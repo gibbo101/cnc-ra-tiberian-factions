@@ -7739,8 +7739,8 @@ COORDINATE UnitClass::TF_Pick_Coord(COORDINATE point) const
     return (XY_Coord(Coord_X(centre), y));
 }
 
-// True while a Titan or Juggernaut is so deep in a TS war factory's bay that its antenna would show over the roof;
-// it draws its antenna-less bay frames until then. Depths below the plot's north edge: scripts/probes/wf_bay_sim.py.
+// True while a Titan or Juggernaut is deep in a TS war factory's bay: it draws its antenna-less bay frames until a
+// second's walk past where its antenna clears the roof (scripts/probes/wf_bay_sim.py --switch).
 bool UnitClass::TF_Hides_Antenna(void) const
 {
     if (*this != UNIT_TSTITN && *this != UNIT_TSJUGG) {
@@ -7751,7 +7751,7 @@ bool UnitClass::TF_Hides_Antenna(void) const
         return (false);
     }
     bool mobile = (*factory == STRUCT_TSDWEAP);
-    int depth = (*this == UNIT_TSTITN) ? (mobile ? 249 : 259) : (mobile ? 273 : 279);
+    int depth = (*this == UNIT_TSTITN) ? (mobile ? 331 : 341) : (mobile ? 346 : 352);
     return ((int)Coord_Y(Coord) - (int)Coord_Y(factory->Coord) < depth);
 }
 
