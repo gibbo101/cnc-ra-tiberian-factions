@@ -8785,10 +8785,6 @@ COORDINATE BuildingClass::Target_Coord(void) const
         // The south row is the only real footprint.
         return XY_Coord(Coord_X(coord), Coord_Y(Cell_Coord((CELL)(Coord_Cell(Coord) + MAP_CELL_W))));
     }
-    if (*this == STRUCT_TSSILO) {
-        // The north row is the only real footprint; the bib row is in the plot.
-        return XY_Coord(Coord_X(coord), Coord_Y(Cell_Coord(Coord_Cell(Coord))));
-    }
 
     if (Class->FoundationFace != FACING_NONE) {
         return (Adjacent_Cell(coord, Class->FoundationFace));
