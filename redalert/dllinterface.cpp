@@ -6850,6 +6850,11 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
 
     new_object.Owner = (base_object != NULL) ? ((override_owner != HOUSE_NONE) ? override_owner : base_object->Owner)
                                              : (char)object->Owner();
+    // TF: the dropship is a bullet, which has no house; it takes the bay's, so its trim takes the house colour.
+    if (base_object == NULL && object->What_Am_I() == RTTI_BULLET && *(BulletClass const*)object == BULLET_TSDROPPOD
+        && ((BulletClass const*)object)->TF_Payback_House() != HOUSE_NONE) {
+        new_object.Owner = (char)((BulletClass const*)object)->TF_Payback_House();
+    }
 
     HouseClass* owner_house = nullptr;
     for (int i = 0; i < Houses.Count(); ++i) {
