@@ -147,8 +147,6 @@ static short const List13[] = {0, MCW, MCW * 2, REFRESH_EOL};
 static short const List22[] = {0, 1, MCW, MCW + 1, REFRESH_EOL};
 static short const List22_0011[] = {MCW, MCW + 1, REFRESH_EOL};
 static short const List22_1100[] = {0, 1, REFRESH_EOL};
-static short const List22_1011[] = {0, MCW, MCW + 1, REFRESH_EOL};
-static short const List22_0100[] = {1, REFRESH_EOL};
 static short const List2[] = {0, 1, MCW + 1, MCW, REFRESH_EOL};
 static short const List32[] = {0, 1, 2, MCW, MCW + 1, MCW + 2, REFRESH_EOL};
 static short const List32_000111[] = {MCW, MCW + 1, MCW + 2, REFRESH_EOL};
@@ -1444,10 +1442,10 @@ static BuildingTypeClass const ClassTsHpad(STRUCT_TSHPAD,
                                            true, true, false, false, false, true,
                                            RTTI_AIRCRAFTTYPE,  // Aircraft factory.
                                            DIR_N,
-                                           BSIZE_22,           // The pad's south row and the tower's cell are footprint,
-                                           NULL,               // the bib row in front; the empty north-east cell is headroom.
-                                           (short const*)List22_1011,
-                                           (short const*)List22_0100);
+                                           BSIZE_22,           // The pad's south row is footprint and the bib row lies in
+                                           NULL,               // front; the north row is headroom, the tower's cell closed
+                                           (short const*)List22_0011, // to units (TF_Is_Helipad_Tower_Cell).
+                                           (short const*)List22_1100);
 
 static BuildingTypeClass const ClassTsTech(STRUCT_TSTECH,
                                            TXT_NONE,
