@@ -7834,6 +7834,17 @@ int BuildingClass::Mission_Unload(void)
                         unit->ArchiveTarget = ::As_Target(House->Where_To_Go(unit));
                     }
                     unit->Rail_To(coord, Desired_Facing256(Coord_X(unit->Coord), Coord_Y(unit->Coord), Coord_X(coord), Coord_Y(coord)));
+                    // TF: a player's unit walks on from the rail's end, to the rally point or clear of the doorstep,
+                    // so the factory can open for the next one. Harvesters harvest instead.
+                    if (House->IsHuman && !unit->Class->IsToHarvest) {
+                        TARGET onward = (Can_Have_Rally_Point() && Target_Legal(RallyPoint))
+                                            ? Target_For_Rally_Point(unit->Class->Speed)
+                                            : ::As_Target(Map.Nearby_Location((CELL)(cell + MAP_CELL_W), unit->Class->Speed));
+                        if (Target_Legal(onward)) {
+                            unit->Assign_Mission(MISSION_MOVE);
+                            unit->Assign_Destination(onward);
+                        }
+                    }
                     Status = LEAVE;
                 } else {
                     Close_Door(DOOR_RATE, DOOR_STAGES);
