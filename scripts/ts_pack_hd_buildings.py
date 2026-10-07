@@ -241,6 +241,12 @@ BUILDINGS = {
         (20, [("A-dish/dropbay-dish", range(0, 20), range(20, 40)),
               ("B-lights/dropbay-lights", range(0, 20), range(20, 40))])], crop=(120, 64, 648, 512),
                    pad_bottom=64),
+    # The Tick Tank dug in, on its 1x1 plot where the tank stood: in the turret layout Shape_Number reads (32
+    # facings x {idle, recoil, damaged idle, damaged recoil}), the body one frame per state; the turret its own
+    # layer (TSTICKT), drawn in place over either state. The build-up is the deploy, played backwards to pack up.
+    "TSTICK": dict(src="tstick", make=("build-up/tick-tank-dug-in-build", 25), frames=("building/tick-tank-dug-in", 2),
+                   pick=[0] * 64 + [1] * 64),
+    "TSTICKT": dict(src="tstick", make=None, frames=("turret/tick-tank-dug-in-turret", 32), pick=list(range(32)) * 4),
     # The EMP cannon's mound on its 2x2 plot, healthy and damaged, with the head as its own layer. The
     # build-up is every other frame of the 24 delivered, ending on the finished mound: 13 frames, the last
     # three of which carry the head (building.cpp seats it from build-up stage 10).
@@ -296,6 +302,7 @@ UNITS = {
     "TSSAPC": _voxel_unit("tssapc", 113),
     "TSSONIC": _voxel_unit("tssonic", 64, contact_shadow=True),
     "TSSUBTANK": _voxel_unit("tssubtank", 113, contact_shadow=True),
+    "TSTTNK": _voxel_unit("tsttnk", 64, contact_shadow=True),
     "TSDSHP": dict(root=UNITS_SRC, src="tsdshp", frames=("frames/tsdshp", 4), digits=4, kind="VFX"),
     "TSHUNT": _voxel_unit("tshunt", 8),
     "TSLIMP": _voxel_unit("tslimp", 20),

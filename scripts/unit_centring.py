@@ -66,6 +66,7 @@ UNITS = {
     "TSAPC": (32, 1, None, None, ()),
     "TSSAPC": (32, 1, None, None, ()),
     "TSSUBTANK": (32, 1, None, None, ()),
+    "TSTTNK": (32, 1, 32, None, ()),
     "TSMEMP": (32, 1, None, None, ()),
     "TSMWAR": (32, 1, None, None, ()),
     "TSMCV": (32, 1, None, None, ()),

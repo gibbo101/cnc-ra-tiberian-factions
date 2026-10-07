@@ -21,4 +21,5 @@ static const struct
     {UNIT_TSSAPC, 45},
     {UNIT_TSSONIC, 29},
     {UNIT_TSSUBTANK, 45},
+    {UNIT_TSTTNK, 29},
 };

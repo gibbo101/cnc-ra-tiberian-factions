@@ -306,6 +306,14 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tslpst_stub.shp" 48 48 32
 PACK_ARGS+=("$TMPDIR/tslpst_stub.shp:TSLPST.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsmwar_stub.shp" 48 48 32
 PACK_ARGS+=("$TMPDIR/tsmwar_stub.shp:TSMWAR.SHP")
+# TS Tick Tank -- 64 shapes: hull 0-31 + turret 32-63 on the 384 canvas (48x48 = ShapeSize). Dug in (TSTICK):
+# 128 shapes in the turret layout on the 256 canvas of its 1x1 plot, and the 25-frame dig-in.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsttnk_stub.shp" 48 48 64
+PACK_ARGS+=("$TMPDIR/tsttnk_stub.shp:TSTTNK.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tstick_stub.shp" 48 48 128
+PACK_ARGS+=("$TMPDIR/tstick_stub.shp:TSTICK.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tstickmk_stub.shp" 48 48 25
+PACK_ARGS+=("$TMPDIR/tstickmk_stub.shp:TSTICKMAKE.SHP")
 # Subterranean pair (Devil's Tongue / Sub APC) -- 112 shapes each: 32 driving
 # + 40 dive + 40 emerge pitch-ladder frames (docs/subterranean-design.md).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tssubtank_stub.shp" 48 48 113
