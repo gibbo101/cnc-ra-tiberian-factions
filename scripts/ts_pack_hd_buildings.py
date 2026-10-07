@@ -182,7 +182,8 @@ BUILDINGS = {
     # The helipad on its 2x2 plot, the machinery down the west side. Idle: the pad's lights (8), healthy
     # then damaged.
     "TSHPAD": dict(src="tshpad", make=("build-up/helipad-build", 24), frames=("loop/helipad-loop", 16)),
-    # The upgrade center on TS's 2x3 plot, its sockets and plugs to the south. Its idle loop
+    # The upgrade center on a 2x2 plot with a bib row in front (TS's 2x3), its sockets and plugs to the south: its
+    # art, drawn on the 2x3, takes 128 px under it so the canvas centres on the 2x2. Its idle loop
     # is baked per plug combination in the order building.cpp's TF_Plug_Art_Block numbers them: none,
     # each plug alone in the right-hand socket, then each ordered pair (right, left), plugs taken
     # ion, pods, seeker. Each block is 40 healthy then 40 damaged frames of the dish, lamps and slot.
@@ -192,7 +193,7 @@ BUILDINGS = {
                            "right-seeker_left-ion", "right-seeker_left-pods"),
                    base="base/{combo}/upgrade-center-{combo}", loop=40,
                    overlays=(("A-dish/upgrade-center-dish", 20), ("B-lamps/upgrade-center-lamps", 10),
-                             ("C-slot/upgrade-center-slot", 8))),
+                             ("C-slot/upgrade-center-slot", 8)), pad_bottom=128),
     # The plugs' placement ghosts (never on the map: a plug installs into an upgrade center), healthy
     # and damaged, standing in the right-hand socket's window.
     "TSPION": dict(src="tsplug", make=None, frames=("plugs/ion-cannon-uplink/ion-cannon-uplink", 16), pick=(0, 15)),
