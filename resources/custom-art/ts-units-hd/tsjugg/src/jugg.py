@@ -156,7 +156,7 @@ CLASS.update({RECESS: 5, HSLIT: 5, SCORE: 5, MSLOT: 5})
 ANTENNA = 123
 CLASS.update({ANTENNA: 5})
 ANT_R = 0.45
-ANT_L = 16.0            # above the roof, as the Titan's stands above its shell
+ANT_L = 7.5             # above the roof: short enough to hide in a TS war factory's bay behind the shut door
 
 
 def roof_at(P, u, v, dw=0.0):
