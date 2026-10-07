@@ -506,11 +506,11 @@ PACK_ARGS+=("$TMPDIR/tdngatevmk_stub.shp:TDNGATEVMAKE.SHP")
 # TS component tower family, same 33x60 canvas family as the wall (176x320 HD):
 # TSCTWR bare tower 2 frames (healthy/damaged) + rising buildup; TSVULC armed
 # tower = 32 facings x {idle, recoil, damaged idle, damaged recoil} like TDGUN.
-# The armed towers are 36x84: a 192x448 canvas centred on their 1x2 plot, the tower's
+# Every tower is 36x84: a 192x448 canvas centred on its 1x2 plot, the tower's
 # cell and the head's headroom above it.
-ts_stub TSCTWR "$TMPDIR/tsctwr_stub.shp" 36 60 2
+ts_stub TSCTWR "$TMPDIR/tsctwr_stub.shp" 36 84 2
 PACK_ARGS+=("$TMPDIR/tsctwr_stub.shp:TSCTWR.SHP")
-ts_stub TSCTWR "$TMPDIR/tsctwrmk_stub.shp" 36 60 17
+ts_stub TSCTWR "$TMPDIR/tsctwrmk_stub.shp" 36 84 17
 PACK_ARGS+=("$TMPDIR/tsctwrmk_stub.shp:TSCTWRMAKE.SHP")
 ts_stub TSVULC "$TMPDIR/tsvulc_stub.shp" 36 84 128
 PACK_ARGS+=("$TMPDIR/tsvulc_stub.shp:TSVULC.SHP")
