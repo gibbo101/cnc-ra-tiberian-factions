@@ -8743,7 +8743,8 @@ COORDINATE BuildingClass::Target_Coord(void) const
         // The occupied cell west of the dock pad (column 1, row 1).
         return XY_Coord(Coord_X(coord) - CELL_LEPTON_W, Coord_Y(coord));
     }
-    if (*this == STRUCT_TSPOWR || *this == STRUCT_TSRADR || *this == STRUCT_TSTECH || *this == STRUCT_TSFGEN) {
+    if (*this == STRUCT_TSPOWR || *this == STRUCT_TSRADR || *this == STRUCT_TSTECH || *this == STRUCT_TSFGEN
+        || *this == STRUCT_TSHPAD) {
         // The south row is the only real footprint.
         return XY_Coord(Coord_X(coord), Coord_Y(Cell_Coord((CELL)(Coord_Cell(Coord) + MAP_CELL_W))));
     }
