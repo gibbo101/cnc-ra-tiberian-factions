@@ -1319,10 +1319,10 @@ static BuildingTypeClass const ClassTsSilo(STRUCT_TSSILO,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,
                                            DIR_N,
-                                           BSIZE_22,           // The south row is footprint and the bib row lies in
-                                           NULL,               // front; the dome rises into the north row, headroom.
-                                           (short const*)List22_0011,
-                                           (short const*)List22_1100);
+                                           BSIZE_22,           // The silo's row and the bib row in front of it, so
+                                           NULL,               // the selection box centres a row lower than its own.
+                                           (short const*)List22_1100,
+                                           (short const*)NULL);
 
 static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            TXT_NONE,
@@ -6017,7 +6017,7 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
     **	on its top row, and the headroom row is demanded clear at placement
     **	(the radar height trick); blocking stays south-row-only.
     */
-    if (placement && (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR || Type == STRUCT_TSHPAD || Type == STRUCT_TSSILO)) {
+    if (placement && (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR || Type == STRUCT_TSHPAD)) {
         /*
         **	Legality spans headroom + pads + bib: three rows from the plot
         **	origin. The GHOST the launcher draws is only the two ground rows
@@ -6171,7 +6171,7 @@ int BuildingTypeClass::Height(bool bib) const
 int BuildingTypeClass::Placement_Ghost_Rows_Above(void) const
 {
     if (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR || Type == STRUCT_TSTECH || Type == STRUCT_TSFGEN
-        || Type == STRUCT_TSHPAD || Type == STRUCT_TSSILO) {
+        || Type == STRUCT_TSHPAD) {
         return (1);
     }
     return (0);
@@ -6205,7 +6205,8 @@ bool BuildingTypeClass::Bib_And_Offset(SmudgeType& bib, CELL& cell) const
         **	Adjust the bib position for special buildings that have the bib as part
         **	of the building art itself.
         */
-        if (bib != SMUDGE_NONE) {
+        // TF: the TS Silo's plot takes in its bib row, so its bib starts on the plot's first row.
+        if (bib != SMUDGE_NONE && Type != STRUCT_TSSILO) {
             cell += ((Height() - 1) * MAP_CELL_W);
         }
     }
