@@ -1264,9 +1264,9 @@ static BuildingTypeClass const ClassTsPile(STRUCT_TSPILE,
                                            TXT_NONE,
                                            "TSPILE",
                                            FACING_NONE,
-                                           // The foot of the entrance steps, classic px from the plot's top-left corner: on a
-                                           // column of infantry spots, so soldiers walk straight out (ts_pack_hd_buildings.py).
-                                           XYP_COORD(30, 26),
+                                           // The foot of the entrance steps, classic px from the plot's top-left corner: in the
+                                           // row in front, as infantry snap to their cell's nearest free spot.
+                                           XYP_COORD(32, 26),
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,              // fake
