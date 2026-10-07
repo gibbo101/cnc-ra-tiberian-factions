@@ -8745,7 +8745,7 @@ COORDINATE BuildingClass::Target_Coord(void) const
         return XY_Coord(Coord_X(coord) - CELL_LEPTON_W, Coord_Y(coord));
     }
     if (*this == STRUCT_TSPOWR || *this == STRUCT_TSRADR || *this == STRUCT_TSTECH || *this == STRUCT_TSFGEN
-        || *this == STRUCT_TSHPAD) {
+        || *this == STRUCT_TSHPAD || *this == STRUCT_TSSILO) {
         // The south row is the only real footprint.
         return XY_Coord(Coord_X(coord), Coord_Y(Cell_Coord((CELL)(Coord_Cell(Coord) + MAP_CELL_W))));
     }
