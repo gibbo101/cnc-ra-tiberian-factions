@@ -160,11 +160,11 @@ BUILDINGS = {
     # Idle: the dome's panels pulse (8), healthy then damaged.
     "TSTECH": dict(src="tstech", make=("build-up/tech-center-build", 24),
                    frames=("loop/tech-center-loop", 16), pad_top=128),
-    # The silo on a 2x2 plot of its own row and the bib row in front: drawn on a 2x2 with its foundation's south
-    # edge on the south edge, so 256 px under it centre the canvas a row lower.
+    # The silo on its 2x1 plot row, the bib row in front: drawn on a 2x2 with the silo in the south row, so 128 px
+    # under it centre the canvas on that row.
     "TSSILO": dict(src="tssilo", make=("build-up/silo-build", 24), base="silo/silo",
                    blocks=[[("A-tiberium/silo-tiberium", [lv], [lv + 4], tiberium)] for lv in range(4)],
-                   runs=[(16, [("B-lamps/silo-lamps", range(0, 16), range(16, 32))])], pad_bottom=256),
+                   runs=[(16, [("B-lamps/silo-lamps", range(0, 16), range(16, 32))])], pad_bottom=128),
     # The refinery turned 22.5 degrees on its 4x3 plot. Idle: the dock lamps (16), healthy then
     # damaged; the flare stack's fire is its own layer (20 lit frames, then 20 empty).
     "TSPROC": dict(src="tsproc", make=("build-up/refinery-build", 24), frames=("loop/refinery-loop", 32)),
