@@ -9309,10 +9309,11 @@ void DLLExportClass::Calculate_Placement_Distances(BuildingTypeClass* placement_
                     }
                 }
             }
-            // TF: a TS war factory's concrete row is in its plot but holds no building; it reaches as the hall does.
+            // TF: the TS War Factory's concrete row is in its plot but holds no building; it reaches as the hall
+            // does. The deployed Mobile War Factory gives no reach (BaseNormal=no).
             if (base == NULL && Map.In_Radar((CELL)(cell - MAP_CELL_W))) {
                 BuildingClass* hall = (BuildingClass*)Map[(CELL)(cell - MAP_CELL_W)].Cell_Find_Object(RTTI_BUILDING);
-                if (hall != NULL && hall->Is_TS_War_Factory()) {
+                if (hall != NULL && *hall == STRUCT_TSWEAP) {
                     base = hall;
                 }
             }
