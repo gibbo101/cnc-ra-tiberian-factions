@@ -120,22 +120,21 @@ static short const TsProcList[] = {(MCW * 1), (MCW * 1) + 1, (MCW * 2), (MCW * 2
 static short const TsProcOList[] = {
     0, 1, 2, 3, MCW + 2, MCW + 3, (MCW * 2) + 2, (MCW * 2) + 3, REFRESH_EOL};
 /*
-**	The TS War Factory, 3x4: RA's 3x3 war factory slot with an empty row behind it, which centres the
-**	selection box over the roof and is otherwise ordinary ground. The hall fills rows 1-2 and row 3 is
-**	walkable concrete with the door's lane down its middle. The art reaches a little past the slot
-**	(the shadow east, debris west when damaged, the build-up's raised poles into row 0), and over row 3.
+**	The TS war factories, 3x3: RA's war factory slot. The hall fills rows 0-1 and row 2 is walkable concrete
+**	with the door's lane down its middle. The art reaches a little past the slot (the shadow east, debris
+**	west when damaged, the roof and the build-up's raised poles into the row behind), and over row 2.
 */
-static short const TsWeap3List[] = {MCW, MCW + 1, MCW + 2, (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, REFRESH_EOL};
-static short const TsWeap3OList[] = {-1, 0, 1, 2, 3,
-                                     MCW - 1, MCW + 3, (MCW * 2) - 1, (MCW * 2) + 3,
-                                     (MCW * 3) - 1, (MCW * 3), (MCW * 3) + 1, (MCW * 3) + 2, (MCW * 3) + 3,
+static short const TsWeap3List[] = {0, 1, 2, MCW, MCW + 1, MCW + 2, REFRESH_EOL};
+static short const TsWeap3OList[] = {-MCW - 1, -MCW, -MCW + 1, -MCW + 2, -MCW + 3,
+                                     -1, 3, MCW - 1, MCW + 3,
+                                     (MCW * 2) - 1, (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3,
                                      REFRESH_EOL};
 /*
 **	Units leave straight south down the lane to the bottom-middle cell, then spread across the row
 **	south of the plot.
 */
-static short const TsWeap3Exit[] = {XYCELL(1, 3), XYCELL(1, 4), XYCELL(0, 4), XYCELL(2, 4),
-                                    XYCELL(0, 3), XYCELL(2, 3), REFRESH_EOL};
+static short const TsWeap3Exit[] = {XYCELL(1, 2), XYCELL(1, 3), XYCELL(0, 3), XYCELL(2, 3),
+                                    XYCELL(0, 2), XYCELL(2, 2), REFRESH_EOL};
 
 static short const List1100[] = {0, 1, REFRESH_EOL};
 static short const List1101[] = {0, 1, (MCW * 1) + 1, REFRESH_EOL};
@@ -1337,8 +1336,7 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            true, true, false, false, false, true,
                                            RTTI_UNITTYPE,      // Vehicle factory.
                                            DIR_N,
-                                           BSIZE_34,           // an empty back row, the hall on rows 1-2, walkable
-                                                               // concrete on row 3.
+                                           BSIZE_33,           // the hall on rows 0-1, walkable concrete on row 2.
                                            (short const*)TsWeap3Exit,
                                            (short const*)TsWeap3List,
                                            (short const*)TsWeap3OList);
@@ -1390,7 +1388,7 @@ static BuildingTypeClass const ClassTsFsdf(STRUCT_TSFSDF,
                                            (short const*)List1,
                                            (short const*)NULL);
 
-// The Mobile War Factory deployed (Firestorm DGWEAP): a TS war factory on TSWEAP's 3x4 plot and exits, its
+// The Mobile War Factory deployed (Firestorm DGWEAP): a TS war factory on TSWEAP's 3x3 plot and exits, its
 // door 20 leptons deeper. Never built from the sidebar; the deploy order packs it into UNIT_TSMWAR.
 static BuildingTypeClass const ClassTsDweap(STRUCT_TSDWEAP,
                                             TXT_NONE,
@@ -1405,7 +1403,7 @@ static BuildingTypeClass const ClassTsDweap(STRUCT_TSDWEAP,
                                             true, true, false, false, false, true,
                                             RTTI_UNITTYPE,      // Vehicle factory.
                                             DIR_N,
-                                            BSIZE_34,
+                                            BSIZE_33,
                                             (short const*)TsWeap3Exit,
                                             (short const*)TsWeap3List,
                                             (short const*)TsWeap3OList);
@@ -6000,18 +5998,9 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
         return (_ts_proc_place);
     }
     if (placement && (Type == STRUCT_TSWEAP || Type == STRUCT_TSDWEAP)) {
-        // The ghost covers the hall and the concrete in front of it. The plot's back row only
-        // centres the selection box over the roof; nothing of the building stands there.
-        static short const _ts_weap3_place[] = {MAP_CELL_W,
-                                                MAP_CELL_W + 1,
-                                                MAP_CELL_W + 2,
-                                                MAP_CELL_W * 2,
-                                                MAP_CELL_W * 2 + 1,
-                                                MAP_CELL_W * 2 + 2,
-                                                MAP_CELL_W * 3,
-                                                MAP_CELL_W * 3 + 1,
-                                                MAP_CELL_W * 3 + 2,
-                                                REFRESH_EOL};
+        // The ghost covers the hall and the concrete in front of it.
+        static short const _ts_weap3_place[] = {0, 1, 2, MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W + 2,
+                                                MAP_CELL_W * 2, MAP_CELL_W * 2 + 1, MAP_CELL_W * 2 + 2, REFRESH_EOL};
         return (_ts_weap3_place);
     }
 
