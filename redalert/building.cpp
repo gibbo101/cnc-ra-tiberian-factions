@@ -3686,7 +3686,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                     seat = Coord_Add(seat, XY_Coord(0, 18));
                 }
                 // TF: these units' HD art reaches past the shut door from the seat, so they wait deeper, in leptons
-                // measured behind the door; the Juggernaut, taller than the bay, shows only its antenna tip.
+                // measured behind the door (scripts/probes/wf_bay_sim.py), as far forward as hides them.
                 if (base->What_Am_I() == RTTI_UNIT) {
                     int pull = 0;
                     switch (((UnitClass*)base)->Class->Type) {
@@ -3698,7 +3698,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                         pull = (*this == STRUCT_TSDWEAP) ? 90 : 72;
                         break;
                     case UNIT_TSJUGG:
-                        pull = 144;
+                        pull = 134;
                         break;
                     default:
                         break;
