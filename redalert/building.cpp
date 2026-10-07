@@ -6878,15 +6878,15 @@ int BuildingClass::TF_Depot_Reach(TechnoClass const* customer) const
 /***********************************************************************************************
  * BuildingClass::TF_Depot_Is_Gantry -- Is this one of the TS Service Depot's gantry cells?    *
  *                                                                                             *
- *    The gantry and its machine stand across the plot's back two rows; no vehicle drives       *
- *    through them.                                                                            *
+ *    The gantry stands down the plot's west column, in its back two rows; no vehicle drives   *
+ *    through it.                                                                              *
  *=============================================================================================*/
 bool BuildingClass::TF_Depot_Is_Gantry(CELL cell) const
 {
     CELL origin = Coord_Cell(Coord);
     int dx = Cell_X(cell) - Cell_X(origin);
     int dy = Cell_Y(cell) - Cell_Y(origin);
-    return (dx >= 0 && dx < 3 && dy >= 0 && dy < 2);
+    return (dx == 0 && dy >= 0 && dy < 2);
 }
 
 int BuildingClass::Mission_Repair(void)

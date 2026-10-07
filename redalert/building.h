@@ -56,13 +56,13 @@ class BuildingClass : public TechnoClass
 {
 public:
     /*
-    **	TS Service Depot: its pad lies in front of the gantry, the ring's centre this many leptons
-    **	east and south of the plot's centre (in the south-middle cell); units sit and aircraft land there.
+    **	TS Service Depot: its pad lies south-east of the gantry, the ring's centre this many leptons
+    **	east and south of the plot's centre (in the middle cell); units sit and aircraft land there.
     */
     enum
     {
-        TS_DEPOT_SEAT_X_LEP = -25,
-        TS_DEPOT_SEAT_Y_LEP = 176
+        TS_DEPOT_SEAT_X_LEP = 61,
+        TS_DEPOT_SEAT_Y_LEP = 89
     };
     int TF_Depot_Reach(TechnoClass const* customer) const;
     bool TF_Depot_Is_Gantry(CELL cell) const;
