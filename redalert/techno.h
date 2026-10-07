@@ -231,6 +231,9 @@ public:
     // one railgun particle system per firer.
     int RailCoilEnd;
 
+    // TF: the shot of a Juggernaut's salvo it fires next (0 to its Burst less one): RA's own salvo stops at two.
+    int BurstShot;
+
     /*
     **	The number of shot this object can fire before running out of ammo. If this
     **	value is zero, then firing is not allowed. If -1, then there is no ammunition
