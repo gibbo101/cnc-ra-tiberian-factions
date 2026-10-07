@@ -1803,6 +1803,37 @@ static UnitTypeClass const UnitC3Pred(UNIT_C3PRED,
                                       MISSION_HUNT  // ORDERS: Default order.
 );
 
+// TS Tick Tank (UNIT_TSTTNK), TS rules [TTNK]: Nod's turret tank, found only in crates. It turns south and digs in as
+// STRUCT_TSTICK; its fire points come from the generated tsttnk_muzzle.h (techno.cpp Fire_Coord).
+static UnitTypeClass const UnitTsTtnk(UNIT_TSTTNK,
+                                      TXT_MTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                      "TSTTNK",     // NAME: IniName.
+                                      ANIM_ART_EXP1,// EXPLOSION: TS's TWLT070 fireball set.
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0020,       // Vertical offset.
+                                      0x0060,       // Primary weapon offset along turret centerline.
+                                      0x0000,       // Primary weapon lateral offset.
+                                      0x0000,       // Secondary weapon offset (none).
+                                      0x0000,       // Secondary weapon lateral offset.
+                                      true,         // Can this be a goodie surprise from a crate? (TS CrateGoodie=yes)
+                                      false,        // Always use the given name for the vehicle?
+                                      true,         // Can this unit squash infantry? (TS Crusher=yes)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      true,         // Is it equipped with a combat turret?
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit?
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset along body centerline.
+                                      MISSION_HUNT  // ORDERS: Default order.
+);
+
 // TS Mobile EM-Pulse (UNIT_TSMEMP), Firestorm rules [MOBILEMP]: unarmed. It charges while not stunned and deploys to
 // set off a small E.M. Pulse itself (UnitClass::EMP_Blast).
 static UnitTypeClass const UnitTsMemp(UNIT_TSMEMP,
@@ -2270,6 +2301,7 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTsMwar);    // UNIT_TSMWAR (Mobile War Factory)
     new UnitTypeClass(UnitC3Mk3);     // UNIT_C3MK3 (C&C3 Mammoth Tank Mk. III)
     new UnitTypeClass(UnitC3Pred);    // UNIT_C3PRED (C&C3 Predator Tank)
+    new UnitTypeClass(UnitTsTtnk);    // UNIT_TSTTNK (TS Tick Tank)
 }
 
 /***********************************************************************************************
@@ -2571,6 +2603,7 @@ void UnitTypeClass::Dimensions(int& width, int& height) const
         {UNIT_R2PRIS, 33, 34},
         {UNIT_C3MK3, 53, 33},
         {UNIT_C3PRED, 32, 22},
+        {UNIT_TSTTNK, 27, 19},
         {UNIT_TS4TNK, 33, 30},
         {UNIT_TSSONIC, 37, 31},
         {UNIT_TSHMEC, 42, 41},
