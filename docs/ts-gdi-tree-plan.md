@@ -178,24 +178,24 @@ HEAVY, and `GTWEAP_D` frames 9-17 are magenta placeholders.
   their feet on it), because a walker's sprite centre sits well above its feet. The Mobile War
   Factory's door is 20 leptons deeper, so `TSDWEAP_SEAT` and `TSDWEAP_SEAT_MECH` are too.
 - **Exit rails:** the vehicle leaves its seat on `Rail_To`, straight south onto the exit cell's
-  centre, plot cell (1,3) (`TS_Weap_Exit_Offset`), for both factories.
+  centre, plot cell (1,2) (`TS_Weap_Exit_Offset`), for both factories.
 - **Exit sort clamp:** a unit on the rail sorts just under the near face and the door until its body
   has cleared the threshold (`dllinterface.cpp`, `TSWEAP3_WALKER_CLEAR` / `TSDWEAP_WALKER_CLEAR` for
   walkers), so the doorway's frame keeps drawing over the part still inside.
 - **The factory keeps its centred sort** (`Sort_Y`): sorting the whole factory south covers every
   poke-through but hides a vehicle in the bay.
 - **Sort** (`dllinterface.cpp`'s draw intercept): the near face and shutter sort just south of the
-  door's threshold (`NF`/`NU` at Sort_Y + 320, `DR` at + 328; + 340 / + 348 for the Mobile War
+  door's threshold (`NF`/`NU` at Sort_Y + 192, `DR` at + 200; + 212 / + 220 for the Mobile War
   Factory), so the shut door covers a seated vehicle and the rising door reveals it. The back wall
-  sorts at the plot's north edge (Sort_Y − 384), under anything in the bay.
+  sorts half a row north of the plot (Sort_Y − 512), under anything in the bay.
 - **Four coupled constraints** for any resize, solved on paper before one build: containment (art
   at least as tall as the tallest exiting unit; the Titan is 52.2 classic px), the box (centred on
   the plot), ghost honesty (the ghost covers every cell the ground art touches; hard-clipping the
-  pad looks wrong), and spawning inside (units spawn hidden and drive out; materialising at the
-  open door was rejected).
+  pad looks wrong), and spawning inside (units spawn behind the shut door and drive out;
+  materialising at the open door was rejected).
 - The Mobile War Factory deploys into `STRUCT_TSDWEAP`, a TS war factory to the code on the same
-  3x4 plot, layers, exits and box, with its own art and a 12-stage door 20 leptons deeper. The truck
-  stands in the hall's middle cell, plot cell (1,2), where the build-up's first frame draws it
+  3x3 plot, layers, exits and box, with its own art and a 12-stage door 20 leptons deeper. The truck
+  stands in the hall's middle cell, plot cell (1,1), where the build-up's first frame draws it
   (`TF_Deploy_Origin`, `TF_Pack_Up`; `emp-cannon-design.md`).
 
 ### Refinery (TSPROC) and its dock

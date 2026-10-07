@@ -444,9 +444,8 @@ public:
 
     /*
     **	The TS war factories (the War Factory and the deployed Mobile War Factory) share the bay's
-    **	layers and unload cycle. The War Factory stands on a 3x4 plot (an empty row behind the
-    **	hall) with its door south and sends units straight down to XYCELL(1, 3); the deployed
-    **	Mobile War Factory stands the same way, its door 20 leptons deeper, with a longer shutter.
+    **	layers and unload cycle. Both stand on a 3x3 plot with the door south and send units straight
+    **	down to XYCELL(1, 2); the Mobile War Factory's door is 20 leptons deeper and its shutter longer.
     */
     bool Is_TS_War_Factory(void) const
     {
@@ -458,7 +457,7 @@ public:
     }
     int TS_Weap_Exit_Offset(void) const
     {
-        return (3 * MAP_CELL_W + 1);
+        return (2 * MAP_CELL_W + 1);
     }
     /*
     **	A Firestorm Wall Section of a house whose field is down: a flat pad anyone can cross.

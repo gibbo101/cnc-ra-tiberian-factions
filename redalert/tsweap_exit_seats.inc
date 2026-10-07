@@ -5,26 +5,26 @@
 #define TSWEAP_SEAT_TSTITN  XYP_COORD(48, 19)
 
 /*
-**	The TS War Factory on its 3x4 plot (STRUCT_TSWEAP), door south: seats on the door's centre line,
-**	leptons from the building's Coord (the plot's north-west corner). The door's threshold is 746
+**	The TS War Factory on its 3x3 plot (STRUCT_TSWEAP), door south: seats on the door's centre line,
+**	leptons from the building's Coord (the plot's north-west corner). The door's threshold is 490
 **	leptons below the plot's north edge. A vehicle waits half a cell inside it; a walker's art stands
 **	0.84 rows below its position, so it waits deeper with its feet on the threshold. Both leave
-**	straight south to XYCELL(1, 3)'s centre, (384, 896).
+**	straight south to XYCELL(1, 2)'s centre, (384, 640).
 */
-#define TSWEAP3_SEAT XY_Coord(384, 618)
-#define TSWEAP3_SEAT_MECH XY_Coord(384, 530)
+#define TSWEAP3_SEAT XY_Coord(384, 362)
+#define TSWEAP3_SEAT_MECH XY_Coord(384, 274)
 /*
 **	A unit riding out of the door draws under the near face and the door until its body has cleared the
-**	threshold: a vehicle for the whole rail, onto XYCELL(1, 3)'s centre; a walker, whose art stands 0.73 rows
+**	threshold: a vehicle for the whole rail, onto XYCELL(1, 2)'s centre; a walker, whose art stands 0.73 rows
 **	below its position, once its position is this far below the plot's north edge (its body half a cell past
 **	the threshold).
 */
-#define TSWEAP3_WALKER_CLEAR 624
+#define TSWEAP3_WALKER_CLEAR 368
 
 /*
-**	The deployed Mobile War Factory on the same 3x4 plot (STRUCT_TSDWEAP): its door on the same centre line,
-**	its threshold 20 leptons deeper (766), so its seats and its walker clearance sit 20 deeper.
+**	The deployed Mobile War Factory on the same 3x3 plot (STRUCT_TSDWEAP): its door on the same centre line,
+**	its threshold 20 leptons deeper (510), so its seats and its walker clearance sit 20 deeper.
 */
-#define TSDWEAP_SEAT XY_Coord(384, 638)
-#define TSDWEAP_SEAT_MECH XY_Coord(384, 550)
-#define TSDWEAP_WALKER_CLEAR 644
+#define TSDWEAP_SEAT XY_Coord(384, 382)
+#define TSDWEAP_SEAT_MECH XY_Coord(384, 294)
+#define TSDWEAP_WALKER_CLEAR 388

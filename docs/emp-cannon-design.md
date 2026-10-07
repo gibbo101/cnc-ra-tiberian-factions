@@ -58,7 +58,7 @@ in range, buildings too.
 
 **Mobile War Factory (`UNIT_TSMWAR` -> `STRUCT_TSDWEAP`, checkpoint `b5c7003e`):** one at a time,
 deployed or not, locked cameo with the red X. Deployed = a TS war factory to the code
-(`Is_TS_War_Factory`) on the War Factory's 3x4 plot; satisfies War Factory
+(`Is_TS_War_Factory`) on the War Factory's 3x3 plot; satisfies War Factory
 prerequisites (Firestorm PrerequisiteFactory). Pack-up is the deploy key only; self-click =
 primary, move = rally point. The doorway layering was fixed and verified in play (`2062873f`).
 

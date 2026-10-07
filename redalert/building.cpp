@@ -215,7 +215,7 @@ COORDINATE const BuildingClass::CenterOffset[BSIZE_COUNT] = {
     0x01800280L, // BSIZE_53 (5x3): x = 2.5 cells, y = 1.5 cells -- centre CELL row 1 col 2 (hangar).
     0x00800180L, // BSIZE_31 (3x1): x = 1.5 cells, y = 0.5 cells.
     0x01800080L, // BSIZE_13 (1x3): x = 0.5 cells, y = 1.5 cells.
-    0x02000180L, // BSIZE_34 (3x4): x = 1.5 cells, y = 2 cells -- centre CELL row 2 col 1 (the hall).
+    0x02000180L, // BSIZE_34 (3x4): x = 1.5 cells, y = 2 cells -- centre CELL row 2 col 1.
 };
 
 /***********************************************************************************************
@@ -5630,7 +5630,7 @@ bool Is_TS_Weap_Exit_Cell(CELL cell)
     /*
     **	Walk back from the candidate to where each war factory's north-west
     **	corner would be, and confirm one of that type stands there, read from a
-    **	cell it occupies (the War Factory's back row is open ground).
+    **	cell it occupies.
     */
     static const struct
     {
@@ -5638,8 +5638,8 @@ bool Is_TS_Weap_Exit_Cell(CELL cell)
         int dx, dy;
         int probe;
     } _doorsteps[] = {
-        {STRUCT_TSWEAP, 1, 3, MAP_CELL_W},
-        {STRUCT_TSDWEAP, 1, 3, MAP_CELL_W},
+        {STRUCT_TSWEAP, 1, 2, 0},
+        {STRUCT_TSDWEAP, 1, 2, 0},
     };
     for (int i = 0; i < (int)(sizeof(_doorsteps) / sizeof(_doorsteps[0])); i++) {
         int x = Cell_X(cell) - _doorsteps[i].dx;
@@ -5795,7 +5795,7 @@ bool Is_TS_Apron_Cell(CELL cell)
         {STRUCT_TSPROC, 0 - MAP_CELL_W},
         {STRUCT_TSPROC, 1 - MAP_CELL_W},
 
-        // The War Factory and the deployed Mobile War Factory, 3x4: centre = row 2 col 1 (the hall).
+        // The War Factory and the deployed Mobile War Factory, 3x3: centre = row 1 col 1 (the hall).
         // Walkable, never buildable: the concrete in front of the door (row 3, the door's lane down its middle).
         {STRUCT_TSWEAP, MAP_CELL_W - 1},
         {STRUCT_TSWEAP, MAP_CELL_W},
@@ -7720,7 +7720,7 @@ static void TF_Pack_Up(BuildingClass* mine)
 {
     CELL cell = Coord_Cell(mine->Coord);
     if (*mine == STRUCT_TSDWEAP) {
-        cell += MAP_CELL_W * 2 + 1; // the hall's middle cell, where the vehicle deployed
+        cell += MAP_CELL_W + 1; // the hall's middle cell, where the vehicle deployed
     }
     fixed ratio = mine->Health_Ratio();
     TARGET nav = mine->TFPackNav;
