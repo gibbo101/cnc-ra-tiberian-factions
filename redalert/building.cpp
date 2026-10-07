@@ -132,6 +132,9 @@ static UnitType TF_Packs_Into(BuildingClass const* building)
     if (*building == STRUCT_TSDWEAP) {
         return (UNIT_TSMWAR);
     }
+    if (*building == STRUCT_TSTICK) {
+        return (UNIT_TSTTNK);
+    }
     return (UNIT_NONE);
 }
 
@@ -808,6 +811,11 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
             static const int TSPULS_TURRET_Y = 10; // classic px: the cannon's seat on the dome
             int tshape = UnitClass::BodyShape[Dir_To_32(PrimaryFacing.Current())];
             Techno_Draw_Object_Virtual(Class->TsPulseTurret, tshape, x, y + TSPULS_TURRET_Y, window, DIR_N, 0x0100, "TSPULST");
+        }
+
+        // TF: the dug-in Tick Tank draws its turret over the body, from the frame its turret facing picks (TSTICKT).
+        if (*this == STRUCT_TSTICK && Strength > 0 && BState != BSTATE_CONSTRUCTION) {
+            Techno_Draw_Object_Virtual(Get_Image_Data(), Shape_Number(), x, y, window, DIR_N, 0x0100, "TSTICKT");
         }
 
         // TF: a component tower draws its wall ends, links, connectors and couplings over the body, then its
@@ -7866,7 +7874,10 @@ static void TF_Pack_Up(BuildingClass* mine)
     if (unit == NULL) {
         return;
     }
-    DirType facing = (type == UNIT_TSLPST) ? DIR_E : ((type == UNIT_TSMWAR) ? DIR_SW : DIR_N);
+    DirType facing = (type == UNIT_TSLPST)   ? DIR_E
+                     : (type == UNIT_TSMWAR) ? DIR_SW
+                     : (type == UNIT_TSTTNK) ? DIR_S
+                                             : DIR_N;
     mine->Limbo();
     if (unit->Unlimbo(Cell_Coord(cell), facing)) {
         unit->Strength = max(1, (int)(unit->Class->MaxStrength * ratio));

@@ -134,6 +134,7 @@
 #include <math.h>
 #include "tstitn_muzzle.h"
 #include "ts4tnk_muzzle.h"
+#include "tsttnk_muzzle.h"
 #include "tshmec_muzzle.h"
 #include "r2tanks_muzzle.h"
 #include "unit_art_drop.h"
@@ -671,6 +672,17 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
         short const* m = mk3 ? _c3mk3_fire[which != 0][IsSecondShot ? 1 : 0][fi] : _c3pred_fire[0][0][fi];
         COORDINATE centre = centre_art;
         return XY_Coord((int)Coord_X(centre) + seat[0] + m[0], (int)Coord_Y(centre) + seat[1] + m[1]);
+    }
+
+    // TF: the Tick Tank fires from its gun's tip in the turret frame drawn (tsttnk_muzzle.h), on the move from its art's
+    // centre and dug in from its cell's.
+    if (What_Am_I() == RTTI_UNIT && ((UnitClass const*)this)->Class->Type == UNIT_TSTTNK) {
+        short const* m = _tsttnk_muzzle[TechnoClass::BodyShape[Dir_To_32(dir)]];
+        return XY_Coord((int)Coord_X(centre_art) + m[0], (int)Coord_Y(centre_art) + m[1]);
+    }
+    if (What_Am_I() == RTTI_BUILDING && ((BuildingClass const*)this)->Class->Type == STRUCT_TSTICK) {
+        short const* m = _tstick_muzzle[TechnoClass::BodyShape[Dir_To_32(dir)]];
+        return XY_Coord((int)Coord_X(Center_Coord()) + m[0], (int)Coord_Y(Center_Coord()) + m[1]);
     }
 
     // TF: the TS component tower plugs fire from the muzzles drawn in each turret frame (tsctwr_muzzle.h), measured

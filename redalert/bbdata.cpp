@@ -207,6 +207,7 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TSBombShell");   // BULLET_TSBOMBSHELL (TS [Cannon2] dropped by the Orca Bomber)
     new BulletTypeClass("TSBallistic2");  // BULLET_TSBALLISTIC2 (Firestorm [Ballistic2] -- the Juggernaut's arcing shell)
     new BulletTypeClass("TSPulsBall");    // BULLET_TSPULSBALL (TS [PulsPr] -- the EMP Cannon's lobbed pulse ball)
+    new BulletTypeClass("TSCannon");      // BULLET_TSCANNON (TS [Cannon] -- the Tick Tank's shell)
 
     // TF: TD-ported bullets run TD's own AI and Unlimbo; the flag is set here, as rules.ini cannot set it.
     BulletTypes.Ptr((int)BULLET_SSM)->IsTDPort = true;

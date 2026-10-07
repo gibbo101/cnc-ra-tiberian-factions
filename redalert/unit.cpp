@@ -2139,11 +2139,15 @@ bool UnitClass::Try_To_Deploy(void)
         **	TS Limpet Drone: settles into a mine on the cell it stands on. TS Mobile Sensor
         **	Array: turns east, broadside to the camera as its build-up starts, and settles into the sensor.
         **	TS Mobile War Factory: turns south-west and unfolds into the war factory round
-        **	it, the vehicle's cell the plot's centre (TS DeploysInto, Deploy_Facing).
+        **	it, the vehicle's cell the plot's centre (TS DeploysInto, Deploy_Facing). TS Tick
+        **	Tank: turns south, nose to the camera, and digs in.
         */
-        if (*this == UNIT_TSLIMP || *this == UNIT_TSLPST || *this == UNIT_TSMWAR) {
+        if (*this == UNIT_TSLIMP || *this == UNIT_TSLPST || *this == UNIT_TSMWAR || *this == UNIT_TSTTNK) {
             StructType into = TF_Deploys_Into();
-            DirType deploy_facing = (*this == UNIT_TSMWAR) ? DIR_SW : ((*this == UNIT_TSLPST) ? DIR_E : DIR_SE);
+            DirType deploy_facing = (*this == UNIT_TSMWAR)   ? DIR_SW
+                                    : (*this == UNIT_TSLPST) ? DIR_E
+                                    : (*this == UNIT_TSTTNK) ? DIR_S
+                                                             : DIR_SE;
 #if TF_DEV_BUILD
 #define TF_LIMP_TRACE(step)                                                                                 \
     do {                                                                                                     \
@@ -4265,6 +4269,7 @@ int UnitClass::Mission_Unload(void)
     case UNIT_TSLIMP:   // TS Limpet Drone — settles into STRUCT_TSDLIMP on its own cell.
     case UNIT_TSLPST:   // TS Mobile Sensor Array — settles into STRUCT_TSDPSA on its own cell.
     case UNIT_TSMWAR:   // TS Mobile War Factory — unfolds into STRUCT_TSDWEAP round its cell.
+    case UNIT_TSTTNK:   // TS Tick Tank — digs in as STRUCT_TSTICK on its own cell.
         switch (Status) {
         case 0:
             Path[0] = FACING_NONE;
@@ -7674,6 +7679,9 @@ StructType UnitClass::TF_Deploys_Into(void) const
     }
     if (*this == UNIT_TSMWAR) {
         return (STRUCT_TSDWEAP);
+    }
+    if (*this == UNIT_TSTTNK) {
+        return (STRUCT_TSTICK);
     }
     return (STRUCT_NONE);
 }

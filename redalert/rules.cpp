@@ -672,6 +672,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WarheadTypeClass("TSLimpy");      // WARHEAD_TSLIMPY (Firestorm [LIMPY] -- the Limpet Drone attaches)
     new WarheadTypeClass("R2ApocAP");     // WARHEAD_R2APOCAP (YR [ApocAP] -- the Apocalypse cannon)
     new WarheadTypeClass("R2Comet");      // WARHEAD_R2COMET (YR [CometWH] -- the Prism Tank beam)
+    new WarheadTypeClass("TSAP");         // WARHEAD_TSAP (TS [AP] -- the Tick Tank's gun)
 
     Weapons.Set_Heap(WeaponMax);
     new WeaponTypeClass("Colt45");
@@ -781,6 +782,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("C3Mk3Cannon");    // WEAPON_C3MK3CANNON (C&C3 GDIMammothTankGun)
     new WeaponTypeClass("C3Mk3Pods");      // WEAPON_C3MK3PODS (C&C3 GDIMammothTankRocketPods)
     new WeaponTypeClass("C3PredCannon");   // WEAPON_C3PREDCANNON (C&C3 GDIPredatorTankCannon)
+    new WeaponTypeClass("TS90mm");         // WEAPON_TS90MM (TS [90mm] -- the Tick Tank's gun)
 
     // TF: TD-port weapons read Speed= as TD's raw MPHType and fire at TD's cadence (docs/td-port-playbook.md).
     // Unflagged, Speed=100 reads as light speed, which a visible TD bullet treats as immobile.

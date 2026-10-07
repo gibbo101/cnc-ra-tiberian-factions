@@ -2927,9 +2927,10 @@ void DisplayClass::Select_These(COORDINATE coord1, COORDINATE coord2, bool addit
         */
         HouseClass* hptr = HouseClass::As_Pointer(obj->Owner());
         // TF: buildings never join a drag selection, except the TS ones a vehicle deploys into (Sensor Array,
-        // Limpet Mine), which select like the vehicles they pack back into.
+        // Limpet Mine, dug-in Tick Tank), which select like the vehicles they pack back into.
         bool deployed_vehicle = obj->What_Am_I() == RTTI_BUILDING
-                                && (*(BuildingClass*)obj == STRUCT_TSDPSA || *(BuildingClass*)obj == STRUCT_TSDLIMP);
+                                && (*(BuildingClass*)obj == STRUCT_TSDPSA || *(BuildingClass*)obj == STRUCT_TSDLIMP
+                                    || *(BuildingClass*)obj == STRUCT_TSTICK);
         if (obj->Class_Of().IsSelectable && (obj->What_Am_I() != RTTI_BUILDING || deployed_vehicle)
             && (!obj->Is_Techno() || !((TechnoClass*)obj)->Is_Cloaked(PlayerPtr)) && x >= x1 && x <= x2 && y >= y1
             && y <= y2) {
