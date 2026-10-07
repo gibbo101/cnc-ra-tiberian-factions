@@ -1265,7 +1265,9 @@ static BuildingTypeClass const ClassTsPile(STRUCT_TSPILE,
                                            TXT_NONE,
                                            "TSPILE",
                                            FACING_NONE,
-                                           XYP_COORD(35, 23),  // The foot of the entrance steps, in classic px from the plot's top-left corner.
+                                           // The foot of the entrance steps, classic px from the plot's top-left corner: in the
+                                           // row in front, as infantry snap to their cell's nearest free spot.
+                                           XYP_COORD(32, 26),
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,              // fake
