@@ -5,10 +5,10 @@ beside the HD frame, on the same scale, for checking against TS.
     python3 checksheet.py UNIT PKG FRAMES out.png [cols] [title]       FRAMES: 134-148,149-163
 """
 import sys
+from paths import HANDOFF
 import numpy as np
 from PIL import Image, ImageDraw
 import infunit
-from paths import HANDOFF
 
 ROOT = HANDOFF + '/'
 BG = np.array([96, 100, 72], float)

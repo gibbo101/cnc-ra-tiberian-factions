@@ -47,7 +47,8 @@ def pose_table(unit, base):
         for f in range(8):
             if f in tab:
                 for st in range(6):
-                    tab.setdefault(340 + 6 * f + st, tab[f])
+                    # (the pack tilted back in the air as in his flight - wrig/jjlean.py: TS's hover flames too)
+                    tab.setdefault(340 + 6 * f + st, (dict(tab[f][0], jpt=JJ_PACK_TILT), tab[f][1]))
     return tab
 
 
@@ -119,6 +120,9 @@ def blood(img, pix, js, size, ss=4):
 # frames drawn in the air from here on (the Jumpjet's flight: the game lifts the frame and draws his shadow from it):
 # no baked shadow, the jet flames at his nozzles
 FLIGHT = {'jj': 292}
+# the Jumpjet's pack in the air: tilted back from his shoulders, degrees (Luke: "in og the jump pack has angled itself
+# differently"; wrig/jjlean.py: the tilt that puts his nozzles on TS's flame roots, the same in every facing)
+JJ_PACK_TILT = 30.0
 # parts that carry TS's pure red as a painted mark (the Medic's crosses): red there is not blood
 DECAL_RED = {'medic': (I.CROSS, I.MEDKIT, I.CHEST, I.VEST)}
 # frames whose reds are a muzzle flash's tips, not blood (the Jumpjet's fire, on the ground and in the air; the Ghost
@@ -187,6 +191,52 @@ def death_shadow(unit, S, js, tab):
     return {int(k): v for k, v in sw.items()}
 
 
+_EAB = {}
+
+
+def ea_blood(unit, k):
+    """the blood of a death fitted to EA's own HD death (wrig/easeq.py records which EA frame each of ours follows): EA's
+    pool where EA's lands, moved onto our canvas - Luke: "follow ea" (TS's red, read off TS's tiny frames, no longer
+    lines up with a body falling EA's way).  None for frames that follow TS."""
+    if unit not in _EAB:
+        _EAB[unit] = {}
+        for seq in ('death1', 'death2'):
+            p = '%s_%s_frames.json' % (unit, seq)
+            if os.path.exists(p):
+                d = json.load(open(p))
+                if 'ea_code' in d:
+                    last = max(v['ea_frame'] for kk, v in d.items() if kk.isdigit() and 'ea_frame' in v)
+                    for kk, v in d.items():
+                        if kk.isdigit() and 'ea_frame' in v:
+                            _EAB[unit][int(kk)] = (d['ea_code'], v['ea_frame'], tuple(d.get('ea_shift', (0, 0))), last)
+    if k not in _EAB[unit]:
+        return None
+    code, e, (dx, dy), last = _EAB[unit][k]
+    import ealib
+    ea = ealib.EA(code, unit, None, None)
+
+    def reds(a):
+        a = a.astype(np.float32)
+        r, g, b, al = a[..., 0], a[..., 1], a[..., 2], a[..., 3]
+        return (al > 40) & (r > 70) & (g < 0.45 * r) & (b < 0.45 * r) & (r - g > 50)
+    # only the blood that lies on the ground: what EA's pool at the end of the death covers (the spray EA draws in the
+    # air as he is hit - Luke: "blood seems suspended in mid air" - left out)
+    m = reds(ea.full(e)) & ndimage.binary_dilation(reds(ea.full(last)), iterations=2)
+    m = np.roll(np.roll(m, -dy, 0), -dx, 1).astype(np.float32)
+    return np.clip(ndimage.gaussian_filter(m, 0.6) * 1.4, 0, 1)
+
+
+def draw_ea_blood(img, a):
+    """the pool under the soldier: drawn where he isn't (his outline keeps his own pixels), in TS's blood red."""
+    base = np.asarray(img).astype(np.float32)
+    a = a * (base[..., 3] < 200)
+    out = base.copy()
+    red = np.array([255.0, 0.0, 0.0])
+    out[..., :3] = base[..., :3] * (1 - a[..., None]) + red * a[..., None]
+    out[..., 3] = np.maximum(base[..., 3], a * 255)
+    return Image.fromarray(np.clip(np.round(out), 0, 255).astype(np.uint8), 'RGBA'), a
+
+
 def render_frame(unit, S, js, k, Q, f, ss=4):
     K, DX, DY = R.K, R.DX, R.DY
     parts, dz = I.grounded(S, Q, I.facing_angle(f))
@@ -217,6 +267,11 @@ def render_frame(unit, S, js, k, Q, f, ss=4):
         on = np.isin(comps, DECAL_RED[unit]).any(axis=(2, 3))
         on = ndimage.binary_dilation(on, iterations=1)
         red = [(x, y) for x, y in red if not on[y, x]]
+    eab = ea_blood(unit, k)
+    if eab is not None:
+        red = []
+        img, ba = draw_ea_blood(img, eab)
+        cover = np.maximum(cover, ba)
     if red:
         img, ba = blood(img, red, js, img.size, ss)
         cover = np.maximum(cover, ba)

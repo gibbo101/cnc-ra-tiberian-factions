@@ -10,11 +10,11 @@ and blood are left out of both.
 UNIT: a key of UNITS (e1 ...).
 """
 import json, os, sys, time
+from paths import HANDOFF
 import numpy as np
 from PIL import Image
 import rc
 import inf as I
-from paths import HANDOFF
 
 ROOT = HANDOFF + '/'
 UNITS = {'e1': ('17-TSE1', 'E1')}

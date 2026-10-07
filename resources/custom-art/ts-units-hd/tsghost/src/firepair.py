@@ -16,6 +16,8 @@ import inffit as F
 import infseq as SQ
 
 W_BODY = 0.002
+# FLAT=1: prone, start each frame lying flat and hold his chest on the ground (the Disc Thrower's prone throw)
+FLAT = bool(int(os.environ.get('FLAT', 0) or 0))
 GUN = ('gy', 'gp', 'gr', 'rgx', 'rgy', 'rgz', 'lfx', 'lsw', 'rsw', 'rsf', 'rsa', 'rst', 'ref', 'lsf', 'lsa', 'lst', 'lef')
 
 
@@ -80,6 +82,10 @@ def main():
                 if gt.line is None:
                     gt.line = G.ts_line(unit, kf)
             Q0 = dict(js['Q'], **old[str(k0)]['Q'])
+            if FLAT:
+                # (lying flat, his chest down on the ground as TS draws him: the old fits had pushed him up on his arms,
+                # his rucksack standing up off his back - TS's lies along it)
+                Q0.update(sp=-8.0, pitch=90.0, hp=-35.0)
             keys = [q for q, a, b in F.qspec(Q0)]
             sc = SM.scale(keys)
             # (the Disc Thrower's throw is a real movement, fitted smooth before: each frame held near it, arms too, so
@@ -96,7 +102,7 @@ def main():
                 l += gt.pen(S, Q, f, ax, y0, dz)
                 if prone:
                     # (the Disc Thrower throws from prone: his chest and throwing arm come up off the ground)
-                    l += ground.lying(S, Q, f, dz, head=False, elbows=unit != 'e2', chest=False)
+                    l += ground.lying(S, Q, f, dz, head=False, elbows=unit != 'e2', chest=FLAT)
                 x = np.array([Q[q] for q in keys])
                 return l + W_BODY * float((((x - x_old) / sc)[body] ** 2).sum())
             starts = [Q0] + SM.line_starts(unit, S, ax, y0, k0, f, Q0, n=4) if gt.line is not None else [Q0]

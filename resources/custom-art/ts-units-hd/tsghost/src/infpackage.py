@@ -17,11 +17,13 @@ CODE = ['inf.py', 'inffit.py', 'infunit.py', 'infseq.py', 'infcycle.py', 'infsta
         'infsmooth.py', 'infliedown.py', 'infsubfit.py', 'infcalib.py', 'infrender.py', 'infall.py', 'infx.py',
         'infexport.py', 'infpreview.py', 'infreport.py', 'infcheck.py', 'infmasks.py', 'infgif.py', 'hdgrid.py',
         'cyclesheet.py', 'infshow.py', 'motion.py', 'infmap.py', 'infpackage.py', 'casepost.py', 'casespot.py',
-        'crawlbio.py', 'crawlfit.py', 'crawlgif.py', 'tsview.py',
+        'crawlbio.py', 'wriggle.py', 'inflook.py', 'crawlfit.py', 'crawlgif.py', 'tsview.py',
         # (TS's shadow and the ground; the deaths fitted to them; fire's two poses; the railgun laid along TS's)
-        'tsshadow.py', 'ground.py', 'deathfit2.py', 'deathback.py', 'deathshadow.py', 'gunline.py', 'firepair.py',
+        'tsshadow.py', 'ground.py', 'deathfit2.py', 'deathback.py', 'deathshadow.py', 'gunline.py', 'firepair.py', 'animsheet.py',
         'gunpass.py',
-        'fitcheck.py', 'checksheet.py', 'e2pack.py', 'pickside.py']
+        'fitcheck.py', 'checksheet.py', 'e2pack.py', 'pickside.py',
+        # (the run's start step per facing; a death's frames refitted; the crawl's key poses; a few sizes refitted)
+        'infphase.py', 'deathfix.py', 'infkey.py', 'e2_subfit.py']
 # data every package carries (TS's shadow light, read off all six units' standing frames)
 COMMON_DATA = ['ts_light.json']
 # every unit's fitted data (each package takes the ones its unit has)
@@ -43,7 +45,8 @@ EXTRA = {'e1': [('sc/e1-standing-8-facings.png', 'standing-8-facings.png'), ('sc
          'ghost': [('sc/ghost-standing-8-facings.png', 'standing-8-facings.png'), ('sc/ghost-masks.png', 'masks.png')],
          'jj': [('sc/jj-standing-8-facings.png', 'standing-8-facings.png'), ('sc/jj-masks.png', 'masks.png')],
          'medic': [('sc/medic-standing-8-facings.png', 'standing-8-facings.png'), ('sc/medic-masks.png', 'masks.png')]}
-SHARED = [VOX + f for f in ('rc.py', 'rcrender.py', 'rcexport.py', 'glbcheck.py', 'vexport.py', 'voxrender.py')]
+SHARED = [VOX + f for f in ('rc.py', 'rcrender.py', 'rcexport.py', 'glbcheck.py', 'vexport.py', 'voxrender.py',
+                            'pngopt.py')]
 REN = [RENDERER + f for f in ('hd.py', 'walls2.py', 'wnoise.py', 'export3d.py', 'vxl.py')]
 
 
@@ -73,8 +76,11 @@ def package_src(unit, pkg):
         if "HANDOFF + '/" in s:
             s = s.replace("HANDOFF + '/", "HANDOFF + '/")
             if 'from paths import HANDOFF' not in s:
+                # (right after the first import: a module can import more further down, after HANDOFF's first use -
+                # tsshadow.py's ROOT)
                 lines = s.split('\n')
-                i = max(i for i, l in enumerate(lines) if l.startswith('import ') or l.startswith('from ')) + 1
+                import ast
+                i = min(n.end_lineno for n in ast.parse(s).body if isinstance(n, (ast.Import, ast.ImportFrom)))
                 lines.insert(i, 'from paths import HANDOFF')
                 s = '\n'.join(lines)
         s = s.replace("VALIDATOR = os.environ.get('GLTF_VALIDATOR', 'validate.js')      # Khronos's glTF validator (node)",
@@ -96,7 +102,7 @@ def package_src(unit, pkg):
             'b = AL.render_frame("%s", S, js, %d, *tab[%d], ss=1)[0]\n'
             'print("src ok", a.size, b.size)') % (unit, unit, unit, unit, unit, second, second)
     run = subprocess.run([sys.executable, '-c', code], cwd=test + '/src', capture_output=True, text=True,
-                         env=dict(os.environ, TS_HANDOFF='/home/claude/units/ts-units-hd-handoff', PYTHONPATH=''))
+                         env=dict(os.environ, PYTHONPATH='', TS_HANDOFF=os.environ.get('TS_HANDOFF', '/home/claude/units/ts-units-hd-handoff')))
     shutil.rmtree(test)
     out = run.stdout.strip() or (run.stderr.strip().splitlines() or ['?'])[-1]
     return left, out
@@ -136,18 +142,23 @@ def main():
     glb = os.path.join(d3, 'ts%s.glb' % F_UNITS_NAME(unit))
     import infexport as EX
     path, info = EX.export(unit, os.path.join(HERE, '%s_shape.json' % unit), glb)
-    val = subprocess.run(['node', VALIDATOR, glb], capture_output=True, text=True).stdout.strip().splitlines()[0]
+    try:
+        val = subprocess.run(['node', VALIDATOR, glb], capture_output=True, text=True).stdout.strip()
+    except OSError:
+        val = ''
+    val = (val or 'not run (no glTF validator: set GLTF_VALIDATOR)').splitlines()[0]
     chk = subprocess.run([sys.executable, VOX + 'glbcheck.py', glb, frames + '/ts%s-0006.png' % F_UNITS_NAME(unit),
                           os.path.join(tempfile.gettempdir(), 'inf-glbcheck.png'), '267x208'],
                          capture_output=True, text=True).stdout
     glb_ov = [l for l in chk.splitlines() if 'overlap' in l][-1].split(':')[-1].strip()
     # the previews made along the way
     for src, name in EXTRA.get(unit, []):
-        shutil.copy(os.path.join(HERE, src), os.path.join(previews, name))
+        if os.path.exists(os.path.join(HERE, src)):      # (queue/post2.sh UNIT PKG standing makes them)
+            shutil.copy(os.path.join(HERE, src), os.path.join(previews, name))
     # (the frame-by-frame check sheets against TS, when made: queue/post2.sh)
-    SPD = '/tmp/claude-0/-home-claude/25343c56-d27f-5b76-9102-de86ff0460c2/scratchpad/'
+    SPD = os.environ.get('SHEETS', '/tmp/claude-0/-home-claude/25343c56-d27f-5b76-9102-de86ff0460c2/scratchpad') + '/'
     for sheet, name in (('death1', 'death-1-sheet.png'), ('death2', 'death-2-sheet.png'), ('crawl', 'crawl-sheet.png'),
-                        ('fire', 'fire-sheet.png')):
+                        ('fire', 'fire-sheet.png'), ('anim', 'animation-sheet.png')):
         p = SPD + '%s_%s_sheet.png' % (unit, sheet)
         if os.path.exists(p):
             shutil.copy(p, os.path.join(previews, name))
@@ -200,6 +211,14 @@ What it is
 One posable soldier built from simple solids (inf.py, shared by the six infantry units, each with its own sizes, gear
 and colours), fitted to TS's own E1 frames in TS's camera (silhouette and colour classes, TS's muzzle flashes and
 blood left out) and drawn the way the HD buildings and the other units are.
+- The look (your makeover, after the ArtStation GDI infantry turnaround you sent; TS's sprite still sets where every
+  part is and its colour; inflook.py): the same skeleton, poses and fitted sizes built as armour.  Angular shoulder
+  plates sit on the shoulders, a second plate on each upper arm; the arms narrow to a dark elbow (the undersuit
+  between the plates), a green bracer on each forearm, gloves.  A chest plate and back plate over the dark undersuit,
+  pouches across the belly and on the belt; the pack with its flap, the pouch under it.  Green thigh plates on the
+  thighs' outer fronts, knee plates, light grey greaves down the shins, boots with soles.  The helmet's visor in a
+  dark frame, a round ear piece each side.  The rifle in parts: stock, pistol grip, receiver with a sight on top,
+  magazine, handguard, barrel and muzzle.  House colour stays plain: its plates read by their shape alone.
 - The shape is fitted to the 8 standing frames together.  The helmet is a rounded box (TS: the head 4 px across, its
   sides upright); the mask is a faceplate set in its front, glowing TS's brightest light blue (TS: 178,178,255 and
   149,149,230 with a near-white glint, in every facing), a dark jaw guard under it, as the references' full helmets
@@ -226,6 +245,17 @@ blood left out) and drawn the way the HD buildings and the other units are.
   draws back. One stroke drives every joint, so the loop runs on with nothing jumping back. How far he is propped up,
   where he looks and how far each part moves are fitted to TS's crawl frames. Overlap {ts_crawl:.2f}, landmarks at
   most {mo_crawl:.1f} TS px a step.
+  His whole body moves as TS's does (your notes: "the body stays stiff as a board", "their whole body really
+  moves").  The skeleton has a two-piece spine (lower and upper back), so the body curves rather than angling at the
+  hips; shoulders that reach forward and pull back; hips that hitch up as each knee draws in; and the pelvis turning
+  about its long axis.  Each step's body is fitted to that step's TS frames in all 8 facings (with how the head moves
+  against the body as a term of its own), the 6 steps joined into one smooth loop, and the movement drawn at 1.5
+  times what that fit gives (judged by eye: at TS's 14 px a lying soldier, the pixels alone can't tell the
+  shoulders' and hips' movement apart).  The arms hold the rifle out in front of his head (your notes: "he has no
+  elbows", the right arm "still under the body and not out in front"): both hands up the rifle 1-5 TS px ahead of
+  his shoulders, both elbows on the ground, each forearm reaching forward in turn (the left with the right knee, the
+  right with the left), where the hands sit, the elbows point and the rifle lies fitted to TS's frames step by step.
+  The arms narrow from shoulder to elbow and from elbow to wrist with a round elbow between (every sequence).
 - Fire and fire prone: TS holds one pose through each facing's 6 frames (only the flash comes and goes), so each facing
   has one pose for all 6: fitted to the 8 facings' flash-free frames together, then each facing's arms, rifle and head
   to its own.  Overlap {ts_fire:.2f} and {ts_prone:.2f}.
@@ -250,8 +280,9 @@ Keep (from the hand-off README)
 - The feet: the soldier's ground point lands where the mod's frames put TS's (TS's sprite x 3.068 at (38.06, 10.57));
   standing, the boots' lowest pixel is on canvas row {feet_lo}-{feet_hi} by facing, as the mod's own frames have it
   on {mfeet_lo}-{mfeet_hi} (the README: feet on 111).
-- EA's infantry height: he stands as tall as the mod's frames (EA's Minigunner is taller still; see
-  standing-8-facings.png).
+- EA's infantry height: he stands 60 px tall on average over his 8 standing facings, as EA's rifleman does in TD and
+  RA (61 px; their infantry run 60-65; see standing-8-facings.png).  His armour makes him bulkier than EA's rifleman,
+  about as bulky as EA's Grenadier and Engineer.
 - The shadow baked in at alpha 128 (50% black, blurred): the README's minimum, lighter than the buildings' 75%, as
   the mod's frames carry TS's at about 25% (your note: at 75% the falling deaths looked like floating).
 
@@ -259,8 +290,8 @@ Keep (from the hand-off README)
 Look
 ----
 - Camera: the RA-grid camera, orthographic, 32 degrees above the ground, looking north; 3.068 canvas px per TS pixel
-  (the mod's frames are TS's sprite x 3.068), the soldier drawn 8% bigger about his feet: TS's sprite draws every pixel
-  the soldier touches, so fitted to it he stands 6% shorter and 11% slimmer than the mod's frames draw him.
+  (the mod's frames are TS's sprite x 3.068), the soldier drawn 3.7% bigger about his feet, so he stands as tall as EA's
+  rifleman (your note: the Light Infantry must match TD's and RA's infantry sizes).
 - Light, sky, ambient, outline and supersampling are the buildings' (hd.py), with a stronger camera fill than the
   vehicles' (EA's HD infantry are lit from the front); none on the rifle, which stays black as TS's.
 - House colour: exactly 0,214,0 x (1 + 1.1 grain) on the shoulder pads, arms, hips and thighs; the -trim masks cover
@@ -286,6 +317,7 @@ tse1.glb   the soldier in vertex colours, every sequence as a glTF animation, th
 
 Judgement calls (each one easy to change)
 -----------------------------------------
+{calls}
 - The run moves smoothly where TS's own run jumps (its rifle snaps from his left side to the front and back between
   steps 2 and 3 and 5 and 0): your note, "fluid movements and not teleport back to start position".  The rifle swings
   on one path instead; each facing's loop still follows that facing's TS frames.
@@ -384,6 +416,14 @@ TS's blood left out) and drawn the way the HD buildings and the other units are.
   the five facings TS drew and the flipped facings get the same pose mirrored, as TS's do. One stroke drives every
   joint, so the loop runs on with nothing jumping back. How far he is propped up, where he looks and how far each
   part moves are fitted to TS's crawl frames. Overlap {ts_crawl:.2f}, landmarks at most {mo_crawl:.1f} TS px a step.
+  His whole body moves as the Light Infantry's does (your notes on its crawl: "stiff as a board", "their whole body
+  really moves"), on the infantry's new skeleton: a two-piece spine, so the body curves; shoulders that reach and
+  pull back; hips that hitch up as each knee draws in.  Each step's body is fitted to that step's TS frames (the
+  facings TS drew; the flipped ones get the mirror), the 6 steps joined into one smooth loop and the movement drawn at
+  1.5 times the fit, as the Light Infantry's accepted crawl.  His arms reach out in front along the ground, one
+  forearm then the other (the left with the right knee, the right with the left), his hands 1-3 TS px ahead of his
+  shoulders and his elbows down by his chest - fitted to TS's frames step by step, then made one alternating stroke.
+  His arms narrow from shoulder to elbow and elbow to wrist with a round elbow between (every sequence).
 - The throw: TS's six frames a facing are one throw from the ready stance and back to it (the throwing arm drawn
   back and over, out forward, the follow-through and the recovery), so it is one smooth loop like the run, step for
   step with TS's frames: overlap {ts_fire:.2f}.  A throw is quick: the throwing hand travels up to {mo_fire:.1f} TS px in a
@@ -409,7 +449,8 @@ Keep (from the hand-off README)
 - The feet: the soldier's ground point lands where the mod's frames put TS's (TS's sprite x 3.071 at (38.68, 10.60));
   standing, the boots' lowest pixel is on canvas row {feet_lo}-{feet_hi} by facing, as the mod's own frames have it
   on {mfeet_lo}-{mfeet_hi} (the README: feet on 111).
-- He stands as tall as the mod's frames (EA's Grenadier: see standing-8-facings.png).
+- He stands as tall as EA's Grenadier (63 px on average over his 8 standing facings; your note: the infantry must
+  match TD's and RA's sizes; see standing-8-facings.png).
 - The shadow baked in at alpha 128 (50% black, blurred): the README's minimum, lighter than the buildings' 75%, as
   the mod's frames carry TS's at about 25% (your note: at 75% the falling deaths looked like floating).
 - The release read on the last throw frame: the throw runs step for step with TS's, ending as TS's ends.
@@ -418,8 +459,7 @@ Keep (from the hand-off README)
 Look
 ----
 - Camera: the RA-grid camera, orthographic, 32 degrees above the ground, looking north; 3.071 canvas px per TS pixel
-  (the mod's frames are TS's sprite x 3.071), the soldier drawn 8% bigger about his feet, as E1: TS's sprite draws
-  every pixel the soldier touches, so the model fitted to it is a little shorter and slimmer than the mod's frames.
+  (the mod's frames are TS's sprite x 3.071), the soldier drawn at EA's Grenadier's height about his feet.
 - Light, sky, ambient, outline and supersampling are the buildings' (hd.py), with the units' camera fill (EA's HD
   infantry are lit from the front); each part as light as TS draws it under that light (infcalib.py), the orange on
   TS's ramp (above).
@@ -539,6 +579,11 @@ blood left out) and drawn the way the HD buildings and the other units are.
   right hand, standing on the ground square to him, and only moves when his hand does. One stroke drives every joint,
   so the loop runs on with nothing jumping back. How far he is propped up, where he looks and how far each part moves
   are fitted to TS's crawl frames. Overlap {ts_crawl:.2f}, landmarks at most {mo_crawl:.1f} TS px a step.
+  On the infantry's new skeleton (as the Light Infantry's): a two-piece spine, so the body curves; shoulders that reach
+  and hips that hitch with the stroke. His body was fitted step by step to TS's crawl, then calmed: the movement at half
+  the fit, and the sideways movements (roll, side bend, twist, the hip turn) centred, so he lies flat and square. (His
+  hood pulled the fit over onto one side; drawn at the Light Infantry's x1.5 he heaved half on his side.) His free arms
+  reach out in front in turn, hands ahead of his shoulders, his arms narrowing to a round elbow.
 - Lying down: the two in-betweens fitted to TS's frames on the way down through kneeling on all fours (TS's second
   frame), from the standing pose to the prone one (the crawl's first step), so standing, down and prone run as one movement ({ts_lie:.2f}); getting up is the same two
   poses backwards, as TS's get-up frames are its lie-down frames backwards, pixel for pixel.
@@ -558,7 +603,8 @@ Keep (from the hand-off README)
 - The feet: the soldier's ground point lands where the mod's frames put TS's (TS's sprite x 3.0755 at (37.91, 10.46));
   standing, the boots' lowest pixel is on canvas row {feet_lo}-{feet_hi} by facing, as the mod's own frames have it
   on {mfeet_lo}-{mfeet_hi} (the README: feet on 111).
-- He stands as tall as the mod's frames (EA's Engineer: see standing-8-facings.png).
+- He stands as tall as EA's Engineer (65 px on average over his 8 standing facings; your note: the infantry must
+  match TD's and RA's sizes; see standing-8-facings.png).
 - The shadow baked in at alpha 128 (50% black, blurred): the README's minimum, lighter than the buildings' 75%, as
   the mod's frames carry TS's at about 25% (your note: at 75% the falling deaths looked like floating).
 
@@ -566,7 +612,7 @@ Keep (from the hand-off README)
 Look
 ----
 - Camera: the RA-grid camera, orthographic, 32 degrees above the ground, looking north; 3.0755 canvas px per TS pixel
-  (the mod's frames are TS's sprite x 3.0755), the soldier drawn 8% bigger about his feet, as E1.
+  (the mod's frames are TS's sprite x 3.0755), the soldier drawn at EA's Engineer's height about his feet.
 - Light, sky, ambient, outline and supersampling are the buildings' (hd.py), with the units' camera fill (EA's HD
   infantry are lit from the front); each part as light as TS draws it under that light (infcalib.py), the yellow on
   TS's ramp (above).
@@ -822,6 +868,8 @@ flames, flashes and blood left out) and drawn the way the HD buildings and the o
   rifle and head to its own frame.  TS draws him with his chest turned about 20 degrees to his right in every facing
   (the wings sit higher on one side in its front and back views); the fit has that too.  Overlap with TS's frames in
   TS's camera: {ts_stand:.2f}.
+- The wings stand 6-8 px higher than TS's in four facings (SW, SE, E, NE): you liked them as they are (4 Oct), so
+  they stay.
 - The run is one smooth loop (every joint on a short smooth curve through the 6 steps, nothing jumps back to a start
   pose), fitted to TS's 48 run frames together, each facing's arms, rifle and head on their own smooth loop on top.
   Overlap {ts_walk:.2f}; the furthest any landmark moves from one step to the next is {mo_walk:.1f} TS px.
@@ -1102,17 +1150,33 @@ CALLS = {'e2': """- TS drew his crawl only facing N, NW, W, SW and S; its NE, E 
   effect (the hand-off README); the 3D model has a "throw" marker in the right hand for it.
 - His back is one big blue rucksack, and the orange under it is patches on the backs of his trousers (your notes).  It
   was first read as a dark plate with two magazines across it and a pouch on his belt; TS's two light bands across the
-  rucksack are its shading.  It is a soft pack, not a box (your note: TS's "has a rounded curve"): rounded over its
-  top, back and sides, flat where it sits on his back, nearly upright.  Its size, how far it stands off his back and
-  how round it is are fitted to TS's 8 standing frames and 16 of its run frames together, and it is drawn in TS's own
-  navy and blue-greys, lit to TS's blues (it was a light lavender box, which read as a thin board).
+  rucksack are its shading.  It is a soft bag, not a box (your notes: TS's "has a rounded curve", "STILL has a big
+  rectangular backpack"): rounded over its top, back and sides, flat where it sits on his back, nearly upright, with a
+  lid flap over its top - TS's light band across the top of the pack and the dark crease under it.  Its size, how far
+  it stands off his back and how round it is are fitted to TS's 8 standing frames and 16 of its run frames together.
+  Its colours are TS's own tones (your note: "pack is good!"): seen from behind, half of TS's pack is near-black navy
+  and a quarter bright lavender where it catches the light, so the pack's shading is mapped onto those tones, quantile
+  for quantile (infunit.py, the pack's tone curve) - it was one flat mid grey-blue, and before that a light lavender
+  box, which read as a thin board.
+- His crawl pushes along the ground with his legs, a knee drawn up to the side in turn and the leg driving back (your
+  note: the crawl "isnt kicking their legs against the floor").  The first crawl's legs were bent up in the air: the
+  fit could only turn the thigh out a little at the hip, so every bend of the knee lifted the foot off the ground.
+  With the thigh turned out, the knee bends along the ground; the stroke is fitted to TS's crawl frames, lying on the
+  ground.  In v5 that fit had settled on a stroke too small to see (your note: "hes not using his legs to push and
+  move"); refitted from a full stroke - each knee drawn well up to the side (30 degrees and more), then the leg driven
+  straight back - it fits TS's crawl frames closer than either earlier crawl.
 - The faceplate is bigger than a fit of the whole soldier made it (fitted again on its own, the light blue counted
   three times over): TS shows it in every facing that sees his face, 2 px at the front edge in the side views.
 - The orange is on TS's own ramp rather than one colour (see What it is): a plain orange could not be as light as
   TS's in HD's light and stay orange.
-- In the throw his arms are less stretched out than TS draws them at the wind-up and the release (TS's arms there are
-  lines a pixel or two wide, which count for little against his body's outline in the fit); the turn of his body,
-  his back to the target at the wind-up and his front at the follow-through, is TS's.
+- In the throw his arms reach out where TS's do.  TS draws them there as lines a pixel or two wide flung out from his
+  body, which count for little against his body's outline, and the first fits tucked them in; now each thin line TS
+  flings out from his upper body is fitted with one of his arms along it, shoulder to hand (gunline.py, ARM_LINE).
+  Where TS shows both arms out and his body hides one from this camera, the one in view is drawn.  The turn of his
+  body, his back to the target at the wind-up and his front at the follow-through, is TS's.
+- Throwing from prone he lies flat, his chest down and the rucksack along his back, as TS draws him (the old fits had
+  him pushed up on his arms, the pack standing up off his back); crawling, his chest is up on his forearms a little
+  (at most 15 degrees: TS's crawl is a closer fit further up, but the pack then stood up like a box).
 - TS's run facing west starts a step later than its other seven facings (its frames match the run one step on, in
   every fit of the run); the HD run follows each facing's own TS frames, so its west loop starts a step on too.
 - TS draws idle 1 and death 1 facing south-west, idle 2 and death 2 facing north-east (their first frames match those
@@ -1203,14 +1267,61 @@ GROUND_CALL = """- The deaths, crawl and prone frames are fitted to TS's shadow 
   drawn in under him (its light raised, so it shortens) and then faded, to show as much of it as TS shows round its
   frame (deathshadow.py; the lengths and strengths are in src/{lc}_shadow_w.json).  Once he is down only a faint
   shadow hugs him, which the game drops (under alpha 128), as TS has none."""
+CALLS.setdefault('e1', '')
 for _u in ('e1', 'e2', 'eng', 'ghost', 'medic'):
     if _u in CALLS:
-        CALLS[_u] = GROUND_CALL.replace('{lc}', _u) + '\n' + CALLS[_u]
+        CALLS[_u] = (GROUND_CALL.replace('{lc}', _u) + '\n' + CALLS[_u]).rstrip('\n')
+# (the crawls refitted with the thigh free to turn out at the hip: CRAWL_FROG lists the units done so)
+CRAWL_FROG = ('e1', 'eng', 'medic')
+CRAWL_CALL = """- His crawl pushes along the ground with his legs, a knee drawn up to the side in turn and the leg driving back
+  (your note on the Disc Thrower's crawl: "isnt kicking their legs against the floor").  The first crawls' legs were
+  bent up in the air: the fit could only turn the thigh out a little at the hip, so every bend of the knee lifted the
+  foot off the ground.  With the thigh turned out, the knee bends along the ground; the stroke is fitted to TS's crawl
+  frames, lying on the ground."""
+for _u in CRAWL_FROG:
+    if _u in CALLS:
+        CALLS[_u] = (CRAWL_CALL + '\n' + CALLS[_u]).rstrip('\n')
 CALLS['jj'] = CALLS['jj'] + """
 - The tumble ends lying flat on the ground where TS's does, fitted to TS's shadow as well as its outline (it ended
   half sitting with a leg up)."""
 READMES = {'e1': 'README', 'e2': 'README_E2', 'eng': 'README_ENG', 'ghost': 'README_GHOST', 'jj': 'README_JJ',
            'medic': 'README_MEDIC'}
+
+
+EA_NAME = {'ra-e1': "RA's Rifle Infantry (E1)", 'ra-e2': "RA's Grenadier (E2)", 'ra-e6': "RA's Engineer (E6)",
+           'ra-medi': "RA's Medic (MEDI)", 'td-rmbo': "TD's Commando (RMBO)"}
+
+
+def ea_note(unit):
+    """the movement's source, when it follows EA's own HD infantry (wrig/ealib.py) rather than TS's frames."""
+    seqs = []
+    code = None
+    for s, nm in (('walk', 'the run'), ('lie_down', 'lying down'), ('get_up', 'getting up'), ('idle1', 'idle 1'),
+                  ('idle2', 'idle 2'), ('death1', 'death 1'), ('death2', 'death 2'), ('fire', 'the attack'),
+                  ('prone_fire', 'the attack lying down'), ('heal', 'the heal')):
+        p = '%s_%s_frames.json' % (unit, s)
+        if os.path.exists(p):
+            d = json.load(open(p))
+            if 'ea_code' in d or any(isinstance(v, dict) and 'ea_frame' in v for v in d.values()) or \
+                    (s == 'walk' and os.path.exists('wrig/%s_walk_ea.json' % unit)) or (s == 'walk' and unit == 'e2'):
+                seqs.append(nm); code = d.get('ea_code', code)
+    cf = json.load(open('%s_crawlfit.json' % unit)) if os.path.exists('%s_crawlfit.json' % unit) else {}
+    if cf.get('ea_code'):
+        seqs.insert(1, 'the crawl'); code = cf['ea_code']
+    if not seqs:
+        return ''
+    ea = EA_NAME.get(code, code or "EA's counterpart")
+    seqs[0] = seqs[0][0].upper() + seqs[0][1:]
+    return ('Movement: EA\'s own (your note: "follow ea")\n'
+            '----------------------------------------------\n'
+            '%s follow %s HD frames from the Remastered install (same 267 x 208 canvas, scale and 32-degree camera), '
+            'not TS\'s: each pose fitted to EA\'s outline and colours (skin, dark kit) on the shared skeleton, a body part '
+            'at a time, the crawl as EA\'s leopard crawl read off its frames (one arm reaching straight out along the '
+            'ground, the knee on that side drawn up and out) with its timing, lean and place fitted, and the run as EA\'s '
+            'stride.  EA\'s timing is spread over TS\'s frame counts (the mod keeps TS\'s layout).  The deaths\' blood is '
+            'drawn where EA\'s pools land.  Where the notes below describe fitting the movement to TS\'s frames, EA\'s '
+            'now replaces it; the soldier\'s sizes and kit are still read off TS.') % (
+        ', '.join(seqs[:-1]) + ' and ' + seqs[-1] if len(seqs) > 1 else seqs[0], ea + "'s")
 
 
 def write_readmes(unit, pkg, rep, info, val, ov):
@@ -1235,6 +1346,10 @@ def write_readmes(unit, pkg, rep, info, val, ov):
                   marker_line=('Marker "%s": %s.\n  ' % (mname, marker)) if mname else '',
                   stem='ts' + u['name'].lower(), pkgname=os.path.basename(pkg))
     text = globals()[READMES[unit]].format(**fields)
+    note = ea_note(unit)
+    if note:
+        i = text.index('\n\n') + 2
+        text = text[:i] + note + '\n\n' + text[i:]
     # (the scripts the shadow pass added, listed with the others)
     extra = ('  tsshadow.py            TS\'s own shadow, read off the mod\'s frames, and its light (ts_light.json: fitted on\n'
              '                         all six units\' standing frames); the fits count it with SHADOW=w\n'
@@ -1244,7 +1359,7 @@ def write_readmes(unit, pkg, rep, info, val, ov):
              '  firepair.py, gunpass.py, gunline.py   fire as TS\'s alternating poses; a gun laid along TS\'s gun\n'
              '  fitcheck.py, checksheet.py   the check sheets: a fit and its shadow in TS\'s camera; TS beside HD\n')
     # (the check sheets, when the package has them)
-    sheets = [n for n in ('death-1-sheet.png', 'death-2-sheet.png', 'crawl-sheet.png', 'fire-sheet.png')
+    sheets = [n for n in ('animation-sheet.png', 'death-1-sheet.png', 'death-2-sheet.png', 'crawl-sheet.png', 'fire-sheet.png')
               if os.path.exists(os.path.join(pkg, 'previews', n))]
     if sheets and 'ts-' in text:
         i = text.find('\n', text.find('masks.png'))

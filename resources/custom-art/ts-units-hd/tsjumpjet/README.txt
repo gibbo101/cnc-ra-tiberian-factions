@@ -24,7 +24,7 @@ previews/   run-8-facings.gif, crawl-8-facings.gif, fire-8-facings.gif, fire-pro
             lie-down-get-up-W.gif, lie-down-get-up-SE.gif         standing -> down -> prone -> up -> standing
             standing-8-facings.png    TS's sprite, the mod's frame, HD and EA's HD Minigunner, each facing
             masks.png                 the helmet and visor close up in 8 facings: TS, the mod, HD
-            animation-sheet.png
+            animation-sheet.png, fire-sheet.png
                                   the frame-by-frame check sheets: each frame as the mod draws it now (TS's
                                   sprite and shadow) beside HD
             shape-run.png, shape-crawl.png    TS's frames as colour classes beside the model's, in TS's own camera
@@ -46,24 +46,26 @@ flames, flashes and blood left out) and drawn the way the HD buildings and the o
   rifle and head to its own frame.  TS draws him with his chest turned about 20 degrees to his right in every facing
   (the wings sit higher on one side in its front and back views); the fit has that too.  Overlap with TS's frames in
   TS's camera: 0.77.
+- The wings stand 6-8 px higher than TS's in four facings (SW, SE, E, NE): you liked them as they are (4 Oct), so
+  they stay.
 - The run is one smooth loop (every joint on a short smooth curve through the 6 steps, nothing jumps back to a start
   pose), fitted to TS's 48 run frames together, each facing's arms, rifle and head on their own smooth loop on top.
-  Overlap 0.69; the furthest any landmark moves from one step to the next is 10.2 TS px.
+  Overlap 0.64; the furthest any landmark moves from one step to the next is 10.4 TS px.
 - TS never lays the Jumpjet down. His crawl frames are his run frames, his fire-prone frames are his fire frames, and
   his lying-down and getting-up frames are his standing frames, pixel for pixel. HD does the same: 86-133 are the
   run, 212-259 the fire and 260-291 his standing pose in each facing.
 - Fire and fire prone: TS holds one pose through each facing's 6 frames (only the flash comes and goes), so each
   facing has one pose for all 6.  Overlap 0.72 and 0.72.
 - Flying: TS holds one pose a facing through its 6 flying frames, leaning into the flight, only the jet flames
-  changing; so does HD: fitted to the 8 facings together, then each facing's arms, rifle and head.  Overlap 0.72.
-  Hovering is TS's standing pose with the jets lit (0.73); firing in the air the flying pose firing (0.69).
+  changing; so does HD: fitted to the 8 facings together, then each facing's arms, rifle and head.  Overlap 0.73.
+  Hovering is TS's standing pose with the jets lit (0.73); firing in the air the flying pose firing (0.70).
 - The jet flames, frame by frame from TS's own pixels (its three flame yellows), drawn smooth and hot (a white-yellow
   core, amber, orange edges) at the HD nozzles, hidden where he is in front of them; firing in the air, the pixels
   nearer his rifle than his nozzles are the muzzle flash, drawn at the muzzle.  The muzzle flash keeps TS's red tips.
 - The tumble: hit in the air, he tumbles and falls, ending on the ground in TS's blood; each frame fitted to its TS
   frame from the one before, then the run of poses relaxed together (0.68).
 - The idles: as the other infantry (0.83 and 0.81).
-Against the mod's current frames the silhouettes overlap by 0.61 (standing 0.62, run 0.58, crawl 0.58, fire
+Against the mod's current frames the silhouettes overlap by 0.60 (standing 0.62, run 0.55, crawl 0.58, fire
 0.60): those frames are TS's sprites scaled up 3.116 times, so this is the difference in TS's own camera above,
 scaled up with them, plus the 32-degree camera.
 

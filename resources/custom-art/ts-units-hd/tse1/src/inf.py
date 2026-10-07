@@ -268,6 +268,28 @@ def limb(p0, p1, R, r1, r2, comp, name, ext=0.25):
     return ellip((p0 + p1) / 2, M, (r1, r2, L / 2 + ext), comp, name)
 
 
+def taper_limb(p0, p1, R, r0, r1, comp, name, ext=0.25):
+    """a limb from p0 (r0 across) narrowing to p1 (r1 across): an ellipsoid along the bone whose widest point sits near
+    p0, long enough that it is r1 across at p1, cut square ext past either end."""
+    p0 = np.asarray(p0, float); p1 = np.asarray(p1, float)
+    L = float(np.linalg.norm(p1 - p0))
+    a = (p1 - p0) / max(L, 1e-9)
+    x = R[:, 0] - (R[:, 0] @ a) * a
+    if np.linalg.norm(x) < 1e-6:
+        x = R[:, 1] - (R[:, 1] @ a) * a
+    x = x / np.linalg.norm(x); y = np.cross(a, x)
+    M = np.stack([x, y, a], 1)
+    k = float(np.clip(r1 / max(r0, 1e-6), 0.2, 0.98))
+    s0 = 0.25 * L                                   # the widest point, a quarter of the way down
+    A = (L - s0) / np.sqrt(1.0 - k * k)             # the half-length that leaves it r1 across at p1
+    c = p0 + a * s0
+    cons = [rc.Ellip(c, M, (r0, r0, A)), rc.Plane(a, a @ p1 + ext), rc.Plane(-a, -(a @ p0) + ext)]
+    p = rc.Part(cons, comp, name, sphere=((p0 + p1) / 2, L / 2 + ext + r0 + 1e-3))
+    p.low = min(p0[2], p1[2]) - r0
+    p.frame = ((p0 + p1) / 2, M)
+    return p
+
+
 def two_bone(A, T, a, b, pole):
     """a two-bone limb from A reaching for T (bones a, b long), its middle joint towards pole: (joint, end)."""
     d = T - A
@@ -326,6 +348,10 @@ class Pose:
         self.S, self.Q = S, Q
         q = Q
         B = Rz(th + q['yaw']) @ Ry(q['pitch']) @ Rx(q['roll'])          # the pelvis's frame in the world
+        # (ptw: the pelvis turned about its own long axis, one hip rising - a crawler's hip hitching up as that knee
+        # comes in; 0 by default)
+        if q.get('ptw', 0.0):
+            B = B @ Rz(q['ptw'])
         hip_h = S['ah'] + S['ls'] + S['lt']
         P0 = np.array([q['dx'], q['dy'], hip_h + q['dz']])
         # (bx, by: the body moved along his own facing - forward, to his left - the same in every facing: TS draws
@@ -336,7 +362,9 @@ class Pose:
         # legs
         self.legs = {}
         for side, sg in (('l', -1.0), ('r', 1.0)):
-            H = P0 + B @ np.array([0, sg * S['hw'], 0])
+            # (lhk, rhk: that hip drawn along the body towards the head, TS px - the hip hitching up as the knee
+            # comes in; 0 by default)
+            H = P0 + B @ np.array([0, sg * S['hw'], q.get(side + 'hk', 0.0)])
             RT = B @ Ry(-q[side + 'hf']) @ Rx(sg * q[side + 'ha']) @ Rz(q[side + 'ht'])
             K = H + RT @ np.array([0, 0, -S['lt']])
             RS = RT @ Ry(q[side + 'kf'])
@@ -344,15 +372,26 @@ class Pose:
             RF = RS @ Ry(-q[side + 'af'])
             self.legs[side] = (H, RT, K, RS, A, RF)
         # spine: abdomen and chest
-        RC = B @ Ry(q['sp']) @ Rz(q['sy']) @ Rx(q['sr'])
-        C0 = P0 + RC @ np.array([0, 0, S['lsp']])                      # the shoulders' height on the spine
+        # the spine in two pieces (the crawl's wriggle: the body curving, not just angling at the hips): the lower
+        # back from the pelvis to the middle of the spine (smid of its length; 0, the default, puts the bend at the
+        # hips as before), turned by lp, ly, lr (pitch, twist, side bend); the upper back from there to the
+        # shoulders, turned by sp, sy, sr on top of it.  With smid 0 and lp, ly, lr 0 it is the old one-piece spine
+        a = float(q.get('smid', 0.0))
+        RL = B @ Ry(q.get('lp', 0.0)) @ Rz(q.get('ly', 0.0)) @ Rx(q.get('lr', 0.0))
+        M = P0 + RL @ np.array([0, 0, a * S['lsp']])
+        RC = RL @ Ry(q['sp']) @ Rz(q['sy']) @ Rx(q['sr'])
+        C0 = M + RC @ np.array([0, 0, (1.0 - a) * S['lsp']])            # the shoulders' height on the spine
+        self.mid = (M, RL)
         self.chest = (C0, RC)
         RH = RC @ Ry(q['hp']) @ Rz(q['hy'])
         N = C0 + RC @ np.array([0, 0, 0.35])
         Hc = N + RH @ np.array([0, 0, S['ln'] + S['hr'][2]])
         self.head = (Hc, RH)
         self.arms = {}
-        shoulders = {sd: C0 + RC @ np.array([0, sg * S['sw'], -0.35]) for sd, sg in (('l', -1.0), ('r', 1.0))}
+        # (the shoulder girdle: lsg / rsg move that shoulder along the spine - up towards the head, a crawler's
+        # shoulder reaching forward - and lsx / rsx along the chest's front, TS px; 0 by default)
+        shoulders = {sd: C0 + RC @ np.array([q.get(sd + 'sx', 0.0), sg * S['sw'], -0.35 + q.get(sd + 'sg', 0.0)])
+                     for sd, sg in (('l', -1.0), ('r', 1.0))}
         RG = RC @ Rz(q['gy']) @ Ry(-q['gp']) @ Rx(q['gr'])               # the rifle: its x axis along the barrel
         if q.get('ik', 1.0) > 0.5:
             # the rifle held: the right hand on its grip, the left under the barrel; the arms reach them (two bones)
@@ -363,9 +402,17 @@ class Pose:
                 RG0 = RC @ Rz(q['gy']) @ Ry(-q['gp']) @ Rx(q['gr'])
                 G = G + RC[:, 0] * gun_clearance(S, P0, B, C0, RC, G, RG0)
             targets = {'r': G, 'l': G + RG @ np.array([q['lfx'], 0, -0.25 - S['rh'] * 0.5])}
+            if 'rfx' in q:
+                # (the right hand up the barrel too, rfx ahead of the grip: a crawler holds his rifle out in front by
+                # the handguard, both hands ahead of the shoulders; the rifle itself stays where the grip puts it)
+                targets['r'] = G + RG @ np.array([q['rfx'], 0, -0.25 - S['rh'] * 0.5])
             for side, sg in (('l', -1.0), ('r', 1.0)):
                 Sh = shoulders[side]
                 pole = RC @ (Rx(sg * q[side + 'sw']) @ np.array([-0.15, sg * 0.55, -0.82]))
+                if 'epy' in q:
+                    # (the elbows' direction given outright, in the chest's frame: epx along its front, epy out to that
+                    # side, epz along the spine - a crawler's elbows out to the sides on the ground)
+                    pole = RC @ np.array([q['epx'], sg * q['epy'], q['epz']])
                 E, W = two_bone(Sh, targets[side] - (targets[side] - Sh) / max(np.linalg.norm(targets[side] - Sh), 1e-6)
                                 * S['rh'] * 0.6, S['lu'], S['lf'], pole)
                 self.arms[side] = (Sh, RC, E, frame_along(W - E, RC), W)
@@ -393,6 +440,10 @@ class Pose:
 
 
 def parts(S, Q, th, rifle=True):
+    if S.get('look', 1) >= 2 and S.get('kit', 'e1') == 'e1':
+        # (the Light Infantry's makeover: inflook.py)
+        import inflook
+        return inflook.parts(S, Q, th, rifle)
     P = Pose(S, Q, th)
     face = float(th)                     # (the facing angle: th is reused for the thighs below)
     out = []
@@ -437,7 +488,13 @@ def parts(S, Q, th, rifle=True):
     C0, RC = P.chest
     # abdomen between the pelvis and the chest, the chest, the vest's front and back plates
     mid = (P0 + C0) / 2
-    out.append(ellip(P0 + (C0 - P0) * 0.45, RC, S['ar'], ABDOMEN, 'abdomen'))
+    M, RL = P.mid
+    if Q.get('smid', 0.0):
+        # (two-piece spine: the abdomen along the lower back, centred between the hips and the middle joint and a
+        # little past it, so it bridges to the chest)
+        out.append(ellip(P0 + (M - P0) * 0.75, RL, S['ar'], ABDOMEN, 'abdomen'))
+    else:
+        out.append(ellip(P0 + (C0 - P0) * 0.45, RC, S['ar'], ABDOMEN, 'abdomen'))
     cc = C0 + RC @ np.array([0, 0, -S['cr'][2] * 0.55])
     out.append(ellip(cc, RC, S['cr'], CHEST, 'chest'))
     out.append(ellip(cc + RC @ np.array([S['cr'][0] * 0.35, 0, -0.35]), RC,
@@ -607,8 +664,17 @@ def parts(S, Q, th, rifle=True):
     for side, sg in (('l', -1.0), ('r', 1.0)):
         Sh, RU, E, RFa, W = P.arms[side]
         out.append(ellip(Sh + RC @ np.array([0, sg * 0.25, S['pdz']]), RC, S['pd'], PAD, 'shoulder_pad'))
-        out.append(limb(Sh, E, RU, S['ru'], S['ru'], UARM, 'upper_arm', ext=0.3))
-        out.append(limb(E, W, RFa, S['rf'], S['rf'], FARM, 'forearm', ext=0.2))
+        if S.get('taper', 0.0):
+            # (the arms shaped: the upper arm narrowing from the shoulder to the elbow, the forearm from just below the
+            # elbow to the wrist, a round elbow between them, so the bend reads as a joint - Luke: "he has no elbows")
+            t = float(S['taper'])
+            out.append(taper_limb(Sh, E, RU, S['ru'], S['ru'] * (1 - 0.4 * t), UARM, 'upper_arm', ext=0.05))
+            out.append(taper_limb(E, W, RFa, S['rf'] * (1 - 0.05 * t), S['rf'] * (1 - 0.4 * t), FARM, 'forearm',
+                                  ext=0.1))
+            out.append(ellip(E, RFa, (S['ru'] * (1 - 0.3 * t),) * 3, FARM, 'elbow'))
+        else:
+            out.append(limb(Sh, E, RU, S['ru'], S['ru'], UARM, 'upper_arm', ext=0.3))
+            out.append(limb(E, W, RFa, S['rf'], S['rf'], FARM, 'forearm', ext=0.2))
         out.append(ellip(W + RFa @ np.array([0, 0, -S['rh'] * 0.6]), RFa, (S['rh'],) * 3, HAND, 'hand'))
     Hc, RH = P.head
     if kit == 'ghost':

@@ -7,6 +7,7 @@ grey where both have shadow, blue TS's shadow only, orange ours only.
         FRAMES: 134,135,... or 134-148
 """
 import json, os, sys
+from paths import HANDOFF
 import numpy as np
 from PIL import Image, ImageDraw
 import rc
@@ -15,7 +16,6 @@ import inf as I
 import inffit as F
 import infrender as R
 import tsshadow as T
-from paths import HANDOFF
 
 ROOT = HANDOFF + '/'
 BG = np.array([96, 100, 72], float)

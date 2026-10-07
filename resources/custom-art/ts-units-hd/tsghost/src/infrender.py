@@ -3,7 +3,8 @@ infrender.py - an infantry unit's HD frames for the mod (267 x 208, the canvas o
 classic pixel, as the buildings), from the posed soldier (inf.py): the RA-grid camera (32 degrees), the mod's size
 (3.068 canvas px a TS px: the mod's frames are TS's sprite x 3.068), the feet on canvas (133.5, 111) as the README
 keeps them; the buildings' light, sky, outline and supersampling with the units' camera fill; the shadow baked in
-(black at alpha 191, as the buildings'); a -trim.png of the house-colour parts.
+(black at alpha 128 - INF_SHADOW 0.5 - half as dark as the buildings' 191: at 75% the falling deaths looked like
+floating); a -trim.png of the house-colour parts.
 """
 import os, sys
 import numpy as np
@@ -135,7 +136,17 @@ def apply_ramps(r, col, mat):
         gamma = spec[2] if len(spec) > 2 else 1.0        # < 1: less between lit and shaded (TS lights from the camera)
         m = (r.comp == c) & r.hitmask
         if m.any() and c in mat:
-            L = G * np.clip(lum(col[m]) / max(float(lum(mat[c])), 1e-6), 0, None) ** gamma
+            x = np.clip(lum(col[m]) / max(float(lum(mat[c])), 1e-6), 0, None)
+            if len(spec) > 3 and spec[3] is not None:
+                # (a tone curve read off TS's own frames: our shading's quantiles onto TS's - the Disc Thrower's pack,
+                # which TS draws near black with bright lavender where it catches the light, not as smooth shading)
+                xs, Ls = spec[3]
+                L = np.interp(x, xs, Ls, left=None, right=None)
+                lo_, hi_ = x < xs[0], x > xs[-1]
+                L[lo_] = Ls[0] * x[lo_] / max(xs[0], 1e-6)
+                L[hi_] = Ls[-1] + (x[hi_] - xs[-1]) * (Ls[-1] - Ls[-2]) / max(xs[-1] - xs[-2], 1e-6)
+            else:
+                L = G * x ** gamma
             col[m] = ramp_colour(ramp, L)
     return col
 

@@ -5,7 +5,6 @@ over the HD frame, one sequence a row, frame by frame (Luke: "show me an up to d
     python3 animsheet.py UNIT PKG out.png [title]
 """
 import sys, os
-sys.path.insert(0, '/home/claude/units/work/vox'); sys.path.insert(0, '/home/claude/units/work/inf')
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import infunit, tsshadow as T, infseq as SQ

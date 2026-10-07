@@ -20,7 +20,7 @@ previews/   run-8-facings.gif, crawl-8-facings.gif, fire-8-facings.gif, fire-pro
             lie-down-get-up-W.gif, lie-down-get-up-SE.gif         standing -> down -> prone -> up -> standing
             standing-8-facings.png    TS's sprite, the mod's frame, HD and EA's HD Commando, each facing
             masks.png                 the head close up in 8 facings: TS, the mod, HD
-            death-1-sheet.png, death-2-sheet.png, crawl-sheet.png, fire-sheet.png
+            animation-sheet.png, death-1-sheet.png, death-2-sheet.png, crawl-sheet.png, fire-sheet.png
                                   the frame-by-frame check sheets: each frame as the mod draws it now (TS's
                                   sprite and shadow) beside HD
             shape-run.png, shape-crawl.png    TS's frames as colour classes beside the model's, in TS's own camera
@@ -52,8 +52,8 @@ TS's flash and blood left out) and drawn the way the HD buildings and the other 
 - The run is one smooth loop: every joint follows a short smooth curve (a Fourier series) through the 6 steps, so
   step 5 runs into step 0 like any step into the next and nothing jumps back to a start pose (your note on the
   soldiers' run).  The loop is fitted to TS's 48 run frames together; each facing's arms, railgun and head then get
-  their own smooth loop on top, held close to the shared one.  Overlap 0.72; the furthest any landmark (muzzle,
-  railgun's back end, hands, head, feet) moves from one step to the next is 26.0 TS px.
+  their own smooth loop on top, held close to the shared one.  Overlap 0.59; the furthest any landmark (muzzle,
+  railgun's back end, hands, head, feet) moves from one step to the next is 26.9 TS px.
 - The crawl is rebuilt from TS's own crawl frames (your notes: "view how og is doing it", "research how a body crawls
   prone"). It is a real prone crawl, done the way the army's low crawl and the leopard crawl are: flat and low on his
   front, up on his forearms with his head up to see. One forearm goes forward with the opposite knee, which is drawn
@@ -80,7 +80,7 @@ TS's flash and blood left out) and drawn the way the HD buildings and the other 
   hot: a white-yellow core, amber, orange edges) at the HD railgun's muzzle, hidden where he stands in front of it;
   the blood in TS's red (255,0,0, as TS and the mod draw it), each red pixel drawn on the ground it covers in TS's
   view, so a pool stays put as the body falls on it.
-Against the mod's current frames the silhouettes overlap by 0.50 (standing 0.47, run 0.48, crawl 0.48, fire
+Against the mod's current frames the silhouettes overlap by 0.50 (standing 0.47, run 0.41, crawl 0.48, fire
 0.50): those frames are TS's sprites scaled up 3.0769 times, so this is the difference in TS's own camera above,
 scaled up with them (a soldier's limbs are a few TS pixels wide, so a pixel counts for a lot), plus the 32-degree camera.
 

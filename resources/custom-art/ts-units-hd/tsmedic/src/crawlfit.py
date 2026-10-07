@@ -88,6 +88,9 @@ def genuine(unit, side=None):
     if unit not in MIRRORED:
         return list(range(8))
     side = side or os.environ.get('SIDE', 'w')
+    if side == 'all':
+        # (a crawl fitted to EA's own HD frames, drawn in all 8 facings: nothing mirrored)
+        return list(range(8))
     return [0, 1, 2, 3, 4] if side == 'w' else [0, 4, 5, 6, 7]
 
 

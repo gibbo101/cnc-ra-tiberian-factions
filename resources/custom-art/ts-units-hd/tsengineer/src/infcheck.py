@@ -7,12 +7,12 @@ EA's HD Minigunner; and HD frames rendered from fitted poses.
         standing pose; ea adds EA's frame of the same number (standing only)
 """
 import json, sys
+from paths import HANDOFF
 import numpy as np
 from PIL import Image, ImageDraw
 import inf as I
 import inffit as F
 import infrender as R
-from paths import HANDOFF
 
 ROOT = HANDOFF + '/'
 K, DX, DY = 3.068, 38.06, 10.57            # the mod's frames: TS's sprite x 3.068 at (38.06, 10.57) (infmap.py)

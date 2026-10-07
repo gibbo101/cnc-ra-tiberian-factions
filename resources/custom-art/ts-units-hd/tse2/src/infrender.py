@@ -3,7 +3,8 @@ infrender.py - an infantry unit's HD frames for the mod (267 x 208, the canvas o
 classic pixel, as the buildings), from the posed soldier (inf.py): the RA-grid camera (32 degrees), the mod's size
 (3.068 canvas px a TS px: the mod's frames are TS's sprite x 3.068), the feet on canvas (133.5, 111) as the README
 keeps them; the buildings' light, sky, outline and supersampling with the units' camera fill; the shadow baked in
-(black at alpha 191, as the buildings'); a -trim.png of the house-colour parts.
+(black at alpha 128 - INF_SHADOW 0.5 - half as dark as the buildings' 191: at 75% the falling deaths looked like
+floating); a -trim.png of the house-colour parts.
 """
 import os, sys
 import numpy as np

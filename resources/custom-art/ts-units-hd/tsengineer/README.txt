@@ -1,6 +1,10 @@
 Engineer (TS [ENGINEER]) in HD for Tiberian Factions: TSENGINEER
 ==================================================================
 
+Movement: EA's own (your note: "follow ea")
+----------------------------------------------
+The run follow EA's counterpart's HD frames from the Remastered install (same 267 x 208 canvas, scale and 32-degree camera), not TS's: each pose fitted to EA's outline and colours (skin, dark kit) on the shared skeleton, a body part at a time, the crawl as EA's leopard crawl read off its frames (one arm reaching straight out along the ground, the knee on that side drawn up and out) with its timing, lean and place fitted, and the run as EA's stride.  EA's timing is spread over TS's frame counts (the mod keeps TS's layout).  The deaths' blood is drawn where EA's pools land.  Where the notes below describe fitting the movement to TS's frames, EA's now replaces it; the soldier's sizes and kit are still read off TS.
+
 frames/     tsengineer-0000.png ... tsengineer-0291.png, the mod's 292 frames on its 267 x 208 canvas, each with a
             -trim.png (white = house colour, antialiased), numbered as TS's own sequence (the mod keeps it):
               0-7      standing, one a facing; facings counter-clockwise from north (0 N, 1 NW, 2 W, 3 SW, 4 S, 5 SE,
@@ -39,6 +43,16 @@ blood left out) and drawn the way the HD buildings and the other units are.
   grey belt); a toolbox in his right hand (TS's east view: a yellow box with a light grey lid hanging at his side,
   7 px long and 5 rows tall).  The shoulder pads, upper arms and thighs house green (TS's remap areas); the forearms,
   gloves and shins yellow; the body, hips and boots dark.
+- The look (your makeover): the C&C Reborn "GDI Engineer (Old)" you picked, with the hazard-striped case of TS's
+  own cameo, its stripes house colour (your note), and off TS's bright yellow onto the Reborn suit's dark ochre (your
+  note: "depart from the bright yellow"; the GDI ochre of the HD buildings' collars; inflook_eng.py, its colours
+  infunit.MAT_ENG_LOOK2).  The same skeleton, poses and fitted sizes.  The ochre helmet with a glowing visor smaller
+  than the soldiers' (your note), grey ear pieces, a low ridge and a short whip antenna; the flat box pack with dark
+  edging, a round gauge and a slot; a segmented ochre chest on the dark suit, a dark belt with a light grey buckle;
+  dark shoulder plates with house-green hazard stripes, ochre plates under them; green upper arms and thighs (TS's
+  remap areas, so he shows his side as TS's does); ochre gauntlets, dark gloves; ochre knee pads and boot covers with
+  light grey shin guards, dark boots; the dark case with house-green stripes on both faces, a light grey lid band and
+  handle.  The goggles, respirator and bright yellow below are TS's sprite as the fit read it, kept for the record.
 - His suit is bulkier than the soldiers' armour: the fit has room for wider hips and a bigger hood and body.  TS drew
   its sprites on black, so the edge pixels of a bright part come out dark; the fit counts the soldier's own edge
   pixels as dark, as TS's are, and his yellow parts are fitted to TS's yellow inside them.
@@ -53,7 +67,7 @@ blood left out) and drawn the way the HD buildings and the other units are.
   the other, the front foot reaching well ahead): the legs follow one curve half a cycle apart; the left arm swings
   against them, the right carries the toolbox with a short swing.  The loop is fitted to TS's 48 run frames together;
   each facing's arms and head then get their own smooth loop on top, held close to the shared one.  Overlap
-  0.67; the furthest any landmark (hands, head, feet) moves from one step to the next is 5.6 TS px.
+  0.51; the furthest any landmark (hands, head, feet) moves from one step to the next is 6.3 TS px.
 - The crawl is rebuilt from TS's own crawl frames (your notes: "view how og is doing it", "research how a body crawls
   prone"). It is a real prone crawl, done the way the army's low crawl and the leopard crawl are: flat and low on his
   front, up on his forearms with his head up to see. One forearm goes forward with the opposite knee, which is drawn
@@ -63,16 +77,21 @@ blood left out) and drawn the way the HD buildings and the other units are.
   the five facings TS drew and the flipped facings get the same pose mirrored, as TS's do. The toolbox stays in his
   right hand, standing on the ground square to him, and only moves when his hand does. One stroke drives every joint,
   so the loop runs on with nothing jumping back. How far he is propped up, where he looks and how far each part moves
-  are fitted to TS's crawl frames. Overlap 0.68, landmarks at most 3.1 TS px a step.
+  are fitted to TS's crawl frames. Overlap 0.67, landmarks at most 4.6 TS px a step.
+  On the infantry's new skeleton (as the Light Infantry's): a two-piece spine, so the body curves; shoulders that reach
+  and hips that hitch with the stroke. His body was fitted step by step to TS's crawl, then calmed: the movement at half
+  the fit, and the sideways movements (roll, side bend, twist, the hip turn) centred, so he lies flat and square. (His
+  hood pulled the fit over onto one side; drawn at the Light Infantry's x1.5 he heaved half on his side.) His free arms
+  reach out in front in turn, hands ahead of his shoulders, his arms narrowing to a round elbow.
 - Lying down: the two in-betweens fitted to TS's frames on the way down through kneeling on all fours (TS's second
-  frame), from the standing pose to the prone one (the crawl's first step), so standing, down and prone run as one movement (0.73); getting up is the same two
+  frame), from the standing pose to the prone one (the crawl's first step), so standing, down and prone run as one movement (0.72); getting up is the same two
   poses backwards, as TS's get-up frames are its lie-down frames backwards, pixel for pixel.
 - The idles and deaths: each frame fitted to its TS frame starting from the one before, then the whole run of poses
   relaxed together (every frame pulled towards the middle of its neighbours), so they move smoothly; the idles start
-  from the standing pose and come back to it.  Overlap: idles 0.84 and 0.81, deaths 0.71 and 0.64.
+  from the standing pose and come back to it.  Overlap: idles 0.83 and 0.82, deaths 0.70 and 0.62.
 - The blood, frame by frame from TS's own pixels: TS's red (255,0,0, as TS and the mod draw it), each red pixel drawn on
   the ground it covers in TS's view, so a pool stays put as the body falls on it.
-Against the mod's current frames the silhouettes overlap by 0.58 (standing 0.61, run 0.52, crawl 0.57): those frames
+Against the mod's current frames the silhouettes overlap by 0.55 (standing 0.61, run 0.38, crawl 0.54): those frames
 are TS's sprites scaled up 3.0755 times, so this is the difference in TS's own camera above, scaled up with them (a
 soldier's limbs are a few TS pixels wide, so a pixel counts for a lot), plus the 32-degree camera.
 
@@ -81,9 +100,10 @@ Keep (from the hand-off README)
 -------------------------------
 - The 267 x 208 canvas; every frame of the layout in TS's order (85, unused, and the empty fire frames included).
 - The feet: the soldier's ground point lands where the mod's frames put TS's (TS's sprite x 3.0755 at (37.91, 10.46));
-  standing, the boots' lowest pixel is on canvas row 107-112 by facing, as the mod's own frames have it
+  standing, the boots' lowest pixel is on canvas row 107-113 by facing, as the mod's own frames have it
   on 105-112 (the README: feet on 111).
-- He stands as tall as the mod's frames (EA's Engineer: see standing-8-facings.png).
+- He stands as tall as EA's Engineer (65 px on average over his 8 standing facings; your note: the infantry must
+  match TD's and RA's sizes; see standing-8-facings.png).
 - The shadow baked in at alpha 128 (50% black, blurred): the README's minimum, lighter than the buildings' 75%, as
   the mod's frames carry TS's at about 25% (your note: at 75% the falling deaths looked like floating).
 
@@ -91,7 +111,7 @@ Keep (from the hand-off README)
 Look
 ----
 - Camera: the RA-grid camera, orthographic, 32 degrees above the ground, looking north; 3.0755 canvas px per TS pixel
-  (the mod's frames are TS's sprite x 3.0755), the soldier drawn 8% bigger about his feet, as E1.
+  (the mod's frames are TS's sprite x 3.0755), the soldier drawn at EA's Engineer's height about his feet.
 - Light, sky, ambient, outline and supersampling are the buildings' (hd.py), with the units' camera fill (EA's HD
   infantry are lit from the front); each part as light as TS draws it under that light (infcalib.py), the yellow on
   TS's ramp (above).
@@ -121,7 +141,7 @@ tsengineer.glb   the soldier in vertex colours, every sequence as a glTF animati
 - Axes: glTF's own (y up): x east, y up, z south.  1.0 = one cell (30.3 TS px, as the other TS units' models).
   Origin: the soldier's position on the ground.  He faces east (the mod's facing 6).
 - Camera "camera_mod": orthographic, 32 degrees above the ground, looking north; it frames the 267 x 208 canvas
-  exactly (checked by drawing the mesh through it over frame 6: overlap 0.930).
+  exactly (checked by drawing the mesh through it over frame 6: overlap 0.912).
 - The file passes Khronos's glTF validator: errors 0 warnings 0 infos 0 hints 0.
 - Vertex colours: COLOR_0 albedo (no light or shadow; the yellow parts in TS's mean yellows), COLOR_1 house colour
   (white = house colour).

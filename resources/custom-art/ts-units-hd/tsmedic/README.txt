@@ -41,6 +41,13 @@ crosses and blood left out) and drawn the way the HD buildings and the other uni
   grey box at his side) with a red cross on each broad face; a red cross on his upper back (TS's back view: 3 x 3 px
   between the shoulder blades).  The crosses are TS's pure red, painted flat (lit only a little, as TS draws them
   bright).
+- The look (your makeover, in the soldiers' armour style, with what your three references share): TS's colours
+  kept - light grey armour, big house-green shoulder pads, orange hips, thigh backs and knee pads, the red crosses on his
+  crown and upper back - with a white helmet and a blue visor (the Engineer's size; the references' visor, not TS's dark
+  glass) and ear pieces, red armbands, and a white case with a red cross on each broad face, red corner brackets, a
+  carry handle and a lid seam; light grey chest and back plates over a dark suit, medical pouches across his belly,
+  light grey bracers, greaves and boots with dark soles (inflook_medic.py, its colours infunit.MAT_MEDIC_LOOK2).  The
+  notes below on the faceplate and the case's grey are TS's sprite as the fit read it, kept for the record.
 - The helmet's cross: TS draws its red blurred into the helmet's grey (flesh-coloured pixels, as round his other
   crosses' edges) on the crown in every facing, standing, running and crawling; it goes edge-on and out of sight when
   he lies on his back and shows more as he bends over to heal, so it lies flat on the crown.
@@ -48,10 +55,10 @@ crosses and blood left out) and drawn the way the HD buildings and the other uni
   sky as it turns up.
 - The orange is drawn on TS's own orange ramp, as E2's.
 - Standing: one pose fitted to the 8 standing frames together, then each facing's arms and head to its own frame.
-  Overlap with TS's frames in TS's camera: 0.84.
+  Overlap with TS's frames in TS's camera: 0.83.
 - The run is one smooth loop (every joint on a short smooth curve through the 6 steps, nothing jumps back to a start
   pose), fitted to TS's 48 run frames together, each facing's arms and head on their own smooth loop on top.  Overlap
-  0.71; the furthest any landmark moves from one step to the next is 6.8 TS px.
+  0.70; the furthest any landmark moves from one step to the next is 6.8 TS px.
 - The crawl is rebuilt from TS's own crawl frames (your notes: "view how og is doing it", "research how a body crawls
   prone"). It is a real prone crawl, done the way the army's low crawl and the leopard crawl are: flat and low on his
   front, up on his forearms with his head up to see. One forearm goes forward with the opposite knee, which is drawn
@@ -62,20 +69,20 @@ crosses and blood left out) and drawn the way the HD buildings and the other uni
   right hand, standing on the ground square to him, and only moves when his hand does (lying down and getting up
   carry it from his hand to the ground and back). One stroke drives every joint, so the loop runs on with nothing
   jumping back. How far he is propped up, where he looks and how far each part moves are fitted to TS's crawl frames.
-  Overlap 0.67, landmarks at most 4.0 TS px a step.
+  Overlap 0.67, landmarks at most 4.1 TS px a step.
 - The heal: each frame fitted to its TS frame starting from the one before, then the whole run of poses relaxed
-  together, starting and ending on his standing pose facing south-east, as TS's does (0.81).
+  together, starting and ending on his standing pose facing south-east, as TS's does (0.80).
 - His case: in his hand standing, running and in idle 1 (TS: he turns it to look at it); upright on the ground ahead
   of his hand as he crawls, pushed along; set down beside him for idle 2 and the heal and taken up again at the end
   (TS: frames 72-84 and 294-304 it stands still on the ground, its cross to the camera); dropped in the deaths, where
   it then stays (death 1 from frame 137, death 2 from 156).  Where it stands is read off TS's frames: the model's case
   and its cross put where TS's cross is in every one of those frames (casespot.py).
-- Lying down, getting up, the idles and deaths: as the other infantry (0.72; idles 0.86 and
-  0.83, deaths 0.65 and 0.68).
+- Lying down, getting up, the idles and deaths: as the other infantry (0.72; idles 0.85 and
+  0.82, deaths 0.65 and 0.67).
 - The blood in TS's red (255,0,0), each red pixel drawn on the ground it covers in TS's view.  TS's crosses are the
   same red: red where the fitted soldier shows a cross, his case or his back is the cross (drawn by the model), the
   rest is blood.
-Against the mod's current frames the silhouettes overlap by 0.54 (standing 0.58, run 0.53, crawl 0.56): those frames
+Against the mod's current frames the silhouettes overlap by 0.55 (standing 0.58, run 0.54, crawl 0.55): those frames
 are TS's sprites scaled up 3.085 times, so this is the difference in TS's own camera above, scaled up with them, plus
 the 32-degree camera.
 
@@ -84,7 +91,7 @@ Keep (from the hand-off README)
 -------------------------------
 - The 267 x 208 canvas; every frame of the layout in TS's order (85, unused, and the empty fire frames included).
 - The feet: the soldier's ground point lands where the mod's frames put TS's (TS's sprite x 3.085 at (37.53, 11.06));
-  standing, the boots' lowest pixel is on canvas row 108-115 by facing, as the mod's own frames have it
+  standing, the boots' lowest pixel is on canvas row 108-116 by facing, as the mod's own frames have it
   on 108-115 (the README: feet on 111).
 - The heal strip at 292-306.
 - He stands as tall as the mod's frames (EA's Field Medic: see standing-8-facings.png).
@@ -125,7 +132,7 @@ tsmedic.glb   the soldier in vertex colours, every sequence as a glTF animation 
 - Axes: glTF's own (y up): x east, y up, z south.  1.0 = one cell (30.3 TS px, as the other TS units' models).
   Origin: the soldier's position on the ground.  He faces east (the mod's facing 6).
 - Camera "camera_mod": orthographic, 32 degrees above the ground, looking north; it frames the 267 x 208 canvas
-  exactly (checked by drawing the mesh through it over frame 6: overlap 0.907).
+  exactly (checked by drawing the mesh through it over frame 6: overlap 0.918).
 - The file passes Khronos's glTF validator: errors 0 warnings 0 infos 0 hints 0.
 - Vertex colours: COLOR_0 albedo (no light or shadow), COLOR_1 house colour (white = house colour).
 

@@ -4,10 +4,10 @@ shadow, coarse then fine).
     python3 infmap.py 17-TSE1 E1 tse1
 """
 import numpy as np
+from paths import HANDOFF
 from PIL import Image
 
 import sys
-from paths import HANDOFF
 ROOT = HANDOFF + '/'
 
 

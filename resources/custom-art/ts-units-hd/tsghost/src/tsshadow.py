@@ -5,6 +5,7 @@ alpha ~64): per TS pixel, whether TS's shadow lies there (where the soldier does
     import tsshadow; sh = tsshadow.ts_shadow(unit, k)     # bool (h, w) on TS's frame grid
 """
 import numpy as np
+from paths import HANDOFF
 from PIL import Image
 import infunit
 
@@ -87,7 +88,6 @@ def shadow_window(unit, k, margin=3):
 # ground; OFF per unit: where the mod's frames put TS's shadow from where that light casts it
 import json as _json
 import os as _os
-from paths import HANDOFF
 _L = _json.load(open(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'ts_light.json')))
 AZ, EL, OFF = _L['az'], _L['el'], {u: tuple(v) for u, v in _L['off'].items()}
 LS = light_dir(AZ, EL)

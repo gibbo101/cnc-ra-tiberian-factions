@@ -1,6 +1,10 @@
 Light Infantry (TS [E1]) in HD for Tiberian Factions: TSE1
 ==========================================================
 
+Movement: EA's own (your note: "follow ea")
+----------------------------------------------
+The run follow EA's counterpart's HD frames from the Remastered install (same 267 x 208 canvas, scale and 32-degree camera), not TS's: each pose fitted to EA's outline and colours (skin, dark kit) on the shared skeleton, a body part at a time, the crawl as EA's leopard crawl read off its frames (one arm reaching straight out along the ground, the knee on that side drawn up and out) with its timing, lean and place fitted, and the run as EA's stride.  EA's timing is spread over TS's frame counts (the mod keeps TS's layout).  The deaths' blood is drawn where EA's pools land.  Where the notes below describe fitting the movement to TS's frames, EA's now replaces it; the soldier's sizes and kit are still read off TS.
+
 frames/     tse1-0000.png ... tse1-0291.png, the mod's 292 frames on its 267 x 208 canvas, each with a -trim.png
             (white = house colour, antialiased), numbered as TS's own E1Sequence (the mod keeps it):
               0-7      standing, one a facing; facings counter-clockwise from north (0 N, 1 NW, 2 W, 3 SW, 4 S, 5 SE,
@@ -20,7 +24,7 @@ previews/   run-8-facings.gif, crawl-8-facings.gif, fire-8-facings.gif, fire-pro
             lie-down-get-up-W.gif, lie-down-get-up-SE.gif         standing -> down -> prone -> up -> standing
             standing-8-facings.png    TS's sprite, the mod's frame, HD and EA's HD Minigunner, each facing
             masks.png                 the head close up in 7 facings: TS, the mod, HD
-            death-1-sheet.png, death-2-sheet.png, crawl-sheet.png, fire-sheet.png
+            animation-sheet.png, death-1-sheet.png, death-2-sheet.png, crawl-sheet.png, fire-sheet.png
                                   the frame-by-frame check sheets: each frame as the mod draws it now (TS's
                                   sprite and shadow) beside HD
             run-before-now.png        the run as the shape check had it, and now
@@ -34,6 +38,14 @@ What it is
 One posable soldier built from simple solids (inf.py, shared by the six infantry units, each with its own sizes, gear
 and colours), fitted to TS's own E1 frames in TS's camera (silhouette and colour classes, TS's muzzle flashes and
 blood left out) and drawn the way the HD buildings and the other units are.
+- The look (your makeover, after the ArtStation GDI infantry turnaround you sent; TS's sprite still sets where every
+  part is and its colour; inflook.py): the same skeleton, poses and fitted sizes built as armour.  Angular shoulder
+  plates sit on the shoulders, a second plate on each upper arm; the arms narrow to a dark elbow (the undersuit
+  between the plates), a green bracer on each forearm, gloves.  A chest plate and back plate over the dark undersuit,
+  pouches across the belly and on the belt; the pack with its flap, the pouch under it.  Green thigh plates on the
+  thighs' outer fronts, knee plates, light grey greaves down the shins, boots with soles.  The helmet's visor in a
+  dark frame, a round ear piece each side.  The rifle in parts: stock, pistol grip, receiver with a sight on top,
+  magazine, handguard, barrel and muzzle.  House colour stays plain: its plates read by their shape alone.
 - The shape is fitted to the 8 standing frames together.  The helmet is a rounded box (TS: the head 4 px across, its
   sides upright); the mask is a faceplate set in its front, glowing TS's brightest light blue (TS: 178,178,255 and
   149,149,230 with a near-white glint, in every facing), a dark jaw guard under it, as the references' full helmets
@@ -42,7 +54,7 @@ blood left out) and drawn the way the HD buildings and the other units are.
   the shins and the plate on his back light grey, the boots dark, the rifle black (TS draws it 0-28).
 - Standing: one pose fitted to the 8 standing frames together, then each facing's arms, rifle and head to its own
   frame (TS doesn't draw one pose turned: its soldier holds the rifle up in one facing and down in the next).
-  Overlap with TS's frames in TS's camera: 0.80.
+  Overlap with TS's frames in TS's camera: 0.78.
 - The run is one smooth loop: every joint follows a short smooth curve (a Fourier series) through the 6 steps, so
   step 5 runs into step 0 like any step into the next and nothing jumps back to a start pose.  The legs follow one
   curve half a cycle apart (a real stride: each thigh swings once a cycle); the body stays on its spot with a steady
@@ -50,31 +62,42 @@ blood left out) and drawn the way the HD buildings and the other units are.
   head level so the visor shows; the hands stay on the rifle, which swings from across his left side (TS's steps 0-2)
   to pointing ahead (3-5) and back.  The loop is fitted to TS's 48 run frames together; TS doesn't draw the rifle the
   same way in every facing (facing south it swings side to side), so each facing's arms, rifle and head then get their
-  own smooth loop on top, held close to the shared one.  Overlap 0.66; the furthest any landmark (muzzle, rifle
-  butt, hands, head, feet) moves from one step to the next is 9.3 TS px (the rifle is 12 long).
+  own smooth loop on top, held close to the shared one.  Overlap 0.63; the furthest any landmark (muzzle, rifle
+  butt, hands, head, feet) moves from one step to the next is 9.4 TS px (the rifle is 12 long).
 - The crawl is rebuilt from TS's own crawl frames (your notes: "view how og is doing it", "research how a body crawls
   prone"). It is a real prone crawl, done the way the army's low crawl and the leopard crawl are: flat and low on his
   front, up on his forearms with his head up to see. One forearm goes forward with the opposite knee, which is drawn
   up while the other leg lies straight back, and his body rolls a little towards that knee; then the other pair. TS
   drew it in all 8 facings, and all 8 are fitted together. The rifle goes forward in both hands with each stroke and
   draws back. One stroke drives every joint, so the loop runs on with nothing jumping back. How far he is propped up,
-  where he looks and how far each part moves are fitted to TS's crawl frames. Overlap 0.64, landmarks at
-  most 3.2 TS px a step.
+  where he looks and how far each part moves are fitted to TS's crawl frames. Overlap 0.56, landmarks at
+  most 5.4 TS px a step.
+  His whole body moves as TS's does (your notes: "the body stays stiff as a board", "their whole body really
+  moves").  The skeleton has a two-piece spine (lower and upper back), so the body curves rather than angling at the
+  hips; shoulders that reach forward and pull back; hips that hitch up as each knee draws in; and the pelvis turning
+  about its long axis.  Each step's body is fitted to that step's TS frames in all 8 facings (with how the head moves
+  against the body as a term of its own), the 6 steps joined into one smooth loop, and the movement drawn at 1.5
+  times what that fit gives (judged by eye: at TS's 14 px a lying soldier, the pixels alone can't tell the
+  shoulders' and hips' movement apart).  The arms hold the rifle out in front of his head (your notes: "he has no
+  elbows", the right arm "still under the body and not out in front"): both hands up the rifle 1-5 TS px ahead of
+  his shoulders, both elbows on the ground, each forearm reaching forward in turn (the left with the right knee, the
+  right with the left), where the hands sit, the elbows point and the rifle lies fitted to TS's frames step by step.
+  The arms narrow from shoulder to elbow and from elbow to wrist with a round elbow between (every sequence).
 - Fire and fire prone: TS holds one pose through each facing's 6 frames (only the flash comes and goes), so each facing
   has one pose for all 6: fitted to the 8 facings' flash-free frames together, then each facing's arms, rifle and head
-  to its own.  Overlap 0.75 and 0.75.
+  to its own.  Overlap 0.72 and 0.71.
 - Lying down: the two in-betweens fitted to TS's frames on the way down through kneeling on all fours (TS's second
-  frame), from the standing pose to the prone one (the crawl's first step), so standing, down and prone run as one movement (0.75); getting up is the same two
+  frame), from the standing pose to the prone one (the crawl's first step), so standing, down and prone run as one movement (0.72); getting up is the same two
   poses backwards, as TS's get-up frames are its lie-down frames backwards, pixel for pixel.
 - The idles and deaths: each frame fitted to its TS frame starting from the one before, then the whole run of poses
   relaxed together (every frame pulled towards the middle of its neighbours), so they move smoothly; the idles start
-  from the standing pose and come back to it.  Overlap: idles 0.87 and 0.93, deaths 0.58 and 0.60.
+  from the standing pose and come back to it.  Overlap: idles 0.83 and 0.89, deaths 0.56 and 0.58.
 - Effects, frame by frame from TS's own pixels: the muzzle flash (TS's three yellows, its shape kept, drawn smooth and
   hot: a white-yellow core, amber, orange edges) at the HD rifle's muzzle, hidden where the soldier stands in front of
   it; the blood in TS's red (255,0,0, as TS and the mod draw it), each red pixel drawn on the ground it covers in TS's
   view, so a pool stays put as the body falls on it.
-Against the mod's current frames the silhouettes overlap by 0.52 (standing 0.53, run 0.45, crawl 0.50, fire
-0.49): those frames are TS's sprites scaled up 3.068 times, so this is the difference in TS's own camera above,
+Against the mod's current frames the silhouettes overlap by 0.51 (standing 0.54, run 0.44, crawl 0.42, fire
+0.50): those frames are TS's sprites scaled up 3.068 times, so this is the difference in TS's own camera above,
 scaled up with them (a soldier's limbs are a few TS pixels wide, so a pixel counts for a lot), plus the 32-degree camera.
 
 
@@ -82,10 +105,11 @@ Keep (from the hand-off README)
 -------------------------------
 - The 267 x 208 canvas; every frame of the layout in TS's order (85, unused, included).
 - The feet: the soldier's ground point lands where the mod's frames put TS's (TS's sprite x 3.068 at (38.06, 10.57));
-  standing, the boots' lowest pixel is on canvas row 105-112 by facing, as the mod's own frames have it
+  standing, the boots' lowest pixel is on canvas row 106-112 by facing, as the mod's own frames have it
   on 108-111 (the README: feet on 111).
-- EA's infantry height: he stands as tall as the mod's frames (EA's Minigunner is taller still; see
-  standing-8-facings.png).
+- EA's infantry height: he stands 60 px tall on average over his 8 standing facings, as EA's rifleman does in TD and
+  RA (61 px; their infantry run 60-65; see standing-8-facings.png).  His armour makes him bulkier than EA's rifleman,
+  about as bulky as EA's Grenadier and Engineer.
 - The shadow baked in at alpha 128 (50% black, blurred): the README's minimum, lighter than the buildings' 75%, as
   the mod's frames carry TS's at about 25% (your note: at 75% the falling deaths looked like floating).
 
@@ -93,8 +117,8 @@ Keep (from the hand-off README)
 Look
 ----
 - Camera: the RA-grid camera, orthographic, 32 degrees above the ground, looking north; 3.068 canvas px per TS pixel
-  (the mod's frames are TS's sprite x 3.068), the soldier drawn 8% bigger about his feet: TS's sprite draws every pixel
-  the soldier touches, so fitted to it he stands 6% shorter and 11% slimmer than the mod's frames draw him.
+  (the mod's frames are TS's sprite x 3.068), the soldier drawn 3.7% bigger about his feet, so he stands as tall as EA's
+  rifleman (your note: the Light Infantry must match TD's and RA's infantry sizes).
 - Light, sky, ambient, outline and supersampling are the buildings' (hd.py), with a stronger camera fill than the
   vehicles' (EA's HD infantry are lit from the front); none on the rifle, which stays black as TS's.
 - House colour: exactly 0,214,0 x (1 + 1.1 grain) on the shoulder pads, arms, hips and thighs; the -trim masks cover
@@ -123,8 +147,8 @@ tse1.glb   the soldier in vertex colours, every sequence as a glTF animation, th
 - Axes: glTF's own (y up): x east, y up, z south.  1.0 = one cell (30.3 TS px, as the other TS units' models).
   Origin: the soldier's position on the ground.  He faces east (the mod's facing 6).
 - Camera "camera_mod": orthographic, 32 degrees above the ground, looking north; it frames the 267 x 208 canvas
-  exactly (checked by drawing the mesh through it over frame 6: overlap 0.898).
-- The file passes Khronos's glTF validator: errors 0 warnings 0 infos 1 hints 0.
+  exactly (checked by drawing the mesh through it over frame 6: overlap 0.907).
+- The file passes Khronos's glTF validator: errors 0 warnings 0 infos 0 hints 0.
 - Vertex colours: COLOR_0 albedo (no light or shadow), COLOR_1 house colour (white = house colour).
 
 

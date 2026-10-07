@@ -34,6 +34,9 @@ COMMON = [('pitch0', 82, 98, 90), ('sp0', -28, 4, -12), ('hp0', -85, -20, -50), 
           ('A_hf', 0, 45, 22), ('A_ha', 0, 35, 15), ('A_kf', 0, 70, 35), ('A_roll', -14, 14, 5), ('A_sy', -18, 18, 6),
           ('A_hy', -15, 15, 0), ('A_by', -1.2, 1.2, 0), ('A_yaw', -10, 10, 0), ('A_bob', -5, 5, 0),
           ('phi0', -180, 180, 0), ('delta', -180, 180, 180)]
+# the wriggle (wriggle.py fits these on top of a crawl)
+WRIGGLE = [('A_sr', -30, 30, 0), ('ph_sr', -180, 180, 0), ('A_sp', -15, 15, 0), ('ph_sp', -180, 180, 0),
+           ('A_hp', -20, 20, 0), ('ph_sy', -180, 180, 0), ('ph_hip', -180, 180, 0), ('ph_hy', -180, 180, 0)]
 ARMS = [('sf0', 50, 150, 100), ('ef0', 30, 140, 85), ('sa0', -10, 45, 15), ('st0', -40, 40, 0),
         ('A_sf', 0, 45, 18), ('A_ef', 0, 55, 25)]
 RIFLE = [('rgx0', 1.0, 5.5, 3.0), ('rgy0', -2.0, 3.0, 0.4), ('rgz0', -4.0, 4.0, 0.5), ('gp0', 40, 140, 95),
@@ -48,9 +51,17 @@ def spec(unit):
 def pose(unit, base, p, s):
     phi = 2 * np.pi * s / N + np.deg2rad(p['phi0'])
     Q = dict(base)
-    Q.update(pitch=p['pitch0'] + p['A_bob'] * np.cos(2 * phi), sp=p['sp0'], hp=p['hp0'], bx=p['bx'], dx=p['dx'],
-             dy=p['dy'], by=p['A_by'] * np.sin(phi), roll=p['A_roll'] * np.sin(phi), yaw=p['A_yaw'] * np.sin(phi),
-             sy=p['A_sy'] * np.sin(phi), sr=0.0, hy=p['A_hy'] * np.sin(phi))
+    # (the wriggle - Luke: "the body stays stiff as a board", TS's "body wriggling": the spine bends to the side
+    # (sr) and twists (sy) on its own timing against the hips' swing (yaw, roll), the chest lifts on each pull (sp,
+    # twice a cycle) with the head pitching against it to keep looking ahead; every term 0 by default)
+    g = lambda k: np.deg2rad(p.get(k, 0.0))
+    Q.update(pitch=p['pitch0'] + p['A_bob'] * np.cos(2 * phi),
+             sp=p['sp0'] + p.get('A_sp', 0.0) * np.cos(2 * phi + g('ph_sp')),
+             hp=p['hp0'] + p.get('A_hp', 0.0) * np.cos(2 * phi + g('ph_sp')), bx=p['bx'], dx=p['dx'],
+             dy=p['dy'], by=p['A_by'] * np.sin(phi), roll=p['A_roll'] * np.sin(phi + g('ph_hip')),
+             yaw=p['A_yaw'] * np.sin(phi + g('ph_hip')),
+             sy=p['A_sy'] * np.sin(phi + g('ph_sy')), sr=p.get('A_sr', 0.0) * np.sin(phi + g('ph_sr')),
+             hy=p['A_hy'] * np.sin(phi + g('ph_hy')))
     leg_phase = phi + np.deg2rad(p['delta'])
     for side, sg, ph in (('r', 1.0, 0.0), ('l', -1.0, np.pi)):
         a = leg_phase + ph

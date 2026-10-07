@@ -13,12 +13,12 @@ import infseq as SQ
 
 UNITS = {
     'e1': dict(dir='17-TSE1', name='E1', K=3.068, DX=38.06, DY=10.57, title='Light Infantry', model='LightInfantry',
-               ref='RA_E1', ref_name="EA's Minigunner"),
+               ref='RA_E1', ref_name="EA's Minigunner", vis=1.08 * 60.6 / 63.125),
     'e2': dict(dir='18-TSE2', name='E2', K=3.071, DX=38.68, DY=10.60, title='Disc Thrower', model='DiscThrower',
-               ref='RA_E2', ref_name="EA's Grenadier"),
+               ref='RA_E2', ref_name="EA's Grenadier", vis=1.08 * 63.1 / 68.2),
     # (K, DX, DY: the mod's placement of TS's frames, from infmap.py)
     'eng': dict(dir='19-TSENGINEER', name='ENGINEER', K=3.0755, DX=37.91, DY=10.46, title='Engineer', model='Engineer',
-                ref='RA_E6', ref_name="EA's Engineer"),
+                ref='RA_E6', ref_name="EA's Engineer", vis=1.08 * 64.8 / 63.0),
     'ghost': dict(dir='20-TSGHOST', name='GHOST', K=3.0769, DX=37.70, DY=10.86, title='Ghost Stalker',
                   model='GhostStalker', ref='TD_RMBO', ref_name="EA's Commando"),
     'jj': dict(dir='21-TSJUMPJET', name='JUMPJET', K=3.116, DX=36.93, DY=9.54, title='Jumpjet Infantry',
@@ -121,7 +121,10 @@ STAND_Q = {'e1': dict(F.STAND_Q) if hasattr(F, 'STAND_Q') else None,
 
 # HD colours (lit as TS draws them, read from its frames), house parts, parts with no camera fill
 MAT = {
-    'e1': dict(R.MAT),
+    'e1': dict(list(R.MAT.items()) + list({740: (96, 96, 104), 741: (52, 52, 56), 742: (56, 56, 60), 743: (52, 52, 66),
+                         744: (34, 34, 36), 745: (204, 204, 206), 746: (44, 44, 48), 750: (150, 150, 152)}.items())),
+    # (inflook.py's parts: chest/back plates, webbing and pouches, the dark elbows and forearm suit, the ear pieces,
+    # the boots' soles, the greaves, the magazine and sight, the pack's flap)
     # E2's read off TS's standing frames (infcalib.py: each part as light as TS draws it under the HD light, in TS's
     # hue; the orange parts face away from the light, so they're as bright an orange as there is)
     'e2': {I.HELMET: (93, 93, 126), I.VISOR: (158, 158, 238), I.FACE: (158, 158, 238), I.CHEST: (38, 38, 38),
@@ -129,7 +132,8 @@ MAT = {
            I.KNEE: (173, 67, 5), I.SHIN: (99, 99, 99), I.BOOT: (97, 97, 97), I.POUCH: (203, 108, 18),
            I.JAW: (36, 36, 44), I.TUBE: (82, 82, 118), I.PLATE: (42, 42, 42), I.DISC: (150, 150, 156)},
 }
-HOUSE = {'e1': R.HOUSE, 'e2': (I.PAD, I.PELVIS, I.UARM, I.FARM, I.THIGH), 'eng': (I.PAD, I.UARM, I.THIGH),
+# (E1: + inflook's thigh plates, shoulder lames and bracers)
+HOUSE = {'e1': tuple(R.HOUSE) + (747, 748, 749), 'e2': (I.PAD, I.PELVIS, I.UARM, I.FARM, I.THIGH), 'eng': (I.PAD, I.UARM, I.THIGH),
          'ghost': (I.PAD, I.RIFLE, I.RIFLE_DARK), 'jj': (I.WING, I.THIGH, I.KNEE, I.SHIN), 'medic': (I.PAD, I.THIGH)}
 # the Engineer's colours (to be read off TS's frames once his shape is fitted: infcalib.py)
 MAT['eng'] = {I.HELMET: (250, 205, 90), I.VISOR: (255, 255, 255), I.FACE: (210, 210, 210), I.CHEST: (75, 75, 75),
@@ -174,7 +178,13 @@ RAMP = {'e1': {}, 'e2': {I.POUCH: (ORANGE_RAMP, 185.0, 0.5), I.KNEE: (ORANGE_RAM
 # lavender it was drawn in read as a light flat board, Luke: "nowhere near as thick")
 PACK_RAMP = [(20, 20, 30), (40, 40, 64), (52, 52, 76), (76, 76, 101), (89, 89, 113), (101, 101, 125), (105, 105, 182),
              (125, 125, 206), (149, 149, 230)]
-RAMP['e2'][I.TUBE] = (PACK_RAMP, float(__import__('os').environ.get('PACK_G', 110.0)))
+RAMP['e2'][I.TUBE] = (PACK_RAMP, float(__import__('os').environ.get('PACK_G', 110.0)),
+                      float(__import__('os').environ.get('PACK_GAMMA', 1.0)))
+# the pack's tones mapped onto TS's own (TS's back views: half its pack near black, a quarter bright lavender -
+# quantiles 10/25/50/75/90 of 20, 28, 44, 104, 116 against our shading's; it was all one mid grey-blue, Luke: "all
+# looking good except the disc thrower", then "pack is good!" on these); PACK_LUT=0 for the plain ramp
+if __import__('os').environ.get('PACK_LUT', '1') != '0':
+    RAMP['e2'][I.TUBE] = (PACK_RAMP, 110.0, 1.0, ([0.555, 0.645, 0.709, 0.773, 0.818], [20.0, 28.0, 44.0, 104.0, 116.0]))
 # the Engineer's yellow: TS's frames' ten yellows (its darkest still a light orange-yellow: TS shades the suit with
 # its dark outline pixels, not darker yellows)
 YELLOW_RAMP = [(230, 149, 48), (238, 174, 72), (246, 182, 80), (255, 194, 89), (255, 210, 97), (255, 218, 97),
@@ -267,6 +277,10 @@ def use(unit):
         F.CW[c] = w
     R.K, R.DX, R.DY = u['K'], u['DX'], u['DY']
     R.PPU = u['K']                     # HD's scale follows the mod's (canvas px per TS px)
+    # (how much bigger HD draws the fitted soldier than TS's sprite: 1.08 made him as tall as the mod's frames; a unit
+    # with 'vis' is drawn as tall as its EA counterpart instead - Luke: the Light Infantry must match TD's and RA's
+    # infantry sizes; EA's rifleman stands 60.6 px in both)
+    R.VIS = u.get('vis', 1.08)
     R.MAT = dict(MAT.get(unit, _BASE['MAT']))
     R.HOUSE = HOUSE.get(unit, _BASE['HOUSE'])
     R.RAMP = dict(RAMP.get(unit, {}))
