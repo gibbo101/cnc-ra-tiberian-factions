@@ -1127,6 +1127,26 @@
       "flags": []
     },
     {
+      "id": 162,
+      "name": "tstick",
+      "display_name": "Deployed Tick Tank",
+      "power_production": 0,
+      "power_usage": 0,
+      "storage": 0,
+      "capturable": false,
+      "width": 1,
+      "height": 1,
+      "occupy_mask": null,
+      "owner": "BadGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Turret"
+      ]
+    },
+    {
       "id": 146,
       "name": "tsdweap",
       "display_name": "Mobile War Factory",
@@ -1918,6 +1938,27 @@
         "Frames32Full"
       ],
       "walk_frames": 3,
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 62,
+      "kind": "vehicle",
+      "name": "tsttnk",
+      "display_name": "Tick Tank",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
       "turret_frames": [
         "Frames32Full"
       ],

@@ -87,6 +87,7 @@ superweapon payload, or dormant.
 | TSMDIV | | 10 | 2800 | — | TSDROP, TSTECH | Mech Division token: 3 Titans + 2 Wolverines |
 | TSMWAR | | 10 | 1800 | 800 | TSWEAP, TSPLUG | Mobile War Factory (deploys TSDWEAP) |
 | TSSUBTANK / TSSAPC | | −1 | 750 / 800 | 300 / 175 | | Devil's Tongue, Subterranean APC: crate finds |
+| TSTTNK | TTNK | −1 | 800 | 350 | | Tick Tank, Nod's: a crate find; digs in as TSTICK (TS [GATICK]). Sidebar side `scripts/ts_pack_ttnk.py`, fire points `scripts/ts_ttnk_muzzle.py` |
 | TSHUNT | | −1 | | 500 | | Hunter Seeker, the Seeker Control's payload |
 
 **Infantry and aircraft**
