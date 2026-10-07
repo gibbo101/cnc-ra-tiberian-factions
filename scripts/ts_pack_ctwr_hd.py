@@ -22,7 +22,7 @@ on the canvas centre, so they ship as drawn. Frame sets written to the TS-HD-Gra
                       8-13   south wall end, wall gdi/nod/brik x {healthy, damaged}
                       14-19  north wall end, same order, with the tower's own pixels cut out:
                              it belongs behind the tower but draws after it
-                      20-25  the lamp by the south-east door (TS GACTWR_A)
+                      20-25  the lamps by the south-east door (TS GACTWR_A) and the south-west one
                       26-41  link to a finished tower on side N/E/S/W, x this tower's state
                              x that tower's state (26 + side*4 + this*2 + other); both towers
                              draw it, and it replaces that side's coupling
@@ -88,8 +88,10 @@ def layers(bodies):
     for wall in WALLS:
         for s in range(STATES):
             out.append(cut(load("ends", f"end-{wall}-N-{s:02d}.png"), bodies[s]))
+    # The lamp, and its mirror across the cell centre in the west door's slot: the body is symmetric.
     for i in range(LAMP_FRAMES):
-        out.append(load("light", f"component-tower-light-{i:02d}.png"))
+        lamp = load("light", f"component-tower-light-{i:02d}.png")
+        out.append(Image.alpha_composite(lamp, lamp.transpose(Image.FLIP_LEFT_RIGHT)))
     for side in SIDES:
         for s in range(STATES):
             for o in range(STATES):
