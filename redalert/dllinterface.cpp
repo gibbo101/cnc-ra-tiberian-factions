@@ -9309,6 +9309,13 @@ void DLLExportClass::Calculate_Placement_Distances(BuildingTypeClass* placement_
                     }
                 }
             }
+            // TF: a TS war factory's concrete row is in its plot but holds no building; it reaches as the hall does.
+            if (base == NULL && Map.In_Radar((CELL)(cell - MAP_CELL_W))) {
+                BuildingClass* hall = (BuildingClass*)Map[(CELL)(cell - MAP_CELL_W)].Cell_Find_Object(RTTI_BUILDING);
+                if (hall != NULL && hall->Is_TS_War_Factory()) {
+                    base = hall;
+                }
+            }
             // TF: Firestorm Wall Sections also reach out from the player's own sections, as walls reach from
             // walls; nothing else may use a section for its reach.
             bool section_chain = (placement_type->Type == STRUCT_TSFSDF && base != NULL && *base == STRUCT_TSFSDF
