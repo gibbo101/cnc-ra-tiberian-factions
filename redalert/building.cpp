@@ -5778,8 +5778,8 @@ bool Is_TS_Apron_Smudge(SmudgeType smudge)
     return (smudge == SMUDGE_TSWEAPBB || smudge == SMUDGE_TSPROCBB || smudge == SMUDGE_TSDWEAPBB);
 }
 
-// True when the cell is a TS building's walkable apron or headroom, where Is_Clear_To_Build allows no
-// building. The table lists each such cell as an offset back to its building's centre.
+// True when the cell is a TS building's walkable apron or the Service Depot's empty corner, where
+// Is_Clear_To_Build allows no building. The table lists each apron cell as an offset back to its building's centre.
 bool Is_TS_Apron_Cell(CELL cell)
 {
     if ((unsigned)cell >= MAP_CELL_TOTAL) {
@@ -5841,8 +5841,8 @@ bool Is_TS_Apron_Cell(CELL cell)
     }
 
     /*
-    **	A tall building's headroom (the power plant's, radar's, helipad's, tech centre's and firestorm
-    **	generator's back row, the service depot's empty north-east cells): its own overlap list.
+    **	The service depot's empty north-east cells (its overlap list). Other tall buildings' headroom rows stay
+    **	free ground: another building may stand under the art that reaches over them.
     */
     CellClass const& here = Map[cell];
     for (int i = 0; i < (int)(sizeof(here.Overlapper) / sizeof(here.Overlapper[0])); i++) {
@@ -5851,8 +5851,7 @@ bool Is_TS_Apron_Cell(CELL cell)
             continue;
         }
         BuildingClass const* b = (BuildingClass const*)o;
-        if (*b != STRUCT_TSPOWR && *b != STRUCT_TSRADR && *b != STRUCT_TSHPAD && *b != STRUCT_TSTECH
-            && *b != STRUCT_TSFGEN && *b != STRUCT_TSDEPT) {
+        if (*b != STRUCT_TSDEPT) {
             continue;
         }
         short const* list = b->Class->Overlap_List();
