@@ -7066,7 +7066,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             // art-geometry/design problem, not an export problem.
             // TSFACT needs no case since the 3x2 plot (2026-08-13): the
             // default foundation-derived box IS the approved 57x38 on the
-            // art rows. TSDROP likewise (box on the deck's 3x2), TSTECH
+            // art rows. TSTECH
             // (3 across the building's row and the dome's row) and TSPROC
             // (4 across and 3 high over the whole plot).
             case STRUCT_TSWEAP:
@@ -7074,6 +7074,11 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 // 3 cells across; from the roof's top down to the concrete in front of the door.
                 dimx = 70;
                 dimy = 74;
+                break;
+            case STRUCT_TSDROP:
+                // The deck's 3x2 box, 4 classic px further out on every side to take in the hangar.
+                dimx = 80;
+                dimy = 56;
                 break;
             case STRUCT_TSPILE:
                 dimy = 38; // 2x2 box, approved 2026-08-13
