@@ -201,6 +201,7 @@ public:
     void EMP_Blast(void);
     StructType TF_Deploys_Into(void) const;
     CELL TF_Deploy_Origin(void) const;
+    COORDINATE TF_Pick_Coord(COORDINATE point) const;
 
     // TF: TS FireballLauncher stream (Devil's Tongue): frames left after a shot, and its target. Fire_Stream_AI
     // spawns a BULLET_TSFIRE particle every 4 frames (TS SpawnFrames).

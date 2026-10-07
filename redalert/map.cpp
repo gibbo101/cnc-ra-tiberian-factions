@@ -1742,6 +1742,9 @@ ObjectClass* MapClass::Close_Object(COORDINATE coord) const
                         d = Distance(coord, Cell_Coord(newcell));
                         if (d > 0x00C0)
                             d = -1;
+                    } else if (o->What_Am_I() == RTTI_UNIT) {
+                        // TF: a tall unit is measured from the nearest point of its drawn height.
+                        d = Distance(coord, ((UnitClass*)o)->TF_Pick_Coord(coord));
                     } else {
                         d = Distance(coord, o->Center_Coord());
                     }

@@ -7689,6 +7689,18 @@ CELL UnitClass::TF_Deploy_Origin(void) const
     return (cell);
 }
 
+// The point of the unit's drawn height nearest to point, for clicks and drag boxes: the Titan's art reaches
+// 18 classic px north of its coord and 20 south; every other unit picks at its centre.
+COORDINATE UnitClass::TF_Pick_Coord(COORDINATE point) const
+{
+    COORDINATE centre = Center_Coord();
+    if (*this != UNIT_TSTITN) {
+        return (centre);
+    }
+    int y = Bound((int)Coord_Y(point), (int)Coord_Y(centre) - 192, (int)Coord_Y(centre) + 213);
+    return (XY_Coord(Coord_X(centre), y));
+}
+
 // Discharges the Mobile EM-Pulse on a full charge unless it is stunned: a small pulse round the vehicle,
 // which it survives, then the charge restarts (OpenTS unit.cpp EMPulse_Blast).
 void UnitClass::EMP_Blast(void)

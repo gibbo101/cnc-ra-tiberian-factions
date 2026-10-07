@@ -2915,6 +2915,10 @@ void DisplayClass::Select_These(COORDINATE coord1, COORDINATE coord2, bool addit
     for (int index = 0; index < Layer[LAYER_GROUND].Count(); index++) {
         ObjectClass* obj = Layer[LAYER_GROUND][index];
         COORDINATE ocoord = obj->Center_Coord();
+        // TF: a tall unit joins when any of its drawn height is in the box.
+        if (obj->What_Am_I() == RTTI_UNIT) {
+            ocoord = ((UnitClass*)obj)->TF_Pick_Coord(XY_Coord(Coord_X(ocoord), (y1 + y2) / 2));
+        }
         int x = Coord_X(ocoord);
         int y = Coord_Y(ocoord);
 
