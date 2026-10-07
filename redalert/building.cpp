@@ -7635,6 +7635,10 @@ void BuildingClass::Enter_Idle_Mode(bool initial)
     MissionType mission = MISSION_GUARD;
 
     if (!initial || ScenarioInit || Debug_Map || TFPlugInstallInProgress) {
+        // TF: a tower plug skips the build-up, where a building takes its starting facing, so it takes it here.
+        if (TFPlugInstallInProgress) {
+            PrimaryFacing = Class->StartFace;
+        }
         TFPlugInstallInProgress = false;
         Begin_Mode(BSTATE_IDLE);
         mission = MISSION_GUARD;
