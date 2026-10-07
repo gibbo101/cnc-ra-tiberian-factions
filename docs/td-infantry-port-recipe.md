@@ -85,6 +85,10 @@ The launcher's `Techno_Draw_Object` overlay then renders the real `TDxx` sprite 
 | **Muzzle-anim weapon (flame)** | Green placeholder box where the jet should be | HD-only anims have NULL `ImageData` → donor-ImageData in `AnimTypeClass::One_Time`; dispatch directional anim via `Fire_Direction()`; TD-prefix the names (playbook §3.26) |
 | **Atlas only in `build/`** | Crest atlas wiped off Deck on rebuild+deploy | Keep `MT_COMMANDBAR_COMMON.TGA` in `resources/` (gitignored), not just `build/` |
 
+**EA's HD frames as a reference.** `scripts/ea_infantry_extract.py` packages an EA infantry unit's HD frames
+from the texture MEGs (PNG plus META, as shipped), a contact sheet, one strip per sequence and its DO table
+quoted from EA's source, with the ranges checked, for fitting new infantry art against.
+
 ---
 
 ## The roster — COMPLETE (2026-05-30)
