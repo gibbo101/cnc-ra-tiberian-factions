@@ -12,7 +12,8 @@ A file's pack follows from its name alone, so every pack script asks this module
 paths and a new TS, RA2 or C&C3 asset lands in its pack without a list to maintain:
   graphics   TS* and RAILFX (not TSLA*, RA's Tesla Coil), R2*, C3<letter> (bare C3 is RA's
              civilian). The HD-rebuilt TS walls, gates and component towers go to TS-HD.
-  cameos     the plain BuildIcon of each of those objects. Badged, locked, faction-mask and
+  cameos     the plain BuildIcon of each of those objects; an HD cameo (scripts/ts_hd_cameos.py)
+             sits in TS-HD beside the classic one and wins at staging. Badged, locked, faction-mask and
              countdown variants, and the superweapon icons, drive Tiberian Factions' sidebar and
              stay with the mod.
   sounds     TS_SFX_EVA_* EVA, TS_SFX_UNT_* unit voices, other TS* effects; RA2 and C&C3 crew
@@ -185,6 +186,13 @@ def tileset_xml(name, kind):
 def cameo_tga(icon):
     stem = re.sub(r"\.tga$", "", os.path.basename(icon), flags=re.I)
     return _made(os.path.join(data_root(cameo_pack(stem)), "ART", "TEXTURES", "SRGB", f"{stem}.tga"))
+
+
+def cameo_source(icon):
+    """The plain cameo the sidebar shows, to bake variants from: the TS-HD pack's, once it has one."""
+    stem = re.sub(r"\.tga$", "", os.path.basename(icon), flags=re.I)
+    hd = os.path.join(pack_data("TS-HD-Graphics-Pack"), "ART", "TEXTURES", "SRGB", f"{stem}.tga")
+    return hd if os.path.exists(hd) else cameo_tga(stem)
 
 
 def buildables_xml_of(pack):

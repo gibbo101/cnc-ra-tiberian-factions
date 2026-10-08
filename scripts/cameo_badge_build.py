@@ -219,7 +219,7 @@ def main(argv):
             x, y, w, h = box
             pristine = atlas.crop((x, y, x + w, y + h)).convert("RGBA")
         else:
-            loose = Path(asset_packs.cameo_tga(region_name))
+            loose = Path(asset_packs.cameo_source(region_name))
             if not loose.exists():
                 print(f"  WARN {asset}: no atlas region and no loose {region_name}.tga")
                 skipped += 1

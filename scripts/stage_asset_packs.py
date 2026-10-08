@@ -6,6 +6,7 @@ Usage:  stage_asset_packs.py <mod dir> [--full]
 Copies every pack's Data/ART and Data/AUDIO into <mod dir>/Data, then writes each of the mod's
 XML files that packs contribute to: the mod's own file from resources/, with every pack's
 entries in place of that pack's marker (before the closing tag when the file has no marker).
+A file two packs carry (an HD cameo over its classic one) is copied from the later pack only.
 The XML always starts from the source tree, so staging twice gives the same result.
 
 --full first copies the mod's own tree (resources/remaster_mods/Vanilla_RA) over <mod dir>: a
@@ -32,9 +33,19 @@ def copy_newer(src, dst):
     return shutil.copy2(src, dst)
 
 
-def copy_tree(src, dst):
+def copy_tree(src, dst, skip=frozenset()):
+    """Copy src over dst, leaving out the paths (relative to src, upper case) in skip."""
     if os.path.isdir(src):
-        shutil.copytree(src, dst, copy_function=copy_newer, dirs_exist_ok=True)
+        def ignore(d, names):
+            rel = os.path.relpath(d, src)
+            return [n for n in names if os.path.normpath(os.path.join(rel, n)).upper() in skip]
+        shutil.copytree(src, dst, copy_function=copy_newer, dirs_exist_ok=True, ignore=ignore)
+
+
+def pack_files(pack, sub):
+    """A pack's files under Data/<sub>, relative to that folder, upper case."""
+    base = os.path.join(A.pack_data(pack), sub)
+    return {os.path.relpath(os.path.join(d, f), base).upper() for d, _, fs in os.walk(base) for f in fs}
 
 
 def pack_body(path, root):
@@ -66,9 +77,11 @@ def stage(mod_dir, full=False):
     if full:
         copy_tree(A.MOD, mod_dir)
     data = os.path.join(mod_dir, "Data")
-    for pack in A.PACKS:
+    packs = list(A.PACKS)
+    for i, pack in enumerate(packs):
         for sub in ("ART", "AUDIO"):
-            copy_tree(os.path.join(A.pack_data(pack), sub), os.path.join(data, sub))
+            later = set().union(*(pack_files(p, sub) for p in packs[i + 1:]))
+            copy_tree(os.path.join(A.pack_data(pack), sub), os.path.join(data, sub), later)
     for rel, pack_file, root, _ in A.XML_FILES:
         dst = os.path.join(data, rel)
         os.makedirs(os.path.dirname(dst), exist_ok=True)

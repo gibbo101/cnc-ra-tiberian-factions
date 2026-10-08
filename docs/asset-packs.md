@@ -28,7 +28,7 @@ asset-packs/TS-Graphics-Pack/
 | Pack | Holds |
 |---|---|
 | TS-Graphics-Pack | TS structure, effect and apron art; plain TS cameos |
-| TS-HD-Graphics-Pack | HD rebuilds of TS objects (GDI buildings, units, infantry, walls, gates, component towers) and their 3D models |
+| TS-HD-Graphics-Pack | HD rebuilds of TS objects (GDI buildings, units, infantry, walls, gates, component towers), their HD cameos and 3D models |
 | TS-SFX-Pack, TS-EVA-eng, TS-Voices-eng | TS effects, EVA lines, unit voices |
 | RA2-Graphics-Pack, RA2-SFX-Pack, RA2-Voices-eng | RA2 tanks, their weapon and engine sounds, their crews |
 | CNC3-Graphics-Pack, CNC3-SFX-Pack, CNC3-Voices-eng | C&C3 tanks, their weapon takes, their crews |
@@ -42,8 +42,11 @@ only the `RA_` files. A pack's XML files are what a modder copies, and what the 
 
 - Art: `TS*` and `RAILFX` (not `TSLA*`, RA's Tesla Coil), `R2*`, `C3<letter>` (bare `C3` is RA's
   civilian). The HD-rebuilt TS objects in its `TS_HD` list go to TS-HD.
-- Cameos: the plain `BuildIcon_` of those objects. The `_G`, `_LK`, `_<n>` and `_CD###` variants
-  and the `SW_`/`SG_` superweapon cameos drive the mod's sidebar and stay in `resources/`.
+- Cameos: the plain `BuildIcon_` of those objects. An HD cameo (`scripts/ts_hd_cameos.py`) goes in
+  TS-HD beside its classic one in TS-Graphics-Pack. Staging copies a file two packs carry from the
+  later pack only, and the variant bakers read the HD one (`cameo_source`). The `_G`, `_LK`, `_<n>`
+  and `_CD###` variants and the `SW_`/`SG_` superweapon cameos drive the mod's sidebar and stay in
+  `resources/`.
 - Sounds: `TS_SFX_EVA_*` EVA, `TS_SFX_UNT_*` voices, other `TS*` effects; RA2 and C&C3 crew lines
   (`SE`/`MO`/`AT` takes) apart from their weapon and engine sounds. `TF_MBX_*` (the EVA mailbox)
   and `TSLACHG2R` stay. TS sounds bundled under TD sample names (`TDR_SFX_DINOATK1` and friends)

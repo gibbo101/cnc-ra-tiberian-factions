@@ -3,7 +3,8 @@
 the east-west gate lying across it, the north-south gate standing up it. Writes the hand-made cameo
 PNGs to resources/custom-cameos (install them with scripts/apply_custom_cameos.py), then bakes each
 gate's badged variant BuildIcon_<INI>_<digit>.tga with its faction's emblem, laid out as
-scripts/cameo_badge_build.py lays out every badged cameo.
+scripts/cameo_badge_build.py lays out every badged cameo. The TS gates have HD cameos instead
+(scripts/ts_hd_cameos.py).
 
 The scene is the TS Concrete Wall cameo's, with the wall painted out from the empty columns at its
 left edge.
@@ -24,8 +25,6 @@ CUSTOM = os.path.join(ROOT, "resources", "custom-cameos")
 ART = os.path.join(ROOT, "resources", "custom-art", "cnc-gates-hd")
 
 GATES = [  # folder, frame prefix, INI stem, cameo stems (east-west, north-south), faction bit
-    ("ts-gdi", "gdi-gate", "TSGATE", ("BuildIcon_TS_GateH", "BuildIcon_TS_GateV"), 0x10),
-    ("ts-nod", "nod-gate", "TSNGATE", ("BuildIcon_TSNGATEH", "BuildIcon_TSNGATEV"), 0x10),
     ("ra-allies", "allies-gate", "ALGATE", ("BuildIcon_ALGATEH", "BuildIcon_ALGATEV"), 0x1),
     ("ra-soviets", "soviet-gate", "SVGATE", ("BuildIcon_SVGATEH", "BuildIcon_SVGATEV"), 0x2),
     ("td-gdi", "tdgdi-gate", "TDGGATE", ("BuildIcon_TDGGATEH", "BuildIcon_TDGGATEV"), 0x4),

@@ -72,7 +72,7 @@ TEMPLATE = """\t<ObjectTypeClass Name="RA_{ini}_{tag}" Classification="CNCBuilda
 
 def bake_art():
     for ini, icon in UNITS.items():
-        base = Image.open(asset_packs.cameo_tga(icon)).convert("RGBA")
+        base = Image.open(asset_packs.cameo_source(icon)).convert("RGBA")
         dimmed = ImageEnhance.Brightness(base).enhance(0.40)
         font = ImageFont.truetype(FONT, int(base.height * 0.42))
         for secs in range(1, SECONDS + 1):
@@ -91,7 +91,7 @@ def bake_art():
 
 def bake_locked():
     for ini, (icon, _) in LOCKED.items():
-        base = Image.open(asset_packs.cameo_tga(icon)).convert("RGBA")
+        base = Image.open(asset_packs.cameo_source(icon)).convert("RGBA")
         img = ImageEnhance.Brightness(base).enhance(0.40)
         draw = ImageDraw.Draw(img)
         w, h = img.size
