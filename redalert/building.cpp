@@ -705,6 +705,8 @@ void BuildingClass::Debug_Dump(MonoClass* mono) const
  *   06/27/1994 JLB : Takes a clipping window parameter.                                       *
  *   07/06/1995 JLB : Handles damaged silos correctly.                                         *
  *=============================================================================================*/
+static int TF_Plug_Layer_Frame(StructType type, int socket, bool damaged);
+
 void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
 {
     assert(Buildings.ID(this) == ID);
@@ -811,6 +813,17 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
             static const int TSPULS_TURRET_Y = 10; // classic px: the cannon's seat on the dome
             int tshape = UnitClass::BodyShape[Dir_To_32(PrimaryFacing.Current())];
             Techno_Draw_Object_Virtual(Class->TsPulseTurret, tshape, x, y + TSPULS_TURRET_Y, window, DIR_N, 0x0100, "TSPULST");
+        }
+
+        // TF: the Upgrade Centre draws the plug in each socket over its body (TSPLUGP), the first plug's on the right.
+        if (*this == STRUCT_TSPLUG && Strength > 0 && BState != BSTATE_CONSTRUCTION) {
+            bool damaged = (Health_Ratio() <= Rule.ConditionYellow);
+            for (int socket = 0; socket < UpgradeLevel && socket < 2; socket++) {
+                int frame = TF_Plug_Layer_Frame(UpgradeTypes[socket], socket, damaged);
+                if (frame >= 0) {
+                    Techno_Draw_Object_Virtual(Get_Image_Data(), frame, x, y, window, DIR_N, 0x0100, "TSPLUGP");
+                }
+            }
         }
 
         // TF: the dug-in Tick Tank draws its turret over the body, from the frame its turret facing picks (TSTICKT).
@@ -1119,19 +1132,23 @@ static int TF_Plug_Type_Index(StructType type)
     }
 }
 
-// The Upgrade Centre art block for its plugs: 1-3 for one plug type alone, 4-9 for the ordered distinct
-// pairs (first in socket 1). scripts/ts_pack_tree.py packs the blocks in this order.
-int TF_Plug_Art_Block(StructType first, StructType second)
+// The TSPLUGP frame for a plug in an Upgrade Centre socket (0 right, 1 left), -1 for no plug: TS's 15-frame loop at
+// 4 ticks a frame (Rate=220), the Ion Cannon Uplink's played back and forth (ART.INI [GAPLUG_F]); 15 when damaged.
+static int TF_Plug_Layer_Frame(StructType type, int socket, bool damaged)
 {
-    int a = TF_Plug_Type_Index(first);
-    int b = TF_Plug_Type_Index(second);
-    if (a < 0) {
-        return (0);
+    int plug = TF_Plug_Type_Index(type);
+    if (plug < 0) {
+        return (-1);
     }
-    if (b < 0 || b == a) {
-        return (1 + a);
+    int step = 15;
+    if (!damaged) {
+        int tick = (int)(Frame / 4);
+        step = (plug == 0) ? (tick % 28) : (tick % 15);
+        if (step > 14) {
+            step = 28 - step;
+        }
     }
-    return (4 + a * 2 + ((b > a) ? (b - 1) : b));
+    return ((socket * 3 + plug) * 16 + step);
 }
 
 // Starts the TS refinery's dock lid opening or closing (NAREFN_A forward or reversed); AI steps it and
@@ -1364,14 +1381,9 @@ int BuildingClass::Shape_Number(void) const
             }
         }
 
-        // TF: a building with addon plugs draws its upgrade level's block (healthy and damaged per block). The
-        // Upgrade Centre's blocks are keyed by plug type instead, so each socket shows the plug it holds.
-        if (UpgradeLevel != 0 && (*this == STRUCT_TSPOWR || *this == STRUCT_TSPLUG)) {
-            int block = UpgradeLevel;
-            if (*this == STRUCT_TSPLUG) {
-                block = TF_Plug_Art_Block(UpgradeTypes[0], (UpgradeLevel >= 2) ? UpgradeTypes[1] : STRUCT_NONE);
-            }
-            shapenum += block * 2 * (Class->Anims[BSTATE_IDLE].Start + Class->Anims[BSTATE_IDLE].Count);
+        // TF: the TS Power Plant draws its upgrade level's block (healthy and damaged per block).
+        if (UpgradeLevel != 0 && *this == STRUCT_TSPOWR) {
+            shapenum += UpgradeLevel * 2 * (Class->Anims[BSTATE_IDLE].Start + Class->Anims[BSTATE_IDLE].Count);
         }
     }
     return (shapenum);
