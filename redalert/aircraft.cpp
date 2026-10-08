@@ -1976,7 +1976,8 @@ ResultType AircraftClass::Take_Damage(int& damage, int distance, WarheadType war
         **	Parachute a survivor if possible.
         */
         if (Class->IsCrew && Percent_Chance(90) && Map[Center_Coord()].Is_Clear_To_Move(SPEED_FOOT, true, false)) {
-            InfantryClass* infantry = new InfantryClass(INFANTRY_E1, House->Class->House);
+            // TF: the pilot is the aircraft's own side's rifleman.
+            InfantryClass* infantry = new InfantryClass(TF_Side_Rifleman(Class), House->Class->House);
             if (infantry != NULL) {
                 if (!infantry->Paradrop(Center_Coord())) {
                     delete infantry;
