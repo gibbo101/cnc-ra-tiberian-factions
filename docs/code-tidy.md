@@ -66,6 +66,8 @@ Build dev and release after each commit; a skirmish before merging.
 - **Unused code:** `WarFactoryOverlayTs`; the footprint presets AFLD and WEAP; Roll_On_Seat;
   `Force_Track`'s `index`; Mission_Harvest_TD's TSPROC branch; Turret_Adjust's TSHVR case;
   `UnitClass::Force_Emerge`; our inert edits in the `KILL_PLAYER_ON_DISCONNECT` `#else`.
+- **`scripts/ts_pack_tree.py`'s TSPLUG section:** the classic per-combination plug blocks; the HD pack's TSPLUG and
+  its plug layer TSPLUGP replace them, and the DLL no longer reads the blocks.
 - **Keep while open:** the AI, wave, naval, ferry, PLACE-FAIL, eco-hold, jumpjet, A* tally and
   head-on logs, each until its `todo.md` or `known-issues.md` item closes; `TF_Dump_Faction_Masks`
   (tool input for cameo_badge_build.py).
