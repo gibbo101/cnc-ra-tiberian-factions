@@ -2955,8 +2955,9 @@ void HouseClass::Super_Weapon_Handler(void)
         }
     }
 
-    // TF: TS E.M. Pulse, granted while the house owns an EMP Cannon; range and power are checked when it fires.
-    bool ts_emp_host = Get_Quantity(STRUCT_TSPULS) > 0;
+    // TF: TS E.M. Pulse, granted while an EMP Cannon of the house stands (one in production doesn't count); range and
+    // power are checked when it fires.
+    bool ts_emp_host = Has_Building_Active(STRUCT_TSPULS);
     if (SuperWeapon[SPC_TS_EMP].Is_Present()) {
         if ((!ts_emp_host && !SuperWeapon[SPC_TS_EMP].Is_One_Time()) || IsDefeated) {
             if (SuperWeapon[SPC_TS_EMP].Remove()) {
@@ -2991,9 +2992,9 @@ void HouseClass::Super_Weapon_Handler(void)
         }
     }
 
-    // TF: TS Firestorm Defense, granted while the house owns a Firestorm Generator. The field drops when its
+    // TF: TS Firestorm Defense, granted while a Firestorm Generator of the house stands. The field drops when its
     // drain runs out, power falls short or the last generator goes; low power restarts a charge from zero (TS).
-    bool ts_fs_host = Get_Quantity(STRUCT_TSFGEN) > 0;
+    bool ts_fs_host = Has_Building_Active(STRUCT_TSFGEN);
     SuperClass& firestorm = SuperWeapon[SPC_TS_FIRESTORM];
     if (IsFirestormLive && (!ts_fs_host || Power_Fraction() < 1 || firestorm.Drain_Expired() || IsDefeated)) {
         TF_Firestorm_Set(this, false);
