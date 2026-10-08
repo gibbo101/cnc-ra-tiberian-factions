@@ -6025,6 +6025,12 @@ MoveType BuildingClass::Can_Enter_Cell(CELL cell, FacingType) const
         return (Map[cell].Is_Clear_To_Build(Class->Speed) ? MOVE_OK : MOVE_NO);
     }
 
+    // TF: a tower plug swapping in stands where the tower it replaced stood. Its placement footprint is one cell from
+    // the plot origin, the headroom row, which may hold walls or units.
+    if (TFPlugInstallInProgress && TF_Is_Wall_Tower(Class->Type)) {
+        return (MOVE_OK);
+    }
+
     if (!Debug_Map && ScenarioInit == 0 && Session.Type == GAME_NORMAL && House->IsPlayerControl
         && !Map[cell].IsMapped) {
         return (MOVE_NO);
