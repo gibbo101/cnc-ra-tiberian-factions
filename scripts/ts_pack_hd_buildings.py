@@ -55,9 +55,6 @@ CAST_SHADOW_MIN_PX = 500
 TIBERIUM_RAMP = np.array([[93.0, 134.0, 28.0], [161.0, 213.0, 53.0], [190.0, 239.0, 91.0]])
 
 
-# How far (0-255, any channel) a plug combination's base must differ from the plugless one to count as plug.
-PLUG_CUT_LEVEL = 8
-
 
 # The war factory's hazard stripes, on the lane from its door (x 160-316, y 370-416 of its source canvas).
 # The apron under them is ground art, which the launcher never recolours, so the stripes there and on the
@@ -245,17 +242,18 @@ BUILDINGS = {
     "TSHPAD": dict(src="tshpad", make=("build-up/helipad-build", 24), frames=("loop/helipad-loop", 16),
                    pad_bottom=128),
     # The upgrade center on a 2x2 plot with a bib row in front (TS's 2x3), its sockets and plugs to the south: its
-    # art, drawn on the 2x3, takes 128 px under it so the canvas centres on the 2x2. Its idle loop
-    # is baked per plug combination in the order building.cpp's TF_Plug_Art_Block numbers them: none,
-    # each plug alone in the right-hand socket, then each ordered pair (right, left), plugs taken
-    # ion, pods, seeker. Each block is 40 healthy then 40 damaged frames of the dish, lamps and slot.
-    "TSPLUG": dict(src="tsplug", make=("build-up/upgrade-center-build", 24),
-                   combos=("none", "right-ion", "right-pods", "right-seeker", "right-ion_left-pods",
-                           "right-ion_left-seeker", "right-pods_left-ion", "right-pods_left-seeker",
-                           "right-seeker_left-ion", "right-seeker_left-pods"),
-                   base="base/{combo}/upgrade-center-{combo}", loop=40,
-                   overlays=(("A-dish/upgrade-center-dish", 20), ("B-lamps/upgrade-center-lamps", 10),
-                             ("C-slot/upgrade-center-slot", 8)), pad_bottom=128),
+    # art, drawn on the 2x3, takes 128 px under it so the canvas centres on the 2x2. Idle without plugs: the dish,
+    # lamps and slot over 40 steps, healthy then damaged; the plugs are their own layer, TSPLUGP.
+    "TSPLUG": dict(src="tsplug", make=("build-up/upgrade-center-build", 24), base="base/none/upgrade-center-none",
+                   runs=[(40, [("A-dish/upgrade-center-dish", range(0, 20), range(20, 40)),
+                               ("B-lamps/upgrade-center-lamps", range(0, 10), range(10, 20)),
+                               ("C-slot/upgrade-center-slot", range(0, 8), range(8, 16))])], pad_bottom=128),
+    # The plugs over it, each on the building's canvas with its shadow: the right socket's ion, pods and seeker, then
+    # the left's, each 15 healthy frames and 1 damaged (building.cpp TF_Plug_Layer_Frame numbers them).
+    "TSPLUGP": dict(src="tsplug", make=None, sequence=[
+        (f"plug-layers/{socket}/{plug}/{plug}-{socket}", 16)
+        for socket in ("right", "left") for plug in ("ion-cannon-uplink", "drop-pod-node", "seeker-control")],
+        pad_bottom=128),
     # The plugs' placement ghosts (never on the map: a plug installs into an upgrade center), healthy
     # and damaged, standing in the right-hand socket's window.
     "TSPION": dict(src="tsplug", make=None, frames=("plugs/ion-cannon-uplink/ion-cannon-uplink", 16), pick=(0, 15)),
@@ -430,24 +428,8 @@ def frames(src, spec):
     if "frames" in spec:
         path, count = spec["frames"]
         tiles = [load(path, i) for i in spec.get("pick", range(count))] * spec.get("repeat", 1)
-    elif "combos" in spec:
-        # One block per combination: its base (healthy, then damaged) with the idle overlays looping
-        # over it, each overlay's damaged frames following its healthy ones. The plugs stand in front of
-        # the overlays, so each overlay is cut where the base differs from the plugless one.
-        tiles = []
-        combo_none = spec["combos"][0]
-        for combo in spec["combos"]:
-            for state in (0, 1):
-                base = load(spec["base"].format(combo=combo), state)
-                plain = np.asarray(load(spec["base"].format(combo=combo_none), state)).astype(int)
-                plugs = np.abs(np.asarray(base).astype(int) - plain).max(axis=-1) > PLUG_CUT_LEVEL
-                for t in range(spec["loop"]):
-                    img = base.copy()
-                    for path, n in spec["overlays"]:
-                        layer = np.array(load(path, t % n + n * state))
-                        layer[plugs] = 0
-                        img.alpha_composite(Image.fromarray(layer))
-                    tiles.append(img)
+    elif "sequence" in spec:
+        tiles = [load(path, i) for path, count in spec["sequence"] for i in range(count)]
     else:
         tiles = []
         for block in spec.get("blocks", [[]]):
