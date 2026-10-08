@@ -550,4 +550,6 @@ public:
     static int const BodyShape[32];
 };
 
+InfantryType TF_Side_Rifleman(TechnoTypeClass const* type);
+
 #endif

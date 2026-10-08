@@ -6002,6 +6002,20 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         }
     }
 
+    // The rifleman a vehicle or aircraft's crew bails out as: TS Light Infantry from a TS type, TD's from a TD type,
+    // RA's Rifleman otherwise.
+    InfantryType TF_Side_Rifleman(TechnoTypeClass const* type)
+    {
+        char const* ini = type->IniName;
+        if (ini[0] == 'T' && ini[1] == 'S') {
+            return (INFANTRY_TSE1);
+        }
+        if (ini[0] == 'T' && ini[1] == 'D') {
+            return (INFANTRY_TDE1);
+        }
+        return (INFANTRY_E1);
+    }
+
     /***********************************************************************************************
      * TechnoClass::Crew_Type -- Fetches the kind of crew this object contains.                    *
      *                                                                                             *
@@ -6035,13 +6049,8 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         **	minigunner. Certain buildings, especially neutral ones, tend to have
         **	civilians exit them instead.
         */
-        InfantryType infantry = INFANTRY_E1;
-        char const* ini = Techno_Type_Class()->IniName;
-        if (ini[0] == 'T' && ini[1] == 'S') {
-            infantry = INFANTRY_TSE1;   // TS vehicles and aircraft bail out as TS Light Infantry
-        } else if (ini[0] == 'T' && ini[1] == 'D') {
-            infantry = INFANTRY_TDE1;
-        }
+        // TF: TS and TD vehicles bail out as their own side's rifleman.
+        InfantryType infantry = TF_Side_Rifleman(Techno_Type_Class());
         if (House->ActLike == HOUSE_NEUTRAL) {
             infantry = Random_Pick(INFANTRY_C1, INFANTRY_C9);
         } else {
