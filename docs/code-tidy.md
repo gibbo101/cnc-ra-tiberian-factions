@@ -1,9 +1,10 @@
 # Code tidy
 
 **Status:** Design. The comment pass shipped on main (every comment of ours to the `CLAUDE.md`
-rules, `scripts/code_check.py` in the packager); the dead-code pass and phase 2 are planned.
-**Open:** the maintainer's calls on the dead-code list below; comments inside the ts-buildings-hd
-branch's ranges; phase 2.
+rules, `scripts/code_check.py` in the packager); the dead-code pass has removed the stubbed and
+shipped-work logs; the rest of it and phase 2 are planned.
+**Open:** the maintainer's calls on the dead-code list below; the rest of the clear deletes; the logs
+held for open items; comments inside the ts-buildings-hd branch's ranges; phase 2.
 
 The rules are in the repo's `CLAUDE.md`. `scripts/code_check.py` fails a package on a personal name,
 an ISO date or a missing `docs/*.md` in a comment; `scripts/code_check_baseline.txt` lists the known
@@ -41,36 +42,30 @@ Build dev and release after each commit; a skirmish before merging.
   units with stubs; `TF_Sidebar_Log`; `TF_LobbyRecHouseBySlot` (written in release, read only by a dev
   log); the lobby "confirm the client sends difficulty" log; foot.cpp's blind-hunt log; building.cpp's
   DEF-OFFLINE and PROD hold logs; the NAVAL census lines in AI_Building; the NOPROG abort in
-  infantry.cpp; `Exit_Object`'s `STRUCT_TSPROC` case (looks unreachable).
+  infantry.cpp; `Exit_Object`'s `STRUCT_TSPROC` case (looks unreachable); scenario.cpp's RA2 tank
+  harness (`#if 0`); the EVA cache patch's `tf_cache_probe.log` lines in dllinterface.cpp.
 
 ### Clear deletes (features shipped or bugs fixed)
-- **`#if 0` logs:** house.cpp (cargo convoy, Check_Pertinent_Structures), scenario.cpp (paths, smoke
-  spawn, start location, MCV spawn, and the Juggernaut, Sensor Array, Limpet, deploy-key, TS aircraft
-  and TS infantry harnesses), techno.cpp (fire_at, muzzle, flame, buildtime, primary_parse),
-  building.cpp (UPDATE_BUILDABLES, AIR_ITER), infantry.cpp (visceroid, ENTERCHK), unit.cpp
-  (fireanim), anim.cpp, bullet.cpp (Unlimbo), cell.cpp (crate), rules.cpp (newunits parse),
-  dllinterface.cpp (paths, radar and voice dispatch, state_query, objlist, assetname,
-  draw_intercept, asset_name, the Phase 1e proxy, sidebar entry, bib stub).
-- **Dev logs for shipped work:** the Can_Build logger; EMP pulse and order logs; scout dispatch;
-  Check_Pertinent; Carryall landing; tf_hunter; FIXEDWING-LAND; tdcargo unload; YARD-EXIT;
-  exit_object; AI build state; orbit probe and `tf_orbit.flag` path; HARV-WAIT and HARV-REBAIL;
-  `TF_Harv_Logfile`; TSUNITS dock logs; `TF_LIMP_TRACE`; tf_facing; `TF_Tunnel_Log`; TSFIRE BURN;
-  JUGG-LAUNCH, JUGG-SHELL and JUGG-SPLASH; `TF_TDPortLog`; sidebar evict; free-harvester log; the
-  crest, tab-icon, click-special and launcher logs; `TF_Probe_ClientG_*` (they also stall the game
-  thread at match start); deploy-key logs; mod command 1 log; placement-anchor log; apron
-  emission; `TF_BIB_DIAG` and `tf_owner_row` (drop the `stealth-generator-spec.md` sentence with
-  it); `TF_AStar_Cap_Trips`; SPREAD lines; startup.cpp's DLL load log.
-- **Always-on cost in release builds:** dead logs that still run `getenv`/`snprintf` (drive.cpp
-  TDWEAP exit track, aircraft.cpp unload log, techno.cpp TF-DMG-TRACE on every hit) and
-  `TF_Naval_Assessment`'s second scan, read only by a log.
+- **Always-on cost in release builds:** bdata.cpp's `tf_mod_one_time.log` block: the file is never
+  opened, but `getenv` and `snprintf` still run in One_Time.
+- **Dev logs for shipped work:** techno.cpp's LIMPET-ATTACH line.
 - **Unused code:** `WarFactoryOverlayTs`; the footprint presets AFLD and WEAP; Roll_On_Seat;
   `Force_Track`'s `index`; Mission_Harvest_TD's TSPROC branch; Turret_Adjust's TSHVR case;
-  `UnitClass::Force_Emerge`; our inert edits in the `KILL_PLAYER_ON_DISCONNECT` `#else`.
+  `UnitClass::Force_Emerge`; our inert edits in the `KILL_PLAYER_ON_DISCONNECT` `#else`;
+  `TF_ORBIT_HEIGHT` in object.h, set by nothing since the orbit probe went (check whether anything
+  else flies above `FLIGHT_LEVEL` before dropping `TF_ORBIT_FALL_RATE` with it).
 - **`scripts/ts_pack_tree.py`'s TSPLUG section:** the classic per-combination plug blocks; the HD pack's TSPLUG and
   its plug layer TSPLUGP replace them, and the DLL no longer reads the blocks.
 - **Keep while open:** the AI, wave, naval, ferry, PLACE-FAIL, eco-hold, jumpjet, A* tally and
-  head-on logs, each until its `todo.md` or `known-issues.md` item closes; `TF_Dump_Faction_Masks`
-  (tool input for cameo_badge_build.py).
+  head-on logs, each until its `todo.md` or `known-issues.md` item closes; `TF_Naval_Assessment`'s
+  second scan, read only by the naval log; `TF_Dump_Faction_Masks` (tool input for
+  cameo_badge_build.py).
+- **Keep until their fixes are signed off in play:** HARV-UNSTICK, HARV-BLACKLIST, HARV-FIELD and
+  `TF_Harv_Logfile` (the harvester follow-ups in `known-issues.md`); `TF_LIMP_TRACE` (Tick Tank and
+  Mobile War Factory deploys); JUGG-LAUNCH, JUGG-SHELL and JUGG-SPLASH (Juggernaut scatter); sidebar
+  evict (Mammoth Mk. II and Mech Division cameos leaving with the Tech Center); the DEPLOY-KEY,
+  DEPLOY-FLAG and mod command 1 logs (Mobile War Factory pack-up); the placement-anchor PLACE lines
+  (tower plugs); tf_mwf; tf_sort (the war factory bay).
 
 ## Comments inside the ts-buildings-hd ranges
 
