@@ -7907,9 +7907,11 @@ void const* BuildingClass::Remap_Table(void)
  * HISTORY:                                                                                    *
  *   07/29/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-// Packs a deployed TS building back into its vehicle on the same cell.
+// Packs a deployed TS building back into its vehicle on the same cell; where the vehicle can't unlimbo, the
+// building stands back on its own plot and tries again.
 static void TF_Pack_Up(BuildingClass* mine)
 {
+    COORDINATE const home = mine->Coord;
     CELL cell = Coord_Cell(mine->Coord);
     if (*mine == STRUCT_TSDWEAP) {
         cell += MAP_CELL_W + 1; // the hall's middle cell, where the vehicle deployed
@@ -7937,7 +7939,7 @@ static void TF_Pack_Up(BuildingClass* mine)
         delete mine;
     } else {
         delete unit;
-        mine->Unlimbo(Cell_Coord(cell), DIR_N);
+        mine->Unlimbo(home, DIR_N);
     }
 }
 

@@ -191,8 +191,6 @@ to a full entry above or delete. One line each: where, what, severity.
   or lift that vehicle unasked.
 - **Give-way (minor):** `HOLD_TIMEOUT` (60) expires claim waits early against a 75-frame claim, and the
   patient queue drops claims at 40 frames; `Find_Give_Way_Cell` checks only each ray's end cell.
-- **TS war factory pack-up (minor):** `TF_Pack_Up` re-unlimbos a TSDWEAP at a shifted cell when the
-  vehicle can't unlimbo, and can leave it in limbo with its power gone.
 - **Firing deploy-to-fire units (minor):** Firing_AI's `too_close` uses the raw MinRange while
   Approach_Target adds half a cell.
 - **Sidebar (cosmetic):** a dropship cameo is never evicted while any bay stands
