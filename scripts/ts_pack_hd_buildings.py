@@ -339,6 +339,7 @@ UNITS = {
     "TSGHOST": _voxel_unit("tsghost", 292),
     "TSMEDIC": _voxel_unit("tsmedic", 307),
     "TSJUMPJET": _voxel_unit("tsjumpjet", 451),
+    "TSE3": _voxel_unit("tse3", 292),
     "R2APOC": _voxel_unit("r2apoc", 64, contact_shadow=True),
     "R2PRIS": _voxel_unit("r2pris", 64, contact_shadow=True),
 }

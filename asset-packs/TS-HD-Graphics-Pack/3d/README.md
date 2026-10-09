@@ -77,6 +77,7 @@ mask (north 1, east 2, south 4, west 8), plus 16 damaged and 32 with the field o
 | `ghost-stalker.glb` | GHOST | TSGHOST | hood, the bedroll on his back, the railgun; a muzzle marker | the same as the light infantry |
 | `medic.glb` | MEDIC | TSMEDIC | the same body with the medkit and the crosses | the same as the engineer, plus heal |
 | `jumpjet-infantry.glb` | JUMPJET | TSJUMPJET | the jetpack with its nozzles and wings, the rifle; a muzzle marker | stand, walk, idle1, idle2, crawl, fire, prone_fire, lie_down, get_up, fly, hover, fire_fly, tumble |
+| `rocket-infantry.glb` | E3 | TSE3 | helmet, mask, vest, pack, the launcher and the rest, each its own node; a muzzle marker | stand, walk, idle1, idle2, crawl, death1, death2, fire, prone_fire, lie_down, get_up |
 
 The infantry face east (+x) with their position at the origin, on the ground, and play their animations facing east at
 the game's speed (15 ticks a second); the looping ones end on their first frame. Each part is one rigid solid posed per

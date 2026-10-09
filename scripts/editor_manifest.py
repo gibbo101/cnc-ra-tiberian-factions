@@ -184,6 +184,7 @@ INFANTRY = [
     {'id': 36, 'name': 'tsmedic', 'display_name': 'Medic', 'owner': 'GoodGuy', 'flags': []},
     {'id': 37, 'name': 'tsghost', 'display_name': 'Ghost Stalker', 'owner': 'GoodGuy', 'flags': ['Armed']},
     {'id': 38, 'name': 'tsjumpjet', 'display_name': 'Jumpjet Infantry', 'owner': 'GoodGuy', 'flags': ['Armed']},
+    {'id': 39, 'name': 'tse3', 'display_name': 'Rocket Infantry', 'owner': 'GoodGuy', 'flags': ['Armed']},
 ]
 
 

@@ -2403,6 +2403,15 @@
       "flags": [
         "Armed"
       ]
+    },
+    {
+      "id": 39,
+      "name": "tse3",
+      "display_name": "Rocket Infantry",
+      "owner": "GoodGuy",
+      "flags": [
+        "Armed"
+      ]
     }
   ],
   "templates": [

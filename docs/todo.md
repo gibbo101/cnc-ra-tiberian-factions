@@ -127,7 +127,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   one more `ERAS` entry in `scripts/eva_mailbox_build.py`, an emblem at
   `scripts/tab_emblems/tsnod.png`, and a crest region. The atlas can grow to 8192x8192 for it
   (`ui-atlas-modding.md`). Recipe: `ts-gdi-faction.md`. HD hand-offs (21 buildings, 19 units) are
-  in `~/Desktop/Tiberian Factions/`. The TS Nod wall is already in, dormant.
+  in `~/Desktop/Tiberian Factions/`. The TS Nod wall is already in, dormant, and so is the Rocket
+  Infantry (`TSE3`, `TechLevel=-1`, TS GDI's owners and barracks): give it TS Nod's owner, Hand of Nod
+  and TechLevel 2 then. The other Nod infantry cameos wait in `ts-hd-cameos/waiting-for-units/`.
 - **TS Pavement (GAPAVE), alongside TS Nod.** It turns cells into pavement: it keeps Tiberium off
   build space and blocks subterranean units. Costs: placement logic like the wall divert (the
   building becomes ground) and square-grid ground art, since TS's is isometric (the Firestorm

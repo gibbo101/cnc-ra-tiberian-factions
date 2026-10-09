@@ -168,6 +168,13 @@
 			<BuildIcon>BuildIcon_TS_Weap</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSE3" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSE3</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSE3_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_RocketInfantry</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<ObjectTypeClass Name="RA_TSE1" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TSE1</ObjectNameTextID>
