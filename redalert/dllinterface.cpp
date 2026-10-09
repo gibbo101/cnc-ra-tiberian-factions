@@ -10473,6 +10473,13 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             {STRUCT_TSDWEAP, SMUDGE_TSDWEAPBB, 0, 0, 0},
             {STRUCT_TSPROC, SMUDGE_TSPROCBB, 0, 0, MAP_CELL_W}, // its north row is open: probe (0,1)
         };
+        // The launcher keeps one overlay a cell, so each cell sends one apron tile: one inside its building's plot
+        // beats one that overhangs it (the refinery's empty fifth column would blank a War Factory's west edge).
+        int pick = -1;
+        int pick_tx = 0;
+        int pick_ty = 0;
+        bool pick_inside = false;
+        BuildingClass* pick_owner = NULL;
         for (int a = 0; a < (int)(sizeof(_aprons) / sizeof(_aprons[0])); a++) {
             const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(_aprons[a].apron);
             bool resolved = false;
@@ -10495,29 +10502,40 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
                     if (apron_owner->Visual_Character() == VISUAL_HIDDEN) {
                         break;
                     }
-
-                    CNCDynamicMapEntryStruct& apron_entry = dynamic_map->Entries[entry_index++];
-
-                    strncpy(apron_entry.AssetName, apron_type.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
-                    apron_entry.AssetName[CNC_OBJECT_ASSET_NAME_LENGTH - 1] = 0;
-                    apron_entry.Type = (short)OVERLAY_V12;
-                    apron_entry.Owner = (char)apron_owner->Owner();
-                    apron_entry.DrawFlags = SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST;
-                    apron_entry.PositionX = xpixel + (CELL_PIXEL_W >> 1);
-                    apron_entry.PositionY = ypixel + (CELL_PIXEL_H >> 1);
-                    apron_entry.Width = CELL_PIXEL_W;
-                    apron_entry.Height = CELL_PIXEL_H;
-                    apron_entry.CellX = Cell_X(cell);
-                    apron_entry.CellY = Cell_Y(cell);
-                    apron_entry.ShapeIndex = (unsigned short)(tx + ty * apron_type.Width);
-                    apron_entry.IsSmudge = false;
-                    apron_entry.IsOverlay = true;
-                    apron_entry.IsResource = false;
-                    apron_entry.IsSellable = false;
-                    apron_entry.IsTheaterShape = true;
-                    apron_entry.IsFlag = false;
+                    bool inside = (_aprons[a].off_x + tx) < apron_owner->Class->Width()
+                                  && (_aprons[a].off_y + ty) < apron_owner->Class->Height();
+                    if (pick < 0 || (inside && !pick_inside)) {
+                        pick = a;
+                        pick_tx = tx;
+                        pick_ty = ty;
+                        pick_inside = inside;
+                        pick_owner = apron_owner;
+                    }
                 }
             }
+        }
+        if (pick >= 0) {
+            const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(_aprons[pick].apron);
+            CNCDynamicMapEntryStruct& apron_entry = dynamic_map->Entries[entry_index++];
+
+            strncpy(apron_entry.AssetName, apron_type.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
+            apron_entry.AssetName[CNC_OBJECT_ASSET_NAME_LENGTH - 1] = 0;
+            apron_entry.Type = (short)OVERLAY_V12;
+            apron_entry.Owner = (char)pick_owner->Owner();
+            apron_entry.DrawFlags = SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST;
+            apron_entry.PositionX = xpixel + (CELL_PIXEL_W >> 1);
+            apron_entry.PositionY = ypixel + (CELL_PIXEL_H >> 1);
+            apron_entry.Width = CELL_PIXEL_W;
+            apron_entry.Height = CELL_PIXEL_H;
+            apron_entry.CellX = Cell_X(cell);
+            apron_entry.CellY = Cell_Y(cell);
+            apron_entry.ShapeIndex = (unsigned short)(pick_tx + pick_ty * apron_type.Width);
+            apron_entry.IsSmudge = false;
+            apron_entry.IsOverlay = true;
+            apron_entry.IsResource = false;
+            apron_entry.IsSellable = false;
+            apron_entry.IsTheaterShape = true;
+            apron_entry.IsFlag = false;
         }
     }
 
