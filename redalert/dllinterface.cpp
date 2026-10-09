@@ -8124,17 +8124,12 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                     sidebar_entry.PlacementListLength = 0;
 
                     // TF: the launcher has no text channel to a cameo, so the bay's cooldown and the unit caps swap in
-                    // baked art by key: a per-second countdown (_CDnnn), or locked (_LK), which outranks the countdown.
+                    // the locked art (_LK) by key.
                     if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
                         && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech)
                         && PlayerPtr->TFDropBayTimer != 0) {
-                        long secs = ((long)(unsigned long)PlayerPtr->TFDropBayTimer + TICKS_PER_SECOND - 1)
-                                    / TICKS_PER_SECOND;
-                        if (secs > 300) {
-                            secs = 300;
-                        }
                         snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                 "%s_CD%03d", tech->IniName, (int)secs);
+                                 "%s_LK", tech->IniName);
                     }
 
                     if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
@@ -8347,17 +8342,12 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                         sidebar_entry.Busy = isbusy;
                         sidebar_entry.PlacementListLength = 0;
 
-                        // TF: the countdown and locked cameo keys, as on the single-player path.
+                        // TF: the locked cameo keys, as on the single-player path.
                         if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
                             && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech)
                             && PlayerPtr->TFDropBayTimer != 0) {
-                            long secs = ((long)(unsigned long)PlayerPtr->TFDropBayTimer + TICKS_PER_SECOND - 1)
-                                        / TICKS_PER_SECOND;
-                            if (secs > 300) {
-                                secs = 300;
-                            }
                             snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                     "%s_CD%03d", tech->IniName, (int)secs);
+                                     "%s_LK", tech->IniName);
                         }
 
                         if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
