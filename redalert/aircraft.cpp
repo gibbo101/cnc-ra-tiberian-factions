@@ -335,8 +335,8 @@ bool AircraftClass::Unlimbo(COORDINATE coord, DirType dir)
         **	Ensure that the owning house knows about the
         **	new object.
         */
-        House->AScan |= TF_Type_Scan_Bit(Class->Type); // TF: no bit past 31
-        House->ActiveAScan |= TF_Type_Scan_Bit(Class->Type); // TF: no bit past 31
+        House->AScan |= (1L << Class->Type);
+        House->ActiveAScan |= (1L << Class->Type);
 
 
         /*

@@ -2662,8 +2662,8 @@ bool InfantryClass::Unlimbo(COORDINATE coord, DirType facing)
         **	Ensure that the owning house knows about the
         **	new object.
         */
-        House->IScan |= TF_Type_Scan_Bit(Class->Type); // TF: no bit past 31
-        House->ActiveIScan |= TF_Type_Scan_Bit(Class->Type); // TF: no bit past 31
+        House->IScan |= (1L << Class->Type);
+        House->ActiveIScan |= (1L << Class->Type);
 
         /*
         **	If there is no sight range, then this object isn't discovered by the player unless

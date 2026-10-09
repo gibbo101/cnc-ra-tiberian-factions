@@ -168,6 +168,10 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 Suspected from reading the code during the code tidy (`code-tidy.md`). Confirm in play, then promote
 to a full entry above or delete. One line each: where, what, severity.
 
+- **Scan bits past 31 (minor):** `Tracking_Add`, `Recalc_Attributes` and each unlimbo shift `1L << type`
+  for infantry and units past bit 31 (undefined; on x86 it wraps, so TSGHOST sets the TANYA bit). The
+  wrap is load-bearing: the multiplayer defeat check, two `tevent.cpp` "any left" events, the AI's
+  `AScan != 0` tests and `Suggested_New_Team`'s own shifts all read it. Change those first, then the shift.
 - **Ferry (minor):** `TFF_SAIL` treats a transport idling offshore as arrived and unloads onto water,
   then waits out `TF_FERRY_TIMEOUT`.
 - **Carryall (minor):** `TFCarryPickup` outlives a changed order, so a later landing can skip its LZ check
