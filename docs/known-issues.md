@@ -185,7 +185,6 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 Suspected from reading the code during the code tidy (`code-tidy.md`). Confirm in play, then promote
 to a full entry above or delete. One line each: where, what, severity.
 
-- **TS harvester speed (minor):** rules.ini `[TSHARV] Speed=5`; the parity change to 6 went into a comment.
 - **Per-match statics never reset (minor):** house.cpp AI_Building's `_waiting_since[]` and
   `TF_Eco_Below_Target`'s hold statics carry into the next match of a session.
 - **TS types missing from hand lists (minor):** Recalc_Center and `TF_Ferry_Wants_MCV` leave out
