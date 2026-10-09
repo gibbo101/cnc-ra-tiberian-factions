@@ -8294,7 +8294,7 @@ static void TF_Dump_Faction_Masks(void)
 #endif
 
 // Per production category, the faction bits of the player's factories that make it: barracks for infantry,
-// war factories for vehicles, yards for buildings. TS-tree factories count as the TS faction.
+// war factories for vehicles, yards for buildings. TS-tree factories count as the TS faction. None in a campaign.
 struct TF_ProducerMasks
 {
     int by_rtti[RTTI_COUNT];
@@ -8306,7 +8306,7 @@ static TF_ProducerMasks TF_Compute_Producer_Masks(HouseClass const* house)
     for (int i = 0; i < RTTI_COUNT; i++) {
         masks.by_rtti[i] = 0;
     }
-    if (house == NULL) {
+    if (house == NULL || Session.Type == GAME_NORMAL) {
         return masks;
     }
 

@@ -50,12 +50,6 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
   every player's localized voices. Fix: trim it to the events the mod changes. The EVA mailbox
   relies on the `RA*_SFX_EVA_*` names, so check those before cutting any RA event.
 
-### Campaign sidebar cameos show both faction badges
-- **Severity:** cosmetic (stock campaigns with the mod on).
-- `TF_Compute_Producer_Masks` ORs each owned yard's owners into the badge mask, and the vanilla
-  `[FACT]` is `Owner=allies,soviet`, so every cameo gets both badges. The tech tree is right; the
-  badge code has no campaign awareness.
-
 ---
 
 ## Multiplayer
