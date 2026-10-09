@@ -120,8 +120,8 @@ fi
 echo "==> Comparing $LOCAL_OUTPUT with $TARGET"
 CHANGES=$(rsync -acn $DELETE_FLAG --itemize-changes "$LOCAL_OUTPUT" "$TARGET" | grep -v '^\.d' || true)
 DELETIONS=$(grep '^\*deleting' <<<"$CHANGES" | cut -c13- || true)
-REPLACED=$(grep -E '^>f[^+]' <<<"$CHANGES" | cut -c13- || true)
-echo "    $(grep -c '^>f+' <<<"$CHANGES" || true) new, $(grep -cE '^>f[^+]' <<<"$CHANGES" || true) replaced, $(grep -c '^\*deleting' <<<"$CHANGES" || true) deleted"
+REPLACED=$(grep -E '^[<>]f[^+]' <<<"$CHANGES" | cut -c13- || true)
+echo "    $(grep -cE '^[<>]f\+' <<<"$CHANGES" || true) new, $(grep -cE '^[<>]f[^+]' <<<"$CHANGES" || true) replaced, $(grep -c '^\*deleting' <<<"$CHANGES" || true) deleted"
 if [[ -n "$DELETIONS" ]]; then
     echo "==> These files on $SURFACE are not in the build and will be DELETED:"
     sed 's/^/    /' <<<"$DELETIONS"
