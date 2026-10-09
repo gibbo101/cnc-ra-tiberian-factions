@@ -3985,7 +3985,7 @@ struct TF_CrestSlot
     const float* want; // which of the four the local player should see
 };
 
-#define TF_CREST_SLOTS 2 // the TD GDI logo record, the TD NOD logo record
+#define TF_CREST_SLOTS 4 // the TD GDI and NOD logos (radar crest), the RA small logos (waypoint and rally marks)
 
 // ClientG addresses found holding a crest record, re-pointed by TF_Crest_Reverify without a heap scan. Each
 // match makes a fresh record, so each match also runs a burst of full scans (TF_Crest_Tick).
@@ -4009,8 +4009,8 @@ static void TF_Crest_Remember(SIZE_T addr)
     }
 }
 
-// Build the two slots (ALLIES->GDI, SOVIET->NOD) for the current local player. Returns false
-// if there is no local player yet.
+// Build the slots for the current local player: the two radar-crest logos and the two small side logos the
+// waypoint and rally markers draw, stretched to a GDI, Nod or TS GDI crest. Returns false with no local player.
 static bool TF_Crest_Slots(TF_CrestSlot slots[TF_CREST_SLOTS])
 {
     HousesType const act_like = TF_Local_ActLike();
@@ -4032,6 +4032,17 @@ static bool TF_Crest_Slots(TF_CrestSlot slots[TF_CREST_SLOTS])
     TF_Atlas_UV_Record(TD_LOGO_GDI, slots[1].gdi, 2);
     TF_Atlas_UV_Record(TD_LOGO_NOD, slots[1].nod, 2);
     TF_Atlas_UV_Record(TS_LOGO_GDI, slots[1].tsgdi, 2);
+
+    static const TF_AtlasRect RA_SMALL_ALLIED = {1437, 1055, 25, 19}; // RA_UI_ALLIED_LOGO_SMALL
+    static const TF_AtlasRect RA_SMALL_SOVIET = {6582, 501, 21, 18};  // RA_UI_SOVIET_LOGO_SMALL
+    TF_Atlas_UV_Record(RA_SMALL_ALLIED, slots[2].stock);
+    TF_Atlas_UV_Record(TD_LOGO_GDI, slots[2].gdi, 3);
+    TF_Atlas_UV_Record(TD_LOGO_NOD, slots[2].nod, 3);
+    TF_Atlas_UV_Record(TS_LOGO_GDI, slots[2].tsgdi, 3);
+    TF_Atlas_UV_Record(RA_SMALL_SOVIET, slots[3].stock);
+    TF_Atlas_UV_Record(TD_LOGO_GDI, slots[3].gdi, 4);
+    TF_Atlas_UV_Record(TD_LOGO_NOD, slots[3].nod, 4);
+    TF_Atlas_UV_Record(TS_LOGO_GDI, slots[3].tsgdi, 4);
 
     for (int s = 0; s < TF_CREST_SLOTS; s++) {
         slots[s].want = tsgdi ? slots[s].tsgdi
@@ -4237,7 +4248,8 @@ static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
                     bool ok = WriteProcessMemory(proc, (LPVOID)rec_addr, slots[slot].want, REC, &wrote)
                               && wrote == (SIZE_T)REC;
                     if (log) {
-                        static const char* const _slot_names[TF_CREST_SLOTS] = {"TDLOGO_GDI", "TDLOGO_NOD"};
+                        static const char* const _slot_names[TF_CREST_SLOTS] = {"TDLOGO_GDI", "TDLOGO_NOD", "RASMALL_ALLIED",
+                                                                                  "RASMALL_SOVIET"};
                         fprintf(log, "  scan slot %s @ %08x %s -> %s %s\n", _slot_names[slot],
                                 (unsigned int)rec_addr, was,
                                 tsgdi ? "tsgdi" : (gdi ? "gdi" : (nod ? "nod" : "stock")),
