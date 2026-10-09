@@ -1601,10 +1601,6 @@ static void TF_Patch_ClientG_Click_Specials(void);
 static void TF_Tell_Launchers_Start(void);
 static void TF_Tell_Launchers_Tick(void);
 static void TF_Crest_Tick(void);
-#if TF_DEV_BUILD
-static void TF_Probe_ClientG_Cache(void);
-static void TF_Probe_ClientG_Crest(void);
-#endif
 
 extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int scenario_index,
                                                                            int scenario_variation,
@@ -1764,10 +1760,6 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
     TF_Patch_ClientG_Crest();
     TF_Patch_ClientG_Click_Specials();
     TF_Tell_Launchers_Start();
-#if TF_DEV_BUILD
-    TF_Probe_ClientG_Cache();
-    TF_Probe_ClientG_Crest();
-#endif
 
     return true;
 }
@@ -2010,10 +2002,6 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Custom_Instance(const ch
     TF_Patch_ClientG_Crest();
     TF_Patch_ClientG_Click_Specials();
     TF_Tell_Launchers_Start();
-#if TF_DEV_BUILD
-    TF_Probe_ClientG_Cache();
-    TF_Probe_ClientG_Crest();
-#endif
 
     return true;
 }
@@ -4989,201 +4977,6 @@ static void TF_Tell_Launchers_Tick(void)
         TF_Tell_Launchers();
     }
 }
-
-#if TF_DEV_BUILD
-/*
-** Tiberian Factions -- stage-1 RAM-patch spike probe (docs/eva-ram-patch-spike.md).
-** READ-ONLY. Scans ClientG.exe's writable private memory for known needles taken
-** from the mailbox NODEPLY sample (the placement-reject line), in BOTH candidate
-** cache formats, and logs every hit to tf_cache_probe.log. It answers one question:
-** does ClientG cache the sample as ADPCM file bytes (found via the ADPCM needle ->
-** an in-place same-size overwrite is trivial) or as decoded PCM (found via the PCM
-** needle -> equal-length PCM handling required)? Reuses the lobby resolver's proven
-** cross-process scan (CreateToolhelp32Snapshot / OpenProcess / VirtualQueryEx /
-** ReadProcessMemory). Nothing is written to ClientG. Runs at match start; the useful
-** result comes on the SECOND match of a boot, after match 1 has fired (and cached)
-** the line -- misplace a building in match 1, then start match 2.
-*/
-struct TF_ProbeNeedle
-{
-    const char* name;
-    const unsigned char* bytes;
-    int len;
-};
-
-/*
-** Shared read-only scanner for the ClientG RAM probes: walks every committed, readable
-** region of ClientG.exe, logs every hit of every needle (address, region, protection, type)
-** and per-needle totals to tf_cache_probe.log. Nothing is written to ClientG.
-*/
-static void TF_Probe_ClientG_Needles(const TF_ProbeNeedle* needles, int needle_count, const char* tag)
-{
-    const char* up = getenv("USERPROFILE");
-    if (up == NULL) {
-        return;
-    }
-    char logpath[512];
-    snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
-    FILE* log = fopen(logpath, "a");
-    if (log == NULL) {
-        return;
-    }
-    fprintf(log, "== probe %s at frame %d ==\n", tag, (int)Frame);
-
-    static unsigned char scratch[1 << 20];
-    const int overlap = 64; // >= max needle length, so a needle straddling two chunks is caught
-
-    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (snap == INVALID_HANDLE_VALUE) {
-        fprintf(log, "  snapshot failed\n");
-        fclose(log);
-        return;
-    }
-    PROCESSENTRY32W pe;
-    pe.dwSize = sizeof(pe);
-    int hit_total[8] = {0};
-    int procs_found = 0, procs_opened = 0;
-    unsigned long long bytes_scanned = 0;
-    int regions_scanned = 0;
-    if (Process32FirstW(snap, &pe)) {
-        do {
-            if (_wcsicmp(pe.szExeFile, L"ClientG.exe") != 0) {
-                continue;
-            }
-            procs_found++;
-            HANDLE proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, pe.th32ProcessID);
-            if (proc == NULL) {
-                fprintf(log, "  ClientG pid %lu: OpenProcess failed\n", (unsigned long)pe.th32ProcessID);
-                continue;
-            }
-            procs_opened++;
-            SIZE_T addr = 0;
-            MEMORY_BASIC_INFORMATION mbi;
-            while (VirtualQueryEx(proc, (LPCVOID)addr, &mbi, sizeof(mbi)) == sizeof(mbi)) {
-                SIZE_T region_base = (SIZE_T)mbi.BaseAddress;
-                SIZE_T region_size = mbi.RegionSize;
-                // Scan any committed, readable region regardless of Type (PRIVATE/MAPPED/IMAGE):
-                // a loose-file sample may be memory-mapped (MAPPED) or copy-on-write, not only
-                // heap-loaded. Exclude only NOACCESS/GUARD.
-                bool readable = (mbi.State == MEM_COMMIT)
-                                && !(mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD))
-                                && (mbi.Protect != 0)
-                                && region_size <= ((SIZE_T)512 << 20);
-                if (readable) {
-                    regions_scanned++;
-                    for (SIZE_T off = 0; off < region_size; off += (sizeof(scratch) - overlap)) {
-                        SIZE_T want = region_size - off;
-                        if (want > sizeof(scratch)) {
-                            want = sizeof(scratch);
-                        }
-                        SIZE_T got = 0;
-                        if (!ReadProcessMemory(proc, (LPCVOID)(region_base + off), scratch, want, &got)
-                            || got == 0) {
-                            continue;
-                        }
-                        bytes_scanned += got;
-                        for (int ni = 0; ni < needle_count; ni++) {
-                            const unsigned char* nb = needles[ni].bytes;
-                            int nl = needles[ni].len;
-                            if ((SIZE_T)nl > got) {
-                                continue;
-                            }
-                            for (SIZE_T i = 0; i + nl <= got; i++) {
-                                if (scratch[i] == nb[0] && memcmp(scratch + i, nb, nl) == 0) {
-                                    if (hit_total[ni] < 32) {
-                                        fprintf(log, "  HIT %s @ %08x (region %08x size %08x prot %lx type %lx)\n",
-                                                needles[ni].name,
-                                                (unsigned int)(region_base + off + i),
-                                                (unsigned int)region_base, (unsigned int)region_size,
-                                                (unsigned long)mbi.Protect, (unsigned long)mbi.Type);
-                                    }
-                                    hit_total[ni]++;
-                                }
-                            }
-                        }
-                    }
-                }
-                SIZE_T next = region_base + region_size;
-                if (next <= addr) {
-                    break;
-                }
-                addr = next;
-            }
-            CloseHandle(proc);
-        } while (Process32NextW(snap, &pe));
-    }
-    CloseHandle(snap);
-    fprintf(log, "  clientg found=%d opened=%d regions=%d bytes=%llu\n",
-            procs_found, procs_opened, regions_scanned, bytes_scanned);
-    for (int ni = 0; ni < needle_count; ni++) {
-        fprintf(log, "  TOTAL %s: %d\n", needles[ni].name, hit_total[ni]);
-    }
-    fflush(log);
-    fclose(log);
-}
-
-static void TF_Probe_ClientG_Cache(void)
-{
-    // Needles: 20-byte ADPCM data-chunk slices (docs/eva-ram-patch-spike.md). Both channel
-    // variants of NODEPLY (Allied 22k = C, Soviet 44k = R) since which plays follows the
-    // player's country, plus construction-complete which fires in EVERY match (guaranteed
-    // cache) so a zero on it means the scan itself is not reaching the cache.
-    static const unsigned char nodeply_c[] = {0x1d, 0xf0, 0x0c, 0xbf, 0x0c, 0xfc, 0xf0, 0xeb, 0x02, 0xfe,
-                                              0xe4, 0x1f, 0xde, 0xdb, 0xed, 0xc1, 0x11, 0xef, 0x70, 0x01};
-    static const unsigned char nodeply_r[] = {0xdf, 0x02, 0x00, 0x05, 0x2e, 0xaf, 0x13, 0x11, 0xfe, 0xdf,
-                                              0x27, 0x11, 0x0d, 0xe0, 0x02, 0x12, 0x70, 0xfa, 0xf0, 0x44};
-    static const unsigned char tddeploy_c[] = {0xff, 0x9e, 0x02, 0x20, 0xb0, 0xed, 0xb0, 0x40, 0xff, 0x10,
-                                               0xbe, 0xe0, 0xff, 0xe0, 0x34, 0xff, 0x15, 0x12, 0x34, 0x70};
-    static const unsigned char tddeploy_r[] = {0x00, 0x11, 0x11, 0x00, 0x00, 0xaa, 0xdd, 0xff, 0x11, 0x33,
-                                               0x44, 0x44, 0x33, 0x00, 0xbb, 0xcc, 0xee, 0xdd, 0xee, 0x22};
-    static const unsigned char constru_c[] = {0x20, 0x12, 0x60, 0x0f, 0x06, 0x0f, 0x13, 0x02, 0x00, 0xf5,
-                                              0x0c, 0x30, 0xd0, 0x00, 0x0c, 0xf8, 0x00, 0x00, 0xfe, 0xa0};
-    static const unsigned char constru_r[] = {0x44, 0x11, 0x66, 0x22, 0x22, 0x22, 0x11, 0x22, 0xff, 0xcc,
-                                              0xdd, 0xaa, 0xee, 0xcc, 0x00, 0x00, 0x00, 0x22, 0x22, 0x33};
-    static const TF_ProbeNeedle needles[] = {
-        {"NODEPLY_C", nodeply_c, sizeof(nodeply_c)},
-        {"NODEPLY_R", nodeply_r, sizeof(nodeply_r)},
-        {"TDDEPLOY_C", tddeploy_c, sizeof(tddeploy_c)},
-        {"TDDEPLOY_R", tddeploy_r, sizeof(tddeploy_r)},
-        {"CONSTRU_C", constru_c, sizeof(constru_c)},
-        {"CONSTRU_R", constru_r, sizeof(constru_r)},
-    };
-    TF_Probe_ClientG_Needles(needles, (int)(sizeof(needles) / sizeof(needles[0])), "eva");
-}
-/*
-** Tiberian Factions -- per-faction radar crest, stage-1 RAM probe (docs/radar-crest-ram-spike.md).
-** READ-ONLY. Asks whether a CPU-readable copy of the radar-slot crest pixels exists in
-** ClientG.exe at match start. Needles are two 8-pixel opaque runs (rows 249 and 463 of the
-** 794x713 UI_SIDEBAR_FACTIONLOGO_ALLIES/_SOVIET regions, which currently hold identical
-** pixels) taken straight from the shipped MT_COMMANDBAR_COMMON.TGA, in BGRA (= the TGA file
-** bytes = the natural decoded layout) and RGBA. Two rows at the same x let the hit
-** addresses reveal the in-memory stride: 27484 = the whole atlas, 3176 = a cropped region
-** texture; the sign gives top- vs bottom-origin. Two hits per needle (one per region) with
-** the whole-atlas stride means the entire atlas is resident.
-*/
-static void TF_Probe_ClientG_Crest(void)
-{
-    static const unsigned char row249_bgra[] = {0x00, 0x01, 0x02, 0xff, 0x10, 0x0e, 0x0f, 0xff, 0x4f, 0x45, 0x40, 0xff,
-                                                0xab, 0x96, 0x87, 0xff, 0xd7, 0xbd, 0xa8, 0xff, 0xc8, 0xad, 0x97, 0xff,
-                                                0xcb, 0xae, 0x99, 0xff, 0xce, 0xb5, 0xa1, 0xff};
-    static const unsigned char row249_rgba[] = {0x02, 0x01, 0x00, 0xff, 0x0f, 0x0e, 0x10, 0xff, 0x40, 0x45, 0x4f, 0xff,
-                                                0x87, 0x96, 0xab, 0xff, 0xa8, 0xbd, 0xd7, 0xff, 0x97, 0xad, 0xc8, 0xff,
-                                                0x99, 0xae, 0xcb, 0xff, 0xa1, 0xb5, 0xce, 0xff};
-    static const unsigned char row463_bgra[] = {0xa6, 0x9b, 0x96, 0xff, 0x8e, 0x84, 0x7d, 0xff, 0x94, 0x89, 0x81, 0xff,
-                                                0x97, 0x8e, 0x83, 0xff, 0xa0, 0x99, 0x92, 0xff, 0x9b, 0x91, 0x8a, 0xff,
-                                                0xaa, 0xa0, 0x97, 0xff, 0x6a, 0x60, 0x56, 0xff};
-    static const unsigned char row463_rgba[] = {0x96, 0x9b, 0xa6, 0xff, 0x7d, 0x84, 0x8e, 0xff, 0x81, 0x89, 0x94, 0xff,
-                                                0x83, 0x8e, 0x97, 0xff, 0x92, 0x99, 0xa0, 0xff, 0x8a, 0x91, 0x9b, 0xff,
-                                                0x97, 0xa0, 0xaa, 0xff, 0x56, 0x60, 0x6a, 0xff};
-    static const TF_ProbeNeedle needles[] = {
-        {"CREST_R249_BGRA", row249_bgra, sizeof(row249_bgra)},
-        {"CREST_R249_RGBA", row249_rgba, sizeof(row249_rgba)},
-        {"CREST_R463_BGRA", row463_bgra, sizeof(row463_bgra)},
-        {"CREST_R463_RGBA", row463_rgba, sizeof(row463_rgba)},
-    };
-    TF_Probe_ClientG_Needles(needles, (int)(sizeof(needles) / sizeof(needles[0])), "crest");
-}
-#endif // TF_DEV_BUILD
 
 // Copies <mod>/CustomMaps/ into Local_Custom_Maps/Red_Alert/ once the mod's CCDATA path registers (a Workshop mod
 // cannot ship into Documents); with TF_TD_MAPS at 0 it deletes those copies.
@@ -10811,38 +10604,6 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
                     apron_entry.CellX = Cell_X(cell);
                     apron_entry.CellY = Cell_Y(cell);
                     apron_entry.ShapeIndex = (unsigned short)(tx + ty * apron_type.Width);
-#if TF_DEV_BUILD
-                    // Apron emission ground truth (2026-08-17): the WF pad
-                    // rendered partially while its packed tiles proved
-                    // correct. One line per cell, once per process: a cell
-                    // missing here was never emitted (loop-side fault); all
-                    // cells present with correct fields = launcher-side.
-                    {
-                        static unsigned char _logged[MAP_CELL_TOTAL];
-                        if (!_logged[cell]) {
-                            _logged[cell] = 1;
-                            const char* up = getenv("USERPROFILE");
-                            char p[600];
-                            snprintf(p, sizeof(p), "%s/MOD_DEBUG_AI.txt", up ? up : ".");
-                            FILE* f = fopen(p, "a");
-                            if (f != NULL) {
-                                fprintf(f,
-                                        "APRON emit %s: cell %d,%d tile %d,%d shape %d "
-                                        "pos %d,%d owner house %d\n",
-                                        apron_type.IniName,
-                                        Cell_X(cell),
-                                        Cell_Y(cell),
-                                        tx,
-                                        ty,
-                                        (int)apron_entry.ShapeIndex,
-                                        (int)apron_entry.PositionX,
-                                        (int)apron_entry.PositionY,
-                                        (int)apron_entry.Owner);
-                                fclose(f);
-                            }
-                        }
-                    }
-#endif
                     apron_entry.IsSmudge = false;
                     apron_entry.IsOverlay = true;
                     apron_entry.IsResource = false;
@@ -10893,41 +10654,6 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
                     }
                 }
             }
-
-#if TF_DEV_BUILD // TF_BIB_DIAG -- every drawn (non-hidden) bib cell: what did it resolve to?
-            if (!tf_hide_bib && (Frame % 60) == 0) {
-                const char* up = getenv("USERPROFILE");
-                char path[600];
-                snprintf(path, sizeof(path), "%s/tf_bib.log", up ? up : ".");
-                FILE* bf = fopen(path, "a");
-                if (bf != NULL) {
-                    if (tf_owner != NULL) {
-                        fprintf(bf,
-                                "F%ld cell=%d (x=%d y=%d) %s data=%d -> %s(vc=%d,H%d) at row -%d\n",
-                                (long)Frame,
-                                (int)cell,
-                                Cell_X(cell),
-                                Cell_Y(cell),
-                                smudge_type.IniName,
-                                (int)cell_ptr->SmudgeData,
-                                tf_owner->Class->IniName,
-                                (int)tf_owner->Visual_Character(),
-                                (int)tf_owner->Owner(),
-                                tf_owner_row);
-                    } else {
-                        fprintf(bf,
-                                "F%ld cell=%d (x=%d y=%d) %s data=%d -> UNRESOLVED\n",
-                                (long)Frame,
-                                (int)cell,
-                                Cell_X(cell),
-                                Cell_Y(cell),
-                                smudge_type.IniName,
-                                (int)cell_ptr->SmudgeData);
-                    }
-                    fclose(bf);
-                }
-            }
-#endif
         }
 
         if (!tf_hide_bib && smudge_type.Get_Image_Data() != NULL) {
