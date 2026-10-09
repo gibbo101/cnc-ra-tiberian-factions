@@ -3321,8 +3321,8 @@ int AircraftClass::Mission_Attack(void)
     **	Fly to attack location.
     */
     case FLY_TO_POSITION:
-        // TF: the Orca Bomber's run: nose into the run, five bombs a pass while in reach, then a bank round to a
-        // turning point off to the side, so the way back over the target is a loop.
+        // TF: the Orca Bomber's run (TS strafe): five bombs fall straight down a cell apart, from two cells short of
+        // the target to two past it, then a bank round to a turning point, so the way back over the target is a loop.
         if (*this == AIRCRAFT_TSORCAB) {
             if (!Target_Legal(TarCom) || !Ammo) {
                 Status = RETURN_TO_BASE;
@@ -3334,8 +3334,12 @@ int AircraftClass::Mission_Attack(void)
             }
             int run = Process_Fly_To(false, NavCom);
             SecondaryFacing.Set_Desired(PrimaryFacing.Desired());
-            if (TFBombsThisRun < 5 && In_Range(TarCom) && Can_Fire(TarCom, 0) == FIRE_OK) {
-                Fire_At(TarCom, 0);
+            COORDINATE const tc = As_Coord(TarCom);
+            int const dist = ::Distance(Center_Coord(), tc);
+            int const off = (int)(signed char)((int)::Direction(Center_Coord(), tc) - (int)PrimaryFacing.Current());
+            int const along = (ABS(off) > 64) ? -dist : dist;
+            if (TFBombsThisRun < 5 && along <= (2 - (int)TFBombsThisRun) * CELL_LEPTON_W) {
+                Fire_At(::As_Target(Coord_Cell(Center_Coord())), 0);
                 Map[::As_Cell(TarCom)].Incoming(Coord, true);
                 TFBombsThisRun++;
             }

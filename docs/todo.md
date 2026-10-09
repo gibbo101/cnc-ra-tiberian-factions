@@ -151,9 +151,6 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   Control's camera have idle frames, but the TSPLUG loops bake each plug at frame 0, and the plug frames'
   128 px boxes clip the uplink's dish. Needs the art chat's idle frames on the Upgrade Center's own canvas
   at each socket, uncropped; the packer then plays them in the combinations' loops.
-- **The Orca Bomber's attack run:** its HD model is final, but the run needs work. It flies RA's
-  helicopter path and drops from where it hovers (`[TSBomb]` Range 1.5 in rules.ini), where TS's
-  Orca Bomber makes a straight pass over the target and lays its bombs along it.
 - **A real TS sidebar** (TS uses TD's HUD scene with its own crest for now). Probes, cheapest
   first: (1) can a tactical scene widget take a standalone loose DDS instead of an atlas region;
   (2) is a third scene loadable (copy `Tactical_UI.bui` under a new name and point one faction at
