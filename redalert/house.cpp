@@ -2039,6 +2039,12 @@ extern bool MPSuperWeaponDisable;
  *=============================================================================================*/
 extern void Recalculate_Placement_Distances();
 
+// Per house, the radar sting's debounce (cleared each match by TF_AI_Clocks_Reset): the state last sounded, the
+// state being timed, and the frames it has held.
+static bool _tf_radar_on[HOUSE_COUNT];
+static bool _tf_radar_pending[HOUSE_COUNT];
+static int _tf_radar_stable[HOUSE_COUNT];
+
 void HouseClass::AI(void)
 {
     assert(Houses.ID(this) == ID);
@@ -2433,22 +2439,20 @@ void HouseClass::AI(void)
             }
             bool functional = (radar_count > 0 || IsGPSActive) && (IsGPSActive || Power_Fraction() >= 1);
 
-            static bool tf_radar_on = false; // last committed/sounded state
-            static bool tf_pending = false;  // candidate state being timed
-            static int tf_stable = 0;        // frames the candidate has held
-            if (functional != tf_pending) {
-                tf_pending = functional;
-                tf_stable = 0;
-            } else if (tf_stable < 8) {
-                tf_stable++;
+            int const h = (int)Class->House;
+            if (functional != _tf_radar_pending[h]) {
+                _tf_radar_pending[h] = functional;
+                _tf_radar_stable[h] = 0;
+            } else if (_tf_radar_stable[h] < 8) {
+                _tf_radar_stable[h]++;
             }
-            if (tf_stable >= 8 && tf_pending != tf_radar_on) {
-                if (tf_pending) {
+            if (_tf_radar_stable[h] >= 8 && _tf_radar_pending[h] != _tf_radar_on[h]) {
+                if (_tf_radar_pending[h]) {
                     Sound_Effect(VOC_RADAR_ON);
                 } else {
                     Sound_Effect(VOC_RADAR_OFF);
                 }
-                tf_radar_on = tf_pending;
+                _tf_radar_on[h] = _tf_radar_pending[h];
             }
         }
 #endif
@@ -7672,6 +7676,9 @@ void TF_AI_Clocks_Reset(void)
     memset(_tf_eco_hold_since, 0, sizeof(_tf_eco_hold_since));
     memset(_tf_eco_hold_spent, 0, sizeof(_tf_eco_hold_spent));
     memset(_tf_waiting_since, 0, sizeof(_tf_waiting_since));
+    memset(_tf_radar_on, 0, sizeof(_tf_radar_on));
+    memset(_tf_radar_pending, 0, sizeof(_tf_radar_pending));
+    memset(_tf_radar_stable, 0, sizeof(_tf_radar_stable));
 }
 
 // True while the house is below its refinery or harvester target and ore remains, so combat production
