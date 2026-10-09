@@ -3034,10 +3034,10 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
     // Static: a 1 MB buffer would overflow the game's 1 MB thread stack.
     static unsigned char scratch[1 << 20];
 
+    TF_LobbyCandN = 0;
 #if TF_DEV_BUILD
     TF_LobbyDiagBudget = 48;
     TF_LobbyDiagHits = 0;
-    TF_LobbyCandN = 0;
 #endif
 
     HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);

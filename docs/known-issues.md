@@ -185,9 +185,6 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 Suspected from reading the code during the code tidy (`code-tidy.md`). Confirm in play, then promote
 to a full entry above or delete. One line each: where, what, severity.
 
-- **Lobby AI difficulty (major):** dllinterface.cpp resets `TF_LobbyCandN` only in dev builds, so in a
-  release the candidate list fills across matches and an ambiguous read can take an earlier lobby's
-  difficulties.
 - **TS harvester speed (minor):** rules.ini `[TSHARV] Speed=5`; the parity change to 6 went into a comment.
 - **Per-match statics never reset (minor):** house.cpp AI_Building's `_waiting_since[]` and
   `TF_Eco_Below_Target`'s hold statics carry into the next match of a session.
