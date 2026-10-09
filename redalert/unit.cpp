@@ -1398,6 +1398,25 @@ bool UnitClass::Unlimbo(COORDINATE coord, DirType dir)
     return (false);
 }
 
+// The refinery a harvester docks at: its own type's nearest first, then RA's, TD's and TS's in turn.
+static BuildingClass* TF_Harvester_Refinery(UnitClass const* harv, bool friendly)
+{
+    StructType native = (*harv == UNIT_TDHARV)   ? STRUCT_TDPROC
+                        : (*harv == UNIT_TSHARV) ? STRUCT_TSPROC
+                                                 : STRUCT_REFINERY;
+    BuildingClass* building = harv->Find_Docking_Bay(native, friendly);
+    if (building == NULL && native != STRUCT_REFINERY) {
+        building = harv->Find_Docking_Bay(STRUCT_REFINERY, friendly);
+    }
+    if (building == NULL && native != STRUCT_TDPROC) {
+        building = harv->Find_Docking_Bay(STRUCT_TDPROC, friendly);
+    }
+    if (building == NULL && native != STRUCT_TSPROC) {
+        building = harv->Find_Docking_Bay(STRUCT_TSPROC, friendly);
+    }
+    return (building);
+}
+
 /***********************************************************************************************
  * UnitClass::Take_Damage -- Inflicts damage points on a unit.                                 *
  *                                                                                             *
@@ -1630,20 +1649,8 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
                     /*
                     **	Find nearby refinery and head to it?
                     */
-                    // TF: any harvester docks at any refinery type, so it tries its own type first, then the others.
-                    StructType native = (*this == UNIT_TDHARV)   ? STRUCT_TDPROC
-                                        : (*this == UNIT_TSHARV) ? STRUCT_TSPROC
-                                                                 : STRUCT_REFINERY;
-                    BuildingClass* building = Find_Docking_Bay(native, false);
-                    if (building == NULL && native != STRUCT_REFINERY) {
-                        building = Find_Docking_Bay(STRUCT_REFINERY, false);
-                    }
-                    if (building == NULL && native != STRUCT_TDPROC) {
-                        building = Find_Docking_Bay(STRUCT_TDPROC, false);
-                    }
-                    if (building == NULL && native != STRUCT_TSPROC) {
-                        building = Find_Docking_Bay(STRUCT_TSPROC, false);
-                    }
+                    // TF: any harvester docks at any refinery type (TF_Harvester_Refinery).
+                    BuildingClass* building = TF_Harvester_Refinery(this, false);
 
                     /*
                     **	Since the refinery said it was ok to load, establish radio
@@ -6057,10 +6064,8 @@ int UnitClass::Mission_Repair(void)
     assert(Units.ID(this) == ID);
     assert(IsActive);
 
-    BuildingClass* nearest = Find_Docking_Bay((*this == UNIT_TDHARV)   ? STRUCT_TDPROC
-                                              : (*this == UNIT_TSHARV) ? STRUCT_TSPROC
-                                                                       : STRUCT_REFINERY,
-                                              true);
+    // TF: any harvester docks at any refinery type (TF_Harvester_Refinery).
+    BuildingClass* nearest = TF_Harvester_Refinery(this, true);
 
     IsHarvesting = false;
 

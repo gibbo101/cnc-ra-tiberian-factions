@@ -193,9 +193,7 @@ to a full entry above or delete. One line each: where, what, severity.
   patient queue drops claims at 40 frames; `Find_Give_Way_Cell` checks only each ray's end cell.
 - **Sidebar (cosmetic):** a dropship cameo is never evicted while any bay stands
   (sidebarglyphx.cpp ~546); the Mech Division isn't marked busy through the bay cooldown.
-- **Small ones (cosmetic or latent):** MinelayerFindSpot's `>` should be `>=`; Mission_Repair looks only
-  for a harvester's own refinery type; `Find_Passable_Position_Near` transposes x and y (from CFE); the
-  [TFTDTiles] reader is unchecked; the dormant TDLST indexes 16 facings on 4 frames; EA's own
+- **Small ones (cosmetic or latent):** the [TFTDTiles] reader is unchecked; the dormant TDLST indexes 16 facings on 4 frames; EA's own
   `Make_Enemy` uses `!` for `~` and CNC_Read_INI's `memset` has its arguments swapped (both also
   upstream).
 
