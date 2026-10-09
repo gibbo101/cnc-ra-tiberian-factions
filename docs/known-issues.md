@@ -197,7 +197,7 @@ to a full entry above or delete. One line each: where, what, severity.
   for a harvester's own refinery type; `Find_Passable_Position_Near` transposes x and y (from CFE); the
   [TFTDTiles] reader is unchecked; the dormant TDLST indexes 16 facings on 4 frames; EA's own
   `Make_Enemy` uses `!` for `~` and CNC_Read_INI's `memset` has its arguments swapped (both also
-  upstream); `[TSPLUG]` lacks the Capturable/Crewed/Repairable/Bib keys its TS original has.
+  upstream).
 
 ## Limitations (cannot be fixed from a mod; do not re-investigate)
 
