@@ -1006,11 +1006,6 @@ void TF_EMPulse(CELL center, TechnoClass* source, int spread, int duration)
         EMP_AIRCRAFT_HEIGHT = 104 // TS one height level: an aircraft below it is not yet flying
     };
     int const spread_sq = spread * spread;
-    int crashed = 0;
-    int stunned_buildings = 0;
-    int stunned_vehicles = 0;
-    int stunned_aircraft = 0;
-    int stunned_underground = 0;
 
     for (int index = Aircraft.Count() - 1; index >= 0; index--) {
         AircraftClass* aircraft = Aircraft.Ptr(index);
@@ -1019,7 +1014,6 @@ void TF_EMPulse(CELL center, TechnoClass* source, int spread, int duration)
             && ::Distance(aircraft->Center_Coord(), Cell_Coord(center)) < spread * CELL_LEPTON_W) {
             int damage = aircraft->Strength;
             aircraft->Take_Damage(damage, 0, WARHEAD_HE, source, true);
-            crashed++;
         }
     }
 
@@ -1055,7 +1049,6 @@ void TF_EMPulse(CELL center, TechnoClass* source, int spread, int duration)
                             }
                         }
                         building->EMP_Stun(duration);
-                        stunned_buildings++;
                     }
                 }
                 continue;
@@ -1074,7 +1067,6 @@ void TF_EMPulse(CELL center, TechnoClass* source, int spread, int duration)
                             }
                         }
                         aircraft->EMP_Stun(duration);
-                        stunned_aircraft++;
                     }
                     continue;
                 }
@@ -1099,7 +1091,6 @@ void TF_EMPulse(CELL center, TechnoClass* source, int spread, int duration)
                 if (rtti == RTTI_UNIT && ((UnitClass*)vehicle)->Is_In_Tunnel_Cycle()) {
                     ((UnitClass*)vehicle)->Tunnel_Stop();
                 }
-                stunned_vehicles++;
             }
         }
     }
@@ -1116,7 +1107,6 @@ void TF_EMPulse(CELL center, TechnoClass* source, int spread, int duration)
         if (dx * dx + dy * dy < spread_sq) {
             unit->EMP_Stun(duration);
             unit->Tunnel_Stop();
-            stunned_underground++;
         }
     }
 }
@@ -1514,74 +1504,6 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
         BuildingTypeClass const* btype = (BuildingTypeClass const*)type;
         if (btype->PowersUpBuilding != STRUCT_NONE && !Has_Building_Active(btype->PowersUpBuilding)) {
             return (false);
-        }
-    }
-
-    // Diagnostic hook 2026-05-19: log Can_Build calls for mod-defined building
-    // entries so we can see why a freshly-added TDxxxx might not appear in the
-    // sidebar. Filter to TD-prefixed IniNames and rate-limit. Keep in place
-    // until v1.0 per [[feedback-keep-diagnostics-until-v1]]. Stub the body
-    // under `if (0)` to disable; do not delete.
-    //
-    // Path resolution: %USERPROFILE%/Documents/CnCRemastered matches the
-    // game's own save folder convention and resolves correctly on both real
-    // Windows (whatever the user's profile is) and Wine/Proton (where
-    // USERPROFILE points to drive_c/users/steamuser). Falls back to CWD if
-    // the env var is unset.
-    // Capture: TD-prefixed buildings (always) + E-prefix infantry (E1..E9,
-    // for the 2026-05-20 GDI roster bring-up where E3 isn't appearing in the
-    // sidebar despite Owner=allies,soviet,GoodGuy,BadGuy + Prerequisite=tent
-    // + TDPYLE built). Logging RTTI distinguishes the two streams.
-    bool log_td = (type->IniName[0] == 'T' && (type->IniName[1] == 'D' || type->IniName[1] == 'S'));
-    bool log_einf = (type->What_Am_I() == RTTI_INFANTRYTYPE
-                     && type->IniName[0] == 'E'
-                     && type->IniName[1] >= '0' && type->IniName[1] <= '9');
-    // v4.0 navy/air debug: also log ALL vessels + aircraft (so we see why GDI/Nod get the RA
-    // rosters from owner-opened SYRD/SPEN/AFLD but not the TD ships/A-10).
-    bool log_navair = (type->What_Am_I() == RTTI_VESSELTYPE || type->What_Am_I() == RTTI_AIRCRAFTTYPE);
-    if (log_td || log_einf || log_navair) {
-        static FILE* s_can_build_log = NULL;
-        static int s_log_count = 0;
-        if (s_log_count < 400) {
-            if (s_can_build_log == NULL) {
-                char path[512];
-                const char* profile = getenv("USERPROFILE");
-                if (profile != NULL && profile[0] != '\0') {
-                    snprintf(path, sizeof(path),
-                             "%s/Documents/CnCRemastered/MOD_DEBUG_CANBUILD.txt",
-                             profile);
-                } else {
-                    strcpy(path, "MOD_DEBUG_CANBUILD.txt");
-                }
-                s_can_build_log = NULL; // TF DIAG OFF for release (was fopen; restore to re-enable)
-            }
-            if (s_can_build_log != NULL) {
-                int level = Control.TechLevel;
-                int const* pre = ((TechnoTypeClass const*)type)->Prerequisite;
-                int own = type->Get_Ownable();
-                int level_ok = ((TechnoTypeClass const*)type)->Level <= (unsigned)level;
-                int pre_ok = 1;
-                for (int i = 0; i < PREREQUISITE_MAX; i++) {
-                    int t = pre[i];
-                    if (t < 0)
-                        break;
-                    if (!Has_Building_Active(t)) {
-                        pre_ok = 0;
-                        break;
-                    }
-                }
-                int own_ok = ((1L << house) & own) != 0;
-                fprintf(s_can_build_log,
-                        "Can_Build rtti=%d name=%s house=%d level=%d type.Level=%d "
-                        "pre=[%d,%d,%d,%d] own=0x%X level_ok=%d pre_ok=%d "
-                        "own_ok=%d IsHuman=%d\n",
-                        (int)type->What_Am_I(), type->IniName, (int)house, level,
-                        ((TechnoTypeClass const*)type)->Level,
-                        pre[0], pre[1], pre[2], pre[3],
-                        own, level_ok, pre_ok, own_ok, (int)IsHuman);
-                fflush(s_can_build_log);
-                s_log_count++;
-            }
         }
     }
 
