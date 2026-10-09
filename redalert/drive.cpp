@@ -812,48 +812,7 @@ bool DriveClass::While_Moving(void)
             offset = step.Offset;
             if (offset || !TrackIndex) {
                 dir = step.Facing;
-                COORDINATE prev_coord_diag = Coord;
                 Coord = Smooth_Turn(offset, dir);
-
-                /*
-                **  TEMPORARY DEV DIAGNOSTIC — log per-tick Coord for vehicles
-                **  emerging from a TDWEAP. The first few logged lines should
-                **  show small smooth increments; a big jump would indicate
-                **  the engine's track snap is producing the visible shift the
-                **  user reports on TDWEAP exit. Per [[feedback-keep-diagnostics-until-v1]].
-                */
-                if ((TrackNumber == DriveClass::OUT_OF_WEAPON_FACTORY
-                     || TrackNumber == DriveClass::OUT_OF_WEAPON_FACTORY_TD)
-                    && In_Radio_Contact()
-                    && Contact_With_Whom()
-                    && Contact_With_Whom()->What_Am_I() == RTTI_BUILDING) {
-                    BuildingClass const* bldg =
-                        (BuildingClass const*)Contact_With_Whom();
-                    if (*bldg == STRUCT_TDWEAP) {
-                        static FILE* s_track = NULL;
-                        if (s_track == NULL) {
-                            char p[512];
-                            const char* up = getenv("USERPROFILE");
-                            if (up) snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_weap_track.log", up);
-                            else strcpy(p, "tf_weap_track.log");
-                            s_track = NULL; // TF DIAG OFF for release (was fopen; restore to re-enable)
-                        }
-                        if (s_track) {
-                            fprintf(s_track,
-                                "tick: idx=%d prev=(%u,%u) new=(%u,%u) "
-                                "delta=(%d,%d) offset=(%u,%u) dir=%d head=(%u,%u)\n",
-                                TrackIndex,
-                                Coord_X(prev_coord_diag), Coord_Y(prev_coord_diag),
-                                Coord_X(Coord), Coord_Y(Coord),
-                                (int)Coord_X(Coord) - (int)Coord_X(prev_coord_diag),
-                                (int)Coord_Y(Coord) - (int)Coord_Y(prev_coord_diag),
-                                Coord_X(offset), Coord_Y(offset),
-                                (int)dir,
-                                Coord_X(Head_To_Coord()), Coord_Y(Head_To_Coord()));
-                            fflush(s_track);
-                        }
-                    }
-                }
 
                 PrimaryFacing.Set(dir);
 

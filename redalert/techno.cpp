@@ -4878,9 +4878,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
 
         ResultType result = RESULT_NONE;
 
-        int dbg_dmg_in = damage;       // [TF-DMG-TRACE]
-        int dbg_str_before = Strength; // [TF-DMG-TRACE]
-
         /*
         **	If not a forced damage condition, adjust damage according to house override armor
         **	value.
@@ -4888,8 +4885,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         if (!forced && damage > 0) {
             damage = damage * ArmorBias * House->ArmorBias;
         }
-
-        int dbg_dmg_after_bias = damage; // [TF-DMG-TRACE]
 
         if (IronCurtainCountDown == 0) {
             result = ObjectClass::Take_Damage(damage, distance, warhead, source, forced);
@@ -4899,40 +4894,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         // gate never blocks retaliation against an attacker it has not yet seen.
         if (source != NULL && Session.Type != GAME_NORMAL && !House->IsHuman) {
             source->Set_Discovered_By_Player(House);
-        }
-
-        /*
-        ** [TF-DMG-TRACE] One line per damage event. Ratios expose every multiplier:
-        **   afterBias/dmgIn = ArmorBias, final/afterBias = warhead-vs-armor modifier,
-        **   dmgIn vs source weapon Attack = FirepowerBias. Line count to str=0 = shots.
-        */
-        if (dbg_dmg_in != 0) {
-            static FILE* s_dmg_log = NULL;
-            static int s_dmg_count = 0;
-            if (s_dmg_count < 500) {
-                if (s_dmg_log == NULL) {
-                    char path[512];
-                    const char* profile = getenv("USERPROFILE");
-                    if (profile != NULL && profile[0] != '\0') {
-                        snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_DAMAGE.txt", profile);
-                    } else {
-                        strcpy(path, "MOD_DEBUG_DAMAGE.txt");
-                    }
-                    s_dmg_log = NULL; // TF DIAG OFF for release (was fopen; restore to re-enable)
-                }
-                if (s_dmg_log != NULL) {
-                    const char* tname = Techno_Type_Class() ? Techno_Type_Class()->IniName : "?";
-                    int tarmor = Techno_Type_Class() ? (int)Techno_Type_Class()->Armor : -1;
-                    const char* sname =
-                        (source && source->Techno_Type_Class()) ? source->Techno_Type_Class()->IniName : "-";
-                    fprintf(s_dmg_log,
-                            "RA tgt=%s armor=%d wh=%d src=%s dmgIn=%d afterBias=%d final=%d str %d->%d\n",
-                            tname, tarmor, (int)warhead, sname, dbg_dmg_in, dbg_dmg_after_bias, damage, dbg_str_before,
-                            (int)Strength);
-                    fflush(s_dmg_log);
-                    s_dmg_count++;
-                }
-            }
         }
 
         switch (result) {

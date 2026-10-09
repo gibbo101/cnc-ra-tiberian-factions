@@ -1246,43 +1246,6 @@ int AircraftClass::Mission_Unload(void)
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
 
-    // Diagnostic 2026-05-21: unload log is unexpectedly empty — log file
-    // not created at all, so Mission_Unload is never being called for our
-    // cargo plane. Unconditional first-entry log + per-call marker so we
-    // can see (1) does Mission_Unload run for the plane at all, (2) is
-    // *this == AIRCRAFT_TDCARGO actually true at runtime.
-    static FILE* s_unload_log = NULL;
-    static int s_unload_tick = 0;
-    if (s_unload_log == NULL) {
-        char dpath[512];
-        const char* dprof = getenv("USERPROFILE");
-        if (dprof != NULL && dprof[0] != '\0') {
-            snprintf(dpath, sizeof(dpath),
-                     "%s\\Documents\\CnCRemastered\\tf_tdcargo_unload.log", dprof);
-            s_unload_log = NULL; // TF DIAG OFF for release (was fopen; restore to re-enable)
-        }
-    }
-    if (s_unload_log && (s_unload_tick++ % 5) == 0) {
-        int navd = Target_Legal(NavCom) ? Distance(As_Movement_Coord(NavCom)) : -1;
-        TechnoClass* contact = In_Radio_Contact() ? Contact_With_Whom() : NULL;
-        const char* contact_ininame = "(none)";
-        if (contact && contact->What_Am_I() == RTTI_BUILDING) {
-            contact_ininame = ((BuildingClass*)contact)->Class->IniName;
-        }
-        fprintf(s_unload_log,
-                "t=%d Status=%d Mission=%d Coord=0x%08x Height=%d "
-                "NavLegal=%d Radio=%d Contact=[%s] navdist=%d Attached=%d Facing=%d Rot=%d\n",
-                s_unload_tick, (int)Status, (int)Mission,
-                (unsigned)Coord, Height,
-                Target_Legal(NavCom) ? 1 : 0,
-                In_Radio_Contact() ? 1 : 0,
-                contact_ininame, navd,
-                Is_Something_Attached() ? 1 : 0,
-                (int)PrimaryFacing.Current(),
-                PrimaryFacing.Is_Rotating() ? 1 : 0);
-        fflush(s_unload_log);
-    }
-
     // TF: the TD cargo plane's delivery run (TD Mission_Unload): it flies to its airstrip, drops the vehicle in a
     // low pass, sends it to the strip's rally point, and leaves the map (docs/cargo-plane-port.md).
     if (Class->IsFixedWing && *this == AIRCRAFT_TDCARGO) {

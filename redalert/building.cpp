@@ -3700,56 +3700,8 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 DirType dir = Direction(cell);
                 COORDINATE start = Exit_Coord();
 
-                // Diagnostic 2026-05-20: capture vehicle-exit data for TD-mod
-                // buildings (TD-prefixed IniName) so we can see why TDWEAP's
-                // tank teleports + faces wrong direction. Logs: building cell,
-                // spawn pixel (start), exit cell, dir, plus the unit's actual
-                // Coord + PrimaryFacing immediately after Unlimbo. See
-                // catalogue.md "TEMPORARY DEV HACKS".
-                static FILE* s_exit_log = NULL;
-                bool log_this = (Class->IniName[0] == 'T' && Class->IniName[1] == 'D');
-                if (log_this) {
-                    if (s_exit_log == NULL) {
-                        char dpath[512];
-                        const char* dprof = getenv("USERPROFILE");
-                        if (dprof != NULL && dprof[0] != '\0') {
-                            snprintf(dpath, sizeof(dpath),
-                                     "%s/Documents/CnCRemastered/tf_exit_object.log", dprof);
-                        } else {
-                            strcpy(dpath, "tf_exit_object.log");
-                        }
-                        s_exit_log = NULL; // TF DIAG OFF for release (was fopen; restore to re-enable)
-                    }
-                    if (s_exit_log != NULL) {
-                        CELL b_origin = Coord_Cell(Coord);
-                        CELL spawn_cell = Coord_Cell(start);
-                        fprintf(s_exit_log,
-                                "EXIT %s b_origin=cell(%d,%d) spawn_pixel=(%d,%d) "
-                                "spawn_cell=cell(%d,%d) exit_cell=cell(%d,%d) "
-                                "exit_rel=(%d,%d) dir=%d\n",
-                                Class->IniName,
-                                Cell_X(b_origin), Cell_Y(b_origin),
-                                Coord_X(start), Coord_Y(start),
-                                Cell_X(spawn_cell), Cell_Y(spawn_cell),
-                                Cell_X(cell), Cell_Y(cell),
-                                Cell_X(cell) - Cell_X(b_origin),
-                                Cell_Y(cell) - Cell_Y(b_origin),
-                                (int)dir);
-                        fflush(s_exit_log);
-                    }
-                }
-
                 ScenarioInit++;
                 if (base->Unlimbo(start, dir)) {
-
-                    if (log_this && s_exit_log != NULL && base->Is_Techno()) {
-                        TechnoClass* t = (TechnoClass*)base;
-                        fprintf(s_exit_log,
-                                "  POST_UNLIMBO base.Coord=(%d,%d) base.PrimaryFacing=%d\n",
-                                Coord_X(t->Coord), Coord_Y(t->Coord),
-                                (int)t->PrimaryFacing.Current());
-                        fflush(s_exit_log);
-                    }
 
                     base->Assign_Mission(MISSION_MOVE);
 
@@ -3762,17 +3714,6 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                         base->Assign_Mission(MISSION_GUARD_AREA);
                         base->ArchiveTarget = ::As_Target(House->Where_To_Go((FootClass*)base));
                     }
-
-                    if (log_this && s_exit_log != NULL && base->Is_Foot()) {
-                        FootClass* t = (FootClass*)base;
-                        fprintf(s_exit_log,
-                                "  POST_MISSION base.Coord=(%d,%d) base.PrimaryFacing=%d Mission=%d NavCom=0x%X\n",
-                                Coord_X(t->Coord), Coord_Y(t->Coord),
-                                (int)t->PrimaryFacing.Current(),
-                                (int)t->Mission, (unsigned)t->NavCom);
-                        fflush(s_exit_log);
-                    }
-
                     ScenarioInit--;
                     return (2);
                 }
