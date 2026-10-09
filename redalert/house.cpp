@@ -4449,6 +4449,7 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
     // approaches that read as a 45-degree fall, each starting higher so they land in turn.
     case SPC_TS_DROPPODS:
         if (SuperWeapon[SPC_TS_DROPPODS].Is_Ready()) {
+            int launched = 0;
             for (int pd = 0; pd < 5; pd++) {
                 CELL podcell = cell;
                 if (pd > 0) {
@@ -4473,10 +4474,14 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
                         Map.Submit(pod, pod->In_Which_Layer());
                         new AnimClass(ANIM_TS_PODRING, Coord_Move(spawn, DIR_N, drop_h));
                         Sound_Effect(VOC_TS_METEOR, lz);
+                        launched++;
                     } else {
                         delete pod;
                     }
                 }
+            }
+            if (launched == 0) {
+                break;
             }
             SuperWeapon[SPC_TS_DROPPODS].Discharged(this == PlayerPtr);
             IsRecalcNeeded = true;
@@ -4493,6 +4498,7 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
     // carrying the Seeker Control plug and hunts on its own. TS fires it untargeted, so the click only releases it.
     case SPC_TS_HUNTSEEK:
         if (SuperWeapon[SPC_TS_HUNTSEEK].Is_Ready()) {
+            bool launched = false;
             BuildingClass* host = TF_House_Plug_Host(this, STRUCT_TSSEEK);
             if (host != NULL) {
                 CELL spawn = Map.Nearby_Location(Coord_Cell(host->Center_Coord()), SPEED_FOOT);
@@ -4503,11 +4509,15 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
                         if (droid->Unlimbo(Cell_Coord(spawn), DIR_E)) {
                             droid->Assign_Mission(MISSION_ATTACK);
                             droid->Commence();
+                            launched = true;
                         } else {
                             delete droid;
                         }
                     }
                 }
+            }
+            if (!launched) {
+                break;
             }
             SuperWeapon[SPC_TS_HUNTSEEK].Discharged(this == PlayerPtr);
             IsRecalcNeeded = true;
