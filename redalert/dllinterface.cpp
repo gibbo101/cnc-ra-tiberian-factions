@@ -4159,11 +4159,8 @@ static int TF_Thread_Stacks(HANDLE proc, TF_AddrRange* out, int max)
 
 // Walks ClientG's private writable heap, remembering every crest record and writing it the wanted rect.
 // Thread stacks are skipped: a rect copy found there may be gone by the write, which then hits a live frame.
-static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
+static void TF_Crest_Full_Scan(const TF_CrestSlot* slots)
 {
-    bool gdi = (slots[0].want == slots[0].gdi);
-    bool nod = (slots[0].want == slots[0].nod);
-    bool tsgdi = (slots[0].want == slots[0].tsgdi);
     static unsigned char bloom[8192];
     memset(bloom, 0, sizeof(bloom));
     for (int s = 0; s < TF_CREST_SLOTS; s++) {
@@ -4183,9 +4180,6 @@ static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
     static TF_AddrRange stacks[1024];
     int const stack_count = TF_Thread_Stacks(proc, stacks, (int)(sizeof(stacks) / sizeof(stacks[0])));
     if (stack_count < 0) {
-        if (log) {
-            fprintf(log, "  thread stacks unreadable, scan skipped\n");
-        }
         CloseHandle(proc);
         return;
     }
@@ -4221,20 +4215,11 @@ static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
                         continue;
                     }
                     int slot = -1;
-                    const char* was = NULL;
                     for (int s = 0; s < TF_CREST_SLOTS && slot < 0; s++) {
-                        if (memcmp(scratch + i, slots[s].stock, REC) == 0) {
+                        if (memcmp(scratch + i, slots[s].stock, REC) == 0 || memcmp(scratch + i, slots[s].gdi, REC) == 0
+                            || memcmp(scratch + i, slots[s].nod, REC) == 0
+                            || memcmp(scratch + i, slots[s].tsgdi, REC) == 0) {
                             slot = s;
-                            was = "stock";
-                        } else if (memcmp(scratch + i, slots[s].gdi, REC) == 0) {
-                            slot = s;
-                            was = "gdi";
-                        } else if (memcmp(scratch + i, slots[s].nod, REC) == 0) {
-                            slot = s;
-                            was = "nod";
-                        } else if (memcmp(scratch + i, slots[s].tsgdi, REC) == 0) {
-                            slot = s;
-                            was = "tsgdi";
                         }
                     }
                     if (slot < 0) {
@@ -4246,16 +4231,7 @@ static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
                         continue;
                     }
                     SIZE_T wrote = 0;
-                    bool ok = WriteProcessMemory(proc, (LPVOID)rec_addr, slots[slot].want, REC, &wrote)
-                              && wrote == (SIZE_T)REC;
-                    if (log) {
-                        static const char* const _slot_names[TF_CREST_SLOTS] = {"TDLOGO_GDI", "TDLOGO_NOD", "RASMALL_ALLIED",
-                                                                                  "RASMALL_SOVIET"};
-                        fprintf(log, "  scan slot %s @ %08x %s -> %s %s\n", _slot_names[slot],
-                                (unsigned int)rec_addr, was,
-                                tsgdi ? "tsgdi" : (gdi ? "gdi" : (nod ? "nod" : "stock")),
-                                ok ? "OK" : "FAIL");
-                    }
+                    WriteProcessMemory(proc, (LPVOID)rec_addr, slots[slot].want, REC, &wrote);
                 }
             }
         }
@@ -4331,28 +4307,10 @@ static void TF_Patch_ClientG_Tab_Prefix(bool td_era)
         patched_len[k] = ra_len;
     }
 
-    FILE* log = NULL;
-#if TF_DEV_BUILD
-    {
-        const char* up = getenv("USERPROFILE");
-        if (up != NULL) {
-            char logpath[512];
-            snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
-            log = fopen(logpath, "a");
-        }
-    }
-#endif
     HANDLE proc = TF_Open_ClientG(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION
                                   | PROCESS_QUERY_INFORMATION);
     if (proc == NULL) {
-        if (log) {
-            fprintf(log, "  tab prefix: ClientG not opened (td_era=%d)\n", (int)td_era);
-            fclose(log);
-        }
         return;
-    }
-    if (log) {
-        fprintf(log, "  tab prefix: td_era=%d\n", (int)td_era);
     }
     {
         static unsigned char scratch[1 << 20];
@@ -4409,28 +4367,12 @@ static void TF_Patch_ClientG_Tab_Prefix(bool td_era)
         }
         DWORD old_protect = 0;
         if (!VirtualProtectEx(proc, (LPVOID)where[k], n, PAGE_READWRITE, &old_protect)) {
-            if (log) {
-                fprintf(log, "  tab prefix %d @ %08x: VirtualProtectEx failed (%u)\n", k,
-                        (unsigned int)where[k], (unsigned)GetLastError());
-            }
             continue;
         }
         SIZE_T wrote = 0;
         WriteProcessMemory(proc, (LPVOID)where[k], want, n, &wrote);
         DWORD tmp = 0;
         VirtualProtectEx(proc, (LPVOID)where[k], n, old_protect, &tmp);
-        if (log) {
-            fprintf(log, "  tab prefix %d @ %08x -> %s %s (was %.32s)\n", k, (unsigned int)where[k], want,
-                    (wrote == (SIZE_T)n) ? "OK" : "FAIL", cur);
-        }
-    }
-    if (log) {
-        for (int k = 0; k < 4; k++) {
-            if (where[k] == 0) {
-                fprintf(log, "  tab prefix %d: not located\n", k);
-            }
-        }
-        fclose(log);
     }
     CloseHandle(proc);
 }
@@ -4550,22 +4492,6 @@ static const char* TF_Patch_Click_Specials_In(HANDLE proc)
     return (result);
 }
 
-static void TF_Click_Specials_Log(const char* where, const char* result)
-{
-#if TF_DEV_BUILD
-    const char* up = getenv("USERPROFILE");
-    if (up != NULL) {
-        char logpath[512];
-        snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
-        FILE* log = fopen(logpath, "a");
-        if (log != NULL) {
-            fprintf(log, "  click specials (%s): %s\n", where, result);
-            fclose(log);
-        }
-    }
-#endif
-}
-
 /*
 **	Match start, from the simulation process: patches the launcher across processes.
 */
@@ -4574,10 +4500,9 @@ static void TF_Patch_ClientG_Click_Specials(void)
     HANDLE proc = TF_Open_ClientG(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION
                                   | PROCESS_QUERY_INFORMATION);
     if (proc == NULL) {
-        TF_Click_Specials_Log("match start", "ClientG not opened");
         return;
     }
-    TF_Click_Specials_Log("match start", TF_Patch_Click_Specials_In(proc));
+    TF_Patch_Click_Specials_In(proc);
     CloseHandle(proc);
 }
 
@@ -4593,10 +4518,10 @@ void TF_Patch_Launcher_At_Load(void)
     const char* name = strrchr(exe, '\\');
     name = (name != NULL) ? name + 1 : exe;
     if (_stricmp(name, "ClientG.exe") == 0) {
-        TF_Click_Specials_Log("launcher load", TF_Patch_Click_Specials_In(GetCurrentProcess()));
-        TF_Click_Specials_Log("launcher load", TF_Launcher_Resident_Install());
-        TF_Click_Specials_Log("launcher load", TF_Patch_Launcher_Keys_In());
-        TF_Click_Specials_Log("launcher load", TF_Launcher_Install());
+        TF_Patch_Click_Specials_In(GetCurrentProcess());
+        TF_Launcher_Resident_Install();
+        TF_Patch_Launcher_Keys_In();
+        TF_Launcher_Install();
     }
 }
 
@@ -4609,20 +4534,6 @@ static void TF_Patch_ClientG_Crest(void)
     if (TF_Crest_Slots(slots)) {
         TF_Patch_ClientG_Tab_Prefix(slots[0].want != slots[0].stock);
     }
-#if TF_DEV_BUILD
-    else {
-        const char* up = getenv("USERPROFILE");
-        if (up != NULL) {
-            char logpath[512];
-            snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
-            FILE* log = fopen(logpath, "a");
-            if (log) {
-                fprintf(log, "  tab prefix: no local house at match start\n");
-                fclose(log);
-            }
-        }
-    }
-#endif
 }
 
 // Full scans run on a worker thread, one at a time, from a copy of the slot table: each reads hundreds of MB
@@ -4632,23 +4543,7 @@ static volatile LONG TF_CrestScanBusy = 0;
 
 static DWORD WINAPI TF_Crest_Scan_Thread(LPVOID)
 {
-    FILE* log = NULL;
-#if TF_DEV_BUILD
-    const char* up = getenv("USERPROFILE");
-    char logpath[512];
-    if (up != NULL) {
-        snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
-        log = fopen(logpath, "a");
-    }
-    if (log) {
-        fprintf(log, "== crest scan frame %d known=%d ==\n", (int)Frame, TF_CrestAddrCount);
-    }
-#endif
-    TF_Crest_Full_Scan(TF_CrestScanSlots, log);
-    if (log) {
-        fflush(log);
-        fclose(log);
-    }
+    TF_Crest_Full_Scan(TF_CrestScanSlots);
     InterlockedExchange(&TF_CrestScanBusy, 0);
     return 0;
 }
@@ -4700,29 +4595,6 @@ static void TF_Crest_Tick(void)
 static volatile LONG TF_LauncherRequest = 0;
 static HANDLE TF_LauncherWake = NULL;
 
-static void TF_Launcher_Log(const char* fmt, ...)
-{
-#if TF_DEV_BUILD
-    const char* up = getenv("USERPROFILE");
-    if (up == NULL) {
-        return;
-    }
-    char logpath[512];
-    snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
-    FILE* log = fopen(logpath, "a");
-    if (log == NULL) {
-        return;
-    }
-    fprintf(log, "  launcher: ");
-    va_list ap;
-    va_start(ap, fmt);
-    vfprintf(log, fmt, ap);
-    va_end(ap);
-    fprintf(log, "\n");
-    fclose(log);
-#endif
-}
-
 // Runs the patches the host runs for itself, in this launcher, each time the event hook wakes it; then keeps
 // the crest up for three minutes at 15 ticks a second, through the scan burst and the match opening.
 static DWORD WINAPI TF_Launcher_Resident_Thread(LPVOID)
@@ -4731,7 +4603,6 @@ static DWORD WINAPI TF_Launcher_Resident_Thread(LPVOID)
     for (;;) {
         WaitForSingleObject(TF_LauncherWake, (ticks_left > 0) ? 1000 / 15 : INFINITE);
         if (InterlockedExchange(&TF_LauncherRequest, 0) != 0) {
-            TF_Launcher_Log("house %d: applying", (int)TF_LauncherActLike);
             TF_Mailbox_Write_EVA_Voice();
             TF_Patch_ClientG_Crest();
             ticks_left = 15 * 180;
@@ -4779,14 +4650,10 @@ extern "C" void __cdecl TF_Launcher_Event_Hook(unsigned char* event)
     }
     int house = atoi(text + 23);
     if (*(volatile unsigned char*)0x1FB6D40 == 0) {
-        TF_Launcher_Log("house %d for %08x%08x: no local player id yet", house, (unsigned)(target >> 32),
-                        (unsigned)target);
         return;
     }
     unsigned long long local = *(volatile unsigned long long*)0x1FB6D48;
     if (target != local) {
-        TF_Launcher_Log("house %d for %08x%08x, local %08x%08x: not ours", house, (unsigned)(target >> 32),
-                        (unsigned)target, (unsigned)(local >> 32), (unsigned)local);
         return;
     }
     InterlockedExchange(&TF_LauncherActLike, house);
@@ -10632,7 +10499,6 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             int tf_row = cell_ptr->SmudgeData / smudge_type.Width;
             int tf_top_left = (int)cell - tf_col - tf_row * MAP_CELL_W;
             BuildingClass* tf_owner = NULL;
-            int tf_owner_row = -1;
             for (int tf_r = 0; tf_r < 4 && tf_owner == NULL; tf_r++) {
                 for (int tf_c = 0; tf_c < smudge_type.Width; tf_c++) {
                     int tf_probe = tf_top_left - tf_r * MAP_CELL_W + tf_c;
@@ -10645,7 +10511,6 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
                     }
                     if (tf_owner == NULL) {
                         tf_owner = tf_occ;
-                        tf_owner_row = tf_r;
                     }
                     if (tf_occ->Visual_Character() == VISUAL_HIDDEN) {
                         tf_owner = tf_occ;
