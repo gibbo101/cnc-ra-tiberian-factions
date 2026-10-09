@@ -30,10 +30,12 @@ def data_roots():
 
 
 def zips_in(root):
-    """Lower-case ZIP stem -> path, for every tileset ZIP under a Data folder."""
+    """Lower-case ZIP stem -> path, for every object tileset ZIP under a Data folder. TERRAIN is left alone: the
+    launcher draws a cell's bib or smudge only from the frame its own shape names (a shared one shows a placeholder)."""
     out = {}
     for path in glob.glob(os.path.join(root, "ART", "TEXTURES", "SRGB", "RED_ALERT", "**", "*.ZIP"), recursive=True):
-        out[os.path.splitext(os.path.basename(path))[0].lower()] = path
+        if os.sep + "TERRAIN" + os.sep not in path.upper():
+            out[os.path.splitext(os.path.basename(path))[0].lower()] = path
     return out
 
 

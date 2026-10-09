@@ -24,10 +24,13 @@ BASE_GAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frame_shar
 
 
 def zip_sources():
-    """Upper-case ZIP stem -> (its path under a mod's Data folder, upper case; the source file staging copies)."""
+    """Upper-case ZIP stem -> (its path under a mod's Data folder, upper case; the source file staging copies), for
+    object tilesets only: a TERRAIN tile draws only its own frame (scripts/dedupe_tileset_frames.py)."""
     out = {}
     for data in [os.path.join(A.MOD, "Data")] + [A.pack_data(p) for p in A.PACKS]:
         for d, _, files in os.walk(os.path.join(data, ART)):
+            if os.sep + "TERRAIN" in d.upper():
+                continue
             for f in files:
                 if f.upper().endswith(".ZIP"):
                     path = os.path.join(d, f)

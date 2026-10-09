@@ -59,8 +59,10 @@ only the `RA_` files. A pack's XML files are what a modder copies, and what the 
 - **Pack scripts** take every output and input path from `asset_packs` by name (`art_zip`,
   `tileset_xml`, `cameo_tga`, `buildables_xml`, `sound_wav`, `sfx_xml`). A new TS unit's art lands
   in TS-Graphics-Pack with no other change.
-- **One copy of each frame:** a shape whose image matches an earlier one in its ZIP names that one
-  in the tileset XML, and the copy leaves the ZIP. Run `scripts/dedupe_tileset_frames.py` after any
+- **One copy of each frame:** in an object tileset (structures, units, effects), a shape whose image
+  matches an earlier one in its ZIP names that one in the tileset XML, and the copy leaves the ZIP.
+  TERRAIN tiles (bibs, smudges) stay one file per shape: the launcher draws a cell only from the frame
+  its own shape names, and shows its placeholder for a shared one. Run `scripts/dedupe_tileset_frames.py` after any
   packer that writes a ZIP; the packager refuses a build that still holds duplicates.
 - **Shared copies:** a type whose ZIP copies another's (the tower plugs, the faction yards, gates and
   MCVs) keeps its own ZIP in the source tree, so a reskin touches one type. Staging draws its frames
