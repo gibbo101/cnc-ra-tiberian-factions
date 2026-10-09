@@ -183,5 +183,4 @@ row is overlap-only (`TdOListProc`), so cloaked TD refineries kept floating bibs
 reconstructs the bib rectangle from `SmudgeData` (col + row·Width; top row is the owner's bottom
 foundation row, column-aligned per `Bib_And_Offset`) and walks north through candidate foundation
 rows, resolving at the first row holding any building, probing every column per row (per-cell
-holes: dock notch, hand of Nod). `TF_BIB_DIAG` (dev builds) logs any bib that still draws with
-what it resolved to.
+holes: dock notch, hand of Nod).

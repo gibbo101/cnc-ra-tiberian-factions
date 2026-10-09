@@ -2049,99 +2049,8 @@ static bool TF_Stealth_Drive(TechnoClass* obj, COORDINATE const* gcoord, HouseCl
     return (obj->IsCloakable && !obj->Techno_Type_Class()->IsCloakable);
 }
 
-#if TF_DEV_BUILD
-/*
-**	TF DEV diagnostic: dump each computer house's build state once a second to
-**	<prefix>/tf_stealth_ai.log, so we can see empirically whether a stealth-generator
-**	base is actually building or stalled. Logs building count over time (rising == it IS
-**	building), base-build flag, money, power, next queued structure/unit, and how many of
-**	the house's buildings are currently cloaked. Compiled out of release.
-*/
-static void TF_Log_AI_Build_State(void)
-{
-    if ((Frame % 60) != 0) {
-        return;
-    }
-
-    const char* up = getenv("USERPROFILE");
-    if (up == NULL) {
-        return;
-    }
-    char path[512];
-    snprintf(path, sizeof(path), "%s/tf_stealth_ai.log", up);
-    FILE* f = fopen(path, "a");
-    if (f == NULL) {
-        return;
-    }
-
-    for (int h = 0; h < Houses.Count(); h++) {
-        HouseClass* hptr = Houses.Ptr(h);
-        if (hptr == NULL || !hptr->IsActive || hptr->IsHuman) {
-            continue;
-        }
-
-        int total = 0;
-        int cloaked = 0;
-        int conyard = 0;
-        char names[256];
-        names[0] = 0;
-        for (int i = 0; i < Buildings.Count(); i++) {
-            BuildingClass* b = Buildings.Ptr(i);
-            if (b != NULL && b->IsActive && !b->IsInLimbo && b->House == hptr) {
-                total++;
-                if (b->Cloak == CLOAKED || b->Cloak == CLOAKING) {
-                    cloaked++;
-                }
-                if (b->Class->Is_Construction_Yard()) {
-                    conyard++;
-                }
-                int len = (int)strlen(names);
-                if (len < (int)sizeof(names) - 12) {
-                    snprintf(names + len, sizeof(names) - len, "%s%s", (len ? "," : ""), b->Class->IniName);
-                }
-            }
-        }
-
-        /*
-        **	Unit census: does the AI still have an undeployed MCV (UNIT_MCV) or a harvester?
-        **	An MCV that never became a Construction Yard == a stuck base.
-        */
-        int units = 0;
-        int mcv = 0;
-        int harv = 0;
-        for (int i = 0; i < Units.Count(); i++) {
-            UnitClass* u = Units.Ptr(i);
-            if (u != NULL && u->IsActive && !u->IsInLimbo && u->House == hptr) {
-                units++;
-                if (u->Class->Is_MCV()) {
-                    mcv++;
-                }
-                if (u->Class->Type == UNIT_HARVESTER || u->Class->Type == UNIT_TDHARV
-                    || u->Class->Type == UNIT_TSHARV) {
-                    harv++;
-                }
-            }
-        }
-
-        fprintf(f,
-                "frame=%d house=%s actlike=%d basebuild=%d bldgs=%d conyard=%d cloaked=%d/%d "
-                "credits=%d pwr=%d/%d pfrac=%d%% nextbldg=%d nextunit=%d units=%d mcv=%d harv=%d [%s]\n",
-                Frame, hptr->Class->IniName, (int)hptr->ActLike, (int)hptr->IsBaseBuilding, total, conyard,
-                cloaked, total, hptr->Available_Money(), hptr->Power, hptr->Drain,
-                (int)(hptr->Power_Fraction() * 100), (int)hptr->BuildStructure, (int)hptr->BuildUnit, units, mcv,
-                harv, names);
-    }
-
-    fclose(f);
-}
-#endif
-
 void BuildingClass::Process_Stealth_Generators(void)
 {
-#if TF_DEV_BUILD
-    TF_Log_AI_Build_State();
-#endif
-
     // Set while a generator exists and until every object we cloaked has uncloaked. Cleared sooner, Cloaking_AI
     // re-cloaks them with IsCloakable still set, and the base stays stealthed with no generator.
     static bool _restore_pending = false;
@@ -3439,31 +3348,6 @@ int BuildingClass::Exit_Object(TechnoClass* base)
     switch (base->What_Am_I()) {
 
     case RTTI_AIRCRAFT:
-#if TF_DEV_BUILD
-        /*
-        **  Logs-first: which exit path an aircraft actually leaves its pad by,
-        **  and whether the orbit probe is armed when it does. The probe that
-        **  froze the game was hooked in Unlimbo; this site is a different one
-        **  and has never been observed to run.
-        */
-        {
-            char dpath[512];
-            const char* dprof = getenv("USERPROFILE");
-            if (dprof != NULL && dprof[0] != '\0') {
-                snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
-            } else {
-                strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
-            }
-            FILE* dlog = fopen(dpath, "a");
-            if (dlog != NULL) {
-                fprintf(dlog, "frame=%d ORBIT-EXIT bldg=%s radio=%s type=%d isorca=%s probe=%s\n", Frame,
-                        Class->IniName, In_Radio_Contact() ? "yes" : "no", (int)*((AircraftClass*)base),
-                        (*((AircraftClass*)base) == AIRCRAFT_TDORCA) ? "yes" : "no",
-                        TF_Orbit_Probe() ? "ARMED" : "off");
-                fclose(dlog);
-            }
-        }
-#endif
         if (!In_Radio_Contact()) {
             AircraftClass* air = (AircraftClass*)base;
 
@@ -3472,47 +3356,6 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             if (air->Unlimbo(Docking_Coord(), air->Pose_Dir())) {
                 Transmit_Message(RADIO_HELLO, air);
                 Transmit_Message(RADIO_TETHER);
-#if TF_DEV_BUILD
-                /*
-                **  PROBE: arrive from orbit rather than appearing on the pad.
-                **
-                **  This has to happen HERE and not in Unlimbo. The pad sets
-                **  Height to 0, unlimbos at the docking coordinate and only
-                **  then tethers, so a hook inside Unlimbo runs before there is
-                **  any radio contact and before NavCom exists -- which is why
-                **  the earlier attempt landed but never docked, and is the
-                **  prime suspect for the freeze that followed.
-                **
-                **  With the pad as NavCom AND as the radio contact, the branch
-                **  at the bottom of Landing_Takeoff_AI can complete its
-                **  handshake and settle the aircraft into the dock, which is
-                **  the state the engine expects an aircraft on a pad to be in.
-                **
-                **  Armed by Documents/CnCRemastered/tf_orbit.flag, off by
-                **  default: it puts aircraft somewhere the engine never
-                **  otherwise puts them.
-                */
-                if (TF_Orbit_Probe() && *air == AIRCRAFT_TDORCA) {
-                    air->Height = TF_ORBIT_HEIGHT;
-                    air->Assign_Destination(As_Target());
-                    air->IsLanding = true;
-
-                    char apath[512];
-                    const char* aprof = getenv("USERPROFILE");
-                    if (aprof != NULL && aprof[0] != '\0') {
-                        snprintf(apath, sizeof(apath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", aprof);
-                    } else {
-                        strcpy(apath, "MOD_DEBUG_TSUNITS.txt");
-                    }
-                    FILE* alog = fopen(apath, "a");
-                    if (alog != NULL) {
-                        fprintf(alog, "frame=%d ORBIT-APPLY height=%d door=%s navcom=%08lX\n", Frame,
-                                (int)air->Height, air->Is_Door_Closed() ? "closed" : "OPEN",
-                                (unsigned long)air->NavCom);
-                        fclose(alog);
-                    }
-                }
-#endif
                 ScenarioInit--;
                 return (2);
             }
@@ -3564,18 +3407,6 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                     v->Scatter(0, true);
                 }
             }
-#if TF_DEV_BUILD // TF_AI_DIAG
-            if (!House->IsHuman) {
-                extern FILE* TF_AI_Diag_File(void);
-                FILE* _tfdbg = TF_AI_Diag_File();
-                if (_tfdbg != NULL) {
-                    fprintf(_tfdbg, "F%ld H%d AL%d YARD-EXIT blocked %s at %s#%d\n", (long)Frame,
-                            (int)House->Class->House, (int)House->ActLike, base->Class_Of().IniName,
-                            Class->IniName, (int)ID);
-                    fflush(_tfdbg);
-                }
-            }
-#endif
             return (1);
 
         default:
@@ -3869,56 +3700,8 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 DirType dir = Direction(cell);
                 COORDINATE start = Exit_Coord();
 
-                // Diagnostic 2026-05-20: capture vehicle-exit data for TD-mod
-                // buildings (TD-prefixed IniName) so we can see why TDWEAP's
-                // tank teleports + faces wrong direction. Logs: building cell,
-                // spawn pixel (start), exit cell, dir, plus the unit's actual
-                // Coord + PrimaryFacing immediately after Unlimbo. See
-                // catalogue.md "TEMPORARY DEV HACKS".
-                static FILE* s_exit_log = NULL;
-                bool log_this = (Class->IniName[0] == 'T' && Class->IniName[1] == 'D');
-                if (log_this) {
-                    if (s_exit_log == NULL) {
-                        char dpath[512];
-                        const char* dprof = getenv("USERPROFILE");
-                        if (dprof != NULL && dprof[0] != '\0') {
-                            snprintf(dpath, sizeof(dpath),
-                                     "%s/Documents/CnCRemastered/tf_exit_object.log", dprof);
-                        } else {
-                            strcpy(dpath, "tf_exit_object.log");
-                        }
-                        s_exit_log = NULL; // TF DIAG OFF for release (was fopen; restore to re-enable)
-                    }
-                    if (s_exit_log != NULL) {
-                        CELL b_origin = Coord_Cell(Coord);
-                        CELL spawn_cell = Coord_Cell(start);
-                        fprintf(s_exit_log,
-                                "EXIT %s b_origin=cell(%d,%d) spawn_pixel=(%d,%d) "
-                                "spawn_cell=cell(%d,%d) exit_cell=cell(%d,%d) "
-                                "exit_rel=(%d,%d) dir=%d\n",
-                                Class->IniName,
-                                Cell_X(b_origin), Cell_Y(b_origin),
-                                Coord_X(start), Coord_Y(start),
-                                Cell_X(spawn_cell), Cell_Y(spawn_cell),
-                                Cell_X(cell), Cell_Y(cell),
-                                Cell_X(cell) - Cell_X(b_origin),
-                                Cell_Y(cell) - Cell_Y(b_origin),
-                                (int)dir);
-                        fflush(s_exit_log);
-                    }
-                }
-
                 ScenarioInit++;
                 if (base->Unlimbo(start, dir)) {
-
-                    if (log_this && s_exit_log != NULL && base->Is_Techno()) {
-                        TechnoClass* t = (TechnoClass*)base;
-                        fprintf(s_exit_log,
-                                "  POST_UNLIMBO base.Coord=(%d,%d) base.PrimaryFacing=%d\n",
-                                Coord_X(t->Coord), Coord_Y(t->Coord),
-                                (int)t->PrimaryFacing.Current());
-                        fflush(s_exit_log);
-                    }
 
                     base->Assign_Mission(MISSION_MOVE);
 
@@ -3931,17 +3714,6 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                         base->Assign_Mission(MISSION_GUARD_AREA);
                         base->ArchiveTarget = ::As_Target(House->Where_To_Go((FootClass*)base));
                     }
-
-                    if (log_this && s_exit_log != NULL && base->Is_Foot()) {
-                        FootClass* t = (FootClass*)base;
-                        fprintf(s_exit_log,
-                                "  POST_MISSION base.Coord=(%d,%d) base.PrimaryFacing=%d Mission=%d NavCom=0x%X\n",
-                                Coord_X(t->Coord), Coord_Y(t->Coord),
-                                (int)t->PrimaryFacing.Current(),
-                                (int)t->Mission, (unsigned)t->NavCom);
-                        fflush(s_exit_log);
-                    }
-
                     ScenarioInit--;
                     return (2);
                 }
@@ -4074,47 +3846,6 @@ void BuildingClass::Update_Buildables(void)
 
     bool buildable_via_capture = (IsCaptured && ActLike != House->ActLike) ? true : false;
 
-    // Tiberian Factions: Update_Buildables entry log (stubbed). Re-enabled
-    // 2026-05-25 to diagnose TDHPAD's missing helicopter cameos. Per
-    // [[feedback-keep-diagnostics-until-v1]] stub bodies under #if 0 so the
-    // flip is one-line.
-#if 0
-    {
-        bool log_this = (Class->IniName[0] == 'T' && Class->IniName[1] == 'D')
-                        || Class->Type == STRUCT_HELIPAD;
-        if (log_this) {
-            static FILE* s_ub_log = NULL;
-            static int s_count = 0;
-            if (s_count < 200) {
-                if (s_ub_log == NULL) {
-                    char path[512];
-                    const char* profile = getenv("USERPROFILE");
-                    if (profile != NULL && profile[0] != '\0') {
-                        snprintf(path, sizeof(path),
-                                 "%s/Documents/CnCRemastered/MOD_DEBUG_UPDATE_BUILDABLES.txt",
-                                 profile);
-                    } else {
-                        strcpy(path, "MOD_DEBUG_UPDATE_BUILDABLES.txt");
-                    }
-                    s_ub_log = fopen(path, "w");
-                }
-                if (s_ub_log != NULL) {
-                    fprintf(s_ub_log,
-                            "Update_Buildables name=%s Type=%d ToBuild=%d "
-                            "IsInLimbo=%d Discovered=%d session=%d "
-                            "PlayerActLike=%d HouseActLike=%d AircraftTypes_n=%d\n",
-                            Class->IniName, (int)Class->Type, (int)Class->ToBuild,
-                            (int)IsInLimbo, Is_Discovered_By_Player() ? 1 : 0,
-                            (int)Session.Type, (int)PlayerPtr->ActLike,
-                            (int)House->ActLike, AircraftTypes.Count());
-                    fflush(s_ub_log);
-                    s_count++;
-                }
-            }
-        }
-    }
-#endif
-
     if (!IsInLimbo && Is_Discovered_By_Player()) {
         switch (Class->ToBuild) {
             int i;
@@ -4197,48 +3928,6 @@ void BuildingClass::Update_Buildables(void)
             break;
 
         case RTTI_AIRCRAFTTYPE:
-            // Tiberian Factions: AIRCRAFTTYPE iteration + Sidebar_Glyphx_Add
-            // result logging (stubbed). Re-enabled 2026-05-25 to diagnose
-            // TDHPAD's missing helicopter cameos. Root cause turned out to be
-            // Who_Can_Build_Me's hardcoded STRUCT_HELIPAD check (object.cpp);
-            // see playbook §3.12. Per [[feedback-keep-diagnostics-until-v1]].
-#if 0
-            {
-                static FILE* s_air_log = NULL;
-                static int s_count = 0;
-                if (s_count < 100) {
-                    if (s_air_log == NULL) {
-                        char path[512];
-                        const char* profile = getenv("USERPROFILE");
-                        if (profile != NULL && profile[0] != '\0') {
-                            snprintf(path, sizeof(path),
-                                     "%s/Documents/CnCRemastered/MOD_DEBUG_AIR_ITER.txt",
-                                     profile);
-                        } else {
-                            strcpy(path, "MOD_DEBUG_AIR_ITER.txt");
-                        }
-                        s_air_log = fopen(path, "w");
-                    }
-                    if (s_air_log != NULL) {
-                        fprintf(s_air_log,
-                                "AirIter from=%s PlayerPtr=%p PlayerActLike=%d "
-                                "PlayerIsHuman=%d HouseIsHuman=%d Aircraft_n=%d "
-                                "ActLike_used=%d\n",
-                                Class->IniName, (void*)PlayerPtr,
-                                (int)PlayerPtr->ActLike, PlayerPtr->IsHuman ? 1 : 0,
-                                House->IsHuman ? 1 : 0,
-                                AircraftTypes.Count(), (int)ActLike);
-                        for (int ai = 0; ai < AircraftTypes.Count(); ai++) {
-                            bool cb = PlayerPtr->Can_Build(AircraftTypes.Ptr(ai), ActLike);
-                            fprintf(s_air_log, "  [%d] %s Can_Build=%d\n",
-                                    ai, AircraftTypes.Ptr(ai)->IniName, cb ? 1 : 0);
-                        }
-                        fflush(s_air_log);
-                        s_count++;
-                    }
-                }
-            }
-#endif
             for (a = 0; a < AircraftTypes.Count(); a++) {
                 if (PlayerPtr->Can_Build(AircraftTypes.Ptr(a), ActLike)) {
                     if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
@@ -4595,24 +4284,6 @@ void BuildingClass::Grand_Opening(bool captured)
                                  : (*this == STRUCT_TSPROC) ? UNIT_TSHARV
                                                             : UNIT_HARVESTER;
             UnitClass* unit = new UnitClass(harv_type, House->Class->House);
-#if TF_DEV_BUILD
-            // Logs-first (first TSHARV test): record the TS refinery's free-unit grant.
-            if (*this == STRUCT_TSPROC) {
-                char dpath[512];
-                const char* dprof = getenv("USERPROFILE");
-                if (dprof != NULL && dprof[0] != '\0') {
-                    snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
-                } else {
-                    strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
-                }
-                FILE* dlog = fopen(dpath, "a");
-                if (dlog != NULL) {
-                    fprintf(dlog, "frame=%d FREE-HARV grant house=%s spawned=%s\n", Frame,
-                            House->Class->IniName, (unit != NULL) ? "yes" : "NO (heap)");
-                    fclose(dlog);
-                }
-            }
-#endif
             if (unit != NULL) {
 
                 /*
@@ -4640,23 +4311,6 @@ void BuildingClass::Grand_Opening(bool captured)
                         unit = NULL;
                     }
                 }
-#if TF_DEV_BUILD
-                if (*this == STRUCT_TSPROC) {
-                    char dpath[512];
-                    const char* dprof = getenv("USERPROFILE");
-                    if (dprof != NULL && dprof[0] != '\0') {
-                        snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
-                    } else {
-                        strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
-                    }
-                    FILE* dlog = fopen(dpath, "a");
-                    if (dlog != NULL) {
-                        fprintf(dlog, "frame=%d FREE-HARV placed=%s cell=%d pad=%d\n", Frame, (unit != NULL) ? "yes" : "NO (refunded)",
-                                (unit != NULL) ? Coord_Cell(unit->Coord) : -1, Coord_Cell(Center_Coord()));
-                        fclose(dlog);
-                    }
-                }
-#endif
             } else {
 
                 /*

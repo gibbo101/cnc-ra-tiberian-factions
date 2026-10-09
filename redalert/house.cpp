@@ -1006,11 +1006,6 @@ void TF_EMPulse(CELL center, TechnoClass* source, int spread, int duration)
         EMP_AIRCRAFT_HEIGHT = 104 // TS one height level: an aircraft below it is not yet flying
     };
     int const spread_sq = spread * spread;
-    int crashed = 0;
-    int stunned_buildings = 0;
-    int stunned_vehicles = 0;
-    int stunned_aircraft = 0;
-    int stunned_underground = 0;
 
     for (int index = Aircraft.Count() - 1; index >= 0; index--) {
         AircraftClass* aircraft = Aircraft.Ptr(index);
@@ -1019,7 +1014,6 @@ void TF_EMPulse(CELL center, TechnoClass* source, int spread, int duration)
             && ::Distance(aircraft->Center_Coord(), Cell_Coord(center)) < spread * CELL_LEPTON_W) {
             int damage = aircraft->Strength;
             aircraft->Take_Damage(damage, 0, WARHEAD_HE, source, true);
-            crashed++;
         }
     }
 
@@ -1055,7 +1049,6 @@ void TF_EMPulse(CELL center, TechnoClass* source, int spread, int duration)
                             }
                         }
                         building->EMP_Stun(duration);
-                        stunned_buildings++;
                     }
                 }
                 continue;
@@ -1074,7 +1067,6 @@ void TF_EMPulse(CELL center, TechnoClass* source, int spread, int duration)
                             }
                         }
                         aircraft->EMP_Stun(duration);
-                        stunned_aircraft++;
                     }
                     continue;
                 }
@@ -1099,7 +1091,6 @@ void TF_EMPulse(CELL center, TechnoClass* source, int spread, int duration)
                 if (rtti == RTTI_UNIT && ((UnitClass*)vehicle)->Is_In_Tunnel_Cycle()) {
                     ((UnitClass*)vehicle)->Tunnel_Stop();
                 }
-                stunned_vehicles++;
             }
         }
     }
@@ -1116,29 +1107,8 @@ void TF_EMPulse(CELL center, TechnoClass* source, int spread, int duration)
         if (dx * dx + dy * dy < spread_sq) {
             unit->EMP_Stun(duration);
             unit->Tunnel_Stop();
-            stunned_underground++;
         }
     }
-
-#if TF_DEV_BUILD
-    const char* up = getenv("USERPROFILE");
-    char path[512];
-    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_emp.log", up ? up : ".");
-    FILE* lf = fopen(path, "a");
-    if (lf != NULL) {
-        fprintf(lf,
-                "frame=%d PULSE cell=%d,%d stunned buildings=%d vehicles=%d underground=%d aircraft=%d crashed aircraft=%d\n",
-                (int)Frame,
-                Cell_X(center),
-                Cell_Y(center),
-                stunned_buildings,
-                stunned_vehicles,
-                stunned_underground,
-                stunned_aircraft,
-                crashed);
-        fclose(lf);
-    }
-#endif
 }
 
 // Whether an order goes to the dropship bay's own factory slot, so a human's bay and war factory build side
@@ -1534,74 +1504,6 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
         BuildingTypeClass const* btype = (BuildingTypeClass const*)type;
         if (btype->PowersUpBuilding != STRUCT_NONE && !Has_Building_Active(btype->PowersUpBuilding)) {
             return (false);
-        }
-    }
-
-    // Diagnostic hook 2026-05-19: log Can_Build calls for mod-defined building
-    // entries so we can see why a freshly-added TDxxxx might not appear in the
-    // sidebar. Filter to TD-prefixed IniNames and rate-limit. Keep in place
-    // until v1.0 per [[feedback-keep-diagnostics-until-v1]]. Stub the body
-    // under `if (0)` to disable; do not delete.
-    //
-    // Path resolution: %USERPROFILE%/Documents/CnCRemastered matches the
-    // game's own save folder convention and resolves correctly on both real
-    // Windows (whatever the user's profile is) and Wine/Proton (where
-    // USERPROFILE points to drive_c/users/steamuser). Falls back to CWD if
-    // the env var is unset.
-    // Capture: TD-prefixed buildings (always) + E-prefix infantry (E1..E9,
-    // for the 2026-05-20 GDI roster bring-up where E3 isn't appearing in the
-    // sidebar despite Owner=allies,soviet,GoodGuy,BadGuy + Prerequisite=tent
-    // + TDPYLE built). Logging RTTI distinguishes the two streams.
-    bool log_td = (type->IniName[0] == 'T' && (type->IniName[1] == 'D' || type->IniName[1] == 'S'));
-    bool log_einf = (type->What_Am_I() == RTTI_INFANTRYTYPE
-                     && type->IniName[0] == 'E'
-                     && type->IniName[1] >= '0' && type->IniName[1] <= '9');
-    // v4.0 navy/air debug: also log ALL vessels + aircraft (so we see why GDI/Nod get the RA
-    // rosters from owner-opened SYRD/SPEN/AFLD but not the TD ships/A-10).
-    bool log_navair = (type->What_Am_I() == RTTI_VESSELTYPE || type->What_Am_I() == RTTI_AIRCRAFTTYPE);
-    if (log_td || log_einf || log_navair) {
-        static FILE* s_can_build_log = NULL;
-        static int s_log_count = 0;
-        if (s_log_count < 400) {
-            if (s_can_build_log == NULL) {
-                char path[512];
-                const char* profile = getenv("USERPROFILE");
-                if (profile != NULL && profile[0] != '\0') {
-                    snprintf(path, sizeof(path),
-                             "%s/Documents/CnCRemastered/MOD_DEBUG_CANBUILD.txt",
-                             profile);
-                } else {
-                    strcpy(path, "MOD_DEBUG_CANBUILD.txt");
-                }
-                s_can_build_log = NULL; // TF DIAG OFF for release (was fopen; restore to re-enable)
-            }
-            if (s_can_build_log != NULL) {
-                int level = Control.TechLevel;
-                int const* pre = ((TechnoTypeClass const*)type)->Prerequisite;
-                int own = type->Get_Ownable();
-                int level_ok = ((TechnoTypeClass const*)type)->Level <= (unsigned)level;
-                int pre_ok = 1;
-                for (int i = 0; i < PREREQUISITE_MAX; i++) {
-                    int t = pre[i];
-                    if (t < 0)
-                        break;
-                    if (!Has_Building_Active(t)) {
-                        pre_ok = 0;
-                        break;
-                    }
-                }
-                int own_ok = ((1L << house) & own) != 0;
-                fprintf(s_can_build_log,
-                        "Can_Build rtti=%d name=%s house=%d level=%d type.Level=%d "
-                        "pre=[%d,%d,%d,%d] own=0x%X level_ok=%d pre_ok=%d "
-                        "own_ok=%d IsHuman=%d\n",
-                        (int)type->What_Am_I(), type->IniName, (int)house, level,
-                        ((TechnoTypeClass const*)type)->Level,
-                        pre[0], pre[1], pre[2], pre[3],
-                        own, level_ok, pre_ok, own_ok, (int)IsHuman);
-                fflush(s_can_build_log);
-                s_log_count++;
-            }
         }
     }
 
@@ -4381,32 +4283,6 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
     case SPC_TS_EMP:
         if (SuperWeapon[SPC_TS_EMP].Is_Ready()) {
             BuildingClass* cannon = TF_EMP_Launch_Site(this, cell);
-#if TF_DEV_BUILD
-            /*
-            **	Why an E.M. Pulse order fired or was refused: power, and the nearest cannon's reach.
-            */
-            {
-                int nearest = -1;
-                for (int bi = 0; bi < Buildings.Count(); bi++) {
-                    BuildingClass* b = Buildings.Ptr(bi);
-                    if (b != NULL && *b == STRUCT_TSPULS && b->House == this && !b->IsInLimbo) {
-                        int d = ::Distance(Cell_Coord(cell), b->Center_Coord()) / CELL_LEPTON_W;
-                        if (nearest < 0 || d < nearest) {
-                            nearest = d;
-                        }
-                    }
-                }
-                const char* up = getenv("USERPROFILE");
-                char path[512];
-                snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_emp.log", up ? up : ".");
-                FILE* lf = fopen(path, "a");
-                if (lf != NULL) {
-                    fprintf(lf, "frame=%d EMP order cell=(%d,%d) power=%d/%d nearest_cannon=%d cells -> %s\n", (int)Frame,
-                            Cell_X(cell), Cell_Y(cell), Power, Drain, nearest, cannon != NULL ? "FIRE" : "REFUSED");
-                    fclose(lf);
-                }
-            }
-#endif
             if (cannon != NULL) {
                 TFEMPDest = cell;
                 cannon->Assign_Mission(MISSION_MISSILE);
@@ -4982,34 +4858,6 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
                     intheory = true;
                 }
                 TechnoClass* builder = pending->Who_Can_Build_Me(intheory, false);
-                // TF DIAGNOSTIC 2026-05-27: stubbed after multi-plane convoy
-                // verified working. Re-enable (#if 1) to log every Place_Object
-                // call (rtti, intheory, builder match, TDAFLD quantity). Useful
-                // for diagnosing factory-stall / wrong-builder issues. Per
-                // [[feedback-keep-diagnostics-until-v1]].
-#if 0
-                {
-                    static FILE* s_pol = NULL;
-                    if (s_pol == NULL) {
-                        const char* up = getenv("USERPROFILE");
-                        char p[512];
-                        if (up) snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_place_object.log", up);
-                        else strcpy(p, "tf_place_object.log");
-                        s_pol = fopen(p, "a");
-                    }
-                    if (s_pol) {
-                        fprintf(s_pol,
-                            "[Place_Object] type=%d pending=%s rtti=%d intheory=%d builder=%s tdafld_qty=%d\n",
-                            (int)type,
-                            pending ? pending->Class_Of().IniName : "(null)",
-                            pending ? (int)pending->What_Am_I() : -1,
-                            (int)intheory,
-                            builder ? builder->Class_Of().IniName : "(null)",
-                            (int)Get_Quantity(STRUCT_TDAFLD));
-                        fflush(s_pol);
-                    }
-                }
-#endif
 #endif
                 TechnoTypeClass const* object_type = pending->Techno_Type_Class();
                 // TF: only 2 means the object left. 1 is a temporary blockage that leaves it in the factory, so it
@@ -6919,22 +6767,6 @@ int HouseClass::Expert_AI(void)
                 && (u->Mission == MISSION_GUARD || u->Mission == MISSION_GUARD_AREA)) {
                 u->Assign_Mission(MISSION_HUNT);
                 hunters++;
-#if TF_DEV_BUILD // TF_AI_DIAG
-                {
-                    extern FILE* TF_AI_Diag_File(void);
-                    FILE* _tfdbg = TF_AI_Diag_File();
-                    if (_tfdbg != NULL) {
-                        fprintf(_tfdbg,
-                                "F%ld H%d AL%d SCOUT-DISPATCH unit %s#%d\n",
-                                (long)Frame,
-                                (int)Class->House,
-                                (int)ActLike,
-                                u->Class->IniName,
-                                (int)u->ID);
-                        fflush(_tfdbg);
-                    }
-                }
-#endif
             }
         }
         for (index = 0; index < Infantry.Count() && hunters < TF_SCOUT_DETAIL; index++) {
@@ -6943,22 +6775,6 @@ int HouseClass::Expert_AI(void)
                 && (i->Mission == MISSION_GUARD || i->Mission == MISSION_GUARD_AREA)) {
                 i->Assign_Mission(MISSION_HUNT);
                 hunters++;
-#if TF_DEV_BUILD // TF_AI_DIAG
-                {
-                    extern FILE* TF_AI_Diag_File(void);
-                    FILE* _tfdbg = TF_AI_Diag_File();
-                    if (_tfdbg != NULL) {
-                        fprintf(_tfdbg,
-                                "F%ld H%d AL%d SCOUT-DISPATCH infantry %s#%d\n",
-                                (long)Frame,
-                                (int)Class->House,
-                                (int)ActLike,
-                                i->Class->IniName,
-                                (int)i->ID);
-                        fflush(_tfdbg);
-                    }
-                }
-#endif
             }
         }
     }
@@ -13395,41 +13211,6 @@ void HouseClass::Check_Pertinent_Structures(void)
     }
 
     if (!any_good_buildings) {
-        // TF DIAGNOSTIC 2026-05-27: when Check_Pertinent_Structures decides
-        // the player has lost, log a snapshot of the house's building/unit
-        // inventory so we can diagnose which check failed (was the TDFACT
-        // not in Buildings? Wrong house? IsInLimbo? Strength 0?). Stub
-        // under #if 0 once verified per [[feedback-keep-diagnostics-until-v1]].
-#if 0 // TF DIAG — OFF for release (was #if 1; flip to 1 to re-enable logging).
-        {
-            const char* up = getenv("USERPROFILE");
-            char p[512];
-            if (up) snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_pertinent.log", up);
-            else strcpy(p, "tf_pertinent.log");
-            FILE* f = fopen(p, "a");
-            if (f) {
-                fprintf(f, "[Check_Pertinent_Structures] FLAG_TO_DIE house=%d ActLike=%d Buildings=%d Units=%d\n",
-                        (int)Class->House, (int)ActLike, Buildings.Count(), Units.Count());
-                for (int i = 0; i < Buildings.Count(); i++) {
-                    BuildingClass* b = Buildings.Ptr(i);
-                    if (b && b->House == this) {
-                        fprintf(f, "  b[%d] IniName=%s Type=%d IsActive=%d IsInLimbo=%d Str=%d IsWall=%d\n",
-                                i, b->Class->IniName, (int)b->Class->Type, (int)b->IsActive,
-                                (int)b->IsInLimbo, (int)b->Strength, (int)b->Class->IsWall);
-                    }
-                }
-                for (int i = 0; i < Units.Count(); i++) {
-                    UnitClass* u = Units.Ptr(i);
-                    if (u && u->House == this) {
-                        fprintf(f, "  u[%d] IniName=%s Type=%d IsActive=%d IsInLimbo=%d Str=%d\n",
-                                i, u->Class->IniName, (int)u->Class->Type, (int)u->IsActive,
-                                (int)u->IsInLimbo, (int)u->Strength);
-                    }
-                }
-                fclose(f);
-            }
-        }
-#endif
         Flag_To_Die();
     }
 }

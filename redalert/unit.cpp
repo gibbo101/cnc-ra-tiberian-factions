@@ -98,9 +98,6 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
-#include <stdarg.h>
-
-static void TF_Tunnel_Log(UnitClass const* unit, char const* fmt, ...);
 
 // TF: attack-move (CFE port) -- launcher-side Shift state, per local player.
 extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
@@ -3047,43 +3044,6 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
 
             Class->Turret_Adjust(PrimaryFacing, xx, yy);
 
-#if TF_DEV_BUILD // TF DEV: TSHVR facing/seat diagnostic. One line per facing change per unit. Compiled out of release builds.
-            if (*this == UNIT_TSHVR) {
-                static FILE* tf_facing_log = NULL;
-                static int last_idx[600];
-                static bool init_done = false;
-                if (!init_done) {
-                    for (int i = 0; i < 600; i++) last_idx[i] = -1;
-                    init_done = true;
-                }
-                if (tf_facing_log == NULL) {
-                    const char* h = getenv("USERPROFILE");
-                    if (h == NULL) h = getenv("HOME");
-                    if (h != NULL) {
-                        char p[512];
-                        snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_facing.log", h);
-                        tf_facing_log = fopen(p, "a");
-                        if (tf_facing_log != NULL) {
-                            fprintf(tf_facing_log, "==== TSHVR facing log session start ====\n");
-                        }
-                    }
-                }
-                int id = Units.ID(this);
-                int idx = Dir_To_32(PrimaryFacing);
-                int combo = idx * 32 + tfacing;
-                if (tf_facing_log != NULL && id >= 0 && id < 600 && last_idx[id] != combo) {
-                    last_idx[id] = combo;
-                    fprintf(tf_facing_log,
-                            "frame=%ld id=%d cell=%d,%d dir=%d idx=%d tfacing=%d hullart=%d rackart=%d seat=(%d,%d)%s\n",
-                            (long)::Frame, id, Coord_XCell(Coord), Coord_YCell(Coord),
-                            (int)PrimaryFacing.Current(), idx, tfacing,
-                            TechnoClass::BodyShape[idx], TechnoClass::BodyShape[tfacing],
-                            xx - x, yy - y, (tfacing != idx) ? "  <== RACK OFF HULL" : "");
-                    fflush(tf_facing_log);
-                }
-            }
-#endif
-
             /*
             **	Actually perform the draw. Overlay an optional shimmer effect as necessary.
             */
@@ -3915,23 +3875,6 @@ int UnitClass::Mission_Unload(void)
         **	so the dock stayed occupied + the harvester stayed capturable during unload.
         */
         Transmit_Message(RADIO_UNLOADED);
-#if TF_DEV_BUILD
-        {
-            char dpath[512];
-            const char* dprof = getenv("USERPROFILE");
-            if (dprof != NULL && dprof[0] != '\0') {
-                snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
-            } else {
-                strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
-            }
-            FILE* dlog = fopen(dpath, "a");
-            if (dlog != NULL) {
-                fprintf(dlog, "frame=%d DOCK-EXIT harv=%s tib=%d cell=%d -> MISSION_HARVEST\n", Frame,
-                        Class->IniName, Tiberium, Coord_Cell(Coord));
-                fclose(dlog);
-            }
-        }
-#endif
         Transmit_Message(RADIO_OVER_OUT);
         Assign_Mission(MISSION_HARVEST);
         /*
@@ -4004,32 +3947,6 @@ int UnitClass::Mission_Unload(void)
                 Do_Turn(TS_DOCK_DIR);
             }
 
-#if TF_DEV_BUILD
-            // Logs-first (first TSHARV test): record each park-offload dock start
-            // with harvester type, load and refinery type -- the 4x3 TSPROC dock
-            // geometry is the flagged risk on the units-wave checklist.
-            {
-                char dpath[512];
-                const char* dprof = getenv("USERPROFILE");
-                if (dprof != NULL && dprof[0] != '\0') {
-                    snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
-                } else {
-                    strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
-                }
-                FILE* dlog = fopen(dpath, "a");
-                if (dlog != NULL) {
-                    TechnoClass* refc = Contact_With_Whom();
-                    fprintf(dlog, "frame=%d DOCK-START harv=%s load=%d ref=%s cell=%d coord=%08lX facing=%d\n",
-                            Frame, Class->IniName, Tiberium,
-                            (refc != NULL && refc->What_Am_I() == RTTI_BUILDING)
-                                ? ((BuildingClass*)refc)->Class->IniName
-                                : "none",
-                            Coord_Cell(Coord), (unsigned long)Coord, (int)PrimaryFacing);
-                    fclose(dlog);
-                }
-            }
-#endif
-
             TechnoClass* refc = Contact_With_Whom();
             AnimClass* fumes = (refc != NULL && refc->What_Am_I() == RTTI_BUILDING
                                 && *((BuildingClass*)refc) == STRUCT_TSPROC)
@@ -4076,23 +3993,6 @@ int UnitClass::Mission_Unload(void)
             bool ts_bay_exit = (exref != NULL && exref->What_Am_I() == RTTI_BUILDING
                                 && *((BuildingClass*)exref) == STRUCT_TSPROC);
             Transmit_Message(RADIO_UNLOADED);
-#if TF_DEV_BUILD
-            {
-                char dpath[512];
-                const char* dprof = getenv("USERPROFILE");
-                if (dprof != NULL && dprof[0] != '\0') {
-                    snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
-                } else {
-                    strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
-                }
-                FILE* dlog = fopen(dpath, "a");
-                if (dlog != NULL) {
-                    fprintf(dlog, "frame=%d DOCK-EXIT harv=%s tib=%d cell=%d bay_exit=%d -> MISSION_HARVEST\n", Frame,
-                            Class->IniName, Tiberium, Coord_Cell(Coord), (int)ts_bay_exit);
-                    fclose(dlog);
-                }
-            }
-#endif
             bool td_bay_exit = (exref != NULL && exref->What_Am_I() == RTTI_BUILDING
                                 && *((BuildingClass*)exref) == STRUCT_TDPROC);
             Transmit_Message(RADIO_OVER_OUT);
@@ -4650,18 +4550,6 @@ int UnitClass::Mission_Harvest(void)
                             Assign_Destination(::As_Target(home));
                         }
                     }
-#if TF_DEV_BUILD
-                    {
-                        FILE* lf = TF_Harv_Logfile();
-                        if (lf != NULL) {
-                            fprintf(lf,
-                                    "HARV-WAIT: harvester at (%d,%d) -- nearby ore blocked, pulling back to "
-                                    "refinery + re-scanning\n",
-                                    Cell_X(Coord_Cell(Center_Coord())), Cell_Y(Coord_Cell(Center_Coord())));
-                            fflush(lf);
-                        }
-                    }
-#endif
                     return (TICKS_PER_SECOND * 3);
                 } else {
                     ArchiveTarget = TARGET_NONE;
@@ -6303,40 +6191,6 @@ BulletClass* UnitClass::Fire_At(TARGET target, int which)
             if (Class->FiringFrames > 0) {
                 FireAnim = Class->FiringFrames * Class->WalkRate;
                 Mark(MARK_CHANGE_REDRAW);
-
-                /*
-                **  Diagnostic: firing-pose receipt. Confirms the shot reached
-                **  here, what the sound table was asked for, and the shape span
-                **  the firing block occupies, so a missing flash can be told
-                **  apart from a missing shot. Flip to 1 to re-enable.
-                */
-#if 0
-                {
-                    static FILE* tf_fire_log = NULL;
-                    if (tf_fire_log == NULL) {
-                        const char* h = getenv("USERPROFILE");
-                        if (h == NULL) h = getenv("HOME");
-                        if (h != NULL) {
-                            char pth[512];
-                            snprintf(pth, sizeof(pth), "%s/Documents/CnCRemastered/tf_fireanim.log", h);
-                            tf_fire_log = fopen(pth, "w");
-                        }
-                    }
-                    if (tf_fire_log != NULL) {
-                        int wf = ((TechnoClass::BodyShape[Dir_To_32(PrimaryFacing)] * Class->WalkFacings + 16) / 32)
-                                 % Class->WalkFacings;
-                        int base = Class->WalkFacings * Class->WalkFrames;
-                        fprintf(tf_fire_log,
-                                "FIRE %s frame=%d wfacing=%d fireanim=%d shapes=%d..%d report=%d\n",
-                                (Class->IniName != NULL) ? Class->IniName : "<null>",
-                                (int)::Frame, wf, (int)FireAnim,
-                                base + wf * Class->FiringFrames,
-                                base + wf * Class->FiringFrames + Class->FiringFrames - 1,
-                                (weap != NULL) ? (int)weap->Sound : -1);
-                        fflush(tf_fire_log);
-                    }
-                }
-#endif
             }
         }
     }
@@ -6430,40 +6284,9 @@ void UnitClass::ReconsiderRefinery(BuildingClass* freed)
 {
     if (Target_Legal(NavCom) && TiberiumUnloadRefinery != TARGET_NONE && Mission == MISSION_HARVEST
         && Status == 2 /* FINDHOME in Mission_Harvest's local enum */) {
-#if TF_DEV_BUILD
-        // Queue-bail confirm line. `oldref` = the refinery this queued harvester was
-        // headed to; `freed` = the dock that just opened (the trigger). After dropping
-        // the plan, Find_Best_Refinery() (read-only) reports what it WILL re-home to next
-        // tick -- if that is now the freed dock, the harvester bailed its queue for the
-        // opening, which is the behaviour we're confirming. Cost is paid only here (a
-        // queued harvester at the instant a dock frees) and only in TF_DEV builds.
-        BuildingClass* oldref = Tiberium_Unload_Refinery();
-#endif
         Assign_Destination(TARGET_NONE);
         Assign_Target(TARGET_NONE);
         TiberiumUnloadRefinery = TARGET_NONE;
-#if TF_DEV_BUILD
-        {
-            FILE* lf = TF_Harv_Logfile();
-            if (lf != NULL) {
-                CELL me = Coord_Cell(Center_Coord());
-                BuildingClass* now = Find_Best_Refinery();
-                bool bailed = (now != NULL && freed != NULL && now == freed && now != oldref);
-                fprintf(lf,
-                        "HARV-REBAIL: harvester #%d at (%d,%d) -- dock freed at (%d,%d); was->(%d,%d) "
-                        "now best->(%d,%d) %s\n",
-                        ID, Cell_X(me), Cell_Y(me),
-                        freed ? Cell_X(Coord_Cell(freed->Center_Coord())) : -1,
-                        freed ? Cell_Y(Coord_Cell(freed->Center_Coord())) : -1,
-                        oldref ? Cell_X(Coord_Cell(oldref->Center_Coord())) : -1,
-                        oldref ? Cell_Y(Coord_Cell(oldref->Center_Coord())) : -1,
-                        now ? Cell_X(Coord_Cell(now->Center_Coord())) : -1,
-                        now ? Cell_Y(Coord_Cell(now->Center_Coord())) : -1,
-                        bailed ? "[BAILED to freed dock]" : (now == oldref ? "[stayed]" : "[switched]"));
-                fflush(lf);
-            }
-        }
-#endif
     }
 }
 
@@ -6964,8 +6787,6 @@ void UnitClass::Assign_Destination(TARGET target)
             }
             if (TunnelState == TUNNEL_IDLE) {
                 bool dig = Should_Dig_To(cell);
-                TF_Tunnel_Log(this, "ORDER cell=(%d,%d) samezone=%d -> %s", Cell_X(cell), Cell_Y(cell),
-                              Is_In_Same_Zone(cell), dig ? "DIG" : "drive");
                 if (dig) {
                     Tunnel_To(Cell_Coord(cell));
                     return;
@@ -7668,40 +7489,6 @@ static const int TUNNEL_DIG_ANIM_STEP = 4;       // Dive: the DIG mound erupts e
 static const int TUNNEL_EMERGE_LEAD_TICKS = 6;   // Emerge: hull stays hidden this long after the mound erupts.
 
 /*
-**	Dev-build trace of the cycle (Documents/CnCRemastered/MOD_DEBUG_TUNNEL.txt).
-*/
-static void TF_Tunnel_Log(UnitClass const* unit, char const* fmt, ...)
-{
-#if TF_DEV_BUILD
-    char path[512];
-    const char* prof = getenv("USERPROFILE");
-    if (prof != NULL && prof[0] != '\0') {
-        snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_TUNNEL.txt", prof);
-    } else {
-        strcpy(path, "MOD_DEBUG_TUNNEL.txt");
-    }
-    FILE* f = fopen(path, "a");
-    if (f == NULL) {
-        return;
-    }
-    CELL c = Coord_Cell(unit->Coord);
-    fprintf(f, "frame=%d %s#%d state=%d step=%d at=(%d,%d) dest=(%d,%d) ", Frame, unit->Class->IniName, unit->ID,
-            unit->TunnelState, unit->TunnelStep, Cell_X(c), Cell_Y(c),
-            unit->TunnelDest ? Cell_X(Coord_Cell(unit->TunnelDest)) : -1,
-            unit->TunnelDest ? Cell_Y(Coord_Cell(unit->TunnelDest)) : -1);
-    va_list ap;
-    va_start(ap, fmt);
-    vfprintf(f, fmt, ap);
-    va_end(ap);
-    fputc('\n', f);
-    fclose(f);
-#else
-    (void)unit;
-    (void)fmt;
-#endif
-}
-
-/*
 **	The building a TS vehicle deploys into (TS DeploysInto), STRUCT_NONE for the rest.
 */
 StructType UnitClass::TF_Deploys_Into(void) const
@@ -7827,7 +7614,6 @@ void UnitClass::Tunnel_To(COORDINATE dest)
         return;
     }
     TunnelDest = dest;
-    TF_Tunnel_Log(this, "TUNNEL_TO");
 
     switch (TunnelState) {
     case TUNNEL_IDLE:
@@ -7853,7 +7639,6 @@ void UnitClass::Tunnel_Stop(void)
 {
     static const int CELL_LEPTON_DIAG = 362;
 
-    TF_Tunnel_Log(this, "STOP");
     switch (TunnelState) {
     case TUNNEL_TURNING:
         TunnelState = TUNNEL_IDLE;
@@ -7904,7 +7689,6 @@ void UnitClass::Tunnel_Begin_Emerge(void)
             sparks->Attach_To(this);
         }
     }
-    TF_Tunnel_Log(this, "EMERGE-BEGIN");
 }
 
 /*
@@ -7933,7 +7717,6 @@ bool UnitClass::Force_Emerge(void)
 */
 void UnitClass::Tunnel_Explode(void)
 {
-    TF_Tunnel_Log(this, "EXPLODE");
     new AnimClass(ANIM_TS_DIG, Coord);
     TunnelDest = 0;
     int damage = Strength;
@@ -7970,7 +7753,6 @@ void UnitClass::Tunnel_AI(void)
         TunnelTick = TUNNEL_LADDER_TICKS;
         Mark(MARK_CHANGE_REDRAW);
         Sound_Effect(VOC_TS_SUBDRIL1, Coord);
-        TF_Tunnel_Log(this, "DIGGING-IN facing8=%d", TunnelFacing);
         break;
     }
 
@@ -7990,7 +7772,6 @@ void UnitClass::Tunnel_AI(void)
             TunnelState = TUNNEL_TUNNELING;
             TunnelStep = 0;
             Mark(MARK_DOWN);
-            TF_Tunnel_Log(this, "UNDERGROUND isdown=%d", IsDown);
         }
         break;
 
@@ -8024,8 +7805,6 @@ void UnitClass::Tunnel_AI(void)
                 return;
             }
             CELL alt = Find_Emerge_Cell(cell);
-            TF_Tunnel_Log(this, "ARRIVED-BLOCKED canenter=%d land=%d alt=(%d,%d)", Can_Enter_Cell(cell),
-                          Map[cell].Land_Type(), alt == -1 ? -1 : Cell_X(alt), alt == -1 ? -1 : Cell_Y(alt));
             if (alt == -1) {
                 Tunnel_Explode();
             } else if (alt != cell) {
@@ -8053,7 +7832,6 @@ void UnitClass::Tunnel_AI(void)
             Look();
         }
         if (TunnelStep > 5) {
-            TF_Tunnel_Log(this, "SURFACED");
             TunnelState = TUNNEL_IDLE;
             TunnelStep = 0;
             COORDINATE pending = TunnelDest;

@@ -547,13 +547,6 @@ CELL FootClass::Find_Spread_Cell(const CELL target, const int maxRadius, Dynamic
     return 0;
 }
 
-#if TF_DEV_BUILD
-// TF DEV: how many A* searches gave up on the expansion budget rather than on an
-// exhausted open list. Reported alongside the success/fallback tally in Find_Path so a
-// glance at the log says whether ASTAR_MAX_EXPANSIONS is set sanely.
-static long TF_AStar_Cap_Trips = 0;
-#endif
-
 // A* path from source to dest (CFE Patch Redux port): its length in cells, 0 if none. resultPath, if given,
 // takes the moves, cut to maxLen. Costs build on Passable_Cell's; infantry avoid TD Tiberium (docs/cfe-port-plan.md).
 int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CELL dest, const int maxLen, const MoveType threshhold, const int threat)
@@ -615,9 +608,6 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
         }
 
         if (++expansions > ASTAR_MAX_EXPANSIONS) {
-#if TF_DEV_BUILD
-            TF_AStar_Cap_Trips++;
-#endif
             break;
         }
 
@@ -803,12 +793,12 @@ PathType* FootClass::Find_Path(CELL dest, FacingType* final_moves, int maxlen, M
                 // Per-fallback detail line (these are the interesting "A* gave up" cases),
                 // plus a running tally so a glance at the tail proves A* is live.
                 if (!result) {
-                    fprintf(tf_astar_log, "A* FALLBACK -> legacy: unit=%s src=(%d,%d) dst=(%d,%d) maxlen=%d [success=%ld fallback=%ld captrips=%ld]\n",
+                    fprintf(tf_astar_log, "A* FALLBACK -> legacy: unit=%s src=(%d,%d) dst=(%d,%d) maxlen=%d [success=%ld fallback=%ld]\n",
                             who, (int)Cell_X(source), (int)Cell_Y(source), (int)Cell_X(dest), (int)Cell_Y(dest),
-                            maxlen, tf_astar_success, tf_astar_fallback, TF_AStar_Cap_Trips);
+                            maxlen, tf_astar_success, tf_astar_fallback);
                 } else if ((tf_astar_success & 0xFF) == 0) {
-                    fprintf(tf_astar_log, "A* tally: success=%ld fallback=%ld captrips=%ld\n",
-                            tf_astar_success, tf_astar_fallback, TF_AStar_Cap_Trips);
+                    fprintf(tf_astar_log, "A* tally: success=%ld fallback=%ld\n",
+                            tf_astar_success, tf_astar_fallback);
                 }
                 fflush(tf_astar_log);
             }

@@ -56,7 +56,7 @@ ignore buildings), same recommended shape of cure (a no-progress detector, not a
 ## Porting TS's pathfinder: no (coach-day dive, 2026-09-11)
 
 TS's hierarchical A* (`reference/OpenTS`) would not fix what is left. Ours already has the heap
-and the 4096-node cap, which never tripped live (`captrips=0`). TS's zones also ignore ordinary
+and the 4096-node cap, which never tripped live. TS's zones also ignore ordinary
 buildings (only walls, the Firestorm and laser fences block them), so a walled destination stays
 invisible to it too. A headless AI-vs-AI Docklands run counted 27,861 real-destination fallbacks,
 the Titans, Wolverines and Disruptors of the unreachable-target storm above, and 1,352 self-cell

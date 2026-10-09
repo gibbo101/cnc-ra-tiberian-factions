@@ -460,7 +460,7 @@ A unit here is done: no open art, geometry or behaviour work.
 - `scripts/ts_rebuild_art.sh` regenerates `$TS_ART_DIR` from the Steam TS install. TS building
   cameos are in SIDEC01.MIX (GDI), not CONQUER.MIX. The chain is TIBSUN.MIX → `tools/ts_extract.py`
   → `ts_shp.py`.
-- Diagnostics land in `MOD_DEBUG_TSUNITS.txt` / `MOD_DEBUG_CANBUILD.txt`, sometimes under
+- Diagnostics land in `MOD_DEBUG_TSUNITS.txt`, sometimes under
   `pfx/drive_c/users/steamuser/` instead of `Documents/CnCRemastered/`; check both.
 - The gitignored UI atlas differs per checkout; main's is canonical (`ui-atlas-modding.md`).
 
@@ -562,9 +562,8 @@ TD counterpart. Baseline: the Nod Stealth Generator. Per building:
 ## Open queue
 
 1. **Mk. II cap to 3** (`TF_MK2_CAP`, one constant; `todo.md`).
-2. **Dead code:** `tf_orbit.flag` (the old from-orbit probe, `aircraft.cpp`).
-3. **`ts_pack_tree.py`'s blank-apron warning is stale:** aprons draw from building geometry, so a
+2. **`ts_pack_tree.py`'s blank-apron warning is stale:** aprons draw from building geometry, so a
    blank tile no longer stamps over a neighbour's bib; it is only a wasted entry.
-4. **NTREFN_C** (Nod's refinery anim, a 144-canvas anim on a 192x168 building, needs offset
+3. **NTREFN_C** (Nod's refinery anim, a 144-canvas anim on a 192x168 building, needs offset
    compositing) is unported; it comes with TS Nod.
-5. Component tower animations and weapon geometry (`todo.md`).
+4. Component tower animations and weapon geometry (`todo.md`).

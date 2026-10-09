@@ -1601,10 +1601,6 @@ static void TF_Patch_ClientG_Click_Specials(void);
 static void TF_Tell_Launchers_Start(void);
 static void TF_Tell_Launchers_Tick(void);
 static void TF_Crest_Tick(void);
-#if TF_DEV_BUILD
-static void TF_Probe_ClientG_Cache(void);
-static void TF_Probe_ClientG_Crest(void);
-#endif
 
 extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int scenario_index,
                                                                            int scenario_variation,
@@ -1764,10 +1760,6 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
     TF_Patch_ClientG_Crest();
     TF_Patch_ClientG_Click_Specials();
     TF_Tell_Launchers_Start();
-#if TF_DEV_BUILD
-    TF_Probe_ClientG_Cache();
-    TF_Probe_ClientG_Crest();
-#endif
 
     return true;
 }
@@ -2010,10 +2002,6 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Custom_Instance(const ch
     TF_Patch_ClientG_Crest();
     TF_Patch_ClientG_Click_Specials();
     TF_Tell_Launchers_Start();
-#if TF_DEV_BUILD
-    TF_Probe_ClientG_Cache();
-    TF_Probe_ClientG_Crest();
-#endif
 
     return true;
 }
@@ -4171,11 +4159,8 @@ static int TF_Thread_Stacks(HANDLE proc, TF_AddrRange* out, int max)
 
 // Walks ClientG's private writable heap, remembering every crest record and writing it the wanted rect.
 // Thread stacks are skipped: a rect copy found there may be gone by the write, which then hits a live frame.
-static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
+static void TF_Crest_Full_Scan(const TF_CrestSlot* slots)
 {
-    bool gdi = (slots[0].want == slots[0].gdi);
-    bool nod = (slots[0].want == slots[0].nod);
-    bool tsgdi = (slots[0].want == slots[0].tsgdi);
     static unsigned char bloom[8192];
     memset(bloom, 0, sizeof(bloom));
     for (int s = 0; s < TF_CREST_SLOTS; s++) {
@@ -4195,9 +4180,6 @@ static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
     static TF_AddrRange stacks[1024];
     int const stack_count = TF_Thread_Stacks(proc, stacks, (int)(sizeof(stacks) / sizeof(stacks[0])));
     if (stack_count < 0) {
-        if (log) {
-            fprintf(log, "  thread stacks unreadable, scan skipped\n");
-        }
         CloseHandle(proc);
         return;
     }
@@ -4233,20 +4215,11 @@ static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
                         continue;
                     }
                     int slot = -1;
-                    const char* was = NULL;
                     for (int s = 0; s < TF_CREST_SLOTS && slot < 0; s++) {
-                        if (memcmp(scratch + i, slots[s].stock, REC) == 0) {
+                        if (memcmp(scratch + i, slots[s].stock, REC) == 0 || memcmp(scratch + i, slots[s].gdi, REC) == 0
+                            || memcmp(scratch + i, slots[s].nod, REC) == 0
+                            || memcmp(scratch + i, slots[s].tsgdi, REC) == 0) {
                             slot = s;
-                            was = "stock";
-                        } else if (memcmp(scratch + i, slots[s].gdi, REC) == 0) {
-                            slot = s;
-                            was = "gdi";
-                        } else if (memcmp(scratch + i, slots[s].nod, REC) == 0) {
-                            slot = s;
-                            was = "nod";
-                        } else if (memcmp(scratch + i, slots[s].tsgdi, REC) == 0) {
-                            slot = s;
-                            was = "tsgdi";
                         }
                     }
                     if (slot < 0) {
@@ -4258,16 +4231,7 @@ static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
                         continue;
                     }
                     SIZE_T wrote = 0;
-                    bool ok = WriteProcessMemory(proc, (LPVOID)rec_addr, slots[slot].want, REC, &wrote)
-                              && wrote == (SIZE_T)REC;
-                    if (log) {
-                        static const char* const _slot_names[TF_CREST_SLOTS] = {"TDLOGO_GDI", "TDLOGO_NOD", "RASMALL_ALLIED",
-                                                                                  "RASMALL_SOVIET"};
-                        fprintf(log, "  scan slot %s @ %08x %s -> %s %s\n", _slot_names[slot],
-                                (unsigned int)rec_addr, was,
-                                tsgdi ? "tsgdi" : (gdi ? "gdi" : (nod ? "nod" : "stock")),
-                                ok ? "OK" : "FAIL");
-                    }
+                    WriteProcessMemory(proc, (LPVOID)rec_addr, slots[slot].want, REC, &wrote);
                 }
             }
         }
@@ -4343,28 +4307,10 @@ static void TF_Patch_ClientG_Tab_Prefix(bool td_era)
         patched_len[k] = ra_len;
     }
 
-    FILE* log = NULL;
-#if TF_DEV_BUILD
-    {
-        const char* up = getenv("USERPROFILE");
-        if (up != NULL) {
-            char logpath[512];
-            snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
-            log = fopen(logpath, "a");
-        }
-    }
-#endif
     HANDLE proc = TF_Open_ClientG(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION
                                   | PROCESS_QUERY_INFORMATION);
     if (proc == NULL) {
-        if (log) {
-            fprintf(log, "  tab prefix: ClientG not opened (td_era=%d)\n", (int)td_era);
-            fclose(log);
-        }
         return;
-    }
-    if (log) {
-        fprintf(log, "  tab prefix: td_era=%d\n", (int)td_era);
     }
     {
         static unsigned char scratch[1 << 20];
@@ -4421,28 +4367,12 @@ static void TF_Patch_ClientG_Tab_Prefix(bool td_era)
         }
         DWORD old_protect = 0;
         if (!VirtualProtectEx(proc, (LPVOID)where[k], n, PAGE_READWRITE, &old_protect)) {
-            if (log) {
-                fprintf(log, "  tab prefix %d @ %08x: VirtualProtectEx failed (%u)\n", k,
-                        (unsigned int)where[k], (unsigned)GetLastError());
-            }
             continue;
         }
         SIZE_T wrote = 0;
         WriteProcessMemory(proc, (LPVOID)where[k], want, n, &wrote);
         DWORD tmp = 0;
         VirtualProtectEx(proc, (LPVOID)where[k], n, old_protect, &tmp);
-        if (log) {
-            fprintf(log, "  tab prefix %d @ %08x -> %s %s (was %.32s)\n", k, (unsigned int)where[k], want,
-                    (wrote == (SIZE_T)n) ? "OK" : "FAIL", cur);
-        }
-    }
-    if (log) {
-        for (int k = 0; k < 4; k++) {
-            if (where[k] == 0) {
-                fprintf(log, "  tab prefix %d: not located\n", k);
-            }
-        }
-        fclose(log);
     }
     CloseHandle(proc);
 }
@@ -4562,22 +4492,6 @@ static const char* TF_Patch_Click_Specials_In(HANDLE proc)
     return (result);
 }
 
-static void TF_Click_Specials_Log(const char* where, const char* result)
-{
-#if TF_DEV_BUILD
-    const char* up = getenv("USERPROFILE");
-    if (up != NULL) {
-        char logpath[512];
-        snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
-        FILE* log = fopen(logpath, "a");
-        if (log != NULL) {
-            fprintf(log, "  click specials (%s): %s\n", where, result);
-            fclose(log);
-        }
-    }
-#endif
-}
-
 /*
 **	Match start, from the simulation process: patches the launcher across processes.
 */
@@ -4586,10 +4500,9 @@ static void TF_Patch_ClientG_Click_Specials(void)
     HANDLE proc = TF_Open_ClientG(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION
                                   | PROCESS_QUERY_INFORMATION);
     if (proc == NULL) {
-        TF_Click_Specials_Log("match start", "ClientG not opened");
         return;
     }
-    TF_Click_Specials_Log("match start", TF_Patch_Click_Specials_In(proc));
+    TF_Patch_Click_Specials_In(proc);
     CloseHandle(proc);
 }
 
@@ -4605,10 +4518,10 @@ void TF_Patch_Launcher_At_Load(void)
     const char* name = strrchr(exe, '\\');
     name = (name != NULL) ? name + 1 : exe;
     if (_stricmp(name, "ClientG.exe") == 0) {
-        TF_Click_Specials_Log("launcher load", TF_Patch_Click_Specials_In(GetCurrentProcess()));
-        TF_Click_Specials_Log("launcher load", TF_Launcher_Resident_Install());
-        TF_Click_Specials_Log("launcher load", TF_Patch_Launcher_Keys_In());
-        TF_Click_Specials_Log("launcher load", TF_Launcher_Install());
+        TF_Patch_Click_Specials_In(GetCurrentProcess());
+        TF_Launcher_Resident_Install();
+        TF_Patch_Launcher_Keys_In();
+        TF_Launcher_Install();
     }
 }
 
@@ -4621,20 +4534,6 @@ static void TF_Patch_ClientG_Crest(void)
     if (TF_Crest_Slots(slots)) {
         TF_Patch_ClientG_Tab_Prefix(slots[0].want != slots[0].stock);
     }
-#if TF_DEV_BUILD
-    else {
-        const char* up = getenv("USERPROFILE");
-        if (up != NULL) {
-            char logpath[512];
-            snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
-            FILE* log = fopen(logpath, "a");
-            if (log) {
-                fprintf(log, "  tab prefix: no local house at match start\n");
-                fclose(log);
-            }
-        }
-    }
-#endif
 }
 
 // Full scans run on a worker thread, one at a time, from a copy of the slot table: each reads hundreds of MB
@@ -4644,23 +4543,7 @@ static volatile LONG TF_CrestScanBusy = 0;
 
 static DWORD WINAPI TF_Crest_Scan_Thread(LPVOID)
 {
-    FILE* log = NULL;
-#if TF_DEV_BUILD
-    const char* up = getenv("USERPROFILE");
-    char logpath[512];
-    if (up != NULL) {
-        snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
-        log = fopen(logpath, "a");
-    }
-    if (log) {
-        fprintf(log, "== crest scan frame %d known=%d ==\n", (int)Frame, TF_CrestAddrCount);
-    }
-#endif
-    TF_Crest_Full_Scan(TF_CrestScanSlots, log);
-    if (log) {
-        fflush(log);
-        fclose(log);
-    }
+    TF_Crest_Full_Scan(TF_CrestScanSlots);
     InterlockedExchange(&TF_CrestScanBusy, 0);
     return 0;
 }
@@ -4712,29 +4595,6 @@ static void TF_Crest_Tick(void)
 static volatile LONG TF_LauncherRequest = 0;
 static HANDLE TF_LauncherWake = NULL;
 
-static void TF_Launcher_Log(const char* fmt, ...)
-{
-#if TF_DEV_BUILD
-    const char* up = getenv("USERPROFILE");
-    if (up == NULL) {
-        return;
-    }
-    char logpath[512];
-    snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
-    FILE* log = fopen(logpath, "a");
-    if (log == NULL) {
-        return;
-    }
-    fprintf(log, "  launcher: ");
-    va_list ap;
-    va_start(ap, fmt);
-    vfprintf(log, fmt, ap);
-    va_end(ap);
-    fprintf(log, "\n");
-    fclose(log);
-#endif
-}
-
 // Runs the patches the host runs for itself, in this launcher, each time the event hook wakes it; then keeps
 // the crest up for three minutes at 15 ticks a second, through the scan burst and the match opening.
 static DWORD WINAPI TF_Launcher_Resident_Thread(LPVOID)
@@ -4743,7 +4603,6 @@ static DWORD WINAPI TF_Launcher_Resident_Thread(LPVOID)
     for (;;) {
         WaitForSingleObject(TF_LauncherWake, (ticks_left > 0) ? 1000 / 15 : INFINITE);
         if (InterlockedExchange(&TF_LauncherRequest, 0) != 0) {
-            TF_Launcher_Log("house %d: applying", (int)TF_LauncherActLike);
             TF_Mailbox_Write_EVA_Voice();
             TF_Patch_ClientG_Crest();
             ticks_left = 15 * 180;
@@ -4791,14 +4650,10 @@ extern "C" void __cdecl TF_Launcher_Event_Hook(unsigned char* event)
     }
     int house = atoi(text + 23);
     if (*(volatile unsigned char*)0x1FB6D40 == 0) {
-        TF_Launcher_Log("house %d for %08x%08x: no local player id yet", house, (unsigned)(target >> 32),
-                        (unsigned)target);
         return;
     }
     unsigned long long local = *(volatile unsigned long long*)0x1FB6D48;
     if (target != local) {
-        TF_Launcher_Log("house %d for %08x%08x, local %08x%08x: not ours", house, (unsigned)(target >> 32),
-                        (unsigned)target, (unsigned)(local >> 32), (unsigned)local);
         return;
     }
     InterlockedExchange(&TF_LauncherActLike, house);
@@ -4990,201 +4845,6 @@ static void TF_Tell_Launchers_Tick(void)
     }
 }
 
-#if TF_DEV_BUILD
-/*
-** Tiberian Factions -- stage-1 RAM-patch spike probe (docs/eva-ram-patch-spike.md).
-** READ-ONLY. Scans ClientG.exe's writable private memory for known needles taken
-** from the mailbox NODEPLY sample (the placement-reject line), in BOTH candidate
-** cache formats, and logs every hit to tf_cache_probe.log. It answers one question:
-** does ClientG cache the sample as ADPCM file bytes (found via the ADPCM needle ->
-** an in-place same-size overwrite is trivial) or as decoded PCM (found via the PCM
-** needle -> equal-length PCM handling required)? Reuses the lobby resolver's proven
-** cross-process scan (CreateToolhelp32Snapshot / OpenProcess / VirtualQueryEx /
-** ReadProcessMemory). Nothing is written to ClientG. Runs at match start; the useful
-** result comes on the SECOND match of a boot, after match 1 has fired (and cached)
-** the line -- misplace a building in match 1, then start match 2.
-*/
-struct TF_ProbeNeedle
-{
-    const char* name;
-    const unsigned char* bytes;
-    int len;
-};
-
-/*
-** Shared read-only scanner for the ClientG RAM probes: walks every committed, readable
-** region of ClientG.exe, logs every hit of every needle (address, region, protection, type)
-** and per-needle totals to tf_cache_probe.log. Nothing is written to ClientG.
-*/
-static void TF_Probe_ClientG_Needles(const TF_ProbeNeedle* needles, int needle_count, const char* tag)
-{
-    const char* up = getenv("USERPROFILE");
-    if (up == NULL) {
-        return;
-    }
-    char logpath[512];
-    snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
-    FILE* log = fopen(logpath, "a");
-    if (log == NULL) {
-        return;
-    }
-    fprintf(log, "== probe %s at frame %d ==\n", tag, (int)Frame);
-
-    static unsigned char scratch[1 << 20];
-    const int overlap = 64; // >= max needle length, so a needle straddling two chunks is caught
-
-    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (snap == INVALID_HANDLE_VALUE) {
-        fprintf(log, "  snapshot failed\n");
-        fclose(log);
-        return;
-    }
-    PROCESSENTRY32W pe;
-    pe.dwSize = sizeof(pe);
-    int hit_total[8] = {0};
-    int procs_found = 0, procs_opened = 0;
-    unsigned long long bytes_scanned = 0;
-    int regions_scanned = 0;
-    if (Process32FirstW(snap, &pe)) {
-        do {
-            if (_wcsicmp(pe.szExeFile, L"ClientG.exe") != 0) {
-                continue;
-            }
-            procs_found++;
-            HANDLE proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, pe.th32ProcessID);
-            if (proc == NULL) {
-                fprintf(log, "  ClientG pid %lu: OpenProcess failed\n", (unsigned long)pe.th32ProcessID);
-                continue;
-            }
-            procs_opened++;
-            SIZE_T addr = 0;
-            MEMORY_BASIC_INFORMATION mbi;
-            while (VirtualQueryEx(proc, (LPCVOID)addr, &mbi, sizeof(mbi)) == sizeof(mbi)) {
-                SIZE_T region_base = (SIZE_T)mbi.BaseAddress;
-                SIZE_T region_size = mbi.RegionSize;
-                // Scan any committed, readable region regardless of Type (PRIVATE/MAPPED/IMAGE):
-                // a loose-file sample may be memory-mapped (MAPPED) or copy-on-write, not only
-                // heap-loaded. Exclude only NOACCESS/GUARD.
-                bool readable = (mbi.State == MEM_COMMIT)
-                                && !(mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD))
-                                && (mbi.Protect != 0)
-                                && region_size <= ((SIZE_T)512 << 20);
-                if (readable) {
-                    regions_scanned++;
-                    for (SIZE_T off = 0; off < region_size; off += (sizeof(scratch) - overlap)) {
-                        SIZE_T want = region_size - off;
-                        if (want > sizeof(scratch)) {
-                            want = sizeof(scratch);
-                        }
-                        SIZE_T got = 0;
-                        if (!ReadProcessMemory(proc, (LPCVOID)(region_base + off), scratch, want, &got)
-                            || got == 0) {
-                            continue;
-                        }
-                        bytes_scanned += got;
-                        for (int ni = 0; ni < needle_count; ni++) {
-                            const unsigned char* nb = needles[ni].bytes;
-                            int nl = needles[ni].len;
-                            if ((SIZE_T)nl > got) {
-                                continue;
-                            }
-                            for (SIZE_T i = 0; i + nl <= got; i++) {
-                                if (scratch[i] == nb[0] && memcmp(scratch + i, nb, nl) == 0) {
-                                    if (hit_total[ni] < 32) {
-                                        fprintf(log, "  HIT %s @ %08x (region %08x size %08x prot %lx type %lx)\n",
-                                                needles[ni].name,
-                                                (unsigned int)(region_base + off + i),
-                                                (unsigned int)region_base, (unsigned int)region_size,
-                                                (unsigned long)mbi.Protect, (unsigned long)mbi.Type);
-                                    }
-                                    hit_total[ni]++;
-                                }
-                            }
-                        }
-                    }
-                }
-                SIZE_T next = region_base + region_size;
-                if (next <= addr) {
-                    break;
-                }
-                addr = next;
-            }
-            CloseHandle(proc);
-        } while (Process32NextW(snap, &pe));
-    }
-    CloseHandle(snap);
-    fprintf(log, "  clientg found=%d opened=%d regions=%d bytes=%llu\n",
-            procs_found, procs_opened, regions_scanned, bytes_scanned);
-    for (int ni = 0; ni < needle_count; ni++) {
-        fprintf(log, "  TOTAL %s: %d\n", needles[ni].name, hit_total[ni]);
-    }
-    fflush(log);
-    fclose(log);
-}
-
-static void TF_Probe_ClientG_Cache(void)
-{
-    // Needles: 20-byte ADPCM data-chunk slices (docs/eva-ram-patch-spike.md). Both channel
-    // variants of NODEPLY (Allied 22k = C, Soviet 44k = R) since which plays follows the
-    // player's country, plus construction-complete which fires in EVERY match (guaranteed
-    // cache) so a zero on it means the scan itself is not reaching the cache.
-    static const unsigned char nodeply_c[] = {0x1d, 0xf0, 0x0c, 0xbf, 0x0c, 0xfc, 0xf0, 0xeb, 0x02, 0xfe,
-                                              0xe4, 0x1f, 0xde, 0xdb, 0xed, 0xc1, 0x11, 0xef, 0x70, 0x01};
-    static const unsigned char nodeply_r[] = {0xdf, 0x02, 0x00, 0x05, 0x2e, 0xaf, 0x13, 0x11, 0xfe, 0xdf,
-                                              0x27, 0x11, 0x0d, 0xe0, 0x02, 0x12, 0x70, 0xfa, 0xf0, 0x44};
-    static const unsigned char tddeploy_c[] = {0xff, 0x9e, 0x02, 0x20, 0xb0, 0xed, 0xb0, 0x40, 0xff, 0x10,
-                                               0xbe, 0xe0, 0xff, 0xe0, 0x34, 0xff, 0x15, 0x12, 0x34, 0x70};
-    static const unsigned char tddeploy_r[] = {0x00, 0x11, 0x11, 0x00, 0x00, 0xaa, 0xdd, 0xff, 0x11, 0x33,
-                                               0x44, 0x44, 0x33, 0x00, 0xbb, 0xcc, 0xee, 0xdd, 0xee, 0x22};
-    static const unsigned char constru_c[] = {0x20, 0x12, 0x60, 0x0f, 0x06, 0x0f, 0x13, 0x02, 0x00, 0xf5,
-                                              0x0c, 0x30, 0xd0, 0x00, 0x0c, 0xf8, 0x00, 0x00, 0xfe, 0xa0};
-    static const unsigned char constru_r[] = {0x44, 0x11, 0x66, 0x22, 0x22, 0x22, 0x11, 0x22, 0xff, 0xcc,
-                                              0xdd, 0xaa, 0xee, 0xcc, 0x00, 0x00, 0x00, 0x22, 0x22, 0x33};
-    static const TF_ProbeNeedle needles[] = {
-        {"NODEPLY_C", nodeply_c, sizeof(nodeply_c)},
-        {"NODEPLY_R", nodeply_r, sizeof(nodeply_r)},
-        {"TDDEPLOY_C", tddeploy_c, sizeof(tddeploy_c)},
-        {"TDDEPLOY_R", tddeploy_r, sizeof(tddeploy_r)},
-        {"CONSTRU_C", constru_c, sizeof(constru_c)},
-        {"CONSTRU_R", constru_r, sizeof(constru_r)},
-    };
-    TF_Probe_ClientG_Needles(needles, (int)(sizeof(needles) / sizeof(needles[0])), "eva");
-}
-/*
-** Tiberian Factions -- per-faction radar crest, stage-1 RAM probe (docs/radar-crest-ram-spike.md).
-** READ-ONLY. Asks whether a CPU-readable copy of the radar-slot crest pixels exists in
-** ClientG.exe at match start. Needles are two 8-pixel opaque runs (rows 249 and 463 of the
-** 794x713 UI_SIDEBAR_FACTIONLOGO_ALLIES/_SOVIET regions, which currently hold identical
-** pixels) taken straight from the shipped MT_COMMANDBAR_COMMON.TGA, in BGRA (= the TGA file
-** bytes = the natural decoded layout) and RGBA. Two rows at the same x let the hit
-** addresses reveal the in-memory stride: 27484 = the whole atlas, 3176 = a cropped region
-** texture; the sign gives top- vs bottom-origin. Two hits per needle (one per region) with
-** the whole-atlas stride means the entire atlas is resident.
-*/
-static void TF_Probe_ClientG_Crest(void)
-{
-    static const unsigned char row249_bgra[] = {0x00, 0x01, 0x02, 0xff, 0x10, 0x0e, 0x0f, 0xff, 0x4f, 0x45, 0x40, 0xff,
-                                                0xab, 0x96, 0x87, 0xff, 0xd7, 0xbd, 0xa8, 0xff, 0xc8, 0xad, 0x97, 0xff,
-                                                0xcb, 0xae, 0x99, 0xff, 0xce, 0xb5, 0xa1, 0xff};
-    static const unsigned char row249_rgba[] = {0x02, 0x01, 0x00, 0xff, 0x0f, 0x0e, 0x10, 0xff, 0x40, 0x45, 0x4f, 0xff,
-                                                0x87, 0x96, 0xab, 0xff, 0xa8, 0xbd, 0xd7, 0xff, 0x97, 0xad, 0xc8, 0xff,
-                                                0x99, 0xae, 0xcb, 0xff, 0xa1, 0xb5, 0xce, 0xff};
-    static const unsigned char row463_bgra[] = {0xa6, 0x9b, 0x96, 0xff, 0x8e, 0x84, 0x7d, 0xff, 0x94, 0x89, 0x81, 0xff,
-                                                0x97, 0x8e, 0x83, 0xff, 0xa0, 0x99, 0x92, 0xff, 0x9b, 0x91, 0x8a, 0xff,
-                                                0xaa, 0xa0, 0x97, 0xff, 0x6a, 0x60, 0x56, 0xff};
-    static const unsigned char row463_rgba[] = {0x96, 0x9b, 0xa6, 0xff, 0x7d, 0x84, 0x8e, 0xff, 0x81, 0x89, 0x94, 0xff,
-                                                0x83, 0x8e, 0x97, 0xff, 0x92, 0x99, 0xa0, 0xff, 0x8a, 0x91, 0x9b, 0xff,
-                                                0x97, 0xa0, 0xaa, 0xff, 0x56, 0x60, 0x6a, 0xff};
-    static const TF_ProbeNeedle needles[] = {
-        {"CREST_R249_BGRA", row249_bgra, sizeof(row249_bgra)},
-        {"CREST_R249_RGBA", row249_rgba, sizeof(row249_rgba)},
-        {"CREST_R463_BGRA", row463_bgra, sizeof(row463_bgra)},
-        {"CREST_R463_RGBA", row463_rgba, sizeof(row463_rgba)},
-    };
-    TF_Probe_ClientG_Needles(needles, (int)(sizeof(needles) / sizeof(needles[0])), "crest");
-}
-#endif // TF_DEV_BUILD
-
 // Copies <mod>/CustomMaps/ into Local_Custom_Maps/Red_Alert/ once the mod's CCDATA path registers (a Workshop mod
 // cannot ship into Documents); with TF_TD_MAPS at 0 it deletes those copies.
 static void TF_Install_Bundled_Maps(const char* mod_path)
@@ -5264,19 +4924,6 @@ void DLLExportClass::Add_Mod_Path(const char* mod_path)
     ModSearchPaths.Add(copy_path);
 
     TF_Install_Bundled_Maps(mod_path);
-
-#if 0 // TF DIAG: mod-path/scenario-resolution spike (2026-06-09). Flip to 1 to re-enable.
-    {
-        char dbg[512];
-        const char* up = getenv("USERPROFILE");
-        snprintf(dbg, sizeof(dbg), "%s/Documents/CnCRemastered/tf_paths.log", up ? up : ".");
-        FILE* fp = fopen(dbg, "a");
-        if (fp) {
-            fprintf(fp, "Add_Mod_Path: '%s'\n", mod_path ? mod_path : "(null)");
-            fclose(fp);
-        }
-    }
-#endif
 }
 
 /**************************************************************************************************
@@ -5318,21 +4965,6 @@ void DLLExportClass::Set_Content_Directory(const char* content_directory)
 
     CCFileClass::Set_Search_Drives(all_paths);
 
-#if 0 // TF DIAG: mod-path/scenario-resolution spike (2026-06-09). Flip to 1 to re-enable.
-    {
-        char dbg[512];
-        const char* up = getenv("USERPROFILE");
-        snprintf(dbg, sizeof(dbg), "%s/Documents/CnCRemastered/tf_paths.log", up ? up : ".");
-        FILE* fp = fopen(dbg, "a");
-        if (fp) {
-            fprintf(fp,
-                    "Set_Content_Directory: content='%s' -> search drives '%s'\n",
-                    content_directory ? content_directory : "(null)",
-                    all_paths);
-            fclose(fp);
-        }
-    }
-#endif
     delete[] all_paths;
 }
 
@@ -5479,26 +5111,6 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
             }
             strncpy(new_event.SoundEffect.SoundEffectName, name, 16);
             new_event.SoundEffect.SoundEffectName[15] = '\0';
-
-#if 0 // TF DIAG — OFF for release (was unguarded; flip to 1 to log radar dispatch).
-            // Diagnostic: confirm dispatch runs + log ActLike at time of call.
-            // Path follows project convention (reference-diagnostic-paths).
-            const char* up = getenv("USERPROFILE");
-            if (up != NULL) {
-                char path[512];
-                snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_radar_dispatch.log", up);
-                FILE* f = fopen(path, "a");
-                if (f != NULL) {
-                    fprintf(f, "[radar] sfx_idx=%d player_ptr=%s actlike=%d house=%d -> name=%s\n",
-                            sound_effect_index,
-                            player_ptr ? "yes" : "no",
-                            player_ptr ? (int)player_ptr->ActLike : -1,
-                            (player_ptr && player_ptr->Class) ? (int)player_ptr->Class->House : -1,
-                            name);
-                    fclose(f);
-                }
-            }
-#endif
         }
 
         /*
@@ -5585,24 +5197,6 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
                 strncpy(new_event.SoundEffect.SoundEffectName, td_name, 16);
                 new_event.SoundEffect.SoundEffectName[15] = '\0';
             }
-
-#if 0
-            // Diagnostic (flip to 1 if the ear-check finds a silent/RA voice):
-            // logs which TD asset name we dispatched. Kept stubbed to avoid
-            // per-voice file I/O in the shipping build (feedback-keep-diagnostics-until-v1).
-            const char* up = getenv("USERPROFILE");
-            if (up != NULL) {
-                char path[512];
-                snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_voice_dispatch.log", up);
-                FILE* f = fopen(path, "a");
-                if (f != NULL) {
-                    fprintf(f, "[voice] sfx_idx=%d actlike=%d var=%d -> name=%s\n",
-                            sound_effect_index, (int)player_ptr->ActLike, variation,
-                            new_event.SoundEffect.SoundEffectName);
-                    fclose(f);
-                }
-            }
-#endif
         }
     } else {
         strncpy(new_event.SoundEffect.SoundEffectName, "BADINDEX", 16);
@@ -6468,27 +6062,6 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Get_Game_State(GameStateReques
     }
     }
 
-    // Tiberian Factions diag 2026-05-31: log every state query the launcher makes, so the
-    // LAST state_type before the EXE NULL-deref crash (MCV deploy, Hum-vee/Buggy) tells us
-    // WHICH state the launcher choked processing (LAYERS/SIDEBAR/OCCUPIER/...). Flip #if 1 -> 0.
-#if 0 // TF DIAG — OFF for release (was #if 1; flip to 1 to re-enable logging).
-    {
-        static FILE* s_state_log = NULL;
-        if (s_state_log == NULL) {
-            char spath[512];
-            const char* sp = getenv("USERPROFILE");
-            snprintf(spath, sizeof(spath), "%s/Documents/CnCRemastered/tf_state_query.log",
-                     (sp != NULL && sp[0] != '\0') ? sp : ".");
-            s_state_log = fopen(spath, "w");
-        }
-        if (s_state_log != NULL) {
-            fprintf(s_state_log, "state_type=%d got=%d buf=%u\n",
-                    (int)state_type, (int)got_state, buffer_size);
-            fflush(s_state_log);
-        }
-    }
-#endif
-
     return got_state;
 }
 
@@ -6585,92 +6158,9 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         height = TF_HUNTER_DRAW_SIZE;
     }
 
-    // Diagnostic 2026-05-19: log Draw calls for every TD-prefixed building
-    // to see what AssetName / shape_file_name / BState the engine passes per
-    // frame. Used to diagnose the placement → buildup Petroglyph flash —
-    // we suspect the launcher does an asset lookup using something other
-    // than our tileset name for one transitional frame.
-    //
-    // No rate limit so the placement transition is fully captured. Disable
-    // by flipping the `#if 1` to `#if 0`. Per
-    // [[feedback-keep-diagnostics-until-v1]] keep in source.
-#if 0 // TF DIAG — OFF for release (was #if 1; flip to 1 to re-enable logging).
-    if (object != NULL && object->What_Am_I() == RTTI_BUILDING) {
-        BuildingTypeClass const* btc = (BuildingTypeClass const*)&object->Class_Of();
-        bool is_td = (btc->IniName[0] == 'T' && btc->IniName[1] == 'D');
-        if (is_td) {
-            static FILE* s_draw_log = NULL;
-            if (s_draw_log == NULL) {
-                char dpath[512];
-                const char* dprof = getenv("USERPROFILE");
-                if (dprof != NULL && dprof[0] != '\0') {
-                    snprintf(dpath, sizeof(dpath),
-                             "%s/Documents/CnCRemastered/tf_draw_intercept.log", dprof);
-                } else {
-                    strcpy(dpath, "tf_draw_intercept.log");
-                }
-                s_draw_log = fopen(dpath, "w");
-            }
-            if (s_draw_log != NULL) {
-                BuildingClass const* bld = (BuildingClass const*)object;
-                char const* pri_name = (btc->PrimaryWeapon != NULL && btc->PrimaryWeapon->Name() != NULL)
-                                           ? btc->PrimaryWeapon->Name() : "(null)";
-                char const* sec_name = (btc->SecondaryWeapon != NULL && btc->SecondaryWeapon->Name() != NULL)
-                                           ? btc->SecondaryWeapon->Name() : "(null)";
-                fprintf(s_draw_log,
-                        "Draw IniName=%s GraphicName=%s shape_file_name=%s "
-                        "BState=%d HP=%d shape#=%d w=%d h=%d "
-                        "ImageData=%p BuildupData=%p Primary=%s Secondary=%s "
-                        "TurretEq=%d Armor=%d TarCom=%lx\n",
-                        btc->IniName,
-                        (btc->Graphic_Name() != NULL ? btc->Graphic_Name() : "(null)"),
-                        (shape_file_name != NULL ? shape_file_name : "(null)"),
-                        (int)bld->BState,
-                        (int)bld->Strength,
-                        shape_number, width, height,
-                        btc->Get_Image_Data(), btc->Get_Buildup_Data(),
-                        pri_name, sec_name, (int)btc->IsTurretEquipped,
-                        (int)btc->Armor, (long)bld->TarCom);
-                fflush(s_draw_log);
-            }
-        }
-    }
-#endif
     CNCObjectStruct& new_object = ObjectList->Objects[TotalObjectCount + CurrentDrawCount];
     memset(&new_object, 0, sizeof(new_object));
     Convert_Type(object, new_object);
-
-    // Tiberian Factions diag 2026-05-31: log EVERY object converted into the launcher's
-    // render list (not just TD buildings). The EXE NULL-derefs on MCV deploy after the
-    // Hum-vee/Buggy were added; the last line before the crash names the object whose data
-    // the launcher choked on, and AssetName/ImageData expose the NULL. Flip #if 0 -> 1 to re-enable.
-#if 0 // TF DIAG (2026-05-31 MCV-crash hunt) — OFF for release; per-object/per-frame log.
-    {
-        static FILE* s_obj_log = NULL;
-        if (s_obj_log == NULL) {
-            char opath[512];
-            const char* op = getenv("USERPROFILE");
-            snprintf(opath, sizeof(opath), "%s/Documents/CnCRemastered/tf_objlist.log",
-                     (op != NULL && op[0] != '\0') ? op : ".");
-            s_obj_log = fopen(opath, "w");
-        }
-        if (s_obj_log != NULL) {
-            const char* ini = "(?)";
-            void const* img = NULL;
-            if (object != NULL) {
-                ObjectTypeClass const& otc = object->Class_Of();
-                ini = (otc.IniName != NULL) ? otc.IniName : "(nullini)";
-                img = otc.Get_Image_Data();
-            }
-            fprintf(s_obj_log,
-                    "rtti=%d ini=%s Type=%d Asset='%s' ImageData=%p shape#=%d scale=%ld slot=%d ow=%d oh=%d\n",
-                    (object != NULL ? (int)object->What_Am_I() : -1), ini,
-                    (int)new_object.Type, new_object.AssetName, img, shape_number,
-                    (long)scale, TotalObjectCount + CurrentDrawCount, width, height);
-            fflush(s_obj_log);
-        }
-    }
-#endif
 
     if (new_object.Type == UNKNOWN) {
         return;
@@ -6845,34 +6335,6 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     }
 #endif
 
-    // Tiberian Factions diag 2026-05-31 (pass 2): log the FINAL AssetName the launcher will
-    // use to resolve each object's render asset. The launcher NULL-derefs on MCV deploy when an
-    // object's AssetName isn't in its asset index; the last line before the crash names it. The
-    // earlier tf_objlist.log logged before AssetName was set (always ''). Flip #if 0 -> 1 to re-enable.
-#if 0 // TF DIAG (2026-05-31 MCV-crash hunt) — OFF for release; per-object/per-frame log.
-    {
-        static FILE* s_asset_log = NULL;
-        if (s_asset_log == NULL) {
-            char apath[512];
-            const char* ap = getenv("USERPROFILE");
-            snprintf(apath, sizeof(apath), "%s/Documents/CnCRemastered/tf_assetname.log",
-                     (ap != NULL && ap[0] != '\0') ? ap : ".");
-            s_asset_log = fopen(apath, "w");
-        }
-        if (s_asset_log != NULL) {
-            const char* gname = (object != NULL && object->Class_Of().Graphic_Name() != NULL)
-                                    ? object->Class_Of().Graphic_Name() : "(nullgfx)";
-            fprintf(s_asset_log,
-                    "rtti=%d Type=%d Asset='%s' TypeName='%s' shapefile=%s gfx='%s' slot=%d\n",
-                    (object != NULL ? (int)object->What_Am_I() : -1), (int)new_object.Type,
-                    new_object.AssetName, new_object.TypeName,
-                    (shape_file_name != NULL ? shape_file_name : "(null)"), gname,
-                    TotalObjectCount + CurrentDrawCount);
-            fflush(s_asset_log);
-        }
-    }
-#endif
-
     new_object.Owner = (base_object != NULL) ? ((override_owner != HOUSE_NONE) ? override_owner : base_object->Owner)
                                              : (char)object->Owner();
     // TF: the dropship is a bullet, which has no house; it takes the bay's, so its trim takes the house colour.
@@ -6898,52 +6360,11 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         if (new_object.Type == BUILDING) {
             BuildingClass* building = (BuildingClass*)object;
 
-#if 0
-            // Phase 1e proxy (donor IniName → launcher) — DISABLED 2026-05-18.
-            // The launcher's sprite lookup is cross-tileset on the original IniName,
-            // so a [NewBuildings] entry using a real TD/RA tileset name (e.g. NUKE,
-            // HAND, PYLE) resolves correctly without this override. Keeping the
-            // block under #if 0 in case a future case needs a runtime IniName proxy.
-            BuildingTypeClass const& donor = BuildingTypeClass::As_Reference(building->Class->Type);
-            if (stricmp(donor.IniName, building->Class->IniName) != 0) {
-                strncpy(new_object.TypeName, donor.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
-                strncpy(new_object.AssetName, donor.Graphic_Name(), CNC_OBJECT_ASSET_NAME_LENGTH);
-            }
-#endif
-
             // TF: walls never take the MAKE suffix. No wall has a <name>MAKE asset, and the launcher crashes looking
             // one up for a wall in BSTATE_CONSTRUCTION, such as the placement preview.
             if (building->BState == BSTATE_CONSTRUCTION && !building->Class->IsWall) {
                 strncat(new_object.AssetName, "MAKE", CNC_OBJECT_ASSET_NAME_LENGTH);
             }
-            // Diagnostic 2026-05-19: log the *final* AssetName the launcher
-            // receives for TD-prefixed buildings — this is the tileset name
-            // it will look up. Petroglyph flash on placement is suspected to
-            // be a transient mismatch here.
-#if 0 // TF DIAG — OFF for release (was #if 1; flip to 1 to re-enable logging).
-            if (building->Class->IniName[0] == 'T' && building->Class->IniName[1] == 'D') {
-                static FILE* s_asset_log = NULL;
-                if (s_asset_log == NULL) {
-                    char dpath[512];
-                    const char* dprof = getenv("USERPROFILE");
-                    if (dprof != NULL && dprof[0] != '\0') {
-                        snprintf(dpath, sizeof(dpath),
-                                 "%s/Documents/CnCRemastered/tf_asset_name.log", dprof);
-                    } else {
-                        strcpy(dpath, "tf_asset_name.log");
-                    }
-                    s_asset_log = fopen(dpath, "w");
-                }
-                if (s_asset_log != NULL) {
-                    fprintf(s_asset_log,
-                            "TypeName=%s AssetName=%s BState=%d shape#=%d Strength=%d\n",
-                            new_object.TypeName, new_object.AssetName,
-                            (int)building->BState, shape_number,
-                            (int)building->Strength);
-                    fflush(s_asset_log);
-                }
-            }
-#endif
             const BuildingTypeClass* building_type = building->Class;
             /*
             **	The launcher draws a unit behind a building by the cells it is handed here. The TS
@@ -8595,29 +8016,6 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
 
                 TechnoTypeClass const* tech = Fetch_Techno_Type(Map.Column[c].Buildables[b].BuildableType,
                                                                 Map.Column[c].Buildables[b].BuildableID);
-
-                // Tiberian Factions diag 2026-05-31: log every sidebar buildable the DLL hands
-                // the launcher (col/type/id + the resolved techno + its IniName). A NULL tech or a
-                // bad entry here would make the launcher NULL-deref. Flip #if 1 -> 0 to disable.
-#if 0 // TF DIAG — OFF for release (was #if 1; flip to 1 to re-enable logging).
-                {
-                    static FILE* s_sb_log = NULL;
-                    if (s_sb_log == NULL) {
-                        char bpath[512];
-                        const char* bp = getenv("USERPROFILE");
-                        snprintf(bpath, sizeof(bpath), "%s/Documents/CnCRemastered/tf_sidebar_entry.log",
-                                 (bp != NULL && bp[0] != '\0') ? bp : ".");
-                        s_sb_log = fopen(bpath, "w");
-                    }
-                    if (s_sb_log != NULL) {
-                        fprintf(s_sb_log, "col=%d b=%d BType=%d BID=%d tech=%p ini=%s\n",
-                                c, b, (int)Map.Column[c].Buildables[b].BuildableType,
-                                Map.Column[c].Buildables[b].BuildableID, (void const*)tech,
-                                (tech != NULL && tech->IniName != NULL) ? tech->IniName : "(null)");
-                        fflush(s_sb_log);
-                    }
-                }
-#endif
 
                 sidebar_entry.SuperWeaponType = SW_NONE;
 
@@ -11073,38 +10471,6 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
                     apron_entry.CellX = Cell_X(cell);
                     apron_entry.CellY = Cell_Y(cell);
                     apron_entry.ShapeIndex = (unsigned short)(tx + ty * apron_type.Width);
-#if TF_DEV_BUILD
-                    // Apron emission ground truth (2026-08-17): the WF pad
-                    // rendered partially while its packed tiles proved
-                    // correct. One line per cell, once per process: a cell
-                    // missing here was never emitted (loop-side fault); all
-                    // cells present with correct fields = launcher-side.
-                    {
-                        static unsigned char _logged[MAP_CELL_TOTAL];
-                        if (!_logged[cell]) {
-                            _logged[cell] = 1;
-                            const char* up = getenv("USERPROFILE");
-                            char p[600];
-                            snprintf(p, sizeof(p), "%s/MOD_DEBUG_AI.txt", up ? up : ".");
-                            FILE* f = fopen(p, "a");
-                            if (f != NULL) {
-                                fprintf(f,
-                                        "APRON emit %s: cell %d,%d tile %d,%d shape %d "
-                                        "pos %d,%d owner house %d\n",
-                                        apron_type.IniName,
-                                        Cell_X(cell),
-                                        Cell_Y(cell),
-                                        tx,
-                                        ty,
-                                        (int)apron_entry.ShapeIndex,
-                                        (int)apron_entry.PositionX,
-                                        (int)apron_entry.PositionY,
-                                        (int)apron_entry.Owner);
-                                fclose(f);
-                            }
-                        }
-                    }
-#endif
                     apron_entry.IsSmudge = false;
                     apron_entry.IsOverlay = true;
                     apron_entry.IsResource = false;
@@ -11133,7 +10499,6 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             int tf_row = cell_ptr->SmudgeData / smudge_type.Width;
             int tf_top_left = (int)cell - tf_col - tf_row * MAP_CELL_W;
             BuildingClass* tf_owner = NULL;
-            int tf_owner_row = -1;
             for (int tf_r = 0; tf_r < 4 && tf_owner == NULL; tf_r++) {
                 for (int tf_c = 0; tf_c < smudge_type.Width; tf_c++) {
                     int tf_probe = tf_top_left - tf_r * MAP_CELL_W + tf_c;
@@ -11146,7 +10511,6 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
                     }
                     if (tf_owner == NULL) {
                         tf_owner = tf_occ;
-                        tf_owner_row = tf_r;
                     }
                     if (tf_occ->Visual_Character() == VISUAL_HIDDEN) {
                         tf_owner = tf_occ;
@@ -11155,66 +10519,7 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
                     }
                 }
             }
-
-#if TF_DEV_BUILD // TF_BIB_DIAG -- every drawn (non-hidden) bib cell: what did it resolve to?
-            if (!tf_hide_bib && (Frame % 60) == 0) {
-                const char* up = getenv("USERPROFILE");
-                char path[600];
-                snprintf(path, sizeof(path), "%s/tf_bib.log", up ? up : ".");
-                FILE* bf = fopen(path, "a");
-                if (bf != NULL) {
-                    if (tf_owner != NULL) {
-                        fprintf(bf,
-                                "F%ld cell=%d (x=%d y=%d) %s data=%d -> %s(vc=%d,H%d) at row -%d\n",
-                                (long)Frame,
-                                (int)cell,
-                                Cell_X(cell),
-                                Cell_Y(cell),
-                                smudge_type.IniName,
-                                (int)cell_ptr->SmudgeData,
-                                tf_owner->Class->IniName,
-                                (int)tf_owner->Visual_Character(),
-                                (int)tf_owner->Owner(),
-                                tf_owner_row);
-                    } else {
-                        fprintf(bf,
-                                "F%ld cell=%d (x=%d y=%d) %s data=%d -> UNRESOLVED\n",
-                                (long)Frame,
-                                (int)cell,
-                                Cell_X(cell),
-                                Cell_Y(cell),
-                                smudge_type.IniName,
-                                (int)cell_ptr->SmudgeData);
-                    }
-                    fclose(bf);
-                }
-            }
-#endif
         }
-
-#if 0 // TF DIAGNOSTIC stub: bib entries on TD-template cells (~/tf_bib.log). \
-      // Resolved 2026-06-10 (bibs render fine with ground suppression); flip \
-      // to 1 if bib rendering regresses.
-        if (cell_ptr->TType >= TEMPLATE_TDSH1 && cell_ptr->TType < TEMPLATE_COUNT
-            && cell_ptr->Smudge >= SMUDGE_BIB1 && cell_ptr->Smudge <= SMUDGE_BIB3
-            && (Frame % 15) == 0) {
-            const char* up = getenv("USERPROFILE");
-            if (up != NULL) {
-                char path[512];
-                snprintf(path, sizeof(path), "%s/tf_bib.log", up);
-                FILE* f = fopen(path, "a");
-                if (f != NULL) {
-                    fprintf(f,
-                            "frame=%d cell=%d smudge=%d data=%d img=%p asset=%s "
-                            "entry_index=%d\n",
-                            Frame, (int)cell, (int)cell_ptr->Smudge,
-                            (int)cell_ptr->SmudgeData, smudge_type.Get_Image_Data(),
-                            smudge_type.IniName, entry_index);
-                    fclose(f);
-                }
-            }
-        }
-#endif
 
         if (!tf_hide_bib && smudge_type.Get_Image_Data() != NULL) {
 

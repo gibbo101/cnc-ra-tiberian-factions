@@ -220,7 +220,7 @@ launcher gets it too (see "Launcher-resident patches" below).
 Only the host simulates a LAN game, so everything the DLL
 did to a launcher (crest, TD tab icons, era EVA lines, click specials) used to reach the host's
 launcher only. **But ClientG loads the mod's DLL itself, briefly, at its own startup, on every
-machine** (dev `tf_dll_load.log`: `attach ... ClientG.exe`, then `detach` a moment later). That
+machine** (it attaches inside ClientG.exe and detaches a moment later). That
 load is the way in:
 
 - `DllMain` -> `TF_Patch_Launcher_At_Load` (only when the process is ClientG.exe) writes the

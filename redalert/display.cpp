@@ -4143,31 +4143,6 @@ void DisplayClass::Mouse_Left_Release(CELL cell, int x, int y, ObjectClass* obje
                 AllowVoice = true;
                 FormMove = false;
 
-#if TF_DEV_BUILD // TF DEV: A* stage-2 destination-spread diagnostic. Confirms the spread fired DLL-side and shows the distinct cells handed out. Compiled out of release builds.
-                if (do_spread && spread_claimed.Count() > 0) {
-                    static FILE* tf_spread_log = NULL;
-                    if (tf_spread_log == NULL) {
-                        const char* h = getenv("USERPROFILE");
-                        if (h == NULL) {
-                            h = getenv("HOME");
-                        }
-                        if (h != NULL) {
-                            char p[512];
-                            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_astar.log", h);
-                            tf_spread_log = fopen(p, "a");
-                        }
-                    }
-                    if (tf_spread_log != NULL) {
-                        fprintf(tf_spread_log, "SPREAD: click=(%d,%d) units=%d cells:", Cell_X(cell), Cell_Y(cell), spread_claimed.Count());
-                        for (int i = 0; i < spread_claimed.Count() && i < 24; i++) {
-                            fprintf(tf_spread_log, " (%d,%d)", Cell_X(spread_claimed[i]), Cell_Y(spread_claimed[i]));
-                        }
-                        fprintf(tf_spread_log, "\n");
-                        fflush(tf_spread_log);
-                    }
-                }
-#endif
-
                 if (action == ACTION_REPAIR && object->What_Am_I() == RTTI_BUILDING) {
                     OutList.Add(EventClass(EventClass::REPAIR, TargetClass(object)));
                 }

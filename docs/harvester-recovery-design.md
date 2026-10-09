@@ -98,7 +98,7 @@ global meaning of `Zones[]` and touches **every** consumer — AI target selecti
 a full playtest cycle. **Too big for the payoff vs. the proven symptom-patch.**
 
 ## Diagnostic instrument
-`tf_astar.log` (TF_DEV_BUILD): `HARV-BLACKLIST` / `HARV-WAIT` (harvester recovery), `CHOKE: ... mission=N
+`tf_astar.log` (TF_DEV_BUILD): `HARV-BLACKLIST` (harvester recovery), `CHOKE: ... mission=N
 status=M` (drive no-path branch, now with mission/status), `A* FALLBACK` tally. An idle harvester that
 has stopped pathing emits nothing — the no-progress detector in `UnitClass::AI` is the instrument that
 sees it.
