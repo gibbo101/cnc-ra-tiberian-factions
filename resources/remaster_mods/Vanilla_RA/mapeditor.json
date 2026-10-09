@@ -1026,11 +1026,9 @@
       "owner": "GoodGuy",
       "factory_overlay": null,
       "frame_offset": 0,
-      "graphics_source": null,
+      "graphics_source": "tsctwr",
       "z_order": "default",
-      "flags": [
-        "Turret"
-      ]
+      "flags": []
     },
     {
       "id": 141,
@@ -1046,11 +1044,9 @@
       "owner": "GoodGuy",
       "factory_overlay": null,
       "frame_offset": 0,
-      "graphics_source": null,
+      "graphics_source": "tsctwr",
       "z_order": "default",
-      "flags": [
-        "Turret"
-      ]
+      "flags": []
     },
     {
       "id": 142,
@@ -1066,11 +1062,9 @@
       "owner": "GoodGuy",
       "factory_overlay": null,
       "frame_offset": 0,
-      "graphics_source": null,
+      "graphics_source": "tsctwr",
       "z_order": "default",
-      "flags": [
-        "Turret"
-      ]
+      "flags": []
     },
     {
       "id": 143,
