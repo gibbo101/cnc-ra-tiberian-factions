@@ -6,7 +6,7 @@ a human has drawn (compositions on the reconstructed TS scene
 background). The TS packers also generate some of these names from game
 assets; they check this directory first, and this script re-asserts every
 override in one pass — run it after any packer that touches SRGB, and before
-ts_mk2_cooldown_cameos.py, which bakes its countdown sets from the base TGAs.
+ts_mk2_cooldown_cameos.py, which bakes the locked cameos from the base TGAs.
 
 License: GPL v3.
 """

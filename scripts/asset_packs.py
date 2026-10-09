@@ -13,8 +13,8 @@ paths and a new TS, RA2 or C&C3 asset lands in its pack without a list to mainta
   graphics   TS* and RAILFX (not TSLA*, RA's Tesla Coil), R2*, C3<letter> (bare C3 is RA's
              civilian). The HD-rebuilt TS walls, gates and component towers go to TS-HD.
   cameos     the plain BuildIcon of each of those objects; an HD cameo (scripts/ts_hd_cameos.py)
-             sits in TS-HD beside the classic one and wins at staging. Badged, locked, faction-mask and
-             countdown variants, and the superweapon icons, drive Tiberian Factions' sidebar and
+             sits in TS-HD beside the classic one and wins at staging. Badged, locked and faction-mask
+             variants, and the superweapon icons, drive Tiberian Factions' sidebar and
              stay with the mod.
   sounds     TS_SFX_EVA_* EVA, TS_SFX_UNT_* unit voices, other TS* effects; RA2 and C&C3 crew
              lines (select, move, attack takes) apart from their weapon and engine sounds.
@@ -92,8 +92,8 @@ def graphics_pack(name):
     return None
 
 
-# the sidebar variants: one base-32 faction-mask digit (TS GDI alone is G), locked, countdown frame
-CAMEO_VARIANT = re.compile(r"_([0-9A-V]|LK|CD\d{3})$")
+# the sidebar variants: one base-32 faction-mask digit (TS GDI alone is G), locked
+CAMEO_VARIANT = re.compile(r"_([0-9A-V]|LK)$")
 
 
 def cameo_pack(icon):

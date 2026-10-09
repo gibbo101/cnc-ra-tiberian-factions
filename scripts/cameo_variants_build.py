@@ -152,11 +152,10 @@ def main():
         # IniNames overflow the mask suffix. They keep their existing badges.
         # Their baked badge variants (TF_Apply_Special_Badge's "S<hex>_" keys)
         # are generated entries too, not buildables -- skip them, along with
-        # the other bespoke DLL-written key families: the dropship cooldown
-        # countdown keys (_CDnnn) and the locked-cameo keys (_LK), which carry
-        # their own art states and never take a badge suffix.
+        # the locked-cameo keys (_LK), which the DLL writes and which never
+        # take a badge suffix.
         if (asset.startswith("SW_") or re.match(r"S[0-9A-F]_", asset)
-                or re.search(r"(_CD\d+|_LK)$", asset)):
+                or re.search(r"_LK$", asset)):
             continue
 
         pristine = plain.get(entry_name, current_icon.group(1).strip())
