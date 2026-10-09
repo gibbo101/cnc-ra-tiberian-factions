@@ -1,39 +1,15 @@
 common/keyframe.cpp	a date	mrparrot 2021-11-22: A better alternative to disabling bigshapebuffer
-redalert/aircraft.cpp	a date	** helipad", 2026-08-01). A live parked plane implies MISSION_ENTER at touchdown
-redalert/aircraft.cpp	a date	Diagnostic 2026-05-21: unload log is unexpectedly empty — log file
-redalert/building.cpp	a date	2026-05-25 to diagnose TDHPAD's missing helicopter cameos. Per
-redalert/building.cpp	a date	Diagnostic 2026-05-20: capture vehicle-exit data for TD-mod
-redalert/building.cpp	a date	result logging (stubbed). Re-enabled 2026-05-25 to diagnose
-redalert/bullet.cpp	a date	Used 2026-05-22 to diagnose TDATWR close-range targeting (root cause: Speed
 redalert/defines.h	a date	Mech Division (dropship-bay group order) — a purchasable TOKEN that never touches the map: Deliver_Cargo expands it into 3 Titans + 2 Wolverines at the unload beat. Cost 2800 (3400 sticker, starport discount — Luke, 2026-08-12).
 redalert/defines.h	a personal name	Mech Division (dropship-bay group order) — a purchasable TOKEN that never touches the map: Deliver_Cargo expands it into 3 Titans + 2 Wolverines at the unload beat. Cost 2800 (3400 sticker, starport discount — Luke, 2026-08-12).
 redalert/dllinterface.cpp	a date	** TEMPORARY (2026-09-06): the credit tick and radar toggle are reported as playing
 redalert/dllinterface.cpp	a date	** Tiberian Factions diag 2026-08-07: the war factory sandwich.
 redalert/dllinterface.cpp	a date	2026-08-13, docs/launcher-render-contracts.md): the launcher
 redalert/dllinterface.cpp	a date	2x2 box, approved 2026-08-13
-redalert/dllinterface.cpp	a date	Apron emission ground truth (2026-08-17): the WF pad
 redalert/dllinterface.cpp	a date	Diagnostic 2026-05-19 for TDNUK2 sidebar invisibility.
-redalert/dllinterface.cpp	a date	Diagnostic 2026-05-19: log Draw calls for every TD-prefixed building
-redalert/dllinterface.cpp	a date	Diagnostic 2026-05-19: log the *final* AssetName the launcher
-redalert/dllinterface.cpp	a date	Phase 1e proxy (donor IniName → launcher) — DISABLED 2026-05-18.
-redalert/dllinterface.cpp	a date	Resolved 2026-06-10 (bibs render fine with ground suppression); flip \
-redalert/dllinterface.cpp	a date	TF DIAG (2026-05-31 MCV-crash hunt) — OFF for release; per-object/per-frame log.
-redalert/dllinterface.cpp	a date	TF DIAG: mod-path/scenario-resolution spike (2026-06-09). Flip to 1 to re-enable.
 redalert/dllinterface.cpp	a date	TSFACT needs no case since the 3x2 plot (2026-08-13): the
 redalert/dllinterface.cpp	a date	Tiberian Factions debug dump (2026-05-16 v0.2.0-alpha investigation).
-redalert/dllinterface.cpp	a date	Tiberian Factions diag 2026-05-31 (pass 2): log the FINAL AssetName the launcher will
-redalert/dllinterface.cpp	a date	Tiberian Factions diag 2026-05-31: log EVERY object converted into the launcher's
-redalert/dllinterface.cpp	a date	Tiberian Factions diag 2026-05-31: log every sidebar buildable the DLL hands
-redalert/dllinterface.cpp	a date	Tiberian Factions diag 2026-05-31: log every state query the launcher makes, so the
-redalert/house.cpp	a date	Diagnostic hook 2026-05-19: log Can_Build calls for mod-defined building
-redalert/house.cpp	a date	TF DIAGNOSTIC 2026-05-27: stubbed after multi-plane convoy
-redalert/house.cpp	a date	TF DIAGNOSTIC 2026-05-27: when Check_Pertinent_Structures decides
-redalert/house.cpp	a date	for the 2026-05-20 GDI roster bring-up where E3 isn't appearing in the
 redalert/scenario.cpp	a date	** 12% over a 6-stage cosine (play-picked 2026-08-26); tank-end discs are further
-redalert/scenario.cpp	a date	TF DIAG: mod-path/scenario-resolution spike (2026-06-09). Flip to 1 to re-enable.
-redalert/scenario.cpp	a date	TF DIAGNOSTIC 2026-06-07: start-location overlap. Flip to 1 to re-enable. Verified fixed over 9 games (bijection, no collisions).
 redalert/techno.cpp	a date	TF DIAGNOSTIC 2026-05-27 (stubbed under #if 0 per
-redalert/techno.cpp	a date	toggle for TD-ported weapons). Confirmed working 2026-05-22 against
 redalert/unit.cpp	a date	** 2026-06-17 = MATCH the current TD full-load time; tune in playtest -- see
 redalert/unit.cpp	a date	** 2026-08-04 23:36).
 redalert/unit.cpp	a date	** follows the TD logic verbatim here -- Luke, 2026-08-05 00:45).
