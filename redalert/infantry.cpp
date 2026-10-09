@@ -667,6 +667,14 @@ void InfantryClass::Draw_It(int x, int y, WindowNumberType window) const
 
 extern bool MPSuperWeaponDisable;
 
+
+// Whether this engineer captures in one use at any health: a GDI or Nod house's engineers and the TS Engineer.
+// Allied and Soviet engineers keep RA's capture below the health threshold.
+static bool TF_Captures_Outright(InfantryClass const* inf)
+{
+    return (inf->House->ActLike == HOUSE_GOOD || inf->House->ActLike == HOUSE_BAD || *inf == INFANTRY_TSENGINEER);
+}
+
 /***********************************************************************************************
  * InfantryClass::Per_Cell_Process -- Handles special operations that occur once per cell.     *
  *                                                                                             *
@@ -736,10 +744,8 @@ void InfantryClass::Per_Cell_Process(PCPType why)
                         if (tech->What_Am_I() == RTTI_BUILDING) {
                             iscapturable = tech->Can_Capture();
                         }
-                        // TF: a GDI or Nod house's engineers and the TS Engineer capture outright, whatever the health;
-                        // Allied and Soviet engineers keep RA's multi-engineer capture.
-                        bool td_single = (House->ActLike == HOUSE_GOOD || House->ActLike == HOUSE_BAD
-                                          || *this == INFANTRY_TSENGINEER);
+                        // TF: some engineers capture outright, whatever the health (TF_Captures_Outright).
+                        bool td_single = TF_Captures_Outright(this);
 #ifdef FIXIT_ENGINEER //	checked - ajw 9/28/98
                         if ((td_single || tech->Health_Ratio() <= EngineerCaptureLevel) && iscapturable) {
 #else
@@ -3288,8 +3294,8 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
             } else {
 
                 if (bldg->Can_Capture()) {
-                    // TF: a GDI or Nod house's engineers capture in one use, so they always show the capture cursor.
-                    bool td_single = (House->ActLike == HOUSE_GOOD || House->ActLike == HOUSE_BAD);
+                    // TF: an engineer that captures outright always shows the capture cursor.
+                    bool td_single = TF_Captures_Outright(this);
 #ifdef FIXIT_ENGINEER //	checked - ajw 9/28/98
                     if (td_single || bldg->Health_Ratio() <= EngineerCaptureLevel) {
 #else
