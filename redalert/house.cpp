@@ -10172,10 +10172,11 @@ int HouseClass::AI_Building(void)
         int level = Control.TechLevel;
         bool tf_td = (ActLike == HOUSE_GOOD || ActLike == HOUSE_BAD);
         unsigned tf_refqty = TF_Role_Quantity(BQuantity, STRUCT_REFINERY);
-        // TF: the economy gate that radar, the repair bay, GDI/Nod tech, air and naval builds wait for: two
+        // TF: the economy gate that radar, the repair bay, GDI/Nod tech, air and naval builds wait for: two standing
         // refineries and a war factory. A tiberium-short map counts as ready, as no more refineries are built there.
-        unsigned tf_weapqty = TF_Role_Quantity(BQuantity, STRUCT_WEAP);
-        bool tf_economy_ready = ((tf_refqty >= 2 || IsTiberiumShort) && tf_weapqty >= 1);
+        unsigned tf_weapqty = TF_Role_Quantity(ActiveBQuantity, STRUCT_WEAP);
+        bool tf_economy_ready = ((TF_Role_Quantity(ActiveBQuantity, STRUCT_REFINERY) >= 2 || IsTiberiumShort)
+                                 && tf_weapqty >= 1);
         // TF: harvesters are counted through the Units heap. UQuantity can't count TD or TS harvesters: types
         // past UNIT_RA_COUNT fold onto vanilla slots, and UQuantity has only UNIT_RA_COUNT - 3 entries.
         int tf_harv_count = 0;
