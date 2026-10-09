@@ -169,8 +169,7 @@ to a full entry above or delete. One line each: where, what, severity.
   or lift that vehicle unasked.
 - **Give-way (minor):** `HOLD_TIMEOUT` (60) expires claim waits early against a 75-frame claim, and the
   patient queue drops claims at 40 frames; `Find_Give_Way_Cell` checks only each ray's end cell.
-- **Sidebar (cosmetic):** a dropship cameo is never evicted while any bay stands
-  (sidebarglyphx.cpp ~546); the Mech Division isn't marked busy through the bay cooldown.
+- **Sidebar (cosmetic):** the Mech Division isn't marked busy through the bay cooldown.
 - **Small ones (cosmetic or latent):** the [TFTDTiles] reader is unchecked; the dormant TDLST indexes 16 facings on 4 frames; EA's own
   `Make_Enemy` uses `!` for `~` and CNC_Read_INI's `memset` has its arguments swapped (both also
   upstream).

@@ -510,10 +510,6 @@ bool SidebarGlyphxClass::StripClass::Recalc(void)
         TechnoTypeClass const* tech = Fetch_Techno_Type(Buildables[index].BuildableType, Buildables[index].BuildableID);
         if (tech) {
             ok = tech->Who_Can_Build_Me(true, true, ParentSidebar->SidebarPlayerPtr->Class->House) != NULL;
-            // TF: dropship bay cargo stays while a bay that could deliver it stands, even when Can_Build refuses it.
-            if (!ok && tech->What_Am_I() == RTTI_UNITTYPE && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech)) {
-                ok = tech->Who_Can_Build_Me(true, false, ParentSidebar->SidebarPlayerPtr->Class->House) != NULL;
-            }
         } else {
 
             if ((unsigned)Buildables[index].BuildableID < SPC_COUNT) {
