@@ -45,7 +45,6 @@ anywhere it self-destructs; a stop order underground heads for the nearest surfa
 - **The E.M. Pulse** stuns a digger and reroutes it to the nearest emerge cell, exploding it only
   if there is none (`Tunnel_Explode`). `UnitClass::Force_Emerge` predates that and has no callers
   (dead code, `todo.md`).
-- Dev builds trace the dig cycle to `MOD_DEBUG_TUNNEL.txt`.
 
 ## Design
 
