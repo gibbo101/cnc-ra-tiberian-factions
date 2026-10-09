@@ -3690,12 +3690,61 @@ static char TF_ModRootPath[MAX_PATH]; // "<mod>\" incl. trailing separator
 static bool TF_InLauncher = false;
 static volatile LONG TF_LauncherActLike = HOUSE_NONE;
 
+// ClientG's flag for a known local player and that player's GlyphX ID.
+static const SIZE_T TF_CLIENTG_LOCAL_KNOWN = 0x1FB6D40;
+static const SIZE_T TF_CLIENTG_LOCAL_ID = 0x1FB6D48;
+
+static HANDLE TF_Open_ClientG(DWORD access);
+
+// In a multiplayer match, the house of the player at this machine's ClientG; NULL until ClientG knows its player
+// and a human house carries that ID.
+static const HouseClass* TF_ClientG_Local_House(void)
+{
+    static unsigned long long local_id = 0;
+    for (int pass = 0; pass < 2; pass++) {
+        if (local_id != 0) {
+            for (int i = 0; i < Houses.Count(); i++) {
+                HouseClass* house = Houses.Ptr(i);
+                if (house != NULL && house->IsActive && house->IsHuman
+                    && (unsigned long long)DLLExportClass::Get_GlyphX_Player_ID(house) == local_id) {
+                    return house;
+                }
+            }
+        }
+        if (pass == 1) {
+            break;
+        }
+        HANDLE proc = TF_Open_ClientG(PROCESS_VM_READ);
+        if (proc == NULL) {
+            return NULL;
+        }
+        unsigned char known = 0;
+        unsigned long long id = 0;
+        SIZE_T got = 0;
+        if (ReadProcessMemory(proc, (LPCVOID)TF_CLIENTG_LOCAL_KNOWN, &known, sizeof(known), &got)
+            && got == sizeof(known) && known != 0
+            && ReadProcessMemory(proc, (LPCVOID)TF_CLIENTG_LOCAL_ID, &id, sizeof(id), &got) && got == sizeof(id)) {
+            local_id = id;
+        }
+        CloseHandle(proc);
+    }
+    return NULL;
+}
+
+// The faction whose crest, tab icons and EVA this machine's ClientG shows: in a multiplayer match the server's
+// PlayerPtr cycles through every player, so the host takes its own player from ClientG.
 static HousesType TF_Local_ActLike(void)
 {
     if (TF_InLauncher) {
         return (HousesType)TF_LauncherActLike;
     }
     const HouseClass* local = PlayerPtr;
+    if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
+        const HouseClass* here = TF_ClientG_Local_House();
+        if (here != NULL) {
+            local = here;
+        }
+    }
     if (local == NULL) {
         for (int i = 0; i < Houses.Count(); i++) {
             HouseClass* house = Houses.Ptr(i);
@@ -4649,10 +4698,10 @@ extern "C" void __cdecl TF_Launcher_Event_Hook(unsigned char* event)
         return;
     }
     int house = atoi(text + 23);
-    if (*(volatile unsigned char*)0x1FB6D40 == 0) {
+    if (*(volatile unsigned char*)TF_CLIENTG_LOCAL_KNOWN == 0) {
         return;
     }
-    unsigned long long local = *(volatile unsigned long long*)0x1FB6D48;
+    unsigned long long local = *(volatile unsigned long long*)TF_CLIENTG_LOCAL_ID;
     if (target != local) {
         return;
     }
