@@ -724,7 +724,13 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
     **	Actually draw the building shape.
     */
     IsTheaterShape = Class->IsTheater; // Let Build_Frame know if this is a theater specific shape
-    Techno_Draw_Object(shapefile, Shape_Number(), x, y, window);
+    // TF: an armed Component Tower draws the bare tower's body (Image=TSCTWR), healthy or damaged; its turret is
+    // drawn over it below, at the turret frame Shape_Number gives.
+    int body = Shape_Number();
+    if ((*this == STRUCT_TSVULC || *this == STRUCT_TSROCK || *this == STRUCT_TSCSAM) && BState != BSTATE_CONSTRUCTION) {
+        body = (Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0;
+    }
+    Techno_Draw_Object(shapefile, body, x, y, window);
     IsTheaterShape = false;
 
     /*
