@@ -6696,9 +6696,7 @@ void HouseClass::Recalc_Center(void)
         for (index = 0; index < Buildings.Count() && yardcount < 8; index++) {
             BuildingClass const* b = Buildings.Ptr(index);
             if (b != NULL && !b->IsInLimbo && (HouseClass*)b->House == this && b->Strength > 0
-                && (b->Class->Type == STRUCT_CONST || b->Class->Type == STRUCT_AFACT
-                    || b->Class->Type == STRUCT_SFACT || b->Class->Type == STRUCT_TDFACT
-                    || b->Class->Type == STRUCT_TDGFACT || b->Class->Type == STRUCT_TDNFACT)) {
+                && b->Class->Is_Construction_Yard()) {
                 yardpos[yardcount++] = b->Center_Coord();
             }
         }
@@ -9526,9 +9524,7 @@ bool HouseClass::TF_Ferry_Wants_MCV(void) const
     for (int index = 0; index < Buildings.Count(); index++) {
         BuildingClass const* b = Buildings.Ptr(index);
         if (b != NULL && !b->IsInLimbo && (HouseClass const*)b->House == this && b->Strength > 0) {
-            StructType t = b->Class->Type;
-            if (t == STRUCT_CONST || t == STRUCT_AFACT || t == STRUCT_SFACT || t == STRUCT_TDFACT
-                || t == STRUCT_TDGFACT || t == STRUCT_TDNFACT) {
+            if (b->Class->Is_Construction_Yard()) {
                 if (second_front) {
                     if (::Distance(b->Center_Coord(), Cell_Coord(_tf_beach_rally[hidx]))
                         <= TF_FERRY_BEACH_RADIUS * CELL_LEPTON_W) {
@@ -10284,7 +10280,8 @@ int HouseClass::AI_Building(void)
                 int afld = ehp->BQuantity[STRUCT_AIRSTRIP] + ehp->BQuantity[STRUCT_TDGAFLD];
                 int hpad = ehp->BQuantity[STRUCT_HELIPAD] + ehp->BQuantity[STRUCT_TDHPAD]
                            + ehp->BQuantity[STRUCT_AHPAD] + ehp->BQuantity[STRUCT_SHPAD]
-                           + ehp->BQuantity[STRUCT_TDGHPAD] + ehp->BQuantity[STRUCT_TDNHPAD];
+                           + ehp->BQuantity[STRUCT_TDGHPAD] + ehp->BQuantity[STRUCT_TDNHPAD]
+                           + ehp->BQuantity[STRUCT_TSHPAD];
                 if (afld > enemy_airstrips) enemy_airstrips = afld;
                 if (hpad > enemy_helipads) enemy_helipads = hpad;
             }
