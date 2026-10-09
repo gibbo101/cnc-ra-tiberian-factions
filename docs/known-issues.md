@@ -193,8 +193,6 @@ to a full entry above or delete. One line each: where, what, severity.
   patient queue drops claims at 40 frames; `Find_Give_Way_Cell` checks only each ray's end cell.
 - **TS war factory pack-up (minor):** `TF_Pack_Up` re-unlimbos a TSDWEAP at a shifted cell when the
   vehicle can't unlimbo, and can leave it in limbo with its power gone.
-- **Names (minor):** `NameOverride[128]` holds fewer slots than rules.ini's 137 `Name=` overrides, so the
-  last types read keep their stock names.
 - **Firing deploy-to-fire units (minor):** Firing_AI's `too_close` uses the raw MinRange while
   Approach_Target adds half a cell.
 - **Sidebar (cosmetic):** a dropship cameo is never evicted while any bay stands

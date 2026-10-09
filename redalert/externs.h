@@ -127,8 +127,8 @@ extern int CarrierLaunchDelay;
 #endif
 
 #ifdef FIXIT_NAME_OVERRIDE
-extern char const* NameOverride[128]; // TF: one slot per Name= override; an overflow crashes the launcher
-extern int NameIDOverride[128];
+extern char const* NameOverride[256]; // TF: one slot per Name= override, with room past rules.ini's 140
+extern int NameIDOverride[256];
 #endif
 
 extern bool GameInFocus;
