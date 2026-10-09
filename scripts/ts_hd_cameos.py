@@ -5,6 +5,8 @@ art chat) into the TS-HD-Graphics-Pack, then rebake every badged, locked and cou
 Each PNG becomes BuildIcon_<name>.tga in the TS-HD pack, beside the classic cameo in TS-Graphics-Pack;
 staging copies the HD one (scripts/stage_asset_packs.py) and the bakers read it (asset_packs.cameo_source).
 The units the Dropship Bay delivers get its HD cameo as an inset, bottom right, above the sidebar's name band.
+Superweapon cameos (BuildIcon_SW_*) belong to the mod, so they replace the mod's own file, and the TS GDI badge
+copy (BuildIcon_SG_*) is rebaked where one exists. Run this after any TS packer that writes those cameos.
 
 Usage: ts_hd_cameos.py
 License: GPL v3.
@@ -48,6 +50,19 @@ def bay_badge(img):
     return img
 
 
+def ts_badge(img, icon):
+    """Rebake a superweapon's TS GDI badge copy (the emblem as cameo_badge_build lays one out), if it has one."""
+    out = asset_packs.cameo_tga(icon)
+    if not os.path.exists(out):
+        return
+    bit, _, emblem_file = next(f for f in cameo_badge_build.FACTIONS if f[0] == 0x10)
+    size, _ = cameo_badge_build.emblem_layout(1, img.width)
+    emblem = Image.open(cameo_badge_build.EMBLEMS / emblem_file).convert("RGBA").resize((size, size), Image.LANCZOS)
+    badged = img.copy()
+    badged.alpha_composite(emblem, cameo_badge_build.EMBLEM_ORIGIN)
+    badged.save(out)
+
+
 def main():
     os.makedirs(SRGB, exist_ok=True)
     icons = set()
@@ -58,7 +73,11 @@ def main():
             sys.exit(f"{stem}: {img.size[0]}x{img.size[1]}, a cameo is 341x256")
         if stem in BAY_DELIVERED:
             img = bay_badge(img)
-        img.save(os.path.join(SRGB, f"{stem}.tga"))
+        if stem.startswith("BuildIcon_SW_"):
+            img.save(asset_packs.cameo_tga(stem))
+            ts_badge(img, stem.replace("BuildIcon_SW_", "BuildIcon_SG_"))
+        else:
+            img.save(os.path.join(SRGB, f"{stem}.tga"))
         icons.add(stem)
     print(f"installed {len(icons)} HD cameos into {SRGB}")
     inis = users(icons)
