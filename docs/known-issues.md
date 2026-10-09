@@ -13,16 +13,6 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 
 ## Units and buildings
 
-### Deploy cursor shows on a construction yard when the player owns two or more
-- **Severity:** cosmetic (the click does nothing).
-- `BuildingClass::What_Action` keeps `ACTION_SELF` on a factory whose house has more than one of
-  its kind (`Factory_Counter(ToBuild) > 1`), so another factory can be set primary. The switch has
-  no case for `RTTI_BUILDINGTYPE`, so a yard keeps `ACTION_SELF` too, which the launcher draws as
-  the deploy cursor, and `Active_Click_With` has no yard handler. EA's `STRUCT_CONST` code is the
-  same, so any second yard shows it.
-- Fix shape: `ACTION_NONE` for `RTTI_BUILDINGTYPE` in that switch. MCV undeploy goes through
-  `ACTION_MOVE` and is not affected.
-
 ### Endgame auto-sonar ignores the TD subs
 - **Severity:** minor (a Nod house down to cloaked TD subs can stall the endgame forever).
 - The stall-breaker in `house.cpp` (`AutoSonarTimer`, 40 s) uncloaks every sub of a house that

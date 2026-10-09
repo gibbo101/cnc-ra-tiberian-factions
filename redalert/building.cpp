@@ -4946,6 +4946,9 @@ ActionType BuildingClass::What_Action(ObjectClass const* object) const
                 break;
 
             case RTTI_NONE:
+            // TF: a construction yard has no primary to toggle; a kept ACTION_SELF draws the deploy cursor.
+            case RTTI_BUILDINGTYPE:
+            case RTTI_BUILDING:
                 action = ACTION_NONE;
                 break;
 
