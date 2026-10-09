@@ -157,8 +157,11 @@ both the tower and the plug (`Refund_Amount`). Weapons
   are TS verbatim (`[TSVulcanTower]`/`[TSSA]`, `[TSRPGTower]`/`[TSRPG]`, `[TSRedEye2]`/`[TSSAMWH]`).
   The AI builds them as a two-step (`TF_AI_Tower_Step`: a bare tower, then the plug, counting plugs
   in production against bare towers; `TF_Plug_Host`).
-- **The tower is TS's own sprite; the turrets are TS's `GTCTWR_B/_C/_D`,** composited by
-  `scripts/ts_pack_towers.py`. Walls come from `scripts/ts_pack_walls.py` (16 joins x 3 damage).
+- **The tower is TS's own sprite; the turrets are TS's `GTCTWR_B/_C/_D`,** packed by
+  `scripts/ts_pack_ctwr_hd.py`. The armed towers have no body art of their own: `Image=TSCTWR` in
+  rules.ini, and `BuildingClass::Draw_It` draws the bare tower's healthy or damaged frame, then the
+  turret (`TSVULCT`, `TSROCKT`, `TSCSAMT`) at the turret frame `Shape_Number` gives. Walls come from
+  `scripts/ts_pack_walls.py` (16 joins x 3 damage).
 - Traps: each turret set rotates about its own pivot (`_B` 23.08,13.69 / `_C` 23.99,11.37 / `_D`
   24.03,11.12); turret scale is about 0.75 of the body width (measured in TS); `GTCTWRMK`'s tail
   frames are debris cels, not build stages; the SAM's odd pixels are TS's own art, not ours to
