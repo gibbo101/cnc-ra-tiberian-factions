@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Install the HD sidebar cameos (resources/custom-art/ts-hd-cameos/BuildIcon_*.png, 341x256, from the HD
-art chat) into the TS-HD-Graphics-Pack, then rebake every badged and locked variant from them.
+art chat) into the TS-HD-Graphics-Pack, then rebake every badged, locked and countdown variant from them.
 
 Each PNG becomes BuildIcon_<name>.tga in the TS-HD pack, beside the classic cameo in TS-Graphics-Pack;
 staging copies the HD one (scripts/stage_asset_packs.py) and the bakers read it (asset_packs.cameo_source).
@@ -45,6 +45,8 @@ def main():
     cameo_badge_build.main(inis)
     if any(icon in icons for icon, _ in ts_mk2_cooldown_cameos.LOCKED.values()):
         ts_mk2_cooldown_cameos.bake_locked()
+    if any(icon in icons for icon in ts_mk2_cooldown_cameos.UNITS.values()):
+        ts_mk2_cooldown_cameos.bake_art()
 
 
 if __name__ == "__main__":
