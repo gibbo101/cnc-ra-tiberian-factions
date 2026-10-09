@@ -17,7 +17,8 @@
 #      ~/Desktop/Tiberian Factions/deploy-backups/desktop-<branch>-<timestamp>/.
 #   5. rsync -ac --delete build/remaster/Vanilla_RA/ -> target, then checks by checksum that the
 #      target matches the build. -c matters: the RA*_SFX_EVA_* seed WAVs can match the build in
-#      size and mtime but not content, and -a alone skips them.
+#      size and mtime but not content, and -a alone skips them. The mirror never deletes CustomMaps/,
+#      where the launcher keeps the maps it receives in LAN games.
 #
 # Flags:
 #   --desktop        Deploy to this machine's Proton prefix instead of the Deck.
@@ -33,7 +34,7 @@ cd "$(dirname "$0")"
 
 NO_BUILD=0
 DRY_RUN=0
-DELETE_FLAG="--delete"
+DELETE_FLAG="--delete --filter=P_/CustomMaps/"
 AUTO_YES=0
 DESKTOP=0
 for arg in "$@"; do
@@ -67,7 +68,7 @@ case "${TARGET_DIR:?}" in
 esac
 
 on_target() {
-    if [[ "$DESKTOP" -eq 1 ]]; then "$@"; else ssh "$DECK_HOST" "$@"; fi
+    if [[ "$DESKTOP" -eq 1 ]]; then "$@"; else ssh -n "$DECK_HOST" "$@"; fi
 }
 
 if [[ "$NO_BUILD" -eq 0 ]]; then
