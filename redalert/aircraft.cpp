@@ -92,7 +92,6 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
-#include <cstdarg>
 
 // TF: attack-move (CFE port) -- launcher-side Shift state, per local player.
 extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
@@ -293,33 +292,6 @@ AircraftClass::AircraftClass(AircraftType classid, HousesType house)
  * HISTORY:                                                                                    *
  *   07/26/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-// Dev builds: true when Documents/CnCRemastered/tf_orbit.flag exists at the first call, arming the from-orbit
-// arrival probe. Off by default: it puts aircraft where the engine never otherwise does.
-bool TF_Orbit_Probe(void)
-{
-#if TF_DEV_BUILD
-    static int cached = -1;
-    if (cached < 0) {
-        cached = 0;
-        const char* h = getenv("USERPROFILE");
-        if (h == NULL)
-            h = getenv("HOME");
-        if (h != NULL) {
-            char p[512];
-            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_orbit.flag", h);
-            FILE* f = fopen(p, "r");
-            if (f != NULL) {
-                cached = 1;
-                fclose(f);
-            }
-        }
-    }
-    return cached != 0;
-#else
-    return false;
-#endif
-}
-
 bool AircraftClass::Unlimbo(COORDINATE coord, DirType dir)
 {
     assert(Aircraft.ID(this) == ID);
@@ -2368,23 +2340,6 @@ int AircraftClass::Mission_Move(void)
             // climbs back to a hover; having set down, it hops to a clear spot beside.
             if (*this == AIRCRAFT_TSCARRY) {
                 bool loaded = Is_Something_Attached();
-#if TF_DEV_BUILD
-                {
-                    const char* prof = getenv("USERPROFILE");
-                    char path[512];
-                    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", prof ? prof : ".");
-                    FILE* lf = fopen(path, "a");
-                    if (lf != NULL) {
-                        UnitClass* u = TF_Pickup_Unit();
-                        fprintf(lf,
-                                "frame=%d CARRY landed loaded=%d nav=%08lx remembered=%08lx unit=%s limbo=%d uheight=%d dist=%d height=%d cell=%d\n",
-                                (int)Frame, (int)loaded, (unsigned long)NavCom, (unsigned long)TFCarryPickup,
-                                u ? u->Class->IniName : "none", u ? (int)u->IsInLimbo : -1, u ? (int)u->Height : -1,
-                                u ? (int)Distance(u) : -1, (int)Height, (int)Coord_Cell(Coord));
-                        fclose(lf);
-                    }
-                }
-#endif
                 if (TF_Carryall_Exchange()) {
                     if (loaded) {
                         Assign_Destination(New_LZ(::As_Target(Coord_Cell(Coord))));
@@ -3031,33 +2986,6 @@ static void TF_HS_Walk(HEAP& heap, HouseClass const* house, bool humans_only, in
     }
 }
 
-static void TF_HS_Log(const char* fmt, ...)
-{
-#if TF_DEV_BUILD
-    static FILE* log = NULL;
-    static bool tried = false;
-    if (!tried) {
-        tried = true;
-        const char* h = getenv("USERPROFILE");
-        if (h == NULL) h = getenv("HOME");
-        if (h != NULL) {
-            char p[512];
-            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_hunter.log", h);
-            log = fopen(p, "a");
-        }
-    }
-    if (log != NULL) {
-        va_list ap;
-        va_start(ap, fmt);
-        vfprintf(log, fmt, ap);
-        va_end(ap);
-        fflush(log);
-    }
-#else
-    (void)fmt;
-#endif
-}
-
 TARGET TF_Hunter_Seeker_Acquire(HouseClass const* house)
 {
     TechnoClass* out = NULL;
@@ -3142,7 +3070,6 @@ bool AircraftClass::TF_Hunter_Seeker_AI(void)
             Set_Speed(0xFF);
         }
         if (distance < DETONATE_PROXIMITY) {
-            TF_HS_Log("DETONATE dist=%d height=%d tgt=%d\n", distance, (int)Height, (int)TarCom);
             TF_Hunter_Seeker_Detonate();
             return (true);
         }
@@ -3170,9 +3097,6 @@ void AircraftClass::TF_Hunter_Seeker_Detonate(void)
     Strength = 0;
 
     TechnoClass* victim = As_Techno(tgt);
-    TF_HS_Log("  detonate victim=%s attack=%d wh=%d\n",
-              (victim && victim->Techno_Type_Class()) ? victim->Techno_Type_Class()->IniName : "-",
-              attack, (int)warhead);
     if (victim != NULL && victim->IsActive) {
         int dmg = attack;
         victim->Take_Damage(dmg, 0, warhead, NULL, true);
@@ -5028,41 +4952,6 @@ bool AircraftClass::Landing_Takeoff_AI(void)
                 Height = 0;
                 IsLanding = false;
                 Set_Speed(0);
-
-#if TF_DEV_BUILD
-                /*
-                ** TF DEV: fixed-wing touchdown census (known-issues "fixed-wing parked on a
-                ** helipad", 2026-08-01). A live parked plane implies MISSION_ENTER at touchdown
-                ** (any other mission self-destructs just below), i.e. a dock contract existed or
-                ** was lost mid-landing. Log every fixed-wing touchdown with what is under the
-                ** wheels and who the radio contact is, so the next sighting explains itself.
-                */
-                if (Class->IsFixedWing) {
-                    static FILE* tf_land_log = NULL;
-                    if (tf_land_log == NULL) {
-                        const char* h = getenv("USERPROFILE");
-                        if (h == NULL)
-                            h = getenv("HOME");
-                        if (h != NULL) {
-                            char p[512];
-                            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_astar.log", h);
-                            tf_land_log = fopen(p, "a");
-                        }
-                    }
-                    if (tf_land_log != NULL) {
-                        CELL mc = Coord_Cell(Center_Coord());
-                        BuildingClass* under = Map[mc].Cell_Building();
-                        TechnoClass* contact = In_Radio_Contact() ? Contact_With_Whom() : NULL;
-                        fprintf(tf_land_log,
-                                "FIXEDWING-LAND: unit=%s cell=(%d,%d) mission=%d under=%s contact=%s navcom=%d\n",
-                                Class->IniName, (int)Cell_X(mc), (int)Cell_Y(mc), (int)Mission,
-                                under ? under->Class->IniName : "<ground>",
-                                contact ? contact->Techno_Type_Class()->IniName : "<none>",
-                                (int)NavCom);
-                        fflush(tf_land_log);
-                    }
-                }
-#endif
 
                 /*
                 **	If the NavCom now equals the destination, then clear out the NavCom.

@@ -562,9 +562,8 @@ TD counterpart. Baseline: the Nod Stealth Generator. Per building:
 ## Open queue
 
 1. **Mk. II cap to 3** (`TF_MK2_CAP`, one constant; `todo.md`).
-2. **Dead code:** `tf_orbit.flag` (the old from-orbit probe, `aircraft.cpp`).
-3. **`ts_pack_tree.py`'s blank-apron warning is stale:** aprons draw from building geometry, so a
+2. **`ts_pack_tree.py`'s blank-apron warning is stale:** aprons draw from building geometry, so a
    blank tile no longer stamps over a neighbour's bib; it is only a wasted entry.
-4. **NTREFN_C** (Nod's refinery anim, a 144-canvas anim on a 192x168 building, needs offset
+3. **NTREFN_C** (Nod's refinery anim, a 144-canvas anim on a 192x168 building, needs offset
    compositing) is unported; it comes with TS Nod.
-5. Component tower animations and weapon geometry (`todo.md`).
+4. Component tower animations and weapon geometry (`todo.md`).

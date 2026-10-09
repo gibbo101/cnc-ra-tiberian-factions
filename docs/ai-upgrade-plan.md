@@ -560,7 +560,7 @@ Research complete (agent report, §7). Two routes for staging-then-blob:
      - `Exit_Object`'s vessel case returned "abort and refund" when the one-cell exit ring was
        occupied, so a finished ship at a blocked slipway was silently deleted (44 ship
        `PROD start`s made a 3-ship fleet). A blocked slipway now retries, and the house's own
-       parked ships are moved off the ring (`0593113`, `YARD-EXIT` diag).
+       parked ships are moved off the ring (`0593113`).
      - `Can_Fire` returns `FIRE_MOVING` for any turretless hull with a NavCom, and a patrolling
        ship always has one, so subs never fought. AI ships drop the NavCom when a target is in
        range (`VesselClass::Combat_AI`, `05f2436`).

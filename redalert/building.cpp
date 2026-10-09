@@ -3439,31 +3439,6 @@ int BuildingClass::Exit_Object(TechnoClass* base)
     switch (base->What_Am_I()) {
 
     case RTTI_AIRCRAFT:
-#if TF_DEV_BUILD
-        /*
-        **  Logs-first: which exit path an aircraft actually leaves its pad by,
-        **  and whether the orbit probe is armed when it does. The probe that
-        **  froze the game was hooked in Unlimbo; this site is a different one
-        **  and has never been observed to run.
-        */
-        {
-            char dpath[512];
-            const char* dprof = getenv("USERPROFILE");
-            if (dprof != NULL && dprof[0] != '\0') {
-                snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
-            } else {
-                strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
-            }
-            FILE* dlog = fopen(dpath, "a");
-            if (dlog != NULL) {
-                fprintf(dlog, "frame=%d ORBIT-EXIT bldg=%s radio=%s type=%d isorca=%s probe=%s\n", Frame,
-                        Class->IniName, In_Radio_Contact() ? "yes" : "no", (int)*((AircraftClass*)base),
-                        (*((AircraftClass*)base) == AIRCRAFT_TDORCA) ? "yes" : "no",
-                        TF_Orbit_Probe() ? "ARMED" : "off");
-                fclose(dlog);
-            }
-        }
-#endif
         if (!In_Radio_Contact()) {
             AircraftClass* air = (AircraftClass*)base;
 
@@ -3472,47 +3447,6 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             if (air->Unlimbo(Docking_Coord(), air->Pose_Dir())) {
                 Transmit_Message(RADIO_HELLO, air);
                 Transmit_Message(RADIO_TETHER);
-#if TF_DEV_BUILD
-                /*
-                **  PROBE: arrive from orbit rather than appearing on the pad.
-                **
-                **  This has to happen HERE and not in Unlimbo. The pad sets
-                **  Height to 0, unlimbos at the docking coordinate and only
-                **  then tethers, so a hook inside Unlimbo runs before there is
-                **  any radio contact and before NavCom exists -- which is why
-                **  the earlier attempt landed but never docked, and is the
-                **  prime suspect for the freeze that followed.
-                **
-                **  With the pad as NavCom AND as the radio contact, the branch
-                **  at the bottom of Landing_Takeoff_AI can complete its
-                **  handshake and settle the aircraft into the dock, which is
-                **  the state the engine expects an aircraft on a pad to be in.
-                **
-                **  Armed by Documents/CnCRemastered/tf_orbit.flag, off by
-                **  default: it puts aircraft somewhere the engine never
-                **  otherwise puts them.
-                */
-                if (TF_Orbit_Probe() && *air == AIRCRAFT_TDORCA) {
-                    air->Height = TF_ORBIT_HEIGHT;
-                    air->Assign_Destination(As_Target());
-                    air->IsLanding = true;
-
-                    char apath[512];
-                    const char* aprof = getenv("USERPROFILE");
-                    if (aprof != NULL && aprof[0] != '\0') {
-                        snprintf(apath, sizeof(apath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", aprof);
-                    } else {
-                        strcpy(apath, "MOD_DEBUG_TSUNITS.txt");
-                    }
-                    FILE* alog = fopen(apath, "a");
-                    if (alog != NULL) {
-                        fprintf(alog, "frame=%d ORBIT-APPLY height=%d door=%s navcom=%08lX\n", Frame,
-                                (int)air->Height, air->Is_Door_Closed() ? "closed" : "OPEN",
-                                (unsigned long)air->NavCom);
-                        fclose(alog);
-                    }
-                }
-#endif
                 ScenarioInit--;
                 return (2);
             }
@@ -3564,18 +3498,6 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                     v->Scatter(0, true);
                 }
             }
-#if TF_DEV_BUILD // TF_AI_DIAG
-            if (!House->IsHuman) {
-                extern FILE* TF_AI_Diag_File(void);
-                FILE* _tfdbg = TF_AI_Diag_File();
-                if (_tfdbg != NULL) {
-                    fprintf(_tfdbg, "F%ld H%d AL%d YARD-EXIT blocked %s at %s#%d\n", (long)Frame,
-                            (int)House->Class->House, (int)House->ActLike, base->Class_Of().IniName,
-                            Class->IniName, (int)ID);
-                    fflush(_tfdbg);
-                }
-            }
-#endif
             return (1);
 
         default:
@@ -4512,24 +4434,6 @@ void BuildingClass::Grand_Opening(bool captured)
                                  : (*this == STRUCT_TSPROC) ? UNIT_TSHARV
                                                             : UNIT_HARVESTER;
             UnitClass* unit = new UnitClass(harv_type, House->Class->House);
-#if TF_DEV_BUILD
-            // Logs-first (first TSHARV test): record the TS refinery's free-unit grant.
-            if (*this == STRUCT_TSPROC) {
-                char dpath[512];
-                const char* dprof = getenv("USERPROFILE");
-                if (dprof != NULL && dprof[0] != '\0') {
-                    snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
-                } else {
-                    strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
-                }
-                FILE* dlog = fopen(dpath, "a");
-                if (dlog != NULL) {
-                    fprintf(dlog, "frame=%d FREE-HARV grant house=%s spawned=%s\n", Frame,
-                            House->Class->IniName, (unit != NULL) ? "yes" : "NO (heap)");
-                    fclose(dlog);
-                }
-            }
-#endif
             if (unit != NULL) {
 
                 /*
@@ -4557,23 +4461,6 @@ void BuildingClass::Grand_Opening(bool captured)
                         unit = NULL;
                     }
                 }
-#if TF_DEV_BUILD
-                if (*this == STRUCT_TSPROC) {
-                    char dpath[512];
-                    const char* dprof = getenv("USERPROFILE");
-                    if (dprof != NULL && dprof[0] != '\0') {
-                        snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
-                    } else {
-                        strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
-                    }
-                    FILE* dlog = fopen(dpath, "a");
-                    if (dlog != NULL) {
-                        fprintf(dlog, "frame=%d FREE-HARV placed=%s cell=%d pad=%d\n", Frame, (unit != NULL) ? "yes" : "NO (refunded)",
-                                (unit != NULL) ? Coord_Cell(unit->Coord) : -1, Coord_Cell(Center_Coord()));
-                        fclose(dlog);
-                    }
-                }
-#endif
             } else {
 
                 /*
