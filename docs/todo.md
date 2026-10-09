@@ -42,7 +42,6 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   against an RA heavy tank at 4.75 and a TD medium at about 4. Range first, then damage, ROF, HP,
   cost, speed and the Devil's Tongue stream. Known deviation: the Mk. II AA tusks carry RA
   MammothTusk stats (7.5 range) instead of TS's 6.
-- **Decision: TS GDI's starting-bonus infantry** (`known-issues.md`).
 
 ## Needs a LAN game with a second human
 

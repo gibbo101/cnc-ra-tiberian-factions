@@ -3744,7 +3744,8 @@ static void Create_Units(bool official)
     static int num_units[ARRAY_SIZE(utable)]; // # of each type of unit to create
     int tot_units;                            // total # units to create
 
-    // TF: the GDI and Nod columns follow TD's own Create_Units infantry table.
+    // TF: the GDI and Nod columns follow TD's own Create_Units infantry table. TS GDI's takes the two infantry
+    // TS lets start a multiplayer game (AllowedToStartInMultiplayer): Light Infantry and the Disc Thrower.
     static struct
     {
         int MinLevel;
@@ -3756,10 +3757,12 @@ static void Create_Units(bool official)
         InfantryType GdiType;
         int NodCount;
         InfantryType NodType;
+        int TsGdiCount;
+        InfantryType TsGdiType;
     } itable[] = {
-        {0, 1, INFANTRY_E1, 1, INFANTRY_E1, 1, INFANTRY_TDE1, 1, INFANTRY_TDE1},
-        {2, 1, INFANTRY_E3, 1, INFANTRY_E2, 1, INFANTRY_TDE2, 1, INFANTRY_TDE3},
-        {4, 1, INFANTRY_E3, 1, INFANTRY_E4, 1, INFANTRY_TDE3, 1, INFANTRY_TDE4},
+        {0, 1, INFANTRY_E1, 1, INFANTRY_E1, 1, INFANTRY_TDE1, 1, INFANTRY_TDE1, 1, INFANTRY_TSE1},
+        {2, 1, INFANTRY_E3, 1, INFANTRY_E2, 1, INFANTRY_TDE2, 1, INFANTRY_TDE3, 1, INFANTRY_TSE2},
+        {4, 1, INFANTRY_E3, 1, INFANTRY_E4, 1, INFANTRY_TDE3, 1, INFANTRY_TDE4, 1, INFANTRY_TSE2},
 
         // removed because of bug B478 (inappropriate infantry given in a bases off scenario).
         //		{5,	1,INFANTRY_RENOVATOR,	1,INFANTRY_RENOVATOR},
@@ -4245,13 +4248,13 @@ static void Create_Units(bool official)
                 **	assigns the infantry to HUNT; we must use Set_Mission() to override
                 **	this state.)
                 */
-                // TF: each faction takes its starting infantry from its own itable column. TS GDI starts with none.
+                // TF: each faction takes its starting infantry from its own itable column.
                 int icount;
                 InfantryType itype;
                 HousesType const iside = hptr->ActLike;
                 if (Is_TS_GDI(iside)) {
-                    icount = 0;
-                    itype = INFANTRY_NONE;
+                    icount = itable[i].TsGdiCount;
+                    itype = itable[i].TsGdiType;
                 } else if (iside == HOUSE_GOOD) {
                     icount = itable[i].GdiCount;
                     itype = itable[i].GdiType;

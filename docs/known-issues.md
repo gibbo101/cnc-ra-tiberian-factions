@@ -32,21 +32,6 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
   `INFANTRY_DOG`), so TD and TS units are not counted either.
 - Fix shape: all five sub hulls in the gate and the ping, and the census over the full ranges.
 
-### TS GDI gets no starting-bonus infantry
-- **Severity:** minor.
-- With `UnitCount>0` the bonus picker (`scenario.cpp`, the `utable`/`itable` faction columns)
-  gives GDI and Nod their own units, and TS GDI its vehicles, but skips infantry for TS GDI. The
-  code comment says no TS infantry exists; TSE1, TSE2 and the rest do now.
-
-### TS Engineer shows the damage cursor over a healthy building
-- **Severity:** minor (the click still captures outright; only the cursor misleads).
-- `InfantryClass::What_Action` (`infantry.cpp`) picks the cursor with its own `td_single` test,
-  which counts GDI and Nod houses but not `INFANTRY_TSENGINEER`; `Per_Cell_Process`, which does the
-  capture, includes it. So a TS Engineer of any other house, TS GDI's own included, shows the damage
-  cursor over a building above the capture threshold, then captures it on arrival. Confirmed in
-  play.
-- Fix shape: add `|| *this == INFANTRY_TSENGINEER` to `What_Action`'s `td_single`.
-
 ### A sold or destroyed Tesla Coil leaves a TS rifleman
 - **Severity:** minor.
 - `BuildingClass::Crew_Type` (`building.cpp`) gives every building whose IniName starts with "TS" a TS
