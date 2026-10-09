@@ -1941,6 +1941,19 @@ extern bool MPSuperWeaponDisable;
  *=============================================================================================*/
 extern void Recalculate_Placement_Distances();
 
+// Whether the house still has a building an enemy could attack. Most added types set no scan bit
+// (TF_Building_Scan_Bit), so the multiplayer defeat check counts buildings here; mines are no legal target.
+static bool TF_Has_Standing_Building(HouseClass const* house)
+{
+    for (int i = 0; i < Buildings.Count(); i++) {
+        BuildingClass const* b = Buildings.Ptr(i);
+        if (b != NULL && b->House == house && !b->IsInLimbo && b->Strength > 0 && b->Class->IsLegalTarget) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
 // Per house, the radar sting's debounce (cleared each match by TF_AI_Clocks_Reset): the state last sounded, the
 // state being timed, and the frames it has held.
 static bool _tf_radar_on[HOUSE_COUNT];
@@ -2238,8 +2251,9 @@ void HouseClass::AI(void)
     ** may not properly set IScan etc for each house; you have to go
     ** through each object's AI before it will be properly set.
     */
+    // TF: a house is not out while a building it holds still stands (TF_Has_Standing_Building).
     if (Session.Type != GAME_NORMAL && !IsDefeated && !ActiveBScan && !ActiveAScan && !UScan && !ActiveIScan
-        && !ActiveVScan && Frame > 0) {
+        && !ActiveVScan && Frame > 0 && !TF_Has_Standing_Building(this)) {
         MPlayer_Defeated();
     }
 
