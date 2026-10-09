@@ -1806,6 +1806,7 @@ typedef enum InfantryType : char
     INFANTRY_TSMEDIC,    // TS Medic: heals friendly infantry with TSHeal.
     INFANTRY_TSGHOST,    // TS Ghost Stalker: TSLtRail railgun and C4, healed by Tiberium, one per house.
     INFANTRY_TSJUMPJET,  // TS Jumpjet Infantry: flies (InfantryClass::Jumpjet_AI), fires TSJumpCannon.
+    INFANTRY_TSE3,       // TS Rocket Infantry (E3): TS Nod's, fires TSBazooka. Not buildable until TS Nod is in.
 
     INFANTRY_COUNT,
     INFANTRY_FIRST = 0
@@ -3532,6 +3533,7 @@ typedef enum WeaponType : char
     WEAPON_C3MK3PODS,      // C&C3 Mammoth rocket pods (GDIMammothTankRocketPods), air and ground.
     WEAPON_C3PREDCANNON,   // C&C3 Predator cannon (GDIPredatorTankCannon) at RA scale. Registered "C3PredCannon".
     WEAPON_TS90MM,         // TS [90mm], the Tick Tank's gun, dug in or not. Registered "TS90mm".
+    WEAPON_TSBAZOOKA,      // TS [Bazooka], the Rocket Infantry's launcher, air and ground. Registered "TSBazooka".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -4353,6 +4355,7 @@ typedef enum VocType : short
     VOC_TS_GATEDWN1, // TS gate lowering (GATEDWN1, [General] GateDown=). Bundled TSGATEDWN1.WAV.
     VOC_TS_GATEUP1,  // TS gate rising (GATEUP1, [General] GateUp=). Bundled TSGATEUP1.WAV.
     VOC_TSLACHG2R,   // The Tesla Coil charge-up (TSLACHG2) reversed: the Tesla gate's arcs winding down. TSLACHG2R.WAV.
+    VOC_TS_RKETINF1, // TS Rocket Infantry's bazooka (RKETINF1, [Bazooka] Report=). Bundled TSRKETINF1.WAV.
 
     VOC_COUNT,
     VOC_FIRST = 0
