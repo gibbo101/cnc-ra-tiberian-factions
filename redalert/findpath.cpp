@@ -464,13 +464,13 @@ CELL FootClass::Find_Passable_Position_Near(const CELL target, const int maxRadi
         }
 
         for (int y = top + 1; y < bottom; ++y) {
-            const CELL currentCell = XY_Cell(y, left);
+            const CELL currentCell = XY_Cell(left, y);
             if (validate_cell(currentCell))
                 return currentCell;
         }
 
         for (int y = top + 1; y < bottom; ++y) {
-            const CELL currentCell = XY_Cell(y, right);
+            const CELL currentCell = XY_Cell(right, y);
             if (validate_cell(currentCell))
                 return currentCell;
         }
