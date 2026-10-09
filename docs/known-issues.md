@@ -83,14 +83,6 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
   play.
 - Fix shape: take the GDI/Nod branch only for types without their own response set.
 
-### "Unable to comply, building in progress" plays in the RA voice for GDI, Nod and TS GDI
-- **Severity:** cosmetic. Queued as a post-release job in `todo.md`.
-- The DLL never sends this line: `ClientG` plays RA's `PROGRES1` itself. Every DLL send of
-  `VOX_NO_FACTORY` routes correctly (`TDBLDG1` for GDI/Nod, `TSNOFACT1` for TS GDI).
-- Route: add `PROGRES1` to the lines the EVA cache patch overwrites at match start
-  (`tf_eva_mailbox.h`, `scripts/eva_mailbox_build.py`, `eva-ram-patch-spike.md`), with
-  `TDBLDG1` / `TSNOFACT1` as the per-era payloads under the same-size rule.
-
 ### Waypoint and rally markers show the Allied emblem for TS GDI
 - **Severity:** cosmetic.
 - The launcher draws both markers from `RA_UI_ALLIED_LOGO_SMALL` (`RA_UI_SOVIET_LOGO_SMALL` for

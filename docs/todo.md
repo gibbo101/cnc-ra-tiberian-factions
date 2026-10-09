@@ -30,10 +30,8 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   It grows from here: TS Nod (21 buildings and 19 units in the HD hand-offs) and the TS HD
   rebuilds. Restage a build folder clean (`stage_asset_packs.py --full`, as
   `package-for-workshop.sh` does) before measuring it.
-- **"Unable to comply, building in progress" in RA's voice** (`known-issues.md`). Add `PROGRES1`
-  to the EVA cache patch rows (`scripts/eva_mailbox_build.py` ERAS, regenerating
-  `tf_eva_mailbox.h`) with the TD (`TDBLDG1`) and TS (`TSNOFACT1`) payloads padded to one length,
-  plus its loose seed files; check the swap in a session that changes era between matches.
+- **Check in play: "Unable to comply, building in progress"** speaks in the picked side's voice
+  (the era mailbox's ninth line), including after a faction switch between matches.
 - **Light orange selection box on a limpeted unit.** TS draws a limpeted object's bracket from
   another frame set (OpenTS techno.cpp:1455). The launcher's box is `CNC_SELECT_BOX.TGA` (white,
   atlas 3027,4088 128x128), tinted as it is drawn, and no data lever reaches the tint. Route: find

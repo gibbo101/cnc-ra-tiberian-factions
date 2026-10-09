@@ -3,7 +3,7 @@
 
 The EVA lines below are fired by the launcher itself and never reach On_Speech: "cannot
 deploy here", "battle control terminated", mission won, mission lost, "select
-target", "insufficient power", "repairing" and "mission saved". The mod speaks them in the picked side's voice
+target", "insufficient power", "repairing", "mission saved" and "unable to comply, building in progress". The mod speaks them in the picked side's voice
 by writing the era-correct recording over the launcher's own sample names at match
 start, and by overwriting ClientG's already-cached copy so an in-session faction
 switch is corrected too (docs/eva-ram-patch-spike.md).
@@ -65,6 +65,7 @@ LINES = {
     "NOPOW":   ("RAC_SFX_EVA_NOPOWR1_EN-US.WAV", "RAR_SFX_EVA_NOPOWR1_EN-US.WAV"),
     "REPAIR":  ("RAC_SFX_EVA_REPAIR1_EN-US.WAV", "RAR_SFX_EVA_REPAIR1_EN-US.WAV"),
     "SAVE":    ("RAC_SFX_EVA_SAVE1_EN-US.WAV", "RAR_SFX_EVA_SAVE1_EN-US.WAV"),
+    "PROGRES": ("RAC_SFX_EVA_PROGRES1_EN-US.WAV", "RAR_SFX_EVA_PROGRES1_EN-US.WAV"),
 }
 
 # Eras that never recorded a line stay silent on it (neither TD nor TS has a "mission
@@ -84,6 +85,7 @@ TS_AUD = {
     "SLCT":    "00-I042",   # select target
     "NOPOW":   "00-I024",   # low power (TS has no separate "insufficient power")
     "REPAIR":  "00-I040",   # repairing
+    "PROGRES": "00-I064",   # unable to comply, building in progress
 }
 
 NEEDLE_LEN = 20

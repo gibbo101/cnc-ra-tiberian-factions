@@ -170,9 +170,9 @@ ship either way; with the faction off nothing routes to them.
 
 ## The era mailbox, N eras wide
 
-Eight lines are fired by the launcher itself and never reach `On_Speech`: cannot deploy here,
-battle control terminated, mission won, mission lost, select target, insufficient power, repairing
-and mission saved (an era that never recorded a line gets inaudible noise, `SILENT` in the
+Nine lines are fired by the launcher itself and never reach `On_Speech`: cannot deploy here,
+battle control terminated, mission won, mission lost, select target, insufficient power, repairing,
+mission saved and unable to comply, building in progress (an era that never recorded a line gets inaudible noise, `SILENT` in the
 builder). The
 mailbox writes the era-correct recording over the launcher's own sample names at match start,
 and overwrites ClientG's cached copy so an in-session switch is corrected too.
