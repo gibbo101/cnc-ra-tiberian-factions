@@ -4982,34 +4982,6 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
                     intheory = true;
                 }
                 TechnoClass* builder = pending->Who_Can_Build_Me(intheory, false);
-                // TF DIAGNOSTIC 2026-05-27: stubbed after multi-plane convoy
-                // verified working. Re-enable (#if 1) to log every Place_Object
-                // call (rtti, intheory, builder match, TDAFLD quantity). Useful
-                // for diagnosing factory-stall / wrong-builder issues. Per
-                // [[feedback-keep-diagnostics-until-v1]].
-#if 0
-                {
-                    static FILE* s_pol = NULL;
-                    if (s_pol == NULL) {
-                        const char* up = getenv("USERPROFILE");
-                        char p[512];
-                        if (up) snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_place_object.log", up);
-                        else strcpy(p, "tf_place_object.log");
-                        s_pol = fopen(p, "a");
-                    }
-                    if (s_pol) {
-                        fprintf(s_pol,
-                            "[Place_Object] type=%d pending=%s rtti=%d intheory=%d builder=%s tdafld_qty=%d\n",
-                            (int)type,
-                            pending ? pending->Class_Of().IniName : "(null)",
-                            pending ? (int)pending->What_Am_I() : -1,
-                            (int)intheory,
-                            builder ? builder->Class_Of().IniName : "(null)",
-                            (int)Get_Quantity(STRUCT_TDAFLD));
-                        fflush(s_pol);
-                    }
-                }
-#endif
 #endif
                 TechnoTypeClass const* object_type = pending->Techno_Type_Class();
                 // TF: only 2 means the object left. 1 is a temporary blockage that leaves it in the factory, so it
@@ -13395,41 +13367,6 @@ void HouseClass::Check_Pertinent_Structures(void)
     }
 
     if (!any_good_buildings) {
-        // TF DIAGNOSTIC 2026-05-27: when Check_Pertinent_Structures decides
-        // the player has lost, log a snapshot of the house's building/unit
-        // inventory so we can diagnose which check failed (was the TDFACT
-        // not in Buildings? Wrong house? IsInLimbo? Strength 0?). Stub
-        // under #if 0 once verified per [[feedback-keep-diagnostics-until-v1]].
-#if 0 // TF DIAG — OFF for release (was #if 1; flip to 1 to re-enable logging).
-        {
-            const char* up = getenv("USERPROFILE");
-            char p[512];
-            if (up) snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_pertinent.log", up);
-            else strcpy(p, "tf_pertinent.log");
-            FILE* f = fopen(p, "a");
-            if (f) {
-                fprintf(f, "[Check_Pertinent_Structures] FLAG_TO_DIE house=%d ActLike=%d Buildings=%d Units=%d\n",
-                        (int)Class->House, (int)ActLike, Buildings.Count(), Units.Count());
-                for (int i = 0; i < Buildings.Count(); i++) {
-                    BuildingClass* b = Buildings.Ptr(i);
-                    if (b && b->House == this) {
-                        fprintf(f, "  b[%d] IniName=%s Type=%d IsActive=%d IsInLimbo=%d Str=%d IsWall=%d\n",
-                                i, b->Class->IniName, (int)b->Class->Type, (int)b->IsActive,
-                                (int)b->IsInLimbo, (int)b->Strength, (int)b->Class->IsWall);
-                    }
-                }
-                for (int i = 0; i < Units.Count(); i++) {
-                    UnitClass* u = Units.Ptr(i);
-                    if (u && u->House == this) {
-                        fprintf(f, "  u[%d] IniName=%s Type=%d IsActive=%d IsInLimbo=%d Str=%d\n",
-                                i, u->Class->IniName, (int)u->Class->Type, (int)u->IsActive,
-                                (int)u->IsInLimbo, (int)u->Strength);
-                    }
-                }
-                fclose(f);
-            }
-        }
-#endif
         Flag_To_Die();
     }
 }
