@@ -183,7 +183,7 @@ extern bool TF_Ghost_At_Cap(HouseClass const* house); // House already fields it
 // Factory cap); gates the EVA ack too (house.cpp)
 extern bool TF_Delivery_Order_Refused(HouseClass const* house, RTTIType type, int id);
 extern int TF_AI_IQ_From_Difficulty(DiffType diff); // lobby difficulty -> AI house IQ tier (behavioural difficulty)
-extern bool TFLobbyAIDifficultySet; // true once CNC_Set_Difficulty has delivered a lobby value; never cleared
+extern bool TFLobbyAIDifficultySet; // true once CNC_Set_Difficulty has delivered this match's lobby value
 
 /*
 ** For WIN32, replace the assert macro so we get an error on the debugger screen

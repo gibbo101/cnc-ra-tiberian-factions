@@ -1595,6 +1595,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance(int scenario_in
  * History: 1/7/2019 5:20PM - ST
  **************************************************************************************************/
 static void TF_Mailbox_Write_EVA_Voice(void);
+static void TF_Lobby_Difficulty_Reset(void);
 static void TF_Patch_ClientG_Crest(void);
 static void TF_Patch_ClientG_Click_Specials(void);
 static void TF_Tell_Launchers_Start(void);
@@ -1615,6 +1616,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
                                                                            int sabotaged_structure,
                                                                            const char* override_map_name)
 {
+    // TF: a match starts from the default difficulty; a skirmish's lobby value arrives after this call.
+    TF_Lobby_Difficulty_Reset();
+
     if (game_type == NULL) {
         return false;
     }
@@ -1864,6 +1868,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Custom_Instance(const ch
                                                                         int build_level,
                                                                         bool multiplayer)
 {
+    // TF: a match starts from the default difficulty; a skirmish's lobby value arrives after this call.
+    TF_Lobby_Difficulty_Reset();
 
     DLLExportClass::Set_Content_Directory(content_directory);
 
@@ -3243,6 +3249,13 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
 
 // Sets each AI house's IQ from its lobby slot's difficulty, else the global tier, and queues the on-screen
 // announcements. Safe to call again mid-match: the deferred re-scan re-tiers the houses this way.
+// Forgets the last match's lobby difficulty, so a campaign after a skirmish doesn't inherit it.
+static void TF_Lobby_Difficulty_Reset(void)
+{
+    TFLobbyAIDifficultySet = false;
+    Scen.CDifficulty = DIFF_NORMAL;
+}
+
 static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff, int slots_read, bool is_retry)
 {
     Scen.CDifficulty = global_diff;
