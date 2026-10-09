@@ -1946,6 +1946,9 @@ extern void Recalculate_Placement_Distances();
 static bool _tf_radar_on[HOUSE_COUNT];
 static bool _tf_radar_pending[HOUSE_COUNT];
 static int _tf_radar_stable[HOUSE_COUNT];
+// Per house, whether the Dropship Bay's delivery cooldown was running at the last AI pass.
+static bool _tf_bay_cooling[HOUSE_COUNT];
+extern void On_Message(const char* message, float timeout_seconds, long long message_id);
 
 void HouseClass::AI(void)
 {
@@ -2356,6 +2359,13 @@ void HouseClass::AI(void)
                 }
                 _tf_radar_on[h] = _tf_radar_pending[h];
             }
+
+            // TF: the Dropship Bay's ready notice, when its delivery cooldown runs out while the house holds a bay.
+            bool const cooling = (TFDropBayTimer != 0);
+            if (_tf_bay_cooling[h] && !cooling && Has_Building_Active(STRUCT_TSDROP)) {
+                On_Message("Dropship Bay ready", 8.0f, -1);
+            }
+            _tf_bay_cooling[h] = cooling;
         }
 #endif
     }
@@ -7495,6 +7505,7 @@ void TF_AI_Clocks_Reset(void)
     memset(_tf_radar_on, 0, sizeof(_tf_radar_on));
     memset(_tf_radar_pending, 0, sizeof(_tf_radar_pending));
     memset(_tf_radar_stable, 0, sizeof(_tf_radar_stable));
+    memset(_tf_bay_cooling, 0, sizeof(_tf_bay_cooling));
 }
 
 // True while the house is below its refinery or harvester target and ore remains, so combat production
