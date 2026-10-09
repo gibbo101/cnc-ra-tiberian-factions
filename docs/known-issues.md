@@ -191,8 +191,6 @@ to a full entry above or delete. One line each: where, what, severity.
   or lift that vehicle unasked.
 - **Give-way (minor):** `HOLD_TIMEOUT` (60) expires claim waits early against a 75-frame claim, and the
   patient queue drops claims at 40 frames; `Find_Give_Way_Cell` checks only each ray's end cell.
-- **Firing deploy-to-fire units (minor):** Firing_AI's `too_close` uses the raw MinRange while
-  Approach_Target adds half a cell.
 - **Sidebar (cosmetic):** a dropship cameo is never evicted while any bay stands
   (sidebarglyphx.cpp ~546); the Mech Division isn't marked busy through the bay cooldown.
 - **Small ones (cosmetic or latent):** MinelayerFindSpot's `>` should be `>=`; Mission_Repair looks only

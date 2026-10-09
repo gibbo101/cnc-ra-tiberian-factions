@@ -73,6 +73,11 @@ public:
     }
     ThreatType Allowed_Threats(void) const;
     bool Is_Wall_Destroyer(void) const;
+    // TF: the distance a unit keeps from its target to fire: MinRange plus half a cell, or 0 without one.
+    int TF_Standoff(void) const
+    {
+        return (MinRange > 0) ? (int)MinRange + CELL_LEPTON_W / 2 : 0;
+    }
 
     /*
     **	This is both the weapon type number and the index number into

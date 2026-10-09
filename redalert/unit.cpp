@@ -899,7 +899,7 @@ void UnitClass::Firing_AI(void)
         && Target_Legal(TarCom) && Class->PrimaryWeapon != NULL) {
         int which = What_Weapon_Should_I_Use(TarCom);
         WeaponTypeClass const* weapon = (which == 1) ? Class->SecondaryWeapon : Class->PrimaryWeapon;
-        bool too_close = (weapon != NULL && weapon->MinRange > 0 && Distance(TarCom) < weapon->MinRange);
+        bool too_close = (weapon != NULL && Distance(TarCom) < weapon->TF_Standoff());
         if (In_Range(TarCom, which) && !too_close) {
             AttackMoveEnterAttackMode();
         }
@@ -909,7 +909,7 @@ void UnitClass::Firing_AI(void)
         && (Mission == MISSION_ATTACK || Mission == MISSION_HUNT)) {
         int which = What_Weapon_Should_I_Use(TarCom);
         WeaponTypeClass const* weapon = (which == 1) ? Class->SecondaryWeapon : Class->PrimaryWeapon;
-        bool too_close = (weapon != NULL && weapon->MinRange > 0 && Distance(TarCom) < weapon->MinRange);
+        bool too_close = (weapon != NULL && Distance(TarCom) < weapon->TF_Standoff());
         if (In_Range(TarCom, which) && !too_close) {
             Deploy_Begin(true);
             return;
