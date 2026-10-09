@@ -21,17 +21,33 @@ import re
 import shutil
 import sys
 
+from PIL import Image
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import asset_packs as A  # noqa: E402
 import share_tileset_zips  # noqa: E402
 
+TGA_RLE = 10
+
+
+def is_rle_cameo(path):
+    with open(path, "rb") as f:
+        return f.read(3)[2:] == bytes([TGA_RLE])
+
 
 def copy_newer(src, dst):
-    """Copy unless dst already has src's size and is no older, keeping rsync-friendly mtimes."""
+    """Copy unless dst already has src's size and is no older, keeping rsync-friendly mtimes. A sidebar cameo
+    is written run-length encoded (the launcher reads RLE TGA), the same pixels at about four fifths the size."""
+    cameo = os.path.basename(src).upper().startswith("BUILDICON_") and src.upper().endswith(".TGA")
     if os.path.exists(dst):
         a, b = os.stat(src), os.stat(dst)
-        if a.st_size == b.st_size and b.st_mtime >= a.st_mtime:
+        same = is_rle_cameo(dst) if cameo else a.st_size == b.st_size
+        if same and b.st_mtime >= a.st_mtime:
             return dst
+    if cameo:
+        Image.open(src).save(dst, compression="tga_rle")
+        shutil.copystat(src, dst)
+        return dst
     return shutil.copy2(src, dst)
 
 
