@@ -6631,13 +6631,13 @@ bool UnitClass::MinelayerFindSpot(void)
 
     for (int i = -2; i <= 2; i++) {
         int scanx = cellx + i;
-        if (scanx < 0 || scanx > MAP_CELL_W) {
+        if (scanx < 0 || scanx >= MAP_CELL_W) {
             continue;
         }
 
         for (int j = -2; j <= 2; j++) {
             int scany = celly + j;
-            if (scany < 0 || scany > MAP_CELL_H) {
+            if (scany < 0 || scany >= MAP_CELL_H) {
                 continue;
             }
 
