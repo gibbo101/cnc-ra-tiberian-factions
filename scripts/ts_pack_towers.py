@@ -23,10 +23,8 @@ the BuildIcon_TS_* cameos in the TS-Graphics-Pack (each name routed by asset_pac
   TSCTWR       2      body healthy, body damaged
   TSCTWRMAKE   17     construction; from the body's own buildup frames if it has
                       them, otherwise a rise-from-the-ground mask reveal
-  TSVULC / TSROCK / TSCSAM
-               128    32 facings x {idle, recoil, damaged idle, damaged recoil},
-                      the TDGUN layout Shape_Number expects (+32 recoil, +64 damaged)
-  <ini>MAKE    17     the same construction frames
+The armed towers draw TSCTWR's body (rules.ini Image=TSCTWR) with their turret over it, from
+scripts/ts_pack_ctwr_hd.py; --preview here still composites a turret onto the body.
 
 Env:
   TS_ART_DIR   required, holds the decoded sprite directories
@@ -305,15 +303,6 @@ def pack():
     make = buildup(healthy)
     write_zip("TSCTWR", [healthy.on_canvas(), damaged.on_canvas()])
     write_zip("TSCTWRMAKE", make)
-    for ini, tdir in TURRETS.items():
-        frames = []
-        for state in range(4):
-            dmg = state >= 2
-            base = damaged if dmg else healthy
-            for f in range(32):
-                frames.append(base.on_canvas(turret(tdir, f, base.ring[2], damaged=dmg, recoil=bool(state % 2))))
-        write_zip(ini, frames)
-        write_zip(ini + "MAKE", make)
     dims = json.load(open(W.STUB_MANIFEST))
     for ini in ("TSCTWR",) + tuple(TURRETS):
         dims[ini] = [CANVAS_W * 3 // 16, CANVAS_H * 3 // 16]

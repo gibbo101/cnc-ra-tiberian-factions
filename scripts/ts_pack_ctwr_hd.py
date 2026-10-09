@@ -6,12 +6,10 @@ on the canvas centre, so they ship as drawn. Frame sets written to the TS-HD-Gra
 (TSHD_STRUCTURES.XML patched; ts_pack_towers.write_zip routes each name by asset_packs.py):
 
   TSCTWR       2    healthy, damaged
-  TSCTWRMAKE   17   build-up (also written as each armed tower's <ini>MAKE)
-  TSVULC / TSROCK / TSCSAM
-               128  the armed tower's own frames, in the TDGUN layout Shape_Number expects
-                    (32 facings x {idle, recoil, damaged idle, damaged recoil}): the body only
+  TSCTWRMAKE   17   build-up
   TSVULCT / TSROCKT / TSCSAMT
-               128  the turret alone, same layout, from the HD turrets in
+               128  the turret alone, in the TDGUN layout Shape_Number expects (32 facings x
+                    {idle, recoil, damaged idle, damaged recoil}), from the HD turrets in
                     resources/custom-art/ts-tower-turrets-hd (drawn in place on the tower's
                     canvas; the RPG and SAM have no recoil pose, so their idle frame stands in).
                     The engine draws it after every other layer, so couplings and links sit
@@ -30,6 +28,9 @@ on the canvas centre, so they ship as drawn. Frame sets written to the TS-HD-Gra
                              (42 + side*2 + state): the tower's half of a link, capped by its
                              flange on the cell edge (the art's src/ct_gatelink.py); it replaces
                              that side's coupling and wall end
+
+The armed towers (TSVULC, TSROCK, TSCSAM) have no body art of their own: rules.ini gives them
+Image=TSCTWR, and BuildingClass::Draw_It draws the bare tower's healthy or damaged frame under the turret.
 
 The fire points come from the turret art's measured aim points (aim-<turret>-healthy.json) and
 are written to redalert/tsctwr_muzzle.h, leptons from the building centre per turret frame, so the
@@ -103,11 +104,6 @@ def layers(bodies):
         for s in range(STATES):
             out.append(load("gatelinks", f"gatelink-{side}-{s:02d}.png"))
     return out
-
-
-def armed(bodies):
-    """The armed tower's body frames in the turret layout: the body for each state."""
-    return [bodies[1 if state >= 2 else 0] for state in range(4) for f in range(32)]
 
 
 def turret_frame(name, state, f):
@@ -186,9 +182,7 @@ def pack():
     write_zip("TSCTWR", bodies, TOWER_PAD)
     write_zip("TSCTWRMAKE", make, TOWER_PAD)
     for ini, name in TURRETS.items():
-        write_zip(ini, armed(bodies), TOWER_PAD)
         write_zip(ini + "T", turrets(name), TOWER_PAD)
-        write_zip(ini + "MAKE", make, TOWER_PAD)
     write_zip("TSCTWRX", extra, TOWER_PAD)
     dims = json.load(open(W.STUB_MANIFEST))
     for ini in ("TSCTWR",) + tuple(TURRETS):
