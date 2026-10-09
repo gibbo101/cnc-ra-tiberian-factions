@@ -4140,12 +4140,18 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
 
 // True once this house has discovered a standing enemy building. Blind-scout dispatch runs until then,
 // and an Easy house's hunters stop probing start positions.
+// A standing building the house has discovered, held by an enemy still in the match: a defeated house can leave
+// buildings behind, and they are no objective.
+static bool TF_Is_Known_Enemy_Building(HouseClass const* house, BuildingClass const* b)
+{
+    return (b != NULL && !b->IsInLimbo && b->Strength > 0 && !house->Is_Ally(b) && !b->House->IsDefeated
+            && b->House->Class->House != HOUSE_NEUTRAL && b->Is_Discovered_By_Player((HouseClass*)house));
+}
+
 bool HouseClass::TF_Knows_Any_Enemy_Building(void)
 {
     for (int index = 0; index < Buildings.Count(); index++) {
-        BuildingClass const* b = Buildings.Ptr(index);
-        if (b != NULL && !b->IsInLimbo && b->Strength > 0 && !Is_Ally(b) && b->House->Class->House != HOUSE_NEUTRAL
-            && b->Is_Discovered_By_Player(this)) {
+        if (TF_Is_Known_Enemy_Building(this, Buildings.Ptr(index))) {
             return (true);
         }
     }
@@ -7621,7 +7627,7 @@ void TF_Wave_Reset(void)
     }
 }
 
-// The discovered enemy building nearest this house's base centre, or 0 while the house has seen none.
+// The known enemy building (TF_Is_Known_Enemy_Building) nearest this house's base centre, or 0 while there is none.
 COORDINATE HouseClass::TF_Wave_Known_Enemy_Coord(void) const
 {
     assert(Houses.ID(this) == ID);
@@ -7630,8 +7636,7 @@ COORDINATE HouseClass::TF_Wave_Known_Enemy_Coord(void) const
     int bestdist = 0;
     for (int index = 0; index < Buildings.Count(); index++) {
         BuildingClass const* b = Buildings.Ptr(index);
-        if (b != NULL && !b->IsInLimbo && b->Strength > 0 && !Is_Ally(b) && b->House->Class->House != HOUSE_NEUTRAL
-            && b->Is_Discovered_By_Player((HouseClass*)this)) {
+        if (TF_Is_Known_Enemy_Building(this, b)) {
             int dist = ::Distance(Center, b->Center_Coord());
             if (best == 0 || dist < bestdist) {
                 best = b->Center_Coord();
