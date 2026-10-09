@@ -371,6 +371,8 @@ bool BulletTypeClass::Read_INI(CCINIClass& ini)
         IsFlameEquipped = ini.Get_Bool(Name(), "Animates", IsFlameEquipped);
         IsFueled = ini.Get_Bool(Name(), "Ranged", IsFueled);
         IsInaccurate = ini.Get_Bool(Name(), "Inaccuate", IsInaccurate);
+        // TF: the key as spelt in rules.ini too; EA's misspelling left every projectile accurate.
+        IsInaccurate = ini.Get_Bool(Name(), "Inaccurate", IsInaccurate);
         IsAntiAircraft = ini.Get_Bool(Name(), "AA", IsAntiAircraft);
         IsAntiGround = ini.Get_Bool(Name(), "AG", IsAntiGround);
         IsAntiSub = ini.Get_Bool(Name(), "ASW", IsAntiSub);
