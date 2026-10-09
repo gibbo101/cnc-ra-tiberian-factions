@@ -483,8 +483,3 @@ Diagnostic logs confirmed `Burst=2` on `[TDTowTwo]` produces 2 missiles per enga
 - 2-missile salvo via Burst=2 (functionally correct)
 - Close-range targeting works (walls take damage at 1-cell range)
 - Missile damage application at 24-89 lepton scatter (TD-Inaccurate-true scatter, well-within explosion radius)
-
-### Diagnostic logging
-
-A per-frame TDSSM/TDLaser/TDAPDS flight trace in `BulletClass::Unlimbo_TD` and `AI_TD` writes `tf_tdport_bullet.log`; it is compiled out (`TF_TDPORT_LOG_ENABLED` under `#if 0` in `bullet.cpp`).
-

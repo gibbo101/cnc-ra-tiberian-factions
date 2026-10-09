@@ -812,33 +812,10 @@ void BulletClass::AI(void)
                         damage = max(damage, Rule.MinDamage);
                     }
                     damage = min(damage, Rule.MaxDamage);
-#if TF_DEV_BUILD
-                    char const* hitname = optr->Class_Of().Name();
-                    int hitrtti = (int)optr->What_Am_I();
-#endif
-                    int before = optr->Strength;
                     ResultType res = RESULT_NONE;
                     if (damage > 0) {
                         res = optr->Take_Damage(damage, 0, WARHEAD_TSFLAMEHIT, Payback);
                     }
-#if TF_DEV_BUILD
-                    {
-                        char path[512];
-                        const char* prof = getenv("USERPROFILE");
-                        if (prof != NULL && prof[0] != '\0') {
-                            snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_TUNNEL.txt", prof);
-                        } else {
-                            strcpy(path, "MOD_DEBUG_TUNNEL.txt");
-                        }
-                        FILE* f = fopen(path, "a");
-                        if (f != NULL) {
-                            fprintf(f, "frame=%d BURN bullet#%d state=%d hit=%s rtti=%d dist=%d dmg=%d hp %d->%d res=%d\n", Frame, ID,
-                                    state, hitname, hitrtti, dist, damage, before, res == RESULT_DESTROYED ? 0 : before - damage,
-                                    (int)res);
-                            fclose(f);
-                        }
-                    }
-#endif
                     if (res == RESULT_DESTROYED) {
                         again = true;
                         break;
@@ -1617,39 +1594,12 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
     return (false);
 }
 
-// Tiberian Factions diagnostic: TDSSM/TDLaser/TDAPDS flight-and-impact trace.
-// Open once, written by Unlimbo_TD (spawn) and AI_TD (per-frame + detonation).
-// Used 2026-05-22 to diagnose TDATWR close-range targeting (root cause: Speed
-// unit conversion mismatch — see [[reference-ra-mphtype-ini-format]]).
-// Disabled per [[feedback-keep-diagnostics-until-v1]] — flip the #if to 1 to
-// re-enable for future TD-port bullet debugging.
-#if 0
-#define TF_TDPORT_LOG_ENABLED 1
-#else
-#define TF_TDPORT_LOG_ENABLED 0
-#endif
-static FILE* TF_TDPortLog = NULL;
-static void TF_OpenTDPortLog()
-{
-#if TF_TDPORT_LOG_ENABLED
-    if (TF_TDPortLog != NULL) return;
-    const char* home = getenv("USERPROFILE");
-    if (home == NULL) home = getenv("HOME");
-    if (home == NULL) return;
-    char path[512];
-    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_tdport_bullet.log", home);
-    TF_TDPortLog = NULL; // TF DIAG OFF for release (was fopen; restore to re-enable)
-#endif
-}
-
 // TD's BulletClass::Unlimbo, ported for TD-port bullets with RA's layer bookkeeping (docs/td-atwr-deep-dive.md).
 // IsFalling stays clear: AI_TD integrates the fall itself, and ObjectClass::AI would integrate it a second time.
 bool BulletClass::Unlimbo_TD(COORDINATE coord, DirType dir)
 {
     assert(Bullets.ID(this) == ID);
     assert(IsActive);
-
-    TF_OpenTDPortLog();
 
     if (!Class->IsHigh) {
         Height = 0;
@@ -1742,25 +1692,6 @@ bool BulletClass::Unlimbo_TD(COORDINATE coord, DirType dir)
 
         PrimaryFacing = dir;
 
-#if TF_TDPORT_LOG_ENABLED
-        if (TF_TDPortLog != NULL) {
-            COORDINATE target = As_Coord(TarCom);
-            fprintf(TF_TDPortLog,
-                "SPAWN bullet=%p class=%s spawn=(%d,%d) target=(%d,%d) fuse_target=(%d,%d) dir=%d "
-                "MaxSpeed=%d Arming=%d IsHoming=%d IsAccurate=%d initial_dist=%d\n",
-                (void*)this,
-                Class->IniName,
-                (int)Coord_X(Coord), (int)Coord_Y(Coord),
-                (int)Coord_X(target), (int)Coord_Y(target),
-                (int)Coord_X(tcoord), (int)Coord_Y(tcoord),
-                (int)dir,
-                (int)MaxSpeed, (int)Class->Arming,
-                Class->IsHoming ? 1 : 0,
-                (Class->IsInaccurate || IsInaccurate) ? 0 : 1,
-                (int)::Distance(Coord, target));
-            fflush(TF_TDPortLog);
-        }
-#endif
         return (true);
     }
     return (false);
@@ -1772,20 +1703,6 @@ void BulletClass::AI_TD(void)
 {
     assert(Bullets.ID(this) == ID);
     assert(IsActive);
-
-#if TF_TDPORT_LOG_ENABLED
-    if (TF_TDPortLog != NULL) {
-        COORDINATE target = As_Coord(TarCom);
-        fprintf(TF_TDPortLog,
-            "FRAME bullet=%p class=%s coord=(%d,%d) target=(%d,%d) dist=%d Timer=%d\n",
-            (void*)this, Class->IniName,
-            (int)Coord_X(Coord), (int)Coord_Y(Coord),
-            (int)Coord_X(target), (int)Coord_Y(target),
-            (int)::Distance(Coord, target),
-            (int)Timer);
-        fflush(TF_TDPortLog);
-    }
-#endif
 
     COORDINATE coord;
 
@@ -1878,22 +1795,6 @@ void BulletClass::AI_TD(void)
             if (!forced && !Class->IsArcing && !Class->IsHoming && Fuse_Target()) {
                 Coord = Fuse_Target();
             }
-
-#if TF_TDPORT_LOG_ENABLED
-            if (TF_TDPortLog != NULL) {
-                COORDINATE target = As_Coord(TarCom);
-                fprintf(TF_TDPortLog,
-                    "DETONATE bullet=%p class=%s coord=(%d,%d) target=(%d,%d) dist=%d Strength=%d "
-                    "Warhead=%d forced=%d Timer=%d\n",
-                    (void*)this, Class->IniName,
-                    (int)Coord_X(Coord), (int)Coord_Y(Coord),
-                    (int)Coord_X(target), (int)Coord_Y(target),
-                    (int)::Distance(Coord, target),
-                    (int)Strength, (int)Class->ClassWarhead,
-                    forced ? 1 : 0, (int)Timer);
-                fflush(TF_TDPortLog);
-            }
-#endif
             if ((!Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->In_Which_Layer() == LAYER_GROUND)
                 && TF_Airborne_Jumpjet(TarCom) == NULL) {
                 Explosion_Damage(Coord, Strength, Payback, Class->ClassWarhead);
