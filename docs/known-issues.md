@@ -13,13 +13,6 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 
 ## Units and buildings
 
-### TS Upgrade Center shows no RA slab
-- **Severity:** minor (units cannot path round its bottom row the way they do round the others).
-- Every other TS GDI building sits on an RA concrete slab; the Upgrade Center (TSPLUG) does not,
-  though its setup matches the Tech Center: `BSIZE_32`, `List32`, `Bib=yes` in rules.ini, and the
-  same stamp path (`building.cpp` Mark, `Bib_And_Offset` -> BIB2). Suspect its add-on handling
-  (the plug install re-marks the building).
-
 ### Deploy cursor shows on a construction yard when the player owns two or more
 - **Severity:** cosmetic (the click does nothing).
 - `BuildingClass::What_Action` keeps `ACTION_SELF` on a factory whose house has more than one of
