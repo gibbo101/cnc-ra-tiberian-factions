@@ -10751,6 +10751,18 @@ bool DLLExportClass::Get_Player_Info_State(uint64 player_id, unsigned char* buff
             action_object = CurrentObject[0];
         }
 
+        // TF: an airborne jumpjet is drawn above its cell and kept off the cell lists, so the launcher's hover
+        // never finds it; the cell it is drawn over carries the action against it.
+        DynamicVectorClass<CELL> flier_cells;
+        DynamicVectorClass<InfantryClass*> fliers;
+        for (int i = 0; i < Infantry.Count(); ++i) {
+            InfantryClass* inf = Infantry.Ptr(i);
+            if (inf->IsActive && !inf->IsInLimbo && inf->Is_Airborne_Jumpjet() && !inf->Is_Cloaked(PlayerPtr)) {
+                flier_cells.Add(Coord_Cell(Coord_Add(inf->Center_Coord(), XY_Coord(0, -inf->Height))));
+                fliers.Add(inf);
+            }
+        }
+
         int index = 0;
         for (int y = top; y <= bottom; ++y) {
             for (int x = left; x <= right; ++x, ++index) {
@@ -10762,6 +10774,11 @@ bool DLLExportClass::Get_Player_Info_State(uint64 player_id, unsigned char* buff
                         && !((TechnoClass*)o)->Is_Cloaked(PlayerPtr)) {
                         sensed = o;
                         break;
+                    }
+                }
+                for (int f = 0; sensed == NULL && f < fliers.Count(); ++f) {
+                    if (flier_cells[f] == XY_Cell(x, y)) {
+                        sensed = fliers[f];
                     }
                 }
                 if (sensed != NULL) {
