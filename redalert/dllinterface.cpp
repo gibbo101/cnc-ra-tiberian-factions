@@ -5264,19 +5264,6 @@ void DLLExportClass::Add_Mod_Path(const char* mod_path)
     ModSearchPaths.Add(copy_path);
 
     TF_Install_Bundled_Maps(mod_path);
-
-#if 0 // TF DIAG: mod-path/scenario-resolution spike (2026-06-09). Flip to 1 to re-enable.
-    {
-        char dbg[512];
-        const char* up = getenv("USERPROFILE");
-        snprintf(dbg, sizeof(dbg), "%s/Documents/CnCRemastered/tf_paths.log", up ? up : ".");
-        FILE* fp = fopen(dbg, "a");
-        if (fp) {
-            fprintf(fp, "Add_Mod_Path: '%s'\n", mod_path ? mod_path : "(null)");
-            fclose(fp);
-        }
-    }
-#endif
 }
 
 /**************************************************************************************************
@@ -5318,21 +5305,6 @@ void DLLExportClass::Set_Content_Directory(const char* content_directory)
 
     CCFileClass::Set_Search_Drives(all_paths);
 
-#if 0 // TF DIAG: mod-path/scenario-resolution spike (2026-06-09). Flip to 1 to re-enable.
-    {
-        char dbg[512];
-        const char* up = getenv("USERPROFILE");
-        snprintf(dbg, sizeof(dbg), "%s/Documents/CnCRemastered/tf_paths.log", up ? up : ".");
-        FILE* fp = fopen(dbg, "a");
-        if (fp) {
-            fprintf(fp,
-                    "Set_Content_Directory: content='%s' -> search drives '%s'\n",
-                    content_directory ? content_directory : "(null)",
-                    all_paths);
-            fclose(fp);
-        }
-    }
-#endif
     delete[] all_paths;
 }
 
@@ -5479,26 +5451,6 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
             }
             strncpy(new_event.SoundEffect.SoundEffectName, name, 16);
             new_event.SoundEffect.SoundEffectName[15] = '\0';
-
-#if 0 // TF DIAG — OFF for release (was unguarded; flip to 1 to log radar dispatch).
-            // Diagnostic: confirm dispatch runs + log ActLike at time of call.
-            // Path follows project convention (reference-diagnostic-paths).
-            const char* up = getenv("USERPROFILE");
-            if (up != NULL) {
-                char path[512];
-                snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_radar_dispatch.log", up);
-                FILE* f = fopen(path, "a");
-                if (f != NULL) {
-                    fprintf(f, "[radar] sfx_idx=%d player_ptr=%s actlike=%d house=%d -> name=%s\n",
-                            sound_effect_index,
-                            player_ptr ? "yes" : "no",
-                            player_ptr ? (int)player_ptr->ActLike : -1,
-                            (player_ptr && player_ptr->Class) ? (int)player_ptr->Class->House : -1,
-                            name);
-                    fclose(f);
-                }
-            }
-#endif
         }
 
         /*
@@ -5585,24 +5537,6 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
                 strncpy(new_event.SoundEffect.SoundEffectName, td_name, 16);
                 new_event.SoundEffect.SoundEffectName[15] = '\0';
             }
-
-#if 0
-            // Diagnostic (flip to 1 if the ear-check finds a silent/RA voice):
-            // logs which TD asset name we dispatched. Kept stubbed to avoid
-            // per-voice file I/O in the shipping build (feedback-keep-diagnostics-until-v1).
-            const char* up = getenv("USERPROFILE");
-            if (up != NULL) {
-                char path[512];
-                snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_voice_dispatch.log", up);
-                FILE* f = fopen(path, "a");
-                if (f != NULL) {
-                    fprintf(f, "[voice] sfx_idx=%d actlike=%d var=%d -> name=%s\n",
-                            sound_effect_index, (int)player_ptr->ActLike, variation,
-                            new_event.SoundEffect.SoundEffectName);
-                    fclose(f);
-                }
-            }
-#endif
         }
     } else {
         strncpy(new_event.SoundEffect.SoundEffectName, "BADINDEX", 16);
@@ -6468,27 +6402,6 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Get_Game_State(GameStateReques
     }
     }
 
-    // Tiberian Factions diag 2026-05-31: log every state query the launcher makes, so the
-    // LAST state_type before the EXE NULL-deref crash (MCV deploy, Hum-vee/Buggy) tells us
-    // WHICH state the launcher choked processing (LAYERS/SIDEBAR/OCCUPIER/...). Flip #if 1 -> 0.
-#if 0 // TF DIAG — OFF for release (was #if 1; flip to 1 to re-enable logging).
-    {
-        static FILE* s_state_log = NULL;
-        if (s_state_log == NULL) {
-            char spath[512];
-            const char* sp = getenv("USERPROFILE");
-            snprintf(spath, sizeof(spath), "%s/Documents/CnCRemastered/tf_state_query.log",
-                     (sp != NULL && sp[0] != '\0') ? sp : ".");
-            s_state_log = fopen(spath, "w");
-        }
-        if (s_state_log != NULL) {
-            fprintf(s_state_log, "state_type=%d got=%d buf=%u\n",
-                    (int)state_type, (int)got_state, buffer_size);
-            fflush(s_state_log);
-        }
-    }
-#endif
-
     return got_state;
 }
 
@@ -6585,92 +6498,9 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         height = TF_HUNTER_DRAW_SIZE;
     }
 
-    // Diagnostic 2026-05-19: log Draw calls for every TD-prefixed building
-    // to see what AssetName / shape_file_name / BState the engine passes per
-    // frame. Used to diagnose the placement → buildup Petroglyph flash —
-    // we suspect the launcher does an asset lookup using something other
-    // than our tileset name for one transitional frame.
-    //
-    // No rate limit so the placement transition is fully captured. Disable
-    // by flipping the `#if 1` to `#if 0`. Per
-    // [[feedback-keep-diagnostics-until-v1]] keep in source.
-#if 0 // TF DIAG — OFF for release (was #if 1; flip to 1 to re-enable logging).
-    if (object != NULL && object->What_Am_I() == RTTI_BUILDING) {
-        BuildingTypeClass const* btc = (BuildingTypeClass const*)&object->Class_Of();
-        bool is_td = (btc->IniName[0] == 'T' && btc->IniName[1] == 'D');
-        if (is_td) {
-            static FILE* s_draw_log = NULL;
-            if (s_draw_log == NULL) {
-                char dpath[512];
-                const char* dprof = getenv("USERPROFILE");
-                if (dprof != NULL && dprof[0] != '\0') {
-                    snprintf(dpath, sizeof(dpath),
-                             "%s/Documents/CnCRemastered/tf_draw_intercept.log", dprof);
-                } else {
-                    strcpy(dpath, "tf_draw_intercept.log");
-                }
-                s_draw_log = fopen(dpath, "w");
-            }
-            if (s_draw_log != NULL) {
-                BuildingClass const* bld = (BuildingClass const*)object;
-                char const* pri_name = (btc->PrimaryWeapon != NULL && btc->PrimaryWeapon->Name() != NULL)
-                                           ? btc->PrimaryWeapon->Name() : "(null)";
-                char const* sec_name = (btc->SecondaryWeapon != NULL && btc->SecondaryWeapon->Name() != NULL)
-                                           ? btc->SecondaryWeapon->Name() : "(null)";
-                fprintf(s_draw_log,
-                        "Draw IniName=%s GraphicName=%s shape_file_name=%s "
-                        "BState=%d HP=%d shape#=%d w=%d h=%d "
-                        "ImageData=%p BuildupData=%p Primary=%s Secondary=%s "
-                        "TurretEq=%d Armor=%d TarCom=%lx\n",
-                        btc->IniName,
-                        (btc->Graphic_Name() != NULL ? btc->Graphic_Name() : "(null)"),
-                        (shape_file_name != NULL ? shape_file_name : "(null)"),
-                        (int)bld->BState,
-                        (int)bld->Strength,
-                        shape_number, width, height,
-                        btc->Get_Image_Data(), btc->Get_Buildup_Data(),
-                        pri_name, sec_name, (int)btc->IsTurretEquipped,
-                        (int)btc->Armor, (long)bld->TarCom);
-                fflush(s_draw_log);
-            }
-        }
-    }
-#endif
     CNCObjectStruct& new_object = ObjectList->Objects[TotalObjectCount + CurrentDrawCount];
     memset(&new_object, 0, sizeof(new_object));
     Convert_Type(object, new_object);
-
-    // Tiberian Factions diag 2026-05-31: log EVERY object converted into the launcher's
-    // render list (not just TD buildings). The EXE NULL-derefs on MCV deploy after the
-    // Hum-vee/Buggy were added; the last line before the crash names the object whose data
-    // the launcher choked on, and AssetName/ImageData expose the NULL. Flip #if 0 -> 1 to re-enable.
-#if 0 // TF DIAG (2026-05-31 MCV-crash hunt) — OFF for release; per-object/per-frame log.
-    {
-        static FILE* s_obj_log = NULL;
-        if (s_obj_log == NULL) {
-            char opath[512];
-            const char* op = getenv("USERPROFILE");
-            snprintf(opath, sizeof(opath), "%s/Documents/CnCRemastered/tf_objlist.log",
-                     (op != NULL && op[0] != '\0') ? op : ".");
-            s_obj_log = fopen(opath, "w");
-        }
-        if (s_obj_log != NULL) {
-            const char* ini = "(?)";
-            void const* img = NULL;
-            if (object != NULL) {
-                ObjectTypeClass const& otc = object->Class_Of();
-                ini = (otc.IniName != NULL) ? otc.IniName : "(nullini)";
-                img = otc.Get_Image_Data();
-            }
-            fprintf(s_obj_log,
-                    "rtti=%d ini=%s Type=%d Asset='%s' ImageData=%p shape#=%d scale=%ld slot=%d ow=%d oh=%d\n",
-                    (object != NULL ? (int)object->What_Am_I() : -1), ini,
-                    (int)new_object.Type, new_object.AssetName, img, shape_number,
-                    (long)scale, TotalObjectCount + CurrentDrawCount, width, height);
-            fflush(s_obj_log);
-        }
-    }
-#endif
 
     if (new_object.Type == UNKNOWN) {
         return;
@@ -6845,34 +6675,6 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     }
 #endif
 
-    // Tiberian Factions diag 2026-05-31 (pass 2): log the FINAL AssetName the launcher will
-    // use to resolve each object's render asset. The launcher NULL-derefs on MCV deploy when an
-    // object's AssetName isn't in its asset index; the last line before the crash names it. The
-    // earlier tf_objlist.log logged before AssetName was set (always ''). Flip #if 0 -> 1 to re-enable.
-#if 0 // TF DIAG (2026-05-31 MCV-crash hunt) — OFF for release; per-object/per-frame log.
-    {
-        static FILE* s_asset_log = NULL;
-        if (s_asset_log == NULL) {
-            char apath[512];
-            const char* ap = getenv("USERPROFILE");
-            snprintf(apath, sizeof(apath), "%s/Documents/CnCRemastered/tf_assetname.log",
-                     (ap != NULL && ap[0] != '\0') ? ap : ".");
-            s_asset_log = fopen(apath, "w");
-        }
-        if (s_asset_log != NULL) {
-            const char* gname = (object != NULL && object->Class_Of().Graphic_Name() != NULL)
-                                    ? object->Class_Of().Graphic_Name() : "(nullgfx)";
-            fprintf(s_asset_log,
-                    "rtti=%d Type=%d Asset='%s' TypeName='%s' shapefile=%s gfx='%s' slot=%d\n",
-                    (object != NULL ? (int)object->What_Am_I() : -1), (int)new_object.Type,
-                    new_object.AssetName, new_object.TypeName,
-                    (shape_file_name != NULL ? shape_file_name : "(null)"), gname,
-                    TotalObjectCount + CurrentDrawCount);
-            fflush(s_asset_log);
-        }
-    }
-#endif
-
     new_object.Owner = (base_object != NULL) ? ((override_owner != HOUSE_NONE) ? override_owner : base_object->Owner)
                                              : (char)object->Owner();
     // TF: the dropship is a bullet, which has no house; it takes the bay's, so its trim takes the house colour.
@@ -6898,52 +6700,11 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         if (new_object.Type == BUILDING) {
             BuildingClass* building = (BuildingClass*)object;
 
-#if 0
-            // Phase 1e proxy (donor IniName → launcher) — DISABLED 2026-05-18.
-            // The launcher's sprite lookup is cross-tileset on the original IniName,
-            // so a [NewBuildings] entry using a real TD/RA tileset name (e.g. NUKE,
-            // HAND, PYLE) resolves correctly without this override. Keeping the
-            // block under #if 0 in case a future case needs a runtime IniName proxy.
-            BuildingTypeClass const& donor = BuildingTypeClass::As_Reference(building->Class->Type);
-            if (stricmp(donor.IniName, building->Class->IniName) != 0) {
-                strncpy(new_object.TypeName, donor.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
-                strncpy(new_object.AssetName, donor.Graphic_Name(), CNC_OBJECT_ASSET_NAME_LENGTH);
-            }
-#endif
-
             // TF: walls never take the MAKE suffix. No wall has a <name>MAKE asset, and the launcher crashes looking
             // one up for a wall in BSTATE_CONSTRUCTION, such as the placement preview.
             if (building->BState == BSTATE_CONSTRUCTION && !building->Class->IsWall) {
                 strncat(new_object.AssetName, "MAKE", CNC_OBJECT_ASSET_NAME_LENGTH);
             }
-            // Diagnostic 2026-05-19: log the *final* AssetName the launcher
-            // receives for TD-prefixed buildings — this is the tileset name
-            // it will look up. Petroglyph flash on placement is suspected to
-            // be a transient mismatch here.
-#if 0 // TF DIAG — OFF for release (was #if 1; flip to 1 to re-enable logging).
-            if (building->Class->IniName[0] == 'T' && building->Class->IniName[1] == 'D') {
-                static FILE* s_asset_log = NULL;
-                if (s_asset_log == NULL) {
-                    char dpath[512];
-                    const char* dprof = getenv("USERPROFILE");
-                    if (dprof != NULL && dprof[0] != '\0') {
-                        snprintf(dpath, sizeof(dpath),
-                                 "%s/Documents/CnCRemastered/tf_asset_name.log", dprof);
-                    } else {
-                        strcpy(dpath, "tf_asset_name.log");
-                    }
-                    s_asset_log = fopen(dpath, "w");
-                }
-                if (s_asset_log != NULL) {
-                    fprintf(s_asset_log,
-                            "TypeName=%s AssetName=%s BState=%d shape#=%d Strength=%d\n",
-                            new_object.TypeName, new_object.AssetName,
-                            (int)building->BState, shape_number,
-                            (int)building->Strength);
-                    fflush(s_asset_log);
-                }
-            }
-#endif
             const BuildingTypeClass* building_type = building->Class;
             /*
             **	The launcher draws a unit behind a building by the cells it is handed here. The TS
@@ -8595,29 +8356,6 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
 
                 TechnoTypeClass const* tech = Fetch_Techno_Type(Map.Column[c].Buildables[b].BuildableType,
                                                                 Map.Column[c].Buildables[b].BuildableID);
-
-                // Tiberian Factions diag 2026-05-31: log every sidebar buildable the DLL hands
-                // the launcher (col/type/id + the resolved techno + its IniName). A NULL tech or a
-                // bad entry here would make the launcher NULL-deref. Flip #if 1 -> 0 to disable.
-#if 0 // TF DIAG — OFF for release (was #if 1; flip to 1 to re-enable logging).
-                {
-                    static FILE* s_sb_log = NULL;
-                    if (s_sb_log == NULL) {
-                        char bpath[512];
-                        const char* bp = getenv("USERPROFILE");
-                        snprintf(bpath, sizeof(bpath), "%s/Documents/CnCRemastered/tf_sidebar_entry.log",
-                                 (bp != NULL && bp[0] != '\0') ? bp : ".");
-                        s_sb_log = fopen(bpath, "w");
-                    }
-                    if (s_sb_log != NULL) {
-                        fprintf(s_sb_log, "col=%d b=%d BType=%d BID=%d tech=%p ini=%s\n",
-                                c, b, (int)Map.Column[c].Buildables[b].BuildableType,
-                                Map.Column[c].Buildables[b].BuildableID, (void const*)tech,
-                                (tech != NULL && tech->IniName != NULL) ? tech->IniName : "(null)");
-                        fflush(s_sb_log);
-                    }
-                }
-#endif
 
                 sidebar_entry.SuperWeaponType = SW_NONE;
 
@@ -11191,30 +10929,6 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             }
 #endif
         }
-
-#if 0 // TF DIAGNOSTIC stub: bib entries on TD-template cells (~/tf_bib.log). \
-      // Resolved 2026-06-10 (bibs render fine with ground suppression); flip \
-      // to 1 if bib rendering regresses.
-        if (cell_ptr->TType >= TEMPLATE_TDSH1 && cell_ptr->TType < TEMPLATE_COUNT
-            && cell_ptr->Smudge >= SMUDGE_BIB1 && cell_ptr->Smudge <= SMUDGE_BIB3
-            && (Frame % 15) == 0) {
-            const char* up = getenv("USERPROFILE");
-            if (up != NULL) {
-                char path[512];
-                snprintf(path, sizeof(path), "%s/tf_bib.log", up);
-                FILE* f = fopen(path, "a");
-                if (f != NULL) {
-                    fprintf(f,
-                            "frame=%d cell=%d smudge=%d data=%d img=%p asset=%s "
-                            "entry_index=%d\n",
-                            Frame, (int)cell, (int)cell_ptr->Smudge,
-                            (int)cell_ptr->SmudgeData, smudge_type.Get_Image_Data(),
-                            smudge_type.IniName, entry_index);
-                    fclose(f);
-                }
-            }
-        }
-#endif
 
         if (!tf_hide_bib && smudge_type.Get_Image_Data() != NULL) {
 
