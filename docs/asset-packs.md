@@ -44,8 +44,8 @@ only the `RA_` files. A pack's XML files are what a modder copies, and what the 
   civilian). The HD-rebuilt TS objects in its `TS_HD` list go to TS-HD.
 - Cameos: the plain `BuildIcon_` of those objects. An HD cameo (`scripts/ts_hd_cameos.py`) goes in
   TS-HD beside its classic one in TS-Graphics-Pack. Staging copies a file two packs carry from the
-  later pack only, and the variant bakers read the HD one (`cameo_source`). The `_G`, `_LK`, `_<n>`
-  and `_CD###` variants and the `SW_`/`SG_` superweapon cameos drive the mod's sidebar and stay in
+  later pack only, and the variant bakers read the HD one (`cameo_source`). The `_G`, `_LK` and `_<n>`
+  variants and the `SW_`/`SG_` superweapon cameos drive the mod's sidebar and stay in
   `resources/`.
 - Sounds: `TS_SFX_EVA_*` EVA, `TS_SFX_UNT_*` voices, other `TS*` effects; RA2 and C&C3 crew lines
   (`SE`/`MO`/`AT` takes) apart from their weapon and engine sounds. `TF_MBX_*` (the EVA mailbox)

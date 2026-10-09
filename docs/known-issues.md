@@ -127,11 +127,6 @@ to a full entry above or delete. One line each: where, what, severity.
   (`TDACCOM1`, `TDFAIL1` and `RAOLOST1` all went out through valid chains and stayed silent),
   so the endgame lines ride the EVA mailbox. Mid-game stub-and-refire is unaffected.
 
-### The Dropship Bay's countdown cameo tooltip flickers once a second
-- The 5:00 to 0:01 cooldown is a per-second AssetName swap (`%s_CD%03d`), and each swap rebuilds the launcher's sidebar
-  button, closing an open tooltip. Tooltip and icon are one launcher widget. Per-second precision
-  was chosen over coarser, flicker-free steps.
-
 ### Classic graphics mode is unsupported
 - The mod's terrain and units have no classic art, so the mod is HD-only.
   `CNCDisableLegacyGraphicsOption` in `Data/XML/GameConstants_Mod.xml` removes the option and the

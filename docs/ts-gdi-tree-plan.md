@@ -245,11 +245,11 @@ the plot is the deck's 3x2 and the canvas is padded to centre on it.
   file every 9 frames. **The Mk. II field cap** (`TF_MK2_CAP` in `house.cpp`) is heap-counted:
   the CSII quantity fold aliases mod-unit `UQuantity` slots.
 - **The cooldown arms at pod launch, per house,** through one list (`TF_Is_Dropship_Delivered`:
-  the factory binding, both order gates, the sidebar keep-alive and the countdown) and shows as a
-  per-second baked countdown cameo, 5:00 to 0:01 (`scripts/ts_mk2_cooldown_cameos.py`, an AssetName
-  swap). At the cap the cameo is `BuildIcon_TSHMEC_LK` (dimmed, red X), which outranks the
-  countdown, and both sidebar click handlers ask `TF_Delivery_Order_Refused` before speaking, so a
-  refused click says "Cannot comply".
+  the factory binding, both order gates, the sidebar keep-alive and the locked cameo). Through the
+  cooldown every unit it delivers shows its `_LK` cameo (dimmed, red X; `scripts/ts_mk2_cooldown_cameos.py`,
+  an AssetName swap), as the Mk. II does at its field cap; both sidebar click handlers ask
+  `TF_Delivery_Order_Refused` before speaking, so a refused click says "Cannot comply". When the
+  cooldown runs out with a bay standing, the player gets a "Dropship Bay ready" message.
 - **`TFDropBayTimer` must be initialised in the HouseClass constructor;** uninitialised it reads as
   a live cooldown and looks like a broken binding.
 - **The one-bay cap counts standing bays** (`Has_Building_Active(STRUCT_TSDROP)`), never
@@ -397,9 +397,9 @@ A unit here is done: no open art, geometry or behaviour work.
 - **`Can_Build` is the sidebar's offer test** (`Update_Buildables`); a pause expressed there makes the
   cameo vanish instead of greying, and a bay rebuilt during a pause re-offered its cargo through it,
   so cameos never came back. Order refusal lives in `TF_Delivery_Order_Refused` (`Begin_Production`
-  and both click handlers), and the sidebar fill paints the countdown and locked dress.
+  and both click handlers), and the sidebar fill paints the locked dress.
 - **`CNCSidebarEntryStruct::Busy` draws nothing.** Show unavailability with an AssetName swap (the
-  Mk. II's dimming is its countdown art). A fake `Constructing` + `Progress` reads as a build and
+  locked cameo). A fake `Constructing` + `Progress` reads as a build and
   miscounts queue clicks.
 - **Any divert that bypasses `MISSION_CONSTRUCTION` must free the builder itself** and run
   `Grand_Opening`: the plug install skipped it, the yard stayed in radio contact, and every later
@@ -451,7 +451,7 @@ A unit here is done: no open art, geometry or behaviour work.
 - **TS's blank cameo scene** (rock wall, dark band, dirt floor) is rebuilt from 21 TS cameos by
   `scripts/ts_cameo_background.py`: TS ships no empty one. New cameos are composed on it.
 - **Anything inserted after the last ObjectTypeClass in `RABUILDABLES.XML` lands inside the
-  countdown generator's block,** and its next run eats it; insert before the BEGIN marker.
+  locked-cameo generator's block,** and its next run eats it; insert before the BEGIN marker.
 - **Two Blender traps:** a world made through the API has a near-black default colour, so
   everything the sun misses renders black; bevelling a box with non-uniform object scale makes
   degenerate geometry that also renders black.

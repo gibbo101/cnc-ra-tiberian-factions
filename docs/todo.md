@@ -15,11 +15,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
     (allies over allies,soviet): set the intended values there too, after deciding E3's owner;
   - `Inaccurate=` is dead (EA reads `Inaccuate`): turn projectile inaccuracy back on, through the
     key or a `// TF:` parser fix, and retune the artillery range if the scatter changes it.
-- **Shrink the package.** The build is 1,280 MB unpacked, 835 MB zipped (5.0.0: 1,456 MB, zip
+- **Shrink the package.** The build is 1,137 MB unpacked, 772 MB zipped (5.0.0: 1,456 MB, zip
   1.0 GB), with each frame stored once, copied ZIPs shared at staging and cameos staged as RLE TGA
-  (`docs/asset-packs.md`). Where the rest goes: 327 MB of sidebar cameos, 144 MB of them the Dropship
-  Bay's per-second countdown (300 frames each for the Mk. II and the Mech Division; coarser steps
-  would tick the clock in jumps, the maintainer's call), the 177 MB UI atlas (same size as EA's),
+  (`docs/asset-packs.md`). Where the rest goes: 182 MB of sidebar cameos, the 177 MB UI atlas (same size as EA's),
   67 MB of movies, 51 MB of lobby thumbnails (same-size swaps for EA's), 43 MB CONFIG.MEG. Leads:
   `TSWEAP2.ZIP` (2.5 MB), the pre-rebuild war factory overlay, which the game never draws, can go
   once the map editor's factory overlay (`editor_manifest.py`) and the war-factory Aseprite scripts
