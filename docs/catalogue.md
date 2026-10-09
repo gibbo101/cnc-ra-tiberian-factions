@@ -644,6 +644,8 @@ their own rules:
   0:24, Power Plant 0:11, Repair Facility 0:41, all within a second.
 - **Units build at RA's base rate:** `Cost × BuildSpeedBias × TICKS_PER_MINUTE / 1000` (Cost × 0.72 in
   our rules). TD's raw-cost ticks made them about 1.39x slower than RA units of equal cost.
+- **Low power and the AI's IQ slow it, as in TD:** no power makes a build take 4x as long, under half
+  2.5x, under full 1.5x; a computer house with build slowdown on takes up to twice as long by its IQ.
 - **Extra factories divide the time,** as they do for the RA factions: by the number of factories
   building that category (`Factory_Count`), capped at 2 when Aftermath units are on.
 

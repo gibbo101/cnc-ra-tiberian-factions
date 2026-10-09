@@ -188,8 +188,6 @@ to a full entry above or delete. One line each: where, what, severity.
 - **Lobby AI difficulty (major):** dllinterface.cpp resets `TF_LobbyCandN` only in dev builds, so in a
   release the candidate list fills across matches and an ambiguous read can take an earlier lobby's
   difficulties.
-- **GDI/Nod build speed ignores power (major):** techno.cpp `Time_To_Build`'s GDI/Nod path returns before
-  the low-power scaling, the AI build slowdown and the house bias; TD itself applies the power scaling.
 - **TS harvester speed (minor):** rules.ini `[TSHARV] Speed=5`; the parity change to 6 went into a comment.
 - **Per-match statics never reset (minor):** house.cpp AI_Building's `_waiting_since[]` and
   `TF_Eco_Below_Target`'s hold statics carry into the next match of a session.

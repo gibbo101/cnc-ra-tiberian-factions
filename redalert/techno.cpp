@@ -7837,7 +7837,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
 #endif
 
         // TF: GDI and Nod build buildings in TD's time (cost less any unit that comes with them) and units at RA's
-        // base rate, divided by factory count, skipping the bias, AI slowdown and power scaling (docs/catalogue.md).
+        // base rate, without RA's house bias; TD's AI slowdown, power scaling and factory count apply (catalogue.md).
         if (hptr->ActLike == HOUSE_GOOD || hptr->ActLike == HOUSE_BAD) {
             int td_cost = Cost;
             if (What_Am_I() == RTTI_BUILDINGTYPE) {
@@ -7858,6 +7858,18 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 td_cost = Cost * Rule.BuildSpeedBias * fixed(TICKS_PER_MINUTE, 1000);
             }
             if (td_cost < 0) td_cost = 0;
+
+            if (!hptr->IsHuman && Rule.Diff[hptr->Difficulty].IsBuildSlowdown) {
+                td_cost = td_cost * Inverse(fixed(hptr->IQ + Rule.MaxIQ, Rule.MaxIQ * 2));
+            }
+            fixed const power = hptr->Power_Fraction();
+            if (power == 0) {
+                td_cost *= fixed(4, 1);
+            } else if (power < fixed::_1_2) {
+                td_cost *= fixed(5, 2);
+            } else if (power < 1) {
+                td_cost *= fixed(3, 2);
+            }
 
             int td_divisor = hptr->Factory_Count(What_Am_I(), TF_Bay_Order(What_Am_I(), ID));
             if (td_divisor != 0) {
