@@ -3708,7 +3708,7 @@ static void Reserve_Unit()
 static void Create_Units(bool official)
 {
     // TF: the GDI and Nod columns follow TD's own Create_Units table, spread over RA's four rows. TS GDI's
-    // column leaves out the Mammoth Mk. II, which arrives by dropship.
+    // column leaves out the Mammoth Mk. II, which arrives by dropship, and has no tech-10 unit.
     static struct
     {
         int MinLevel;
@@ -3740,7 +3740,7 @@ static void Create_Units(bool official)
                    {UNIT_HTANK, UNIT_NONE},
                    {UNIT_TDHTNK, UNIT_NONE},
                    {UNIT_TDSTNK, UNIT_TDMSAM},
-                   {UNIT_TSSONIC, UNIT_NONE}}};
+                   {UNIT_NONE, UNIT_NONE}}};
     static int num_units[ARRAY_SIZE(utable)]; // # of each type of unit to create
     int tot_units;                            // total # units to create
 
