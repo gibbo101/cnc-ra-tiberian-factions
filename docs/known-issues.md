@@ -19,8 +19,8 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
   gives each untethered friendly infantryman ahead a one-cell `MISSION_MOVE` out of the way, and
   nothing restores his order. A soldier walking through the pass, or an engineer on
   `MISSION_ENTER` heading to capture, would stop one cell aside and stay there. Not yet seen in play.
-- Fix shape: re-issue the man's mission and destination once he has stepped aside, or push only
-  men with no order of their own.
+- Fix shape, once it is seen in play: re-issue the man's mission and destination once he has stepped
+  aside. Pushing only men with no order brings back the head-on jam the shove exists to break.
 
 ---
 
@@ -54,12 +54,6 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
   everyone's, which means the id is a local filter and the data-side route in
   `building-sound-routing.md` §2 is needed.
 
-### The radar on/off sting never plays with two or more humans
-- **Severity:** cosmetic.
-- The debounce in `HouseClass::AI` (`tf_radar_on`, `tf_pending`, `tf_stable`) is function-static,
-  shared by every human house. With two or more humans their states alternate, nothing holds the 8
-  frames the debounce needs, and no sting plays (it never loops). Fix shape: per-house state.
-
 ### First solo skirmish after a LAN session spawned the LAN lobby's AIs (seen once)
 - **Severity:** minor, unreproduced.
 - `CNC_Set_Multiplayer_Data` handed over the previous LAN lobby's roster (8 slots, 6 AIs against an
@@ -77,19 +71,6 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 - Next time: poll the AI log size every 5 s and on a 20 s stall run
   `gdb -p <pid> -batch -ex 'thread apply all bt 30'` on the sim process (gdb attaches under Wine;
   breakpoints never fire).
-
-### The economy gate counts buildings still in limbo
-- **Severity:** minor.
-- `tf_economy_ready` (`house.cpp`) counts refineries and war factories with
-  `TF_Role_Quantity(BQuantity, ...)`. `BQuantity` rises when production starts, so an unbuilt war
-  factory reads as owned and unlocks `TDFIX` early. Fix shape: gate on `ActiveBQuantity`; leave the
-  "do I need another" counts on `BQuantity`, which must see in-flight orders.
-
-### Lobby difficulty state survives into the next game
-- **Severity:** minor, no symptom seen.
-- `TF_Apply_AI_Difficulties` sets `TFLobbyAIDifficultySet` and `Scen.CDifficulty`, and nothing
-  resets them, so a campaign started after a skirmish in the same session inherits them. Fix
-  shape: reset both at match start.
 
 ### Thousands of genuine path failures per match: baseline not set
 - **Severity:** unknown.
