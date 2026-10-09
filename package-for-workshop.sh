@@ -56,6 +56,12 @@ if ! python3 scripts/code_check.py >&2; then
     exit 1
 fi
 
+# A release ships each distinct frame of a tileset ZIP once (scripts/dedupe_tileset_frames.py).
+if ! python3 scripts/dedupe_tileset_frames.py --check >&2; then
+    echo "ERROR: tileset ZIPs hold duplicate frames. Run scripts/dedupe_tileset_frames.py." >&2
+    exit 1
+fi
+
 echo "==> Release build (TF_DEV_BUILD=0 — dev cheats compiled out)"
 CMAKE_TOOLCHAIN_FILE=cmake/i686-mingw-w64-toolchain.cmake \
   VC_CXX_FLAGS="-w;-fpermissive;-DTF_DEV_BUILD=0" \

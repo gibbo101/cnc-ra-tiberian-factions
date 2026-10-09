@@ -59,6 +59,9 @@ only the `RA_` files. A pack's XML files are what a modder copies, and what the 
 - **Pack scripts** take every output and input path from `asset_packs` by name (`art_zip`,
   `tileset_xml`, `cameo_tga`, `buildables_xml`, `sound_wav`, `sfx_xml`). A new TS unit's art lands
   in TS-Graphics-Pack with no other change.
+- **One copy of each frame:** a shape whose image matches an earlier one in its ZIP names that one
+  in the tileset XML, and the copy leaves the ZIP. Run `scripts/dedupe_tileset_frames.py` after any
+  packer that writes a ZIP; the packager refuses a build that still holds duplicates.
 - **Build:** the CMake post-build step copies `resources/remaster_mods/Vanilla_RA`, then
   `scripts/stage_asset_packs.py` copies every pack's art and audio and writes the merged XML: each
   pack's entries replace the `<!-- asset-pack: <Pack> -->` marker in the mod's file. Staging always
