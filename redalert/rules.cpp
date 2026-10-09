@@ -783,6 +783,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("C3Mk3Pods");      // WEAPON_C3MK3PODS (C&C3 GDIMammothTankRocketPods)
     new WeaponTypeClass("C3PredCannon");   // WEAPON_C3PREDCANNON (C&C3 GDIPredatorTankCannon)
     new WeaponTypeClass("TS90mm");         // WEAPON_TS90MM (TS [90mm] -- the Tick Tank's gun)
+    new WeaponTypeClass("TSBazooka");      // WEAPON_TSBAZOOKA (TS [Bazooka] -- the Rocket Infantry's launcher)
 
     // TF: TD-port weapons read Speed= as TD's raw MPHType and fire at TD's cadence (docs/td-port-playbook.md).
     // Unflagged, Speed=100 reads as light speed, which a visible TD bullet treats as immobile.

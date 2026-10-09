@@ -771,6 +771,26 @@ static InfantryTypeClass const TsJumpjet(INFANTRY_TSJUMPJET, // Infantry type nu
                                          0                   // pointer to override remap table
 );
 
+// TS Rocket Infantry (INFANTRY_TSE3), TS Nod's: art.ini [E3] shares E1Sequence and fires on FireUp=2.
+static InfantryTypeClass const TsE3(INFANTRY_TSE3, // Infantry type number.
+                                    TXT_E3,        // Translate name number (display set via rules.ini Name=).
+                                    "TSE3",        // INI name for infantry.
+                                    0x0035,        // Vertical offset.
+                                    0x0010,        // Primary weapon offset along centerline.
+                                    false,         // Is this a female type?
+                                    true,          // Has crawling animation frames? (TS Crawls=yes)
+                                    false,         // Is this a civilian?
+                                    false,         // Does this unit use the override remap table?
+                                    false,         // Always use the given name for the infantry?
+                                    false,         // Theater specific graphic image?
+                                    PIP_FULL,      // Transport pip shape/color to use.
+                                    TsE1DoControls,
+                                    TsE1DoControls,
+                                    2,             // Frame of projectile launch (TS FireUp=2).
+                                    2,             // Frame of projectile launch while prone.
+                                    0              // pointer to override remap table
+);
+
 // Grenadiers
 static InfantryTypeClass const E2(INFANTRY_E2, // Infantry type number.
                                   TXT_E2,      // Translate name number for infantry type.
@@ -1671,6 +1691,7 @@ void InfantryTypeClass::Init_Heap(void)
     new InfantryTypeClass(TsMedic);
     new InfantryTypeClass(TsGhost);
     new InfantryTypeClass(TsJumpjet);
+    new InfantryTypeClass(TsE3);
 }
 
 /***********************************************************************************************
@@ -1957,6 +1978,14 @@ void InfantryTypeClass::One_Time(void)
     }
     if (tsjumpjet.CameoData == NULL) {
         ((void const*&)tsjumpjet.CameoData) = As_Reference(INFANTRY_E1).CameoData;
+    }
+
+    InfantryTypeClass& tse3 = As_Reference(INFANTRY_TSE3); // TS Rocket Infantry
+    if (tse3.ImageData == NULL) {
+        ((void const*&)tse3.ImageData) = As_Reference(INFANTRY_E1).ImageData;
+    }
+    if (tse3.CameoData == NULL) {
+        ((void const*&)tse3.CameoData) = As_Reference(INFANTRY_E1).CameoData;
     }
 
     InfantryTypeClass& tde2 = As_Reference(INFANTRY_TDE2);  // TD Grenadier

@@ -453,6 +453,7 @@ struct SoundEffectNameStruct
     {"TSGATEDWN1", 5, IN_NOVAR},  // VOC_TS_GATEDWN1 -- TS gate lowering
     {"TSGATEUP1", 5, IN_NOVAR},   // VOC_TS_GATEUP1 -- TS gate rising
     {"TSLACHG2R", 5, IN_NOVAR},   // VOC_TSLACHG2R -- Tesla gate arcs winding down
+    {"TSRKETINF1", 1, IN_NOVAR},  // VOC_TS_RKETINF1 -- TS Rocket Infantry bazooka
 };
 
 //
