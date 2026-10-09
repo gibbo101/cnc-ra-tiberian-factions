@@ -8472,13 +8472,10 @@ InfantryType BuildingClass::Crew_Type(void) const
         break;
     }
 
-    // TF: TD buildings ("TD" IniName prefix) leave TD Minigunners as crew, TS buildings TS riflemen.
-    if (Class->IniName[0] == 'T' && Class->IniName[1] == 'D') {
-        return (INFANTRY_TDE1);
-    }
-
-    if (Class->IniName[0] == 'T' && Class->IniName[1] == 'S') {
-        return (INFANTRY_TSE1);
+    // TF: TD and TS buildings leave their own side's rifleman as crew (TF_Side_Rifleman).
+    InfantryType side = TF_Side_Rifleman(Class);
+    if (side != INFANTRY_E1) {
+        return (side);
     }
     return (TechnoClass::Crew_Type());
 }

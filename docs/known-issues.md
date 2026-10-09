@@ -32,13 +32,6 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
   `INFANTRY_DOG`), so TD and TS units are not counted either.
 - Fix shape: all five sub hulls in the gate and the ping, and the census over the full ranges.
 
-### A sold or destroyed Tesla Coil leaves a TS rifleman
-- **Severity:** minor.
-- `BuildingClass::Crew_Type` (`building.cpp`) gives every building whose IniName starts with "TS" a TS
-  Light Infantry (`INFANTRY_TSE1`) as its survivor. The RA Tesla Coil is `TSLA` and `Crewed=yes` in
-  rules.ini, so it matches. Found in the code, not yet seen in play.
-- Fix shape: test `Class->Is_TS_Era()` instead of the IniName prefix.
-
 ### Infantry pushed aside in a narrow pass lose their orders (suspected)
 - **Severity:** minor.
 - When a vehicle drives through a one-cell pass, `DriveClass::Drain_Infantry_Along` (`drive.cpp`)

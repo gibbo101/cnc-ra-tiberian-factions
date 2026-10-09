@@ -6002,12 +6002,14 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         }
     }
 
-    // The rifleman a vehicle or aircraft's crew bails out as: TS Light Infantry from a TS type, TD's from a TD type,
-    // RA's Rifleman otherwise.
+    // The rifleman a crew bails out as: TS Light Infantry from a TS type, TD's from a TD type, RA's Rifleman
+    // otherwise. A building's era is its own test, as RA's Tesla Coil (TSLA) shares the TS prefix.
     InfantryType TF_Side_Rifleman(TechnoTypeClass const* type)
     {
         char const* ini = type->IniName;
-        if (ini[0] == 'T' && ini[1] == 'S') {
+        bool const ts = (type->What_Am_I() == RTTI_BUILDINGTYPE) ? ((BuildingTypeClass const*)type)->Is_TS_Era()
+                                                                 : (ini[0] == 'T' && ini[1] == 'S');
+        if (ts) {
             return (INFANTRY_TSE1);
         }
         if (ini[0] == 'T' && ini[1] == 'D') {
