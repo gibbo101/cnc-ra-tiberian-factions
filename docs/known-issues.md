@@ -35,15 +35,6 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
   play.
 - Fix shape: take the GDI/Nod branch only for types without their own response set.
 
-### Waypoint and rally markers show the Allied emblem for TS GDI
-- **Severity:** cosmetic.
-- The launcher draws both markers from `RA_UI_ALLIED_LOGO_SMALL` (`RA_UI_SOVIET_LOGO_SMALL` for
-  the other side), chosen by side, and TS GDI rides an Allied country house. There is no marker
-  draw code in the DLL. A loose atlas repaint is global, so real Allied players would get the
-  eagle too.
-- Route: the RAM lever in `radar-crest-ram-spike.md`, re-pointing ClientG's cached region record
-  at match start. The crest patch handles two records today (`TF_CREST_SLOTS 2`).
-
 ### Localized SFX file overrides the German and French voice dubs
 - **Severity:** minor (DE/FR players hear English voices).
 - `Data/XML/AUDIO/SFXEVENTSLOCALIZED.XML` carries 985 events, every sample `_EN-US`, and replaces

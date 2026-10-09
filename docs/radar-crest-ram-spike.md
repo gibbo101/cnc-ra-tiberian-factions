@@ -73,6 +73,16 @@ that crashed on 2026-10-04 (the crash itself was the EVA patch, `eva-ram-patch-s
    is right. (The 2026-07-20 "HOUSE_BAD → SOVIET region" claim was never testable: both regions
    held the same C&C logo.)
 
+## The waypoint and rally markers
+
+The launcher draws a player's waypoint and rally markers from `RA_UI_ALLIED_LOGO_SMALL` (25x19) or
+`RA_UI_SOVIET_LOGO_SMALL` (21x18), picked by RA side, and GDI, Nod and TS GDI all ride Allied
+countries. Both small-logo records are two more crest slots: for a GDI, Nod or TS GDI player they
+point at that faction's radar crest (the TD eagle, the scorpion, the TS coin), stretched to the
+marker's 25x19, so the round coin draws about a fifth wider than tall. The atlas around each crest is
+packed with other art, so no wider rect keeps the coin round. Allied and Soviet keep their stock
+logos. The patch only changes the local player's own client, the only one that draws their markers.
+
 ## The backdrop too (same day)
 
 TD drew its crest over a scratched metallic plate (`UI_SIDEBAR_RADARBG`, 868x763); RA draws it
