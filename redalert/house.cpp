@@ -1967,6 +1967,55 @@ void HouseClass::Init(void)
     TF_AI_Clocks_Reset();
 }
 
+// True for the five submarine hulls: RA's two and Nod's three.
+static bool TF_Is_Sub(VesselClass const* vessel)
+{
+    VesselType const t = *vessel;
+    return (t == VESSEL_SS || t == VESSEL_MISSILESUB || t == VESSEL_TDNSUB || t == VESSEL_TDOBLISUB
+            || t == VESSEL_TDMSUB);
+}
+
+// True when a house's only forces left are submarines: at least one sub, and no building, unit, aircraft,
+// other vessel or non-civilian infantry of any faction.
+static bool TF_Only_Subs_Left(HouseClass const* house)
+{
+    int subs = 0;
+    for (int i = 0; i < Vessels.Count(); i++) {
+        VesselClass const* v = Vessels.Ptr(i);
+        if (v->House == house && v->IsActive) {
+            if (!TF_Is_Sub(v)) {
+                return (false);
+            }
+            subs++;
+        }
+    }
+    if (subs == 0) {
+        return (false);
+    }
+    for (int i = 0; i < Buildings.Count(); i++) {
+        if (Buildings.Ptr(i)->House == house && Buildings.Ptr(i)->IsActive) {
+            return (false);
+        }
+    }
+    for (int i = 0; i < Units.Count(); i++) {
+        if (Units.Ptr(i)->House == house && Units.Ptr(i)->IsActive) {
+            return (false);
+        }
+    }
+    for (int i = 0; i < Aircraft.Count(); i++) {
+        if (Aircraft.Ptr(i)->House == house && Aircraft.Ptr(i)->IsActive) {
+            return (false);
+        }
+    }
+    for (int i = 0; i < Infantry.Count(); i++) {
+        InfantryClass const* inf = Infantry.Ptr(i);
+        if (inf->House == house && inf->IsActive && !inf->Class->IsCivilian) {
+            return (false);
+        }
+    }
+    return (true);
+}
+
 // Object selection list is switched with player context for GlyphX. ST - 8/7/2019 10:11AM
 extern void Logic_Switch_Player_Context(HouseClass* house);
 extern bool MPSuperWeaponDisable;
@@ -2253,47 +2302,17 @@ void HouseClass::AI(void)
 #ifdef FIXIT_VERSION_3 //	For endgame auto-sonar pulse.
     if ((Session.Type != GAME_NORMAL || !IsHuman) && Scen.AutoSonarTimer == 0) {
         //	If house has nothing but subs left, do an automatic sonar pulse to reveal them.
-        if (VQuantity[VESSEL_SS] > 0) //	Includes count of VESSEL_MISSILESUBs. ajw
-        {
-            int iCount = 0;
-            int i;
-            for (i = 0; i != STRUCT_COUNT - 3; ++i) {
-                iCount += BQuantity[i];
-            }
-            if (!iCount) {
-                for (i = 0; i != UNIT_RA_COUNT - 3; ++i) {
-                    iCount += UQuantity[i];
-                }
-                if (!iCount) {
-                    //	ajw - Found bug - house's civilians are not removed from IQuantity when they die.
-                    //	Workaround...
-                    for (i = 0; i <= INFANTRY_DOG; ++i) {
-                        iCount += IQuantity[i];
-                    }
-                    if (!iCount) {
-                        for (i = 0; i != AIRCRAFT_COUNT; ++i) {
-                            iCount += AQuantity[i];
-                        }
-                        if (!iCount) {
-                            for (i = 0; i != VESSEL_RA_COUNT; ++i) {
-                                if (i != VESSEL_SS)
-                                    iCount += VQuantity[i];
-                            }
-                            if (!iCount) {
-                                //	Do the ping.
-                                for (int index = 0; index < Vessels.Count(); index++) {
-                                    VesselClass* sub = Vessels.Ptr(index);
-                                    if (*sub == VESSEL_SS || *sub == VESSEL_MISSILESUB) {
-                                        sub->PulseCountDown = 15 * TICKS_PER_SECOND;
-                                        sub->Do_Uncloak();
-                                    }
-                                }
-                                bAutoSonarPulse = true;
-                            }
-                        }
-                    }
+        // TF: the census and the ping cover every faction's subs and forces (TF_Only_Subs_Left); the
+        // quantity arrays it read fold TD and TS types onto RA indices.
+        if (TF_Only_Subs_Left(this)) {
+            for (int index = 0; index < Vessels.Count(); index++) {
+                VesselClass* sub = Vessels.Ptr(index);
+                if (sub->House == this && TF_Is_Sub(sub)) {
+                    sub->PulseCountDown = 15 * TICKS_PER_SECOND;
+                    sub->Do_Uncloak();
                 }
             }
+            bAutoSonarPulse = true;
         }
     }
 #endif

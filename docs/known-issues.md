@@ -13,15 +13,6 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 
 ## Units and buildings
 
-### Endgame auto-sonar ignores the TD subs
-- **Severity:** minor (a Nod house down to cloaked TD subs can stall the endgame forever).
-- The stall-breaker in `house.cpp` (`AutoSonarTimer`, 40 s) uncloaks every sub of a house that
-  owns nothing else. Its gate is `VQuantity[VESSEL_SS] > 0` and its ping hits only `VESSEL_SS` and
-  `VESSEL_MISSILESUB`, so TDNSUB, TDOBLISUB and TDMSUB never trip it. The "nothing but subs"
-  census runs over the RA ranges (`UNIT_RA_COUNT`, `VESSEL_RA_COUNT`, infantry up to
-  `INFANTRY_DOG`), so TD and TS units are not counted either.
-- Fix shape: all five sub hulls in the gate and the ping, and the census over the full ranges.
-
 ### Infantry pushed aside in a narrow pass lose their orders (suspected)
 - **Severity:** minor.
 - When a vehicle drives through a one-cell pass, `DriveClass::Drain_Infantry_Along` (`drive.cpp`)
