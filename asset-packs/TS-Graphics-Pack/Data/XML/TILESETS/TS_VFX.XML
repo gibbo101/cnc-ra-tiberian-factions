@@ -153,7 +153,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tssonicw\tssonicw-0001.tga</Frame>
+				<Frame>tssonicw\tssonicw-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -164,7 +164,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tssonicw\tssonicw-0002.tga</Frame>
+				<Frame>tssonicw\tssonicw-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -175,7 +175,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tssonicw\tssonicw-0003.tga</Frame>
+				<Frame>tssonicw\tssonicw-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -186,7 +186,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tssonicw\tssonicw-0004.tga</Frame>
+				<Frame>tssonicw\tssonicw-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -4850,7 +4850,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tscanist\tscanist-0015.tga</Frame>
+				<Frame>tscanist\tscanist-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -4861,7 +4861,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tscanist\tscanist-0016.tga</Frame>
+				<Frame>tscanist\tscanist-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -4872,7 +4872,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tscanist\tscanist-0017.tga</Frame>
+				<Frame>tscanist\tscanist-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -4883,7 +4883,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tscanist\tscanist-0018.tga</Frame>
+				<Frame>tscanist\tscanist-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -4894,7 +4894,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tscanist\tscanist-0019.tga</Frame>
+				<Frame>tscanist\tscanist-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -4905,7 +4905,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tscanist\tscanist-0020.tga</Frame>
+				<Frame>tscanist\tscanist-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -4916,7 +4916,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tscanist\tscanist-0021.tga</Frame>
+				<Frame>tscanist\tscanist-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -4927,7 +4927,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tscanist\tscanist-0022.tga</Frame>
+				<Frame>tscanist\tscanist-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -4938,7 +4938,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tscanist\tscanist-0023.tga</Frame>
+				<Frame>tscanist\tscanist-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -4949,7 +4949,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tscanist\tscanist-0024.tga</Frame>
+				<Frame>tscanist\tscanist-0009.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -4960,7 +4960,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tscanist\tscanist-0025.tga</Frame>
+				<Frame>tscanist\tscanist-0010.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -4971,7 +4971,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tscanist\tscanist-0026.tga</Frame>
+				<Frame>tscanist\tscanist-0011.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -4982,7 +4982,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tscanist\tscanist-0027.tga</Frame>
+				<Frame>tscanist\tscanist-0012.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -4993,7 +4993,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tscanist\tscanist-0028.tga</Frame>
+				<Frame>tscanist\tscanist-0013.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5004,7 +5004,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tscanist\tscanist-0029.tga</Frame>
+				<Frame>tscanist\tscanist-0014.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5015,7 +5015,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tscanist\tscanist-0030.tga</Frame>
+				<Frame>tscanist\tscanist-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5026,7 +5026,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tscanist\tscanist-0031.tga</Frame>
+				<Frame>tscanist\tscanist-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5114,7 +5114,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0007.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5125,7 +5125,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0008.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5136,7 +5136,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0009.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5147,7 +5147,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0010.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5158,7 +5158,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0011.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5169,7 +5169,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0012.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5180,7 +5180,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0013.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5191,7 +5191,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0014.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5202,7 +5202,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0015.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5213,7 +5213,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0016.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5224,7 +5224,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0017.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5235,7 +5235,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0018.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5246,7 +5246,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0019.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5257,7 +5257,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0020.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5268,7 +5268,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0021.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5279,7 +5279,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0022.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5290,7 +5290,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0023.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5301,7 +5301,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0024.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5312,7 +5312,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0025.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5323,7 +5323,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0026.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5334,7 +5334,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0027.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5345,7 +5345,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0028.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5356,7 +5356,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0029.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5367,7 +5367,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0030.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5378,7 +5378,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdiscus\tsdiscus-0031.tga</Frame>
+				<Frame>tsdiscus\tsdiscus-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -5829,7 +5829,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspulsbl\tspulsbl-0015.tga</Frame>
+				<Frame>tspulsbl\tspulsbl-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>

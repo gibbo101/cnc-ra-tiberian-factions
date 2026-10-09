@@ -21,7 +21,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocbb\tsprocbb-0001.tga</Frame>
+				<Frame>tsprocbb\tsprocbb-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -32,7 +32,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocbb\tsprocbb-0002.tga</Frame>
+				<Frame>tsprocbb\tsprocbb-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -43,7 +43,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocbb\tsprocbb-0003.tga</Frame>
+				<Frame>tsprocbb\tsprocbb-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -54,7 +54,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocbb\tsprocbb-0004.tga</Frame>
+				<Frame>tsprocbb\tsprocbb-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -65,7 +65,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocbb\tsprocbb-0005.tga</Frame>
+				<Frame>tsprocbb\tsprocbb-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -109,7 +109,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocbb\tsprocbb-0009.tga</Frame>
+				<Frame>tsprocbb\tsprocbb-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -120,7 +120,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocbb\tsprocbb-0010.tga</Frame>
+				<Frame>tsprocbb\tsprocbb-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -164,7 +164,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocbb\tsprocbb-0014.tga</Frame>
+				<Frame>tsprocbb\tsprocbb-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -186,7 +186,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsweapbb\tsweapbb-0001.tga</Frame>
+				<Frame>tsweapbb\tsweapbb-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -197,7 +197,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsweapbb\tsweapbb-0002.tga</Frame>
+				<Frame>tsweapbb\tsweapbb-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -285,7 +285,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdweapbb\tsdweapbb-0001.tga</Frame>
+				<Frame>tsdweapbb\tsdweapbb-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -296,7 +296,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsdweapbb\tsdweapbb-0002.tga</Frame>
+				<Frame>tsdweapbb\tsdweapbb-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>

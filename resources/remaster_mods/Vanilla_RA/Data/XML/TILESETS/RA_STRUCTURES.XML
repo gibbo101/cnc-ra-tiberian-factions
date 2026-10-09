@@ -31297,7 +31297,7 @@
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>tdblossom\tdblossom-0032.tga</Frame>
+						<Frame>tdblossom\tdblossom-0031.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
@@ -31308,7 +31308,7 @@
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>tdblossom\tdblossom-0033.tga</Frame>
+						<Frame>tdblossom\tdblossom-0030.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
@@ -31319,7 +31319,7 @@
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>tdblossom\tdblossom-0034.tga</Frame>
+						<Frame>tdblossom\tdblossom-0030.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
@@ -31330,7 +31330,7 @@
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>tdblossom\tdblossom-0035.tga</Frame>
+						<Frame>tdblossom\tdblossom-0031.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
@@ -31341,7 +31341,7 @@
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>tdblossom\tdblossom-0036.tga</Frame>
+						<Frame>tdblossom\tdblossom-0031.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
@@ -31352,7 +31352,7 @@
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>tdblossom\tdblossom-0037.tga</Frame>
+						<Frame>tdblossom\tdblossom-0030.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
@@ -31528,7 +31528,7 @@
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>tdblossom\tdblossom-0053.tga</Frame>
+						<Frame>tdblossom\tdblossom-0031.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
@@ -31539,7 +31539,7 @@
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>tdblossom\tdblossom-0054.tga</Frame>
+						<Frame>tdblossom\tdblossom-0031.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
@@ -32382,7 +32382,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdsteal\tdsteal-0009.tga</Frame>
+				<Frame>tdsteal\tdsteal-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -32393,7 +32393,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdsteal\tdsteal-0010.tga</Frame>
+				<Frame>tdsteal\tdsteal-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -32404,7 +32404,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdsteal\tdsteal-0011.tga</Frame>
+				<Frame>tdsteal\tdsteal-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -32415,7 +32415,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdsteal\tdsteal-0012.tga</Frame>
+				<Frame>tdsteal\tdsteal-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -32426,7 +32426,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdsteal\tdsteal-0013.tga</Frame>
+				<Frame>tdsteal\tdsteal-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -32437,7 +32437,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdsteal\tdsteal-0014.tga</Frame>
+				<Frame>tdsteal\tdsteal-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -32448,7 +32448,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdsteal\tdsteal-0015.tga</Frame>
+				<Frame>tdsteal\tdsteal-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -32558,7 +32558,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdsteal\tdsteal-0025.tga</Frame>
+				<Frame>tdsteal\tdsteal-0024.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -32569,7 +32569,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdsteal\tdsteal-0026.tga</Frame>
+				<Frame>tdsteal\tdsteal-0024.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -32580,7 +32580,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdsteal\tdsteal-0027.tga</Frame>
+				<Frame>tdsteal\tdsteal-0024.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -32591,7 +32591,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdsteal\tdsteal-0028.tga</Frame>
+				<Frame>tdsteal\tdsteal-0024.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -32602,7 +32602,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdsteal\tdsteal-0029.tga</Frame>
+				<Frame>tdsteal\tdsteal-0024.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -32613,7 +32613,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdsteal\tdsteal-0030.tga</Frame>
+				<Frame>tdsteal\tdsteal-0024.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -32624,7 +32624,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdsteal\tdsteal-0031.tga</Frame>
+				<Frame>tdsteal\tdsteal-0024.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39070,7 +39070,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatehl\algatehl-0003.tga</Frame>
+				<Frame>algatehl\algatehl-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39510,7 +39510,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevx\algatevx-0009.tga</Frame>
+				<Frame>algatevx\algatevx-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39521,7 +39521,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevx\algatevx-0010.tga</Frame>
+				<Frame>algatevx\algatevx-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39532,7 +39532,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevx\algatevx-0011.tga</Frame>
+				<Frame>algatevx\algatevx-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39565,7 +39565,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevx\algatevx-0014.tga</Frame>
+				<Frame>algatevx\algatevx-0012.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39620,7 +39620,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevx\algatevx-0019.tga</Frame>
+				<Frame>algatevx\algatevx-0017.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39631,7 +39631,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevx\algatevx-0020.tga</Frame>
+				<Frame>algatevx\algatevx-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39642,7 +39642,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevx\algatevx-0021.tga</Frame>
+				<Frame>algatevx\algatevx-0017.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39675,7 +39675,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevx\algatevx-0024.tga</Frame>
+				<Frame>algatevx\algatevx-0022.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39730,7 +39730,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevx\algatevx-0029.tga</Frame>
+				<Frame>algatevx\algatevx-0027.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39741,7 +39741,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevx\algatevx-0030.tga</Frame>
+				<Frame>algatevx\algatevx-0028.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39752,7 +39752,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevx\algatevx-0031.tga</Frame>
+				<Frame>algatevx\algatevx-0027.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39785,7 +39785,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevx\algatevx-0034.tga</Frame>
+				<Frame>algatevx\algatevx-0032.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39840,7 +39840,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevx\algatevx-0039.tga</Frame>
+				<Frame>algatevx\algatevx-0037.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39851,7 +39851,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevx\algatevx-0040.tga</Frame>
+				<Frame>algatevx\algatevx-0038.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39862,7 +39862,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevx\algatevx-0041.tga</Frame>
+				<Frame>algatevx\algatevx-0037.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39895,7 +39895,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevx\algatevx-0044.tga</Frame>
+				<Frame>algatevx\algatevx-0042.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40357,7 +40357,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0020.tga</Frame>
+				<Frame>algatevl\algatevl-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40368,7 +40368,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0021.tga</Frame>
+				<Frame>algatevl\algatevl-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40379,7 +40379,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0022.tga</Frame>
+				<Frame>algatevl\algatevl-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40390,7 +40390,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0023.tga</Frame>
+				<Frame>algatevl\algatevl-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40401,7 +40401,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0024.tga</Frame>
+				<Frame>algatevl\algatevl-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40412,7 +40412,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0025.tga</Frame>
+				<Frame>algatevl\algatevl-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40423,7 +40423,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0026.tga</Frame>
+				<Frame>algatevl\algatevl-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40434,7 +40434,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0027.tga</Frame>
+				<Frame>algatevl\algatevl-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40445,7 +40445,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0028.tga</Frame>
+				<Frame>algatevl\algatevl-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40456,7 +40456,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0029.tga</Frame>
+				<Frame>algatevl\algatevl-0009.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40467,7 +40467,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0030.tga</Frame>
+				<Frame>algatevl\algatevl-0010.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40478,7 +40478,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0031.tga</Frame>
+				<Frame>algatevl\algatevl-0011.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40489,7 +40489,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0032.tga</Frame>
+				<Frame>algatevl\algatevl-0012.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40500,7 +40500,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0033.tga</Frame>
+				<Frame>algatevl\algatevl-0013.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40511,7 +40511,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0034.tga</Frame>
+				<Frame>algatevl\algatevl-0014.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40522,7 +40522,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0035.tga</Frame>
+				<Frame>algatevl\algatevl-0015.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40533,7 +40533,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0036.tga</Frame>
+				<Frame>algatevl\algatevl-0016.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40544,7 +40544,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0037.tga</Frame>
+				<Frame>algatevl\algatevl-0017.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40555,7 +40555,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0038.tga</Frame>
+				<Frame>algatevl\algatevl-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40566,7 +40566,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>algatevl\algatevl-0039.tga</Frame>
+				<Frame>algatevl\algatevl-0019.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40676,7 +40676,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgateh\svgateh-0009.tga</Frame>
+				<Frame>svgateh\svgateh-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40786,7 +40786,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgateh\svgateh-0019.tga</Frame>
+				<Frame>svgateh\svgateh-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40874,7 +40874,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatehmake\svgatehmake-0001.tga</Frame>
+				<Frame>svgatehmake\svgatehmake-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41138,7 +41138,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatehl\svgatehl-0003.tga</Frame>
+				<Frame>svgatehl\svgatehl-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41248,7 +41248,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatev\svgatev-0009.tga</Frame>
+				<Frame>svgatev\svgatev-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41358,7 +41358,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatev\svgatev-0019.tga</Frame>
+				<Frame>svgatev\svgatev-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41446,7 +41446,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevmake\svgatevmake-0001.tga</Frame>
+				<Frame>svgatevmake\svgatevmake-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41710,7 +41710,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevx\svgatevx-0015.tga</Frame>
+				<Frame>svgatevx\svgatevx-0014.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41820,7 +41820,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevx\svgatevx-0025.tga</Frame>
+				<Frame>svgatevx\svgatevx-0024.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41996,7 +41996,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevx\svgatevx-0041.tga</Frame>
+				<Frame>svgatevx\svgatevx-0040.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42106,7 +42106,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevx\svgatevx-0051.tga</Frame>
+				<Frame>svgatevx\svgatevx-0050.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42282,7 +42282,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevx\svgatevx-0067.tga</Frame>
+				<Frame>svgatevx\svgatevx-0066.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42392,7 +42392,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevx\svgatevx-0077.tga</Frame>
+				<Frame>svgatevx\svgatevx-0076.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42568,7 +42568,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0009.tga</Frame>
+				<Frame>svgatevl\svgatevl-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42678,7 +42678,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0019.tga</Frame>
+				<Frame>svgatevl\svgatevl-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42755,7 +42755,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0026.tga</Frame>
+				<Frame>svgatevl\svgatevl-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42766,7 +42766,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0027.tga</Frame>
+				<Frame>svgatevl\svgatevl-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42777,7 +42777,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0028.tga</Frame>
+				<Frame>svgatevl\svgatevl-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42788,7 +42788,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0029.tga</Frame>
+				<Frame>svgatevl\svgatevl-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42799,7 +42799,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0030.tga</Frame>
+				<Frame>svgatevl\svgatevl-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42810,7 +42810,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0031.tga</Frame>
+				<Frame>svgatevl\svgatevl-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42821,7 +42821,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0032.tga</Frame>
+				<Frame>svgatevl\svgatevl-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42832,7 +42832,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0033.tga</Frame>
+				<Frame>svgatevl\svgatevl-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42843,7 +42843,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0034.tga</Frame>
+				<Frame>svgatevl\svgatevl-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42854,7 +42854,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0035.tga</Frame>
+				<Frame>svgatevl\svgatevl-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42865,7 +42865,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0036.tga</Frame>
+				<Frame>svgatevl\svgatevl-0010.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42876,7 +42876,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0037.tga</Frame>
+				<Frame>svgatevl\svgatevl-0011.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42887,7 +42887,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0038.tga</Frame>
+				<Frame>svgatevl\svgatevl-0012.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42898,7 +42898,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0039.tga</Frame>
+				<Frame>svgatevl\svgatevl-0013.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42909,7 +42909,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0040.tga</Frame>
+				<Frame>svgatevl\svgatevl-0014.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42920,7 +42920,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0041.tga</Frame>
+				<Frame>svgatevl\svgatevl-0015.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42931,7 +42931,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0042.tga</Frame>
+				<Frame>svgatevl\svgatevl-0016.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42942,7 +42942,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0043.tga</Frame>
+				<Frame>svgatevl\svgatevl-0017.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42953,7 +42953,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0044.tga</Frame>
+				<Frame>svgatevl\svgatevl-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42964,7 +42964,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0045.tga</Frame>
+				<Frame>svgatevl\svgatevl-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42975,7 +42975,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0046.tga</Frame>
+				<Frame>svgatevl\svgatevl-0020.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42986,7 +42986,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0047.tga</Frame>
+				<Frame>svgatevl\svgatevl-0021.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42997,7 +42997,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0048.tga</Frame>
+				<Frame>svgatevl\svgatevl-0022.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -43008,7 +43008,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0049.tga</Frame>
+				<Frame>svgatevl\svgatevl-0023.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -43019,7 +43019,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0050.tga</Frame>
+				<Frame>svgatevl\svgatevl-0024.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -43030,7 +43030,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>svgatevl\svgatevl-0051.tga</Frame>
+				<Frame>svgatevl\svgatevl-0025.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -43140,7 +43140,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggateh\tdggateh-0009.tga</Frame>
+				<Frame>tdggateh\tdggateh-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -43250,7 +43250,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggateh\tdggateh-0019.tga</Frame>
+				<Frame>tdggateh\tdggateh-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -43272,7 +43272,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatehmake\tdggatehmake-0001.tga</Frame>
+				<Frame>tdggatehmake\tdggatehmake-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -43536,7 +43536,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatehl\tdggatehl-0003.tga</Frame>
+				<Frame>tdggatehl\tdggatehl-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -43646,7 +43646,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatev\tdggatev-0009.tga</Frame>
+				<Frame>tdggatev\tdggatev-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -43756,7 +43756,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatev\tdggatev-0019.tga</Frame>
+				<Frame>tdggatev\tdggatev-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -43778,7 +43778,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevmake\tdggatevmake-0001.tga</Frame>
+				<Frame>tdggatevmake\tdggatevmake-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -43954,7 +43954,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0007.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -43965,7 +43965,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0008.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -43976,7 +43976,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0009.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -43987,7 +43987,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0010.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -43998,7 +43998,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0011.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44009,7 +44009,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0012.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44020,7 +44020,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0013.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44031,7 +44031,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0014.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44042,7 +44042,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0015.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44075,7 +44075,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0018.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0017.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44097,7 +44097,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0020.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0019.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44108,7 +44108,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0021.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0019.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44152,7 +44152,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0025.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0024.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44174,7 +44174,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0027.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0026.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44185,7 +44185,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0028.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0026.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44196,7 +44196,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0029.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0026.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44207,7 +44207,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0030.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0026.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44218,7 +44218,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0031.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0026.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44229,7 +44229,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0032.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0026.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44240,7 +44240,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0033.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0026.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44251,7 +44251,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0034.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0026.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44262,7 +44262,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0035.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0026.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44295,7 +44295,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0038.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0037.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44317,7 +44317,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0040.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0039.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44328,7 +44328,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0041.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0039.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44372,7 +44372,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0045.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0044.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44394,7 +44394,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0047.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0046.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44405,7 +44405,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0048.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0046.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44427,7 +44427,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0050.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0049.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44449,7 +44449,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0052.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0051.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44460,7 +44460,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0053.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0051.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44471,7 +44471,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0054.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0051.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44482,7 +44482,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0055.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0051.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44515,7 +44515,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0058.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0057.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44537,7 +44537,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0060.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0059.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44548,7 +44548,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0061.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0059.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44592,7 +44592,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevx\tdggatevx-0065.tga</Frame>
+				<Frame>tdggatevx\tdggatevx-0064.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44614,7 +44614,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0001.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44625,7 +44625,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0002.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44647,7 +44647,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0004.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44669,7 +44669,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0006.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44680,7 +44680,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0007.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44691,7 +44691,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0008.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44702,7 +44702,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0009.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44735,7 +44735,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0012.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0011.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44757,7 +44757,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0014.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0013.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44768,7 +44768,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0015.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0013.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44812,7 +44812,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0019.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44823,7 +44823,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0020.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44834,7 +44834,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0021.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44845,7 +44845,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0022.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44856,7 +44856,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0023.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44867,7 +44867,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0024.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44878,7 +44878,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0025.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44889,7 +44889,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0026.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44900,7 +44900,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0027.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44911,7 +44911,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0028.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44922,7 +44922,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0029.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44933,7 +44933,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0030.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0010.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44944,7 +44944,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0031.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0011.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44955,7 +44955,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0032.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0011.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44966,7 +44966,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0033.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0013.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44977,7 +44977,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0034.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0013.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44988,7 +44988,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0035.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0013.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44999,7 +44999,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0036.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0016.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -45010,7 +45010,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0037.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0017.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -45021,7 +45021,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0038.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -45032,7 +45032,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdggatevl\tdggatevl-0039.tga</Frame>
+				<Frame>tdggatevl\tdggatevl-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -45054,7 +45054,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngateh\tdngateh-0001.tga</Frame>
+				<Frame>tdngateh\tdngateh-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -45142,7 +45142,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngateh\tdngateh-0009.tga</Frame>
+				<Frame>tdngateh\tdngateh-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -45164,7 +45164,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngateh\tdngateh-0011.tga</Frame>
+				<Frame>tdngateh\tdngateh-0010.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -45252,7 +45252,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngateh\tdngateh-0019.tga</Frame>
+				<Frame>tdngateh\tdngateh-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -45274,7 +45274,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatehmake\tdngatehmake-0001.tga</Frame>
+				<Frame>tdngatehmake\tdngatehmake-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -45362,7 +45362,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatehmake\tdngatehmake-0009.tga</Frame>
+				<Frame>tdngatehmake\tdngatehmake-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -45538,7 +45538,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatehl\tdngatehl-0003.tga</Frame>
+				<Frame>tdngatehl\tdngatehl-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -45560,7 +45560,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatev\tdngatev-0001.tga</Frame>
+				<Frame>tdngatev\tdngatev-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -45648,7 +45648,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatev\tdngatev-0009.tga</Frame>
+				<Frame>tdngatev\tdngatev-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -45670,7 +45670,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatev\tdngatev-0011.tga</Frame>
+				<Frame>tdngatev\tdngatev-0010.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -45758,7 +45758,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatev\tdngatev-0019.tga</Frame>
+				<Frame>tdngatev\tdngatev-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -45780,7 +45780,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevmake\tdngatevmake-0001.tga</Frame>
+				<Frame>tdngatevmake\tdngatevmake-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -45868,7 +45868,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevmake\tdngatevmake-0009.tga</Frame>
+				<Frame>tdngatevmake\tdngatevmake-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -45956,7 +45956,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevx\tdngatevx-0007.tga</Frame>
+				<Frame>tdngatevx\tdngatevx-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46044,7 +46044,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevx\tdngatevx-0015.tga</Frame>
+				<Frame>tdngatevx\tdngatevx-0014.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46066,7 +46066,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevx\tdngatevx-0017.tga</Frame>
+				<Frame>tdngatevx\tdngatevx-0016.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46154,7 +46154,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevx\tdngatevx-0025.tga</Frame>
+				<Frame>tdngatevx\tdngatevx-0024.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46176,7 +46176,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevx\tdngatevx-0027.tga</Frame>
+				<Frame>tdngatevx\tdngatevx-0026.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46264,7 +46264,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevx\tdngatevx-0035.tga</Frame>
+				<Frame>tdngatevx\tdngatevx-0034.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46286,7 +46286,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevx\tdngatevx-0037.tga</Frame>
+				<Frame>tdngatevx\tdngatevx-0036.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46374,7 +46374,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevx\tdngatevx-0045.tga</Frame>
+				<Frame>tdngatevx\tdngatevx-0044.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46396,7 +46396,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevx\tdngatevx-0047.tga</Frame>
+				<Frame>tdngatevx\tdngatevx-0046.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46484,7 +46484,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevx\tdngatevx-0055.tga</Frame>
+				<Frame>tdngatevx\tdngatevx-0054.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46506,7 +46506,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevx\tdngatevx-0057.tga</Frame>
+				<Frame>tdngatevx\tdngatevx-0056.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46594,7 +46594,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevx\tdngatevx-0065.tga</Frame>
+				<Frame>tdngatevx\tdngatevx-0064.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46616,7 +46616,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0001.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46704,7 +46704,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0009.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46726,7 +46726,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0011.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0010.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46814,7 +46814,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0019.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46825,7 +46825,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0020.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46836,7 +46836,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0021.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46847,7 +46847,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0022.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46858,7 +46858,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0023.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46869,7 +46869,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0024.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46880,7 +46880,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0025.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46891,7 +46891,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0026.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46902,7 +46902,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0027.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46913,7 +46913,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0028.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46924,7 +46924,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0029.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46935,7 +46935,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0030.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0010.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46946,7 +46946,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0031.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0010.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46957,7 +46957,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0032.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0012.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46968,7 +46968,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0033.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0013.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46979,7 +46979,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0034.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0014.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -46990,7 +46990,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0035.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0015.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -47001,7 +47001,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0036.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0016.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -47012,7 +47012,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0037.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0017.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -47023,7 +47023,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0038.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -47034,7 +47034,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tdngatevl\tdngatevl-0039.tga</Frame>
+				<Frame>tdngatevl\tdngatevl-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
