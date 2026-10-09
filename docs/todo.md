@@ -139,9 +139,6 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   Titan and Juggernaut reached past the door from the shared bay seats, so they now wait deeper (`building.cpp`,
   the bay seat). The depths come from `scripts/probes/wf_bay_sim.py`, which composites a unit behind the near
   face and door; the Juggernaut, taller than the bay, shows its antenna tip over the roof.
-- **The Mammoth Mk. III's pods fire two rockets, not their Burst=4:** RA makes any Burst above one a pair
-  (`techno.cpp`, `Is_Two_Shooter`). The Juggernaut's salvo counter (`BurstShot`) could run them too, which
-  doubles the volley: a balance call before it is switched on.
 - **The deployed Mobile War Factory loses units:** of three APCs ordered one after another, only the third
   rolled out; Titans have teleported or never arrived, and a finished unit can wait seconds for the doors.
   The exit runs on the per-unit rail (`drive.cpp`) and the doorstep table in `building.cpp`; log each
@@ -261,3 +258,4 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 - A live era-wide audio flip on a TS MCV deploy: rejected. The voice follows the picked faction.
 - Veterancy: if it ever comes in, it comes in for every faction, never TS alone.
 - Porting TS's hierarchical pathfinder: no (`path-failure-livelock-design.md`).
+- The Mammoth Mk. III's four-rocket pod volley (it fires RA's pair): a crate easter egg, not worth the time.
