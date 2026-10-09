@@ -1963,6 +1963,8 @@ void HouseClass::Init(void)
     TF_Skirmish_Naval_Reset();
     extern void TF_Wave_Reset(void);
     TF_Wave_Reset();
+    extern void TF_AI_Clocks_Reset(void);
+    TF_AI_Clocks_Reset();
 }
 
 // Object selection list is switched with player context for GlyphX. ST - 8/7/2019 10:11AM
@@ -7639,6 +7641,20 @@ int HouseClass::TF_Eco_Harvester_Target(int refineries) const
     return (refineries);
 }
 
+// Per-match AI clocks, cleared on every scenario load (TF_AI_Clocks_Reset): when each house's eco hold began
+// and whether it is spent, and since when each base-builder candidate has lost its tie.
+static long _tf_eco_hold_since[HOUSE_COUNT];
+static bool _tf_eco_hold_spent[HOUSE_COUNT];
+static int _tf_waiting_since[HOUSE_COUNT][STRUCT_COUNT];
+
+// Clears the per-match AI clocks; frame numbers restart each match, so stale ones would never expire.
+void TF_AI_Clocks_Reset(void)
+{
+    memset(_tf_eco_hold_since, 0, sizeof(_tf_eco_hold_since));
+    memset(_tf_eco_hold_spent, 0, sizeof(_tf_eco_hold_spent));
+    memset(_tf_waiting_since, 0, sizeof(_tf_waiting_since));
+}
+
 // True while the house is below its refinery or harvester target and ore remains, so combat production
 // yields to the economy. A hit in the last two minutes lifts the hold; an unbroken hold lapses at four.
 bool HouseClass::TF_Eco_Below_Target(int* refwant, int* harvwant, int* refhave) const
@@ -7669,24 +7685,22 @@ bool HouseClass::TF_Eco_Below_Target(int* refwant, int* harvwant, int* refhave) 
     {
         TF_ECO_HOLD_MAX = TICKS_PER_MINUTE * 4
     };
-    static long _hold_since[HOUSE_COUNT] = {0};
-    static bool _hold_spent[HOUSE_COUNT] = {false};
     int hidx = (int)Class->House;
     if (hidx < 0 || hidx >= HOUSE_COUNT) {
         return (below);
     }
     if (!below) {
-        _hold_since[hidx] = 0;
-        _hold_spent[hidx] = false;
+        _tf_eco_hold_since[hidx] = 0;
+        _tf_eco_hold_spent[hidx] = false;
         return (false);
     }
-    if (_hold_spent[hidx]) {
+    if (_tf_eco_hold_spent[hidx]) {
         return (false);
     }
-    if (_hold_since[hidx] == 0) {
-        _hold_since[hidx] = (long)Frame;
-    } else if ((long)Frame - _hold_since[hidx] > TF_ECO_HOLD_MAX) {
-        _hold_spent[hidx] = true;
+    if (_tf_eco_hold_since[hidx] == 0) {
+        _tf_eco_hold_since[hidx] = (long)Frame;
+    } else if ((long)Frame - _tf_eco_hold_since[hidx] > TF_ECO_HOLD_MAX) {
+        _tf_eco_hold_spent[hidx] = true;
         return (false);
     }
     return (true);
@@ -10697,7 +10711,6 @@ int HouseClass::AI_Building(void)
         {
             STARVE_FRAMES = 7500
         };
-        static int _waiting_since[HOUSE_COUNT][STRUCT_COUNT] = {{0}};
         int hidx = (int)Class->House;
         bool track = (hidx >= 0 && hidx < HOUSE_COUNT);
 
@@ -10722,8 +10735,8 @@ int HouseClass::AI_Building(void)
                     bestindex = index; // scan order is the default priority
                 }
                 StructType s = BuildChoice.Ptr(index)->Structure;
-                if (track && s >= 0 && s < STRUCT_COUNT && _waiting_since[hidx][s] > 0) {
-                    int waited = (int)Frame - _waiting_since[hidx][s];
+                if (track && s >= 0 && s < STRUCT_COUNT && _tf_waiting_since[hidx][s] > 0) {
+                    int waited = (int)Frame - _tf_waiting_since[hidx][s];
                     if (waited > longest) {
                         longest = waited;
                         starved = index;
@@ -10745,9 +10758,9 @@ int HouseClass::AI_Building(void)
                         continue;
                     }
                     if (index == bestindex) {
-                        _waiting_since[hidx][s] = 0; // built, stop the clock
-                    } else if (_waiting_since[hidx][s] == 0) {
-                        _waiting_since[hidx][s] = (int)Frame; // start the clock
+                        _tf_waiting_since[hidx][s] = 0; // built, stop the clock
+                    } else if (_tf_waiting_since[hidx][s] == 0) {
+                        _tf_waiting_since[hidx][s] = (int)Frame; // start the clock
                     }
                 }
             }
