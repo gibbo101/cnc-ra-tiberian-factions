@@ -62,6 +62,10 @@ only the `RA_` files. A pack's XML files are what a modder copies, and what the 
 - **One copy of each frame:** a shape whose image matches an earlier one in its ZIP names that one
   in the tileset XML, and the copy leaves the ZIP. Run `scripts/dedupe_tileset_frames.py` after any
   packer that writes a ZIP; the packager refuses a build that still holds duplicates.
+- **Shared copies:** a type whose ZIP copies another's (the tower plugs, the faction yards, gates and
+  MCVs) keeps its own ZIP in the source tree, so a reskin touches one type. Staging draws its frames
+  from the first identical ZIP and leaves the copy out of the build (`scripts/share_tileset_zips.py`;
+  run it alone to list what it would leave out).
 - **Build:** the CMake post-build step copies `resources/remaster_mods/Vanilla_RA`, then
   `scripts/stage_asset_packs.py` copies every pack's art and audio and writes the merged XML: each
   pack's entries replace the `<!-- asset-pack: <Pack> -->` marker in the mod's file. Staging always
