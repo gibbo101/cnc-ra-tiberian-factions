@@ -39,6 +39,12 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   cost, speed and the Devil's Tongue stream. Known deviation: the Mk. II AA tusks carry RA
   MammothTusk stats (7.5 range) instead of TS's 6.
 
+- **Check: can a defeated house leave buildings standing?** A skirmish or LAN house is defeated when
+  its scan bits are empty, and `TF_Building_Scan_Bit` gives most added types none (TS power, gates,
+  towers, TD defences); that path calls `MPlayer_Defeated`, which destroys nothing. Not seen in play:
+  confirm a house down to such buildings is declared defeated before choosing between blowing them
+  up and counting them.
+
 ## Needs a LAN game with a second human
 
 - **Firestorm against an enemy:** an enemy firing across a live wall has its shots eaten at the
