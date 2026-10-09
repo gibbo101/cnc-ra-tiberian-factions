@@ -63,6 +63,13 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 
 ## AI and pathfinding
 
+### An AI ally's units clump at defeated bases (seen once)
+- In a LAN game whose TS GDI and TD Nod enemies were wiped out, the human's AI ally (with GPS) kept
+  sending units to the defeated bases and left them there instead of attacking the enemies still
+  playing. Cause not found: the waves' objective and the blind-hunt probe (`TF_Scout_Destination`,
+  which cycles every start position but the house's own) are the suspects.
+- Next time: watch the host's `MOD_DEBUG_AI.txt` (WAVE and SCOUT lines) live from the first defeat.
+
 ### Sim froze once in a 4-Hard-AI Docklands match (2026-09-02)
 - **Severity:** unknown, unreproduced.
 - Every DLL log stopped inside frame 22357 (about 11 minutes); ClientG kept spinning at about 60%
