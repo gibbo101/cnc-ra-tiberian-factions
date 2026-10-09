@@ -185,8 +185,6 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 Suspected from reading the code during the code tidy (`code-tidy.md`). Confirm in play, then promote
 to a full entry above or delete. One line each: where, what, severity.
 
-- **Per-match statics never reset (minor):** house.cpp AI_Building's `_waiting_since[]` and
-  `TF_Eco_Below_Target`'s hold statics carry into the next match of a session.
 - **Ferry (minor):** `TFF_SAIL` treats a transport idling offshore as arrived and unloads onto water,
   then waits out `TF_FERRY_TIMEOUT`.
 - **Carryall (minor):** `TFCarryPickup` outlives a changed order, so a later landing can skip its LZ check
