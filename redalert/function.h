@@ -158,6 +158,7 @@ extern void TF_Dev_Tunneller_Tick(void);
 extern bool TF_Dev_Cheats(void); // TF dev-cheats runtime gate (see defines.h TF_DEV_BUILD)
 extern bool TF_Dev_Reveal(void); // full-map reveal on its own (tf_dev_reveal.flag) even when the other cheats are off
 extern long TF_Building_Scan_Bit(int btype); // building Type -> its BScan/ActiveBScan/OldBScan bit
+extern long TF_Type_Scan_Bit(int type); // infantry/unit/aircraft/vessel Type -> its scan bit, none past 31
 extern bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type); // Prerequisite= names a TS-tree building (house.cpp)
 extern bool TF_Is_TS_Yard_Wall(ObjectTypeClass const* type); // a shared wall the TS yard also builds (house.cpp)
 extern bool TF_Gate_Lets_Through(FootClass* foot, CELL cell); // opens a friendly gate ahead; true once passable (building.cpp)

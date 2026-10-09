@@ -5086,6 +5086,13 @@ bool BuildingTypeClass::Is_TS_Era(void) const
            || (Type >= STRUCT_TS_TREE_FIRST && Type <= STRUCT_TS_TREE_LAST) || Type == STRUCT_TSTICK;
 }
 
+// The house scan-mask bit an infantry, unit, aircraft or vessel type sets: none past bit 31, where a shift
+// would wrap onto another type's bit. Those types are counted only by their quantity arrays.
+long TF_Type_Scan_Bit(int type)
+{
+    return (type >= 0 && type < 32) ? (1L << type) : 0;
+}
+
 // The house scan-mask bit a building type sets. Types past bit 31 set their vanilla equivalent's bit, or
 // none; prerequisites count those through ActiveBQuantity (Has_Building_Active).
 long TF_Building_Scan_Bit(int btype)
