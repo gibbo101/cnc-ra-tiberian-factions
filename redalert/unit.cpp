@@ -1378,8 +1378,8 @@ bool UnitClass::Unlimbo(COORDINATE coord, DirType dir)
         **	Ensure that the owning house knows about the
         **	new object.
         */
-        House->UScan |= (1L << Class->Type);
-        House->ActiveUScan |= (1L << Class->Type);
+        House->UScan |= TF_Type_Scan_Bit(Class->Type); // TF: no bit past 31
+        House->ActiveUScan |= TF_Type_Scan_Bit(Class->Type); // TF: no bit past 31
 
         /*
         **	If it starts off the edge of the map, then it already starts cloaked.

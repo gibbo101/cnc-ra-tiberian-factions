@@ -187,8 +187,6 @@ to a full entry above or delete. One line each: where, what, severity.
 
 - **Per-match statics never reset (minor):** house.cpp AI_Building's `_waiting_since[]` and
   `TF_Eco_Below_Target`'s hold statics carry into the next match of a session.
-- **Scan bits past 31 (minor):** `Tracking_Add`/`Recalc_Attributes` shift `1L << type` for infantry and
-  units past bit 31 (undefined; on x86 TSGHOST sets the TANYA bit). Deterministic, so no desync.
 - **Ferry (minor):** `TFF_SAIL` treats a transport idling offshore as arrived and unloads onto water,
   then waits out `TF_FERRY_TIMEOUT`.
 - **Carryall (minor):** `TFCarryPickup` outlives a changed order, so a later landing can skip its LZ check
