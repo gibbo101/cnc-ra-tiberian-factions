@@ -11767,7 +11767,7 @@ void HouseClass::Tracking_Add(TechnoClass const* techno)
         CurAircraft++;
         aircraft = ((AircraftTypeClass const&)techno->Class_Of()).Type;
         AQuantity[aircraft]++;
-        AScan |= TF_Type_Scan_Bit(aircraft); // TF: no bit past 31
+        AScan |= (1L << aircraft);
         if (Session.Type == GAME_INTERNET) {
             AircraftTotals.Increment_Unit_Total(techno->Class_Of().ID);
         }
@@ -11788,7 +11788,7 @@ void HouseClass::Tracking_Add(TechnoClass const* techno)
             if (!((InfantryTypeClass const&)techno->Class_Of()).IsCivilian && Session.Type == GAME_INTERNET) {
                 InfantryTotals.Increment_Unit_Total(techno->Class_Of().ID);
             }
-            IScan |= TF_Type_Scan_Bit(infantry); // TF: no bit past 31
+            IScan |= (1L << infantry);
         }
         break;
 
@@ -11803,7 +11803,7 @@ void HouseClass::Tracking_Add(TechnoClass const* techno)
 #else
         UQuantity[unit]++;
 #endif
-        UScan |= TF_Type_Scan_Bit(unit); // TF: no bit past 31
+        UScan |= (1L << unit);
 #ifdef REMASTER_BUILD
         if (Session.Type == GAME_INTERNET) {
             UnitTotals.Increment_Unit_Total(techno->Class_Of().ID);
@@ -11822,7 +11822,7 @@ void HouseClass::Tracking_Add(TechnoClass const* techno)
 #else
         VQuantity[vessel]++;
 #endif
-        VScan |= TF_Type_Scan_Bit(vessel); // TF: no bit past 31
+        VScan |= (1L << vessel);
         if (Session.Type == GAME_INTERNET) {
             VesselTotals.Increment_Unit_Total(techno->Class_Of().ID);
         }
@@ -12066,35 +12066,34 @@ void HouseClass::Recalc_Attributes(void)
     **	A second pass through the sentient objects is required so that the appropriate scan
     **	bits will be set for the owner house.
     */
-    // TF: scan bits through TF_Type_Scan_Bit, so a type past 31 sets none rather than another type's.
     for (index = 0; index < Units.Count(); index++) {
         UnitClass const* unit = Units.Ptr(index);
-        unit->House->UScan |= TF_Type_Scan_Bit(unit->Class->Type);
+        unit->House->UScan |= (1L << unit->Class->Type);
         if (unit->IsLocked && (Session.Type != GAME_NORMAL || !unit->House->IsHuman || unit->IsDiscoveredByPlayer)) {
             if (!unit->IsInLimbo) {
-                unit->House->ActiveUScan |= TF_Type_Scan_Bit(unit->Class->Type);
+                unit->House->ActiveUScan |= (1L << unit->Class->Type);
             }
         }
     }
     for (index = 0; index < Infantry.Count(); index++) {
         InfantryClass const* infantry = Infantry.Ptr(index);
-        infantry->House->IScan |= TF_Type_Scan_Bit(infantry->Class->Type);
+        infantry->House->IScan |= (1L << infantry->Class->Type);
         if (infantry->IsLocked
             && (Session.Type != GAME_NORMAL || !infantry->House->IsHuman || infantry->IsDiscoveredByPlayer)) {
             if (!infantry->IsInLimbo) {
-                infantry->House->ActiveIScan |= TF_Type_Scan_Bit(infantry->Class->Type);
-                infantry->House->OldIScan |= TF_Type_Scan_Bit(infantry->Class->Type);
+                infantry->House->ActiveIScan |= (1L << infantry->Class->Type);
+                infantry->House->OldIScan |= (1L << infantry->Class->Type);
             }
         }
     }
     for (index = 0; index < Aircraft.Count(); index++) {
         AircraftClass const* aircraft = Aircraft.Ptr(index);
-        aircraft->House->AScan |= TF_Type_Scan_Bit(aircraft->Class->Type);
+        aircraft->House->AScan |= (1L << aircraft->Class->Type);
         if (aircraft->IsLocked
             && (Session.Type != GAME_NORMAL || !aircraft->House->IsHuman || aircraft->IsDiscoveredByPlayer)) {
             if (!aircraft->IsInLimbo) {
-                aircraft->House->ActiveAScan |= TF_Type_Scan_Bit(aircraft->Class->Type);
-                aircraft->House->OldAScan |= TF_Type_Scan_Bit(aircraft->Class->Type);
+                aircraft->House->ActiveAScan |= (1L << aircraft->Class->Type);
+                aircraft->House->OldAScan |= (1L << aircraft->Class->Type);
             }
         }
     }
@@ -12116,12 +12115,12 @@ void HouseClass::Recalc_Attributes(void)
     }
     for (index = 0; index < Vessels.Count(); index++) {
         VesselClass const* vessel = Vessels.Ptr(index);
-        vessel->House->VScan |= TF_Type_Scan_Bit(vessel->Class->Type);
+        vessel->House->VScan |= (1L << vessel->Class->Type);
         if (vessel->IsLocked
             && (Session.Type != GAME_NORMAL || !vessel->House->IsHuman || vessel->IsDiscoveredByPlayer)) {
             if (!vessel->IsInLimbo) {
-                vessel->House->ActiveVScan |= TF_Type_Scan_Bit(vessel->Class->Type);
-                vessel->House->OldVScan |= TF_Type_Scan_Bit(vessel->Class->Type);
+                vessel->House->ActiveVScan |= (1L << vessel->Class->Type);
+                vessel->House->OldVScan |= (1L << vessel->Class->Type);
             }
         }
     }
