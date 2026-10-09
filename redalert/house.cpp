@@ -1119,26 +1119,6 @@ void TF_EMPulse(CELL center, TechnoClass* source, int spread, int duration)
             stunned_underground++;
         }
     }
-
-#if TF_DEV_BUILD
-    const char* up = getenv("USERPROFILE");
-    char path[512];
-    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_emp.log", up ? up : ".");
-    FILE* lf = fopen(path, "a");
-    if (lf != NULL) {
-        fprintf(lf,
-                "frame=%d PULSE cell=%d,%d stunned buildings=%d vehicles=%d underground=%d aircraft=%d crashed aircraft=%d\n",
-                (int)Frame,
-                Cell_X(center),
-                Cell_Y(center),
-                stunned_buildings,
-                stunned_vehicles,
-                stunned_underground,
-                stunned_aircraft,
-                crashed);
-        fclose(lf);
-    }
-#endif
 }
 
 // Whether an order goes to the dropship bay's own factory slot, so a human's bay and war factory build side
@@ -4381,32 +4361,6 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
     case SPC_TS_EMP:
         if (SuperWeapon[SPC_TS_EMP].Is_Ready()) {
             BuildingClass* cannon = TF_EMP_Launch_Site(this, cell);
-#if TF_DEV_BUILD
-            /*
-            **	Why an E.M. Pulse order fired or was refused: power, and the nearest cannon's reach.
-            */
-            {
-                int nearest = -1;
-                for (int bi = 0; bi < Buildings.Count(); bi++) {
-                    BuildingClass* b = Buildings.Ptr(bi);
-                    if (b != NULL && *b == STRUCT_TSPULS && b->House == this && !b->IsInLimbo) {
-                        int d = ::Distance(Cell_Coord(cell), b->Center_Coord()) / CELL_LEPTON_W;
-                        if (nearest < 0 || d < nearest) {
-                            nearest = d;
-                        }
-                    }
-                }
-                const char* up = getenv("USERPROFILE");
-                char path[512];
-                snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_emp.log", up ? up : ".");
-                FILE* lf = fopen(path, "a");
-                if (lf != NULL) {
-                    fprintf(lf, "frame=%d EMP order cell=(%d,%d) power=%d/%d nearest_cannon=%d cells -> %s\n", (int)Frame,
-                            Cell_X(cell), Cell_Y(cell), Power, Drain, nearest, cannon != NULL ? "FIRE" : "REFUSED");
-                    fclose(lf);
-                }
-            }
-#endif
             if (cannon != NULL) {
                 TFEMPDest = cell;
                 cannon->Assign_Mission(MISSION_MISSILE);
@@ -6891,22 +6845,6 @@ int HouseClass::Expert_AI(void)
                 && (u->Mission == MISSION_GUARD || u->Mission == MISSION_GUARD_AREA)) {
                 u->Assign_Mission(MISSION_HUNT);
                 hunters++;
-#if TF_DEV_BUILD // TF_AI_DIAG
-                {
-                    extern FILE* TF_AI_Diag_File(void);
-                    FILE* _tfdbg = TF_AI_Diag_File();
-                    if (_tfdbg != NULL) {
-                        fprintf(_tfdbg,
-                                "F%ld H%d AL%d SCOUT-DISPATCH unit %s#%d\n",
-                                (long)Frame,
-                                (int)Class->House,
-                                (int)ActLike,
-                                u->Class->IniName,
-                                (int)u->ID);
-                        fflush(_tfdbg);
-                    }
-                }
-#endif
             }
         }
         for (index = 0; index < Infantry.Count() && hunters < TF_SCOUT_DETAIL; index++) {
@@ -6915,22 +6853,6 @@ int HouseClass::Expert_AI(void)
                 && (i->Mission == MISSION_GUARD || i->Mission == MISSION_GUARD_AREA)) {
                 i->Assign_Mission(MISSION_HUNT);
                 hunters++;
-#if TF_DEV_BUILD // TF_AI_DIAG
-                {
-                    extern FILE* TF_AI_Diag_File(void);
-                    FILE* _tfdbg = TF_AI_Diag_File();
-                    if (_tfdbg != NULL) {
-                        fprintf(_tfdbg,
-                                "F%ld H%d AL%d SCOUT-DISPATCH infantry %s#%d\n",
-                                (long)Frame,
-                                (int)Class->House,
-                                (int)ActLike,
-                                i->Class->IniName,
-                                (int)i->ID);
-                        fflush(_tfdbg);
-                    }
-                }
-#endif
             }
         }
     }
