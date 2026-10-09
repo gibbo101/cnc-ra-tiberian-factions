@@ -350,8 +350,6 @@ The exception is plumbing the launcher requires (e.g. `Map.Submit` for layer sys
 
 **⚠️ THE TRAP WITHIN THE TRAP (cost a build cycle 2026-05-28):** Do NOT try to satisfy a prereq by shadowing the vanilla `STRUCTF_*` flag into `House->BScan`/`ActiveBScan`. The prereq check calls `Has_Building_Active(type)`, which tests **`ActiveBQuantity[type] > 0`** — a per-building-type *counter* — NOT the BScan bitmask (`house.h:1008`). So a BScan flag shadow does nothing for prerequisites. (The BScan shadow IS still required for *other* engine checks — radar activation, defeat-on-no-scans `house.cpp:1474`, GPS/superweapon gating — just not prereqs.) Prereqs need the explicit per-type remap above, full stop.
 
-**Diagnostic:** `MOD_DEBUG_CANBUILD.txt` (written by the `Can_Build` hook for TD-prefixed and `E#` infantry entries) logs `level_ok` / `pre_ok` / `own_ok` per call. `pre=[N,…]` shows the STRUCT enum each token resolved to. Pull it from the Deck to see exactly which gate fails before changing code. (Watch the house filter — AI houses log too; match the player's house number.)
-
 **Why it's silent:** no engine error. `Can_Build` returns false and the sidebar hides the cameo.
 
 ### 3.11b — Audio override mechanics (mod XML vs WAV-file replacement)

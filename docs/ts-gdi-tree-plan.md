@@ -460,7 +460,7 @@ A unit here is done: no open art, geometry or behaviour work.
 - `scripts/ts_rebuild_art.sh` regenerates `$TS_ART_DIR` from the Steam TS install. TS building
   cameos are in SIDEC01.MIX (GDI), not CONQUER.MIX. The chain is TIBSUN.MIX → `tools/ts_extract.py`
   → `ts_shp.py`.
-- Diagnostics land in `MOD_DEBUG_TSUNITS.txt` / `MOD_DEBUG_CANBUILD.txt`, sometimes under
+- Diagnostics land in `MOD_DEBUG_TSUNITS.txt`, sometimes under
   `pfx/drive_c/users/steamuser/` instead of `Documents/CnCRemastered/`; check both.
 - The gitignored UI atlas differs per checkout; main's is canonical (`ui-atlas-modding.md`).
 
