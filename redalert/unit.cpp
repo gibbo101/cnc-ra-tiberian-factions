@@ -6303,40 +6303,6 @@ BulletClass* UnitClass::Fire_At(TARGET target, int which)
             if (Class->FiringFrames > 0) {
                 FireAnim = Class->FiringFrames * Class->WalkRate;
                 Mark(MARK_CHANGE_REDRAW);
-
-                /*
-                **  Diagnostic: firing-pose receipt. Confirms the shot reached
-                **  here, what the sound table was asked for, and the shape span
-                **  the firing block occupies, so a missing flash can be told
-                **  apart from a missing shot. Flip to 1 to re-enable.
-                */
-#if 0
-                {
-                    static FILE* tf_fire_log = NULL;
-                    if (tf_fire_log == NULL) {
-                        const char* h = getenv("USERPROFILE");
-                        if (h == NULL) h = getenv("HOME");
-                        if (h != NULL) {
-                            char pth[512];
-                            snprintf(pth, sizeof(pth), "%s/Documents/CnCRemastered/tf_fireanim.log", h);
-                            tf_fire_log = fopen(pth, "w");
-                        }
-                    }
-                    if (tf_fire_log != NULL) {
-                        int wf = ((TechnoClass::BodyShape[Dir_To_32(PrimaryFacing)] * Class->WalkFacings + 16) / 32)
-                                 % Class->WalkFacings;
-                        int base = Class->WalkFacings * Class->WalkFrames;
-                        fprintf(tf_fire_log,
-                                "FIRE %s frame=%d wfacing=%d fireanim=%d shapes=%d..%d report=%d\n",
-                                (Class->IniName != NULL) ? Class->IniName : "<null>",
-                                (int)::Frame, wf, (int)FireAnim,
-                                base + wf * Class->FiringFrames,
-                                base + wf * Class->FiringFrames + Class->FiringFrames - 1,
-                                (weap != NULL) ? (int)weap->Sound : -1);
-                        fflush(tf_fire_log);
-                    }
-                }
-#endif
             }
         }
     }

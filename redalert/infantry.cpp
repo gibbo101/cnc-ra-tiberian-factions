@@ -1401,21 +1401,6 @@ void InfantryClass::AI(void)
             CELL deathcell = Coord_Cell(Coord);
             int damage = 2;
             ResultType res = Take_Damage(damage, 0, WARHEAD_SA, NULL, false);
-#if 0 // TF DIAG -- visceroid spawn-on-tiberium-death. Flip to 1 to re-enable.
-            {
-                const char* up = getenv("USERPROFILE");
-                if (up != NULL) {
-                    char path[512];
-                    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_visceroid.log", up);
-                    FILE* f = fopen(path, "a");
-                    if (f != NULL) {
-                        fprintf(f, "[vice] tick: res=%d strength=%d active=%d cell=%d\n",
-                                (int)res, (int)Strength, (int)IsActive, (int)deathcell);
-                        fclose(f);
-                    }
-                }
-            }
-#endif
             if (res == RESULT_DESTROYED) {
                 if (Random_Pick(0, 99) != 0) {
                     return;
@@ -1453,21 +1438,6 @@ void InfantryClass::AI(void)
                         delete vice;
                     }
                 }
-#if 0 // TF DIAG -- flip to 1 to re-enable
-                {
-                    const char* up = getenv("USERPROFILE");
-                    if (up != NULL) {
-                        char path[512];
-                        snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_visceroid.log", up);
-                        FILE* f = fopen(path, "a");
-                        if (f != NULL) {
-                            fprintf(f, "[vice] DEATH: house=%d valid_house=%d alloc=%d placed=%d cell=%d\n",
-                                    (int)vh, (int)House.Is_Valid(), (int)alloc, (int)placed, (int)deathcell);
-                            fclose(f);
-                        }
-                    }
-                }
-#endif
                 return;
             }
             if (!IsActive) {
@@ -3422,28 +3392,6 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
     /*
     **	Check to see if it can enter a transporter.
     */
-#if 0 // TF ENTERCHK -- why does a transport refuse a passenger (Tanya evac diag). Flip to TF_DEV_BUILD to re-enable.
-    if (object != NULL && object->Is_Techno() && object->What_Am_I() == RTTI_AIRCRAFT && Is_Owned_By_Player()) {
-        int _ally = House->Is_Ally(object) ? 1 : 0;
-        int _canload = _ally ? (int)((InfantryClass*)this)->Transmit_Message(RADIO_CAN_LOAD, (TechnoClass*)object) : -1;
-        static int _lastkey = 0x7fffffff;
-        int _kk = ((int)Owner()) | (_ally << 8) | ((_canload & 0xf) << 12) | (((int)object->Owner()) << 16);
-        if (_kk != _lastkey) {
-            _lastkey = _kk;
-            extern FILE* TF_AI_Diag_File(void);
-            FILE* _f = TF_AI_Diag_File();
-            if (_f != NULL) {
-                fprintf(_f,
-                        "ENTERCHK unit=%s myowner=%d objowner=%d isally=%d canload=%d "
-                        "(ROGER=%d NEG=%d STATIC=%d) playerctl=%d action=%d\n",
-                        Class->IniName, (int)Owner(), (int)object->Owner(), _ally, _canload,
-                        (int)RADIO_ROGER, (int)RADIO_NEGATIVE, (int)RADIO_STATIC,
-                        (int)House->IsPlayerControl, (int)action);
-                fflush(_f);
-            }
-        }
-    }
-#endif
     // TF: a force-fire on an allied transport or building stays a force-fire, never an enter order.
     if (House->Is_Ally(object) && House->IsPlayerControl && action != ACTION_ATTACK && object->Is_Techno()) {
 #ifdef FIXIT_CARRIER //	checked - ajw 9/28/98

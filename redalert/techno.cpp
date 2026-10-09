@@ -3844,37 +3844,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 Mark(MARK_CHANGE_REDRAW);
             }
 
-            // Tiberian Factions diagnostic: salvo verification (Burst=2 + IsTwoShooter
-            // toggle for TD-ported weapons). Confirmed working 2026-05-22 against
-            // TD ATWR side-by-side. Stub under #if 0 per
-            // [[feedback-keep-diagnostics-until-v1]] — flip to 1 to re-enable.
-#if 0
-            {
-                static FILE* tflog = NULL;
-                if (tflog == NULL) {
-                    char path[512];
-                    const char* home = getenv("USERPROFILE");
-                    if (home == NULL) home = getenv("HOME");
-                    if (home != NULL) {
-                        snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_fire_at.log", home);
-                        tflog = fopen(path, "w");
-                    }
-                }
-                if (tflog != NULL) {
-                    fprintf(tflog,
-                        "Fire_At techno=%p which=%d weapon=%s ROF=%d Burst=%d IsTwoShooter=%d "
-                        "IsSecondShot(pre)=%d Arm_now=%d\n",
-                        (void*)this, which,
-                        weapon ? "set" : "NULL",
-                        weapon ? (int)weapon->ROF : -1,
-                        weapon ? (int)weapon->Burst : -1,
-                        tclass.Is_Two_Shooter() ? 1 : 0,
-                        IsSecondShot ? 1 : 0,
-                        (int)Arm);
-                    fflush(tflog);
-                }
-            }
-#endif
             // TF: the Juggernaut fires its whole Burst, one shell per barrel, where RA's salvo stops at two.
             if (What_Am_I() == RTTI_UNIT && ((UnitClass*)this)->Class->Type == UNIT_TSJUGG && weapon->Burst > 2) {
                 BurstShot = (BurstShot + 1) % weapon->Burst;
@@ -3934,55 +3903,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 if (anim != NULL) {
                     anim->Attach_To(this);
                 }
-#if 0 // TF DEV: red-rocket diagnostic -- log every MUZZLE anim (shooter + weapon + final anim). Flip to 0 before release.
-                {
-                    static FILE* tf_muzzle_log = NULL;
-                    if (tf_muzzle_log == NULL) {
-                        const char* h = getenv("USERPROFILE");
-                        if (h == NULL) h = getenv("HOME");
-                        if (h != NULL) {
-                            char pp[512];
-                            snprintf(pp, sizeof(pp), "%s/Documents/CnCRemastered/tf_muzzle.log", h);
-                            tf_muzzle_log = fopen(pp, "w");
-                        }
-                    }
-                    if (tf_muzzle_log != NULL) {
-                        fprintf(tf_muzzle_log, "MUZZLE: shooter=%s weapon-anim=%d final-anim=%s\n",
-                                (Techno_Type_Class() ? Techno_Type_Class()->IniName : "<none>"),
-                                (int)weapon->Anim,
-                                AnimTypeClass::As_Reference(a).IniName);
-                        fflush(tf_muzzle_log);
-                    }
-                }
-#endif
-#if 0 // TF DEV: Flame Tank muzzle-geometry diagnostic (TDFTNK nozzle position + nozzle alternation). Flip to 0 before release.
-                if (weapon->IsTDPort) {
-                    static FILE* ff = NULL;
-                    if (ff == NULL) {
-                        const char* h = getenv("USERPROFILE");
-                        if (h == NULL) h = getenv("HOME");
-                        if (h != NULL) { char p[512]; snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_flame.log", h); ff = fopen(p, "w"); }
-                    }
-                    if (ff != NULL) {
-                        COORDINATE cen = Center_Coord();
-                        COORDINATE fc  = Fire_Coord(which);
-                        // dX/dY are lepton deltas of the muzzle from the hull center; the
-                        // sign/size tells us whether the two burst shots split to opposite
-                        // nozzles (alternating IsSecondShot) or collapse to one spot.
-                        fprintf(ff,
-                            "Fire_At TDPort Anim=%s which=%d IsSecondShot=%d dir=%d "
-                            "center=(%d,%d) fire=(%d,%d) dX=%d dY=%d anim=%p\n",
-                            (a != ANIM_NONE) ? AnimTypeClass::As_Reference(a).IniName : "NONE",
-                            which, IsSecondShot ? 1 : 0, (int)Turret_Facing(),
-                            (int)Coord_X(cen), (int)Coord_Y(cen),
-                            (int)Coord_X(fc),  (int)Coord_Y(fc),
-                            (int)Coord_X(fc) - (int)Coord_X(cen),
-                            (int)Coord_Y(fc) - (int)Coord_Y(cen),
-                            (void*)anim);
-                        fflush(ff);
-                    }
-                }
-#endif
             }
 
             /*
@@ -7808,36 +7728,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         }
 #endif
 
-#if 0   // TF DIAGNOSTIC stub — flip to 1 to re-enable per-call buildtime logging
-        {
-            const char* up = getenv("USERPROFILE");
-            if (up != NULL) {
-                char path[512];
-                snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_buildtime.log", up);
-                FILE* f = fopen(path, "a");
-                if (f != NULL) {
-                    int step1 = Cost * Rule.BuildSpeedBias;
-                    int step2 = step1 * fixed(TICKS_PER_MINUTE, 1000);
-                    int rule_bsb_x100 = Rule.BuildSpeedBias * 100;
-                    int hptr_bsb_x100 = hptr->BuildSpeedBias * 100;
-                    fprintf(f, "[buildtime] PASTTOGGLE arg=%d ClsH=%d ActLike=%d IsHuman=%d Cost=%d RuleBSB*100=%d HPtrBSB*100=%d TPM=%d step1=%d step2=%d initial_time=%d\n",
-                            (int)house,
-                            (int)hptr->Class->House,
-                            (int)hptr->ActLike,
-                            (int)hptr->IsHuman,
-                            Cost,
-                            rule_bsb_x100,
-                            hptr_bsb_x100,
-                            (int)TICKS_PER_MINUTE,
-                            step1,
-                            step2,
-                            time);
-                    fclose(f);
-                }
-            }
-        }
-#endif
-
         // TF: GDI and Nod build buildings in TD's time (cost less any unit that comes with them) and units at RA's
         // base rate, without RA's house bias; TD's AI slowdown, power scaling and factory count apply (catalogue.md).
         if (hptr->ActLike == HOUSE_GOOD || hptr->ActLike == HOUSE_BAD) {
@@ -8173,47 +8063,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             SecondaryWeapon = WeaponTypeClass::As_Pointer(ini.Get_WeaponType(
                 Name(), "Secondary", SecondaryWeapon != NULL ? (WeaponType)(SecondaryWeapon->ID) : WEAPON_NONE));
 
-#if 0 // TF DIAG — OFF for release (was #if 1; flip to 1 to re-enable logging).
-            /*
-            ** Tiberian Factions mod: diagnostic — when TechnoTypeClass::Read_INI
-            ** runs for a TD-prefixed mod entry, log what Primary= resolved to.
-            ** Confirms whether Get_WeaponType found our new weapon ("TowTwo"
-            ** etc.) and whether the heap-indexed As_Pointer returned the right
-            ** WeaponTypeClass. Per [[feedback-keep-diagnostics-until-v1]] —
-            ** flip #if 1 to 0 to disable.
-            */
-            if (Name() != NULL && Name()[0] == 'T' && Name()[1] == 'D') {
-                char dpath[512];
-                const char* dprof = getenv("USERPROFILE");
-                if (dprof != NULL && dprof[0] != '\0') {
-                    snprintf(dpath, sizeof(dpath),
-                             "%s/Documents/CnCRemastered/tf_primary_parse.log", dprof);
-                } else {
-                    strcpy(dpath, "tf_primary_parse.log");
-                }
-                FILE* dlog = fopen(dpath, "a");
-                if (dlog != NULL) {
-                    char pbuf[64] = "";
-                    char sbuf[64] = "";
-                    ini.Get_String(Name(), "Primary", "<absent>", pbuf, sizeof(pbuf));
-                    ini.Get_String(Name(), "Secondary", "<absent>", sbuf, sizeof(sbuf));
-                    fprintf(dlog,
-                            "TechnoTypeClass::Read_INI section='%s' "
-                            "raw_primary='%s' resolved_PrimaryWeapon=%s (id=%d) primary_present=%s | "
-                            "raw_secondary='%s' resolved_SecondaryWeapon=%s (id=%d) secondary_present=%s\n",
-                            Name(),
-                            pbuf,
-                            PrimaryWeapon != NULL ? PrimaryWeapon->IniName : "<NULL>",
-                            PrimaryWeapon != NULL ? (int)PrimaryWeapon->ID : -1,
-                            ini.Is_Present(Name(), "Primary") ? "yes" : "no",
-                            sbuf,
-                            SecondaryWeapon != NULL ? SecondaryWeapon->IniName : "<NULL>",
-                            SecondaryWeapon != NULL ? (int)SecondaryWeapon->ID : -1,
-                            ini.Is_Present(Name(), "Secondary") ? "yes" : "no");
-                    fclose(dlog);
-                }
-            }
-#endif
             IsCloakable = ini.Get_Bool(Name(), "Cloakable", IsCloakable);
             IsCrushable = ini.Get_Bool(Name(), "Crushable", IsCrushable);
             IsScanner = ini.Get_Bool(Name(), "Sensors", IsScanner);
