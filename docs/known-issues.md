@@ -192,8 +192,6 @@ to a full entry above or delete. One line each: where, what, severity.
   `STRUCT_TSTECH`.
 - **Scan bits past 31 (minor):** `Tracking_Add`/`Recalc_Attributes` shift `1L << type` for infantry and
   units past bit 31 (undefined; on x86 TSGHOST sets the TANYA bit). Deterministic, so no desync.
-- **EMP and Firestorm granted early (minor):** the specials key on `Get_Quantity`, true while the
-  generator is still on the sidebar; the Firestorm grant never rechecks a placed one.
 - **Charges spent with no droid or pod (minor):** the Hunter Seeker and Drop Pods discharge even when the
   spawn fails.
 - **Ferry (minor):** `TFF_SAIL` treats a transport idling offshore as arrived and unloads onto water,
