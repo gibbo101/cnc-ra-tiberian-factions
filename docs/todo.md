@@ -15,18 +15,16 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
     (allies over allies,soviet): set the intended values there too, after deciding E3's owner;
   - `Inaccurate=` is dead (EA reads `Inaccuate`): turn projectile inaccuracy back on, through the
     key or a `// TF:` parser fix, and retune the artillery range if the scatter changes it.
-- **Shrink the package.** 5.0.0 is 1,456 MB unpacked (the GitHub zip 1.0 GB; 4.0.0's was
-  404 MB). Where it goes: 398 MB of sidebar cameos (1,196 loose `BuildIcon_*` TGAs, each an
-  uncompressed 341x256 RGBA at 349 KB, many of them badge variants), 405 MB of building art (the
-  Upgrade Center's `TSPLUG.ZIP` alone is 91 MB, then the Mk. II at 30 MB), 200 MB of unit art,
-  the 177 MB UI atlas (same size as EA's), 67 MB of movies, 51 MB of lobby thumbnails (same-size
-  swaps for EA's), 49 MB of VFX, 43 MB CONFIG.MEG. Leads, cheapest first: list which cameo
-  variants anything references and drop the rest (`scripts/cameo_variants_build.py` makes them);
+- **Shrink the package.** The build is 1,280 MB unpacked, 835 MB zipped (5.0.0: 1,456 MB, zip
+  1.0 GB), with each frame stored once, copied ZIPs shared at staging and cameos staged as RLE TGA
+  (`docs/asset-packs.md`). Where the rest goes: 327 MB of sidebar cameos, 144 MB of them the Dropship
+  Bay's per-second countdown (300 frames each for the Mk. II and the Mech Division; coarser steps
+  would tick the clock in jumps, the maintainer's call), the 177 MB UI atlas (same size as EA's),
+  67 MB of movies, 51 MB of lobby thumbnails (same-size swaps for EA's), 43 MB CONFIG.MEG. Leads:
   `TSWEAP2.ZIP` (2.5 MB), the pre-rebuild war factory overlay, which the game never draws, can go
   once the map editor's factory overlay (`editor_manifest.py`) and the war-factory Aseprite scripts
-  read the current layers;
-  test whether the launcher takes an RLE TGA or a DXT DDS for a loose cameo; see why TSPLUG's plug
-  combinations cost 91 MB. Any format change gets an in-game check of every faction's sidebar.
+  read the current layers; whether the launcher takes a DXT DDS for a loose cameo (an in-game check
+  of every faction's sidebar).
   It grows from here: TS Nod (21 buildings and 19 units in the HD hand-offs) and the TS HD
   rebuilds. Restage a build folder clean (`stage_asset_packs.py --full`, as
   `package-for-workshop.sh` does) before measuring it.
