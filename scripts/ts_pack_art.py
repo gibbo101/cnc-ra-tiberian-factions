@@ -54,7 +54,7 @@ tail = sample.split('"A-10 Warthog"', 1)[1]  # the trailing empty-lang commas
 rows = [
     ('TEXT_UNIT_TSHVR', 'Hover MLRS'),
     ('TEXT_UNIT_TSHVR_DESC', 'Hover platform firing twin anti-air capable missiles.'),
-    ('TEXT_STRUCTURE_TSPOWR', 'Tiberian Power Plant'),
+    ('TEXT_STRUCTURE_TSPOWR', 'GDI Power Plant'),
     ('TEXT_STRUCTURE_TSPOWR_DESC', 'Generates power.'),
 ]
 new = ""

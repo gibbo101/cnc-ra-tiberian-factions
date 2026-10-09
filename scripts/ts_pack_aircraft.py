@@ -20,9 +20,9 @@ import ts_pack_infantry as inf   # cameo, sidebar, text_rows
 # ini -> (cameo stem, icon name, display name, description)
 AIRCRAFT = {
     "TSORCA": ("orcaicon", "BuildIcon_TS_OrcaFighter", "Orca Fighter",
-               "VTOL gunship. Fires Hellfire missiles at ground and air, and rearms at the TS Helipad."),
+               "VTOL gunship. Fires Hellfire missiles at ground and air, and rearms at the Helipad."),
     "TSORCAB": ("obmbicon", "BuildIcon_TS_OrcaBomber", "Orca Bomber",
-                "Heavy VTOL bomber. Drops its bombs from over the target and rearms at the TS Helipad."),
+                "Heavy VTOL bomber. Drops its bombs from over the target and rearms at the Helipad."),
     "TSCARRY": ("otrnicon", "BuildIcon_TS_Carryall", "Carryall",
                 "Unarmed VTOL transport. Lifts one vehicle and sets it down where you send it."),
     "TSORCATRAN": ("crryicon", "BuildIcon_TS_OrcaTransport", "Orca Transport",

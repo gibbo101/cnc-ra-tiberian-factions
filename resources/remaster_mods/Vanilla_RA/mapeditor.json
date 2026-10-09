@@ -490,7 +490,7 @@
     {
       "id": 112,
       "name": "tspowr",
-      "display_name": "Tiberian Power Plant",
+      "display_name": "GDI Power Plant",
       "power_production": 100,
       "power_usage": 0,
       "storage": 0,
@@ -714,7 +714,7 @@
     {
       "id": 123,
       "name": "tsfact",
-      "display_name": "TS Construction Yard",
+      "display_name": "Construction Yard",
       "power_production": 0,
       "power_usage": 0,
       "storage": 0,
@@ -735,7 +735,7 @@
     {
       "id": 124,
       "name": "tspile",
-      "display_name": "TS Barracks",
+      "display_name": "Barracks",
       "power_production": 0,
       "power_usage": 20,
       "storage": 0,
@@ -755,7 +755,7 @@
     {
       "id": 125,
       "name": "tsproc",
-      "display_name": "TS Tiberium Refinery",
+      "display_name": "Tiberium Refinery",
       "power_production": 0,
       "power_usage": 30,
       "storage": 2000,
@@ -773,7 +773,7 @@
     {
       "id": 126,
       "name": "tssilo",
-      "display_name": "TS Tiberium Silo",
+      "display_name": "Tiberium Silo",
       "power_production": 0,
       "power_usage": 10,
       "storage": 60,
@@ -791,7 +791,7 @@
     {
       "id": 127,
       "name": "tsweap",
-      "display_name": "TS War Factory",
+      "display_name": "GDI War Factory",
       "power_production": 0,
       "power_usage": 30,
       "storage": 0,
@@ -809,7 +809,7 @@
     {
       "id": 128,
       "name": "tsradr",
-      "display_name": "TS Radar",
+      "display_name": "Radar",
       "power_production": 0,
       "power_usage": 40,
       "storage": 0,
@@ -829,7 +829,7 @@
     {
       "id": 129,
       "name": "tshpad",
-      "display_name": "TS Helipad",
+      "display_name": "Helipad",
       "power_production": 0,
       "power_usage": 10,
       "storage": 0,
@@ -847,7 +847,7 @@
     {
       "id": 130,
       "name": "tstech",
-      "display_name": "TS Tech Center",
+      "display_name": "GDI Tech Center",
       "power_production": 0,
       "power_usage": 200,
       "storage": 0,
@@ -867,7 +867,7 @@
     {
       "id": 131,
       "name": "tsdept",
-      "display_name": "TS Service Depot",
+      "display_name": "Service Depot",
       "power_production": 0,
       "power_usage": 30,
       "storage": 0,
@@ -1672,7 +1672,7 @@
       "id": 44,
       "kind": "vehicle",
       "name": "tsmcv",
-      "display_name": "TS Mobile Construction Vehicle",
+      "display_name": "Mobile Construction Vehicle",
       "owner": "GoodGuy",
       "body_frames": [
         "Frames32Full"
@@ -1690,7 +1690,7 @@
       "id": 45,
       "kind": "vehicle",
       "name": "tsharv",
-      "display_name": "TS Harvester",
+      "display_name": "Harvester",
       "owner": "GoodGuy",
       "body_frames": [
         "Frames32Full"

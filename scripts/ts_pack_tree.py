@@ -1269,9 +1269,9 @@ def loop(d):
 # (ini, base_dir, anims_dirs, mk_dir, mk_count, canvas, target_w, cameo_dir, name, desc)
 WAVE2 = [
     ("TSHPAD", "shp_gthpad", ["shp_gthpad_a"],
-     "shp_gthpadmk", 19, (256, 256), 256, "shp_heliicon", "TS Helipad", "Rearms Tiberian-era aircraft."),
+     "shp_gthpadmk", 19, (256, 256), 256, "shp_heliicon", "Helipad", "Rearms aircraft."),
     ("TSDEPT", "shp_gtdept", ["shp_gtdept_a", "shp_gtdept_b"],
-     "shp_gtdeptmk", 19, (384, 384), 382, "shp_fixicon", "TS Service Depot", "Repairs vehicles and aircraft."),
+     "shp_gtdeptmk", 19, (384, 384), 382, "shp_fixicon", "Service Depot", "Repairs vehicles and aircraft."),
     # The dropship bay is the depot's apron plate promoted to a building of its
     # own: GTDEPTBB carries the octagonal deck, GTDEPT the gantry that stands
     # beside it. Passing only the plate leaves nothing to patch, since the
@@ -1470,7 +1470,7 @@ SIZEPASS = [
     # sub-object layers (EXTRA_LAYERS below) driven by the DLL.
     ("TSPROC", "shp_ntrefn", [("shp_ntrefn_c", list(range(16)), list(range(16, 32)))],
      "shp_ntrefnmk", 19, (736, 928), 75, 1.0, "shp_reficon",
-     "TS Tiberium Refinery", "Processes Tiberium into credits."),
+     "Tiberium Refinery", "Processes Tiberium into credits."),
     # 4x3 plot, descaled: the Mk. II arrives by dropship bay, so the hangar does not have to pass a 40px sprite.
     # fit_w 460 splits the difference between the 416 APC floor and the old 512
     # (416 read barely bigger than the power plant).
@@ -1492,12 +1492,12 @@ SIZEPASS = [
     # walkable bottom row; units drive out through it.
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
      "shp_gtweapmk", 19, (896, 672), 51, 1.0, "shp_weapicon",
-     "TS War Factory", "Produces Tiberian-era vehicles."),
+     "GDI War Factory", "Produces vehicles."),
     # The Mobile War Factory deployed (Firestorm DGWEAP, art MWAR): packed on TSWEAP's exact
     # affine (affine_from below), its build-up starting from the vehicle itself.
     ("TSDWEAP", "shp_mwar", [],
      "shp_mwarmk", 19, (896, 672), 51, 1.0, "shp_mwaricon",
-     "Mobile War Factory", "A deployed Mobile War Factory. Produces Tiberian-era vehicles."),
+     "Mobile War Factory", "A deployed Mobile War Factory. Produces vehicles."),
     # 2x1 plot + bib: the 48-tall stub centres on the 24-tall box, so the
     # canvas bottom is 12 classic below the plot edge. Margin 12 = building
     # ON the top (plot) row, slab owns the entire bottom row (Luke, 23:40).
@@ -1507,7 +1507,7 @@ SIZEPASS = [
     # edge, same tuck as the 3x2 tuning had.
     ("TSRADR", "shp_gtradr", ["shp_gtradr_a"],
      "shp_gtradrmk", 20, (256, 512), 21, 1.0, "shp_radricon",
-     "TS Radar", "Provides radar coverage."),
+     "Radar", "Provides radar coverage."),
     # TS EMP Pulse Cannon (docs/emp-cannon-design.md). NAPULS is snow-theatre-only
     # art: NTPULS = temperate (NAPULS is the ARCTIC variant, TS 2nd-letter theatre code); static base (frame 0 / LIGHT damage), TSPOWR's
     # 2x2 fit. The PULSCAN voxel turret rides as the TSPULST layer (EXTRA_LAYERS).
@@ -1606,18 +1606,18 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
 # the Mobile War Factory's affine, but write no art (hd_owned).
 if os.path.isdir(f"{ART}/shp_techicon"):
     CURRENT_INI[0] = "TSTECH"
-    emit_sidebar_data("TSTECH", "TS Tech Center", "Unlocks advanced Tiberian technology.", "shp_techicon")
+    emit_sidebar_data("TSTECH", "GDI Tech Center", "Unlocks advanced technology.", "shp_techicon")
 if os.path.isdir(f"{ART}/shp_brrkicon"):
     CURRENT_INI[0] = "TSPILE"
-    emit_sidebar_data("TSPILE", "TS Barracks", "Trains Tiberian-era infantry.", "shp_brrkicon")
+    emit_sidebar_data("TSPILE", "Barracks", "Trains infantry.", "shp_brrkicon")
 if os.path.isdir(f"{ART}/shp_turbicon"):
     CURRENT_INI[0] = "TSTURB"
     emit_sidebar_data("TSTURB", "Power Turbine",
-                      "Installs into a Tiberian Power Plant, adding 50 power. Two per plant.",
+                      "Installs into a GDI Power Plant, adding 50 power. Two per plant.",
                       "shp_turbicon")
 if os.path.isdir(f"{ART}/shp_siloicon"):
     CURRENT_INI[0] = "TSSILO"
-    emit_sidebar_data("TSSILO", "TS Tiberium Silo", "Stores excess Tiberium.", "shp_siloicon")
+    emit_sidebar_data("TSSILO", "Tiberium Silo", "Stores excess Tiberium.", "shp_siloicon")
 
 # ---- TSPLUG: TS GDI Upgrade Centre (3x2 TSTECH twin, GAPLUG art) + the Ion
 # Cannon Uplink plug (TSPION). GTPLUG anim windows: _A masts 20 real (10/10
