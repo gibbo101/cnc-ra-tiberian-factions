@@ -40,7 +40,8 @@ import asset_packs  # noqa: E402
 import msadpcm  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-WORKSPACE = ROOT.parent
+# The workspace holding tools/: the repo's parent, or further up from a worktree.
+WORKSPACE = next((p for p in ROOT.parents if (p / "tools/ts_extract.py").exists()), ROOT.parent)
 # The RA and TD recordings come from a frozen snapshot, never from the mod's
 # Data/AUDIO/EN-US: the files there are this script's own output, so reading them back
 # would add one more ADPCM generation on every run. See scripts/eva_work/README.md.
