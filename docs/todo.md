@@ -33,6 +33,12 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   It grows from here: TS Nod (21 buildings and 19 units in the HD hand-offs) and the TS HD
   rebuilds. Restage a build folder clean (`stage_asset_packs.py --full`, as
   `package-for-workshop.sh` does) before measuring it.
+- **Lobby faction picker in timeline order:** RA Allies, Soviets, TD GDI, Nod, TS GDI (TS Nod when
+  it lands). The rows follow the launcher's country order (`faction-select-identity.md`), and the
+  launcher keys HUD colour, EVA channel and crest slot on each country's RA side, so the Soviets can
+  only sit on USSR (row 3) or Ukraine (row 5). Either make the launcher read an Allied-side row as
+  Soviet (a RAM patch, like the crest and EVA ones) or settle a nearest layout; then the DLL remap,
+  `mastertext.edits.txt` names and `picker_emblems_paint.py` plates move with it.
 - **Nod's cargo plane circles the airstrip** (`known-issues.md`): find why the TDC17 sometimes
   misses its landing on `TDAFLD` and fix it, with a play test of several deliveries.
 - **"Unable to comply, building in progress" in RA's voice** (`known-issues.md`). Add `PROGRES1`
