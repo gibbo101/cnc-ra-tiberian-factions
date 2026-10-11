@@ -5580,37 +5580,10 @@ void BuildingTypeClass::One_Time(void)
 
     // TF: types made from [NewBuildings] sit past STRUCT_COUNT, beyond the loop above, so their art loads here
     // by Graphic_Name.
-    /*
-    **  Diagnostic — log what MFCD::Retrieve returns for each mod entry's
-    **  asset lookups. Tells us whether NUK2.SHP / NUKEMAKE.SHP etc. are
-    **  resolvable in the mixfile registry, or coming back NULL.
-    */
-    FILE* mod_log = NULL;
-    {
-        char mpath[512];
-        const char* mprof = getenv("USERPROFILE");
-        if (mprof != NULL && mprof[0] != '\0') {
-            snprintf(mpath, sizeof(mpath),
-                     "%s/Documents/CnCRemastered/tf_mod_one_time.log", mprof);
-        } else {
-            strcpy(mpath, "tf_mod_one_time.log");
-        }
-        mod_log = NULL; // TF DIAG OFF for release (was fopen; restore to re-enable)
-        if (mod_log != NULL) {
-            fprintf(mod_log, "BuildingTypes.Count()=%d STRUCT_COUNT=%d\n",
-                    BuildingTypes.Count(), STRUCT_COUNT);
-            fflush(mod_log);
-        }
-    }
-
     for (int sindex = STRUCT_COUNT; sindex < BuildingTypes.Count(); sindex++) {
         BuildingTypeClass& building = *BuildingTypes.Ptr(sindex);
         char fullname[_MAX_FNAME + _MAX_EXT];
         char buffer[_MAX_FNAME + 4];
-
-        void const* cameo_before = building.CameoData;
-        void const* buildup_before = building.BuildupData;
-        void const* image_before = building.ImageData;
 
         if (building.Level != -1) {
             sprintf(buffer, "%sICON", building.Graphic_Name());
@@ -5636,20 +5609,6 @@ void BuildingTypeClass::One_Time(void)
 
         _makepath(fullname, NULL, NULL, building.Graphic_Name(), ".SHP");
         ((void const*&)building.ImageData) = MFCD::Retrieve(fullname);
-
-        if (mod_log != NULL) {
-            fprintf(mod_log,
-                    "[%d] IniName=%s GraphicName=%s Type=%d Size=%d "
-                    "ImageData: before=%p after=%p (looking for %s.SHP) | "
-                    "BuildupData: before=%p after=%p (looking for %sMAKE.SHP) | "
-                    "CameoData: before=%p after=%p\n",
-                    sindex, building.IniName, building.Graphic_Name(),
-                    (int)building.Type, (int)building.Size,
-                    image_before, building.ImageData, building.Graphic_Name(),
-                    buildup_before, building.BuildupData, building.Graphic_Name(),
-                    cameo_before, building.CameoData);
-            fflush(mod_log);
-        }
     }
 
     // TF: HD-only buildings ship no classic SHP, so each borrows a counterpart's classic shape, cameo and
@@ -5706,10 +5665,6 @@ void BuildingTypeClass::One_Time(void)
             }
         }
 
-    }
-
-    if (mod_log != NULL) {
-        fclose(mod_log);
     }
 }
 

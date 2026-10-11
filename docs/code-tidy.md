@@ -46,8 +46,6 @@ Build dev and release after each commit; a skirmish before merging.
   harness (`#if 0`); the EVA cache patch's `tf_cache_probe.log` lines in dllinterface.cpp.
 
 ### Clear deletes (features shipped or bugs fixed)
-- **Always-on cost in release builds:** bdata.cpp's `tf_mod_one_time.log` block: the file is never
-  opened, but `getenv` and `snprintf` still run in One_Time.
 - **Dev logs for shipped work:** techno.cpp's LIMPET-ATTACH line.
 - **Unused code:** `WarFactoryOverlayTs`; the footprint presets AFLD and WEAP; Roll_On_Seat;
   `Force_Track`'s `index`; Mission_Harvest_TD's TSPROC branch; Turret_Adjust's TSHVR case;
