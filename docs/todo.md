@@ -33,6 +33,8 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   It grows from here: TS Nod (21 buildings and 19 units in the HD hand-offs) and the TS HD
   rebuilds. Restage a build folder clean (`stage_asset_packs.py --full`, as
   `package-for-workshop.sh` does) before measuring it.
+- **Nod's cargo plane circles the airstrip** (`known-issues.md`): find why the TDC17 sometimes
+  misses its landing on `TDAFLD` and fix it, with a play test of several deliveries.
 - **"Unable to comply, building in progress" in RA's voice** (`known-issues.md`). Add `PROGRES1`
   to the EVA cache patch rows (`scripts/eva_mailbox_build.py` ERAS, regenerating
   `tf_eva_mailbox.h`) with the TD (`TDBLDG1`) and TS (`TSNOFACT1`) payloads padded to one length,
