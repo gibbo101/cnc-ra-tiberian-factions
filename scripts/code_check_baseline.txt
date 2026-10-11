@@ -9,7 +9,6 @@ redalert/dllinterface.cpp	a date	Diagnostic 2026-05-19 for TDNUK2 sidebar invisi
 redalert/dllinterface.cpp	a date	TSFACT needs no case since the 3x2 plot (2026-08-13): the
 redalert/dllinterface.cpp	a date	Tiberian Factions debug dump (2026-05-16 v0.2.0-alpha investigation).
 redalert/scenario.cpp	a date	** 12% over a 6-stage cosine (play-picked 2026-08-26); tank-end discs are further
-redalert/techno.cpp	a date	TF DIAGNOSTIC 2026-05-27 (stubbed under #if 0 per
 redalert/unit.cpp	a date	** 2026-06-17 = MATCH the current TD full-load time; tune in playtest -- see
 redalert/unit.cpp	a date	** 2026-08-04 23:36).
 redalert/unit.cpp	a date	** follows the TD logic verbatim here -- Luke, 2026-08-05 00:45).
