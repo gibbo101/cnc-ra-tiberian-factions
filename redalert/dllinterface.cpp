@@ -560,8 +560,6 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot); // fwd decl for the
 #define TF_LOBBY_RETRY_ATTEMPTS 4
 #define TF_LOBBY_RETRY_FRAME_GAP 90
 static DiffType TFLobbyGlobalDiff = DIFF_HARD;
-static char TFLobbyGlobalSource = 'd';
-static int TFLobbyClientDifficulty = 0;
 static int TFLobbyRetriesLeft = 0;
 static long TFLobbyRetryFrame = 0;
 static int TFLobbyPrevSlots[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
@@ -3223,7 +3221,7 @@ static void TF_Lobby_Difficulty_Reset(void)
     Scen.CDifficulty = DIFF_NORMAL;
 }
 
-static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff, int slots_read, bool is_retry)
+static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff, int slots_read)
 {
     Scen.CDifficulty = global_diff;
     TFLobbyAIDifficultySet = true;
@@ -3256,32 +3254,6 @@ static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff,
             }
         }
     }
-
-#if TF_DEV_BUILD // TF_AI_DIAG -- confirm the client actually sends lobby difficulty in skirmish.
-    {
-        const char* up = getenv("USERPROFILE");
-        char p[600];
-        snprintf(p, sizeof(p), "%s/MOD_DEBUG_AI.txt", up ? up : ".");
-        FILE* f = fopen(p, "a");
-        if (f != NULL) {
-            fprintf(f,
-                    "CNC_Set_Difficulty(%d) -> CDifficulty=%d IQ=%d humans=%d source=%s ram_slots=%d",
-                    TFLobbyClientDifficulty,
-                    (int)global_diff,
-                    TF_AI_IQ_From_Difficulty(global_diff),
-                    TF_HumanPlayerCount,
-                    TFLobbyGlobalSource == 'f' ? "tf_ai_difficulty.txt" : "default-hard (client value ignored)",
-                    slots_read);
-            for (int s = 1; s <= TF_LOBBY_MAX_AI_SLOTS; s++) {
-                if (slot_diff[s] != 0) {
-                    fprintf(f, " s%d=%d", s, slot_diff[s]);
-                }
-            }
-            fprintf(f, is_retry ? " (deferred re-scan)\n" : " (AI houses retro-applied)\n");
-            fclose(f);
-        }
-    }
-#endif
 }
 
 // Called every frame: runs an owed lobby re-scan, TF_LOBBY_RETRY_FRAME_GAP frames apart. A read is applied
@@ -3303,7 +3275,7 @@ static void TF_Lobby_Difficulty_Retry()
                          && memcmp(TFLobbyPrevSlots, slot_diff, sizeof(TFLobbyPrevSlots)) == 0;
         if (confirmed || TFLobbyRetriesLeft <= 0) {
             TFLobbyRetriesLeft = 0;
-            TF_Apply_AI_Difficulties(TFLobbyGlobalDiff, slot_diff, slots_read, true);
+            TF_Apply_AI_Difficulties(TFLobbyGlobalDiff, slot_diff, slots_read);
             return;
         }
     }
@@ -3333,7 +3305,6 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
     // TF: skirmish and LAN AI difficulty, per lobby slot from ClientG, else tf_ai_difficulty.txt, else Hard. Only
     // the host simulates, so nothing needs syncing (docs/lobby-difficulty-ram-spike.md).
     DiffType diff = DIFF_HARD;
-    char tf_diff_source = 'd'; // d=default, f=file
 
     {
         const char* up = getenv("USERPROFILE");
@@ -3345,13 +3316,10 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
             if (fscanf(f, "%31s", word) == 1) {
                 if (stricmp(word, "easy") == 0 || strcmp(word, "0") == 0) {
                     diff = DIFF_EASY;
-                    tf_diff_source = 'f';
                 } else if (stricmp(word, "normal") == 0 || stricmp(word, "medium") == 0 || strcmp(word, "1") == 0) {
                     diff = DIFF_NORMAL;
-                    tf_diff_source = 'f';
                 } else if (stricmp(word, "hard") == 0 || strcmp(word, "2") == 0) {
                     diff = DIFF_HARD;
-                    tf_diff_source = 'f';
                 }
             }
             fclose(f);
@@ -3362,11 +3330,9 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
     int slots_read = TF_Read_Lobby_AI_Difficulties(slot_diff);
 
     TFLobbyGlobalDiff = diff;
-    TFLobbyGlobalSource = tf_diff_source;
-    TFLobbyClientDifficulty = difficulty;
     TFLobbyRetriesLeft = 0;
 
-    TF_Apply_AI_Difficulties(diff, slot_diff, slots_read, false);
+    TF_Apply_AI_Difficulties(diff, slot_diff, slots_read);
 
     if (slots_read <= 0 && TF_LobbyAIRosterMask != 0) {
         TFLobbyRetriesLeft = TF_LOBBY_RETRY_ATTEMPTS;
