@@ -184,7 +184,8 @@ HEAVY, and `GTWEAP_D` frames 9-17 are magenta placeholders.
   seat, Track20 for the Titan) ending on the handover cell, plot cell (3,2).
   `scripts/wf_spawn_preview.py` reads the spawn markers from the Aseprite sheet and writes
   `tsweap_exit_track{,_titan}.inc` and `tsweap_exit_seats.inc`, used by both `bdata.cpp` and
-  `building.cpp`; it errors on any seat drift.
+  `building.cpp`; it errors on any seat drift, and refuses to run while that file holds the
+  hand-set mouth seats, which it does not emit.
 - **Aseprite work:** `scripts/wf_aseprite_export.py` exports the packed layers, the pad and a grid
   reference on one shared 896x672 canvas to `~/Desktop/wf-art/`, so they stack pixel-perfect.
 - **No exit sort clamp:** the rail runs unclamped. The near face has no pixels along the exit path

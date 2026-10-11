@@ -219,7 +219,16 @@ spr:saveAs(spr.filename)
               f"(backup at {SHEET}.bak)")
 
 
+def refuse_hand_set_seats():
+    """Stop before writing when tsweap_exit_seats.inc holds seats this script does not emit."""
+    hand = sorted(set(re.findall(r"#define (TSWEAP_SEAT_MOUTH\w*)", open(INC_SEATS).read())))
+    if hand:
+        sys.exit(f"tsweap_exit_seats.inc holds hand-set seats this script would drop "
+                 f"({', '.join(hand)}); emit them here or move them out before running it.")
+
+
 def main():
+    refuse_hand_set_seats()
     which = sys.argv[1] if len(sys.argv) > 1 else "TSTITN"
     uz, upre, stride, has_turret, target_h = UNITS[which]
 
