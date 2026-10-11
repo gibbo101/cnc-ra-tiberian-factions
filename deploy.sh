@@ -39,6 +39,7 @@ AUTO_YES=0
 DESKTOP=0
 KEEP_BACKUPS=3
 BACKUP_ROOT="$HOME/Desktop/Tiberian Factions/deploy-backups"
+BACKUP_MARKER=".deploy-sh-backup"
 for arg in "$@"; do
     case "$arg" in
         --desktop)  DESKTOP=1 ;;
@@ -148,6 +149,7 @@ fi
 if [[ "$DESKTOP" -eq 1 && -n "$DELETIONS$REPLACED" ]]; then
     BACKUP="$BACKUP_ROOT/desktop-$(git rev-parse --abbrev-ref HEAD | tr / -)-$(date +%Y%m%d-%H%M%S)"
     mkdir -p "$BACKUP"
+    touch "$BACKUP/$BACKUP_MARKER"
     printf '%s\n%s\n' "$DELETIONS" "$REPLACED" | grep -v '/$' | grep . | while read -r f; do
         (cd "$TARGET_DIR" && cp -p --parents "$f" "$BACKUP/")
     done
@@ -163,9 +165,9 @@ if [[ "$LEFT" -ne 0 ]]; then
     exit 1
 fi
 if [[ "$DESKTOP" -eq 1 && -d "$BACKUP_ROOT" ]]; then
-    # Only folders this script names (desktop-<branch>-<YYYYMMDD-HHMMSS>), newest by timestamp.
-    find "$BACKUP_ROOT" -mindepth 1 -maxdepth 1 -type d -regextype posix-extended \
-        -regex '.*/desktop-.+-[0-9]{8}-[0-9]{6}' -printf '%f\n' \
+    # Only folders carrying this script's marker; hand-made backups are never touched.
+    find "$BACKUP_ROOT" -mindepth 2 -maxdepth 2 -type f -name "$BACKUP_MARKER" -printf '%h\n' \
+        | xargs -r -d '\n' -n1 basename \
         | awk '{print substr($0, length($0) - 14) " " $0}' | sort -r | tail -n +$((KEEP_BACKUPS + 1)) \
         | cut -d' ' -f2 | while read -r old; do
             scripts/clear_dir.sh "${BACKUP_ROOT:?}/$old"
