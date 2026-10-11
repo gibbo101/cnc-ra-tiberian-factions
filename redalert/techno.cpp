@@ -7673,14 +7673,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             return time;
         }
 
-        // TF DIAGNOSTIC 2026-05-27 (stubbed under #if 0 per
-        // feedback-keep-diagnostics-until-v1): proved that the
-        // everyone-builds-in-1-sec symptom was a stale BuildSpeed=.001
-        // edit left on the Steam Deck's CCDATA/rules.ini by a previous
-        // smoke session, not a code bug. Source rules.ini was always .8.
-        // Re-enable the #if 1 around the per-call fprintf below if a
-        // similar Rule.BuildSpeedBias mystery recurs.
-
         // TF: with dev cheats on, human houses build everything in 15 ticks (about a second). Release builds
         // compile it out.
 #if TF_DEV_BUILD

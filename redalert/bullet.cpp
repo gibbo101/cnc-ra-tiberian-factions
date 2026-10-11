@@ -1622,13 +1622,6 @@ bool BulletClass::Unlimbo_TD(COORDINATE coord, DirType dir)
                 int scatterdist = ::Distance(coord, tcoord) / 3;
                 scatterdist = min(scatterdist, 0x0200);
 
-                // TD's BULLET_GRENADE special-case (Unlimbo:669-672) — narrower
-                // scatter for grenades. No TD grenade port yet; kept as note.
-                // if (*this == BULLET_GRENADE) {
-                //     scatterdist = ::Distance(coord, tcoord) / 4;
-                //     scatterdist = min(scatterdist, 0x0080);
-                // }
-
                 dir = (DirType)((dir + (Random_Pick(0, 10) - 5)) & 0x00FF);
                 tcoord = Coord_Scatter(tcoord, Random_Pick(0, scatterdist));
             } else {
@@ -1782,12 +1775,6 @@ void BulletClass::AI_TD(void)
         if (!forced && (Class->IsDropping || !Fuse_Checkup(coord))) {
             Coord = coord;
             Mark();
-
-            /*
-            **	TD's BULLET_BULLET branch — strength decay during flight for the
-            **	small-arms invisible bullet. No TD small-arms port yet; kept as note.
-            **	if (*this == BULLET_BULLET) { if (Strength > 5) Strength--; }
-            */
 
         } else {
 
