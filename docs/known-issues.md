@@ -68,7 +68,7 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
   sending units to the defeated bases and left them there instead of attacking the enemies still
   playing. Cause not found: the waves' objective and the blind-hunt probe (`TF_Scout_Destination`,
   which cycles every start position but the house's own) are the suspects.
-- Next time: watch the host's `MOD_DEBUG_AI.txt` (WAVE and SCOUT lines) live from the first defeat.
+- Next time: watch the host's `MOD_DEBUG_AI.txt` (WAVE lines) live from the first defeat.
 
 ### Sim froze once in a 4-Hard-AI Docklands match (2026-09-02)
 - **Severity:** unknown, unreproduced.
