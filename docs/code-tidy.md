@@ -38,8 +38,8 @@ Build dev and release after each commit; a skirmish before merging.
 - **Hunter Seeker rise code** (decided: delete, behaviour unchanged): the EMERGE/ASCENT/DESCENT
   values, `emerging` and the Height step in `TF_Hunter_Seeker_AI`; keep `DETONATE_PROXIMITY` and the
   never-dive trap.
-- **Unsure:** `TF_Dev_Tunneller` and the `tf_deploy_now.flag` lever; `Exit_Object`'s `STRUCT_TSPROC` case (looks unreachable); scenario.cpp's RA2 tank
-  harness (`#if 0`); the EVA cache patch's `tf_cache_probe.log` lines in dllinterface.cpp.
+- **Kept:** `TF_Dev_Tunneller` and its tick, the `tf_deploy_now.flag` lever, scenario.cpp's RA2 tank
+  harness (`#if 0`), and the EVA cache patch's `tf_cache_probe.log` lines in dllinterface.cpp.
 
 ### Clear deletes (features shipped or bugs fixed)
 - **Keep while open:** the AI, wave, naval, ferry, PLACE-FAIL, eco-hold, jumpjet, A* tally and

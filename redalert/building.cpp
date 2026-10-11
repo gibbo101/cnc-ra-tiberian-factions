@@ -3449,22 +3449,6 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             return (1);
         }
 
-        case STRUCT_TSPROC:
-            // TF: a harvester leaving the TS refinery appears seated on the dock ramp, facing SE.
-            if (base->What_Am_I() == RTTI_UNIT) {
-                UnitClass* unit = (UnitClass*)base;
-                cell = Coord_Cell(Center_Coord()); // the dock pad = the 4x4 centre cell
-                ScenarioInit++;
-                if (unit->Unlimbo(Coord_Add(Cell_Coord(cell), XYP_Coord(5, 7)), DIR_SE)) {
-                    unit->PrimaryFacing = DIR_SE;
-                    unit->Assign_Mission(MISSION_HARVEST);
-                }
-                ScenarioInit--;
-            } else {
-                base->Scatter(0, true);
-            }
-            break;
-
         case STRUCT_REFINERY:
             if (base->What_Am_I() == RTTI_UNIT) {
                 cell = Coord_Cell(Center_Coord());
