@@ -8059,18 +8059,21 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         */
         short const* offset = Occupy_List(true);
         bool build = (What_Am_I() == RTTI_BUILDINGTYPE);
-        // TF: art headroom rows (the tall TS towers) are skipped, as the ghost leaves them out and a ghost that
-        // reads legal must place. A tower or gate may replace a wall it joins (Takes_Building_On_Wall).
+        // TF: a tall TS building's art headroom rows need only be map cells, so it can stand on the top row with its
+        // art past the edge, as EA's Tesla Coil does. A tower or gate may replace a wall it joins.
         int headroom = build ? ((BuildingTypeClass const*)this)->Placement_Ghost_Rows_Above() * MAP_CELL_W : 0;
 
         while (offset != NULL && *offset != REFRESH_EOL) {
             short off = *offset++;
             CELL cell = pos + off;
+            if (build && off < headroom) {
+                if ((unsigned)cell >= MAP_CELL_TOTAL)
+                    return (false);
+                continue;
+            }
             if (!Map.In_Radar(cell))
                 return (false);
-            if (build && off < headroom) {
-                continue;
-            } else if (build) {
+            if (build) {
                 if (!Map[cell].Is_Clear_To_Build(Speed)
                     && !Map[cell].Takes_Building_On_Wall((BuildingTypeClass const*)this)) {
                     return (0);

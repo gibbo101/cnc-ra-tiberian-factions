@@ -5607,8 +5607,9 @@ MoveType BuildingClass::Can_Enter_Cell(CELL cell, FacingType) const
         return (MOVE_OK);
     }
 
+    // TF: the shroud test is on the first ground row, under any art headroom rows.
     if (!Debug_Map && ScenarioInit == 0 && Session.Type == GAME_NORMAL && House->IsPlayerControl
-        && !Map[cell].IsMapped) {
+        && !Map[(CELL)(cell + Class->Placement_Ghost_Rows_Above() * MAP_CELL_W)].IsMapped) {
         return (MOVE_NO);
     }
 
