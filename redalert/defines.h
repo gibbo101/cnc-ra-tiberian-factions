@@ -2999,7 +2999,6 @@ typedef enum AnimType : short
 
     ANIM_RAILFX, // TS railgun particle: a small blue spark, spawned in a helix along the MechRailgun line.
     ANIM_TS_SONICWAVE, // TS Disruptor wave: a translucent disc (TSSONICW), spawned in a chain along the SonicZap line.
-    ANIM_TS_SONICPULSE, // Unused: nothing spawns it. Its slot keeps the order adata.cpp registers anims in.
     ANIM_TS_GUNFIRE,    // TS GUNFIRE muzzle flash: Anim= of the TS railguns and TS120mmx.
     ANIM_TS_DIG,        // TS DIG mound: the earth burst as a subterranean vehicle digs in or emerges.
     ANIM_TS_ION_BEAM,   // TS Ion Cannon beam (IONBEAM): deals the strike's damage in Middle(), like ANIM_TD_ION_CANNON.

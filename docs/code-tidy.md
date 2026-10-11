@@ -28,7 +28,6 @@ Build dev and release after each commit; a skirmish before merging.
   Unused since the factory exits on `Rail_To`. Removing the enum entries renumbers
   `ROLL_OFF_DOCK_SEAT`, which saves store: keep `TrackControl` and `RawTracks` aligned, or keep
   placeholders. Keep `tsweap_exit_seats.inc`. Wait for ts-buildings-hd (it edits the clamp's `if`).
-- **`ANIM_TS_SONICPULSE`:** the retired ripple, its adata.cpp entry (order-coupled tail) and draw check.
 - **Sonic band levers:** `TF_Sonic_Cloak_Mode_Refresh`, `tf_sonic_cloak.flag`, the tf_sonic logs; the
   shipped look becomes constants.
 - **Hunter Seeker rise code** (decided: delete, behaviour unchanged): the EMERGE/ASCENT/DESCENT

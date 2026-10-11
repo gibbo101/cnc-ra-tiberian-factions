@@ -2458,10 +2458,6 @@ static AnimTypeClass const TsSonicWave(ANIM_TS_SONICWAVE, "TSSONICW", 24, 7, fal
 // gunfire.shp scaled x4. Fire_At attaches it to the firer through the weapon's Anim=, as any RA muzzle anim.
 static AnimTypeClass const TsGunfire(ANIM_TS_GUNFIRE, "TSGUNFIRE", 16, 1, false, false, false, false, false, false, false, true, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
 
-// TS Disruptor ripple disc (ANIM_TS_SONICPULSE): nothing spawns it. It stays registered so the enum and the heap
-// keep their order (docs/ts-gdi-tree-plan.md).
-static AnimTypeClass const TsSonicPulse(ANIM_TS_SONICPULSE, "TSSONICP", 24, 7, false, false, false, false, false, false, false, false, false, 0, 5, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x100);
-
 void AnimTypeClass::Init_Heap(void)
 {
     /*
@@ -2602,7 +2598,6 @@ void AnimTypeClass::Init_Heap(void)
     // the heap ID is the registration order.
     new AnimTypeClass(RailFx);
     new AnimTypeClass(TsSonicWave);
-    new AnimTypeClass(TsSonicPulse);
     new AnimTypeClass(TsGunfire);
     new AnimTypeClass(TsDig);
     new AnimTypeClass(TsIonBeam);

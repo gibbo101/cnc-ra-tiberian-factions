@@ -6357,8 +6357,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         // TF: the Disruptor's sonic band takes its launcher draw levers from TF_SonicCloakMode and
         // TF_SonicFxMode (scenario.cpp): fading plus a scale throb unless a dev-build flag picks others.
         if (object != NULL && object->What_Am_I() == RTTI_ANIM
-            && (((AnimTypeClass const&)object->Class_Of()).Type == ANIM_TS_SONICWAVE
-                || ((AnimTypeClass const&)object->Class_Of()).Type == ANIM_TS_SONICPULSE)) {
+            && ((AnimTypeClass const&)object->Class_Of()).Type == ANIM_TS_SONICWAVE) {
             int stage = ((AnimClass const*)object)->Fetch_Stage();
 #if TF_DEV_BUILD
             static int logged = 0;
