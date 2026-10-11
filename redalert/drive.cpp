@@ -507,25 +507,6 @@ bool DriveClass::Rail_To(COORDINATE dest, DirType face, int from_face)
     return (true);
 }
 
-// The mirror of Roll_Off_Seat: a straight rail from the cell centre out to a seat px_east, px_north pixels off it,
-// facing held.
-bool DriveClass::Roll_On_Seat(int px_east, int px_north)
-{
-    assert(IsActive);
-
-    if (!px_east && !px_north) {
-        return (false);
-    }
-    int ex = px_east * PIXEL_LEPTON_W;
-    int ny = -px_north * PIXEL_LEPTON_W;
-    int steps = (abs(px_east) > abs(px_north)) ? abs(px_east) : abs(px_north);
-    COORDINATE seat = Coord_Add(Cell_Coord(Coord_Cell(Coord)), XY_Coord((LEPTON)(short)ex, (LEPTON)(short)ny));
-    Set_Rail(-ex, -ny, steps, PrimaryFacing.Current(), 0);
-    Force_Track(ROLL_OFF_DOCK_SEAT, seat);
-    Set_Speed(128);
-    return (true);
-}
-
 /***********************************************************************************************
  * DriveClass::DriveClass -- Constructor for drive class object.                               *
  *                                                                                             *

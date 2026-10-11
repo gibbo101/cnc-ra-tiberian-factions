@@ -79,7 +79,7 @@ left. Engine reference: OpenTS (`reference/OpenTS/code/`); data: TS's own `RULES
   east and 9 px south of the middle cell, and `DriveClass::Start_Of_Move` drives the last step onto
   it (`Rail_To`), but only some approaches get there. Once the HD depot's ring is centred on the
   middle cell, `TS_DEPOT_SEAT_EAST_PX` / `_SOUTH_PX` (`building.h`) go to 0 and the drive-on rail
-  comes out. Glide approaches (`Roll_On_Seat`) were rejected.
+  comes out. Glide approaches were rejected.
 
 ## TS ground truth
 
