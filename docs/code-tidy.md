@@ -28,9 +28,6 @@ Build dev and release after each commit; a skirmish before merging.
   Unused since the factory exits on `Rail_To`. Removing the enum entries renumbers
   `ROLL_OFF_DOCK_SEAT`, which saves store: keep `TrackControl` and `RawTracks` aligned, or keep
   placeholders. Keep `tsweap_exit_seats.inc`. Wait for ts-buildings-hd (it edits the clamp's `if`).
-- **Hunter Seeker rise code** (decided: delete, behaviour unchanged): the EMERGE/ASCENT/DESCENT
-  values, `emerging` and the Height step in `TF_Hunter_Seeker_AI`; keep `DETONATE_PROXIMITY` and the
-  never-dive trap.
 - **Kept:** `TF_Dev_Tunneller` and its tick, the `tf_deploy_now.flag` lever, scenario.cpp's RA2 tank
   harness (`#if 0`), and the EVA cache patch's `tf_cache_probe.log` lines in dllinterface.cpp.
 

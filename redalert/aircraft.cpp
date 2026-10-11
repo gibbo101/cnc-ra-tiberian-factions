@@ -2985,12 +2985,7 @@ bool AircraftClass::TF_Hunter_Seeker_AI(void)
 {
     enum
     {
-        EMERGE_SPEED = 6,
-        ASCENT_SPEED = 40,
-        DESCENT_SPEED = 50,
-        DESCEND_PROXIMITY = 700,
-        DETONATE_PROXIMITY = 150,
-        EMERGE_HEIGHT = FLIGHT_LEVEL / 4
+        DETONATE_PROXIMITY = 150
     };
 
     LayerType layer = In_Which_Layer();
@@ -2999,7 +2994,6 @@ bool AircraftClass::TF_Hunter_Seeker_AI(void)
         Assign_Target(TF_Hunter_Seeker_Acquire(House));
     }
 
-    int want = FLIGHT_LEVEL;
     int distance = 0;
     if (Target_Legal(TarCom)) {
         COORDINATE tcoord = ::As_Coord(TarCom);
@@ -3009,12 +3003,6 @@ bool AircraftClass::TF_Hunter_Seeker_AI(void)
     }
     // The droid strikes from FLIGHT_LEVEL, never diving: deleting an aircraft from LAYER_GROUND corrupts the
     // layer lists.
-    bool emerging = (Height < EMERGE_HEIGHT);
-    if (Height < want) {
-        Height = min(want, Height + (emerging ? EMERGE_SPEED : ASCENT_SPEED));
-    } else if (Height > want) {
-        Height = max(want, Height - DESCENT_SPEED);
-    }
     Mark(MARK_CHANGE);
 
     // Re-register the droid's layer for its current height before anything that can delete it, or Limbo
@@ -3024,7 +3012,7 @@ bool AircraftClass::TF_Hunter_Seeker_AI(void)
         Map.Submit(this, In_Which_Layer());
     }
 
-    if (!Target_Legal(TarCom) || emerging) {
+    if (!Target_Legal(TarCom)) {
         if (Speed != 0) {
             Set_Speed(0);
         }
