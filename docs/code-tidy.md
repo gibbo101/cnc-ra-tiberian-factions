@@ -17,12 +17,6 @@ release-path items in others, and each larger removal in a commit of its own wit
 Build dev and release after each commit; a skirmish before merging.
 
 ### Needs a call first
-- **`Logic=` / `[NewBuildings]` / `[NewUnits]`:** the dynamic type path in bdata.cpp and udata.cpp
-  (constructors, One_Time per-entry loops, Init re-copy, Read_INI `Logic=` blocks), the rules.cpp
-  registration loops, the rules.ini sections and their 15 commented `MIGRATED` lines, and
-  add_building.py's emission. Nothing uses them: every listed name is a static type. Keep
-  `As_Pointer`. Doc edits with it: `td-building-separation-recipe.md` Prerequisites item 6, Steps 9
-  and 10, gotcha 3, and any `catalogue.md` `Logic=` row.
 - **TS war factory Track19/20:** the tracks, `tsweap_exit_track*.inc`, `OUT_OF_WEAPON_FACTORY_TS(_TITAN)`,
   `TsExitSortClamp` and its clamp block in dllinterface.cpp, `On_TS_Exit_Track`/`On_TS_Titan_Exit_Track`.
   Unused since the factory exits on `Rail_To`. Removing the enum entries renumbers

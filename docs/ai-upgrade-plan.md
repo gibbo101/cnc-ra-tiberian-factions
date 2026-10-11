@@ -640,7 +640,7 @@ decision-gated (§2.3).
 ## 4. What's already fixed (do not redo)
 Radar/tech progression (f8351de), harvester intelligence arc (threat-aware fields 2f80f76,
 load-balanced refineries 5e14772, anti-stuck watchdog, IsTiberiumShort reset), Repair Bay
-queue (TDFIX), TD Ion/Nuke auto-fire, building Points targeting values (`td-building-separation-recipe.md` gotcha 12),
+queue (TDFIX), TD Ion/Nuke auto-fire, building Points targeting values (`td-building-separation-recipe.md` gotcha 11),
 A*/attack-move/chokepoint give-way/group-spread (v2.2-2.3), Session.Type sweep confirmed NO
 undiscovered high-severity gates (audit 2026-07-17).
 

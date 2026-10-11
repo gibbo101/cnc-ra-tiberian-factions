@@ -39,9 +39,8 @@ Per-building flags extracted from `tiberiandawn/bdata.cpp`. These are the values
 - Empty `Idle` column = no idle animation (engine renders shape 0 statically). Damaged state = shape 1 in that case (the engine's `largest = max(Anims[*].Start + Count) = 1` auto-shift).
 - `Crew=no` means selling/destroying spawns zero infantry (TD canon for SILO/HPAD/SAM).
 - `Cap=no` (bold) marks entries where TD authentic differs from the original catalogue spec — defensive structures and superweapon hosts can't be captured. **TMPL and EYE are NOT capturable per TD.**
-- `Points` is the TD-authentic Risk/Reward value extracted from `tiberiandawn/bdata.cpp` per-class constructor (the line commented `// RISK/RWRD: Risk/reward rating values`). Both `Risk` and `Reward` fields are set from the rules.ini `Points=` key (`redalert/techno.cpp:7067`), and the value feeds `TechnoClass::Value()` (`redalert/techno.cpp:5171`). Without it the AI can't see the building — see `td-building-separation-recipe.md`, gotcha 12. **Mandatory field for every TD entry.**
+- `Points` is the TD-authentic Risk/Reward value extracted from `tiberiandawn/bdata.cpp` per-class constructor (the line commented `// RISK/RWRD: Risk/reward rating values`). Both `Risk` and `Reward` fields are set from the rules.ini `Points=` key (`redalert/techno.cpp:7067`), and the value feeds `TechnoClass::Value()` (`redalert/techno.cpp:5171`). Without it the AI can't see the building — see `td-building-separation-recipe.md`, gotcha 11. **Mandatory field for every TD entry.**
 - `Sight` values are TD-authentic (extracted from each `tiberiandawn/bdata.cpp` class's `// SIGHTRANGE: Range of sighting.` line). **TD buildings have systematically smaller sight radii than RA equivalents** (roughly -2 cells across the board — e.g., NUKE=2 vs POWR=4, PYLE=3 vs TENT=5). This is by design while we stay vanilla-faithful; expect GDI/Nod bases to feel "shrouded" next to Allied/Soviet ones until scouting units are deployed. Revisit if balance demands it.
-- Logic= aliases the engine donor; field overrides come via rules.ini per the recipe.
 
 **Note on TDHQ:** TD's `RADAR` (HQ) has Points=20, which is lower than RA's `DOME` (Points=30, the engine donor). Using TD-authentic = 20 here means the AI weighs HQs slightly less than vanilla. If skirmishes show HQ being ignored relative to the rest of the base, consider bumping to 30 to match the RA donor — document any deviation here.
 
@@ -49,7 +48,7 @@ Per-building flags extracted from `tiberiandawn/bdata.cpp`. These are the values
 
 ## Master wiring table (engine hookups)
 
-Values that **must be set in rules.ini per-entry** because the Logic= alias does *not* copy them from the donor (`bdata.cpp:3731-3759` lists what *is* copied — everything below isn't). Omitting any of these reproduces the same class of bug as the `Points=` issue: the building constructs but the engine treats it as a vanilla-default placeholder for the missing field.
+Values that **must be set in rules.ini per-entry**; nothing is inherited from a donor. Omitting any of these reproduces the same class of bug as the `Points=` issue: the building constructs but the engine treats it as a vanilla-default placeholder for the missing field.
 
 | IniName | TechLevel | Prereq (TD-prefixed) | Primary | Secondary | BaseNormal | Owner | TD source line |
 |---|---|---|---|---|---|---|---|
@@ -138,7 +137,7 @@ values are in rules.ini.
 
 The sections below capture **design rationale and donor choice** for each catalogue entry. The flag values shown in per-entry field tables are illustrative — the **master flag table above is the canonical source** the script reads. Where they disagree, the master table wins.
 
-Entry names below use the TD asset name (e.g. "PYLE", "HAND") for readability; the actual IniName in rules.ini is TD-prefixed (`TDPYLE`, `TDHAND`, etc.) to avoid the vanilla-RA collision class in `td-building-separation-recipe.md`, gotcha 10.
+Entry names below use the TD asset name (e.g. "PYLE", "HAND") for readability; the actual IniName in rules.ini is TD-prefixed (`TDPYLE`, `TDHAND`, etc.) to avoid the vanilla-RA collision class in `td-building-separation-recipe.md`, gotcha 9.
 
 ---
 
@@ -151,7 +150,6 @@ Faction: GDI · Donor: **TENT** (Allied barracks) · TD lvl 0, $300, -20 power, 
 
 | Field | Value |
 |---|---|
-| Logic= | TENT |
 | Image= | PYLE |
 | Footprint= | PYLE (2×2, to add) |
 | Name= | Barracks |
@@ -175,7 +173,6 @@ Faction: **both** · Donor: **HPAD** · TD lvl 6, $1500, -10 power, 400 HP, 2×2
 
 | Field | Value |
 |---|---|
-| Logic= | HPAD |
 | Image= | HPAD |
 | Footprint= | HPAD (2×2) |
 | Name= | Helipad |
@@ -199,7 +196,6 @@ Faction: **both** · Donor: **DOME** · TD lvl 2, $1000, -40 power, 500 HP, 2×2
 
 | Field | Value |
 |---|---|
-| Logic= | DOME |
 | Image= | HQ |
 | Footprint= | HQ (2×2) |
 | Name= | Communications Center |
@@ -223,7 +219,6 @@ Faction: GDI · Donor: **MSLO** (RA Missile Silo — for superweapon hosting) ·
 
 | Field | Value |
 |---|---|
-| Logic= | MSLO |
 | Image= | EYE |
 | Footprint= | EYE (2×2) |
 | Name= | Advanced Communications Center |
@@ -252,7 +247,6 @@ Faction: GDI · Donor: **PBOX** (Allied Pillbox) · TD lvl 2, $500, -10 power, 2
 
 | Field | Value |
 |---|---|
-| Logic= | PBOX |
 | Image= | GTWR |
 | Footprint= | GTWR (1×1, to add) |
 | Name= | Guard Tower |
@@ -274,7 +268,6 @@ Faction: GDI · Donor: **AGUN** (Anti-Aircraft Gun) or **GUN** · TD lvl 4, $100
 
 | Field | Value |
 |---|---|
-| Logic= | AGUN |
 | Image= | ATWR |
 | Footprint= | ATWR (1×2, to add) |
 | Name= | Advanced Guard Tower |
@@ -304,7 +297,6 @@ Faction: Nod · Donor: **BARR** (Soviet barracks) · TD lvl 0, $300, -20 power, 
 
 | Field | Value |
 |---|---|
-| Logic= | BARR |
 | Image= | HAND |
 | Footprint= | HAND (2×3, to add — bigger than PYLE) |
 | Name= | Hand of Nod |
@@ -328,7 +320,6 @@ Faction: Nod · Donor: **GUN** (Allied Turret) · TD lvl 2, $600, -20 power, 200
 
 | Field | Value |
 |---|---|
-| Logic= | GUN |
 | Image= | GUN |
 | Footprint= | GUN (1×1) |
 | Name= | Nod Turret |
@@ -345,14 +336,13 @@ Faction: Nod · Donor: **GUN** (Allied Turret) · TD lvl 2, $600, -20 power, 200
 | Capturable | true |
 | Bib | no |
 
-**Note:** Same IniName as RA's GUN — but our entry shadows the donor via Logic=. Display name disambiguates ("Nod Turret" vs "Turret").
+**Note:** Same IniName as RA's GUN — the display name disambiguates ("Nod Turret" vs "Turret").
 
 ### SAM — SAM Site (Nod anti-air) 📝
 Faction: Nod · Donor: **SAM** (RA's own SAM) · TD lvl 6, $750, -20 power, 200 HP, **2×1** steel, prereq HAND
 
 | Field | Value |
 |---|---|
-| Logic= | SAM |
 | Image= | SAM |
 | Footprint= | SAM (2×1) |
 | Name= | SAM Site |
@@ -376,7 +366,6 @@ Faction: Nod · Donor: **TSLA** · TD lvl 4, $1500, -**150** power, 200 HP, **1�
 
 | Field | Value |
 |---|---|
-| Logic= | TSLA |
 | Image= | OBLI |
 | Footprint= | OBLI (1×2, to add) |
 | Name= | Obelisk of Light |
@@ -400,9 +389,7 @@ Faction: Nod · Donor: **WEAP** (TD's Airstrip is Nod's vehicle factory) · TD l
 
 | Field | Value |
 |---|---|
-| Logic= | WEAP |
 | Image= | AFLD |
-| Footprint= | AFLD (4×2, to add — big!) |
 | Name= | Nod Airstrip |
 | TechLevel | 2 |
 | Prerequisite | PROC |
@@ -418,7 +405,7 @@ Faction: Nod · Donor: **WEAP** (TD's Airstrip is Nod's vehicle factory) · TD l
 | Capturable | true |
 | Bib | yes |
 
-**Design (2026-05-19):** TD-faithful split — GDI=WEAP, Nod=AFLD. Both Logic=WEAP so both behave as vehicle factories. Same vehicle roster (whatever WEAP donor produces) until v0.4 brings TD-flavoured tanks.
+**Design (2026-05-19):** TD-faithful split — GDI=WEAP, Nod=AFLD. Both are vehicle factories with the same vehicle roster until v0.4 brings TD-flavoured tanks.
 
 **Engine work needed (scoped for v0.3, in Nod's portion of the build):**
 
@@ -430,14 +417,13 @@ Faction: Nod · Donor: **WEAP** (TD's Airstrip is Nod's vehicle factory) · TD l
    - Plumbing: `AircraftClass::Paradrop_Cargo` exists for infantry; vehicle delivery follows the same general arc but needs new code for the "land and unload vehicle" step (RA's Hind/Chinook transport unload is the closest existing path).
    - Asset: TD's cargo plane sprite (`CARGO.ZIP` from `TEXTURES_TD_SRGB.MEG`).
 
-**Timing:** Don't block. GDI catalogue (NUKE/NUK2/PYLE/HQ/EYE/WEAP/FIX/GTWR/ATWR/HPAD) ships first using the existing Logic-aliased pipeline. When we move into Nod's portion (HAND/GUN/SAM/OBLI/TMPL), AFLD becomes its own focused slice with the two engine pieces above. Estimated 1-2 sessions for the air-delivery work, then AFLD plugs in like any other catalogue entry.
+**Timing:** Don't block. GDI catalogue (NUKE/NUK2/PYLE/HQ/EYE/WEAP/FIX/GTWR/ATWR/HPAD) ships first. When we move into Nod's portion (HAND/GUN/SAM/OBLI/TMPL), AFLD becomes its own focused slice with the two engine pieces above. Estimated 1-2 sessions for the air-delivery work, then AFLD plugs in like any other catalogue entry.
 
 ### TMPL — Temple of Nod (superweapon) 📝 🚧
 Faction: Nod · Donor: **MSLO** (RA Missile Silo) · TD lvl 7, $3000, -150 power, **1000** HP, 3×3 aluminum, prereq HQ
 
 | Field | Value |
 |---|---|
-| Logic= | MSLO |
 | Image= | TMPL |
 | Footprint= | TMPL (3×3, to add) |
 | Name= | Temple of Nod |
@@ -471,7 +457,6 @@ Faction: **both** · Donor: **POWR** · TD lvl 0, $300, +100 power, 200 HP, 2×2
 
 | Field | Value |
 |---|---|
-| Logic= | POWR |
 | Image= | NUKE |
 | Footprint= | NUKE (2×2, to add — same shape as NUK2) |
 | Name= | Power Plant |
@@ -492,7 +477,6 @@ Faction: **both** · Donor: **APWR** (was POWR in POC) · TD lvl 5, $700, +200 p
 
 | Field | POC value | TD-authentic target |
 |---|---|---|
-| Logic= | POWR | **APWR** |
 | Image= | NUK2 | NUK2 |
 | Footprint= | NUK2 | NUK2 |
 | Name= | GDIPowerPlant | Advanced Power Plant |
@@ -512,7 +496,6 @@ Faction: **both** · Donor: **PROC** · TD lvl 1, $2000, -40 power, 450 HP, 3×3
 
 | Field | Value |
 |---|---|
-| Logic= | PROC |
 | Image= | PROC |
 | Footprint= | PROC (3×3) |
 | Name= | Tiberium Refinery |
@@ -536,7 +519,6 @@ Faction: **both** · Donor: **SILO** · TD lvl 1, $150, -10 power, 150 HP, 2×1 
 
 | Field | Value |
 |---|---|
-| Logic= | SILO |
 | Image= | SILO |
 | Footprint= | SILO (2×1) |
 | Name= | Tiberium Silo |
@@ -558,9 +540,7 @@ Faction: **GDI** · Donor: **WEAP** · TD lvl 2, $2000, -30 power, 500 HP, **3×
 
 | Field | Value |
 |---|---|
-| Logic= | WEAP |
 | Image= | WEAP |
-| Footprint= | WEAP (3×3) |
 | Name= | Weapons Factory |
 | TechLevel | 2 |
 | Prerequisite | PROC |
@@ -576,7 +556,7 @@ Faction: **GDI** · Donor: **WEAP** · TD lvl 2, $2000, -30 power, 500 HP, **3×
 | Capturable | true |
 | Bib | yes |
 
-**Note:** TD-faithful: GDI builds vehicles here, Nod builds at AFLD. Both Logic=WEAP, both produce the same vehicle roster until v0.4's TD vehicle work.
+**Note:** TD-faithful: GDI builds vehicles here, Nod builds at AFLD. Both produce the same vehicle roster until v0.4's TD vehicle work.
 
 ### FIX — Service Depot 📝
 `[TDFIX] Name=Repair Facility` matches TD's `TXT_FIX_IT`; RA calls its own one the Service Depot.
@@ -585,7 +565,6 @@ Faction: **both** · Donor: **FIX** · TD lvl 5, $1200, -30 power, 400 HP, 3×3 
 
 | Field | Value |
 |---|---|
-| Logic= | FIX |
 | Image= | FIX |
 | Footprint= | FIX (3×3) |
 | Name= | Service Depot |
@@ -607,7 +586,6 @@ Faction: **both, split into GDI / Nod variants** · Donor: **FACT** · TD lvl 99
 
 | Field | GDIFACT | NODFACT |
 |---|---|---|
-| Logic= | FACT | FACT |
 | Image= | FACT (TD art) | FACT (TD art — same — visual differentiation via remap colour) |
 | Footprint= | FACT (3×2) | FACT (3×2) |
 | Name= | Construction Yard | Construction Yard |
@@ -624,7 +602,7 @@ Faction: **both, split into GDI / Nod variants** · Donor: **FACT** · TD lvl 99
 **Sequencing:** TD buildings (NUKE, NUK2, PROC, SILO, PYLE, HAND, HQ, WEAP, AFLD, EYE, TMPL, FIX, GTWR, ATWR, OBLI, GUN, SAM, HPAD) → then MCV/CY pair → ship v0.3.
 
 **Engine work for MCV/CY pair (v0.3 closing slice):**
-- Add `GDIMCV` / `NODMCV` unit types via the Logic-aliased pipeline (extends pipeline from BuildingType to UnitType — pipeline hasn't been validated for units yet, that's prereq work).
+- Add `GDIMCV` / `NODMCV` unit types.
 - Modify MCV deploy logic so it creates the faction-appropriate CY type by reading Owner (or a new field on UnitTypeClass like `DeploysInto=`).
 - Modify initial-units placement in `house.cpp` so GDI/Nod players start with their respective MCV instead of the vanilla one.
 - New CY entries above are then the deploy targets.

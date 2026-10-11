@@ -1346,40 +1346,7 @@ void UnitTypeClass::operator delete(void* pointer)
     UnitTypes.Free((UnitTypeClass*)pointer);
 }
 
-// Builds a [NewUnits] entry in the heap slot operator new has just appended (Count() - 1); Read_INI's Logic= then
-// makes it act as a vanilla unit type.
-UnitTypeClass::UnitTypeClass(int /*utype*/, char const* ininame)
-    : UnitTypeClass(static_cast<UnitType>(UnitTypes.Count() - 1),
-                    TXT_NONE,
-                    ininame,
-                    ANIM_FBALL1,    // EXPLOSION:	donor will override
-                    REMAP_NORMAL,   // Sidebar remap logic.
-                    0x0000,         // Vertical offset.
-                    0x0000,         // Primary weapon offset.
-                    0x0000,         // Primary weapon lateral offset.
-                    0x0000,         // Secondary weapon offset.
-                    0x0000,         // Secondary weapon lateral offset.
-                    false,          // IsGoodie (crate drop)
-                    false,          // IsNominal
-                    false,          // IsCrusher
-                    false,          // IsToHarvest
-                    false,          // IsStealthy
-                    false,          // IsInsignificant
-                    false,          // IsTurretEquipped
-                    false,          // IsRadarEquipped
-                    false,          // IsFireAnim
-                    false,          // IsLockTurret
-                    false,          // IsGigundo
-                    false,          // IsAnimating
-                    false,          // IsJammer
-                    false,          // IsGapper
-                    32,             // Rotation stages.
-                    0,              // TurretOffset
-                    MISSION_GUARD)  // Default order
-{
-}
-
-// Finds a unit type by IniName across the whole heap, [NewUnits] entries included; From_Name stops at UNIT_COUNT.
+// Finds a unit type by IniName across the whole heap.
 UnitTypeClass* UnitTypeClass::As_Pointer(char const* name)
 {
     if (name == NULL) {
@@ -2799,39 +2766,6 @@ bool UnitTypeClass::Read_INI(CCINIClass& ini)
         }
         if (ini.Get_Bool(IniName, "Hover", (Speed == SPEED_HOVER))) {
             Speed = SPEED_HOVER;
-        }
-
-        // TF: Logic=<vanilla IniName> runs this entry as that unit type, borrowing its flags and the art One_Time loads
-        // only for vanilla slots. Primary= and Secondary= in the entry's own section win over the donor's.
-        char buffer[64];
-        if (ini.Get_String(IniName, "Logic", "", buffer, sizeof(buffer)) > 0) {
-            UnitTypeClass* donor = UnitTypeClass::As_Pointer(buffer);
-            if (donor != NULL && donor != this) {
-                Type = donor->Type;
-                IsCrateGoodie = donor->IsCrateGoodie;
-                IsCrusher = donor->IsCrusher;
-                IsToHarvest = donor->IsToHarvest;
-                IsRadarEquipped = donor->IsRadarEquipped;
-                IsFireAnim = donor->IsFireAnim;
-                IsLockTurret = donor->IsLockTurret;
-                IsGigundo = donor->IsGigundo;
-                IsAnimating = donor->IsAnimating;
-                IsJammer = donor->IsJammer;
-                IsGapper = donor->IsGapper;
-                IsNoFireWhileMoving = donor->IsNoFireWhileMoving;
-                TurretOffset = donor->TurretOffset;
-                Mission = donor->Mission;
-                Explosion = donor->Explosion;
-                MaxSize = donor->MaxSize;
-                Speed = donor->Speed;
-                ((void const*&)ImageData) = donor->ImageData;
-                if (PrimaryWeapon == NULL) {
-                    PrimaryWeapon = donor->PrimaryWeapon;
-                }
-                if (SecondaryWeapon == NULL) {
-                    SecondaryWeapon = donor->SecondaryWeapon;
-                }
-            }
         }
 
         /*

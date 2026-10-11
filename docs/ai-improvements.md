@@ -11,7 +11,7 @@ recruit gated), 15 (friendly fire on buildings only), 16 (enemy fixation), 17's 
 A-Cheat 3 (MCV deploy shoves own units), spy/thief/dog production.
 
 Every TD building is a first-class engine type with its own `Points=` (`td-building-separation-recipe.md`
-gotcha 12), so the AI targets them.
+gotcha 11), so the AI targets them.
 
 **Reference source: AI Boost 3.2** (Bast75 and xXMini FrankiXx, GPL v3 with EA's terms, built on
 CFE 1.8) in `reference/ai-boost2/`. It has working skirmish naval AI, Iron Curtain and

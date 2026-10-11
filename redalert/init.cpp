@@ -218,8 +218,7 @@ bool Init_Game(int, char*[])
     **	of processing the rules.ini file, but that is a bit beyond the capabilities of
     **	the rule parser routine (currently).
     */
-    // TF: the building and unit heaps reserve slots past the vanilla counts: Init_Heap seeds the vanilla types and
-    // rules.ini [NewBuildings] and [NewUnits] fill the rest.
+    // TF: the building and unit heaps reserve spare slots past the vanilla counts.
     HouseTypes.Set_Heap(HOUSE_COUNT);
     BuildingTypes.Set_Heap(MAX_BUILDING_TYPES);
     AircraftTypes.Set_Heap(AIRCRAFT_COUNT);

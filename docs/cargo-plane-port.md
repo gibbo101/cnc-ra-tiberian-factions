@@ -64,8 +64,7 @@ GoodGuy,BadGuy`, `Cost=10`, `Points=1`, `ROT=5`, `Passengers=1`.
 `if (!shapefile) return;` guard (`aircraft.cpp:416-418`) and the
 plane is invisible.
 
-Mirror the building/unit Logic= alias pattern (`bdata.cpp:3452`,
-`udata.cpp:1391`) — copy `BadgerPlane.ImageData` into `TDCargoPlane`.
+Copy `BadgerPlane.ImageData` into `TDCargoPlane`.
 The launcher's `Techno_Draw_Object` overlay then resolves the actual
 sprite by IniName via `RA_UNITS.XML`'s `TDC17` tileset, regardless of
 which pointer was supplied.
@@ -138,28 +137,14 @@ retiring at the edge.
 
 ### 8. `Find_Docking_Bay` recognises TDAFLD-as-airstrip
 
-`redalert/techno.cpp`. The standard `Find_Docking_Bay(STRUCT_AIRSTRIP)`
-checks (a) `House->Get_Quantity(STRUCT_AIRSTRIP) != 0` early-out and
-(b) `*building == STRUCT_AIRSTRIP` per-building match. Our TDAFLD is
-Logic=WEAP-aliased so `Class->Type == STRUCT_WEAP`, missing both
-checks.
+`redalert/techno.cpp`. `Find_Docking_Bay` treats a request for the RA airstrip as a request for
+every faction's airstrip (`STRUCT_AIRSTRIP`, `STRUCT_TDAFLD`, `STRUCT_TDGAFLD`), in both the
+early-out count and the per-building match, so PICK_AIRSTRIP finds the TD strip.
 
-Patched: (a) relaxed early-out to also pass if STRUCTF_WEAP buildings
-exist; (b) added IniName fallback so any STRUCT_WEAP building whose
-IniName starts with "TDAFLD" counts as airstrip; (c) skipped the
-`RADIO_CAN_LOAD` probe for TDAFLD matches — WEAP's inherited
-`Receive_Message` rejects it (CAN_LOAD is helipad/refinery semantics),
-but `RADIO_HELLO` in PICK_AIRSTRIP works fine. Without the CAN_LOAD
-bypass, Find_Docking_Bay returns NULL and PICK_AIRSTRIP falls to its
-retreat path, despawning the plane immediately.
+### 9. `Docking_Coord` for TDAFLD
 
-### 9. `Docking_Coord` IniName check for TDAFLD
-
-`redalert/building.cpp`. The existing STRUCT_AIRSTRIP docking-offset
-case (`Coord + (ICON_PIXEL_W + ICON_PIXEL_W/2, 28)`) misses our TDAFLD
-because of Logic=WEAP aliasing. IniName fallback so the plane lands at
-the visual middle-front of the 4×2 strip instead of the building's
-geometric centre.
+`redalert/building.cpp`. `STRUCT_TDAFLD` has its own docking-offset case, so the plane lands at the
+visual middle-front of the 4x2 strip instead of the building's geometric centre.
 
 ### 10. `What_Action` force-attack guard
 

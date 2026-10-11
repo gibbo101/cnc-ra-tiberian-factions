@@ -11,7 +11,6 @@ Field meanings and source:
                  Also used as the rules.ini Image= and XML tileset Name —
                  TD-prefix everywhere on the consumer side prevents collisions
                  with vanilla RA entries (e.g. WEAP, FIX, HPAD, SAM).
-  logic        - RA donor IniName for the engine alias (Logic= in rules.ini)
   td_asset     - Original TD asset name in TEXTURES_TD_SRGB.MEG (e.g. "NUKE"
                  for the TD power plant). Drives MEG extraction in
                  bundle_assets.py and the internal `foo-NNNN.tga` frame
@@ -76,7 +75,6 @@ License: GPL v3 (inherited from Vanilla Conquer base).
 TDNUKE = {
     "ininame":     "TDNUKE",
     # Native STRUCT_TDNUKE in bdata.cpp Init_Heap.
-    "logic":       None,
     "td_asset":       "NUKE",
     "footprint":   "NUKE",
     "shape_size":  (48, 48),
@@ -108,7 +106,6 @@ TDNUKE = {
 TDNUK2 = {
     "ininame":     "TDNUK2",
     # Native STRUCT_TDNUK2 in bdata.cpp Init_Heap.
-    "logic":       None,
     "td_asset":       "NUK2",
     "footprint":   "NUK2",
     "shape_size":  (48, 48),
@@ -141,7 +138,6 @@ TDNUK2 = {
 TDHQ = {
     "ininame":     "TDHQ",
     # Native STRUCT_TDHQ in bdata.cpp Init_Heap.
-    "logic":       None,
     "td_asset":    "HQ",
     "footprint":   "HQ",
     "shape_size":  (48, 48),
@@ -175,7 +171,6 @@ TDHQ = {
 
 TDPROC = {
     "ininame":     "TDPROC",
-    "logic":       None,          # STRUCT_TDPROC native.
     "td_asset":    "PROC",
     "footprint":   None,          # ClassTdProc uses native TdListProc + TdOListProc (TD-source exact shape).
     "shape_size":  (72, 72),
@@ -203,14 +198,13 @@ TDPROC = {
     "repairable":  True,
     "bib":         True,
     "idle_anim":   (0, 6, 4),
-    "notes":       "TD Tiberium Refinery. Shared GoodGuy/BadGuy. Logic=PROC inherits free-harvester-on-build + dock/siphon cycles. First entry exercising Storage= field.",
+    "notes":       "TD Tiberium Refinery. Shared GoodGuy/BadGuy. First entry exercising Storage= field.",
 }
 
 
 TDSILO = {
     "ininame":     "TDSILO",
     # Native STRUCT_TDSILO in bdata.cpp Init_Heap.
-    "logic":       None,
     "td_asset":    "SILO",
     # RA SILO donor is BSIZE_11 (1×1) which made TDSILO render 1×1; override to
     # TD-authentic BSIZE_21 via the SILO preset. Bib=yes adds the extra row
@@ -249,7 +243,6 @@ TDSILO = {
 TDFIX = {
     "ininame":     "TDFIX",
     # Native STRUCT_TDFIX in bdata.cpp Init_Heap.
-    "logic":       None,
     "td_asset":    "FIX",
     "footprint":   None,  # RA FIX donor is 3x3 (BSIZE_33); inherit donor shape.
     "shape_size":  (72, 72),
@@ -277,13 +270,12 @@ TDFIX = {
     "repairable":  True,
     "bib":         True,
     "idle_anim":   None,
-    "notes":       "TD Service Depot. STRUCT_TDFIX with own BuildingTypeClass (ClassTdFix) modeled on TD's ClassRepair. Non-factory (ToBuild=RTTI_NONE), BSIZE_33 cross-shape (ListFix+OListFix reused from RA's vanilla FIX), ARMOR_WOOD, Strength=400 (TD-authentic; RA's REPAIR has 800 — leaked through Logic=FIX alias). Engine dispatches: 13 STRUCT_REPAIR cases in building.cpp + 5 unit.cpp + 2 aircraft.cpp updated to accept STRUCT_TDFIX. Find_Docking_Bay (techno.cpp:6486) extended with TDFIX fallback so vehicles/aircraft find TDFIX when looking for STRUCT_REPAIR. Classic SHP ships via TFASSETS.MIX (TDFIX.SHP + TDFIXMAKE.SHP).",
+    "notes":       "TD Service Depot. STRUCT_TDFIX with own BuildingTypeClass (ClassTdFix) modeled on TD's ClassRepair. Non-factory (ToBuild=RTTI_NONE), BSIZE_33 cross-shape (ListFix+OListFix reused from RA's vanilla FIX), ARMOR_WOOD, Strength=400 (TD-authentic). Engine dispatches: 13 STRUCT_REPAIR cases in building.cpp + 5 unit.cpp + 2 aircraft.cpp updated to accept STRUCT_TDFIX. Find_Docking_Bay (techno.cpp:6486) extended with TDFIX fallback so vehicles/aircraft find TDFIX when looking for STRUCT_REPAIR. Classic SHP ships via TFASSETS.MIX (TDFIX.SHP + TDFIXMAKE.SHP).",
 }
 
 
 TDWEAP = {
     "ininame":     "TDWEAP",
-    "logic":       None,         # STRUCT_TDWEAP native, no engine alias.
     "td_asset":    "WEAP",
     "footprint":   None,         # ClassTdWeap uses RA's ExitWeap/ListWeap/OListWeap (same shape as TD WEAP).
     "shape_size":  (72, 72),
@@ -318,7 +310,6 @@ TDWEAP = {
 TDHPAD = {
     "ininame":     "TDHPAD",
     # Native STRUCT_TDHPAD in bdata.cpp Init_Heap.
-    "logic":       None,
     "td_asset":    "HPAD",
     "footprint":   None,  # RA HPAD donor matches TD (2x2 BSIZE_22).
     "shape_size":  (48, 48),
@@ -346,14 +337,13 @@ TDHPAD = {
     "repairable":  True,
     "bib":         True,
     "idle_anim":   None,
-    "notes":       "TD Helipad. STRUCT_TDHPAD with own BuildingTypeClass (ClassTdHpad) modeled on TD's ClassHelipad. RTTI_AIRCRAFTTYPE factory, 2x2 BSIZE_22, ARMOR_WOOD, Strength=400 (TD-authentic; RA's HELIPAD has 800 — leaked through Logic=HPAD alias). Engine dispatches: 8 STRUCT_HELIPAD cases in building.cpp updated to accept STRUCT_TDHPAD (Receive_Message x3, sidebar refresh, Grand_Opening free-aircraft, Docking_Coord, Exit_Coord, Mission_Unload). Find_Docking_Bay (techno.cpp:6486) extended with helipad fallback so rotary aircraft find TDHPAD when looking for STRUCT_HELIPAD. Raw_Cost cost-adjust includes TDHPAD. Classic SHP ships via TFASSETS.MIX (TDHPAD.SHP + TDHPADMAKE.SHP).",
+    "notes":       "TD Helipad. STRUCT_TDHPAD with own BuildingTypeClass (ClassTdHpad) modeled on TD's ClassHelipad. RTTI_AIRCRAFTTYPE factory, 2x2 BSIZE_22, ARMOR_WOOD, Strength=400 (TD-authentic). Engine dispatches: 8 STRUCT_HELIPAD cases in building.cpp updated to accept STRUCT_TDHPAD (Receive_Message x3, sidebar refresh, Grand_Opening free-aircraft, Docking_Coord, Exit_Coord, Mission_Unload). Find_Docking_Bay (techno.cpp:6486) extended with helipad fallback so rotary aircraft find TDHPAD when looking for STRUCT_HELIPAD. Raw_Cost cost-adjust includes TDHPAD. Classic SHP ships via TFASSETS.MIX (TDHPAD.SHP + TDHPADMAKE.SHP).",
 }
 
 
 TDGTWR = {
     "ininame":     "TDGTWR",
     # Native STRUCT_TDGTWR in bdata.cpp Init_Heap.
-    "logic":       None,
     "td_asset":    "GTWR",
     "footprint":   None,  # 1x1 (BSIZE_11) — matches TD ClassGTower.
     "shape_size":  (24, 24),
@@ -390,7 +380,6 @@ TDGTWR = {
 TDATWR = {
     "ininame":     "TDATWR",
     # Native STRUCT_TDATWR in bdata.cpp Init_Heap.
-    "logic":       None,
     "td_asset":    "ATWR",
     "footprint":   None,  # RA AGUN donor is 1x2 (BSIZE_12); matches TD.
     "shape_size":  (24, 48),
@@ -428,7 +417,6 @@ TDATWR = {
 TDEYE = {
     "ininame":     "TDEYE",
     # Native STRUCT_TDEYE in bdata.cpp Init_Heap.
-    "logic":       None,
     "td_asset":    "EYE",
     # RA MSLO donor is BSIZE_21 (2x1); TD EYE is BSIZE_22 with the L-shape
     # NUK2 pattern (occupy {0, MCW, MCW+1}, overlap {1}). EYE preset reuses
@@ -459,13 +447,12 @@ TDEYE = {
     "repairable":  True,
     "bib":         True,
     "idle_anim":   (0, 16, 4),
-    "notes":       "TD GDI Advanced Comm / Ion Cannon host. MIGRATED to STRUCT_TDEYE; Logic= dropped. Ion Cannon weapon effects + HouseClass machinery land in Phase E2/E3. Cap=no per TD canon (superweapon hosts can't be captured). -200 power drain is TD-authentic and intentional.",
+    "notes":       "TD GDI Advanced Comm / Ion Cannon host. STRUCT_TDEYE. Ion Cannon weapon effects + HouseClass machinery land in Phase E2/E3. Cap=no per TD canon (superweapon hosts can't be captured). -200 power drain is TD-authentic and intentional.",
 }
 
 
 TDFACT = {
     "ininame":     "TDFACT",
-    "logic":       None,         # STRUCT_TDFACT native.
     "td_asset":    "FACT",
     "footprint":   None,         # ClassTdFact uses native BSIZE_32 + List32 (TD-authentic 3x2; RA's STRUCT_CONST is BSIZE_33).
     "shape_size":  (72, 72),
@@ -504,7 +491,6 @@ TDFACT = {
 
 TDGFACT = {
     "ininame":     "TDGFACT",
-    "logic":       None,         # W2(b) faction split — STRUCT_TDGFACT native (bdata.cpp Init_Heap).
     "td_asset":    "FACT",
     "footprint":   None,         # BSIZE_32 + List32, same as TDFACT.
     "shape_size":  (72, 48),
@@ -538,7 +524,6 @@ TDGFACT = {
 
 TDNFACT = {
     "ininame":     "TDNFACT",
-    "logic":       None,         # W2(b) faction split — STRUCT_TDNFACT native (bdata.cpp Init_Heap).
     "td_asset":    "FACT",
     "footprint":   None,         # BSIZE_32 + List32, same as TDFACT.
     "shape_size":  (72, 48),
@@ -573,7 +558,6 @@ TDNFACT = {
 TDPYLE = {
     "ininame":     "TDPYLE",
     # Native STRUCT_TDPYLE in bdata.cpp Init_Heap.
-    "logic":       None,
     "td_asset":       "PYLE",
     "footprint":   "PYLE",
     "shape_size":  (48, 48),
@@ -606,7 +590,6 @@ TDPYLE = {
 TDGUN = {
     "ininame":     "TDGUN",
     # Native STRUCT_TDGUN in bdata.cpp Init_Heap.
-    "logic":       None,
     "td_asset":    "GUN",
     "footprint":   "",
     "shape_size":  (24, 24),
@@ -643,7 +626,6 @@ TDGUN = {
 TDSAM = {
     "ininame":     "TDSAM",
     # Native STRUCT_TDSAM in bdata.cpp Init_Heap.
-    "logic":       None,
     "td_asset":    "SAM",
     "footprint":   "",
     "shape_size":  (48, 24),
@@ -679,15 +661,9 @@ TDSAM = {
 
 
 # TDOBLI is a fully-separated building: STRUCT_TDOBLI in defines.h with ClassObelisk in
-# bdata.cpp's Init_Heap. The [TDOBLI] rules.ini section is still
-# Read_INI'd to populate Cost/Power/etc, but no Logic= alias.
-# Asset bundling via this manifest entry still applies (extract ZIPs,
-# patch RA_STRUCTURES.XML + RABUILDABLES.XML). When/if we re-run
-# scripts/add_building.py for TDOBLI, the emitter must NOT re-add
-# TDOBLI to [NewBuildings] index nor emit Logic=. Set logic=None here.
+# bdata.cpp's Init_Heap. Its [TDOBLI] rules.ini section is Read_INI'd for Cost, Power and the rest.
 TDOBLI = {
     "ininame":     "TDOBLI",
-    "logic":       None,
     "td_asset":    "OBLI",
     "footprint":   "",
     "shape_size":  (24, 48),
@@ -727,10 +703,6 @@ TDOBLI = {
 TDTMPL = {
     "ininame":     "TDTMPL",
     # Native STRUCT_TDTMPL in bdata.cpp Init_Heap.
-    # Logic=MSLO previously granted RA AtomBomb as the placeholder super; the
-    # Nuclear Strike (SPC_TD_NUKE) proper lands in Phase T2 via HouseClass.
-    # Phase T1 ships the building structurally only — no super attached.
-    "logic":       None,
     "td_asset":    "TMPL",
     "footprint":   "TMPL",
     "shape_size":  (72, 72),
@@ -758,13 +730,12 @@ TDTMPL = {
     "idle_anim":   (0, 1, 0),
     "active_anim": (0, 5, 1),
     "buildup_anim": (0, 36, 2),
-    "notes":       "TD Nod Temple of Nod (3x3 superweapon host). MIGRATED to STRUCT_TDTMPL; Logic= dropped. Nuclear Strike super lands in Phase T2 via SPC_TD_NUKE on HouseClass. idle_anim=(0,1,0) + active_anim=(0,5,1) match TD-authentic _anims[] values (STRUCT_TEMPLE BSTATE_IDLE 0/1/0, BSTATE_ACTIVE 0/5/1). buildup_anim=(0,36,2) drives the 36-frame temple-assembly sequence from TDTMPLMAKE.ZIP.",
+    "notes":       "TD Nod Temple of Nod (3x3 superweapon host). STRUCT_TDTMPL. Nuclear Strike super lands in Phase T2 via SPC_TD_NUKE on HouseClass. idle_anim=(0,1,0) + active_anim=(0,5,1) match TD-authentic _anims[] values (STRUCT_TEMPLE BSTATE_IDLE 0/1/0, BSTATE_ACTIVE 0/5/1). buildup_anim=(0,36,2) drives the 36-frame temple-assembly sequence from TDTMPLMAKE.ZIP.",
 }
 
 
 TDAFLD = {
     "ininame":     "TDAFLD",
-    "logic":       None,         # STRUCT_TDAFLD native, no engine alias.
     "td_asset":    "AFLD",
     "footprint":   None,         # ClassTdAfld uses native TdList42 + TdExitAirstrip (BSIZE_42 4x2 flat, TD-authentic).
     "shape_size":  (96, 48),
@@ -798,7 +769,6 @@ TDAFLD = {
 TDHAND = {
     "ininame":     "TDHAND",
     # Native STRUCT_TDHAND in bdata.cpp Init_Heap.
-    "logic":       None,
     "td_asset":    "HAND",
     "footprint":   "HAND",
     "shape_size":  (48, 72),
@@ -837,7 +807,6 @@ TDHAND = {
 
 TDGHPAD = {
     "ininame":     "TDGHPAD",
-    "logic":       None,         # W2 (d) faction split — STRUCT_TDGHPAD native (bdata.cpp Init_Heap).
     "td_asset":    "HPAD",
     "footprint":   None,
     "shape_size":  (48, 48),
@@ -871,7 +840,6 @@ TDGHPAD = {
 
 TDNHPAD = {
     "ininame":     "TDNHPAD",
-    "logic":       None,         # W2 (d) faction split — STRUCT_TDNHPAD native (bdata.cpp Init_Heap).
     "td_asset":    "HPAD",
     "footprint":   None,
     "shape_size":  (48, 48),

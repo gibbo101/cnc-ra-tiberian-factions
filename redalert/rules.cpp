@@ -1081,21 +1081,6 @@ bool RulesClass::Objects(CCINIClass& ini)
         Weapons.Ptr(windex)->Read_INI(ini);
     }
 
-    // TF: [NewUnits] names become heap types before Read_INI, so each reads its own section in this pass.
-    // Objects() runs again on every scenario load, so a name already in the heap is skipped.
-    static char const* const NEW_UNITS = "NewUnits";
-    if (ini.Is_Present(NEW_UNITS)) {
-        for (int x = 0; x < ini.Entry_Count(NEW_UNITS); x++) {
-            char const* key = ini.Get_Entry(NEW_UNITS, x);
-            char buffer[64];
-            if (ini.Get_String(NEW_UNITS, key, "", buffer, sizeof(buffer)) > 0) {
-                if (UnitTypeClass::As_Pointer(buffer) == NULL) {
-                    new UnitTypeClass(atoi(key), buffer);
-                }
-            }
-        }
-    }
-
     for (int uindex = 0; uindex < UnitTypes.Count(); uindex++) {
         UnitTypes.Ptr(uindex)->Read_INI(ini);
     }
@@ -1110,20 +1095,6 @@ bool RulesClass::Objects(CCINIClass& ini)
 
     for (int aindex = 0; aindex < AircraftTypes.Count(); aindex++) {
         AircraftTypes.Ptr(aindex)->Read_INI(ini);
-    }
-
-    // TF: the same for [NewBuildings] names.
-    static char const* const NEW_BUILDINGS = "NewBuildings";
-    if (ini.Is_Present(NEW_BUILDINGS)) {
-        for (int x = 0; x < ini.Entry_Count(NEW_BUILDINGS); x++) {
-            char const* key = ini.Get_Entry(NEW_BUILDINGS, x);
-            char buffer[64];
-            if (ini.Get_String(NEW_BUILDINGS, key, "", buffer, sizeof(buffer)) > 0) {
-                if (BuildingTypeClass::As_Pointer(buffer) == NULL) {
-                    new BuildingTypeClass(atoi(key), buffer);
-                }
-            }
-        }
     }
 
     for (int bindex = 0; bindex < BuildingTypes.Count(); bindex++) {

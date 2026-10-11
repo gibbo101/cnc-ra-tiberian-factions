@@ -1648,12 +1648,10 @@ typedef enum StructType : short
 */
 #define TF_SENSOR_RADIUS_CELLS 25
 
-// BuildingTypes heap size: the enum plus 50 slots for rules.ini [NewBuildings]. HouseClass sizes its
-// per-type counts by it, so those types index safely past STRUCT_COUNT.
+// BuildingTypes heap size: the enum plus 50 spare slots. HouseClass sizes its per-type counts by it.
 #define MAX_BUILDING_TYPES (STRUCT_COUNT + 50)
 
-// UnitTypes heap size: the enum plus 50 slots for rules.ini [NewUnits]. At exactly UNIT_COUNT, Alloc()
-// fails silently for a [NewUnits] entry and As_Pointer() returns NULL for it.
+// UnitTypes heap size: the enum plus 50 spare slots.
 #define MAX_UNIT_TYPES (UNIT_COUNT + 50)
 
 /*

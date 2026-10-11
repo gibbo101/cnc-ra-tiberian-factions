@@ -36,7 +36,6 @@ import buildings_manifest  # noqa: E402
 REPO_ROOT = SCRIPT_DIR.parent
 RULES_INI = REPO_ROOT / "resources/remaster_mods/Vanilla_RA/CCDATA/rules.ini"
 END_MARKER = "; End of Rules.INI"
-NEW_BUILDINGS_SECTION = "[NewBuildings]"
 
 
 # Field order and per-field formatter. Tuple is (manifest_key, ini_key, formatter).
@@ -52,7 +51,6 @@ def _shape_size(v): return "%d,%d" % (v[0], v[1])
 
 FIELD_SPEC = [
     # identity
-    ("logic",       "Logic",        _identity),
     # Image= in rules.ini = the IniName (TD-prefixed) so the launcher's
     # tileset lookup hits the per-entry <Name>TDxxx</Name> we put in
     # RA_STRUCTURES.XML. Source asset name (unprefixed) lives in
@@ -126,22 +124,13 @@ def emit_block(entry):
         lines.append("ActiveAnimCount=%d" % count)
         lines.append("ActiveAnimRate=%d"  % rate)
     # Buildup anim block: BSTATE_CONSTRUCTION override. Necessary when our
-    # TGA-pack MAKE frame count differs from the Logic= donor's MAKE.SHP
-    # frame count — One_Time() can't auto-init for mod entries (no SHP in
-    # REDALERT.MIX), so donor's count is inherited and any extra frames in
-    # our TGA pack get truncated. Set count to match the MAKE tileset shape
-    # count (= MAKE.ZIP frame count + 1 for the empty shape 0).
+    # BSTATE_CONSTRUCTION override: count is the MAKE tileset shape count
+    # (MAKE.ZIP frame count + 1 for the empty shape 0).
     buildup = entry.get("buildup_anim")
     if buildup is None:
         # Auto-derive from the bundled MAKE.ZIP frame count when no explicit
-        # override. Every Logic= aliased mod entry needs this — without it the
-        # engine inherits the donor's BSTATE_CONSTRUCTION count, which mis-
-        # matches our TGA pack in either direction (donor longer → mod plays
-        # shapes past tileset end, donor shorter → mod buildup truncates).
-        # Convention: count = TGA frames + 1 for the empty shape-0 placement
-        # marker emitted by bundle_assets.py. Rate=2 ticks/frame approximates
-        # the engine's auto-computed (Rule.BuildupTime * TICKS_PER_MINUTE) /
-        # count for typical 13-35 frame packs.
+        # override: TGA frames + 1 for the empty shape-0 placement marker, at
+        # 2 ticks per frame.
         make_zip = REPO_ROOT / (
             "resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB/"
             "RED_ALERT/STRUCTURES/" + entry["ininame"] + "MAKE.ZIP"
@@ -204,68 +193,6 @@ def replace_or_insert(content, ininame, new_block):
     return content.rstrip("\n") + "\n\n" + new_block.rstrip("\n") + "\n"
 
 
-def register_in_new_buildings(content, ininame):
-    '''Append `<n>=<ininame>` to the [NewBuildings] section if absent.
-
-    The engine only reads sections listed here, so an unregistered [TDxxxx]
-    block is dead weight. Ordinals are allocated as `max(existing) + 1`; the
-    ordinal value itself is decorative (the heap slot comes from BuildingTypes.Count()).
-    Re-registration is a no-op.
-    '''
-    # Anchor to "\n[NewBuildings]" so we hit the section header at the start of
-    # a line, not a literal occurrence of the same string inside a comment
-    # (which would have us appending the registration into the comment block,
-    # creating an orphan that the engine never reads).
-    section_anchor = "\n" + NEW_BUILDINGS_SECTION
-    if section_anchor not in content and not content.startswith(NEW_BUILDINGS_SECTION):
-        raise RuntimeError(
-            "rules.ini missing %s section — add one manually (see "
-            "docs/td-building-separation-recipe.md)." % NEW_BUILDINGS_SECTION
-        )
-
-    if content.startswith(NEW_BUILDINGS_SECTION):
-        sec_start = 0
-    else:
-        sec_start = content.index(section_anchor) + 1  # +1 to skip the leading \n
-    # Find end of section: next "\n[Section]" or EOF
-    rest = content[sec_start + len(NEW_BUILDINGS_SECTION):]
-    next_section = rest.find("\n[")
-    end_marker_rel = rest.find("\n" + END_MARKER)
-    candidates = [c for c in (next_section, end_marker_rel) if c != -1]
-    if candidates:
-        sec_end = sec_start + len(NEW_BUILDINGS_SECTION) + min(candidates)
-    else:
-        sec_end = len(content)
-
-    section_body = content[sec_start:sec_end]
-
-    # Already registered? Bail without changes.
-    for line in section_body.splitlines():
-        if "=" in line:
-            _ord, _, name = line.partition("=")
-            if name.strip() == ininame:
-                return content
-
-    # Find highest existing ordinal.
-    highest = 0
-    for line in section_body.splitlines():
-        if "=" in line:
-            ord_str, _, _ = line.partition("=")
-            try:
-                highest = max(highest, int(ord_str.strip()))
-            except ValueError:
-                pass  # ignore non-numeric ordinals (shouldn't appear in vanilla format)
-    new_ordinal = highest + 1
-    new_line = "%d=%s\n" % (new_ordinal, ininame)
-
-    # Insert just before the section ends — strip trailing whitespace from the
-    # section body, append our line, then a single blank-line separator before
-    # the next section.
-    trimmed = section_body.rstrip("\n")
-    new_body = trimmed + "\n" + new_line
-    return content[:sec_start] + new_body + content[sec_end:]
-
-
 def _atomic_write(path, content):
     tmp = path.with_suffix(path.suffix + ".tmp")
     tmp.write_text(content, encoding="utf-8", newline="\n")
@@ -322,7 +249,6 @@ def main():
     for entry in entries:
         block = emit_block(entry)
         updated = replace_or_insert(updated, entry["ininame"], block)
-        updated = register_in_new_buildings(updated, entry["ininame"])
 
     if args.diff:
         _show_diff(original, updated, rules_path)

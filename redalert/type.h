@@ -825,7 +825,6 @@ public:
                       short const* sizelist,
                       short const* overlap);
 
-    BuildingTypeClass(int btype, char const* ininame);
     operator StructType(void) const
     {
         return (Type);
@@ -1091,9 +1090,6 @@ public:
                   int rotation,
                   int toffset,
                   MissionType order);
-
-    // TF: builds a [NewUnits] entry; Read_INI's Logic= then makes it act as a vanilla unit type.
-    UnitTypeClass(int utype, char const* ininame);
 
     static void* operator new(size_t) noexcept;
     static void* operator new(size_t, void* ptr)

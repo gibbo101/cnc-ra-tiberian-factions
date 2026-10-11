@@ -4951,41 +4951,7 @@ void BuildingTypeClass::operator delete(void* ptr)
     BuildingTypes.Free((BuildingTypeClass*)ptr);
 }
 
-// Registers a mod-defined building type from [NewBuildings] by IniName; Read_INI fills in the rest. Its ID
-// must be the heap slot it lands in: CCPtr resolves by ID, so a vanilla StructType would alias that type.
-BuildingTypeClass::BuildingTypeClass(int /*btype*/, char const* ininame)
-    : BuildingTypeClass(static_cast<StructType>(BuildingTypes.Count() - 1),
-                        TXT_NONE,
-                        ininame,
-                        FACING_NONE,
-                        XYP_COORD(0, 0),
-                        REMAP_NORMAL,
-                        0x0000,
-                        0x0000,
-                        0x0000,
-                        false,
-                        false,
-                        false,
-                        false,
-                        true,
-                        false,
-                        true,
-                        true,
-                        false,
-                        false,
-                        false,
-                        true,
-                        RTTI_NONE,
-                        DIR_N,
-                        BSIZE_11,
-                        NULL,
-                        NULL,
-                        NULL)
-{
-}
-
-// Finds a building type by IniName across the whole heap, including mod-defined types past STRUCT_COUNT,
-// which From_Name does not search.
+// Finds a building type by IniName across the whole heap.
 BuildingTypeClass* BuildingTypeClass::As_Pointer(char const* name)
 {
     if (name == NULL)
@@ -5574,39 +5540,6 @@ void BuildingTypeClass::One_Time(void)
             .Init_Anim(_anims[index].Stage, _anims[index].Start, _anims[index].Length, _anims[index].Rate);
     }
 
-    // TF: types made from [NewBuildings] sit past STRUCT_COUNT, beyond the loop above, so their art loads here
-    // by Graphic_Name.
-    for (int sindex = STRUCT_COUNT; sindex < BuildingTypes.Count(); sindex++) {
-        BuildingTypeClass& building = *BuildingTypes.Ptr(sindex);
-        char fullname[_MAX_FNAME + _MAX_EXT];
-        char buffer[_MAX_FNAME + 4];
-
-        if (building.Level != -1) {
-            sprintf(buffer, "%sICON", building.Graphic_Name());
-            if (building.IsFake) {
-                buffer[3] = 'F';
-            }
-            _makepath(fullname, NULL, NULL, buffer, ".SHP");
-            ((void const*&)building.CameoData) = MFCD::Retrieve(fullname);
-        }
-
-        sprintf(buffer, "%sMAKE", building.Graphic_Name());
-        _makepath(fullname, NULL, NULL, buffer, ".SHP");
-        void const* dataptr = MFCD::Retrieve(fullname);
-        ((void const*&)building.BuildupData) = dataptr;
-        if (dataptr != NULL) {
-            int timedelay = 1;
-            int count = Get_Build_Frame_Count(dataptr);
-            if (count > 0) {
-                timedelay = (Rule.BuildupTime * TICKS_PER_MINUTE) / count;
-            }
-            building.Init_Anim(BSTATE_CONSTRUCTION, 0, count, timedelay);
-        }
-
-        _makepath(fullname, NULL, NULL, building.Graphic_Name(), ".SHP");
-        ((void const*&)building.ImageData) = MFCD::Retrieve(fullname);
-    }
-
     // TF: HD-only buildings ship no classic SHP, so each borrows a counterpart's classic shape, cameo and
     // construction anim. One with its own MAKE stub keeps its anim: a donor's longer count runs past its tiles.
     {
@@ -5875,20 +5808,6 @@ void BuildingTypeClass::Init(TheaterType theater)
                         timedelay = (5 * TICKS_PER_SECOND) / count;
                     }
                     classptr->Init_Anim(BSTATE_CONSTRUCTION, 0, count, timedelay);
-                }
-            }
-        }
-
-        // TF: a Logic= aliased mod type copied its donor's art at Read_INI, before a theater-specific donor had
-        // loaded it, so the art and construction anim are copied again now.
-        for (int sindex = STRUCT_COUNT; sindex < BuildingTypes.Count(); sindex++) {
-            BuildingTypeClass const* modptr = &(*BuildingTypes.Ptr(sindex));
-            if (modptr->Type >= STRUCT_FIRST && modptr->Type < STRUCT_COUNT) {
-                BuildingTypeClass const* donor = &As_Reference(modptr->Type);
-                if (donor->IsTheater) {
-                    ((void const*&)modptr->ImageData)   = donor->ImageData;
-                    ((void const*&)modptr->BuildupData) = donor->BuildupData;
-                    modptr->Anims[BSTATE_CONSTRUCTION] = donor->Anims[BSTATE_CONSTRUCTION];
                 }
             }
         }
@@ -6360,36 +6279,7 @@ bool BuildingTypeClass::Read_INI(CCINIClass& ini)
         IsBase = ini.Get_Bool(Name(), "BaseNormal", IsBase);
         Power = ini.Get_Int(Name(), "Power", (Power > 0) ? Power : -Drain);
 
-        // TF: Logic=<IniName> makes this type behave as that building: it takes the donor's Type, footprint,
-        // exits, anims and art, and the donor's weapons unless its own section names them.
         char buffer[64];
-        if (ini.Get_String(Name(), "Logic", "", buffer, sizeof(buffer)) > 0) {
-            BuildingTypeClass* donor = BuildingTypeClass::As_Pointer(buffer);
-            if (donor != NULL && donor != this) {
-                Type = donor->Type;
-                Size = donor->Size;
-                OccupyList = donor->OccupyList;
-                OverlapList = donor->OverlapList;
-                BuildupData = donor->BuildupData;
-                for (int s = 0; s < BSTATE_COUNT; s++) {
-                    Anims[s] = donor->Anims[s];
-                }
-                FoundationFace = donor->FoundationFace;
-                StartFace = donor->StartFace;
-                ExitCoordinate = donor->ExitCoordinate;
-                ExitList = donor->ExitList;
-                ToBuild = donor->ToBuild;
-                Adjacent = donor->Adjacent;
-                Capacity = donor->Capacity;
-                ((void const*&)ImageData) = donor->ImageData;
-                if (PrimaryWeapon == NULL && !ini.Is_Present(Name(), "Primary")) {
-                    PrimaryWeapon = donor->PrimaryWeapon;
-                }
-                if (SecondaryWeapon == NULL && !ini.Is_Present(Name(), "Secondary")) {
-                    SecondaryWeapon = donor->SecondaryWeapon;
-                }
-            }
-        }
 
         // TF: Footprint=<preset> gives a TD building TD's own footprint and, for HAND, TD's exits.
         static short const List_NUK2_OCCUPY[]  = {0, MAP_CELL_W, MAP_CELL_W + 1, REFRESH_EOL};
