@@ -5,12 +5,11 @@ The RA launcher populates the picker from the ObjectTypeClass entries in FACTION
 shipped CONFIG.MEG). Three edits, all byte-length-neutral because CONFIG.MEG members must not
 change size (offsets resolve against the base archive):
 
-  * ORDER: the visible entries are re-sequenced in document order to GDI, Nod, Allies, Soviet,
-    then the four country duplicates. (Entry blocks are moved whole; the launcher's country id
-    for each entry is untouched.)
-  * ICONS: GDI (Faction3) and Nod (Faction10) point at the full-size 150x80 plates that used to
-    hold the Spain and Turkey flags (_03 / _10) instead of the 66x56 _00 / _01 icons, so all
-    picker entries share one size. scripts/picker_emblems_paint.py paints those plates.
+  * ORDER: entry blocks are moved whole into this document order. The launcher lists the
+    picker in its own country order, so this changes the file and not the picker.
+  * ICONS: Spain (Faction3, GDI) and Turkey (Faction10, an Allied duplicate) point at their
+    own 150x80 plates (_03 / _10) instead of the 66x56 _00 / _01 icons the base gives them, so
+    all picker rows share one size. scripts/picker_emblems_paint.py paints the plates.
   * TD_HUD: every entry names both tactical scenes, TD's Tactical_UI.bui in TopLevelGUIList and
     RA's RA_Tactical_UI.bui in TopLevelGUIListAlt; the launcher picks one list per game. In the
     GDI (Faction3), Nod (Faction4) and TS GDI (Faction8) entries the two scene names are

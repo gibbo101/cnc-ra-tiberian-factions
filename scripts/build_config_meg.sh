@@ -4,7 +4,7 @@
 # Bakes into resources/.../Data/CONFIG.MEG:
 #  - our custom main-menu layout (RA_MAIN_MENU.BUI: START NEW GAME removed,
 #    MISSION SELECT promoted), rebuilt from the pristine base BUI by
-#    scripts/bui_mainmenu_build.py (see memory: project-main-menu-bui-spike)
+#    scripts/bui_mainmenu_build.py (docs/bui-front-end-modding.md)
 #  - the menu's confirmation box (RA_DIALOGBOX_SOVIET.BUI) in TD's green frame with the
 #    menu's steel buttons, rebuilt from its base by scripts/bui_dialogbox_build.py
 #  - the loading screen's spinner as the faction emblem row with a glint

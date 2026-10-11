@@ -8,7 +8,7 @@ Rebuild RA_MAIN_MENU.BUI with our custom main-menu layout:
   - green BUILD / VERSION lines, TD's neutral box sheen, and the Bonus Gallery's
     new-content glow in green on its own row
 
-HOW THE .BUI WORKS (see memory: project-main-menu-bui-spike)
+HOW THE .BUI WORKS (docs/bui-front-end-modding.md)
   File = 0x24-byte "CH" header + zlib stream.
     [0x08] u32 hash  -- NOT validated by the launcher (can be left stale)
     [0x10] u32       -- compressed length (must equal len(zlib stream))

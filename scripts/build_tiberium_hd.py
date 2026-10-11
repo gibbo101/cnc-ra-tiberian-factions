@@ -23,7 +23,7 @@ Theatres: temperate (TD TEMPERATE art -> RA_TERRAIN_TEMPERATE.XML), interior
 (TD DESERT art -> RA_TERRAIN_INTERIOR.XML) and snow (TD WINTER art ->
 RA_TERRAIN_SNOW.XML, for RA's own snow maps). Pass theatre names (e.g. SNOW)
 to build only those; with none, every theatre is built.
-See memory project-tiberium-overlay-implementation.md.
+The overlay is in docs/tiberium-ecosystem.md.
 
 License: GPL v3 (inherited from Vanilla Conquer base).
 '''
