@@ -66,9 +66,6 @@ MOTTLE = 0.5          # 0 = flat fill, 1 = heavily rippled interior. The 6-7 dee
                       # only edge softening. Full strength halved the band's alpha.
 MOTTLE_SCALE = 3.0    # blur radius of the noise clumps, px on the 128 canvas
 MOTTLE_SEED = 20260824
-PULSE_COLOR = (235, 255, 250)  # paler/whiter than the band: TS's ripple lifts the green/blue of what's underneath
-PULSE_ALPHA = 35          # per disc at PEAK amplitude; the discs stack ~6-7 deep along the band
-PULSE_FRAMES = 13         # amplitude ladder, frame = ripple level 0-12 (TS WaveClass); the DLL drives the stage per tick
 RISE_STAGES = 1       # stages from dark to full once the lead-in ends
 FALL_STAGES = 2       # stages from full to dark at the end
 
@@ -139,26 +136,6 @@ def wave(i):
     return out
 
 
-def pulse(i):
-    """Ripple level i of the amplitude ladder: the wave's disc shape in a pale
-    tint, alpha proportional to i/12. The DLL sets each ripple disc's stage per
-    tick from TS's |sin| formula, so the band brightens in travelling crests
-    exactly as TS's screen-space ripple does."""
-    alpha = PULSE_ALPHA * i // (PULSE_FRAMES - 1)
-    if alpha <= 0:
-        return Image.new('RGBA', (CANVAS, CANVAS), (0, 0, 0, 0))
-    ss = 4
-    big = Image.new('L', (CANVAS * ss, CANVAS * ss), 0)
-    d = ImageDraw.Draw(big)
-    c = CANVAS * ss / 2.0
-    r = DIAMETER * ss / 2.0
-    d.ellipse([c - r, c - r, c + r, c + r], fill=255)
-    mask = big.resize((CANVAS, CANVAS), Image.LANCZOS).filter(ImageFilter.GaussianBlur(EDGE_SOFT))
-    out = Image.new('RGBA', (CANVAS, CANVAS), PULSE_COLOR + (0,))
-    out.putalpha(mask.point(lambda v: v * alpha // 255))
-    return out
-
-
 def tga_bytes(img):
     buf = io.BytesIO()
     img.save(buf, format='TGA')
@@ -214,13 +191,8 @@ def main():
     path = zip_path('TSSONICW')
     write_zip(path, 'tssonicw', frames)
     print(f'wrote {path} ({len(frames)} frames, {CANVAS}px canvas)')
-    pframes = [pulse(i) for i in range(PULSE_FRAMES)]
-    ppath = zip_path('TSSONICP')
-    write_zip(ppath, 'tssonicp', pframes)
-    print(f'wrote {ppath} ({len(pframes)} frames)')
     if len(sys.argv) <= 1:
         patch_tileset(asset_packs.tileset_xml('TSSONICW', 'VFX'), 'TSSONICW', FRAMES)
-        patch_tileset(asset_packs.tileset_xml('TSSONICP', 'VFX'), 'TSSONICP', PULSE_FRAMES)
 
 
 if __name__ == '__main__':

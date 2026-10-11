@@ -59,7 +59,7 @@ TS_HD = ("TSWALL", "TSNWALL", "TSGATEH", "TSGATEV", "TSNGATEH", "TSNGATEV", "TSC
          "TSJUGG", "TSLIMP", "TSPLUG", "TSPION", "TSPODS", "TSSEEK", "TSFGEN", "TSFSDF", "TSDLIMP", "TSDWEAP",
          "TSTTNK", "TSTICK")
 # ...and these names exactly: other art that starts with them stays in the TS pack (the Disruptor's
-# sonic wave, TSSONICW and TSSONICP; the EMP cannon's pulse ball and flashes, TSPULSBL, TSPULSF1, TSPULSF2)
+# sonic wave, TSSONICW; the EMP cannon's pulse ball and flashes, TSPULSBL, TSPULSF1, TSPULSF2)
 TS_HD_EXACT = ("TSSONIC", "TSPULS", "TSPULSMAKE", "TSPULST",
                "TSE1", "TSE2", "TSENGINEER", "TSGHOST", "TSMEDIC", "TSJUMPJET", "TSE3")
 

@@ -19,8 +19,6 @@ Build dev and release after each commit; a skirmish before merging.
 ### Needs a call first
 - **Kept:** `TF_Dev_Tunneller` and its tick, the `tf_deploy_now.flag` lever, and the EVA cache
   patch's `tf_cache_probe.log` lines in dllinterface.cpp.
-- **TSSONICP:** the retired ripple's stub in TFASSETS.MIX (`build_tfassets.sh`) and its VFX art and
-  tileset entry (`ts_gen_sonicwave.py`, TS-Graphics-Pack); drop them at the next TFASSETS.MIX rebuild.
 
 ### Clear deletes (features shipped or bugs fixed)
 - **Keep while open:** the AI, wave, naval, ferry, PLACE-FAIL, eco-hold, jumpjet, A* tally and
