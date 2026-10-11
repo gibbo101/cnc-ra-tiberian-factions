@@ -46,7 +46,7 @@ Build dev and release after each commit; a skirmish before merging.
   harness (`#if 0`); the EVA cache patch's `tf_cache_probe.log` lines in dllinterface.cpp.
 
 ### Clear deletes (features shipped or bugs fixed)
-- **Unused code:** Turret_Adjust's TSHVR case (live: FLAGGED); our inert edits in the `KILL_PLAYER_ON_DISCONNECT` `#else`;
+- **Unused code:** Turret_Adjust's TSHVR case (live: FLAGGED);
   `TF_ORBIT_HEIGHT` in object.h, set by nothing since the orbit probe went (check whether anything
   else flies above `FLIGHT_LEVEL` before dropping `TF_ORBIT_FALL_RATE` with it).
 - **`scripts/ts_pack_tree.py`'s TSPLUG section:** the classic per-combination plug blocks; the HD pack's TSPLUG and

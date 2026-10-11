@@ -3516,7 +3516,7 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Player_Switch_To_AI(uin
         if (PlayerPtr) {
             PlayerPtr->WasHuman = true;
             PlayerPtr->IsHuman = false;
-            PlayerPtr->IQ = TF_AI_IQ_From_Difficulty(Scen.CDifficulty);
+            PlayerPtr->IQ = Rule.MaxIQ;
             strcpy(PlayerPtr->IniName, Text_String(TXT_COMPUTER));
 
             PlayerPtr->IsBaseBuilding = true;
@@ -3528,7 +3528,7 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Player_Switch_To_AI(uin
                 UnitClass* obj = Units.Ptr(index);
 
                 if (obj && !obj->IsInLimbo && obj->House == PlayerPtr) {
-                    if (obj->Class->Is_MCV()) {
+                    if (*obj == UNIT_MCV) {
                         obj->Assign_Mission(MISSION_GUARD);
                         obj->Assign_Target(TARGET_NONE);
                         obj->Assign_Destination(TARGET_NONE);
