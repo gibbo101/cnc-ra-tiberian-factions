@@ -2466,9 +2466,6 @@ void UnitTypeClass::One_Time(void)
     // They take a same-size vanilla unit's shapes and size; the launcher draws their real art by IniName.
     {
         static const struct { UnitType hd; UnitType donor; } _hd_udonors[] = {
-            {UNIT_TSHVR, UNIT_MTANK2},
-            {UNIT_TSTITN, UNIT_MTANK2},
-            {UNIT_TSHMEC, UNIT_HTANK},
             {UNIT_AMCV, UNIT_MCV},
             {UNIT_SMCV, UNIT_MCV},
             {UNIT_TDGMCV, UNIT_TDMCV},
