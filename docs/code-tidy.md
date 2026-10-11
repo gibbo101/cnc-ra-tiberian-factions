@@ -83,11 +83,6 @@ udata.cpp's TS war factory, depot and Juggernaut notes; sdata.cpp's apron smudge
 comment at dllinterface.cpp's include of tf_eva_mailbox.h, under the menu-buttons branch.
 
 ## Small flags
-- Stale docstrings in files the ts-buildings-hd branch rewrites, fixed after it merges:
-  `ts_pack_walkers.py` gives the Titan 15 walk frames (code and rules.ini use 12), `ts_pack_tree.py`
-  names a TSWEAPLT stub no longer packed, and `cameo_badge_build.py` caps a cameo at four crests.
-- "Hand-tucked pad" in `ts_pack_tree.py` and `wf_aseprite_export.py` may be stale (the pack call
-  passes `apron_canvas=None`); check with the art owner.
 - `factions_build.py`'s `ORDER` moves entry blocks the launcher ignores; drop it with a lobby check.
 - `wf_spawn_preview.py` refuses to run while `tsweap_exit_seats.inc` holds the hand-set mouth
   seats; it goes with the Track19/20 call above.
