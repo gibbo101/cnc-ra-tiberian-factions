@@ -28,8 +28,6 @@ Build dev and release after each commit; a skirmish before merging.
   Unused since the factory exits on `Rail_To`. Removing the enum entries renumbers
   `ROLL_OFF_DOCK_SEAT`, which saves store: keep `TrackControl` and `RawTracks` aligned, or keep
   placeholders. Keep `tsweap_exit_seats.inc`. Wait for ts-buildings-hd (it edits the clamp's `if`).
-- **Sonic band levers:** `TF_Sonic_Cloak_Mode_Refresh`, `tf_sonic_cloak.flag`, the tf_sonic logs; the
-  shipped look becomes constants.
 - **Hunter Seeker rise code** (decided: delete, behaviour unchanged): the EMERGE/ASCENT/DESCENT
   values, `emerging` and the Height step in `TF_Hunter_Seeker_AI`; keep `DETONATE_PROXIMITY` and the
   never-dive trap.

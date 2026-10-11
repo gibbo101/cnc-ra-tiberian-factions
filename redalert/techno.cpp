@@ -4136,7 +4136,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 }
 
                 if (weapon->IsSonic) {
-                    TF_Sonic_Cloak_Mode_Refresh();
                     CELL anchored = Coord_Cell(Center_Coord());
                     AnimClass* last = NULL;
                     for (int d = 0; d <= dist; d += AnimClass::SONIC_SPACING) {
@@ -4152,9 +4151,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                             wave->SonicDir = ::Direction(XY_Coord(sx, sy), XY_Coord(sx + ddx, sy + ddy));
                             wave->SonicT = (d * 256) / dist;
                             wave->SonicTether = target;
-                            if (TF_SonicCloakMode >= 10) {
-                                wave->Set_Owner(House->Class->House);
-                            }
                             if (cc != anchored) {
                                 anchored = cc;
                                 wave->SonicDamage = max(weapon->AmbientDamage / AnimClass::Sonic_Damage_Hits(), 1);

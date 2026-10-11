@@ -6354,81 +6354,15 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         new_object.FlashingFlags = 0;
         new_object.Cloak = (CurrentDrawCount > 0) ? root_object.Cloak : UNCLOAKED;
 
-        // TF: the Disruptor's sonic band takes its launcher draw levers from TF_SonicCloakMode and
-        // TF_SonicFxMode (scenario.cpp): fading plus a scale throb unless a dev-build flag picks others.
+        // TF: the Disruptor's sonic band fades and throbs 12% over a 6-stage cosine, so discs nearer the target
+        // pulse in step.
         if (object != NULL && object->What_Am_I() == RTTI_ANIM
             && ((AnimTypeClass const&)object->Class_Of()).Type == ANIM_TS_SONICWAVE) {
             int stage = ((AnimClass const*)object)->Fetch_Stage();
-#if TF_DEV_BUILD
-            static int logged = 0;
-            if (logged < 3) {
-                logged++;
-                const char* h = getenv("USERPROFILE");
-                if (h == NULL)
-                    h = getenv("HOME");
-                char lp[512];
-                snprintf(lp, sizeof(lp), "%s/Documents/CnCRemastered/tf_sonic.log", h ? h : ".");
-                FILE* lf = fopen(lp, "a");
-                if (lf != NULL) {
-                    fprintf(lf, "export: disc stage %d mode %d fx %d owner %d\n", stage, TF_SonicCloakMode, TF_SonicFxMode, (int)new_object.Owner);
-                    fclose(lf);
-                }
-            }
-#endif
-            switch (TF_SonicCloakMode % 10) {
-            case 1:
-                new_object.Cloak = CLOAKING;
-                break;
-            case 2:
-                new_object.Cloak = UNCLOAKING;
-                break;
-            case 3:
-                new_object.Cloak = CLOAKED;
-                break;
-            case 4:
-                if (stage < AnimClass::SONIC_LEAD_STAGES) {
-                    new_object.Cloak = UNCLOAKED;
-                } else if (stage < AnimClass::SONIC_LEAD_STAGES + 4) {
-                    new_object.Cloak = UNCLOAKING;
-                } else if (stage >= 21) {
-                    new_object.Cloak = CLOAKING;
-                } else {
-                    new_object.Cloak = UNCLOAKED;
-                }
-                break;
-            case 5:
-                new_object.Cloak = (stage & 1) ? UNCLOAKING : CLOAKING;
-                break;
-            default:
-                break;
-            }
-            if (TF_SonicFxMode & 1) {
-                new_object.DrawFlags |= SHAPE_PREDATOR;
-            }
-            if (TF_SonicFxMode & 2) {
-                new_object.DrawFlags |= SHAPE_GHOST;
-            }
-            if (TF_SonicFxMode & 4) {
-                new_object.DrawFlags |= SHAPE_FADING;
-            }
-            if (TF_SonicFxMode & 8) {
-                double phase = (2.0 * 3.14159265) * (double)stage / (double)TF_SonicThrobPeriod;
-                int amp = (0x0100 * TF_SonicThrobAmp) / 100;
-                new_object.Scale = 0x0100 + (int)((double)amp * cos(phase));
-            }
-            if (TF_SonicFxMode & 16) {
-                new_object.FlashingFlags = (stage & 1) ? 0xFFFFFFFFU : 0U;
-            }
-            if (TF_SonicFxMode & 32) {
-                new_object.Type = UNIT;
-            }
-            if (TF_SonicFxMode & 64) {
-                // Keep a UNIT-typed disc out of the real units' ID range.
-                new_object.ID += 5000;
-            }
-            if (TF_SonicFxMode & 128) {
-                new_object.Rotation = (unsigned char)((AnimClass const*)object)->SonicDir;
-            }
+            new_object.DrawFlags |= SHAPE_FADING;
+            double phase = (2.0 * 3.14159265) * (double)stage / 6.0;
+            int amp = (0x0100 * 12) / 100;
+            new_object.Scale = 0x0100 + (int)((double)amp * cos(phase));
         }
 
         new_object.VisibleFlags = CNCObjectStruct::VISIBLE_FLAGS_ALL;

@@ -141,14 +141,6 @@ class BuildingClass* TS_Refinery_Lane_Owner(CELL cell); // TS refinery dock lane
 
 extern int Get_CD_Drive(void);
 extern void Fatal(char const* message, ...);
-#define TF_SONIC_FX_DEFAULT           12  // SHAPE_FADING + scale throb
-#define TF_SONIC_THROB_AMP_DEFAULT    12  // percent of unity scale
-#define TF_SONIC_THROB_PERIOD_DEFAULT 6   // stages per cosine cycle
-extern int TF_SonicCloakMode;              // sonic band cloak-export experiment (see TF_Sonic_Cloak_Mode_Refresh)
-extern int TF_SonicFxMode;                 // sonic band extra draw levers, bit-mask (same flag file, second integer)
-extern int TF_SonicThrobAmp;               // sonic band throb amplitude, percent (third integer)
-extern int TF_SonicThrobPeriod;            // sonic band throb period in stages (fourth integer)
-extern void TF_Sonic_Cloak_Mode_Refresh(void);
 extern int TF_Railgun_Coil(bool small, int sx, int sy, int dx, int dy, int dist);
 extern void TF_Sensor_Tick(void); // announces newly sensed cloaked/buried enemies (building.cpp)
 extern bool TF_Is_Sensed(HouseClass const* house, COORDINATE coord); // inside a friendly Sensor Array's range (building.cpp)
