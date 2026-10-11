@@ -62,3 +62,5 @@ All granted by a host building, the Ion Cannon pattern, in `HouseClass` (`house.
   cabin). A shadow baked into a GLB texture is not a render shadow; re-render with a fill light
   rather than painting over it.
 - HD draw scales classic pixels by about 5.33 (128/24).
+- `scripts/render_helideck.py` models and renders a helideck overlay (`TDCADECK`, not in the game) on
+  the same rig.

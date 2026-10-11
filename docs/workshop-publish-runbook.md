@@ -236,6 +236,8 @@ Visit the item URL in a browser (logged in), accept the Workshop Contributor Agr
 - **Ask for `<game install>/log/CrashLog.txt`.** It has one line per crash naming the faulting
   process and address, which separates the renderer (`ClientG.exe`) from the sim
   (`InstanceServerG.exe`).
+- **A sim crash with a minidump:** `tools/dumpwalk.py <dmp> <RedAlert.dll>` prints the exception and
+  the DLL return addresses on the faulting thread's stack.
 - **A ClientG crash can still be ours.** The DLL imports no d3d11, dxgi or gdi32, so it cannot
   reach the GPU, but it patches ClientG's memory and code, and mod data has crashed ClientG
   before: a wrong-size CONFIG.MEG member, an unreadable WAV, and the EVA cache patch writing over

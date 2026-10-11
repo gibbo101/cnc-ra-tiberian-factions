@@ -296,6 +296,8 @@ eight faction yards and MCVs as pipeline-built types (`STRUCT_AFACT/SFACT/TDGFAC
 war factory split (`5ffa98db`); the four-way helipad split (`3492bf1b`). Vanilla
 `FACT`/`MCV`/`TDFACT`/`TDMCV` keep their identities for stock-campaign content. How sidebar names
 resolve is in `faction-select-identity.md`; the tileset-key trap is `td-port-playbook.md` §3.30.
+On the map the twin yards and MCVs are told apart by a faction emblem baked onto their sprites
+(`scripts/badge_sprite_art.py`).
 
 > **b3 dispatches on the UNIT's TYPE.** With 4 real MCV types the
 > type itself carries the faction — an MCV built by a captured factory IS that faction's

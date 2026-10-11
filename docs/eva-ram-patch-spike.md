@@ -72,6 +72,7 @@ write replaces header + data and the sample plays in the new voice.
   refused. Its writes are memory writes into a live process, so the whole-payload check (finding
   6) is what keeps it from crashing ClientG. Diagnostic logging (`tf_cache_probe.log`) is
   `TF_DEV_BUILD`-only: `PATCH OK` = replaced, `PATCH FAIL` = left alone.
+- `scripts/eva_mailbox_payload.py` builds one TD + RA payload pair and prints its needle lines.
 - Needles/offsets are regenerated whenever a payload is re-padded (the re-encode/pad changes the
   bytes). The generator picks a high-entropy 20-byte slice from the real audio (never the leading
   silence) and records its file offset.
