@@ -4762,30 +4762,6 @@ void InfantryClass::Movement_AI(void)
                                     // TF: give up an order whose paths keep failing from this cell, which the zone test
                                     // misses (docs/path-failure-livelock-design.md); a target out of range goes too.
                                     if (Target_Legal(NavCom) && tf_no_progress) {
-#if TF_DEV_BUILD
-                                        {
-                                            static FILE* tf_noprog_log = NULL;
-                                            if (tf_noprog_log == NULL) {
-                                                const char* h = getenv("USERPROFILE");
-                                                if (h == NULL)
-                                                    h = getenv("HOME");
-                                                if (h != NULL) {
-                                                    char p[512];
-                                                    snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_astar.log", h);
-                                                    tf_noprog_log = fopen(p, "a");
-                                                }
-                                            }
-                                            if (tf_noprog_log != NULL) {
-                                                CELL mc = Coord_Cell(Center_Coord());
-                                                CELL dc = As_Cell(NavCom);
-                                                fprintf(tf_noprog_log,
-                                                        "NOPROG abort (inf): unit=%s src=(%d,%d) dst=(%d,%d) stuck=%ldf\n",
-                                                        Class->IniName, (int)Cell_X(mc), (int)Cell_Y(mc),
-                                                        (int)Cell_X(dc), (int)Cell_Y(dc), (long)(Frame - TF_NoProgStart));
-                                                fflush(tf_noprog_log);
-                                            }
-                                        }
-#endif
                                         Assign_Destination(TARGET_NONE);
                                         if (Target_Legal(TarCom) && !In_Range(TarCom)) {
                                             IsScanLimited = true;

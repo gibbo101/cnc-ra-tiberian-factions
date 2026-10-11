@@ -25,7 +25,7 @@ successful path starts a fresh window, so a queued column that advances one cell
 - **Vehicles** (`drive.cpp` give-up branch, 60 s): the patient queue keeps priority, but a unit
   still at the same cell after a minute runs the engine's own abandon branch.
 - Both aborts are **caller-side**, never from inside `Basic_Path()` (see the failed attempt).
-- `TF_DEV_BUILD` diag: `NOPROG abort (inf|veh)` lines in `tf_astar.log`.
+- `TF_DEV_BUILD` diag: `NOPROG abort (veh)` lines in `tf_astar.log`.
 
 **The Docklands stack overflow was a different bug.** Its `EXCEPTION_STACK_OVERFLOW` was unbounded
 recursion in the give-way RETREAT: `Start_Of_Move` → gw==2 → `Assign_Destination(back)` → nested
