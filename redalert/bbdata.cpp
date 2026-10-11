@@ -198,7 +198,6 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TSFire");        //	BULLET_TSFIRE (TS fire-stream particle, FLAMEALL sprite)
     new BulletTypeClass("TSDropPod");     //	BULLET_TSDROPPOD (dropship bay delivery — falls like NukeDown, sets its cargo down, does no damage)
     new BulletTypeClass("TSPodDrop");     //	BULLET_TSPODDROP (infantry drop pod — angled descent strafing the LZ, spawns its trooper + husk on touchdown)
-    new BulletTypeClass("TSHUNT");        //	BULLET_TSHUNTER (unused: the Hunter Seeker is AIRCRAFT_TSHUNT)
     new BulletTypeClass("TSLobbed2");     //	BULLET_TSLOBBED2 (TS RPG tower canister — accurate high arc, TSCANIST tumble)
     new BulletTypeClass("TSAAHeatSeeker"); //	BULLET_TSAAHEATSEEKER (TS SAM tower and Mk. I missile — RA's MISSILE art on RA's homing path)
     new BulletTypeClass("TSLobbed");      //	BULLET_TSLOBBED (TS Disc Thrower disc — accurate arc, TSDISCUS spin)
@@ -297,10 +296,6 @@ void BulletTypeClass::One_Time(void)
     BulletTypeClass& tspoddrop = As_Reference(BULLET_TSPODDROP);
     if (tspoddrop.ImageData == NULL) {
         ((void const*&)tspoddrop.ImageData) = donor.ImageData;
-    }
-    BulletTypeClass& tshunter = As_Reference(BULLET_TSHUNTER);
-    if (tshunter.ImageData == NULL) {
-        ((void const*&)tshunter.ImageData) = donor.ImageData;
     }
     BulletTypeClass& tslobbed2 = As_Reference(BULLET_TSLOBBED2);
     if (tslobbed2.ImageData == NULL) {

@@ -2125,7 +2125,6 @@ static int TF_Self_Action_Selected(void)
 }
 
 static long TF_SelectAllLatchUntil[HOUSE_COUNT]; // per house: frame until which a select-all order still counts as fresh
-static const int TF_HUNTER_DRAW_SIZE = 90; // launcher draw box for the Hunter Seeker droid (tune by eye)
 
 // Per frame: runs the deploy key on a fresh press of backslash, and holds an 'A' press for ten frames, since
 // the launcher's select-all reaches CNC_Select_Object a frame or two after the key goes down.
@@ -6109,13 +6108,6 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         }
     }
 
-    // TF: a BULLET_TSHUNTER draws at TF_HUNTER_DRAW_SIZE; a bullet's own draw box is tiny.
-    if (object != NULL && object->What_Am_I() == RTTI_BULLET
-        && ((BulletTypeClass const&)object->Class_Of()).Type == BULLET_TSHUNTER) {
-        width = TF_HUNTER_DRAW_SIZE;
-        height = TF_HUNTER_DRAW_SIZE;
-    }
-
     CNCObjectStruct& new_object = ObjectList->Objects[TotalObjectCount + CurrentDrawCount];
     memset(&new_object, 0, sizeof(new_object));
     Convert_Type(object, new_object);
@@ -6455,12 +6447,6 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         // health bar sits over the body rather than over the shadow.
         if (object->What_Am_I() == RTTI_INFANTRY && ((InfantryClass const*)object)->Is_Airborne_Jumpjet()) {
             new_object.CenterCoordY -= object->Height;
-        }
-        // TF: BULLET_TSHUNTER renders from its DimensionX/Y box, whose 10x10 bullet default draws it tiny.
-        if (object->What_Am_I() == RTTI_BULLET
-            && ((BulletTypeClass const&)object->Class_Of()).Type == BULLET_TSHUNTER) {
-            dimx = 46;
-            dimy = 46;
         }
 
         if (object->What_Am_I() == RTTI_BUILDING) {

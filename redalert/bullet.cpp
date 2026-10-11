@@ -888,56 +888,6 @@ void BulletClass::AI(void)
         return;
     }
 
-    // TF: BULLET_TSHUNTER homes on a random enemy from TF_Hunter_Seeker_Acquire, re-acquiring when its victim dies,
-    // and kills it on contact. TFPodHouse carries the firing house.
-    if (*this == BULLET_TSHUNTER) {
-        ObjectClass::AI();
-        if (!IsActive) {
-            return;
-        }
-        Mark(MARK_CHANGE);
-        LayerType layer = In_Which_Layer();
-
-        enum
-        {
-            HUNT_SPEED = 42,
-            HUNT_DETONATE = 160
-        };
-
-        if (!Target_Legal(TarCom)) {
-            HouseClass* hptr = (TFPodHouse != HOUSE_NONE) ? HouseClass::As_Pointer(TFPodHouse) : NULL;
-            TarCom = (hptr != NULL) ? TF_Hunter_Seeker_Acquire(hptr) : TARGET_NONE;
-        }
-
-        if (Target_Legal(TarCom)) {
-            COORDINATE tcoord = ::As_Coord(TarCom);
-            int dist = Distance(tcoord);
-            DirType dir = ::Direction(Coord, tcoord);
-            PrimaryFacing.Set(dir);
-
-            if (dist < HUNT_DETONATE) {
-                TechnoClass* victim = As_Techno(TarCom);
-                Sound_Effect(VOC_TS_HUNTER2, Coord);
-                if (victim != NULL && victim->IsActive) {
-                    int dmg = victim->Strength + 1000;
-                    victim->Take_Damage(dmg, 0, WARHEAD_HE, NULL, true);
-                }
-                Explosion_Damage(tcoord, 400, NULL, WARHEAD_HE);
-                new AnimClass(ANIM_FBALL1, tcoord);
-                delete this;
-                return;
-            }
-
-            Coord = Coord_Move(Coord, dir, HUNT_SPEED);
-        }
-
-        if (In_Which_Layer() != layer) {
-            Map.Remove(this, layer);
-            Map.Submit(this, In_Which_Layer());
-        }
-        return;
-    }
-
     // TF: the infantry drop pod (OpenTS droppod.cpp) streaks in at TS's 45-degree DropPodAngle, strafing a held LZ,
     // and lands its trooper, or blasts the cell when the trooper can't land. The fuse and Physics never run for it.
     if (*this == BULLET_TSPODDROP) {
@@ -1186,11 +1136,7 @@ int BulletClass::Shape_Number(void) const
 {
     int shapenum = 0;
 
-    // TF: BULLET_TSHUNTER cycles 8 frames; FLAMEALL is 4 axis sets (N/S, NE/SW, E/W, NW/SE) x 19 ageing states.
-    if (*this == BULLET_TSHUNTER) {
-        return ((Frame / 3) & 7);
-    }
-
+    // TF: FLAMEALL is 4 axis sets (N/S, NE/SW, E/W, NW/SE) x 19 ageing states.
     if (*this == BULLET_TSFIRE) {
         int state = TFStage / max(1, TFDwell);
         if (state > 18) {

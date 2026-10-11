@@ -1404,7 +1404,6 @@ typedef enum BulletType : char
     BULLET_TSFIRE,    // TS fire-stream particle: ages through 19 states and burns its cell every 3 frames.
     BULLET_TSDROPPOD, // TS Dropship Bay delivery: falls like NukeDown, sets its cargo down, does no damage.
     BULLET_TSPODDROP, // TS infantry drop pod (SPC_TS_DROPPODS), OpenTS droppod.cpp: strafes the LZ, lands its trooper.
-    BULLET_TSHUNTER,  // Unused: nothing creates it. The Hunter Seeker is AIRCRAFT_TSHUNT.
     BULLET_TSLOBBED2,       // TS [Lobbed2]: the RPG tower's arcing canister (TSCANIST, 15-frame tumble).
     BULLET_TSAAHEATSEEKER,  // TS [AAHeatSeeker]: the SAM tower's and Mk. I's missile, RA's MISSILE art and homing path.
     BULLET_TSLOBBED,        // TS [Lobbed]: the Disc Thrower's disc, drawn with TS's DISCUS (TSDISCUS).
