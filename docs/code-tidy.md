@@ -83,7 +83,6 @@ udata.cpp's TS war factory, depot and Juggernaut notes; sdata.cpp's apron smudge
 comment at dllinterface.cpp's include of tf_eva_mailbox.h, under the menu-buttons branch.
 
 ## Small flags
-- `factions_build.py`'s `ORDER` moves entry blocks the launcher ignores; drop it with a lobby check.
 - `wf_spawn_preview.py` refuses to run while `tsweap_exit_seats.inc` holds the hand-set mouth
   seats; it goes with the Track19/20 call above.
 - Whether `SHAPE_GHOST` darkens the sonic discs is unsettled; check in game before anything claims it.
