@@ -6404,6 +6404,10 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 dimx = 26;
                 dimy = 34;
                 break;
+            case STRUCT_TSRADR:
+                // Centred on the 2x4 box, tall enough to reach the base's front edge.
+                dimy = 88;
+                break;
             case STRUCT_TSSILO:
                 // From the dome's top to the silo's base: 30 classic px, centred on its plot row.
                 dimy = 30;
