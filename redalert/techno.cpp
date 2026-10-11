@@ -3698,20 +3698,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         }
         techno->LimpetType |= bit;
         techno->LimpetSpeedFactor = fixed(100 - weapon->WarheadPtr->LimpetFactor, 100);
-#if TF_DEV_BUILD
-        {
-            const char* prof = getenv("USERPROFILE");
-            char path[512];
-            snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", prof ? prof : ".");
-            FILE* lf = fopen(path, "a");
-            if (lf != NULL) {
-                fprintf(lf, "frame=%d LIMPET-ATTACH mine=%d house=%d -> %s id=%d cell=%d\n", (int)Frame, (int)mine->ID,
-                        (int)mine->House->Class->House, techno->Techno_Type_Class()->IniName, (int)techno->ID,
-                        (int)Coord_Cell(techno->Center_Coord()));
-                fclose(lf);
-            }
-        }
-#endif
         if (weapon->Sound != VOC_NONE) {
             Sound_Effect(weapon->Sound, techno->Center_Coord());
         }
