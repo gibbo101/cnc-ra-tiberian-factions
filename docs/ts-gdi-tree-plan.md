@@ -308,7 +308,7 @@ until its ~2.4 s coil dies, and ours keeps the 1.5 s ROF instead.
 the launcher can't do, and TS ships no sonic-wave art.
 - **The band is a chain of discs** (a spawned anim draws unrotated, so a band sprite would line up
   at one angle only), `SHAPE_FADING` plus a stage-keyed scale throb (12%, period 6,
-  `TF_SONIC_*_DEFAULT` in `function.h`), 25 stages x 5 ticks, discs 32 leptons apart (at 64 the band
+  in `dllinterface.cpp`'s draw intercept), 25 stages x 5 ticks, discs 32 leptons apart (at 64 the band
   showed beads). Discs carry no owner: the launcher tints an owned anim in the house colour, which
   turned the green band gold.
 - **The band is the weapon:** per-cell anchor discs (`AnimClass::SonicDamage`) hit every techno in

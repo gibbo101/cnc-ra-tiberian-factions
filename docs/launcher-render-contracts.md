@@ -131,7 +131,7 @@ TSFACT's and transplant the relationship, art compensated to stay put.
 
 ## 8. Anim exports honour `Rotation`, but the rotated texture is clipped to the UNROTATED frame
 
-Proven on the Disruptor band with a since-removed debug lever: setting
+Proven on the Disruptor band: setting
 `CNCObjectStruct::Rotation` on an anim export turns the sprite onto that DirType (E, N and SE
 all verified in play), which the 2026-08 "spawned anims draw unrotated" note did not know.
 The catch: the launcher rotates the texture inside the sprite's quad but keeps the quad at
