@@ -17,8 +17,8 @@ release-path items in others, and each larger removal in a commit of its own wit
 Build dev and release after each commit; a skirmish before merging.
 
 ### Needs a call first
-- **Kept:** `TF_Dev_Tunneller` and its tick, the `tf_deploy_now.flag` lever, scenario.cpp's RA2 tank
-  harness (`#if 0`), and the EVA cache patch's `tf_cache_probe.log` lines in dllinterface.cpp.
+- **Kept:** `TF_Dev_Tunneller` and its tick, the `tf_deploy_now.flag` lever, and the EVA cache
+  patch's `tf_cache_probe.log` lines in dllinterface.cpp.
 
 ### Clear deletes (features shipped or bugs fixed)
 - **Keep while open:** the AI, wave, naval, ferry, PLACE-FAIL, eco-hold, jumpjet, A* tally and
