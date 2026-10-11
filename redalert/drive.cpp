@@ -428,14 +428,12 @@ bool DriveClass::Teleport_To(CELL cell)
  * HISTORY:                                                                                    *
  *   03/17/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-// TF: index boards the track at that waypoint, so units on different seats can share one rail. The caller
-// places the unit on that waypoint's coordinate first.
-void DriveClass::Force_Track(int track, COORDINATE coord, int index)
+void DriveClass::Force_Track(int track, COORDINATE coord)
 {
     assert(IsActive);
 
     TrackNumber = track;
-    TrackIndex = index;
+    TrackIndex = 0;
     if (coord != 0) {
         Start_Driver(coord);
     }

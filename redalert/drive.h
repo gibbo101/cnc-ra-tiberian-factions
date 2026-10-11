@@ -118,7 +118,7 @@ public:
 #ifdef CHEAT_KEYS
     virtual void Debug_Dump(MonoClass* mono) const;
 #endif
-    void Force_Track(int track, COORDINATE coord, int index = 0);
+    void Force_Track(int track, COORDINATE coord);
     bool Roll_Off_Seat(int px_east, int px_north);
     bool Rail_To(COORDINATE dest, DirType face, int from_face = -1);
     bool On_TS_Exit_Track(void) const
