@@ -899,8 +899,7 @@ public:
     // TF: the TD war factory's door overlay, TD's WEAP2 packed as TDWEAP2.SHP, drawn over STRUCT_TDWEAP.
     static void const* WarFactoryOverlayTd;
     // TF: the TS war factory's door layers (TSWEAPDR/UD/NF/NU), each loaded at the factory's stub size, which
-    // sets the box the launcher draws it in. WarFactoryOverlayTs is never loaded.
-    static void const* WarFactoryOverlayTs;
+    // sets the box the launcher draws it in.
     static void const* TsWeapShutter;
     static void const* TsWeapUnderDoor;
     static void const* TsWeapFront;

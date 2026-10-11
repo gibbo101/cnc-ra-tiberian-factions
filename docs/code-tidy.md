@@ -46,7 +46,7 @@ Build dev and release after each commit; a skirmish before merging.
   harness (`#if 0`); the EVA cache patch's `tf_cache_probe.log` lines in dllinterface.cpp.
 
 ### Clear deletes (features shipped or bugs fixed)
-- **Unused code:** `WarFactoryOverlayTs`; the footprint presets AFLD and WEAP; Roll_On_Seat;
+- **Unused code:** Roll_On_Seat;
   `Force_Track`'s `index`; Mission_Harvest_TD's TSPROC branch; Turret_Adjust's TSHVR case;
   `UnitClass::Force_Emerge`; our inert edits in the `KILL_PLAYER_ON_DISCONNECT` `#else`;
   `TF_ORBIT_HEIGHT` in object.h, set by nothing since the orbit probe went (check whether anything

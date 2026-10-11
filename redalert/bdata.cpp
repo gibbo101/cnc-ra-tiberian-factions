@@ -4784,7 +4784,6 @@ static BuildingTypeClass const ClassLarva2(STRUCT_LARVA2,
 #endif
 void const* BuildingTypeClass::WarFactoryOverlay;
 void const* BuildingTypeClass::WarFactoryOverlayTd;
-void const* BuildingTypeClass::WarFactoryOverlayTs;
 void const* BuildingTypeClass::TsWeapShutter;
 void const* BuildingTypeClass::TsWeapUnderDoor;
 void const* BuildingTypeClass::TsWeapFront;
@@ -6395,17 +6394,11 @@ bool BuildingTypeClass::Read_INI(CCINIClass& ini)
             }
         }
 
-        // TF: Footprint=<preset> gives a TD building TD's own footprint and, for HAND and WEAP, TD's exits.
+        // TF: Footprint=<preset> gives a TD building TD's own footprint and, for HAND, TD's exits.
         static short const List_NUK2_OCCUPY[]  = {0, MAP_CELL_W, MAP_CELL_W + 1, REFRESH_EOL};
         static short const List_NUK2_OVERLAP[] = {1, REFRESH_EOL};
         static short const List_PYLE_OCCUPY[]  = {0, 1, REFRESH_EOL};
         static short const List_PYLE_OVERLAP[] = {MAP_CELL_W, MAP_CELL_W + 1, REFRESH_EOL};
-        static short const List_WEAP_OCCUPY[]  = {
-            (MAP_CELL_W * 1), (MAP_CELL_W * 1) + 1, (MAP_CELL_W * 1) + 2,
-            (MAP_CELL_W * 2), (MAP_CELL_W * 2) + 1, (MAP_CELL_W * 2) + 2,
-            REFRESH_EOL
-        };
-        static short const List_WEAP_OVERLAP[] = {0, 1, 2, REFRESH_EOL};
         static short const List_SILO_OCCUPY[] = {0, 1, REFRESH_EOL};
         static short const List_HAND_OCCUPY[]  = {MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W * 2 + 1, REFRESH_EOL};
         static short const List_HAND_OVERLAP[] = {0, 1, MAP_CELL_W * 2, MAP_CELL_W, REFRESH_EOL};
@@ -6415,31 +6408,12 @@ bool BuildingTypeClass::Read_INI(CCINIClass& ini)
             XYCELL(-1, 0), XYCELL(2, 0),  XYCELL(2, 1),  XYCELL(-1, 1),
             REFRESH_EOL
         };
-        static short const List_AFLD_OCCUPY[]  = {
-            0, 1, 2, 3,
-            MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W + 2, MAP_CELL_W + 3,
-            REFRESH_EOL
-        };
-        static short const Exit_AFLD[] = {
-            XYCELL(-1, -1), XYCELL(-1, 0),  XYCELL(-1, 1), XYCELL(-1, 2),
-            XYCELL(0, -1),  XYCELL(0, 2),
-            XYCELL(1, -1),  XYCELL(1, 2),
-            XYCELL(2, -1),  XYCELL(2, 2),
-            XYCELL(3, -1),  XYCELL(3, 2),
-            XYCELL(4, -1),  XYCELL(4, 0),   XYCELL(4, 1),  XYCELL(4, 2),
-            REFRESH_EOL
-        };
         static short const List_TMPL_OCCUPY[]  = {
             MAP_CELL_W,     MAP_CELL_W + 1, MAP_CELL_W + 2,
             MAP_CELL_W * 2, MAP_CELL_W * 2 + 1, MAP_CELL_W * 2 + 2,
             REFRESH_EOL
         };
         static short const List_TMPL_OVERLAP[] = {0, 1, 2, REFRESH_EOL};
-        static short const Exit_WEAP[] = {
-            XYCELL(-1, 3), XYCELL(0, 3), XYCELL(-1, 2), XYCELL(1, 3),
-            XYCELL(-1, 1), XYCELL(3, 1),
-            REFRESH_EOL
-        };
 
         struct FootprintPreset
         {
@@ -6456,13 +6430,9 @@ bool BuildingTypeClass::Read_INI(CCINIClass& ini)
             {"EYE",  BSIZE_22, List_NUK2_OCCUPY, List_NUK2_OVERLAP, NULL, 0},   // TD ComList/OComList = NUK2 L-shape
             {"PYLE", BSIZE_22, List_PYLE_OCCUPY, List_PYLE_OVERLAP, NULL, 0},
             {"HAND", BSIZE_23, List_HAND_OCCUPY, List_HAND_OVERLAP, Exit_HAND, XYP_COORD(36, 63)},
-            {"AFLD", BSIZE_42, List_AFLD_OCCUPY, NULL,              Exit_AFLD, 0},
             {"TMPL", BSIZE_33, List_TMPL_OCCUPY, List_TMPL_OVERLAP, NULL, 0},   // Temple of Nod, 3x3 (top row overlap)
             {"SILO", BSIZE_21, List_SILO_OCCUPY, NULL,              NULL, 0},   // 2x1 + bib (TD-authentic)
             {"HQ",   BSIZE_22, List_NUK2_OCCUPY, List_NUK2_OVERLAP, NULL, 0},   // TD ComList/OComList = NUK2 L-shape
-            {"WEAP", BSIZE_33, List_WEAP_OCCUPY, List_WEAP_OVERLAP, Exit_WEAP,
-             XYP_COORD(10 + (CELL_PIXEL_W / 2),
-                       ((CELL_PIXEL_H * 3) - (CELL_PIXEL_H / 2)) - 21)},
         };
 
         if (ini.Get_String(Name(), "Footprint", "", buffer, sizeof(buffer)) > 0) {
