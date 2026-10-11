@@ -14,7 +14,8 @@
 #      intro) is missing or differs from its committed md5.
 #   3. Lists what the mirror would delete and asks before going on.
 #   4. Desktop only: backs up every file it will replace or delete to
-#      ~/Desktop/Tiberian Factions/deploy-backups/desktop-<branch>-<timestamp>/.
+#      ~/Desktop/Tiberian Factions/deploy-backups/desktop-<branch>-<timestamp>/, and after a
+#      deploy that checks out keeps only the newest 3 of those folders.
 #   5. rsync -ac --delete build/remaster/Vanilla_RA/ -> target, then checks by checksum that the
 #      target matches the build. -c matters: the RA*_SFX_EVA_* seed WAVs can match the build in
 #      size and mtime but not content, and -a alone skips them.
@@ -36,6 +37,8 @@ DRY_RUN=0
 DELETE_FLAG="--delete"
 AUTO_YES=0
 DESKTOP=0
+KEEP_BACKUPS=3
+BACKUP_ROOT="$HOME/Desktop/Tiberian Factions/deploy-backups"
 for arg in "$@"; do
     case "$arg" in
         --desktop)  DESKTOP=1 ;;
@@ -143,7 +146,7 @@ if [[ -n "$DELETIONS" && "$AUTO_YES" -eq 0 ]]; then
 fi
 
 if [[ "$DESKTOP" -eq 1 && -n "$DELETIONS$REPLACED" ]]; then
-    BACKUP="$HOME/Desktop/Tiberian Factions/deploy-backups/desktop-$(git rev-parse --abbrev-ref HEAD | tr / -)-$(date +%Y%m%d-%H%M%S)"
+    BACKUP="$BACKUP_ROOT/desktop-$(git rev-parse --abbrev-ref HEAD | tr / -)-$(date +%Y%m%d-%H%M%S)"
     mkdir -p "$BACKUP"
     printf '%s\n%s\n' "$DELETIONS" "$REPLACED" | grep -v '/$' | grep . | while read -r f; do
         (cd "$TARGET_DIR" && cp -p --parents "$f" "$BACKUP/")
@@ -158,5 +161,15 @@ LEFT=$(rsync -acn $DELETE_FLAG --itemize-changes "$LOCAL_OUTPUT" "$TARGET" | gre
 if [[ "$LEFT" -ne 0 ]]; then
     echo "ERROR: $LEFT files still differ from the build on $SURFACE." >&2
     exit 1
+fi
+if [[ "$DESKTOP" -eq 1 && -d "$BACKUP_ROOT" ]]; then
+    # Only folders this script names (desktop-<branch>-<YYYYMMDD-HHMMSS>), newest by timestamp.
+    find "$BACKUP_ROOT" -mindepth 1 -maxdepth 1 -type d -regextype posix-extended \
+        -regex '.*/desktop-.+-[0-9]{8}-[0-9]{6}' -printf '%f\n' \
+        | awk '{print substr($0, length($0) - 14) " " $0}' | sort -r | tail -n +$((KEEP_BACKUPS + 1)) \
+        | cut -d' ' -f2 | while read -r old; do
+            scripts/clear_dir.sh "${BACKUP_ROOT:?}/$old"
+            echo "==> Pruned old backup $old"
+        done
 fi
 echo "==> Done: $SURFACE matches the build by checksum (DLL $(md5sum "${LOCAL_OUTPUT}Data/RedAlert.dll" | cut -c1-8))."
