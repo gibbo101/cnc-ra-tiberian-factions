@@ -46,6 +46,7 @@ THEATRES = ("TEMPERATE", "SNOW", "INTERIOR")
 STUB_MANIFEST = f"{SCRIPTS}/ts_stub_dims.json"
 HAZE_ALPHA = 4
 BOX_RIM = 2
+CELL = 128
 # The units' black outline antialiases this far out from the solid body; a cast shadow is what
 # lies beyond, and a frame with fewer such pixels than CAST_SHADOW_MIN_PX has none.
 OUTLINE_PX = 2
@@ -150,7 +151,8 @@ def tiberium(img):
 # recolour / make_recolour apply a function to every tileset / build-up frame as it loads.
 # box=(x0, y0, x1, y1) is the building's whole BSIZE box on the source canvas: every frame becomes exactly that
 # box, so the canvas is the box; it may run past the source's edges, and only cast shadow and the art's 2 px
-# antialiased rim may fall outside it.
+# antialiased rim may fall outside it. cells=(w, h) ships every frame on w x h whole cells centred on the plot,
+# under the same rule.
 # make_pick takes those build-up frames, in that order, instead of all of them.
 # then=(path prefix, count) appends those frames after the tileset; then_over=(path prefix, frame) draws that
 # one frame over each of them.
@@ -171,7 +173,7 @@ BUILDINGS = {
     # one block per turbine level (1, 2, 3 pods), each 12 healthy then 12 damaged frames of
     # the tower's lights and the pods turning: the block Shape_Number picks by UpgradeLevel
     "TSPOWR": dict(src="tspowr", make=("build-up/power-plant-build", 24),
-                   frames=("loop/power-plant-loop", 72)),
+                   frames=("loop/power-plant-loop", 72), cells=(2, 3)),
     # the turbine's placement ghost; it never stands on the map, it installs into a plant
     "TSTURB": dict(src="tspowr", make=None, frames=("pod-128/power-pod", 2)),
     # one block per fill level (empty, a third, two thirds, full: the Tiberium through the glass),
@@ -184,12 +186,12 @@ BUILDINGS = {
         (56, [("C-flag/barracks-flag", range(0, 7), range(7, 14)),
               ("A-lamps/barracks-lamps", range(0, 8), range(8, 16)),
               ("B-beacon/barracks-beacon", range(0, 8), range(8, 16))]),
-    ], pad_bottom=128),
+    ], pad_bottom=128, cells=(3, 3)),
     # TS's wedge its own way round, drawn on a 3x1 row: 128 px over it centre the canvas on the 3x2
     # plot, the wedge on the south row, the fins and dome in the north row, the bib row in front.
     # Idle: the dome's panels pulse (8), healthy then damaged.
     "TSTECH": dict(src="tstech", make=("build-up/tech-center-build", 24),
-                   frames=("loop/tech-center-loop", 16), pad_top=128),
+                   frames=("loop/tech-center-loop", 16), pad_top=128, cells=(3, 3)),
     # The silo on its 2x1 plot row, the bib row in front: drawn on a 2x2 with the silo in the south row, so 128 px
     # under it centre the canvas on that row.
     "TSSILO": dict(src="tssilo", make=("build-up/silo-build", 24), base="silo/silo",
@@ -236,7 +238,8 @@ BUILDINGS = {
                    box=(0, -88, 256, 424)),
     # The deployed Mobile Sensor Array on its 1x1 plot, broadside, the mast at its west end. Idle: the
     # head's flash (5), healthy then damaged. The build-up is the vehicle settling and raising the mast.
-    "TSDPSA": dict(src="tsdpsa", make=("build-up/sensor-array-build", 36), frames=("loop/sensor-array-loop", 10)),
+    "TSDPSA": dict(src="tsdpsa", make=("build-up/sensor-array-build", 36), frames=("loop/sensor-array-loop", 10),
+                   cells=(2, 3)),
     # The service depot turned a quarter on its 3x3 plot: the gantry across the back two rows, the pad in
     # front of it. Idle: the guide lights (5) and the hood's glow (7) together over 35 steps, healthy then
     # damaged; while it repairs, the pad's flash (7 healthy, 7 damaged) is its own layer.
@@ -280,10 +283,11 @@ BUILDINGS = {
     # build-up is every other frame of the 24 delivered, ending on the finished mound: 13 frames, the last
     # three of which carry the head (building.cpp seats it from build-up stage 10).
     "TSPULS": dict(src="tspuls", make=("build-up/pulse-cannon-build", 24), make_pick=[*range(0, 24, 2), 23],
-                   frames=("building/pulse-cannon", 2)),
+                   frames=("building/pulse-cannon", 2), cells=(2, 2)),
     # The head in 32 facings, drawn in place over the mound on the mound's canvas. building.cpp draws it
     # TSPULS_TURRET_Y (10 classic px, 53 canvas px) lower than the mound, so it is packed 53 px higher.
-    "TSPULST": dict(src="tspuls", make=None, frames=("head/pulse-cannon-head", 32), crop_top=53, pad_bottom=53),
+    "TSPULST": dict(src="tspuls", make=None, frames=("head/pulse-cannon-head", 32), crop_top=53, pad_bottom=53,
+                    cells=(2, 3)),
     # The Firestorm generator on its 3x2 plot: the dome raised, the pit's lightning and the fins' lamps
     # playing (48), healthy then damaged; then the building still with the dome closed, healthy and damaged, for
     # low power.
@@ -417,6 +421,14 @@ def to_box(img, box):
     out = Image.new("RGBA", (x1 - x0, y1 - y0), (0, 0, 0, 0))
     out.paste(img, (-x0, -y0))
     return out
+
+
+def to_cells(img, cells):
+    w, h = cells[0] * CELL, cells[1] * CELL
+    if (img.width - w) % 2 or (img.height - h) % 2:
+        raise SystemExit(f"cannot centre {w}x{h} on a {img.size} frame")
+    x0, y0 = (img.width - w) // 2, (img.height - h) // 2
+    return to_box(img, (x0, y0, x0 + w, y0 + h))
 
 
 def crop_above(img, px):
@@ -709,6 +721,9 @@ def main(argv):
         if spec.get("pad_bottom"):
             tiles = [pad_under(i, spec["pad_bottom"]) for i in tiles]
             make = [pad_under(i, spec["pad_bottom"]) for i in make]
+        if spec.get("cells"):
+            tiles = [to_cells(i, spec["cells"]) for i in tiles]
+            make = [to_cells(i, spec["cells"]) for i in make]
         size = canvas_for(tiles + make)
         pack(ini, tiles, make, size)
         stubs[ini] = [size[0] * 3 // 16, size[1] * 3 // 16]

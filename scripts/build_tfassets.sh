@@ -393,20 +393,21 @@ ts_stub TSDWEAP "$TMPDIR/tsdweapnf_stub.shp" 90 120 240
 PACK_ARGS+=("$TMPDIR/tsdweapnf_stub.shp:TSDWEAPNF.SHP")
 ts_stub TSDWEAP "$TMPDIR/tsdweapnu_stub.shp" 90 120 240
 PACK_ARGS+=("$TMPDIR/tsdweapnu_stub.shp:TSDWEAPNU.SHP")
-# TSPILE 60x72 = the HD barracks' 320x384 canvas centred on its 2x1 plot: the flag in the 32 px either
+# TSPILE 72x72 = the HD barracks' 384x384 canvas, whole cells centred on its 2x1 plot: the flag either
 # side, the masts and flag in the row behind, empty canvas over the bib row in front.
-ts_stub TSPILE "$TMPDIR/tspile_stub.shp" 60 72 2
+ts_stub TSPILE "$TMPDIR/tspile_stub.shp" 72 72 2
 PACK_ARGS+=("$TMPDIR/tspile_stub.shp:TSPILE.SHP")
-ts_stub TSPILE "$TMPDIR/tspilemk_stub.shp" 60 72 24
+ts_stub TSPILE "$TMPDIR/tspilemk_stub.shp" 72 72 24
 PACK_ARGS+=("$TMPDIR/tspilemk_stub.shp:TSPILEMAKE.SHP")
 # TS Limpet Mine on a 48x48 stub (the build-up's standing drone overhangs the 1x1 plot).
 ts_stub TSDLIMP "$TMPDIR/tsdlimp_stub.shp" 48 48 20
 PACK_ARGS+=("$TMPDIR/tsdlimp_stub.shp:TSDLIMP.SHP")
 ts_stub TSDLIMP "$TMPDIR/tsdlimpmk_stub.shp" 48 48 42
 PACK_ARGS+=("$TMPDIR/tsdlimpmk_stub.shp:TSDLIMPMAKE.SHP")
-ts_stub TSDPSA "$TMPDIR/tsdpsa_stub.shp" 48 78 10
+# TSDPSA 48x72 = the deployed sensor array's 256x384 canvas, whole cells centred on its 1x1 plot.
+ts_stub TSDPSA "$TMPDIR/tsdpsa_stub.shp" 48 72 10
 PACK_ARGS+=("$TMPDIR/tsdpsa_stub.shp:TSDPSA.SHP")
-ts_stub TSDPSA "$TMPDIR/tsdpsamk_stub.shp" 48 78 36
+ts_stub TSDPSA "$TMPDIR/tsdpsamk_stub.shp" 48 72 36
 PACK_ARGS+=("$TMPDIR/tsdpsamk_stub.shp:TSDPSAMAKE.SHP")
 PACK_ARGS+=("$TMPDIR/tsweapmk_stub.shp:TSWEAPMAKE.SHP")
 # TSRADR 48x96 = the HD radar's 256x512 canvas, its 2x4 box: the pads on the south row, the tower, dish
@@ -430,20 +431,19 @@ ts_stub TSDROP "$TMPDIR/tsdrop_stub.shp" 99 96 2
 PACK_ARGS+=("$TMPDIR/tsdrop_stub.shp:TSDROP.SHP")
 ts_stub TSDROP "$TMPDIR/tsdropmk_stub.shp" 99 96 19
 PACK_ARGS+=("$TMPDIR/tsdropmk_stub.shp:TSDROPMAKE.SHP")
-# TSPOWR 48x51 = the HD rebuild's 256x272 canvas: the 2x2 plot centred, the cooling
-# tower rising into the headroom above it.
-ts_stub TSPOWR "$TMPDIR/tspowr_stub.shp" 48 51 2
+# TSPOWR 48x72 = the HD rebuild's 256x384 canvas, whole cells centred on its 2x2 plot: the cooling
+# tower rising into the headroom row, the base's front lip just past the plot.
+ts_stub TSPOWR "$TMPDIR/tspowr_stub.shp" 48 72 2
 PACK_ARGS+=("$TMPDIR/tspowr_stub.shp:TSPOWR.SHP")
-# TSPULS 48x60 = the HD EMP cannon's 256x320 canvas centred on its 2x2 plot, the head rising into the
-# headroom above: the mound (healthy + damaged) and the head as the TSPULST layer (32 facings), on the
-# same canvas.
-ts_stub TSPULS "$TMPDIR/tspuls_stub.shp" 48 60 2
-ts_stub TSPULS "$TMPDIR/tspulst_stub.shp" 48 60 32
+# TSPULS 48x48 = the HD EMP cannon's mound (healthy + damaged) on its 2x2 plot, the canvas the plot. The head
+# (TSPULST, 32 facings) rises above it on 256x384, whole cells centred on the same plot.
+ts_stub TSPULS "$TMPDIR/tspuls_stub.shp" 48 48 2
+ts_stub TSPULST "$TMPDIR/tspulst_stub.shp" 48 72 32
 PACK_ARGS+=("$TMPDIR/tspulst_stub.shp:TSPULST.SHP")
 PACK_ARGS+=("$TMPDIR/tspuls_stub.shp:TSPULS.SHP")
-ts_stub TSPULS "$TMPDIR/tspulsmk_stub.shp" 48 60 13
+ts_stub TSPULS "$TMPDIR/tspulsmk_stub.shp" 48 48 13
 PACK_ARGS+=("$TMPDIR/tspulsmk_stub.shp:TSPULSMAKE.SHP")
-ts_stub TSPOWR "$TMPDIR/tspowrmk_stub.shp" 48 51 24
+ts_stub TSPOWR "$TMPDIR/tspowrmk_stub.shp" 48 72 24
 PACK_ARGS+=("$TMPDIR/tspowrmk_stub.shp:TSPOWRMAKE.SHP")
 # TSTURB 24x24 on a 1x1: the power-turbine addon's placement GHOST (it never
 # stands on the map — placement installs it into a TSPOWR). No MAKE stub: the
@@ -555,11 +555,11 @@ ts_stub TSFACT "$TMPDIR/tsfact_stub.shp" 75 54 2
 PACK_ARGS+=("$TMPDIR/tsfact_stub.shp:TSFACT.SHP")
 ts_stub TSFACT "$TMPDIR/tsfactmk_stub.shp" 75 54 32
 PACK_ARGS+=("$TMPDIR/tsfactmk_stub.shp:TSFACTMAKE.SHP")
-# TSTECH 78x93 = the HD tech centre's 416x496 canvas centred on its 3x2 plot: the wedge on the south
-# row, the fins and dome in the north row (walk-behind headroom), the bib row in front.
-ts_stub TSTECH "$TMPDIR/tstech_stub.shp" 78 93 2
+# TSTECH 72x72 = the HD tech centre's 384x384 canvas, whole cells centred on its 3x2 plot: the wedge on
+# the south row, the fins and dome in the north row (walk-behind headroom), the wedge's shadow past it.
+ts_stub TSTECH "$TMPDIR/tstech_stub.shp" 72 72 2
 PACK_ARGS+=("$TMPDIR/tstech_stub.shp:TSTECH.SHP")
-ts_stub TSTECH "$TMPDIR/tstechmk_stub.shp" 78 93 24
+ts_stub TSTECH "$TMPDIR/tstechmk_stub.shp" 72 72 24
 PACK_ARGS+=("$TMPDIR/tstechmk_stub.shp:TSTECHMAKE.SHP")
 # TSFGEN 72x72: the Firestorm Generator on the Tech Center's 3x2 plot and square canvas.
 ts_stub TSFGEN "$TMPDIR/tsfgen_stub.shp" 72 72 2
