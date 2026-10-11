@@ -3074,8 +3074,8 @@ DriveClass::RawTrackType const DriveClass::RawTracks[21] = {{Track1, -1, 0, -1},
                                                             {Track16, -1, 0, -1},
                                                             {Track17, -1, 0, -1},
                                                             {Track18, -1, 0, -1},
-                                                            {NULL, -1, 0, -1}, // Slot 19: unused, ROLL_OFF_DOCK_SEAT's number is saved.
-                                                            {NULL, -1, 0, -1}, // Slot 20: unused, ROLL_OFF_DOCK_SEAT's number is saved.
+                                                            {NULL, -1, 0, -1}, // Slot 19: unused, keeps the later track numbers.
+                                                            {NULL, -1, 0, -1}, // Slot 20: unused, keeps the later track numbers.
                                                             {NULL, -1, 0, -1}}; // ROLL_OFF_DOCK_SEAT: per unit (Rail_Step)
 
 /***************************************************************************
@@ -3159,7 +3159,7 @@ DriveClass::TurnTrackType const DriveClass::TrackControl[75] = {
     {17, 17, (DirType)94, F_}, // TS refinery, TDHARV: reverse into the bay seat.
     {18, 18, (DirType)94, F_}, // TS refinery, TDHARV: drive out onto the plate.
 
-    {0, 0, DIR_N, F_}, // Unused: ROLL_OFF_DOCK_SEAT's number is saved as TrackNumber.
-    {0, 0, DIR_N, F_}, // Unused: ROLL_OFF_DOCK_SEAT's number is saved as TrackNumber.
+    {0, 0, DIR_N, F_}, // Unused: keeps ROLL_OFF_DOCK_SEAT at 74.
+    {0, 0, DIR_N, F_}, // Unused: keeps ROLL_OFF_DOCK_SEAT at 74.
     {21, 21, DIR_SW, F_}       // Runtime rail, each unit's own (Set_Rail).
 };
