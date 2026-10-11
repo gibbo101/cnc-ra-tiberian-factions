@@ -6196,20 +6196,8 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, (LEPTON)(short)-512)) >> 3);
     }
 
-    // TF: the TS war factory exit-rail sort clamp, applied to a unit's base draw. Nothing assigns TsExitSortClamp,
-    // so it never applies (docs/ts-gdi-tree-plan.md).
     if (object->What_Am_I() == RTTI_UNIT && CurrentDrawCount == 0) {
         DriveClass const* drive = (DriveClass const*)object;
-        if (drive->On_TS_Exit_Track() && drive->TsExitSortClamp != 0) {
-            bool release = drive->On_TS_Titan_Exit_Track()
-                           && Coord_Y(object->Sort_Y()) > Coord_Y(drive->TsExitSortClamp) + 96;
-            if (!release) {
-                int clamp = (ExportLayer << 29) + (drive->TsExitSortClamp >> 3);
-                if (new_object.SortOrder > clamp) {
-                    new_object.SortOrder = clamp;
-                }
-            }
-        }
 
         /*
         **  A unit riding out of a TS war factory's door on its rail sorts just under the near face

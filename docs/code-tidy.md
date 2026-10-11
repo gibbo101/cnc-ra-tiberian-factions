@@ -17,11 +17,6 @@ release-path items in others, and each larger removal in a commit of its own wit
 Build dev and release after each commit; a skirmish before merging.
 
 ### Needs a call first
-- **TS war factory Track19/20:** the tracks, `tsweap_exit_track*.inc`, `OUT_OF_WEAPON_FACTORY_TS(_TITAN)`,
-  `TsExitSortClamp` and its clamp block in dllinterface.cpp, `On_TS_Exit_Track`/`On_TS_Titan_Exit_Track`.
-  Unused since the factory exits on `Rail_To`. Removing the enum entries renumbers
-  `ROLL_OFF_DOCK_SEAT`, which saves store: keep `TrackControl` and `RawTracks` aligned, or keep
-  placeholders. Keep `tsweap_exit_seats.inc`. Wait for ts-buildings-hd (it edits the clamp's `if`).
 - **Kept:** `TF_Dev_Tunneller` and its tick, the `tf_deploy_now.flag` lever, scenario.cpp's RA2 tank
   harness (`#if 0`), and the EVA cache patch's `tf_cache_probe.log` lines in dllinterface.cpp.
 
@@ -51,8 +46,6 @@ comment at dllinterface.cpp's include of tf_eva_mailbox.h, under the menu-button
 ## Small flags
 - `scripts/factions_build.py`: the docstring and `ORDER` treat `Faction10` as Nod; `TD_HUD`,
   `faction-select-identity.md` and the emblem painter say Nod is `Faction4`.
-- `scripts/wf_spawn_preview.py` must not be run: it rewrites `tsweap_exit_seats.inc` without the
-  hand-set mouth seats, then fails its own check. Emit the mouth seats or move them out first.
 - A few script docstrings are stale: the walker frame count (12, not 15), the TSWEAPLT stub,
   "hand-tucked pad", the cameo crest count.
 - Whether `SHAPE_GHOST` darkens the sonic discs is unsettled; check in game before anything claims it.

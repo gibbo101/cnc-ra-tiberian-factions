@@ -85,10 +85,6 @@ public:
     */
     unsigned IsOnShortTrack : 1;
 
-    // TF: sort-key clamp for a unit on a TS war-factory exit rail, 0 = none. Nothing sets it or drives those
-    // rails: the factory exits on Rail_To.
-    COORDINATE TsExitSortClamp;
-
     /*---------------------------------------------------------------------
     **	Constructors, Destructors, and overloaded operators.
     */
@@ -121,14 +117,6 @@ public:
     void Force_Track(int track, COORDINATE coord);
     bool Roll_Off_Seat(int px_east, int px_north);
     bool Rail_To(COORDINATE dest, DirType face, int from_face = -1);
-    bool On_TS_Exit_Track(void) const
-    {
-        return TrackNumber == OUT_OF_WEAPON_FACTORY_TS || TrackNumber == OUT_OF_WEAPON_FACTORY_TS_TITAN;
-    }
-    bool On_TS_Titan_Exit_Track(void) const
-    {
-        return TrackNumber == OUT_OF_WEAPON_FACTORY_TS_TITAN;
-    }
     bool On_Rail(void) const
     {
         return TrackNumber == ROLL_OFF_DOCK_SEAT;
@@ -151,9 +139,7 @@ public:
         OUT_OF_REFINERY_SE,        // TS refinery, TSHARV: drive forward east out onto the plate.
         BACKUP_INTO_REFINERY_SE_TD, // TS refinery, TDHARV variant (deeper bay seat).
         OUT_OF_REFINERY_SE_TD,     // TS refinery, TDHARV variant.
-        OUT_OF_WEAPON_FACTORY_TS,      // TS war factory default seat's rail (generated table); never driven.
-        OUT_OF_WEAPON_FACTORY_TS_TITAN, // TS war factory Titan seat's rail (generated table); never driven.
-        ROLL_OFF_DOCK_SEAT             // Runtime straight rail between an off-centre seat and a cell (Set_Rail).
+        ROLL_OFF_DOCK_SEAT = 74        // Runtime straight rail between an off-centre seat and a cell (Set_Rail).
     };
 
     /****************************************************************************
@@ -250,8 +236,6 @@ private:
     static TrackType const Track16[];
     static TrackType const Track17[];
     static TrackType const Track18[];
-    static TrackType const Track19[];
-    static TrackType const Track20[];
     static TrackType const Track12[];
     static TrackType const Track11[];
     static TrackType const Track10[];
