@@ -43,9 +43,8 @@ Build dev and release after each commit; a skirmish before merging.
 
 ### Clear deletes (features shipped or bugs fixed)
 - **Keep while open:** the AI, wave, naval, ferry, PLACE-FAIL, eco-hold, jumpjet, A* tally and
-  head-on logs, each until its `todo.md` or `known-issues.md` item closes; `TF_Naval_Assessment`'s
-  second scan, read only by the naval log; `TF_Dump_Faction_Masks` (tool input for
-  cameo_badge_build.py).
+  head-on logs, each until its `todo.md` or `known-issues.md` item closes; `TF_Dump_Faction_Masks`
+  (tool input for cameo_badge_build.py).
 - **Keep until their fixes are signed off in play:** HARV-UNSTICK, HARV-BLACKLIST, HARV-FIELD and
   `TF_Harv_Logfile` (the harvester follow-ups in `known-issues.md`); `TF_LIMP_TRACE` (Tick Tank and
   Mobile War Factory deploys); JUGG-LAUNCH, JUGG-SHELL and JUGG-SPLASH (Juggernaut scatter); sidebar

@@ -8815,7 +8815,7 @@ static int const TF_NAVAL_FLEET_FLOOR = 4;
 static int const TF_NAVAL_FLEET_MAX = 12;
 
 // The largest water zone in reach of the base worth a navy, and whether a discovered enemy building is on
-// its shore. False with size = -(largest pond) when none is. Reads deterministic state only: lockstep-safe.
+// its shore. False when none is. Reads deterministic state only: lockstep-safe.
 bool HouseClass::TF_Naval_Assessment(int& zone, int& size, bool& enemy_coastal) const
 {
     assert(Houses.ID(this) == ID);
@@ -8846,19 +8846,6 @@ bool HouseClass::TF_Naval_Assessment(int& zone, int& size, bool& enemy_coastal) 
         }
     }
     if (zone == 0) {
-        int pond = 0;
-        for (int y = cy - TF_NAVAL_COAST_RADIUS; y <= cy + TF_NAVAL_COAST_RADIUS; y++) {
-            for (int x = cx - TF_NAVAL_COAST_RADIUS; x <= cx + TF_NAVAL_COAST_RADIUS; x++) {
-                CELL cell = XY_Cell(x, y);
-                if (Map.In_Radar(cell)) {
-                    int wz = Map[cell].Zones[MZONE_WATER];
-                    if (wz > 0 && wz < ARRAY_SIZE(TF_WaterZoneSize) && TF_WaterZoneSize[wz] > pond) {
-                        pond = TF_WaterZoneSize[wz];
-                    }
-                }
-            }
-        }
-        size = -pond;
         return (false);
     }
 
