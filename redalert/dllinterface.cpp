@@ -546,10 +546,6 @@ static int TF_LobbyAIColorBySlot[TF_LOBBY_MAX_AI_SLOTS + 1];
 // against the record's +0x54. -1 = unknown, which skips that gate.
 static int TF_LobbyAIHouseBySlot[TF_LOBBY_MAX_AI_SLOTS + 1];
 
-// Diagnostic: the raw +0x54 field of the last validated record per slot, logged so the
-// client's numbering stays checkable against ours in real logs.
-static int TF_LobbyRecHouseBySlot[TF_LOBBY_MAX_AI_SLOTS + 1];
-
 #if TF_DEV_BUILD
 // Which call site invoked the forensic scan: 0 = CNC_Set_Difficulty (the shipped
 // scan site, post-consolidation), 1 = CNC_Set_Multiplayer_Data (earlier in the
@@ -984,7 +980,6 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
     for (int slot_index = 0; slot_index <= TF_LOBBY_MAX_AI_SLOTS; slot_index++) {
         TF_LobbyAIColorBySlot[slot_index] = -1;
         TF_LobbyAIHouseBySlot[slot_index] = -1;
-        TF_LobbyRecHouseBySlot[slot_index] = -1;
     }
     TFLobbyRetriesLeft = 0;
     TFLobbyPrevRead = 0;
@@ -2678,7 +2673,6 @@ static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* 
 #if TF_DEV_BUILD
         TF_Log_Lobby_Record(k, n, team, diff, color, rec_house, "accept");
 #endif
-        TF_LobbyRecHouseBySlot[n] = rec_house;
 
         diff_by_n[n] = diff;
         *found_mask |= (1u << n);
@@ -3239,7 +3233,6 @@ static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff,
         HouseClass* housep = Houses.Ptr(index);
         if (housep != NULL && housep->IsActive && !housep->IsHuman && housep->Class->House >= HOUSE_MULTI1) {
             DiffType house_diff = global_diff;
-            bool per_slot = false;
             int house_index = (int)housep->Class->House - (int)HOUSE_MULTI1;
             int slot_number = (house_index >= 0 && house_index < MAX_PLAYERS) ? TF_AILobbySlotByHouse[house_index] : 0;
             if (slots_read > 0 && slot_number >= 1 && slot_number <= TF_LOBBY_MAX_AI_SLOTS
@@ -3247,44 +3240,9 @@ static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff,
                 house_diff = (slot_diff[slot_number] == 1)   ? DIFF_EASY
                              : (slot_diff[slot_number] == 2) ? DIFF_NORMAL
                                                              : DIFF_HARD;
-                per_slot = true;
             }
             housep->IQ = TF_AI_IQ_From_Difficulty(house_diff);
 
-#if TF_DEV_BUILD // TF_AI_DIAG -- per-house difficulty announcement (RED/GREEN test).
-            // GREEN = a mixed lobby prints mixed modes tagged [slot n]; houses on the
-            // global source print [global]. Phase A of
-            // docs/lobby-difficulty-ram-spike.md.
-            {
-                const char* mode =
-                    (house_diff == DIFF_EASY) ? "EASY" : (house_diff == DIFF_HARD) ? "HARD" : "MEDIUM";
-                char source_tag[24];
-                if (per_slot) {
-                    snprintf(source_tag, sizeof(source_tag), "slot %d%s", slot_number, is_retry ? " retry" : "");
-                } else {
-                    strcpy(source_tag, is_retry ? "global retry" : "global");
-                }
-                FILE* _tfdbg = TF_AI_Diag_File();
-                if (_tfdbg != NULL) {
-                    // rec_house/rec_color are the client's own values for this slot, printed
-                    // beside ours so the two numbering systems can be mapped from real logs.
-                    fprintf(_tfdbg,
-                            "HELLO IM H%d (ActLike=%d) IN %s MODE (IQ=%d) [%s]"
-                            " rec_house=%d rec_color=%d ours_color=%d\n",
-                            (int)housep->Class->House,
-                            (int)housep->ActLike,
-                            mode,
-                            housep->IQ,
-                            source_tag,
-                            (slot_number >= 1 && slot_number <= TF_LOBBY_MAX_AI_SLOTS)
-                                ? TF_LobbyRecHouseBySlot[slot_number] : -1,
-                            (slot_number >= 1 && slot_number <= TF_LOBBY_MAX_AI_SLOTS)
-                                ? TF_LobbyAIColorBySlot[slot_number] : -1,
-                            (int)housep->RemapColor);
-                    fflush(_tfdbg);
-                }
-            }
-#endif
             if (TFHelloPendingCount < ARRAY_SIZE(TFHelloPending)) {
                 const char* mode_nice =
                     (house_diff == DIFF_EASY) ? "Easy" : (house_diff == DIFF_HARD) ? "Hard" : "Medium";

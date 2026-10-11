@@ -38,8 +38,7 @@ Build dev and release after each commit; a skirmish before merging.
 - **Hunter Seeker rise code** (decided: delete, behaviour unchanged): the EMERGE/ASCENT/DESCENT
   values, `emerging` and the Height step in `TF_Hunter_Seeker_AI`; keep `DETONATE_PROXIMITY` and the
   never-dive trap.
-- **Unsure:** `TF_Dev_Tunneller` and the `tf_deploy_now.flag` lever; `TF_LobbyRecHouseBySlot` (written in release, read only by a dev
-  log); the lobby "confirm the client sends difficulty" log; foot.cpp's blind-hunt log; building.cpp's
+- **Unsure:** `TF_Dev_Tunneller` and the `tf_deploy_now.flag` lever; the lobby "confirm the client sends difficulty" log; foot.cpp's blind-hunt log; building.cpp's
   DEF-OFFLINE and PROD hold logs; the NAVAL census lines in AI_Building; the NOPROG abort in
   infantry.cpp; `Exit_Object`'s `STRUCT_TSPROC` case (looks unreachable); scenario.cpp's RA2 tank
   harness (`#if 0`); the EVA cache patch's `tf_cache_probe.log` lines in dllinterface.cpp.
