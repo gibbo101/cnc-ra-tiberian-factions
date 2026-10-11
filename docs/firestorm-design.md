@@ -71,7 +71,7 @@ left. Engine reference: OpenTS (`reference/OpenTS/code/`); data: TS's own `RULES
 - **Wall-section seam:** the launcher places a sprite half its classic stub width from its centre,
   so an odd stub width lands ~2.7 HD px east. TSFSDF's stub is 33x60 (`build_tfassets.sh`). If a
   section ever shows a seam beside an even-stub piece (gates, BRIK), pad it to an even width, as the
-  TS walls and towers were (192-wide canvases, stub 36).
+  TS walls (128x128, stub 24) and towers (256x384, stub 48) are.
 - **TS Service Depot pad seat** (built in this arc): the depot's 3x3 is solid, so a vehicle on it may
   cross its cells to leave; the gantry cells (west column, top two: `TF_Depot_Is_Gantry`) stay
   closed to every vehicle; exits are two cells out. The pad glow is `TSDEPTRP` (GTDEPT_D frames

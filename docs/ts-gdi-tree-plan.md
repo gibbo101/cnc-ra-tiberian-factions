@@ -115,9 +115,9 @@ superweapon payload, or dormant.
   DimensionX/Y from the DLL (contract 7 in `launcher-render-contracts.md`). A box that reads wrong
   means the plot is wrong for the art. TSFACT and TSDROP went from 3x3 to 3x2 for this: the empty
   top row held their boxes off the art.
-- **TSPOWR and TSRADR use a south-row footprint** (the Tesla/Obelisk `List22_0011` pattern): the
-  ghost is 2x2 including the bib, units walk behind the tower, and a full 2x2 placement list keeps
-  the ghost on the cursor (the launcher anchors the cursor on the BSIZE origin).
+- **TSPOWR (2x2 box) and TSRADR (2x4 box) use a south-row footprint**: the rows behind it are art
+  that units walk behind and buildings may stand on. The ghost is the south row and the bib
+  (`Placement_Ghost_Rows_Above`), and the rows behind need only be on the map.
 - **Damage states use frame 1 (LIGHT)** across the tree; the bay keeps its weathered heavy art.
 - **Aprons draw under everything:** the renderer derives them from the owning building's
   footprint (the `_aprons` table in `dllinterface.cpp`), not from map state. Ore and bibs draw
