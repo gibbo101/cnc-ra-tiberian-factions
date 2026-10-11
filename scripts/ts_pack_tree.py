@@ -1582,8 +1582,6 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
                     # everywhere else. Raise it to tuck the vehicle further
                     # behind the door frame.
                     front_ring=None,
-                    # The lamp cycle sweeps and returns (8 -> 14 frames);
-                    # _anims[] Count and the TSWEAPLT stub must match.
                     pingpong=False,
                     affine_from={"TSDWEAP": "TSWEAP"}.get(ini))
     emit_sidebar_data(ini, disp, desc, cameo)

@@ -62,9 +62,8 @@ FACTIONS = [
 DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUV"  # base-32 mask digit; TS alone = 'G'
 
 # Measured from the shipped badged cameos against their pristine atlas crops.
-# EMBLEM_SIZE / EMBLEM_SPACING are the one- to three-emblem layout; four emblems
-# scale down to stay inside the cameo (see emblem_layout) so a fourth crest is
-# never clipped off the right edge.
+# EMBLEM_SIZE / EMBLEM_SPACING fit up to three emblems; more scale down
+# (emblem_layout) so none is clipped off the right edge.
 EMBLEM_SIZE = 90
 EMBLEM_ORIGIN = (12, 12)
 EMBLEM_SPACING = 96
