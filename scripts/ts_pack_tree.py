@@ -951,7 +951,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
 
     # A leftover hazard-stripe
     # skirt from the source GTWEAP art rides in the BASE below the overlay's
-    # bottom edge, west of the bay mouth, on top of the hand-tucked pad.
+    # bottom edge, west of the bay mouth, on top of TS's own pad.
     # Erase the marked patch (+2px margin); the pad ground art beneath is the
     # intended surface. Canvas space, so the coordinates are the markup's.
     # Do not widen the erase to the south skirt: the remap-green band there is wanted art.
@@ -1475,7 +1475,7 @@ SIZEPASS = [
     # concrete and the art roughly centres on the plot-centred selection
     # box. Canvas/stub unchanged (896x672 = 168x126).
     # margin 40.5: building union
-    # bottom at canvas 456, which centres the ENSEMBLE (hangar + hand-tucked
+    # bottom at canvas 456, which centres the ENSEMBLE (hangar + TS's own
     # pad, bbox 205-467) on the 4x3 plot (144-528). Art centred on plot =
     # the launcher's plot-centred selection box hugs it at 96x49 with a size
     # dial only (contract #7). The door front dips into the top half of the
