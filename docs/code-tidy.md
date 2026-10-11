@@ -46,8 +46,6 @@ Build dev and release after each commit; a skirmish before merging.
   harness (`#if 0`); the EVA cache patch's `tf_cache_probe.log` lines in dllinterface.cpp.
 
 ### Clear deletes (features shipped or bugs fixed)
-- **`scripts/ts_pack_tree.py`'s TSPLUG section:** the classic per-combination plug blocks; the HD pack's TSPLUG and
-  its plug layer TSPLUGP replace them, and the DLL no longer reads the blocks.
 - **Keep while open:** the AI, wave, naval, ferry, PLACE-FAIL, eco-hold, jumpjet, A* tally and
   head-on logs, each until its `todo.md` or `known-issues.md` item closes; `TF_Naval_Assessment`'s
   second scan, read only by the naval log; `TF_Dump_Faction_Masks` (tool input for
