@@ -6644,9 +6644,7 @@ int BuildingClass::Mission_Harvest_TD(void)
         if (IsReadyToCommence) {
             IsReadyToCommence = false;
 
-            Map[(*this == STRUCT_TSPROC) ? Coord_Cell(Center_Coord())
-                                         : Adjacent_Cell(Coord_Cell(Center_Coord()), DIR_SW)]
-                .Incoming(0, true, true);
+            Map[Adjacent_Cell(Coord_Cell(Center_Coord()), DIR_SW)].Incoming(0, true, true);
 
             FootClass* techno = Attached_Object();
             if (techno) {
