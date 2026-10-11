@@ -215,6 +215,7 @@ COORDINATE const BuildingClass::CenterOffset[BSIZE_COUNT] = {
     0x00800180L, // BSIZE_31 (3x1): x = 1.5 cells, y = 0.5 cells.
     0x01800080L, // BSIZE_13 (1x3): x = 0.5 cells, y = 1.5 cells.
     0x02000180L, // BSIZE_34 (3x4): x = 1.5 cells, y = 2 cells -- centre CELL row 2 col 1.
+    0x020000FFL, // BSIZE_24 (2x4): x = 1 cell, y = 2 cells.
 };
 
 /***********************************************************************************************
@@ -8543,7 +8544,8 @@ COORDINATE BuildingClass::Target_Coord(void) const
     if (*this == STRUCT_TSPOWR || *this == STRUCT_TSRADR || *this == STRUCT_TSTECH || *this == STRUCT_TSFGEN
         || TF_Is_Wall_Tower(Class->Type)) {
         // The south row is the only real footprint.
-        return XY_Coord(Coord_X(coord), Coord_Y(Cell_Coord((CELL)(Coord_Cell(Coord) + MAP_CELL_W))));
+        return XY_Coord(Coord_X(coord),
+                        Coord_Y(Cell_Coord((CELL)(Coord_Cell(Coord) + (Class->Height() - 1) * MAP_CELL_W))));
     }
 
     if (Class->FoundationFace != FACING_NONE) {
