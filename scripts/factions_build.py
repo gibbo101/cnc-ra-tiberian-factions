@@ -5,8 +5,6 @@ The RA launcher populates the picker from the ObjectTypeClass entries in FACTION
 shipped CONFIG.MEG). Three edits, all byte-length-neutral because CONFIG.MEG members must not
 change size (offsets resolve against the base archive):
 
-  * ORDER: entry blocks are moved whole into this document order. The launcher lists the
-    picker in its own country order, so this changes the file and not the picker.
   * ICONS: Spain (Faction3, GDI) and Turkey (Faction10, an Allied duplicate) point at their
     own 150x80 plates (_03 / _10) instead of the 66x56 _00 / _01 icons the base gives them, so
     all picker rows share one size. scripts/picker_emblems_paint.py paints the plates.
@@ -29,8 +27,6 @@ import os
 import re
 import sys
 
-ORDER = ['Faction1', 'Faction2', 'Faction3', 'Faction10', 'Faction4', 'Faction5',
-         'Faction6', 'Faction7', 'Faction8', 'Faction9']
 ICONS = {'Faction3': '03', 'Faction10': '10'}
 TD_HUD = ['Faction3', 'Faction4']
 # Faction8 = Germany = TS GDI, and only when the fifth faction is switched on; with
@@ -55,17 +51,17 @@ def main(base, out, hide):
     data = open(base, 'rb').read()
     size = len(data)
     blocks = blocks_of(data)
-    missing = [n for n in ORDER if n not in blocks]
+    order = sorted(blocks, key=lambda n: blocks[n][0])
+    missing = [n for n in list(ICONS) + TD_HUD + list(FRONT_END) if n not in blocks]
     if missing:
         sys.exit('entries not found: %s' % missing)
-    # Keep the text between entries (comments/whitespace) in its original slots so only the
-    # entry blocks move.
+    # Rebuild entry by entry; the text between entries (comments, whitespace) stays as it is.
     orig = sorted(blocks.values(), key=lambda b: b[0])
     first, last = orig[0][0], orig[-1][1]
     head, tail = data[:first], data[last:]
     gaps = [data[orig[i][1]:orig[i + 1][0]] for i in range(len(orig) - 1)] + [b'']
     parts = []
-    for slot, name in enumerate(ORDER):
+    for slot, name in enumerate(order):
         block = blocks[name][2]
         if name in ICONS:
             old = re.search(rb'<SmallIconName>UI_Multiplayer_PlayerSlot_Faction_(\d\d)\.tga</SmallIconName>', block)
@@ -91,7 +87,7 @@ def main(base, out, hide):
     data = head + b''.join(parts) + tail
     assert len(data) == size, (len(data), size)
     open(out, 'wb').write(data)
-    print('%s: %d bytes, order %s, hidden %s' % (out, len(data), ' '.join(ORDER[2:]), hide or 'none'))
+    print('%s: %d bytes, hidden %s' % (out, len(data), hide or 'none'))
 
 
 if __name__ == '__main__':
