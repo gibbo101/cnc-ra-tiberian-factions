@@ -138,10 +138,6 @@ static UnitType TF_Packs_Into(BuildingClass const* building)
     return (UNIT_NONE);
 }
 
-// The TS refinery's dock lid stays shut: on the reverse-in seat it would show beside the harvester's hull,
-// which TS never does.
-static const bool TS_LID_ENABLED = false;
-
 /*
 ** TF: rally points (CFE Patch Redux port) — draw rally markers directly in
 ** remastered graphics mode. Defined in conquer.cpp.
@@ -790,18 +786,12 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
         **	TS refinery layers, on the building's own canvas: its front (the building in front of
         **	the dock lane, at the idle phase), which sorts south of a docked truck so the truck
         **	backs in under the deck; the flare stack's fire while a burst plays (its 20 lit frames
-        **	serve both states); and the dock lid while it opens and closes (a healthy run, then a
-        **	damaged one).
+        **	serve both states).
         */
         if (*this == STRUCT_TSPROC && Strength > 1 && BState != BSTATE_CONSTRUCTION) {
-            int dmg = (Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0;
             Techno_Draw_Object_Virtual(Class->TsRefineryFront, Shape_Number(), x, y, window, DIR_N, 0x0100, "TSPROCNF");
             if (TsFlameStage >= 0) {
                 Techno_Draw_Object_Virtual(Class->TsRefineryFlame, TsFlameStage, x, y, window, DIR_N, 0x0100, "TSPROCFR");
-            }
-            if (TS_LID_ENABLED && Ts_Lid_Busy()) {
-                Techno_Draw_Object_Virtual(
-                    Class->TsRefineryLid, TsLidStage + dmg * 5, x, y, window, DIR_N, 0x0100, "TSPROCLD");
             }
         }
 
@@ -1155,33 +1145,6 @@ static int TF_Plug_Layer_Frame(StructType type, int socket, bool damaged)
         }
     }
     return ((socket * 3 + plug) * 16 + step);
-}
-
-// Starts the TS refinery's dock lid opening or closing (NAREFN_A forward or reversed); AI steps it and
-// Ts_Lid_Busy reports while it moves. Opening does nothing while TS_LID_ENABLED is false.
-void BuildingClass::Ts_Lid_Open(void)
-{
-    if (!TS_LID_ENABLED) {
-        return;
-    }
-    if (TsLidPhase == 0) {
-        TsLidStage = 0;
-    }
-    if (TsLidPhase == 0 || TsLidPhase == 3) {
-        TsLidPhase = 1;
-        TsLidTick = 0;
-    }
-}
-
-void BuildingClass::Ts_Lid_Close(void)
-{
-    if (TsLidPhase == 1 || TsLidPhase == 2) {
-        if (TsLidPhase == 2) {
-            TsLidStage = 4;
-        }
-        TsLidPhase = 3;
-        TsLidTick = 0;
-    }
 }
 
 int BuildingClass::Shape_Number(void) const
@@ -1558,21 +1521,6 @@ void BuildingClass::AI(void)
             }
         } else if (--TsFlameTimer <= 0) {
             TsFlameStage = 0;
-            Mark(MARK_CHANGE_REDRAW);
-        }
-        if (Ts_Lid_Busy() && ++TsLidTick >= 4) {
-            TsLidTick = 0;
-            if (TsLidPhase == 1) {
-                if (++TsLidStage >= 5) {
-                    TsLidPhase = 2;
-                }
-            } else {
-                if (TsLidStage == 0) {
-                    TsLidPhase = 0;
-                } else {
-                    TsLidStage--;
-                }
-            }
             Mark(MARK_CHANGE_REDRAW);
         }
     }
@@ -2841,9 +2789,6 @@ BuildingClass::BuildingClass(BuildingTypeClass const* typeptr, HousesType house)
     , TsFlameStage(-1)
     , TsFlameTick(0)
     , TsFlameTimer(30)
-    , TsLidPhase(0)
-    , TsLidStage(0)
-    , TsLidTick(0)
     , UpgradeLevel(0)
     , IsCaptured(false)
     , IsJamming(false)

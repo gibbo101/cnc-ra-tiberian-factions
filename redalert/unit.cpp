@@ -2781,22 +2781,6 @@ int UnitClass::Shape_Number(void) const
         */
         // TF: the TD harvester has 4 load frames per direction (TD's 64-frame sprite); the TS harvester has no load or
         // dump frames, so it draws its facing throughout.
-        /*
-        **	TS's UnloadingHarvester: while the TS harvester unloads at the TS
-        **	refinery its body is the HORV model (bed lowered), packed as the
-        **	second 32-facing block of the TSHARV tileset.
-        */
-        /*
-        **	Switched off (Luke, 08-28): the bed dropping on the reverse-in seat
-        **	reads as the truck losing its back. Frames 32-63 stay packed.
-        */
-        const bool TS_HORV_ENABLED = false;
-        if (TS_HORV_ENABLED && *this == UNIT_TSHARV && IsDumping) {
-            TechnoClass const* dref = Contact_With_Whom();
-            if (dref != NULL && dref->What_Am_I() == RTTI_BUILDING && *((BuildingClass const*)dref) == STRUCT_TSPROC) {
-                return (UnitClass::BodyShape[facing] + 32);
-            }
-        }
         if (IsHarvesting && !PrimaryFacing.Is_Rotating() && !NavCom && !IsDriving && *this != UNIT_TSHARV) {
             if (*this == UNIT_TDHARV) {
                 static char const _td_hstage[6] = {0, 1, 2, 3, 2, 1};

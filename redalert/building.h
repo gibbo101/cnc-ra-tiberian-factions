@@ -147,13 +147,10 @@ public:
     unsigned IsCharged : 1;
 
     // TF: TS refinery layers. Chimney fireball: TsFlameStage 0..19 playing or -1 idle, TsFlameTimer the random
-    // pause between bursts. Dock lid: TsLidPhase 0 shut, 1 opening, 2 open, 3 closing (off: TS_LID_ENABLED).
+    // pause between bursts.
     signed char TsFlameStage;
     unsigned char TsFlameTick;
     short TsFlameTimer;
-    unsigned char TsLidPhase;
-    unsigned char TsLidStage;
-    unsigned char TsLidTick;
 
     // TF: TS addon plugs installed in this building, newest last, UpgradeLevel of them. They add their power to
     // Power_Output and refund on sale.
@@ -324,12 +321,6 @@ public:
     virtual DirType Fire_Direction(void) const;
     virtual short const* Overlap_List(bool redraw = false) const;
     int Shape_Number(void) const;
-    void Ts_Lid_Open(void);
-    void Ts_Lid_Close(void);
-    bool Ts_Lid_Busy(void) const
-    {
-        return TsLidPhase == 1 || TsLidPhase == 3;
-    }
     int Power_Output(void) const;
     virtual int Refund_Amount(void) const;
     bool Can_Upgrade(BuildingTypeClass const* plug, HouseClass const* house) const;

@@ -12,7 +12,6 @@ redalert/scenario.cpp	a date	** 12% over a 6-stage cosine (play-picked 2026-08-2
 redalert/unit.cpp	a date	** 2026-06-17 = MATCH the current TD full-load time; tune in playtest -- see
 redalert/unit.cpp	a date	** 2026-08-04 23:36).
 redalert/unit.cpp	a date	** follows the TD logic verbatim here -- Luke, 2026-08-05 00:45).
-redalert/unit.cpp	a personal name	** Switched off (Luke, 08-28): the bed dropping on the reverse-in seat
 redalert/unit.cpp	a personal name	** follows the TD logic verbatim here -- Luke, 2026-08-05 00:45).
 redalert/unit.cpp	a personal name	** or a queued harvester drives across the baked docked truck (Luke,
 resources/remaster_mods/Vanilla_RA/CCDATA/rules.ini	a date	apron art restored as the ground visual (2026-08-04); placement-blocking moved to Is_TS_Apron_Cell

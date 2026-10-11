@@ -28,8 +28,6 @@ Build dev and release after each commit; a skirmish before merging.
   Unused since the factory exits on `Rail_To`. Removing the enum entries renumbers
   `ROLL_OFF_DOCK_SEAT`, which saves store: keep `TrackControl` and `RawTracks` aligned, or keep
   placeholders. Keep `tsweap_exit_seats.inc`. Wait for ts-buildings-hd (it edits the clamp's `if`).
-- **TS refinery lid and harvester bed pose:** `Ts_Lid_*`, `TsLid*`, `TS_LID_ENABLED`, unit.cpp's
-  `TS_HORV_ENABLED` branch. Never run. Delete unless the pose is wanted back.
 - **`BULLET_TSHUNTER`:** enum slot, bbdata.cpp registration, bullet.cpp and dllinterface.cpp branches,
   `TF_HUNTER_DRAW_SIZE`. Nothing creates it; mind the bullet enum order.
 - **`ANIM_TS_SONICPULSE`:** the retired ripple, its adata.cpp entry (order-coupled tail) and draw check.

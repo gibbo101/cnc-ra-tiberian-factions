@@ -4794,7 +4794,6 @@ void const* BuildingTypeClass::TsDweapFront;
 void const* BuildingTypeClass::TsDweapFrontOpen;
 void const* BuildingTypeClass::TsRefineryFlame;
 void const* BuildingTypeClass::TsPulseTurret;
-void const* BuildingTypeClass::TsRefineryLid;
 void const* BuildingTypeClass::TsRefineryFront;
 void const* LightningShapes;
 
@@ -5557,13 +5556,11 @@ void BuildingTypeClass::One_Time(void)
     TsDweapFront = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"TSDWEAPNU", ".SHP");
     TsDweapFrontOpen = MFCD::Retrieve(fullname);
-    // TS refinery event layers (fireball burst, dock lid), sized to its stub.
+    // TS refinery event layer (fireball burst), sized to its stub.
     _makepath(fullname, NULL, NULL, (char const*)"TSPROCFR", ".SHP");
     TsRefineryFlame = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"TSPULST", ".SHP");
     TsPulseTurret = MFCD::Retrieve(fullname);
-    _makepath(fullname, NULL, NULL, (char const*)"TSPROCLD", ".SHP");
-    TsRefineryLid = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"TSPROCNF", ".SHP");
     TsRefineryFront = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"LITNING", ".SHP");
