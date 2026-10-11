@@ -296,12 +296,7 @@ public:
 
     enum
     {
-        FLIGHT_LEVEL = 256,
-
-        // TF: a from-orbit arrival spawns at TF_ORBIT_HEIGHT, above the top of the screen, and descends
-        // TF_ORBIT_FALL_RATE times faster while above FLIGHT_LEVEL.
-        TF_ORBIT_HEIGHT = 2400,
-        TF_ORBIT_FALL_RATE = 3
+        FLIGHT_LEVEL = 256
     };
 };
 

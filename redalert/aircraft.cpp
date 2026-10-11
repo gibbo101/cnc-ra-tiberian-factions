@@ -4899,18 +4899,8 @@ bool AircraftClass::Landing_Takeoff_AI(void)
 
         if (IsLanding) {
             Mark(MARK_UP);
-            if (Height) {
-                // TF: above FLIGHT_LEVEL (a from-orbit arrival) an aircraft descends TF_ORBIT_FALL_RATE times faster,
-                // clamped at FLIGHT_LEVEL so the touchdown is walked down at the stock rate.
-                int step = Pixel_To_Lepton(1);
-                if (Height > FLIGHT_LEVEL) {
-                    step *= TF_ORBIT_FALL_RATE;
-                    if (Height - step < FLIGHT_LEVEL) {
-                        step = Height - FLIGHT_LEVEL;
-                    }
-                }
-                Height -= step;
-            }
+            if (Height)
+                Height -= Pixel_To_Lepton(1);
             if (Height <= 0) {
                 Height = 0;
                 IsLanding = false;
