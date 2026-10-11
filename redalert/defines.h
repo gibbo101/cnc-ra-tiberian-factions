@@ -3787,6 +3787,7 @@ typedef enum BSizeType : char
     BSIZE_31, // Gates, east-west.
     BSIZE_13, // Gates, north-south.
     BSIZE_34, // TSWEAP: RA's 3x3 war factory slot with an empty row behind it, so the box rises over the roof; the row is ordinary ground.
+    BSIZE_24, // TSRADR: the pads on the south row, the tower, dish and antennas over the three walkable rows behind.
 
     BSIZE_COUNT
 } BSizeType;
