@@ -2988,8 +2988,6 @@ bool AircraftClass::TF_Hunter_Seeker_AI(void)
         DETONATE_PROXIMITY = 150
     };
 
-    LayerType layer = In_Which_Layer();
-
     if (!Target_Legal(TarCom)) {
         Assign_Target(TF_Hunter_Seeker_Acquire(House));
     }
@@ -3004,13 +3002,6 @@ bool AircraftClass::TF_Hunter_Seeker_AI(void)
     // The droid strikes from FLIGHT_LEVEL, never diving: deleting an aircraft from LAYER_GROUND corrupts the
     // layer lists.
     Mark(MARK_CHANGE);
-
-    // Re-register the droid's layer for its current height before anything that can delete it, or Limbo
-    // unlinks the wrong layer list and leaves a dangling pointer.
-    if (layer != In_Which_Layer()) {
-        Map.Remove(this, layer);
-        Map.Submit(this, In_Which_Layer());
-    }
 
     if (!Target_Legal(TarCom)) {
         if (Speed != 0) {
