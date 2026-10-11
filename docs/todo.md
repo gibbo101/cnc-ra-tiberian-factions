@@ -8,6 +8,15 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ---
 
+## URGENT
+
+- **Remove unused files.** The root disk is at 95% (13 GB free on 2026-10-11) and the checkout
+  carries files nothing uses: `resources/` 1.1 GB, `asset-packs/` 415 MB, `scripts/` 232 MB,
+  `parked/` 182 MB, plus gitignored build and staging leftovers. List every file that no build
+  step, packager, script, doc or the ts-buildings-hd branch references and that doesn't ship, get
+  the maintainer's OK on the list, then delete it in its own commits. Check with the asset-pack
+  instance before touching `asset-packs/`. Deleting from the tree doesn't shrink the 5.5 GB `.git`.
+
 ## Next version: first jobs
 
 - **Fix the balance data bugs** (`known-issues.md`, "Balance data"), each with a play test:
