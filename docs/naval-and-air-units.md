@@ -60,5 +60,5 @@ All granted by a host building, the Ion Cannon pattern, in `HouseClass` (`house.
 - **Team colour:** the green region is the house-remap zone. Team green needed a 1.45x lift for the
   launcher's brightness-preserving remap, capped at deck brightness (higher drew halos round the
   cabin). A shadow baked into a GLB texture is not a render shadow; re-render with a fill light
-  rather than painting over it (`scripts/tdboat_hull_postprocess.py`).
+  rather than painting over it.
 - HD draw scales classic pixels by about 5.33 (128/24).
