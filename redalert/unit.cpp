@@ -7692,27 +7692,6 @@ void UnitClass::Tunnel_Begin_Emerge(void)
 }
 
 /*
-**	Surfaces a tunneling vehicle where it is (the EMP counter). On a cell it cannot
-**	stand on it is destroyed instead. Returns whether it surfaced.
-*/
-bool UnitClass::Force_Emerge(void)
-{
-    if (TunnelState != TUNNEL_TUNNELING) {
-        return (false);
-    }
-    CELL cell = Coord_Cell(Coord);
-    if (!Map.In_Radar(cell) || Can_Enter_Cell(cell) != MOVE_OK) {
-        Tunnel_Explode();
-        return (false);
-    }
-    Mark(MARK_UP);
-    Coord = Cell_Coord(cell);
-    Mark(MARK_DOWN);
-    Tunnel_Begin_Emerge();
-    return (true);
-}
-
-/*
 **	Death underground: a muffled dirt burst at the surface and nothing comes out.
 */
 void UnitClass::Tunnel_Explode(void)

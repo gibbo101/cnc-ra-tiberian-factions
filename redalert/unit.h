@@ -400,7 +400,6 @@ public:
     void Tunnel_To(COORDINATE dest);
     void Tunnel_Stop(void);
     void Tunnel_AI(void);
-    bool Force_Emerge(void);
     void Tunnel_Explode(void);
     void Tunnel_Begin_Emerge(void);
     void Fire_Stream_Begin(TARGET target);

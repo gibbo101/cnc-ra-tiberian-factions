@@ -43,8 +43,7 @@ anywhere it self-destructs; a stop order underground heads for the nearest surfa
 - **Detection:** the Mobile Sensor Array shows buried enemies in range to its owner only, as
   ghost copies that can be seen but not attacked (`emp-cannon-design.md`).
 - **The E.M. Pulse** stuns a digger and reroutes it to the nearest emerge cell, exploding it only
-  if there is none (`Tunnel_Explode`). `UnitClass::Force_Emerge` predates that and has no callers
-  (dead code, `todo.md`).
+  if there is none (`Tunnel_Explode`).
 
 ## Design
 
