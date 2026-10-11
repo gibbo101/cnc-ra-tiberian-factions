@@ -80,10 +80,15 @@ not, and never invent a detail or its placement: only what TS's art, TS's voxels
     (-26, -96), silo 3.73 (-32, -137), tech 3.73 (-220, -109.5), refinery 4.1 (-69.4, -44.7). Search coarse
     then fine, with ranges narrowed from the bounding boxes: a brute-force search over a 384 canvas takes too
     long. Sprite units the same way (the Juggernaut's walker: K 6.33, (-76.7, 9.3)).
-- RA-grid canvas: the plot is centred in the canvas (the game anchors the canvas centre on the plot centre);
-  the foundation's south edge on the plot's south edge. If the building doesn't fit, grow the canvas evenly
-  top and bottom and report the new size (yard 384x360; plant 256x272; tech turned 256x512; refinery
-  736x928 as the mod has it). Units keep their in-mod canvas, size and place pixel for pixel.
+- RA-grid canvas: whole cells (128 px each), and the canvas is the building's box: the game anchors the
+  canvas centre on the box's centre, so art drawn on its box needs no offsets in any mod. The foundation's
+  south edge sits on the box's south edge; the bib is its own layer in front. Art that rises above the
+  building goes on extra rows behind the footprint, which units walk behind and which need only be on the map
+  (the radar: 2x5 with bib = the slab, the pads, three walk-behind rows; canvas 256x512, the 2x4 box). Only
+  cast shadow and the 2 px antialiased rim may fall outside the box. Art that must spread past the box
+  sideways or into a neighbour (the Component Tower's turning barrels, its link into a gate) keeps a canvas
+  of whole cells centred on the box (the tower: 256x384 on its 1x2). Give every size with the bib and say
+  which rows block. Units keep their in-mod canvas, size and place pixel for pixel.
 - Light (walls2.py): L = (-0.451, -0.551, 0.702) (x east, y south, z up: from the north-west, above).
   shade = 0.20 + 0.26 (0.5 + 0.5 nz) + 0.62 max(0, n.L) (1 - 0.8 in_shadow); AO 0.8 + 0.2 clip(z / 40).
   The light is camera-relative: a render in TS's camera is lit like TS's sprites (hd.py's L_CAM_TS). A thin
