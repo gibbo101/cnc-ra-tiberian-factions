@@ -10109,47 +10109,6 @@ int HouseClass::AI_Building(void)
                 fflush(_tfdbg);
             }
         }
-
-        /*
-        **	W5.1 naval groundwork diag: what the water evaluation would tell the
-        **	(future) naval production code, on its own 30s schedule and for EVERY
-        **	computer house -- the RA factions are the naval-heavy ones, and the
-        **	economy diag above is TD-era-gated. Verifies the zone census + coastal
-        **	assessment from logs alone, before any behaviour is wired to it.
-        */
-        {
-            static int _tf_nav_due[HOUSE_COUNT] = {0};
-            int _tf_nh = (int)Class->House;
-            if (!IsHuman && _tf_nh >= 0 && _tf_nh < HOUSE_COUNT && (int)Frame >= _tf_nav_due[_tf_nh]) {
-                _tf_nav_due[_tf_nh] = (int)Frame + 450;
-                FILE* _tfdbg = TF_AI_Diag_File();
-                if (_tfdbg != NULL) {
-                    /*
-                    **	One census line per match (the DLL reloads per match, so the
-                    **	static resets): every water zone's size, to sanity-check the
-                    **	histogram against the visible map before trusting ok=0 lines.
-                    */
-                    static bool _tf_census_done = false;
-                    if (!_tf_census_done) {
-                        _tf_census_done = true;
-                        fprintf(_tfdbg, "NAVAL-CENSUS wzones=%d", (int)TF_WaterZoneCount);
-                        for (int _z = 1; _z <= TF_WaterZoneCount && _z < 256; _z++) {
-                            fprintf(_tfdbg, " z%d=%d", _z, TF_WaterZoneSize[_z]);
-                        }
-                        fprintf(_tfdbg, "\n");
-                    }
-                    int _nz = 0, _nsz = 0;
-                    bool _nec = false;
-                    bool _nok = TF_Naval_Assessment(_nz, _nsz, _nec);
-                    CELL _nc = Coord_Cell(Center);
-                    fprintf(_tfdbg,
-                            "F%ld H%d AL%d NAVAL ok=%d zone=%d size=%d enemycoastal=%d center=(%d,%d) wzones=%d\n",
-                            (long)Frame, (int)Class->House, (int)ActLike, (int)_nok, _nz, _nsz, (int)_nec,
-                            (int)Cell_X(_nc), (int)Cell_Y(_nc), (int)TF_WaterZoneCount);
-                    fflush(_tfdbg);
-                }
-            }
-        }
 #endif
         BuildingTypeClass const* b = NULL;
         HouseClass const* enemy = NULL;
