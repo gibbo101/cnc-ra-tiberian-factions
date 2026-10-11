@@ -13,6 +13,12 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 
 ## Units and buildings
 
+### Nod's cargo plane sometimes circles the airstrip
+- **Severity:** minor (seen in play, not every delivery).
+- Now and then the TDC17 delivering a vehicle to the Nod Airstrip (`TDAFLD`) circles the strip
+  instead of landing. Seen before and after the dead-code pass, so not caused by it. Cause not yet
+  looked into; the delivery path is in `cargo-plane-port.md`.
+
 ### Infantry pushed aside in a narrow pass lose their orders (suspected)
 - **Severity:** minor.
 - When a vehicle drives through a one-cell pass, `DriveClass::Drain_Infantry_Along` (`drive.cpp`)

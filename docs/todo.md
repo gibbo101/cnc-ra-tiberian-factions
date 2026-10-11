@@ -10,6 +10,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ## Next version: first jobs
 
+- **Check `asset-packs/` for unused files.** The rest of the checkout has been through it: every
+  tracked script and art source is named by a build step, script or doc. The asset-pack instance
+  owns `asset-packs/`, so it checks that folder.
 - **Fix the balance data bugs** (`known-issues.md`, "Balance data"), each with a play test:
   - the mod's `aftrmath.ini` overrides `[155mm] Range` (6 over the intended 8) and `[E3] Owner`
     (allies over allies,soviet): set the intended values there too, after deciding E3's owner;
@@ -28,6 +31,14 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   `package-for-workshop.sh` does) before measuring it.
 - **Check in play: "Unable to comply, building in progress"** speaks in the picked side's voice
   (the era mailbox's ninth line), including after a faction switch between matches.
+- **Lobby faction picker in timeline order:** RA Allies, Soviets, TD GDI, Nod, TS GDI (TS Nod when
+  it lands). The rows follow the launcher's country order (`faction-select-identity.md`), and the
+  launcher keys HUD colour, EVA channel and crest slot on each country's RA side, so the Soviets can
+  only sit on USSR (row 3) or Ukraine (row 5). Either make the launcher read an Allied-side row as
+  Soviet (a RAM patch, like the crest and EVA ones) or settle a nearest layout; then the DLL remap,
+  `mastertext.edits.txt` names and `picker_emblems_paint.py` plates move with it.
+- **Nod's cargo plane circles the airstrip** (`known-issues.md`): find why the TDC17 sometimes
+  misses its landing on `TDAFLD` and fix it, with a play test of several deliveries.
 - **Light orange selection box on a limpeted unit.** TS draws a limpeted object's bracket from
   another frame set (OpenTS techno.cpp:1455). The launcher's box is `CNC_SELECT_BOX.TGA` (white,
   atlas 3027,4088 128x128), tinted as it is drawn, and no data lever reaches the tint. Route: find

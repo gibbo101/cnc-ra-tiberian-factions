@@ -24,7 +24,8 @@ REDALERT="${CNCDATA}/RED_ALERT/CD1/REDALERT.MIX"
 TEMPERAT_MIX="${CNCDATA}/TIBERIAN_DAWN/CD1/TEMPERAT.MIX"
 OUTMIX="resources/remaster_mods/Vanilla_RA/CCDATA/TFASSETS.MIX"
 TMPDIR="$(mktemp -d -t tfassets-XXXXXX)"
-trap "rm -rf '$TMPDIR'" EXIT
+CLEAR_DIR="$(cd "$(dirname "$0")" && pwd)/clear_dir.sh"
+trap '"$CLEAR_DIR" "$TMPDIR"' EXIT
 
 for f in "$CONQUER" "$TD_PAL" "$REDALERT"; do
     if [[ ! -f "$f" ]]; then

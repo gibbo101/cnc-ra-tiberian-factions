@@ -166,6 +166,10 @@ both the tower and the plug (`Refund_Amount`). Weapons
   24.03,11.12); turret scale is about 0.75 of the body width (measured in TS); `GTCTWRMK`'s tail
   frames are debris cels, not build stages; the SAM's odd pixels are TS's own art, not ours to
   repaint.
+- **HD rebuilds** (TS-HD-Graphics-Pack): `scripts/ts_blender_tower.py` models the tower with its
+  connectors on N/E/S/W; `scripts/ts_render_tower_glb.py` renders a generated 3D tower, repainting
+  it by geometry because such models bake their lighting into the texture.
+  `scripts/gate_cameos.py` makes the gates' sidebar cameos and their badged variants.
 
 ### War factory (TSWEAP)
 
@@ -214,6 +218,8 @@ HEAVY, and `GTWEAP_D` frames 9-17 are magenta placeholders.
   roll-off seats ride `ROLL_OFF_DOCK_SEAT` (`DriveClass::Track21`), one static table shared with the
   war factory exit and the depot (`todo.md`). Pairings and dock time:
   `harvester-docking-rework-plan.md`.
+- **TSHARV.ZIP has 64 frames** (`scripts/ts_pack_tsharv_horv.py`): 0-31 the harvester, 32-63 TS's
+  unloading truck with its bed lowered, not drawn.
 - **The refinery radio protocol gated on literal `STRUCT_REFINERY || STRUCT_TDPROC` in about 15
   sites;** all take TSPROC. Repair (`STRUCT_REPAIR || STRUCT_TDFIX`, ~17 sites) and radar
   (`STRUCT_RADAR || TDHQ || TDEYE`, 7 chains) needed the same audit.
@@ -437,6 +443,8 @@ A unit here is done: no open art, geometry or behaviour work.
 - **The launcher maps the HD canvas onto the classic stub box centred on the BSIZE box centre;**
   stub height beyond the box splits into equal halos above and below, which is how apron and
   overhang rows work.
+- **More detail at the same size:** `scripts/ts_import_hires_frames.py` swaps redrawn frames into a
+  packed zip at an integer multiple of the canvas, framed the same, so the stub stays as it is.
 - **Canvas and classic stub move together:** `ts_pack_tree.py` writes `scripts/ts_stub_dims.json`
   and `build_tfassets.sh` refuses a stub that disagrees. A partial pack run truncates that file to
   the packed subset; a full run drops the entries other packers own (towers, walls, the Hunter
@@ -479,6 +487,8 @@ A unit here is done: no open art, geometry or behaviour work.
   slab spans the building; no baked pads.
 
 **TS infantry, Firestorm units and aircraft:**
+- **Aircraft art** (`scripts/ts_pack_aircraft.py`): the Orca Fighter, Orca Bomber and Carryall pack
+  as 32 facings with no baked shadow (the engine draws the air shadow), plus cameos, XML and ModText.
 - **The launcher places the selection box and health bar from the first shape an object draws,
   plus its exported centre.** The export Type and Altitude do nothing for them. An airborne jumpjet
   draws its body before its shadow and lifts `CenterCoordY` by Height.

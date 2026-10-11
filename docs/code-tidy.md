@@ -44,10 +44,6 @@ udata.cpp's TS war factory, depot and Juggernaut notes; sdata.cpp's apron smudge
 comment at dllinterface.cpp's include of tf_eva_mailbox.h, under the menu-buttons branch.
 
 ## Small flags
-- `scripts/factions_build.py`: the docstring and `ORDER` treat `Faction10` as Nod; `TD_HUD`,
-  `faction-select-identity.md` and the emblem painter say Nod is `Faction4`.
-- A few script docstrings are stale: the walker frame count (12, not 15), the TSWEAPLT stub,
-  "hand-tucked pad", the cameo crest count.
 - Whether `SHAPE_GHOST` darkens the sonic discs is unsettled; check in game before anything claims it.
 
 ## Phase 2

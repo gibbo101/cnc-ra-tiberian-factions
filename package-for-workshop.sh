@@ -74,7 +74,7 @@ if [[ ! -f "$BUILT_DLL" ]]; then
     echo "ERROR: $BUILT_DLL not found after the release build." >&2
     exit 1
 fi
-rm -rf "$BUILD_DIR"
+scripts/clear_dir.sh "$BUILD_DIR"
 python3 scripts/stage_asset_packs.py --full "$BUILD_DIR"
 cp "$BUILT_DLL" "$BUILD_DIR/Data/RedAlert.dll"
 

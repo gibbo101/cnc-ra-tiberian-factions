@@ -17,7 +17,7 @@ SHOTS="${1:-scripts/intro_work/shots.tsv}"
 ENDING="${2:-menu}"
 OUT="resources/remaster_mods/Vanilla_RA/Data/ART/MOVIES/RA/REDINTRO.BK2"
 WORK="$(mktemp -d "$LIB/edit/build.XXXX")"
-trap 'rm -rf "$WORK"' EXIT
+trap 'scripts/clear_dir.sh "$WORK"' EXIT
 
 python3 scripts/intro_work/intro_cut.py "$SHOTS" frames "$WORK/frames" "$ENDING"
 last=$(( $(ls "$WORK/frames"/frame_*.jpg | wc -l) - 1 ))

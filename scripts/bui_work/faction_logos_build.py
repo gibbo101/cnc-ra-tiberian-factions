@@ -210,7 +210,7 @@ def main():
                     f'{MEMBER}={edited}'], check=True, capture_output=True)
     os.replace(OUT_MEG + '.tmp', OUT_MEG)
     assert os.path.getsize(OUT_MEG) == os.path.getsize(MOD_MEG), 'MEG size drifted'
-    shutil.rmtree(tmp, ignore_errors=True)
+    subprocess.run([os.path.join(REPO, 'scripts', 'clear_dir.sh'), tmp])
     print(f'wrote {OUT_MEG} (member {ORIG}B unchanged, comp {len(comp)}/{ORIGC})')
 
 

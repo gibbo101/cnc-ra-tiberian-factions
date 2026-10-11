@@ -14,7 +14,8 @@
 #      intro) is missing or differs from its committed md5.
 #   3. Lists what the mirror would delete and asks before going on.
 #   4. Desktop only: backs up every file it will replace or delete to
-#      ~/Desktop/Tiberian Factions/deploy-backups/desktop-<branch>-<timestamp>/.
+#      ~/Desktop/Tiberian Factions/deploy-backups/desktop-<branch>-<timestamp>/, and after a
+#      deploy that checks out keeps only the newest 3 of those folders.
 #   5. rsync -ac --delete build/remaster/Vanilla_RA/ -> target, then checks by checksum that the
 #      target matches the build. -c matters: the RA*_SFX_EVA_* seed WAVs can match the build in
 #      size and mtime but not content, and -a alone skips them. The mirror never deletes CustomMaps/,
@@ -37,6 +38,9 @@ DRY_RUN=0
 DELETE_FLAG="--delete --filter=P_/CustomMaps/"
 AUTO_YES=0
 DESKTOP=0
+KEEP_BACKUPS=3
+BACKUP_ROOT="$HOME/Desktop/Tiberian Factions/deploy-backups"
+BACKUP_MARKER=".deploy-sh-backup"
 for arg in "$@"; do
     case "$arg" in
         --desktop)  DESKTOP=1 ;;
@@ -78,7 +82,7 @@ if [[ "$NO_BUILD" -eq 0 ]]; then
       cmake --workflow --preset remaster
     # The CMake copy only runs when the DLL relinks and never deletes, so restage from scratch.
     echo "==> Restaging $LOCAL_OUTPUT"
-    rm -rf "${LOCAL_OUTPUT:?}"
+    scripts/clear_dir.sh "${LOCAL_OUTPUT:?}"
     python3 scripts/stage_asset_packs.py "$LOCAL_OUTPUT" --full
     cp build/remaster/RelWithDebInfo/RedAlert.dll "${LOCAL_OUTPUT}Data/"
 fi
@@ -144,8 +148,9 @@ if [[ -n "$DELETIONS" && "$AUTO_YES" -eq 0 ]]; then
 fi
 
 if [[ "$DESKTOP" -eq 1 && -n "$DELETIONS$REPLACED" ]]; then
-    BACKUP="$HOME/Desktop/Tiberian Factions/deploy-backups/desktop-$(git rev-parse --abbrev-ref HEAD | tr / -)-$(date +%Y%m%d-%H%M%S)"
+    BACKUP="$BACKUP_ROOT/desktop-$(git rev-parse --abbrev-ref HEAD | tr / -)-$(date +%Y%m%d-%H%M%S)"
     mkdir -p "$BACKUP"
+    touch "$BACKUP/$BACKUP_MARKER"
     printf '%s\n%s\n' "$DELETIONS" "$REPLACED" | grep -v '/$' | grep . | while read -r f; do
         (cd "$TARGET_DIR" && cp -p --parents "$f" "$BACKUP/")
     done
@@ -159,5 +164,15 @@ LEFT=$(rsync -acn $DELETE_FLAG --itemize-changes "$LOCAL_OUTPUT" "$TARGET" | gre
 if [[ "$LEFT" -ne 0 ]]; then
     echo "ERROR: $LEFT files still differ from the build on $SURFACE." >&2
     exit 1
+fi
+if [[ "$DESKTOP" -eq 1 && -d "$BACKUP_ROOT" ]]; then
+    # Only folders carrying this script's marker; hand-made backups are never touched.
+    find "$BACKUP_ROOT" -mindepth 2 -maxdepth 2 -type f -name "$BACKUP_MARKER" -printf '%h\n' \
+        | xargs -r -d '\n' -n1 basename \
+        | awk '{print substr($0, length($0) - 14) " " $0}' | sort -r | tail -n +$((KEEP_BACKUPS + 1)) \
+        | cut -d' ' -f2 | while read -r old; do
+            scripts/clear_dir.sh "${BACKUP_ROOT:?}/$old"
+            echo "==> Pruned old backup $old"
+        done
 fi
 echo "==> Done: $SURFACE matches the build by checksum (DLL $(md5sum "${LOCAL_OUTPUT}Data/RedAlert.dll" | cut -c1-8))."
