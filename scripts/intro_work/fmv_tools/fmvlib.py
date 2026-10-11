@@ -28,7 +28,6 @@ Commands
 import json
 import math
 import os
-import shutil
 import struct
 import subprocess
 import sys
@@ -41,6 +40,7 @@ TOOLS = os.path.join(ROOT, 'tools')
 BK2DUMP_DIR = os.path.join(TOOLS, 'bk2dump')
 WINEPREFIX = os.path.expanduser('~/.local/opt/wine-fmv')
 WORK = os.environ.get('FMV_WORK', '/tmp/claude-1000/fmvwork')
+CLEAR_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'clear_dir.sh')
 BROWSE_W = 960
 THUMB_W = 240
 SHEET_COLS = 8
@@ -212,8 +212,7 @@ def make_sheets(game, movie, items, fps, title):
 def process(game, movie, decoder, frames, fps_num, fps_den, w, h, source, rate):
     fps = fps_num / fps_den
     fdir = os.path.join(ROOT, 'frames', game, movie)
-    if os.path.isdir(fdir):
-        shutil.rmtree(fdir)
+    subprocess.run([CLEAR_DIR, fdir], check=True)
     os.makedirs(fdir)
     picks = sample_frames(frames, fps, rate)
     duration = frames / fps
@@ -296,7 +295,7 @@ def cmd_range(game, movie, container, offset, size, source_archive, source_entry
         return process(game, movie, lambda picks: decode_ffmpeg(path, picks, w, h), frames, num, den, w, h, src, rate)
     finally:
         if tmpdir:
-            shutil.rmtree(tmpdir, ignore_errors=True)
+            subprocess.run([CLEAR_DIR, tmpdir])
 
 
 def meg_entry(meg_path, entry):
@@ -320,8 +319,7 @@ def cmd_index(game, per_page=6, per_movie=16):
     """Overview pages: each movie gets 16 evenly spaced browse frames."""
     metas = load_meta(game)
     idir = os.path.join(ROOT, 'sheets', game, '_index')
-    if os.path.isdir(idir):
-        shutil.rmtree(idir)
+    subprocess.run([CLEAR_DIR, idir], check=True)
     os.makedirs(idir)
     tw, cols = 150, 8
     pages = [metas[i:i + per_page] for i in range(0, len(metas), per_page)]
@@ -396,7 +394,7 @@ def cmd_fullres(gm, first, last, outdir, step=1, jpg=False):
         print(f'wrote {n} full-res frames ({m["width"]}x{m["height"]}) to {outdir}')
     finally:
         if tmpdir:
-            shutil.rmtree(tmpdir, ignore_errors=True)
+            subprocess.run([CLEAR_DIR, tmpdir])
 
 
 def main(argv):

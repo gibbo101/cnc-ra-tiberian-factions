@@ -77,7 +77,7 @@ if [[ "$NO_BUILD" -eq 0 ]]; then
       cmake --workflow --preset remaster
     # The CMake copy only runs when the DLL relinks and never deletes, so restage from scratch.
     echo "==> Restaging $LOCAL_OUTPUT"
-    rm -rf "${LOCAL_OUTPUT:?}"
+    scripts/clear_dir.sh "${LOCAL_OUTPUT:?}"
     python3 scripts/stage_asset_packs.py "$LOCAL_OUTPUT" --full
     cp build/remaster/RelWithDebInfo/RedAlert.dll "${LOCAL_OUTPUT}Data/"
 fi

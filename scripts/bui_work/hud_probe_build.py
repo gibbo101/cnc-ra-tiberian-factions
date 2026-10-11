@@ -80,7 +80,7 @@ def main():
     vd = open(v, 'rb').read(); vraw = zlib.decompress(vd[0x24:])
     ok = (os.path.getsize(OUT_MEG) == os.path.getsize(MOD_MEG) and len(vd) == orig
           and len(vraw) == dlen and vraw.count(A) == 0 and vraw.count(B) == 2)
-    shutil.rmtree(tmp, ignore_errors=True)
+    subprocess.run([os.path.join(REPO, 'scripts', 'clear_dir.sh'), tmp])
     print(f'wrote {OUT_MEG}')
     print(f'  member {MEMBER}: {orig} bytes (unchanged), payload {dlen} bytes (unchanged), swap applied')
     print(f'  probe MEG size == mod MEG size: {os.path.getsize(OUT_MEG) == os.path.getsize(MOD_MEG)}')

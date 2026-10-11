@@ -20,7 +20,7 @@ if [[ ! -f "$ATLAS" ]]; then
     exit 1
 fi
 STOCK="$(mktemp -d)"
-trap 'rm -rf "$STOCK"' EXIT
+trap 'scripts/clear_dir.sh "$STOCK"' EXIT
 for t in UI_MISSIONSELECT_BG.DDS UI_LOADGAME_BG_SCANLINES.DDS RA_UI_MISSIONSELECT_BG.DDS MT_COMMANDBAR_COMMON.MTD; do
     python3 scripts/meg_extract.py extract "$TEXTURES_MEG" "DATA\\ART\\TEXTURES\\SRGB\\$t" "$STOCK" >/dev/null
 done
