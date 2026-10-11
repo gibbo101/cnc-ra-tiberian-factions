@@ -409,11 +409,11 @@ PACK_ARGS+=("$TMPDIR/tsdpsa_stub.shp:TSDPSA.SHP")
 ts_stub TSDPSA "$TMPDIR/tsdpsamk_stub.shp" 48 78 36
 PACK_ARGS+=("$TMPDIR/tsdpsamk_stub.shp:TSDPSAMAKE.SHP")
 PACK_ARGS+=("$TMPDIR/tsweapmk_stub.shp:TSWEAPMAKE.SHP")
-# TSRADR 48x111 = the HD radar's 256x592 canvas centred on its 2x2 plot: the tower and its antennas
-# rise into the headroom above.
-ts_stub TSRADR "$TMPDIR/tsradr_stub.shp" 48 111 2
+# TSRADR 48x96 = the HD radar's 256x512 canvas, its 2x4 box: the pads on the south row, the tower, dish
+# and antennas over the three rows behind.
+ts_stub TSRADR "$TMPDIR/tsradr_stub.shp" 48 96 2
 PACK_ARGS+=("$TMPDIR/tsradr_stub.shp:TSRADR.SHP")
-ts_stub TSRADR "$TMPDIR/tsradrmk_stub.shp" 48 111 26
+ts_stub TSRADR "$TMPDIR/tsradrmk_stub.shp" 48 96 26
 # TSDEPT 72x72 = the HD service depot's 384x384 canvas, its 3x3 plot; its repair flash (TSDEPTRP)
 # draws on the same stub.
 ts_stub TSDEPT "$TMPDIR/tsdept_stub.shp" 72 72 2
@@ -450,15 +450,14 @@ PACK_ARGS+=("$TMPDIR/tspowrmk_stub.shp:TSPOWRMAKE.SHP")
 # buildup state is unreachable.
 ts_stub TSTURB "$TMPDIR/tsturb_stub.shp" 24 24 2
 PACK_ARGS+=("$TMPDIR/tsturb_stub.shp:TSTURB.SHP")
-# TSWALL 33x60 (canvas 176x320: joined arms overshoot the cell edge): the TS concrete wall OVERLAY's classic stub
+# TSWALL 24x24 = the HD wall's 128x128 canvas, its cell: the TS concrete wall OVERLAY's classic stub
 # (the engine loads walls as non-theatre "<INI>.SHP" by IniName). 48 frames =
-# 16 join icons x 3 damage stages, RA's wall layout. Taller than the cell so a
-# north-south run's crest can rise above the cell's north edge. No MAKE stub:
+# 16 join icons x 3 damage stages, RA's wall layout. No MAKE stub:
 # walls never enumerate in the buildup state (dllinterface IsWall guard).
-ts_stub TSWALL "$TMPDIR/tswall_stub.shp" 36 60 48
+ts_stub TSWALL "$TMPDIR/tswall_stub.shp" 24 24 48
 PACK_ARGS+=("$TMPDIR/tswall_stub.shp:TSWALL.SHP")
 # TSNWALL: the TS Nod wall overlay's classic stub, TSWALL's twin.
-ts_stub TSNWALL "$TMPDIR/tsnwall_stub.shp" 36 60 48
+ts_stub TSNWALL "$TMPDIR/tsnwall_stub.shp" 24 24 48
 PACK_ARGS+=("$TMPDIR/tsnwall_stub.shp:TSNWALL.SHP")
 # TS GDI gates (HD canvas = the footprint): east-west 72x24, north-south 24x72; 20 door frames
 # (10 stages, healthy + damaged) and the 10-frame rise out of the slot.
@@ -512,26 +511,25 @@ ts_stub TDNGATEV "$TMPDIR/tdngatev_stub.shp" 24 72 20
 PACK_ARGS+=("$TMPDIR/tdngatev_stub.shp:TDNGATEV.SHP")
 ts_stub TDNGATEV "$TMPDIR/tdngatevmk_stub.shp" 24 72 10
 PACK_ARGS+=("$TMPDIR/tdngatevmk_stub.shp:TDNGATEVMAKE.SHP")
-# TS component tower family, same 33x60 canvas family as the wall (176x320 HD):
-# TSCTWR bare tower 2 frames (healthy/damaged) + rising buildup; TSVULC armed
+# TS component tower family: TSCTWR bare tower 2 frames (healthy/damaged) + rising buildup; TSVULC armed
 # tower = 32 facings x {idle, recoil, damaged idle, damaged recoil} like TDGUN.
-# Every tower is 36x84: a 192x448 canvas centred on its 1x2 plot, the tower's
+# Every tower is 48x72: a 256x384 canvas centred on its 1x2 plot, the tower's
 # cell and the head's headroom above it.
-ts_stub TSCTWR "$TMPDIR/tsctwr_stub.shp" 36 84 2
+ts_stub TSCTWR "$TMPDIR/tsctwr_stub.shp" 48 72 2
 PACK_ARGS+=("$TMPDIR/tsctwr_stub.shp:TSCTWR.SHP")
-ts_stub TSCTWR "$TMPDIR/tsctwrmk_stub.shp" 36 84 17
+ts_stub TSCTWR "$TMPDIR/tsctwrmk_stub.shp" 48 72 17
 PACK_ARGS+=("$TMPDIR/tsctwrmk_stub.shp:TSCTWRMAKE.SHP")
-ts_stub TSVULC "$TMPDIR/tsvulc_stub.shp" 36 84 128
+ts_stub TSVULC "$TMPDIR/tsvulc_stub.shp" 48 72 128
 PACK_ARGS+=("$TMPDIR/tsvulc_stub.shp:TSVULC.SHP")
-ts_stub TSVULC "$TMPDIR/tsvulcmk_stub.shp" 36 84 17
+ts_stub TSVULC "$TMPDIR/tsvulcmk_stub.shp" 48 72 17
 PACK_ARGS+=("$TMPDIR/tsvulcmk_stub.shp:TSVULCMAKE.SHP")
-ts_stub TSROCK "$TMPDIR/tsrock_stub.shp" 36 84 128
+ts_stub TSROCK "$TMPDIR/tsrock_stub.shp" 48 72 128
 PACK_ARGS+=("$TMPDIR/tsrock_stub.shp:TSROCK.SHP")
-ts_stub TSROCK "$TMPDIR/tsrockmk_stub.shp" 36 84 17
+ts_stub TSROCK "$TMPDIR/tsrockmk_stub.shp" 48 72 17
 PACK_ARGS+=("$TMPDIR/tsrockmk_stub.shp:TSROCKMAKE.SHP")
-ts_stub TSCSAM "$TMPDIR/tscsam_stub.shp" 36 84 128
+ts_stub TSCSAM "$TMPDIR/tscsam_stub.shp" 48 72 128
 PACK_ARGS+=("$TMPDIR/tscsam_stub.shp:TSCSAM.SHP")
-ts_stub TSCSAM "$TMPDIR/tscsammk_stub.shp" 36 84 17
+ts_stub TSCSAM "$TMPDIR/tscsammk_stub.shp" 48 72 17
 PACK_ARGS+=("$TMPDIR/tscsammk_stub.shp:TSCSAMMAKE.SHP")
 # TSPLUG 72x108 = the HD upgrade center's 384x576 canvas centred on its 2x2 plot (TS Upgrade
 # Centre, addon host), its bib row in front: the antennas rise into the headroom above the box.

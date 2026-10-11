@@ -5,8 +5,8 @@ into TSWALL.ZIP, or with --nod the Nod wall (resources/custom-art/ts-nod-wall-hd
 The source frames are 128x128 with the frame exactly one cell, in BRIK's order and joins
 (frame = N*1 + E*2 + S*4 + W*8 per damage stage). The wall takes TD's three wall damage
 stages (healthy, damaged, heavily damaged: frames 0-47); the source's fourth, rubble stage
-is not shipped. Each frame sits on the wall packers' 176x320 canvas with the cell's centre
-on the canvas centre, the same anchoring the classic TSWALL stub declares.
+is not shipped. Each frame is its own 128x128 canvas, exactly the cell, on a 24x24 classic
+stub, so the art needs no offsets in any mod.
 
 The ZIP and its TSHD_STRUCTURES.XML tile run go to the TS-HD-Graphics-Pack (asset_packs.py
 routes the name). The art's generator lives beside the frames (src/); regenerate there, then
@@ -29,10 +29,9 @@ WALLS = {  # flag: (source dir, frame prefix, tileset)
 }
 STAGES = 3
 CELL = 128
-# The canvas is 192 wide, 96 px either side of the cell centre: its classic stub (36x60) has an
-# even width, so the launcher's half-width offset lands on a whole pixel and the wall sits exactly
-# on its cell. An odd stub (the old 176 / 33) drew every piece 2.7 px east of a gate's end.
-CANVAS_W, CANVAS_H = 192, W.CANVAS_H
+# The canvas is the cell. Its stub (24x24) has an even width, so the launcher's half-width offset
+# lands on a whole pixel; an odd stub drew every piece 2.7 px east of a gate's end.
+CANVAS_W, CANVAS_H = CELL, CELL
 
 
 def main():

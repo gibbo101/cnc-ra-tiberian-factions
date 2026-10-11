@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Pack the HD TS GDI Component Tower (resources/custom-art/ts-gdi-component-tower-hd).
 
-The source frames are already on the tower family's 176x320 canvas with the cell's centre
-on the canvas centre, so they ship as drawn. Frame sets written to the TS-HD-Graphics-Pack
+The source frames are on the tower family's 176x320 canvas with the cell's centre on the
+canvas centre; they ship on a 256x384 canvas centred on the tower's 1x2 box. Frame sets written to the TS-HD-Graphics-Pack
 (TSHD_STRUCTURES.XML patched; ts_pack_towers.write_zip routes each name by asset_packs.py):
 
   TSCTWR       2    healthy, damaged
@@ -56,13 +56,10 @@ TURRETS = {"TSVULC": "vulcan", "TSROCK": "rpg", "TSCSAM": "sam"}
 SIDES = "NESW"
 WALLS = ("gdi", "nod", "brik")
 STATES = 2          # healthy, damaged; the destroyed tower is never on the map
-# The art is drawn on the 176x320 canvas; it ships padded to 192 wide so its classic stub (36x60)
-# has an even width and the launcher's half-width offset lands on a whole pixel (an odd 33 drew
-# the tower 2.7 px east of a gate's end). The padding moves nothing on screen.
-SHIP_W = 192
-# A tower's plot is its cell and the head's headroom cell above (bdata.cpp), so the launcher centres its art half
-# a cell higher: every frame carries that much more canvas on top.
-TOWER_PAD = 128
+# The shipped canvas is 2x3 cells centred on the tower's 1x2 box (its cell and the head's headroom above): wide
+# enough for the barrels and pods that turn past the cell's sides, tall enough for the link into a gate south of it.
+SHIP_W, SHIP_H = 256, 384
+CELL = 128
 MAKE_FRAMES = 17
 LAMP_FRAMES = 6
 
@@ -159,16 +156,18 @@ def write_muzzles():
     print(f"wrote {MUZZLE_H}")
 
 
-def write_zip(ini, frames, pad_top=0):
-    """ts_pack_towers.write_zip on the SHIP_W canvas: each frame centred in it, pad_top px added above."""
-    pad = (SHIP_W - T.CANVAS_W) // 2
+def write_zip(ini, frames):
+    """ts_pack_towers.write_zip on the shipped canvas, the box's centre (half a cell above the cell's) on its centre."""
+    x, y = (SHIP_W - T.CANVAS_W) // 2, SHIP_H // 2 - (T.CANVAS_H // 2 - CELL // 2)
     wide = []
-    for f in frames:
-        cv = Image.new("RGBA", (SHIP_W, T.CANVAS_H + pad_top), (0, 0, 0, 0))
-        cv.paste(f, (pad, pad_top))
+    for i, f in enumerate(frames):
+        cv = Image.new("RGBA", (SHIP_W, SHIP_H), (0, 0, 0, 0))
+        cv.paste(f, (x, y))
+        if np.asarray(f)[SHIP_H - y:, :, 3].any() or np.asarray(f)[:max(0, -y), :, 3].any():
+            raise SystemExit(f"{ini} frame {i} has art outside the {SHIP_W}x{SHIP_H} canvas")
         wide.append(cv)
     w0, h0 = T.CANVAS_W, T.CANVAS_H
-    T.CANVAS_W, T.CANVAS_H = SHIP_W, T.CANVAS_H + pad_top
+    T.CANVAS_W, T.CANVAS_H = SHIP_W, SHIP_H
     try:
         T.write_zip(ini, wide)
     finally:
@@ -179,14 +178,14 @@ def pack():
     bodies = [load("tower", f"component-tower-{s:02d}.png") for s in range(STATES)]
     make = [load("build-up", f"component-tower-build-{i:02d}.png") for i in range(MAKE_FRAMES)]
     extra = layers(bodies)
-    write_zip("TSCTWR", bodies, TOWER_PAD)
-    write_zip("TSCTWRMAKE", make, TOWER_PAD)
+    write_zip("TSCTWR", bodies)
+    write_zip("TSCTWRMAKE", make)
     for ini, name in TURRETS.items():
-        write_zip(ini + "T", turrets(name), TOWER_PAD)
-    write_zip("TSCTWRX", extra, TOWER_PAD)
+        write_zip(ini + "T", turrets(name))
+    write_zip("TSCTWRX", extra)
     dims = json.load(open(W.STUB_MANIFEST))
     for ini in ("TSCTWR",) + tuple(TURRETS):
-        dims[ini] = [SHIP_W * 3 // 16, (T.CANVAS_H + TOWER_PAD) * 3 // 16]
+        dims[ini] = [SHIP_W * 3 // 16, SHIP_H * 3 // 16]
     json.dump(dims, open(W.STUB_MANIFEST, "w"), indent=1)
     open(W.STUB_MANIFEST, "a").write("\n")
     write_muzzles()

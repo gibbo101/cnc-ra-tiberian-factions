@@ -45,6 +45,7 @@ REDALERT = os.path.join(SCRIPTS, "..", "redalert")
 THEATRES = ("TEMPERATE", "SNOW", "INTERIOR")
 STUB_MANIFEST = f"{SCRIPTS}/ts_stub_dims.json"
 HAZE_ALPHA = 4
+BOX_RIM = 2
 # The units' black outline antialiases this far out from the solid body; a cast shadow is what
 # lies beyond, and a frame with fewer such pixels than CAST_SHADOW_MIN_PX has none.
 OUTLINE_PX = 2
@@ -147,6 +148,9 @@ def tiberium(img):
 # that many empty px off the top, for art drawn on a plot of another depth than the building's own (the canvas
 # centres on the building's plot); crop=(x0, y0, x1, y1) cuts every frame to that box, which holds all the art. repeat=n plays the frames n times over (one set for both states), and
 # recolour / make_recolour apply a function to every tileset / build-up frame as it loads.
+# box=(x0, y0, x1, y1) is the building's whole BSIZE box on the source canvas: every frame becomes exactly that
+# box, so the canvas is the box; it may run past the source's edges, and only cast shadow and the art's 2 px
+# antialiased rim may fall outside it.
 # make_pick takes those build-up frames, in that order, instead of all of them.
 # then=(path prefix, count) appends those frames after the tileset; then_over=(path prefix, frame) draws that
 # one frame over each of them.
@@ -226,9 +230,10 @@ BUILDINGS = {
     "TSDWEAPDR": dict(src="tsdweap", make=None, frames=("D-door/mobile-war-factory-door", 12), repeat=2, pad_bottom=128),
     "TSDWEAPUD": dict(src="tsdweap", make=None, frames=("1-under-door/mobile-war-factory-under", 2), repeat=2,
                       pad_bottom=128, recolour=mwf_lane),
-    # The radar on its 2x2 plot, the tower and its antennas rising into the headroom above. Idle: the dish
-    # turning there and back (28), healthy then damaged.
-    "TSRADR": dict(src="tsradr", make=("build-up/radar-build", 26), frames=("loop/radar-loop", 56)),
+    # The radar on its 2x4 box: the pads on the south row, the tower, dish and antennas over the three rows behind.
+    # Idle: the dish turning there and back (28), healthy then damaged.
+    "TSRADR": dict(src="tsradr", make=("build-up/radar-build", 26), frames=("loop/radar-loop", 56),
+                   box=(0, -88, 256, 424)),
     # The deployed Mobile Sensor Array on its 1x1 plot, broadside, the mast at its west end. Idle: the
     # head's flash (5), healthy then damaged. The build-up is the vehicle settling and raising the mast.
     "TSDPSA": dict(src="tsdpsa", make=("build-up/sensor-array-build", 36), frames=("loop/sensor-array-loop", 10)),
@@ -401,6 +406,17 @@ def crop_to(img, box):
     if a.max() > HAZE_ALPHA:
         raise SystemExit(f"cannot crop to {box}: art stands outside it")
     return img.crop(box)
+
+
+def to_box(img, box):
+    a = np.asarray(img).copy()
+    x0, y0, x1, y1 = box
+    a[max(0, y0 - BOX_RIM):max(0, y1 + BOX_RIM), max(0, x0 - BOX_RIM):max(0, x1 + BOX_RIM)] = 0
+    if (a[..., :3][a[..., 3] > HAZE_ALPHA]).max(initial=0) > 0:
+        raise SystemExit(f"cannot cut to {box}: more than shadow stands outside it")
+    out = Image.new("RGBA", (x1 - x0, y1 - y0), (0, 0, 0, 0))
+    out.paste(img, (-x0, -y0))
+    return out
 
 
 def crop_above(img, px):
@@ -681,6 +697,9 @@ def main(argv):
         if spec.get("crop"):
             tiles = [crop_to(i, spec["crop"]) for i in tiles]
             make = [crop_to(i, spec["crop"]) for i in make]
+        if spec.get("box"):
+            tiles = [to_box(i, spec["box"]) for i in tiles]
+            make = [to_box(i, spec["box"]) for i in make]
         if spec.get("crop_top"):
             tiles = [crop_above(i, spec["crop_top"]) for i in tiles]
             make = [crop_above(i, spec["crop_top"]) for i in make]
