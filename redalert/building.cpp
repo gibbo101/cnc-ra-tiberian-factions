@@ -4860,23 +4860,6 @@ FireErrorType BuildingClass::Can_Fire(TARGET target, int which) const
         **	Certain buildings cannot fire if there is insufficient power.
         */
         if (Class->IsPowered && House->Power_Fraction() < 1) {
-#if TF_DEV_BUILD // TF_AI_DIAG -- powered defence held offline by low power (~30s heartbeat per building).
-            if (((Frame + ID) % 450) == 0) {
-                extern FILE* TF_AI_Diag_File(void);
-                FILE* _tfdbg = TF_AI_Diag_File();
-                if (_tfdbg != NULL) {
-                    fprintf(_tfdbg,
-                            "F%ld H%d DEF-OFFLINE %s#%d (power %d/%d)\n",
-                            (long)Frame,
-                            (int)House->Class->House,
-                            Class->IniName,
-                            (int)ID,
-                            (int)House->Power,
-                            (int)House->Drain);
-                    fflush(_tfdbg);
-                }
-            }
-#endif
             return (FIRE_BUSY);
         }
 
@@ -8768,52 +8751,8 @@ void BuildingClass::Factory_AI(void)
                     if (!House->IsHuman && !Factory->Has_Completed()
                         && (Factory->Start() || House->TF_Has_Income())) {
                         PlacementDelay = TICKS_PER_SECOND * 3;
-#if TF_DEV_BUILD // TF_AI_DIAG -- the order survived the stall check: held (or resumed) rather
-                 // than scrapped. At most one line per 3-second retry window.
-                        extern FILE* TF_AI_Diag_File(void);
-                        FILE* _tfdbg = TF_AI_Diag_File();
-                        TechnoClass* _obj = Factory->Get_Object();
-                        if (_tfdbg != NULL) {
-                            fprintf(_tfdbg,
-                                    "F%ld H%d AL%d PROD %s %s pct=%d cash=%d at %s#%d\n",
-                                    (long)Frame,
-                                    (int)House->Class->House,
-                                    (int)House->ActLike,
-                                    Factory->Is_Building() ? "resume" : "hold",
-                                    _obj != NULL ? _obj->Class_Of().IniName : "(none)",
-                                    Factory->Completion(),
-                                    House->Available_Money(),
-                                    Class->IniName,
-                                    (int)ID);
-                            fflush(_tfdbg);
-                        }
-#endif
                         return;
                     }
-#if TF_DEV_BUILD // TF_AI_DIAG -- a stalled order is scrapped here rather than paused, so an
-                 // item that repeatedly reaches PROD start and never appears died on this
-                 // line. Records what was lost, how far it got, and whether the house could
-                 // actually afford to continue.
-                    if (!House->IsHuman) {
-                        extern FILE* TF_AI_Diag_File(void);
-                        FILE* _tfdbg = TF_AI_Diag_File();
-                        TechnoClass* _obj = Factory->Get_Object();
-                        if (_tfdbg != NULL) {
-                            fprintf(_tfdbg,
-                                    "F%ld H%d AL%d PROD abandon %s pct=%d cash=%d completed=%d at %s#%d\n",
-                                    (long)Frame,
-                                    (int)House->Class->House,
-                                    (int)House->ActLike,
-                                    _obj != NULL ? _obj->Class_Of().IniName : "(none)",
-                                    Factory->Completion(),
-                                    House->Available_Money(),
-                                    (int)Factory->Has_Completed(),
-                                    Class->IniName,
-                                    (int)ID);
-                            fflush(_tfdbg);
-                        }
-                    }
-#endif
                     Factory->Abandon();
                     delete (FactoryClass*)Factory;
                     Factory = 0;
