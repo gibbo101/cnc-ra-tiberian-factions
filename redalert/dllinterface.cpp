@@ -2134,21 +2134,6 @@ static int TF_Self_Action_Selected(void)
 static long TF_SelectAllLatchUntil[HOUSE_COUNT]; // per house: frame until which a select-all order still counts as fresh
 static const int TF_HUNTER_DRAW_SIZE = 90; // launcher draw box for the Hunter Seeker droid (tune by eye)
 
-static void TF_Sidebar_Log(const char* fmt, ...)
-{
-#if TF_DEV_BUILD
-    char cp[512]; const char* pr = getenv("USERPROFILE");
-    if (pr && pr[0]) snprintf(cp, sizeof(cp), "%s/Documents/CnCRemastered/MOD_DEBUG_SIDEBAR.txt", pr);
-    else strcpy(cp, "MOD_DEBUG_SIDEBAR.txt");
-    FILE* f = fopen(cp, "a");
-    if (!f) return;
-    fprintf(f, "frame=%d ", (int)Frame);
-    va_list ap; va_start(ap, fmt); vfprintf(f, fmt, ap); va_end(ap);
-    fprintf(f, "\n");
-    fclose(f);
-#endif
-}
-
 // Per frame: runs the deploy key on a fresh press of backslash, and holds an 'A' press for ten frames, since
 // the launcher's select-all reaches CNC_Select_Object a frame or two after the key goes down.
 static void TF_Deploy_Key_Tick(void)
@@ -7569,10 +7554,6 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Sidebar_Request(Sidebar
         return;
     }
 
-    TF_Sidebar_Log("sidebar request type=%d buildable_type=%d buildable_id=%d cell=%d,%d house=%d",
-                   (int)request_type, buildable_type, buildable_id, (int)cell_x, (int)cell_y,
-                   (PlayerPtr != NULL) ? (int)PlayerPtr->Class->House : -1);
-
     // TF: a left click on a click special's cameo arrives as a build request: the Firestorm goes on or off,
     // the Hunter Seeker launches. Clicks on one cameo within a third of a second count as one.
     int click_special = TF_Click_Special_Index(buildable_type, buildable_id);
@@ -7646,10 +7627,6 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_SuperWeapon_Request(Sup
     if (!DLLExportClass::Set_Player_Context(player_id)) {
         return;
     }
-
-    TF_Sidebar_Log("superweapon request type=%d buildable_type=%d buildable_id=%d at %d,%d house=%d",
-                   (int)request_type, buildable_type, buildable_id, x1, y1,
-                   (PlayerPtr != NULL) ? (int)PlayerPtr->Class->House : -1);
 
     switch (request_type) {
     case SUPERWEAPON_REQUEST_PLACE_SUPER_WEAPON:
