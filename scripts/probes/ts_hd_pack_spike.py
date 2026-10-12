@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Probe: can Tiberian Factions take one TS unit from a separate data-only pack mod?
 
-install moves the Wolverine (TSSMEC art and tiles, its RA_TSSMEC sidebar entry and cameo, the
+install moves the Wolverine (TSSMEC art and tiles, its RA_TSSMEC sidebar entry, both its cameos, the
 TSGUN4 report and its two events) out of an installed Vanilla_RA into a pack folder beside it,
 loaded through the pack's CCDATA/veterancy_mod.xml file list, as TD-Assets is. Everything it
 changes in Vanilla_RA is copied to a backup folder first; restore copies it back and removes the pack.
@@ -21,6 +21,7 @@ MOD = "Vanilla_RA"
 FILES = (
     "Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS/TSSMEC.ZIP",
     "Data/ART/TEXTURES/SRGB/BuildIcon_TS_Wolverine.tga",
+    "Data/ART/TEXTURES/SRGB/BuildIcon_TSSMEC_G.tga",
     "Data/AUDIO/TSGUN4.WAV",
 )
 TILES = "Data/XML/TILESETS/RA_UNITS.XML"
