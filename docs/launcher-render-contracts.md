@@ -129,18 +129,12 @@ canvas geometry. Open boxes: TSFACT (1 tile high), TSDROP
 can give). Fix path: diff TDFACT's stub/canvas content geometry against
 TSFACT's and transplant the relationship, art compensated to stay put.
 
-## 8. Anim exports honour `Rotation`, but the rotated texture is clipped to the UNROTATED frame
+## 8. The launcher draws every exported sprite unrotated
 
-Proven on the Disruptor band: setting
-`CNCObjectStruct::Rotation` on an anim export turns the sprite onto that DirType (E, N and SE
-all verified in play), which the 2026-08 "spawned anims draw unrotated" note did not know.
-The catch: the launcher rotates the texture inside the sprite's quad but keeps the quad at
-the packed frame's unrotated size, so anything outside that rectangle is cut off. A 64x112
-strip frame drew as a 64-wide bar at N/S and a sawtooth of axis-aligned rectangles on the
-diagonal; a near-square 124x72 oblong survived. **Rule: a sprite that will be exported
-rotated must be packed as a SQUARE frame (no bbox crop) with the art inside the inscribed
-circle.** `ts_gen_sonicwave.py::write_zip(square=True)` did this; the strip itself was
-rejected in play, the contract stands.
+`CNCObjectStruct::Rotation` is ignored on exports: an anim, a unit-typed export, and either with `SHAPE_FADING`,
+all drew flat with a logged `Rotation` of 158. Art that must follow an angle is built from round pieces laid along
+the line (the railgun shot's dots, `cnc3-railgun-beam.md`), or drawn by the launcher's beam line (`Lines[]`, any
+angle).
 
 ## 9. Overlapping-sprite chains can never give a hard edge or keep a texture
 
