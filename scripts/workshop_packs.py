@@ -128,7 +128,6 @@ def write_manifest(mod, folder):
 
 GAME = {"TS": "Tiberian Sun", "RA2": "Red Alert 2", "CNC3": "Command & Conquer 3: Tiberium Wars"}
 TF_URL = "https://steamcommunity.com/sharedfiles/filedetails/?id=3729834253"
-VETERANCY_URL = "https://steamcommunity.com/sharedfiles/filedetails/?id=2194215017"
 EA_EXAMPLE_URL = "https://github.com/electronicarts/CnC_Remastered_Collection/blob/master/REDALERT/ADATA.CPP#L2590"
 
 
@@ -159,11 +158,8 @@ def readme(mod, listed):
     lines += ["## Using the assets in your own mod", "",
               f"Every object, cameo and sound is named with the `{w["prefix"]}` prefix, so nothing clashes with the "
               "base game's own assets.", "",
-              f"- **With [Veterancy & more]({VETERANCY_URL}):** enable this pack beside it. Its DLL reads "
-              "`CCDATA/veterancy_mod.xml` and loads this pack's XML for you; add the objects through its rules "
-              "system.",
-              "- **With your own DLL mod:** enable this pack beside your mod (the game finds its art and sounds in "
-              "any enabled mod) and copy the entries you need from this pack's `Data/XML` files into your mod's "
+              "Enable this pack beside your mod (the game finds its art and sounds in any enabled mod) and copy "
+              "the entries you need from this pack's `Data/XML` files into your mod's "
               "`RA_*.XML`, `RABUILDABLES.XML` and `SFXEVENTS*.XML`. Each object needs a classic-mode SHP with the "
               "same frame count (a transparent stub is enough) and its `ImageData` set in your DLL's `Init` or "
               f"`One_Time` ([EA's example]({EA_EXAMPLE_URL})).", ""]
