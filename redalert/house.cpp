@@ -4136,8 +4136,6 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
     }
 }
 
-// True once this house has discovered a standing enemy building. Blind-scout dispatch runs until then,
-// and an Easy house's hunters stop probing start positions.
 // A standing building the house has discovered, held by an enemy still in the match: a defeated house can leave
 // buildings behind, and they are no objective.
 static bool TF_Is_Known_Enemy_Building(HouseClass const* house, BuildingClass const* b)
@@ -4146,6 +4144,8 @@ static bool TF_Is_Known_Enemy_Building(HouseClass const* house, BuildingClass co
             && b->House->Class->House != HOUSE_NEUTRAL && b->Is_Discovered_By_Player((HouseClass*)house));
 }
 
+// True once this house has discovered a standing enemy building. Blind-scout dispatch runs until then,
+// and an Easy house's hunters stop probing start positions.
 bool HouseClass::TF_Knows_Any_Enemy_Building(void)
 {
     for (int index = 0; index < Buildings.Count(); index++) {
