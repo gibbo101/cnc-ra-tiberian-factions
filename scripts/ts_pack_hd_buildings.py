@@ -302,8 +302,8 @@ BUILDINGS = {
                    frames=("loop/firestorm-generator-loop", 96), then=("building/firestorm-generator", 2),
                    then_over=("A-dome/firestorm-generator-dome", 0)),
     # A Firestorm wall section on its cell, in the wall view: the neighbour mask (N1 E2 S4 W8), +16
-    # damaged, +32 with the field on.
-    "TSFSDF": dict(src="tsfsdf", make=None, frames=("wall/firestorm-wall", 64)),
+    # damaged, +32 with the field on. 2x2 cells centred on its cell keep the shadow and joining brackets.
+    "TSFSDF": dict(src="tsfsdf", make=None, frames=("wall/firestorm-wall", 64), cells=(2, 2)),
     # The limpet mine dug in on its cell: its lens flashing (10), healthy then damaged. The build-up is
     # all 42 of TS's DLIMPMK frames, the drone landing and digging in.
     "TSDLIMP": dict(src="tsdlimp", make=("build-up/limpet-mine-build", 42), frames=("loop/limpet-mine-loop", 20)),

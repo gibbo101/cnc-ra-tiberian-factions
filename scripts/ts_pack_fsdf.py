@@ -19,7 +19,7 @@ from TS's own pixels, taken from TS's frames un-projected to an overhead view:
 Frames (TS's order, neighbour bits N1 E2 S4 W8 within each group of 16):
    0-15 normal, 16-31 normal damaged, 32-47 field up, 48-63 field up damaged.
 The damaged groups repeat the undamaged art until damaged art is signed off.
-Canvas 176x320 with the cell centred, the wall packers' (and the TSFSDF classic stub's) canvas.
+Canvas 176x320 with the cell centred, the wall packers' canvas.
 TSFSDF.ZIP, its TS_STRUCTURES.XML tile run and BuildIcon_TS_Fsdf.tga go to the TS-Graphics-Pack
 (asset_packs.py routes each name).
 

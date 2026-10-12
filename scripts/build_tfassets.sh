@@ -574,8 +574,8 @@ ts_stub TSFGEN "$TMPDIR/tsfgen_stub.shp" 72 72 2
 PACK_ARGS+=("$TMPDIR/tsfgen_stub.shp:TSFGEN.SHP")
 ts_stub TSFGEN "$TMPDIR/tsfgenmk_stub.shp" 72 72 19
 PACK_ARGS+=("$TMPDIR/tsfgenmk_stub.shp:TSFGENMAKE.SHP")
-# TSFSDF 33x60, 64 frames: the Firestorm Wall Section on the wall packers' 176x320 canvas.
-ts_stub TSFSDF "$TMPDIR/tsfsdf_stub.shp" 33 60 64
+# TSFSDF 48x48, 64 frames: the Firestorm Wall Section's 256x256 canvas centred on its cell.
+ts_stub TSFSDF "$TMPDIR/tsfsdf_stub.shp" 48 48 64
 PACK_ARGS+=("$TMPDIR/tsfsdf_stub.shp:TSFSDF.SHP")
 # TSSILO 48x72 = the HD silo's 256x384 canvas centred on its 2x1 plot: the silo on the plot row, empty
 # canvas over the bib row in front.
