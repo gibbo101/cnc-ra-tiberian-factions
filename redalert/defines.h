@@ -3784,10 +3784,8 @@ typedef enum BSizeType : char
     BSIZE_55,
     BSIZE_43, // TS-authentic wide footprints. Appended at the tail: Width()/Height()/CenterOffset are positional tables.
     BSIZE_44, // TSPROC: 4x3 building + the south apron row as real footprint (no cliff drape).
-    BSIZE_53, // TSWEAP: hangar on rows 0-1 x cols 0-3, row 2 + col 4 walkable concrete (08-28 rebuild).
     BSIZE_31, // Gates, east-west.
     BSIZE_13, // Gates, north-south.
-    BSIZE_34, // TSWEAP: RA's 3x3 war factory slot with an empty row behind it, so the box rises over the roof; the row is ordinary ground.
     BSIZE_24, // TSRADR: the pads on the south row, the tower, dish and antennas over the three walkable rows behind.
 
     BSIZE_COUNT

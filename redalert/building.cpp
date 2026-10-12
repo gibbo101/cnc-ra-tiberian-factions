@@ -211,10 +211,8 @@ COORDINATE const BuildingClass::CenterOffset[BSIZE_COUNT] = {
 
     0x02000200L, // BSIZE_44 (4x4): x = 2 cells, y = 2 cells -- the centre CELL is row 2 col 2,
                  // which for TSPROC is the dock pad itself (an occupy hole).
-    0x01800280L, // BSIZE_53 (5x3): x = 2.5 cells, y = 1.5 cells -- centre CELL row 1 col 2 (hangar).
     0x00800180L, // BSIZE_31 (3x1): x = 1.5 cells, y = 0.5 cells.
     0x01800080L, // BSIZE_13 (1x3): x = 0.5 cells, y = 1.5 cells.
-    0x02000180L, // BSIZE_34 (3x4): x = 1.5 cells, y = 2 cells -- centre CELL row 2 col 1.
     0x020000FFL, // BSIZE_24 (2x4): x = 1 cell, y = 2 cells.
 };
 
