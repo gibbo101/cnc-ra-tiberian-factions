@@ -257,7 +257,7 @@ void AnimClass::Draw_It(int x, int y, WindowNumberType window) const
         void const* shapefile = Get_Image_Data();
         if (shapefile != NULL) {
             void const* transtable = NULL;
-            int shapenum = Class->Start + Fetch_Stage();
+            int shapenum = Class->Start + Fetch_Stage() + BeamShape; // TF: a railgun segment's art block
             void const* remap = NULL;
             ShapeFlags_Type flags = SHAPE_CENTER | SHAPE_WIN_REL;
             bool alt = false;
@@ -337,7 +337,7 @@ void AnimClass::Draw_It(int x, int y, WindowNumberType window) const
                               flags,
                               remap,
                               transtable,
-                              DIR_N,
+                              BeamDir, // TF: DIR_N but for a railgun piece turned onto its shot
                               Class->VirtualScale,
                               width,
                               height);
@@ -617,6 +617,8 @@ AnimClass::AnimClass(AnimType animnum, COORDINATE coord, unsigned char timedelay
     , RailBlend(0.0f)
     , RailFade(0.0f)
     , RailLife(0)
+    , BeamDir(DIR_N)
+    , BeamShape(0)
     , Loops(1)
     , IsToDelete(false)
     , IsBrandNew(true)
@@ -842,6 +844,54 @@ int TF_Railgun_Coil(bool small, int sx, int sy, int dx, int dy, int dist)
         }
     }
     return (longest);
+}
+
+// Lays C&C3's railgun shot along a Mk. II's line (leptons): one-cell beam pieces turned onto the shot, threads
+// widening toward the target, the muzzle flash and the impact. Returns the frames the gun holds, TS's coil life.
+int TF_Railgun_Beam(int sx, int sy, int dx, int dy, int dist)
+{
+    enum
+    {
+        PIECE = 256,    // leptons in one cell of beam art
+        QUARTER = 64,   // the art's shortest piece
+        TIERS = 4,
+        FRAMES = 15,    // stages of each beam piece's art block
+        HOLD = 75,      // TS's coil life, which sets the Mk. II's rate of fire
+    };
+    if (dist <= 0) {
+        return (0);
+    }
+    DirType const dir = ::Direction(XY_Coord(sx, sy), XY_Coord(sx + dx, sy + dy));
+    DirType const turn = (DirType)(((int)dir - (int)DIR_E) & 0xFF);
+    int const full = dist / PIECE;
+    int last = (dist % PIECE + QUARTER / 2) / QUARTER;
+    for (int i = 0; i <= full; i++) {
+        int quarters = (i < full) ? 4 : last;
+        if (quarters == 0) {
+            break;
+        }
+        int along = i * PIECE + PIECE / 2;
+        int x = sx + dx * along / dist;
+        int y = sy + dy * along / dist;
+        if (x < 0 || y < 0) {
+            continue;
+        }
+        AnimClass* piece = new AnimClass(ANIM_C3_RAILSEG, XY_Coord(x, y));
+        if (piece == NULL) {
+            break;
+        }
+        int tier = min(TIERS - 1, (i * PIECE + quarters * QUARTER / 2) * TIERS / dist);
+        piece->BeamDir = turn;
+        piece->BeamShape = (tier * 4 + quarters - 1) * FRAMES;
+    }
+    new AnimClass(ANIM_C3_RAILMZ, XY_Coord(sx, sy));
+    if (sx + dx >= 0 && sy + dy >= 0) {
+        AnimClass* hit = new AnimClass(ANIM_C3_RAILHIT, XY_Coord(sx + dx, sy + dy));
+        if (hit != NULL) {
+            hit->BeamDir = turn;
+        }
+    }
+    return (HOLD);
 }
 
 // One frame of a TS railgun spark, as OpenTS ParticleClass::Railgun_Behavior_AI: it drifts, and its colour
