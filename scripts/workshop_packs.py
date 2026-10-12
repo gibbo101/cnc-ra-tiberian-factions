@@ -161,6 +161,15 @@ def readme(mod, listed):
     for title, names in contents(mod).items():
         lines += [f"**{title}** ({len(names)}): " + ", ".join(names), ""]
     lines += ["XML files: " + ", ".join(f"`{n}`" for n in sorted(listed.values())) + ".", ""]
+    lines += ["## AI disclosure", ""]
+    if w["game"] in ("TS", "RA2"):
+        lines += ["The HD art in this pack was made with AI assistance. The 3D models behind the sprites were built "
+                  "and refined with AI tools, then rendered, checked and fitted to the game by hand, and every asset "
+                  "was reviewed in play before release."]
+    else:
+        lines += ["These sprites were rendered from the game's own 3D models; no AI generated the art."]
+    lines += ["The scripts and tools that build this pack, and Tiberian Factions' code, were written with AI "
+              "assistance. The original designs, sounds and voices are Westwood's and Electronic Arts'.", ""]
     lines += ["## Credits", "", f"Original {game} art and sounds: Electronic Arts."]
     if w["game"] in ("TS", "RA2"):
         lines += [f"HD rebuilds of the {game} designs and preparation for Remastered: gibbo101."]
