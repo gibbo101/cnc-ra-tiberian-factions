@@ -64,6 +64,7 @@ sections, and `package-for-workshop.sh` runs it.
 - `subterranean-design.md` — the subterranean units.
 - `stealth-generator-spec.md` — the Nod Stealth Generator.
 - `cnc3-to-remastered-sprites.md` — C&C3 units as HD sprites.
+- `cnc3-railgun-beam.md` — C&C3's railgun shot on the RailBeam weapons (the Mammoth Mk. II).
 - `asset-packs.md` — the TS, RA2 and C&C3 asset packs.
 
 ### Art and rendering
