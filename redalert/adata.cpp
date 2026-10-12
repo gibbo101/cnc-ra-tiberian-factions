@@ -2420,9 +2420,9 @@ static AnimTypeClass const TsDig(ANIM_TS_DIG, "TSDIG", 64, 18, false, false, fal
 // IonBlast=RING1 flash. Art from scripts/ts_pack_ion.py, the beam pre-tiled, as the launcher can't tile anims.
 // C&C3's railgun shot for the Mammoth Mk. II (scripts/c3_rail_beam.py): beam pieces laid by TF_Railgun_Beam, which
 // picks each piece's art block (AnimClass::BeamShape) and turns it onto the shot (BeamDir); muzzle and impact.
-static AnimTypeClass const C3RailSeg(ANIM_C3_RAILSEG, "C3RAILSEG", 36, 0, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 15, 0, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const C3RailSeg(ANIM_C3_RAILSEG, "C3RAILSEG", 36, 0, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
 static AnimTypeClass const C3RailMz(ANIM_C3_RAILMZ, "C3RAILMZ", 36, 0, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 5, 0, VOC_NONE, ANIM_NONE, 5, 0x100);
-static AnimTypeClass const C3RailHit(ANIM_C3_RAILHIT, "C3RAILHIT", 48, 0, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 15, 0, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const C3RailHit(ANIM_C3_RAILHIT, "C3RAILHIT", 48, 0, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
 
 static AnimTypeClass const TsIonBeam(ANIM_TS_ION_BEAM, "TSIONBM", 48, 11, false, false, false, true, true, false, false, false, false, 0, 2, 0, 0, 0, 15, 0, VOC_TS_ION1, ANIM_NONE, 15, 0x100);
 static AnimTypeClass const TsIonRing(ANIM_TS_ION_RING, "TSIONRNG", 48, 7, false, false, false, false, false, false, true, false, false, 0, 1, 0, 0, 0, 15, 0, VOC_NONE, ANIM_NONE, 15, 0x100);

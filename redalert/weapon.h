@@ -128,6 +128,10 @@ public:
     // and they deal its AmbientDamage.
     unsigned IsSonic : 1;
 
+    // TF: fires with C&C3's railgun shot (RailBeam=), drawn from the muzzle to the target by TF_Railgun_Beam; with
+    // IsRailgun it replaces the TS coil.
+    unsigned IsRailBeam : 1;
+
     // TF: an RA2 prism beam (the Prism Tank). The beam forks from the impact onto up to five nearby enemies,
     // each taking AmbientDamage through the weapon's warhead.
     unsigned IsPrismBeam : 1;

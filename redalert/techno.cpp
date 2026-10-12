@@ -3818,6 +3818,13 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             } else {
                 delete bullet;
             }
+            // TF: a RailBeam weapon with a projectile draws C&C3's railgun shot to the target as it fires.
+            if (weapon->IsRailBeam && !weapon->IsRailgun) {
+                TF_Railgun_Beam((int)Coord_X(fire_coord),
+                                (int)Coord_Y(fire_coord),
+                                (int)Coord_X(target_coord) - (int)Coord_X(fire_coord),
+                                (int)Coord_Y(target_coord) - (int)Coord_Y(fire_coord));
+            }
             /*
             **	TF: the TS FireballLauncher's shot is the first particle of a stream the
             **	unit keeps spawning for the next 30 frames (TS FireStreamSys Lifetime).
@@ -4121,7 +4128,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 x1 += Map.TacPixelX;
                 y += Map.TacPixelY;
                 y1 += Map.TacPixelY;
-                if (!weapon->IsSonic && weapon->ID != WEAPON_MECHRAILGUN) {
+                if (!weapon->IsSonic && !weapon->IsRailBeam) {
                 bool const small_rail = (weapon->ID == WEAPON_TSLTRAIL);
                 Lines[0][0] = x; Lines[0][1] = y; Lines[0][2] = x1; Lines[0][3] = y1; Lines[0][4] = small_rail ? 0x9F : 0x0A;
                 LineCount = 1;
@@ -4133,8 +4140,8 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 enum { SONIC_SWEEP_STAGES = AnimClass::SONIC_LEAD_STAGES };
                 if (weapon->IsRailgun) {
                     RailCoilEnd = (int)Frame
-                                  + ((weapon->ID == WEAPON_MECHRAILGUN)
-                                         ? TF_Railgun_Beam(sx, sy, ddx, ddy, dist)
+                                  + (weapon->IsRailBeam
+                                         ? TF_Railgun_Beam(sx, sy, ddx, ddy)
                                          : TF_Railgun_Coil(weapon->ID == WEAPON_TSLTRAIL, sx, sy, ddx, ddy, dist));
                 }
 

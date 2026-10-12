@@ -846,18 +846,20 @@ int TF_Railgun_Coil(bool small, int sx, int sy, int dx, int dy, int dist)
     return (longest);
 }
 
-// Lays C&C3's railgun shot along a Mk. II's line (leptons): one-cell beam pieces turned onto the shot, threads
-// widening toward the target, the muzzle flash and the impact. Returns the frames the gun holds, TS's coil life.
-int TF_Railgun_Beam(int sx, int sy, int dx, int dy, int dist)
+// Lays C&C3's railgun shot from (sx, sy) along (dx, dy) in leptons: one-cell beam pieces turned onto the shot, threads
+// growing from the muzzle, the muzzle flash and the impact. Returns the frames a TS railgun holds, its coil life.
+int TF_Railgun_Beam(int sx, int sy, int dx, int dy)
 {
     enum
     {
         PIECE = 256,    // leptons in one cell of beam art
         QUARTER = 64,   // the art's shortest piece
-        TIERS = 4,
-        FRAMES = 15,    // stages of each beam piece's art block
+        TIERS = 5,      // the threads' strength by cell from the muzzle, full from the 5th
+        PHASES = 3,     // cells in the threads' wave
+        FRAMES = 12,    // stages of each beam piece's art block
         HOLD = 75,      // TS's coil life, which sets the Mk. II's rate of fire
     };
+    int const dist = (int)sqrt((double)dx * dx + (double)dy * dy);
     if (dist <= 0) {
         return (0);
     }
@@ -880,9 +882,8 @@ int TF_Railgun_Beam(int sx, int sy, int dx, int dy, int dist)
         if (piece == NULL) {
             break;
         }
-        int tier = min(TIERS - 1, (i * PIECE + quarters * QUARTER / 2) * TIERS / dist);
         piece->BeamDir = turn;
-        piece->BeamShape = (tier * 4 + quarters - 1) * FRAMES;
+        piece->BeamShape = ((min(i, TIERS - 1) * PHASES + i % PHASES) * 4 + quarters - 1) * FRAMES;
     }
     new AnimClass(ANIM_C3_RAILMZ, XY_Coord(sx, sy));
     if (sx + dx >= 0 && sy + dy >= 0) {
