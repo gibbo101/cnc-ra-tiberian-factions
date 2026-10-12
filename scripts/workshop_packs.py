@@ -177,8 +177,7 @@ def readme(mod, listed):
         lines += [f"HD rebuilds of the {game} designs and preparation for Remastered: gibbo101."]
     else:
         lines += ["Rendered for Remastered from the game's own models by gibbo101."]
-    more = [m for m in D.MORE_MODS if w["required"] or "Tiberian Factions" not in m]
-    lines += ["", "## More C&C projects by gibbo101", ""] + [f"- {m}" for m in more] + [""]
+    lines += ["", "## More C&C projects by gibbo101", ""] + [f"- {m}" for m in D.MORE_MODS] + [""]
     return "\n".join(lines)
 
 
