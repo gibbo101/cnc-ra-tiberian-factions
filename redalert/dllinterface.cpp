@@ -95,6 +95,7 @@ extern char const* Speech[VOX_COUNT];
 extern char const* SpeechTD[VOX_COUNT];
 extern void Init_SpeechTD(void);
 #include "tf_eva_mailbox.h"
+#include "tf_asset_pack.h"
 #include "tf_launcher.h"
 // Tiberian Sun GDI's EVA (audio.cpp Init_SpeechTS). NULL slots fall back to SpeechTD[].
 extern char const* SpeechTS[VOX_COUNT];
@@ -1010,6 +1011,15 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
         }
         if (player_info.House == HOUSE_GREECE) {
             player_info.House = HOUSE_BAD;
+        }
+        // TF: without the TS-HD-Assets pack a TS GDI pick plays another side, so no TS art is ever asked for.
+        if (Is_TS_GDI((HousesType)player_info.House) && !TF_TS_Pack_Present()) {
+            static const HousesType _instead[] = {HOUSE_GOOD, HOUSE_BAD, HOUSE_ENGLAND, HOUSE_USSR};
+            static const char* const _instead_name[] = {"GDI", "Nod", "Allied", "Soviet"};
+            player_info.House = _instead[i % 4];
+            if (!player_info.IsAI) {
+                TF_Queue_Pack_Notice(_instead_name[i % 4]);
+            }
         }
 
         who->Player.House = (HousesType)player_info.House;
@@ -2290,6 +2300,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
     TF_Deploy_Key_Tick();
 
     TF_Sensor_Tick();
+
+    TF_Pack_Notice_Tick();
 
     TF_Dev_Tunneller_Tick();
 
@@ -4881,6 +4893,8 @@ void DLLExportClass::Add_Mod_Path(const char* mod_path)
     ModSearchPaths.Add(copy_path);
 
     TF_Install_Bundled_Maps(mod_path);
+    // TF: an enabled TS-HD-Assets pack registers its CCDATA here, with its marker.
+    TF_Note_Mod_Path(mod_path);
 }
 
 /**************************************************************************************************
