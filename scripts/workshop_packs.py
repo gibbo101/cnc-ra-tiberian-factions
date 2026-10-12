@@ -22,6 +22,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import asset_packs as A  # noqa: E402
+import asset_pack_docs as D  # noqa: E402
 
 # Launcher XML -> (folder under Data/XML, the file name for a pack, veterancy_mod.xml tag)
 XML_NAMES = {
@@ -92,7 +93,7 @@ def write_if_changed(path, text):
 
 def write_xml(mod, folder):
     """The mod's XML files and the veterancy_mod.xml list of them; returns {veterancy tag: file name}."""
-    listed = {}
+    listed, files = {}, {}
     for rel, pack_file, root, _ in A.XML_FILES:
         sub, pattern, tag = XML_NAMES[rel]
         text = combined_xml(mod, rel, pack_file, root)
@@ -100,6 +101,7 @@ def write_xml(mod, folder):
             continue
         name = pattern.format(id=A.WORKSHOP[mod]["xml_id"])
         write_if_changed(os.path.join(folder, "Data", "XML", sub, name), text)
+        files[rel] = name
         if tag:
             listed[tag] = name
     tiles = "".join(f"\t\t<{t}>{listed.get(t, '')}</{t}>\n" for t in ("Structures", "Units", "Vfx"))
@@ -109,7 +111,7 @@ def write_xml(mod, folder):
                  f"\t<GameObjects>{listed.get('GameObjects', '')}</GameObjects>\n"
                  f"\t<TileSets>\n{tiles}\t</TileSets>\n</Files>\n")
     write_if_changed(os.path.join(folder, "CCDATA", "veterancy_mod.xml"), file_list)
-    return listed
+    return files
 
 
 def write_manifest(mod, folder):
@@ -124,11 +126,71 @@ def write_manifest(mod, folder):
                          f"[Pack]\nName={mod}\nVersion={high}.{low}\n")
 
 
+GAME = {"TS": "Tiberian Sun", "RA2": "Red Alert 2", "CNC3": "Command & Conquer 3: Tiberium Wars"}
+TF_URL = "https://steamcommunity.com/sharedfiles/filedetails/?id=3729834253"
+VETERANCY_URL = "https://steamcommunity.com/sharedfiles/filedetails/?id=2194215017"
+EA_EXAMPLE_URL = "https://github.com/electronicarts/CnC_Remastered_Collection/blob/master/REDALERT/ADATA.CPP#L2590"
+
+
+def contents(mod):
+    """Section title -> sorted names across the mod's source packs."""
+    out = {}
+    for pack in A.WORKSHOP[mod]["packs"]:
+        for title, names in D.listing(pack).items():
+            out.setdefault(title, set()).update(names)
+    return {title: sorted(names) for title, names in out.items()}
+
+
+def readme(mod, listed):
+    """The pack's README.md: what it is, how players and modders use it, contents and credits."""
+    w = A.WORKSHOP[mod]
+    game = GAME[w["game"]]
+    lines = [f"# {w['name']}", "", w["description"] + " Built for Command & Conquer Remastered Collection.", "",
+             "This is an asset pack: on its own it adds nothing to the game. A mod has to use it.", ""]
+    if w["required"]:
+        lines += ["## Playing Tiberian Factions", "",
+                  f"[Tiberian Factions]({TF_URL}) needs this pack for its {game} factions.", "",
+                  "1. Subscribe to Tiberian Factions and to this pack.",
+                  "2. In the game's Mods menu, enable both.",
+                  "3. Restart the game: the game only picks up a change to enabled mods after a restart.", "",
+                  f"Without the pack, Tiberian Factions still plays, but its {game} factions are locked.", ""]
+    lines += ["If the game crashes on the splash screen, the extra art needs more video memory than it has: add "
+              "`NOSPLASHPRELOAD` to the game's launch options.", ""]
+    lines += ["## Using the assets in your own mod", "",
+              f"Every object, cameo and sound is named with the `{w["prefix"]}` prefix, so nothing clashes with the "
+              "base game's own assets.", "",
+              f"- **With [Veterancy & more]({VETERANCY_URL}):** enable this pack beside it. Its DLL reads "
+              "`CCDATA/veterancy_mod.xml` and loads this pack's XML for you; add the objects through its rules "
+              "system.",
+              "- **With your own DLL mod:** enable this pack beside your mod (the game finds its art and sounds in "
+              "any enabled mod) and copy the entries you need from this pack's `Data/XML` files into your mod's "
+              "`RA_*.XML`, `RABUILDABLES.XML` and `SFXEVENTS*.XML`. Each object needs a classic-mode SHP with the "
+              "same frame count (a transparent stub is enough) and its `ImageData` set in your DLL's `Init` or "
+              f"`One_Time` ([EA's example]({EA_EXAMPLE_URL})).", ""]
+    if w["game"] == "TS":
+        lines += ["Most units use the stock layout: one frame per facing, then a turret block where they have one. "
+                  "Walkers, units with rolling treads or offset turrets, and buildings with doors, docks or add-ons "
+                  "use Tiberian Factions' own layouts and need the matching DLL code, which is in its "
+                  f"[source]({D.REPO_URL}).", ""]
+    lines += ["## Contents", ""]
+    for title, names in contents(mod).items():
+        lines += [f"**{title}** ({len(names)}): " + ", ".join(names), ""]
+    lines += ["XML files: " + ", ".join(f"`{n}`" for n in sorted(listed.values())) + ".", ""]
+    lines += ["## Credits", "", f"Original {game} art and sounds: Electronic Arts."]
+    if w["game"] in ("TS", "RA2"):
+        lines += [f"HD rebuilds of the {game} designs and preparation for Remastered: gibbo101."]
+    else:
+        lines += ["Rendered for Remastered from the game's own models by gibbo101."]
+    lines += ["", "## More C&C projects by gibbo101", ""] + [f"- {m}" for m in D.MORE_MODS] + [""]
+    return "\n".join(lines)
+
+
 def build(mod, folder):
     """The whole Workshop folder for one asset-pack mod."""
     write_manifest(mod, folder)
     copy_binaries(mod, folder)
-    write_xml(mod, folder)
+    listed = write_xml(mod, folder)
+    write_if_changed(os.path.join(folder, "README.md"), readme(mod, listed))
 
 
 def main(argv):
