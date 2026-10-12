@@ -7489,9 +7489,9 @@ void const* BuildingClass::Remap_Table(void)
  * HISTORY:                                                                                    *
  *   07/29/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-// Packs a deployed TS building back into its vehicle on the same cell; where the vehicle can't unlimbo, the
-// building stands back on its own plot and tries again.
-static void TF_Pack_Up(BuildingClass* mine)
+// Packs a deployed TS building back into its vehicle on the same cell, deleting the building. False where
+// the vehicle can't unlimbo: the building then stands back on its own plot.
+static bool TF_Pack_Up(BuildingClass* mine)
 {
     COORDINATE const home = mine->Coord;
     CELL cell = Coord_Cell(mine->Coord);
@@ -7503,7 +7503,7 @@ static void TF_Pack_Up(BuildingClass* mine)
     UnitType type = TF_Packs_Into(mine);
     UnitClass* unit = new UnitClass(type, mine->House->Class->House);
     if (unit == NULL) {
-        return;
+        return (false);
     }
     DirType facing = (type == UNIT_TSLPST)   ? DIR_E
                      : (type == UNIT_TSMWAR) ? DIR_SW
@@ -7519,10 +7519,11 @@ static void TF_Pack_Up(BuildingClass* mine)
             unit->Assign_Mission(MISSION_GUARD);
         }
         delete mine;
-    } else {
-        delete unit;
-        mine->Unlimbo(home, DIR_N);
+        return (true);
     }
+    delete unit;
+    mine->Unlimbo(home, DIR_N);
+    return (false);
 }
 
 int BuildingClass::Mission_Unload(void)
@@ -7544,8 +7545,14 @@ int BuildingClass::Mission_Unload(void)
             Status = 1;
             return (1);
         }
-        if (IsReadyToCommence) {
-            TF_Pack_Up(this);
+        // Trap: a successful pack-up deletes this building.
+        if (IsReadyToCommence && !TF_Pack_Up(this)) {
+            if (House->IsHuman) {
+                Sound_Effect(VOC_SCOLD);
+            }
+            Status = 0;
+            Begin_Mode(BSTATE_IDLE);
+            Set_Mission(MISSION_GUARD);
         }
         return (1);
     }
