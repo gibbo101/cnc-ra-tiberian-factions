@@ -3035,6 +3035,9 @@ typedef enum AnimType : short
     ANIM_TS_FSIDLE,     // TS FSIDLE: the crackling column over a live Firestorm Wall Section, based at its coordinate.
     ANIM_TS_FSGRND,     // TS FSGRND: sparks where something on the ground meets a live Firestorm.
     ANIM_TS_FSAIR,      // TS FSAIR: sparks where something in the air meets a live Firestorm (19 frames).
+    ANIM_C3_RAILSEG,    // C&C3 railgun shot: one cell of beam, turned onto the shot (TF_Railgun_Beam).
+    ANIM_C3_RAILMZ,     // C&C3 railgun muzzle flash.
+    ANIM_C3_RAILHIT,    // C&C3 railgun impact glow and sparks, turned onto the shot.
 
     ANIM_COUNT,
     ANIM_FIRST = 0
