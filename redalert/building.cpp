@@ -925,8 +925,8 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
             Techno_Draw_Object_Virtual(Get_Image_Data(), glow, x, y, window, DIR_N, 0x0100, "TSDEPTRP");
         }
 
-        // TF: a TS war factory draws, over its body, the under-door floor while unloading, the near face of
-        // the hangar in front of a vehicle in the bay, then the shutter.
+        // TF: a TS war factory draws, over its body, the under-door floor while unloading, the hangar's near face,
+        // its door frame in front of a vehicle in the bay, then the shutter.
         if (Is_TS_War_Factory() && Strength > 1) {
             bool mobile = (*this == STRUCT_TSDWEAP);
             int stages = TS_Door_Stages();
@@ -949,6 +949,8 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
                 Techno_Draw_Object_Virtual(mobile ? Class->TsDweapFront : Class->TsWeapFront, Shape_Number(), x, y, window,
                                            DIR_N, 0x0100, mobile ? "TSDWEAPNF" : "TSWEAPNF");
             }
+            Techno_Draw_Object_Virtual(mobile ? Class->TsDweapDoorFrame : Class->TsWeapDoorFrame, Shape_Number(), x, y,
+                                       window, DIR_N, 0x0100, mobile ? "TSDWEAPNP" : "TSWEAPNP");
             Techno_Draw_Object_Virtual(mobile ? Class->TsDweapShutter : Class->TsWeapShutter, stage + dmg * stages, x, y,
                                        window, DIR_N, 0x0100, mobile ? "TSDWEAPDR" : "TSWEAPDR");
         }
