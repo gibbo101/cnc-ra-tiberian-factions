@@ -3,9 +3,11 @@
 
 Usage:  stage_asset_packs.py <mod dir> [--full]
 
-Copies every pack's Data/ART and Data/AUDIO into <mod dir>/Data, then writes each of the mod's
-XML files that packs contribute to: the mod's own file from resources/, with every pack's
-entries in place of that pack's marker (before the closing tag when the file has no marker).
+Copies every pack's Data/ART and Data/AUDIO into <mod dir>/Data, or into the folder beside it of
+the required Workshop mod that carries the pack (asset_packs.REQUIRED, with its ccmod.json), then
+writes each of the mod's XML files that packs contribute to: the mod's own file from resources/,
+with every pack's entries in place of that pack's marker (before the closing tag when the file has
+no marker).
 A file two packs carry (an HD cameo over its classic one) is copied from the later pack only, and a tileset
 ZIP that copies another's frames is left out (scripts/share_tileset_zips.py).
 The XML always starts from the source tree, so staging twice gives the same result.
@@ -16,6 +18,7 @@ its own copy of that tree.
 
 License: GPL v3.
 """
+import json
 import os
 import re
 import shutil
@@ -63,6 +66,16 @@ def copy_tree(src, dst, skip=frozenset()):
         shutil.copytree(src, dst, copy_function=copy_newer, dirs_exist_ok=True, ignore=ignore)
 
 
+def write_manifest(folder, mod):
+    """The ccmod.json of a required Workshop mod: data only, loaded beside Tiberian Factions."""
+    manifest = dict(author="gibbo101", load_order=2, game_type="RA", **A.REQUIRED_MANIFEST[mod])
+    text = json.dumps(manifest, indent=4) + "\n"
+    path = os.path.join(folder, "ccmod.json")
+    os.makedirs(folder, exist_ok=True)
+    if not os.path.exists(path) or open(path, encoding="utf-8").read() != text:
+        open(path, "w", encoding="utf-8").write(text)
+
+
 def pack_files(pack, sub):
     """A pack's files under Data/<sub>, relative to that folder, upper case."""
     base = os.path.join(A.pack_data(pack), sub)
@@ -100,16 +113,30 @@ def stage(mod_dir, full=False):
     if full:
         copy_tree(A.MOD, mod_dir, {os.path.join("DATA", rel) for rel in shared})
     data = os.path.join(mod_dir, "Data")
+    datas = {None: data}
+    for mod in A.REQUIRED:
+        folder = os.path.join(os.path.dirname(os.path.normpath(mod_dir)), mod)
+        write_manifest(folder, mod)
+        datas[mod] = os.path.join(folder, "Data")
     for rel in shared:
-        stale = os.path.join(data, rel)
-        if os.path.exists(stale):
-            os.remove(stale)
+        for d in datas.values():
+            stale = os.path.join(d, rel)
+            if os.path.exists(stale):
+                os.remove(stale)
     packs = list(A.PACKS)
     for i, pack in enumerate(packs):
+        dst = datas[A.required_mod(pack)]
         for sub in ("ART", "AUDIO"):
             later = set().union(*(pack_files(p, sub) for p in packs[i + 1:]))
             skip = later | {os.path.relpath(rel, sub.upper()) for rel in shared if rel.startswith(sub.upper() + os.sep)}
-            copy_tree(os.path.join(A.pack_data(pack), sub), os.path.join(data, sub), skip)
+            src = os.path.join(A.pack_data(pack), sub)
+            copy_tree(src, os.path.join(dst, sub), skip)
+            if dst != data:
+                for d, _, fs in os.walk(src):
+                    for f in fs:
+                        stale = os.path.join(data, sub, os.path.relpath(os.path.join(d, f), src))
+                        if os.path.exists(stale):
+                            os.remove(stale)
     for rel, text in texts.items():
         dst = os.path.join(data, rel)
         os.makedirs(os.path.dirname(dst), exist_ok=True)

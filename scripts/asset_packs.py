@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """The asset packs: which of the mod's files belong to which Workshop pack, and where they live.
 
-Every folder under asset-packs/ is one Steam Workshop item, laid out exactly as it is uploaded
-(the TD-Assets layout): ccmod.json, README.md and a Data/ tree in the launcher's own layout, so
-another modder can copy any of it straight into their mod. Tiberian Factions' own files stay in
-resources/remaster_mods/Vanilla_RA. The build stages both: the packs' art and audio are copied
-into the staged mod and each pack's XML entries are merged into the mod's XML files
-(scripts/stage_asset_packs.py).
+Every folder under asset-packs/ holds one kind of asset (the TD-Assets layout): ccmod.json,
+README.md and a Data/ tree in the launcher's own layout, so another modder can copy any of it
+straight into their mod. Tiberian Factions' own files stay in resources/remaster_mods/Vanilla_RA.
+The build stages both (scripts/stage_asset_packs.py): each pack's XML entries are merged into the
+mod's XML files, and its art and audio are copied into the staged mod, or, for the packs a
+REQUIRED Workshop mod carries, into that mod's folder beside it. The launcher finds a file in any
+enabled mod, so the mod keeps only the XML naming them.
 
 A file's pack follows from its name alone, so every pack script asks this module for its output
 paths and a new TS, RA2 or C&C3 asset lands in its pack without a list to maintain:
@@ -49,6 +50,23 @@ PACKS = {
     "CNC3-SFX-Pack": "CNC3",
     "CNC3-Voices-eng": "CNC3",
 }
+
+# Data-only Workshop mods Tiberian Factions requires: each carries these packs' art and audio, and
+# the mod keeps only their XML entries
+REQUIRED = {
+    "TS-HD-Assets": ("TS-Graphics-Pack", "TS-HD-Graphics-Pack", "TS-SFX-Pack", "TS-EVA-eng", "TS-Voices-eng"),
+}
+REQUIRED_MANIFEST = {
+    "TS-HD-Assets": {"name": "Tiberian Sun HD Assets",
+                     "description": "Tiberian Sun units, buildings, effects, sounds and EVA for Red Alert, in HD.",
+                     "version_high": 1, "version_low": 0},
+}
+
+
+def required_mod(pack):
+    """The required Workshop mod that carries a pack's art and audio, or None for the mod's own."""
+    return next((mod for mod, packs in REQUIRED.items() if pack in packs), None)
+
 
 # HD rebuilds of TS objects (resources/custom-art): every art name that starts with one of these,
 # so an object's MAKE, door, lamp, turret and apron layers travel with it
@@ -426,8 +444,11 @@ def split(dry_run=False):
 if __name__ == "__main__":
     import sys
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
+    if cmd == "required":
+        print("\n".join(REQUIRED))
+        raise SystemExit(0)
     if cmd not in ("split", "check"):
-        raise SystemExit("usage: asset_packs.py split | check")
+        raise SystemExit("usage: asset_packs.py split | check | required")
     found = split(dry_run=(cmd == "check"))
     for p in PACKS:
         if p in found:
