@@ -1898,6 +1898,7 @@ typedef enum UnitType : char
     UNIT_C3MK3,             // C&C3 Mammoth Tank, "Mk. III" (Tiberium Wars GDIMammoth): twin cannon + AA/AG rocket pods. Art = GUMAMM hull 32 facings x 3 tread steps (0-95) + turret 96-127 (scripts/c3_pack_tanks.py).
     UNIT_C3PRED,            // C&C3 Predator Tank (Tiberium Wars GDIPredator): single cannon, turret seated aft of the hull centre. Art = GUPREDTANK, same layout as UNIT_C3MK3.
     UNIT_TSTTNK,            // TS Tick Tank ([TTNK]): Nod's turret tank, found only in crates; turns south and digs in as STRUCT_TSTICK. Art: ts_pack_hd_buildings.py.
+    UNIT_TS4PAIR,           // Mk. I Reserve: a dropship-bay group order; the pod lands two UNIT_TS4TNK.
 
     UNIT_COUNT,
     UNIT_FIRST = 0
