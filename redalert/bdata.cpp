@@ -3062,7 +3062,7 @@ static BuildingTypeClass const ClassTsPuls(STRUCT_TSPULS,
                                            false,           // Does it have a rotating turret? (baked into the shapes)
                                            true,            // Can the building be color remapped to indicate owner?
                                            RTTI_NONE,       // The object type produced at this factory.
-                                           DIR_N,           // Starting idle frame to match construction.
+                                           DIR_SE,          // The cannon faces south-east when built.
                                            BSIZE_22,        // 2x2, whole plot occupied.
                                            NULL,            // Preferred exit cell list.
                                            (short const*)List22,     // OCCUPYLIST: all four cells.
