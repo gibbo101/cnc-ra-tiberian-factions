@@ -124,11 +124,26 @@ BulletClass::BulletClass(BulletType id,
  *   07/06/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
 /*
-**	The Mech Division manifest: what the TSMDIV token stands for, disembarked in
+**	The dropship bay's group orders: what each token stands for, disembarked in
 **	this order (armour first, escorts last).
 */
 static UnitType const _mech_division[] = {UNIT_TSTITN, UNIT_TSTITN, UNIT_TSTITN, UNIT_TSSMEC, UNIT_TSSMEC};
-int const MECH_DIVISION_COUNT = (int)(sizeof(_mech_division) / sizeof(_mech_division[0]));
+
+// The units a group-order token stands for and how many, or NULL when the cargo is a single vehicle.
+static UnitType const* TF_Group_Manifest(TechnoClass const* cargo, int& count)
+{
+    count = 0;
+    if (cargo == NULL || cargo->What_Am_I() != RTTI_UNIT) {
+        return NULL;
+    }
+    switch (((UnitClass const*)cargo)->Class->Type) {
+    case UNIT_TSMDIV:
+        count = ARRAY_SIZE(_mech_division);
+        return _mech_division;
+    default:
+        return NULL;
+    }
+}
 
 // Where a dropship bay's cargo sets down: the foot of the bay's ramp, on the row south of its plot.
 static COORDINATE TF_Bay_Ramp_Foot(BuildingClass const* deck)
@@ -137,7 +152,7 @@ static COORDINATE TF_Bay_Ramp_Foot(BuildingClass const* deck)
 }
 
 // Spawns one unit at the landed dropship's exit, the foot of the bay's ramp, and walks it to the bay's rally point
-// or two rows clear. The paced Mech Division unload and Deliver_Cargo both use it.
+// or two rows clear. The paced group unload and Deliver_Cargo both use it.
 void BulletClass::TF_Disembark(HouseClass* owner, UnitType type)
 {
     if (owner == NULL) {
@@ -186,13 +201,15 @@ void BulletClass::Deliver_Cargo(void)
     if (deck != NULL && *deck == STRUCT_TSDROP) {
         where = TF_Bay_Ramp_Foot(deck);
     }
-    // The Mech Division token is an order, never a unit: it must not reach the map. TFUnloaded stops this backstop
+    // A group-order token is an order, never a unit: it must not reach the map. TFUnloaded stops this backstop
     // and the paced unload in AI from delivering a member twice.
-    if (cargo->Class->Type == UNIT_TSMDIV) {
+    int members;
+    UnitType const* manifest = TF_Group_Manifest(cargo, members);
+    if (manifest != NULL) {
         delete cargo;
         cargo = NULL;
-        while (TFUnloaded < MECH_DIVISION_COUNT) {
-            TF_Disembark(owner, _mech_division[TFUnloaded]);
+        while (TFUnloaded < members) {
+            TF_Disembark(owner, manifest[TFUnloaded]);
             TFUnloaded++;
         }
         if (owner != NULL && owner->TFDropBayTimer == 0) {
@@ -855,14 +872,14 @@ void BulletClass::AI(void)
 
         case 1: {
             TFDwell--;
-            bool group = (Payback != NULL && Payback->What_Am_I() == RTTI_UNIT
-                          && ((UnitClass*)Payback)->Class->Type == UNIT_TSMDIV);
-            if (group) {
-                if (TFDwell <= TICKS_PER_SECOND * 3 && TFUnloaded < MECH_DIVISION_COUNT
+            int members;
+            UnitType const* manifest = TF_Group_Manifest(Payback, members);
+            if (manifest != NULL) {
+                if (TFDwell <= TICKS_PER_SECOND * 3 && TFUnloaded < members
                     && (TICKS_PER_SECOND * 3 - TFDwell) % 9 == 0) {
-                    TF_Disembark(Payback->House, _mech_division[TFUnloaded]);
+                    TF_Disembark(Payback->House, manifest[TFUnloaded]);
                     TFUnloaded++;
-                    if (TFUnloaded >= MECH_DIVISION_COUNT) {
+                    if (TFUnloaded >= members) {
                         UnitClass* token = (UnitClass*)Payback;
                         Payback = NULL;
                         delete token;
