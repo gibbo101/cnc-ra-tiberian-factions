@@ -2945,118 +2945,12 @@ DriveClass::TrackType const DriveClass::Track14[] = {
     {XYP_COORD(2, -3), (DirType)(DIR_SW - 5)},    {XYP_COORD(1, -2), (DirType)(DIR_SW - 3)},
     {XYP_COORD(1, -1), (DirType)(DIR_SW - 1)},    {0x00000000L, DIR_SW}};
 
-// Track15-18: the TS refinery's reverse dock, Track15/16 for TSHARV and Track17/18 for TDHARV. The entry track
-// backs the truck off the plate into its bay seat and the exit drives it back out; each starts where the truck stands.
-DriveClass::TrackType const DriveClass::Track15[] = {
-    {0x00B600D8L, (DirType)92},
-    {0x00AE00CEL, (DirType)92},
-    {0x00A500C4L, (DirType)92},
-    {0x009D00BBL, (DirType)92},
-    {0x009500B1L, (DirType)92},
-    {0x008D00A7L, (DirType)92},
-    {0x0084009DL, (DirType)92},
-    {0x007C0093L, (DirType)92},
-    {0x00740089L, (DirType)92},
-    {0x006C0080L, (DirType)92},
-    {0x00630076L, (DirType)92},
-    {0x005B006CL, (DirType)92},
-    {0x00530062L, (DirType)92},
-    {0x004A0058L, (DirType)92},
-    {0x0042004FL, (DirType)92},
-    {0x003A0045L, (DirType)92},
-    {0x0032003BL, (DirType)92},
-    {0x00290031L, (DirType)92},
-    {0x00210027L, (DirType)92},
-    {0x0019001DL, (DirType)92},
-    {0x00110014L, (DirType)92},
-    {0x0008000AL, (DirType)92},
-    {0x00000000L, (DirType)92}};
-
-DriveClass::TrackType const DriveClass::Track16[] = {
-    {0xFF4AFF28L, (DirType)92},
-    {0xFF52FF32L, (DirType)92},
-    {0xFF5BFF3CL, (DirType)92},
-    {0xFF63FF45L, (DirType)92},
-    {0xFF6BFF4FL, (DirType)92},
-    {0xFF73FF59L, (DirType)92},
-    {0xFF7CFF63L, (DirType)92},
-    {0xFF84FF6DL, (DirType)92},
-    {0xFF8CFF77L, (DirType)92},
-    {0xFF94FF80L, (DirType)92},
-    {0xFF9DFF8AL, (DirType)92},
-    {0xFFA5FF94L, (DirType)92},
-    {0xFFADFF9EL, (DirType)92},
-    {0xFFB6FFA8L, (DirType)92},
-    {0xFFBEFFB1L, (DirType)92},
-    {0xFFC6FFBBL, (DirType)92},
-    {0xFFCEFFC5L, (DirType)92},
-    {0xFFD7FFCFL, (DirType)92},
-    {0xFFDFFFD9L, (DirType)92},
-    {0xFFE7FFE3L, (DirType)92},
-    {0xFFEFFFECL, (DirType)92},
-    {0xFFF8FFF6L, (DirType)92},
-    {0x00000000L, (DirType)92}};
-
-DriveClass::TrackType const DriveClass::Track17[] = {
-    {0x00E900FDL, (DirType)94},
-    {0x00DF00F2L, (DirType)94},
-    {0x00D600E8L, (DirType)94},
-    {0x00CC00DDL, (DirType)94},
-    {0x00C200D3L, (DirType)94},
-    {0x00B800C8L, (DirType)94},
-    {0x00AF00BEL, (DirType)94},
-    {0x00A500B3L, (DirType)94},
-    {0x009B00A9L, (DirType)94},
-    {0x0092009EL, (DirType)94},
-    {0x00880094L, (DirType)94},
-    {0x007E0089L, (DirType)94},
-    {0x0074007EL, (DirType)94},
-    {0x006B0074L, (DirType)94},
-    {0x00610069L, (DirType)94},
-    {0x0057005FL, (DirType)94},
-    {0x004E0054L, (DirType)94},
-    {0x0044004AL, (DirType)94},
-    {0x003A003FL, (DirType)94},
-    {0x00310035L, (DirType)94},
-    {0x0027002AL, (DirType)94},
-    {0x001D0020L, (DirType)94},
-    {0x00130015L, (DirType)94},
-    {0x000A000BL, (DirType)94},
-    {0x00000000L, (DirType)94}};
-
-DriveClass::TrackType const DriveClass::Track18[] = {
-    {0xFF17FF03L, (DirType)94},
-    {0xFF21FF0EL, (DirType)94},
-    {0xFF2AFF18L, (DirType)94},
-    {0xFF34FF23L, (DirType)94},
-    {0xFF3EFF2DL, (DirType)94},
-    {0xFF48FF38L, (DirType)94},
-    {0xFF51FF42L, (DirType)94},
-    {0xFF5BFF4DL, (DirType)94},
-    {0xFF65FF57L, (DirType)94},
-    {0xFF6EFF62L, (DirType)94},
-    {0xFF78FF6CL, (DirType)94},
-    {0xFF82FF77L, (DirType)94},
-    {0xFF8CFF82L, (DirType)94},
-    {0xFF95FF8CL, (DirType)94},
-    {0xFF9FFF97L, (DirType)94},
-    {0xFFA9FFA1L, (DirType)94},
-    {0xFFB2FFACL, (DirType)94},
-    {0xFFBCFFB6L, (DirType)94},
-    {0xFFC6FFC1L, (DirType)94},
-    {0xFFCFFFCBL, (DirType)94},
-    {0xFFD9FFD6L, (DirType)94},
-    {0xFFE3FFE0L, (DirType)94},
-    {0xFFEDFFEBL, (DirType)94},
-    {0xFFF6FFF5L, (DirType)94},
-    {0x00000000L, (DirType)94}};
-
 /*
 **	There are a limited basic number of tracks that a vehicle can follow. These
 **	are they. Each track can be interpreted differently but this is controlled
 **	by the TrackControl structure elaborated elsewhere.
 */
-DriveClass::RawTrackType const DriveClass::RawTracks[21] = {{Track1, -1, 0, -1},
+DriveClass::RawTrackType const DriveClass::RawTracks[15] = {{Track1, -1, 0, -1},
                                                             {Track2, -1, 0, -1},
                                                             {Track3, 37, 12, 22},
                                                             {Track4, 26, 11, 19},
@@ -3070,12 +2964,6 @@ DriveClass::RawTrackType const DriveClass::RawTracks[21] = {{Track1, -1, 0, -1},
                                                             {Track12, -1, 0, -1},
                                                             {Track13, -1, 0, -1},
                                                             {Track14, -1, 0, -1},
-                                                            {Track15, -1, 0, -1},
-                                                            {Track16, -1, 0, -1},
-                                                            {Track17, -1, 0, -1},
-                                                            {Track18, -1, 0, -1},
-                                                            {NULL, -1, 0, -1}, // Slot 19: unused, keeps the later track numbers.
-                                                            {NULL, -1, 0, -1}, // Slot 20: unused, keeps the later track numbers.
                                                             {NULL, -1, 0, -1}}; // ROLL_OFF_DOCK_SEAT: per unit (Rail_Step)
 
 /***************************************************************************
@@ -3083,7 +2971,7 @@ DriveClass::RawTrackType const DriveClass::RawTracks[21] = {{Track1, -1, 0, -1},
 **	table determines which track to use and what modifying operations need
 **	be performed on the track data.
 */
-DriveClass::TurnTrackType const DriveClass::TrackControl[75] = {
+DriveClass::TurnTrackType const DriveClass::TrackControl[69] = {
     {1, 0, DIR_N, F_},                                                      //	0-0
     {3, 7, DIR_NE, F_D},                                                    //	0-1 (raw chart)
     {4, 9, DIR_E, F_D},                                                     //	0-2 (raw chart)
@@ -3154,12 +3042,5 @@ DriveClass::TurnTrackType const DriveClass::TrackControl[75] = {
     {13, 13, DIR_SW, F_},    // Drive out of weapons factory (vanilla RA, south motion).
     {14, 14, DIR_SW, F_},    // Drive out of weapons factory (TD-authentic, south-west motion).
 
-    {15, 15, (DirType)92, F_}, // TS refinery, TSHARV: reverse into the bay seat.
-    {16, 16, (DirType)92, F_}, // TS refinery, TSHARV: drive out onto the plate.
-    {17, 17, (DirType)94, F_}, // TS refinery, TDHARV: reverse into the bay seat.
-    {18, 18, (DirType)94, F_}, // TS refinery, TDHARV: drive out onto the plate.
-
-    {0, 0, DIR_N, F_}, // Unused: keeps ROLL_OFF_DOCK_SEAT at 74.
-    {0, 0, DIR_N, F_}, // Unused: keeps ROLL_OFF_DOCK_SEAT at 74.
-    {21, 21, DIR_SW, F_}       // Runtime rail, each unit's own (Set_Rail).
+    {15, 15, DIR_SW, F_} // Runtime rail, each unit's own (Set_Rail).
 };
