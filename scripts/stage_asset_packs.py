@@ -66,14 +66,21 @@ def copy_tree(src, dst, skip=frozenset()):
         shutil.copytree(src, dst, copy_function=copy_newer, dirs_exist_ok=True, ignore=ignore)
 
 
-def write_manifest(folder, mod):
-    """The ccmod.json of a required Workshop mod: data only, loaded beside Tiberian Factions."""
-    manifest = dict(author="gibbo101", load_order=2, game_type="RA", **A.REQUIRED_MANIFEST[mod])
-    text = json.dumps(manifest, indent=4) + "\n"
-    path = os.path.join(folder, "ccmod.json")
-    os.makedirs(folder, exist_ok=True)
+def write_if_changed(path, text):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     if not os.path.exists(path) or open(path, encoding="utf-8").read() != text:
         open(path, "w", encoding="utf-8").write(text)
+
+
+def write_manifest(folder, mod):
+    """The ccmod.json of a required Workshop mod, data only, and its CCDATA marker: the launcher registers
+    an enabled mod's CCDATA with the DLL, which finds the marker there and reads the pack's version."""
+    info = dict(A.REQUIRED_MANIFEST[mod])
+    marker = info.pop("marker")
+    manifest = dict(author="gibbo101", load_order=2, game_type="RA", **info)
+    write_if_changed(os.path.join(folder, "ccmod.json"), json.dumps(manifest, indent=4) + "\n")
+    version = f"{info['version_high']}.{info['version_low']}"
+    write_if_changed(os.path.join(folder, "CCDATA", marker), f"[Pack]\nName={mod}\nVersion={version}\n")
 
 
 def pack_files(pack, sub):

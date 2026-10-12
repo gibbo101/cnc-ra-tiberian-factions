@@ -59,7 +59,7 @@ REQUIRED = {
 REQUIRED_MANIFEST = {
     "TS-HD-Assets": {"name": "Tiberian Sun HD Assets",
                      "description": "Tiberian Sun units, buildings, effects, sounds and EVA for Red Alert, in HD.",
-                     "version_high": 1, "version_low": 0},
+                     "version_high": 1, "version_low": 0, "marker": "TSHDPACK.INI"},
 }
 
 
