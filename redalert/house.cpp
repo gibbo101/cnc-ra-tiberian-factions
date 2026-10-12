@@ -951,7 +951,7 @@ bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type)
 // cameo consult. The delivery cooldown is the bay's, shared by everything it sends.
 bool TF_Is_Dropship_Delivered(UnitTypeClass const* type)
 {
-    return (type != NULL && (type->Type == UNIT_TSHMEC || type->Type == UNIT_TSMDIV));
+    return (type != NULL && (type->Type == UNIT_TSHMEC || type->Type == UNIT_TSMDIV || type->Type == UNIT_TS4PAIR));
 }
 
 /*

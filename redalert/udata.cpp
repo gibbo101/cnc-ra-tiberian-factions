@@ -1958,6 +1958,37 @@ static UnitTypeClass const UnitTsMdiv(UNIT_TSMDIV,
                                       MISSION_GUARD // ORDERS: unused.
 );
 
+// Mk. I Reserve (UNIT_TS4PAIR): a token ordered at the dropship bay, never a unit on the map. The dropship turns
+// it into two Mammoth Mk. Is (bullet.cpp _mammoth_pair), so its stats are inert placeholders.
+static UnitTypeClass const UnitTs4Pair(UNIT_TS4PAIR,
+                                       TXT_HTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                       "TS4PAIR",    // NAME: IniName.
+                                       ANIM_FBALL1,  // EXPLOSION: unused (never on the map).
+                                       REMAP_NORMAL, // Sidebar remap logic.
+                                       0x0000,       // Vertical offset.
+                                       0x0000,       // Primary weapon offset.
+                                       0x0000,       // Primary weapon lateral offset.
+                                       0x0000,       // Secondary weapon offset.
+                                       0x0000,       // Secondary weapon lateral offset.
+                                       false,        // Crate goodie? Never -- a crate token would strand.
+                                       false,        // Always use the given name?
+                                       false,        // Can squash infantry?
+                                       false,        // Harvests?
+                                       false,        // Invisible to radar?
+                                       true,         // Insignificant (no announcements for the token).
+                                       false,        // Combat turret?
+                                       false,        // Radar dish?
+                                       false,        // Firing animation?
+                                       false,        // Turret locked while moving?
+                                       false,        // Gigundo?
+                                       false,        // Constant animation?
+                                       false,        // Radar jammer?
+                                       false,        // Mobile gap generator?
+                                       32,           // Rotation stages.
+                                       0,            // Turret center offset.
+                                       MISSION_GUARD // ORDERS: unused.
+);
+
 // TS Devil's Tongue (UNIT_TSSUBTANK), TS rules [SUBTANK]: a subterranean flame tank, found only in crates
 // (docs/subterranean-design.md). It fires TSFireball, Burst=2 alternating between twin nozzles.
 static UnitTypeClass const UnitTsSubTank(UNIT_TSSUBTANK,
@@ -2269,6 +2300,7 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitC3Mk3);     // UNIT_C3MK3 (C&C3 Mammoth Tank Mk. III)
     new UnitTypeClass(UnitC3Pred);    // UNIT_C3PRED (C&C3 Predator Tank)
     new UnitTypeClass(UnitTsTtnk);    // UNIT_TSTTNK (TS Tick Tank)
+    new UnitTypeClass(UnitTs4Pair);   // UNIT_TS4PAIR (Mk. I Reserve token)
 }
 
 /***********************************************************************************************

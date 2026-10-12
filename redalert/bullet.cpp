@@ -128,6 +128,7 @@ BulletClass::BulletClass(BulletType id,
 **	this order (armour first, escorts last).
 */
 static UnitType const _mech_division[] = {UNIT_TSTITN, UNIT_TSTITN, UNIT_TSTITN, UNIT_TSSMEC, UNIT_TSSMEC};
+static UnitType const _mammoth_pair[] = {UNIT_TS4TNK, UNIT_TS4TNK};
 
 // The units a group-order token stands for and how many, or NULL when the cargo is a single vehicle.
 static UnitType const* TF_Group_Manifest(TechnoClass const* cargo, int& count)
@@ -140,6 +141,9 @@ static UnitType const* TF_Group_Manifest(TechnoClass const* cargo, int& count)
     case UNIT_TSMDIV:
         count = ARRAY_SIZE(_mech_division);
         return _mech_division;
+    case UNIT_TS4PAIR:
+        count = ARRAY_SIZE(_mammoth_pair);
+        return _mammoth_pair;
     default:
         return NULL;
     }
