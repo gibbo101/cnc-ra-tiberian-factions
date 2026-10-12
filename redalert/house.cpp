@@ -1187,16 +1187,6 @@ bool TF_Plug_At_Cap(HouseClass const* house)
     return (false);
 }
 
-// True for sandbags, the shared wall a TS construction yard builds beside the TS tree's own walls. A standing
-// TS yard satisfies Can_Build's ownership test for them, whoever holds it.
-bool TF_Is_TS_Yard_Wall(ObjectTypeClass const* type)
-{
-    if (type == NULL || type->What_Am_I() != RTTI_BUILDINGTYPE) {
-        return (false);
-    }
-    return (((BuildingTypeClass const*)type)->Type == STRUCT_SANDBAG_WALL);
-}
-
 // Line fill (the TS and RA2 wall rule): a section placed within this many cells in line of one of the house's
 // own sections of its type fills the cells between, if all are clear to build and the house can pay for all.
 static const int TF_WALL_FILL_RANGE = 5;
@@ -1555,11 +1545,8 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     **	Check to see if this owner can build the object type specified.
     */
     // TF: a construction yard grants its faction's tree to whoever holds it, so holding a yard listed in
-    // Owner= also passes. A standing TS yard passes for sandbags even when TF_TS_GDI_FACTION is 0.
+    // Owner= also passes.
     bool yard_grants = ((own & Yard_Factions()) != 0);
-    if (TF_Is_TS_Yard_Wall(type) && Has_Building_Active(STRUCT_TSFACT)) {
-        yard_grants = true;
-    }
     if (((1L << house) & own) == 0 && !yard_grants) {
         return (false);
     }
@@ -1585,7 +1572,7 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     }
 
     // TF: in skirmish a building needs a standing yard of a faction in its Owner=. The TS yard gates TS-tree
-    // buildings instead, and sandbags pass while one stands. rules.ini can't say this: prereqs are AND-only.
+    // buildings instead. rules.ini can't say this: prereqs are AND-only.
     if (type->What_Am_I() == RTTI_BUILDINGTYPE && Session.Type != GAME_NORMAL) {
         BuildingTypeClass const* btype = (BuildingTypeClass const*)type;
         if (!btype->Is_Construction_Yard()) {
@@ -1597,11 +1584,9 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
 
             bool ts_tree = TF_Is_TS_Tree_Type((TechnoTypeClass const*)type);
 
-            bool ts_walls = TF_Is_TS_Yard_Wall(type) && Has_Building_Active(STRUCT_TSFACT);
-
             int const factions = HOUSEF_GDI | HOUSEF_NOD | HOUSEF_ALLIES | HOUSEF_SOVIET | HOUSEF_TSGDI;
             int ownable = type->Get_Ownable();
-            if (!ts_tree && !ts_walls && (ownable & factions) != 0) {
+            if (!ts_tree && (ownable & factions) != 0) {
                 int yards = Yard_Factions();
                 if ((ownable & yards) == 0) {
                     return (false);

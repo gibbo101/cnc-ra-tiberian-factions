@@ -7529,18 +7529,13 @@ static int TF_Faction_Mask_From_Ownable(int ownable)
     return mask;
 }
 
-// The faction bits an entry is badged with: the TS bit for TS-tree types, its Owner= factions otherwise, plus
-// the TS bit for sandbags, which a TS yard builds.
+// The faction bits an entry is badged with: the TS bit for TS-tree types, its Owner= factions otherwise.
 static int TF_Entry_Faction_Mask(TechnoTypeClass const* type)
 {
     if (type != NULL && TF_Is_TS_Tree_Type(type)) {
         return TF_FACTION_TSGDI;
     }
-    int mask = TF_Faction_Mask_From_Ownable(type != NULL ? type->Get_Ownable() : 0);
-    if (TF_Is_TS_Yard_Wall(type)) {
-        mask |= TF_FACTION_TSGDI;
-    }
-    return mask;
+    return TF_Faction_Mask_From_Ownable(type != NULL ? type->Get_Ownable() : 0);
 }
 
 #if TF_DEV_BUILD
