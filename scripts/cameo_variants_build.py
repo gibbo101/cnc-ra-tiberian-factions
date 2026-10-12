@@ -79,7 +79,7 @@ def art_resolver():
     def resolves(icon):
         if raw.find(icon.upper().encode() + b".TGA") >= 0:
             return True
-        return os.path.exists(asset_packs.cameo_tga(icon))
+        return os.path.exists(asset_packs.cameo_tga(icon)) or os.path.exists(asset_packs.cameo_source(icon))
 
     return resolves
 
