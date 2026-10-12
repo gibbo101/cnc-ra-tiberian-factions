@@ -10,7 +10,7 @@ own design rather than inventing one:
     a dark recess running down each diagonal between the legs
   - four wall connectors on the cardinals. These are WALL-ENDS: TS paints them in the
     wall's own greys (face 129, cap 161) because they are a stub of wall, which is why
-    a run meets them seamlessly. Ours are the same cross-section as ts_blender_walls.py
+    a run meets them seamlessly. Ours take the wall's cross-section
   - a service ladder recessed into the south face
   - a bluish-grey platform on top with four bolt sockets, ringed by the team colour
 
@@ -20,7 +20,7 @@ Camera: orthographic from the south at 32 degrees, the mod's TS vehicle camera. 
 that elevation a flat circle projects to a 0.53 ellipse, which is TS's own 2:1 ground
 squash, so the render needs no re-projection and sits in the same space as every other
 TS building the mod ships. Output therefore feeds ts_pack_towers.py directly as a
-body directory, NOT ts_pack_blender.py (which is for the grid-aligned walls).
+body directory.
 
 Run:
   blender -b -P scripts/ts_blender_tower.py -- --out <dir> [--samples N] [--px N]

@@ -8,7 +8,7 @@ three materials, so this discards the imported texture entirely and paints the m
 by geometry instead -- tan concrete, grey steel buttresses, and a pure-green platform
 ring the launcher recolours per house. Lighting is then ours alone.
 
-Camera and light match scripts/ts_blender_walls.py (and the mod's TS vehicles):
+Camera and light match the mod's TS vehicles:
 orthographic, from the south, 32 degrees above the ground, ground restored to 1:1
 afterwards by the packer.
 
