@@ -51,21 +51,35 @@ PACKS = {
     "CNC3-Voices-eng": "CNC3",
 }
 
-# Data-only Workshop mods Tiberian Factions requires: each carries these packs' art and audio, and
-# the mod keeps only their XML entries
-REQUIRED = {
-    "TS-HD-Assets": ("TS-Graphics-Pack", "TS-HD-Graphics-Pack", "TS-SFX-Pack", "TS-EVA-eng", "TS-Voices-eng"),
+# The Workshop asset-pack mods, data only, each built from these source packs (scripts/workshop_packs.py).
+# Tiberian Factions requires the ones marked required: it keeps only their XML entries, and its DLL reads
+# their CCDATA marker; the others are libraries for other modders, and the mod keeps its own copies.
+WORKSHOP = {
+    "TS-HD-Assets": {
+        "packs": ("TS-Graphics-Pack", "TS-HD-Graphics-Pack", "TS-SFX-Pack", "TS-EVA-eng", "TS-Voices-eng"),
+        "required": True, "marker": "TSHDPACK.INI", "xml_id": "TSHDAssets", "version": (1, 0), "game": "TS",
+        "name": "Tiberian Sun HD Assets",
+        "description": "Tiberian Sun units, buildings, effects, sounds and EVA for Red Alert, in HD.",
+    },
+    "RA2-HD-Assets": {
+        "packs": ("RA2-Graphics-Pack", "RA2-SFX-Pack", "RA2-Voices-eng"),
+        "required": False, "xml_id": "RA2HDAssets", "version": (1, 0), "game": "RA2",
+        "name": "Red Alert 2 HD Assets",
+        "description": "Red Alert 2 units, sounds and voices for Red Alert, in HD.",
+    },
+    "CNC3-Assets": {
+        "packs": ("CNC3-Graphics-Pack", "CNC3-SFX-Pack", "CNC3-Voices-eng"),
+        "required": False, "xml_id": "CNC3Assets", "version": (1, 0), "game": "CNC3",
+        "name": "C&C3 Tiberium Wars Assets",
+        "description": "Command & Conquer 3 units, sounds and voices for Red Alert, in HD.",
+    },
 }
-REQUIRED_MANIFEST = {
-    "TS-HD-Assets": {"name": "Tiberian Sun HD Assets",
-                     "description": "Tiberian Sun units, buildings, effects, sounds and EVA for Red Alert, in HD.",
-                     "version_high": 1, "version_low": 0, "marker": "TSHDPACK.INI"},
-}
+REQUIRED = [mod for mod, w in WORKSHOP.items() if w["required"]]
 
 
 def required_mod(pack):
     """The required Workshop mod that carries a pack's art and audio, or None for the mod's own."""
-    return next((mod for mod, packs in REQUIRED.items() if pack in packs), None)
+    return next((mod for mod in REQUIRED if pack in WORKSHOP[mod]["packs"]), None)
 
 
 # HD rebuilds of TS objects (resources/custom-art): every art name that starts with one of these,

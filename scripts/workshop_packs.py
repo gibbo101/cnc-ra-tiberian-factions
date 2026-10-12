@@ -1,0 +1,146 @@
+#!/usr/bin/env python3
+"""Build the Workshop asset-pack mods (asset_packs.WORKSHOP) from the asset-packs/ source folders.
+
+Usage:  workshop_packs.py <out dir> [mod ...]   (every Workshop pack when none is named)
+
+Each mod is a data-only Red Alert mod folder: ccmod.json, README.md, every file of its source packs
+under Data/ART and Data/AUDIO (a later pack's copy of a path wins), and its XML: one file per
+launcher XML, the source packs' entries together, complete on their own (no ZIP shared with another
+mod). CCDATA/veterancy_mod.xml lists those files for the Veterancy & more DLL, which loads them by
+itself; any other DLL mod copies the entries into its own XML. A pack Tiberian Factions requires also
+carries its marker in CCDATA, which the mod's DLL reads to know the pack is enabled.
+
+scripts/stage_asset_packs.py builds the required packs beside the staged mod the same way.
+
+License: GPL v3.
+"""
+import json
+import os
+import re
+import shutil
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import asset_packs as A  # noqa: E402
+
+# Launcher XML -> (folder under Data/XML, the file name for a pack, veterancy_mod.xml tag)
+XML_NAMES = {
+    os.path.join("XML", "TILESETS", "RA_UNITS.XML"): ("TILESETS", "{id}_UNITS.XML", "Units"),
+    os.path.join("XML", "TILESETS", "RA_STRUCTURES.XML"): ("TILESETS", "{id}_STRUCTURES.XML", "Structures"),
+    os.path.join("XML", "TILESETS", "RA_VFX.XML"): ("TILESETS", "{id}_VFX.XML", "Vfx"),
+    os.path.join("XML", "TILESETS", "RA_TERRAIN_TEMPERATE.XML"): ("TILESETS", "{id}_TERRAIN_TEMPERATE.XML", None),
+    os.path.join("XML", "TILESETS", "RA_TERRAIN_SNOW.XML"): ("TILESETS", "{id}_TERRAIN_SNOW.XML", None),
+    os.path.join("XML", "TILESETS", "RA_TERRAIN_INTERIOR.XML"): ("TILESETS", "{id}_TERRAIN_INTERIOR.XML", None),
+    os.path.join("XML", "OBJECTS", "UNITS", "RABUILDABLES.XML"): (os.path.join("OBJECTS", "UNITS"),
+                                                                 "{id}Buildables.xml", "GameObjects"),
+    os.path.join("XML", "AUDIO", "SFXEVENTSNONLOCALIZED.XML"): ("AUDIO", "SFXEvents{id}.xml", "SFXEvents"),
+    os.path.join("XML", "AUDIO", "SFXEVENTSLOCALIZED.XML"): ("AUDIO", "SFXEventsLocalized{id}.xml",
+                                                             "LocalizedSFXEvents"),
+}
+
+
+def copy_newer(src, dst):
+    """Copy unless dst already has src's size and mtime."""
+    if os.path.exists(dst):
+        a, b = os.stat(src), os.stat(dst)
+        if a.st_size == b.st_size and int(a.st_mtime) == int(b.st_mtime):
+            return dst
+    return shutil.copy2(src, dst)
+
+
+def copy_binaries(mod, folder):
+    """Every file under the mod's source packs' Data/ART and Data/AUDIO; a later pack's copy of a path wins."""
+    packs = A.WORKSHOP[mod]["packs"]
+    for i, pack in enumerate(packs):
+        for sub in ("ART", "AUDIO"):
+            src = os.path.join(A.pack_data(pack), sub)
+            later = {os.path.relpath(os.path.join(d, f), src).upper()
+                     for p in packs[i + 1:] for d, _, fs in os.walk(os.path.join(A.pack_data(p), sub)) for f in fs}
+            for d, _, fs in os.walk(src):
+                for f in fs:
+                    rel = os.path.relpath(os.path.join(d, f), src)
+                    if rel.upper() in later:
+                        continue
+                    dst = os.path.join(folder, "Data", sub, rel)
+                    os.makedirs(os.path.dirname(dst), exist_ok=True)
+                    copy_newer(os.path.join(d, f), dst)
+
+
+def combined_xml(mod, rel, pack_file, root):
+    """The mod's source packs' entries for one launcher XML, in the first source file's wrapper; None if empty."""
+    sources = [pack_file(p) for p in A.WORKSHOP[mod]["packs"] if os.path.exists(pack_file(p))]
+    bodies, template = [], None
+    for path in sources:
+        text = open(path, encoding="utf-8-sig", newline="").read()
+        opened = re.search(r"<%s\b[^>]*>[ \t]*\r?\n" % root, text)
+        if opened is None:
+            continue
+        body = text[opened.end():text.rindex(f"</{root}>")]
+        if body.strip():
+            bodies.append(body)
+            template = template or (text[:opened.end()], text[text.rindex(f"</{root}>"):])
+    if not bodies:
+        return None
+    return template[0] + "".join(bodies) + template[1]
+
+
+def write_if_changed(path, text):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    if not os.path.exists(path) or open(path, encoding="utf-8", newline="").read() != text:
+        open(path, "w", encoding="utf-8", newline="").write(text)
+
+
+def write_xml(mod, folder):
+    """The mod's XML files and the veterancy_mod.xml list of them; returns {veterancy tag: file name}."""
+    listed = {}
+    for rel, pack_file, root, _ in A.XML_FILES:
+        sub, pattern, tag = XML_NAMES[rel]
+        text = combined_xml(mod, rel, pack_file, root)
+        if text is None:
+            continue
+        name = pattern.format(id=A.WORKSHOP[mod]["xml_id"])
+        write_if_changed(os.path.join(folder, "Data", "XML", sub, name), text)
+        if tag:
+            listed[tag] = name
+    tiles = "".join(f"\t\t<{t}>{listed.get(t, '')}</{t}>\n" for t in ("Structures", "Units", "Vfx"))
+    file_list = ('<?xml version="1.0" encoding="utf-8"?>\n<Files>\n'
+                 f"\t<SFXEvents>{listed.get('SFXEvents', '')}</SFXEvents>\n"
+                 f"\t<LocalizedSFXEvents>{listed.get('LocalizedSFXEvents', '')}</LocalizedSFXEvents>\n"
+                 f"\t<GameObjects>{listed.get('GameObjects', '')}</GameObjects>\n"
+                 f"\t<TileSets>\n{tiles}\t</TileSets>\n</Files>\n")
+    write_if_changed(os.path.join(folder, "CCDATA", "veterancy_mod.xml"), file_list)
+    return listed
+
+
+def write_manifest(mod, folder):
+    """ccmod.json, and for a pack Tiberian Factions requires, the CCDATA marker carrying its version."""
+    w = A.WORKSHOP[mod]
+    high, low = w["version"]
+    manifest = {"name": w["name"], "description": w["description"], "author": "gibbo101", "load_order": 2,
+                "version_high": high, "version_low": low, "game_type": "RA"}
+    write_if_changed(os.path.join(folder, "ccmod.json"), json.dumps(manifest, indent=4) + "\n")
+    if w.get("marker"):
+        write_if_changed(os.path.join(folder, "CCDATA", w["marker"]),
+                         f"[Pack]\nName={mod}\nVersion={high}.{low}\n")
+
+
+def build(mod, folder):
+    """The whole Workshop folder for one asset-pack mod."""
+    write_manifest(mod, folder)
+    copy_binaries(mod, folder)
+    write_xml(mod, folder)
+
+
+def main(argv):
+    if not argv:
+        raise SystemExit(__doc__)
+    out, mods = argv[0], argv[1:] or list(A.WORKSHOP)
+    for mod in mods:
+        if mod not in A.WORKSHOP:
+            raise SystemExit(f"not a Workshop pack: {mod}")
+        build(mod, os.path.join(out, mod))
+        print(f"built {os.path.join(out, mod)}")
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

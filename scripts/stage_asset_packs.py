@@ -3,8 +3,8 @@
 
 Usage:  stage_asset_packs.py <mod dir> [--full]
 
-Copies every pack's Data/ART and Data/AUDIO into <mod dir>/Data, or into the folder beside it of
-the required Workshop mod that carries the pack (asset_packs.REQUIRED, with its ccmod.json), then
+Copies every pack's Data/ART and Data/AUDIO into <mod dir>/Data, except the packs a required
+Workshop mod carries: that mod is built whole in the folder beside it (scripts/workshop_packs.py). Then
 writes each of the mod's XML files that packs contribute to: the mod's own file from resources/,
 with every pack's entries in place of that pack's marker (before the closing tag when the file has
 no marker).
@@ -18,7 +18,6 @@ its own copy of that tree.
 
 License: GPL v3.
 """
-import json
 import os
 import re
 import shutil
@@ -29,6 +28,7 @@ from PIL import Image
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import asset_packs as A  # noqa: E402
 import share_tileset_zips  # noqa: E402
+import workshop_packs  # noqa: E402
 
 TGA_RLE = 10
 
@@ -64,23 +64,6 @@ def copy_tree(src, dst, skip=frozenset()):
             rel = os.path.relpath(d, src)
             return [n for n in names if os.path.normpath(os.path.join(rel, n)).upper() in skip]
         shutil.copytree(src, dst, copy_function=copy_newer, dirs_exist_ok=True, ignore=ignore)
-
-
-def write_if_changed(path, text):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    if not os.path.exists(path) or open(path, encoding="utf-8").read() != text:
-        open(path, "w", encoding="utf-8").write(text)
-
-
-def write_manifest(folder, mod):
-    """The ccmod.json of a required Workshop mod, data only, and its CCDATA marker: the launcher registers
-    an enabled mod's CCDATA with the DLL, which finds the marker there and reads the pack's version."""
-    info = dict(A.REQUIRED_MANIFEST[mod])
-    marker = info.pop("marker")
-    manifest = dict(author="gibbo101", load_order=2, game_type="RA", **info)
-    write_if_changed(os.path.join(folder, "ccmod.json"), json.dumps(manifest, indent=4) + "\n")
-    version = f"{info['version_high']}.{info['version_low']}"
-    write_if_changed(os.path.join(folder, "CCDATA", marker), f"[Pack]\nName={mod}\nVersion={version}\n")
 
 
 def pack_files(pack, sub):
@@ -120,30 +103,26 @@ def stage(mod_dir, full=False):
     if full:
         copy_tree(A.MOD, mod_dir, {os.path.join("DATA", rel) for rel in shared})
     data = os.path.join(mod_dir, "Data")
-    datas = {None: data}
-    for mod in A.REQUIRED:
-        folder = os.path.join(os.path.dirname(os.path.normpath(mod_dir)), mod)
-        write_manifest(folder, mod)
-        datas[mod] = os.path.join(folder, "Data")
     for rel in shared:
-        for d in datas.values():
-            stale = os.path.join(d, rel)
-            if os.path.exists(stale):
-                os.remove(stale)
+        stale = os.path.join(data, rel)
+        if os.path.exists(stale):
+            os.remove(stale)
     packs = list(A.PACKS)
     for i, pack in enumerate(packs):
-        dst = datas[A.required_mod(pack)]
         for sub in ("ART", "AUDIO"):
-            later = set().union(*(pack_files(p, sub) for p in packs[i + 1:]))
-            skip = later | {os.path.relpath(rel, sub.upper()) for rel in shared if rel.startswith(sub.upper() + os.sep)}
             src = os.path.join(A.pack_data(pack), sub)
-            copy_tree(src, os.path.join(dst, sub), skip)
-            if dst != data:
+            if A.required_mod(pack):
                 for d, _, fs in os.walk(src):
                     for f in fs:
                         stale = os.path.join(data, sub, os.path.relpath(os.path.join(d, f), src))
                         if os.path.exists(stale):
                             os.remove(stale)
+                continue
+            later = set().union(*(pack_files(p, sub) for p in packs[i + 1:]))
+            skip = later | {os.path.relpath(rel, sub.upper()) for rel in shared if rel.startswith(sub.upper() + os.sep)}
+            copy_tree(src, os.path.join(data, sub), skip)
+    for mod in A.REQUIRED:
+        workshop_packs.build(mod, os.path.join(os.path.dirname(os.path.normpath(mod_dir)), mod))
     for rel, text in texts.items():
         dst = os.path.join(data, rel)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
