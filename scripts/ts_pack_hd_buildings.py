@@ -152,7 +152,7 @@ def tiberium(img):
 # box=(x0, y0, x1, y1) is the building's whole BSIZE box on the source canvas: every frame becomes exactly that
 # box, so the canvas is the box; it may run past the source's edges, and only cast shadow and the art's 2 px
 # antialiased rim may fall outside it. cells=(w, h) ships every frame on w x h whole cells centred on the plot,
-# under the same rule.
+# under the same rule; east=px keeps art that sat half a classic px east on an odd-width stub where it was.
 # make_pick takes those build-up frames, in that order, instead of all of them.
 # then=(path prefix, count) appends those frames after the tileset; then_over=(path prefix, frame) draws that
 # one frame over each of them.
@@ -169,7 +169,7 @@ BUILDINGS = {
         (20, [("A-fans/construction-yard-fans", range(0, 10), range(10, 20)),
               ("C-roof-lamps/construction-yard-roof-lamps", [8], [23]),
               ("D-producing/construction-yard-producing", range(0, 20), range(0, 20))]),
-    ]),
+    ], cells=(3, 3), east=2),
     # one block per turbine level (1, 2, 3 pods), each 12 healthy then 12 damaged frames of
     # the tower's lights and the pods turning: the block Shape_Number picks by UpgradeLevel
     "TSPOWR": dict(src="tspowr", make=("build-up/power-plant-build", 24),
@@ -199,39 +199,43 @@ BUILDINGS = {
                    runs=[(16, [("B-lamps/silo-lamps", range(0, 16), range(16, 32))])], pad_bottom=128),
     # The refinery turned 22.5 degrees on its 4x3 plot. Idle: the dock lamps (16), healthy then
     # damaged; the flare stack's fire is its own layer (20 lit frames, then 20 empty).
-    "TSPROC": dict(src="tsproc", make=("build-up/refinery-build", 24), frames=("loop/refinery-loop", 32)),
-    "TSPROCFR": dict(src="tsproc", make=None, frames=("B-fire/refinery-fire", 40)),
+    "TSPROC": dict(src="tsproc", make=("build-up/refinery-build", 24), frames=("loop/refinery-loop", 32),
+                   cells=(4, 5)),
+    "TSPROCFR": dict(src="tsproc", make=None, frames=("B-fire/refinery-fire", 40), cells=(4, 5)),
     # its front: the building in front of the dock lane, the idle loop's frames masked to it, drawn over a docked
     # truck so it backs in under the deck
-    "TSPROCNF": dict(src="tsproc", make=None, frames=("front/refinery-front", 32)),
-    # The war factory on its 3x4 plot, door south: RA's 3x3 war factory slot with an empty row behind it, the art's
-    # own 480x512 canvas centred on it (the build-up's raised poles reach into the empty row). Its body is
+    "TSPROCNF": dict(src="tsproc", make=None, frames=("front/refinery-front", 32), cells=(4, 5)),
+    # The war factory on its 3x4 plot, door south: RA's 3x3 war factory slot with an empty row behind it, the art on
+    # 4x4 whole cells centred on it (the build-up's raised poles reach into the empty row). Its body is
     # the door bay with the building's ground shadow, under units; the near face (the rest of the building,
     # with the door lamps (16, a four-lamp run), the roof lamps (8) and the fans (4) over 32 idle steps) and the roll-up door
     # draw over a vehicle in the bay. The under-door is the doorway seen with the door up, and its build-up the 26
     # frames of TS's GTWEAPMK order.
     "TSWEAP": dict(src="tsweap", make=("build-up/war-factory-build", 26), make_recolour=lane_gold,
-                   base="building-bay/war-factory-bay", runs=[(32, [])], pad_bottom=128),
+                   base="building-bay/war-factory-bay", runs=[(32, [])], pad_bottom=128, cells=(4, 4)),
     "TSWEAPNF": dict(src="tsweap", make=None, base="2-over-units/war-factory-over", runs=[
         (32, [("A-lamps/war-factory-lamps", range(0, 16), range(16, 32)),
               ("B-lamps/war-factory-lamps-b", range(0, 8), range(8, 16)),
               ("C-fans/war-factory-fans", range(0, 4), range(4, 8))]),
-    ], pad_bottom=128),
-    "TSWEAPDR": dict(src="tsweap", make=None, frames=("D-door/war-factory-door", 9), repeat=2, pad_bottom=128),
-    "TSWEAPUD": dict(src="tsweap", make=None, frames=("1-under-door/war-factory-under", 2), repeat=2, pad_bottom=128),
+    ], pad_bottom=128, cells=(4, 4)),
+    "TSWEAPDR": dict(src="tsweap", make=None, frames=("D-door/war-factory-door", 9), repeat=2, pad_bottom=128,
+                     cells=(4, 4)),
+    "TSWEAPUD": dict(src="tsweap", make=None, frames=("1-under-door/war-factory-under", 2), repeat=2, pad_bottom=128,
+                     cells=(4, 4)),
     # The deployed Mobile War Factory on the War Factory's 3x4 plot, the door south on the middle cell, in the
     # same layers. Idle on the near face: fans (5), the side lights steady and the roof lamps lighting in a line (8),
     # re-timed by ts_light_runs.py; 120 steps.
     "TSDWEAP": dict(src="tsdweap", make=("build-up/mobile-war-factory-build", 19), make_recolour=mwf_lane,
-                    base="building-bay/mobile-war-factory-bay", runs=[(120, [])], pad_bottom=128),
+                    base="building-bay/mobile-war-factory-bay", runs=[(120, [])], pad_bottom=128, cells=(4, 3)),
     "TSDWEAPNF": dict(src="tsdweap", make=None, base="2-over-units/mobile-war-factory-over", runs=[
         (120, [("A-fans/mobile-war-factory-fans", range(0, 5), range(5, 10)),
                ("B-lights-run/mobile-war-factory-lights", range(0, 12), range(12, 24)),
                ("C-lamps-run/mobile-war-factory-lamps", range(0, 8), range(8, 16))]),
-    ], pad_bottom=128),
-    "TSDWEAPDR": dict(src="tsdweap", make=None, frames=("D-door/mobile-war-factory-door", 12), repeat=2, pad_bottom=128),
+    ], pad_bottom=128, cells=(4, 3)),
+    "TSDWEAPDR": dict(src="tsdweap", make=None, frames=("D-door/mobile-war-factory-door", 12), repeat=2, pad_bottom=128,
+                      cells=(4, 3)),
     "TSDWEAPUD": dict(src="tsdweap", make=None, frames=("1-under-door/mobile-war-factory-under", 2), repeat=2,
-                      pad_bottom=128, recolour=mwf_lane),
+                      pad_bottom=128, recolour=mwf_lane, cells=(4, 3)),
     # The radar on its 2x4 box: the pads on the south row, the tower, dish and antennas over the three rows behind.
     # Idle: the dish turning there and back (28), healthy then damaged.
     "TSRADR": dict(src="tsradr", make=("build-up/radar-build", 26), frames=("loop/radar-loop", 56),
@@ -255,13 +259,14 @@ BUILDINGS = {
     "TSPLUG": dict(src="tsplug", make=("build-up/upgrade-center-build", 24), base="base/none/upgrade-center-none",
                    runs=[(40, [("A-dish/upgrade-center-dish", range(0, 20), range(20, 40)),
                                ("B-lamps/upgrade-center-lamps", range(0, 10), range(10, 20)),
-                               ("C-slot/upgrade-center-slot", range(0, 8), range(8, 16))])], pad_bottom=128),
+                               ("C-slot/upgrade-center-slot", range(0, 8), range(8, 16))])], pad_bottom=128,
+                   cells=(3, 4)),
     # The plugs over it, each on the building's canvas with its shadow: the right socket's ion, pods and seeker, then
     # the left's, each 15 healthy frames and 1 damaged (building.cpp TF_Plug_Layer_Frame numbers them).
     "TSPLUGP": dict(src="tsplug", make=None, sequence=[
         (f"plug-layers/{socket}/{plug}/{plug}-{socket}", 16)
         for socket in ("right", "left") for plug in ("ion-cannon-uplink", "drop-pod-node", "seeker-control")],
-        pad_bottom=128),
+        pad_bottom=128, cells=(3, 4)),
     # The plugs' placement ghosts (never on the map: a plug installs into an upgrade center), healthy
     # and damaged, standing in the right-hand socket's window.
     "TSPION": dict(src="tsplug", make=None, frames=("plugs/ion-cannon-uplink/ion-cannon-uplink", 16), pick=(0, 15)),
@@ -272,7 +277,7 @@ BUILDINGS = {
     "TSDROP": dict(src="tsdrop", make=("build-up/dropbay-build", 19), base="building/dropbay", runs=[
         (20, [("A-dish/dropbay-dish", range(0, 20), range(20, 40)),
               ("B-lights/dropbay-lights", range(0, 20), range(20, 40))])], crop=(120, 64, 648, 512),
-                   pad_bottom=64),
+                   pad_bottom=64, cells=(4, 4), east=3),
     # The Tick Tank dug in, on its 1x1 plot where the tank stood: in the turret layout Shape_Number reads (32
     # facings x {idle, recoil, damaged idle, damaged recoil}), the body one frame per state; the turret its own
     # layer (TSTICKT), drawn in place over either state. The build-up is the deploy, played backwards to pack up.
@@ -423,11 +428,12 @@ def to_box(img, box):
     return out
 
 
-def to_cells(img, cells):
+def to_cells(img, cells, east=0):
+    """w x h whole cells centred on the frame, the art moved east px within them."""
     w, h = cells[0] * CELL, cells[1] * CELL
     if (img.width - w) % 2 or (img.height - h) % 2:
         raise SystemExit(f"cannot centre {w}x{h} on a {img.size} frame")
-    x0, y0 = (img.width - w) // 2, (img.height - h) // 2
+    x0, y0 = (img.width - w) // 2 - east, (img.height - h) // 2
     return to_box(img, (x0, y0, x0 + w, y0 + h))
 
 
@@ -722,8 +728,8 @@ def main(argv):
             tiles = [pad_under(i, spec["pad_bottom"]) for i in tiles]
             make = [pad_under(i, spec["pad_bottom"]) for i in make]
         if spec.get("cells"):
-            tiles = [to_cells(i, spec["cells"]) for i in tiles]
-            make = [to_cells(i, spec["cells"]) for i in make]
+            tiles = [to_cells(i, spec["cells"], spec.get("east", 0)) for i in tiles]
+            make = [to_cells(i, spec["cells"], spec.get("east", 0)) for i in make]
         size = canvas_for(tiles + make)
         pack(ini, tiles, make, size)
         stubs[ini] = [size[0] * 3 // 16, size[1] * 3 // 16]
