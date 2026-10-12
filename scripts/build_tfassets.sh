@@ -378,6 +378,9 @@ ts_stub TSWEAP "$TMPDIR/tsweapnf_stub.shp" 96 96 64
 PACK_ARGS+=("$TMPDIR/tsweapnf_stub.shp:TSWEAPNF.SHP")
 ts_stub TSWEAP "$TMPDIR/tsweapnu_stub.shp" 96 96 64
 PACK_ARGS+=("$TMPDIR/tsweapnu_stub.shp:TSWEAPNU.SHP")
+# Its door frame, the near face's middle columns, drawn over a vehicle in the bay.
+ts_stub TSWEAP "$TMPDIR/tsweapnp_stub.shp" 96 96 64
+PACK_ARGS+=("$TMPDIR/tsweapnp_stub.shp:TSWEAPNP.SHP")
 # TSDWEAP 96x72 = the deployed Mobile War Factory's 512x384 canvas, whole cells centred on its 3x3 plot: a
 # 120-step idle cycle on the near face, a 12-stage shutter.
 ts_stub TSDWEAP "$TMPDIR/tsdweap_stub.shp" 96 72 2
@@ -392,6 +395,8 @@ ts_stub TSDWEAP "$TMPDIR/tsdweapnf_stub.shp" 96 72 240
 PACK_ARGS+=("$TMPDIR/tsdweapnf_stub.shp:TSDWEAPNF.SHP")
 ts_stub TSDWEAP "$TMPDIR/tsdweapnu_stub.shp" 96 72 240
 PACK_ARGS+=("$TMPDIR/tsdweapnu_stub.shp:TSDWEAPNU.SHP")
+ts_stub TSDWEAP "$TMPDIR/tsdweapnp_stub.shp" 96 72 240
+PACK_ARGS+=("$TMPDIR/tsdweapnp_stub.shp:TSDWEAPNP.SHP")
 # TSPILE 72x72 = the HD barracks' 384x384 canvas, whole cells centred on its 2x1 plot: the flag either
 # side, the masts and flag in the row behind, empty canvas over the bib row in front.
 ts_stub TSPILE "$TMPDIR/tspile_stub.shp" 72 72 2

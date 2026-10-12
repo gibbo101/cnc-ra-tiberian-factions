@@ -47,6 +47,7 @@ STUB_MANIFEST = f"{SCRIPTS}/ts_stub_dims.json"
 HAZE_ALPHA = 4
 BOX_RIM = 2
 CELL = 128
+OPAQUE_ALPHA = 250  # a copy drawn over its own opaque px leaves them unchanged
 # The units' black outline antialiases this far out from the solid body; a cast shadow is what
 # lies beyond, and a frame with fewer such pixels than CAST_SHADOW_MIN_PX has none.
 OUTLINE_PX = 2
@@ -153,6 +154,7 @@ def tiberium(img):
 # box, so the canvas is the box; it may run past the source's edges, and only cast shadow and the art's 2 px
 # antialiased rim may fall outside it. cells=(w, h) ships every frame on w x h whole cells centred on the plot,
 # under the same rule; east=px keeps art that sat half a classic px east on an odd-width stub where it was.
+# strip=(x0, x1) keeps only the opaque px between those canvas columns, a copy of part of a layer to sort apart.
 # make_pick takes those build-up frames, in that order, instead of all of them.
 # then=(path prefix, count) appends those frames after the tileset; then_over=(path prefix, frame) draws that
 # one frame over each of them.
@@ -309,6 +311,10 @@ BUILDINGS = {
 # The open-door near face is the same layer: the door is its own layer here.
 BUILDINGS["TSWEAPNU"] = BUILDINGS["TSWEAPNF"]
 BUILDINGS["TSDWEAPNU"] = BUILDINGS["TSDWEAPNF"]
+# The near face's door frame (the pillars and the roof over the door), sorted over a vehicle in the bay while the
+# rest of the face sorts as the building does; as wide as the widest vehicle the bay seats (the MCV).
+BUILDINGS["TSWEAPNP"] = dict(BUILDINGS["TSWEAPNF"], strip=(144, 368))
+BUILDINGS["TSDWEAPNP"] = dict(BUILDINGS["TSDWEAPNF"], strip=(144, 368))
 
 # ini: the source folder and the frames (path prefix, count) on the unit's own canvas. root
 # overrides the folder the source sits in, digits the frame number's width, and muzzle names the
@@ -435,6 +441,14 @@ def to_cells(img, cells, east=0):
         raise SystemExit(f"cannot centre {w}x{h} on a {img.size} frame")
     x0, y0 = (img.width - w) // 2 - east, (img.height - h) // 2
     return to_box(img, (x0, y0, x0 + w, y0 + h))
+
+
+def to_strip(img, strip):
+    a = np.asarray(img).copy()
+    keep = np.zeros(a.shape[:2], bool)
+    keep[:, strip[0]:strip[1]] = a[:, strip[0]:strip[1], 3] >= OPAQUE_ALPHA
+    a[~keep] = 0
+    return Image.fromarray(a, "RGBA")
 
 
 def crop_above(img, px):
@@ -730,6 +744,8 @@ def main(argv):
         if spec.get("cells"):
             tiles = [to_cells(i, spec["cells"], spec.get("east", 0)) for i in tiles]
             make = [to_cells(i, spec["cells"], spec.get("east", 0)) for i in make]
+        if spec.get("strip"):
+            tiles = [to_strip(i, spec["strip"]) for i in tiles]
         size = canvas_for(tiles + make)
         pack(ini, tiles, make, size)
         stubs[ini] = [size[0] * 3 // 16, size[1] * 3 // 16]
