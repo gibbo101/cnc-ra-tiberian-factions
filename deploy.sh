@@ -8,16 +8,17 @@
 #
 # Behavior:
 #   1. cmake --workflow --preset remaster, then a full restage of resources/ and the asset packs
-#      into build/remaster/Vanilla_RA/ (a fresh folder, so nothing stale rides along).
-#   2. Refuses to deploy when the game is running on the target, when the target path is not a
-#      Mods/Red_Alert/Vanilla_RA folder, or when a gitignored locked file (the UI atlas, the
-#      intro) is missing or differs from its committed md5.
+#      into build/remaster/Vanilla_RA/ and the folder of each required asset-pack mod beside it
+#      (scripts/asset_packs.py REQUIRED), fresh folders so nothing stale rides along.
+#   2. Refuses to deploy when the game is running on the target, when a target path is not its
+#      Mods/Red_Alert/<folder>, or when a gitignored locked file (the UI atlas, the CAMPAIGNS page
+#      textures, the intro) is missing or differs from its committed md5.
 #   3. Lists what the mirror would delete and asks before going on.
 #   4. Desktop only: backs up every file it will replace or delete to
 #      ~/Desktop/Tiberian Factions/deploy-backups/desktop-<branch>-<timestamp>/, and after a
 #      deploy that checks out keeps only the newest 3 of those folders.
-#   5. rsync -ac --delete build/remaster/Vanilla_RA/ -> target, then checks by checksum that the
-#      target matches the build. -c matters: the RA*_SFX_EVA_* seed WAVs can match the build in
+#   5. rsync -ac --delete each folder to Mods/Red_Alert/<folder>/ on the target, then checks by
+#      checksum that it matches the build. -c matters: the RA*_SFX_EVA_* seed WAVs can match the build in
 #      size and mtime but not content, and -a alone skips them. The mirror never deletes CustomMaps/,
 #      where the launcher keeps the maps it receives in LAN games.
 #
@@ -52,24 +53,20 @@ for arg in "$@"; do
     esac
 done
 
-MODS_SUFFIX="steamapps/compatdata/1213210/pfx/drive_c/users/steamuser/Documents/CnCRemastered/Mods/Red_Alert/Vanilla_RA/"
-LOCAL_OUTPUT="build/remaster/Vanilla_RA/"
+MODS_SUFFIX="steamapps/compatdata/1213210/pfx/drive_c/users/steamuser/Documents/CnCRemastered/Mods/Red_Alert/"
+LOCAL_ROOT="build/remaster/"
+LOCAL_OUTPUT="${LOCAL_ROOT}Vanilla_RA/"
+mapfile -t REQUIRED_MODS < <(python3 scripts/asset_packs.py required)
 if [[ "$DESKTOP" -eq 1 ]]; then
-    TARGET_DIR="$HOME/.steam/steam/$MODS_SUFFIX"
-    TARGET="$TARGET_DIR"
+    TARGET_ROOT="$HOME/.steam/steam/$MODS_SUFFIX"
+    TARGET_HOST=""
     SURFACE="desktop"
 else
     DECK_HOST="${DECK_HOST:-deck@steamdeck}"
-    TARGET_DIR="/home/deck/.steam/steam/$MODS_SUFFIX"
-    TARGET="$DECK_HOST:$TARGET_DIR"
+    TARGET_ROOT="/home/deck/.steam/steam/$MODS_SUFFIX"
+    TARGET_HOST="$DECK_HOST:"
     SURFACE="$DECK_HOST"
 fi
-
-# An empty or wrong target turns the --delete mirror into a wipe of whatever it points at.
-case "${TARGET_DIR:?}" in
-    /*/Mods/Red_Alert/Vanilla_RA/) ;;
-    *) echo "ERROR: refusing to deploy to '$TARGET_DIR': not a Mods/Red_Alert/Vanilla_RA folder." >&2; exit 1 ;;
-esac
 
 on_target() {
     if [[ "$DESKTOP" -eq 1 ]]; then "$@"; else ssh -n "$DECK_HOST" "$@"; fi
@@ -81,8 +78,11 @@ if [[ "$NO_BUILD" -eq 0 ]]; then
       VC_CXX_FLAGS="-w;-fpermissive" \
       cmake --workflow --preset remaster
     # The CMake copy only runs when the DLL relinks and never deletes, so restage from scratch.
-    echo "==> Restaging $LOCAL_OUTPUT"
+    echo "==> Restaging $LOCAL_OUTPUT and ${REQUIRED_MODS[*]}"
     scripts/clear_dir.sh "${LOCAL_OUTPUT:?}"
+    for mod in "${REQUIRED_MODS[@]}"; do
+        scripts/clear_dir.sh "${LOCAL_ROOT:?}${mod:?}/"
+    done
     python3 scripts/stage_asset_packs.py "$LOCAL_OUTPUT" --full
     cp build/remaster/RelWithDebInfo/RedAlert.dll "${LOCAL_OUTPUT}Data/"
 fi
@@ -107,8 +107,9 @@ check_locked() {
     fi
 }
 echo "==> Checking locked gitignored files"
-check_locked "${LOCAL_OUTPUT}Data/ART/TEXTURES/SRGB/MT_COMMANDBAR_COMMON.TGA" \
-    "$(awk '$2 == "MT_COMMANDBAR_COMMON.TGA" {print $1}' scripts/campaigns_work/textures.md5)"
+while read -r want name; do
+    check_locked "${LOCAL_OUTPUT}Data/ART/TEXTURES/SRGB/$name" "$want"
+done < scripts/campaigns_work/textures.md5
 check_locked "${LOCAL_OUTPUT}Data/ART/MOVIES/RA/REDINTRO.BK2" "$(cat scripts/intro_work/REDINTRO.md5)"
 
 # A malformed XML override does not get skipped by the launcher -- it asserts and the
@@ -122,23 +123,45 @@ if on_target pgrep -x ClientG.exe >/dev/null; then
     exit 1
 fi
 
-echo "==> Comparing $LOCAL_OUTPUT with $TARGET"
-CHANGES=$(rsync -acn $DELETE_FLAG --itemize-changes "$LOCAL_OUTPUT" "$TARGET" | grep -v '^\.d' || true)
-DELETIONS=$(grep '^\*deleting' <<<"$CHANGES" | cut -c13- || true)
-REPLACED=$(grep -E '^[<>]f[^+]' <<<"$CHANGES" | cut -c13- || true)
-echo "    $(grep -cE '^[<>]f\+' <<<"$CHANGES" || true) new, $(grep -cE '^[<>]f[^+]' <<<"$CHANGES" || true) replaced, $(grep -c '^\*deleting' <<<"$CHANGES" || true) deleted"
-if [[ -n "$DELETIONS" ]]; then
-    echo "==> These files on $SURFACE are not in the build and will be DELETED:"
-    sed 's/^/    /' <<<"$DELETIONS"
-fi
+# The mod folders this deploy mirrors: Tiberian Factions, then each required asset-pack mod.
+FOLDERS=(Vanilla_RA "${REQUIRED_MODS[@]}")
+BACKUP=""
+
+# Lists one folder's changes into CHANGES, DELETIONS and REPLACED.
+compare() {
+    local local_dir="$1" target="$2"
+    CHANGES=$(rsync -acn $DELETE_FLAG --itemize-changes "$local_dir" "$target" | grep -v '^\.d' || true)
+    DELETIONS=$(grep '^\*deleting' <<<"$CHANGES" | cut -c13- || true)
+    REPLACED=$(grep -E '^[<>]f[^+]' <<<"$CHANGES" | cut -c13- || true)
+}
+
+ALL_DELETIONS=""
+for folder in "${FOLDERS[@]}"; do
+    target_dir="$TARGET_ROOT$folder/"
+    # An empty or wrong target turns the --delete mirror into a wipe of whatever it points at.
+    case "${target_dir:?}" in
+        /*/Mods/Red_Alert/"$folder"/) ;;
+        *) echo "ERROR: refusing to deploy to '$target_dir': not a Mods/Red_Alert/$folder folder." >&2; exit 1 ;;
+    esac
+    echo "==> Comparing $LOCAL_ROOT$folder/ with $TARGET_HOST$target_dir"
+    compare "$LOCAL_ROOT$folder/" "$TARGET_HOST$target_dir"
+    echo "    $(grep -cE '^[<>]f\+' <<<"$CHANGES" || true) new, $(grep -cE '^[<>]f[^+]' <<<"$CHANGES" || true) replaced, $(grep -c '^\*deleting' <<<"$CHANGES" || true) deleted"
+    if [[ -n "$DELETIONS" ]]; then
+        echo "==> These files in $folder on $SURFACE are not in the build and will be DELETED:"
+        sed 's/^/    /' <<<"$DELETIONS"
+        ALL_DELETIONS+="$DELETIONS"
+    fi
+    if [[ "$DRY_RUN" -eq 1 ]]; then
+        grep -v '^\.f\.\.t' <<<"$CHANGES" | sed 's/^/    /' || true
+    fi
+done
 
 if [[ "$DRY_RUN" -eq 1 ]]; then
     echo "==> DRY RUN: nothing transferred"
-    grep -v '^\.f\.\.t' <<<"$CHANGES" | sed 's/^/    /' || true
     exit 0
 fi
 
-if [[ -n "$DELETIONS" && "$AUTO_YES" -eq 0 ]]; then
+if [[ -n "$ALL_DELETIONS" && "$AUTO_YES" -eq 0 ]]; then
     echo "Continue? [y/N]"
     read -r answer
     if [[ ! "$answer" =~ ^[Yy]$ ]]; then
@@ -147,24 +170,30 @@ if [[ -n "$DELETIONS" && "$AUTO_YES" -eq 0 ]]; then
     fi
 fi
 
-if [[ "$DESKTOP" -eq 1 && -n "$DELETIONS$REPLACED" ]]; then
-    BACKUP="$BACKUP_ROOT/desktop-$(git rev-parse --abbrev-ref HEAD | tr / -)-$(date +%Y%m%d-%H%M%S)"
-    mkdir -p "$BACKUP"
-    touch "$BACKUP/$BACKUP_MARKER"
-    printf '%s\n%s\n' "$DELETIONS" "$REPLACED" | grep -v '/$' | grep . | while read -r f; do
-        (cd "$TARGET_DIR" && cp -p --parents "$f" "$BACKUP/")
-    done
-    echo "==> Backed up replaced and deleted files to $BACKUP"
-fi
+for folder in "${FOLDERS[@]}"; do
+    target_dir="$TARGET_ROOT$folder/"
+    compare "$LOCAL_ROOT$folder/" "$TARGET_HOST$target_dir"
+    if [[ "$DESKTOP" -eq 1 && -n "$DELETIONS$REPLACED" ]]; then
+        if [[ -z "$BACKUP" ]]; then
+            BACKUP="$BACKUP_ROOT/desktop-$(git rev-parse --abbrev-ref HEAD | tr / -)-$(date +%Y%m%d-%H%M%S)"
+            mkdir -p "$BACKUP"
+            touch "$BACKUP/$BACKUP_MARKER"
+        fi
+        mkdir -p "$BACKUP/$folder"
+        printf '%s\n%s\n' "$DELETIONS" "$REPLACED" | grep -v '/$' | grep . | while read -r f; do
+            (cd "$target_dir" && cp -p --parents "$f" "$BACKUP/$folder/")
+        done
+    fi
+    echo "==> rsync -ac $DELETE_FLAG $LOCAL_ROOT$folder/ -> $TARGET_HOST$target_dir"
+    rsync -ac $DELETE_FLAG "$LOCAL_ROOT$folder/" "$TARGET_HOST$target_dir"
+    LEFT=$(rsync -acn $DELETE_FLAG --itemize-changes "$LOCAL_ROOT$folder/" "$TARGET_HOST$target_dir" | grep -vc '^\.d' || true)
+    if [[ "$LEFT" -ne 0 ]]; then
+        echo "ERROR: $LEFT files in $folder still differ from the build on $SURFACE." >&2
+        exit 1
+    fi
+done
+[[ -n "$BACKUP" ]] && echo "==> Backed up replaced and deleted files to $BACKUP"
 
-echo "==> rsync -ac $DELETE_FLAG $LOCAL_OUTPUT -> $TARGET"
-rsync -ac $DELETE_FLAG "$LOCAL_OUTPUT" "$TARGET"
-
-LEFT=$(rsync -acn $DELETE_FLAG --itemize-changes "$LOCAL_OUTPUT" "$TARGET" | grep -vc '^\.d' || true)
-if [[ "$LEFT" -ne 0 ]]; then
-    echo "ERROR: $LEFT files still differ from the build on $SURFACE." >&2
-    exit 1
-fi
 if [[ "$DESKTOP" -eq 1 && -d "$BACKUP_ROOT" ]]; then
     # Only folders carrying this script's marker; hand-made backups are never touched.
     find "$BACKUP_ROOT" -mindepth 2 -maxdepth 2 -type f -name "$BACKUP_MARKER" -printf '%h\n' \
@@ -175,4 +204,4 @@ if [[ "$DESKTOP" -eq 1 && -d "$BACKUP_ROOT" ]]; then
             echo "==> Pruned old backup $old"
         done
 fi
-echo "==> Done: $SURFACE matches the build by checksum (DLL $(md5sum "${LOCAL_OUTPUT}Data/RedAlert.dll" | cut -c1-8))."
+echo "==> Done: $SURFACE matches the build by checksum (DLL $(md5sum "${LOCAL_OUTPUT}Data/RedAlert.dll" | cut -c1-8); ${FOLDERS[*]})."
