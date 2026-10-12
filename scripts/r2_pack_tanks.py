@@ -132,7 +132,7 @@ def write_muzzle_header():
 
 def main():
     if not ART:
-        raise SystemExit("set R2_ART_DIR (holding renders/, raw/, ra2/)")
+        raise SystemExit("set R2_ART_DIR (holding raw/, ra2/)")
     for name, cameo in UNITS:
         write_cameo(name, cameo)
     write_audio()

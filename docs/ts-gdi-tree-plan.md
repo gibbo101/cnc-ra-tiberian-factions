@@ -75,7 +75,7 @@ superweapon payload, or dormant.
 | TSHARV | HARV | 1 | 1400 | 1000 | TSWEAP, TSPROC | `Tracked=yes` |
 | TSSMEC | SMECH | 2 | 500 | 175 | TSWEAP | Wolverine |
 | TSTITN | MMCH | 3 | 800 | 400 | TSWEAP | Titan |
-| TSLIMP | | 3 | 550 | 100 | TSWEAP, TSRADR | Limpet Drone (deploys TSDLIMP) |
+| TSLIMP | | 3 | 550 | 100 | TSWEAP, TSRADR | Limpet Drone (deploys TSDLIMP). Sidebar side and sounds `scripts/ts_pack_limpet.py` |
 | TSAPC | APC | 6 | 800 | 200 | TSWEAP, TSPILE | `SPEED_AMPHIBIOUS` |
 | TSJUGG | | 6 | 950 | 350 | TSWEAP, TSRADR | Juggernaut, deploy-to-fire |
 | TSMEMP | | 6 | 1000 | 800 | TSWEAP, TSPULS | Mobile EMP |
@@ -87,7 +87,7 @@ superweapon payload, or dormant.
 | TSMDIV | | 10 | 2800 | — | TSDROP, TSTECH | Mech Division token: 3 Titans + 2 Wolverines |
 | TS4PAIR | | 10 | 3200 | — | TSDROP, TSTECH | Mk. I Reserve token: two reinstated Mk. Is |
 | TSMWAR | | 10 | 1800 | 800 | TSWEAP, TSPLUG | Mobile War Factory (deploys TSDWEAP) |
-| TSSUBTANK / TSSAPC | | −1 | 750 / 800 | 300 / 175 | | Devil's Tongue, Subterranean APC: crate finds |
+| TSSUBTANK / TSSAPC | | −1 | 750 / 800 | 300 / 175 | | Devil's Tongue, Subterranean APC: crate finds. Sidebar side `scripts/ts_pack_subterranean.py` |
 | TSTTNK | TTNK | −1 | 800 | 350 | | Tick Tank, Nod's: a crate find; digs in as TSTICK (TS [GATICK]). Sidebar side `scripts/ts_pack_ttnk.py`, fire points `scripts/ts_ttnk_muzzle.py` |
 | TSHUNT | | −1 | | 500 | | Hunter Seeker, the Seeker Control's payload |
 
@@ -148,8 +148,8 @@ Resource plugs stack by design (`Can_Upgrade`): the power plant takes two turbin
 
 ### Walls and component towers
 
-- A TS yard builds its own concrete wall and gates (TSWALL, TSGATEH/V) and is also granted RA's
-  sandbags (`TF_Is_TS_Yard_Wall`); every wall placement line-fills (`house.cpp`).
+- A TS yard builds its own concrete wall and gates (TSWALL, TSGATEH/V), and no sandbags; every wall
+  placement line-fills (`house.cpp`).
 - **Component towers are standalone defences:** a wall run stops at one rather than binding into
   it, a tower can't be placed on a wall segment, and wall arms end flush on the cell boundary.
 - **The plug is the armed tower type.** Placing TSVULC, TSCSAM or TSROCK replaces the bare TSCTWR
@@ -219,7 +219,7 @@ HEAVY, and `GTWEAP_D` frames 9-17 are magenta placeholders.
   roll-off seats ride `ROLL_OFF_DOCK_SEAT` (`DriveClass::Track21`), one static table shared with the
   war factory exit and the depot (`todo.md`). Pairings and dock time:
   `harvester-docking-rework-plan.md`.
-- **TSHARV.ZIP has 64 frames** (`scripts/ts_pack_tsharv_horv.py`): 0-31 the harvester, 32-63 TS's
+- **TSHARV.ZIP has 64 frames** (`scripts/ts_pack_hd_buildings.py`): 0-31 the harvester, 32-63 TS's
   unloading truck with its bed lowered, not drawn.
 - **The refinery radio protocol gated on literal `STRUCT_REFINERY || STRUCT_TDPROC` in about 15
   sites;** all take TSPROC. Repair (`STRUCT_REPAIR || STRUCT_TDFIX`, ~17 sites) and radar
@@ -275,9 +275,8 @@ the plot is the deck's 3x2 and the canvas is padded to centre on it.
   no remap pixels and stays GDI gold.
 - **Bay WAVs must be MS-ADPCM:** plain PCM crashed ClientG on takeoff (a divide by zero in its ADPCM
   block maths).
-- Render recipe: `vxl_render.py DSHP.VXL --frames 1 --yaw0 180 --px-per-voxel 6.4 --team-green
-  255,204,51 --elev 32 --canvas 656`, then `ts_pack_dropship.py`. The canvas stays 656 so the classic
-  stub (123) and drawn scale never move.
+- Art: the HD rebuild's four frames (TSDSHP, VFX), packed by `ts_pack_hd_buildings.py`. The canvas
+  stays 656 so the classic stub (123) and drawn scale never move.
 
 ---
 
@@ -336,7 +335,7 @@ the launcher can't do, and TS ships no sonic-wave art.
 **Amphibious APC (TSAPC).** TS's APC is the drive locomotor with `SpeedType=Amphibious`: ours is
 `SPEED_AMPHIBIOUS` (rules `Amphibious=yes`, its own land column: Clear 80, Rough 40, Road 100,
 Water 80, Ore 50, Beach 60, River 80, Rock and Wall 0), sharing `MZONE_HOVER`. On water it draws
-TS's water hull `apcw.vxl` (frames 32-63, `scripts/ts_pack_tsapc_water.py`). It skips RA's APC door
+TS's water hull (frames 32-63, packed by `scripts/ts_pack_hd_buildings.py`). It skips RA's APC door
 frames, which it has no art for.
 
 **Wolverine (TSSMEC).** TS's firing animation is a sprite block (art.ini `FiringFrames=4`, SMECH
@@ -393,9 +392,6 @@ A unit here is done: no open art, geometry or behaviour work.
 - **A tower with N/E/S/W connectors:** voxel splats, two procedural Blender towers, an image-model
   redraw and a third-party STL were all rejected; the tower is TS's own sprite. Running TRELLIS
   locally needs 24 GB of VRAM (this box has 12).
-- **The Hover MLRS still shadow** (a shadow-only draw under the bobbing hull): the art half,
-  `scripts/ts_hover_split_shadow.py`, is parked; reviving it also needs a `Draw_It` reorder and a
-  96-frame classic stub.
 
 ## Engine facts, traps, lessons
 

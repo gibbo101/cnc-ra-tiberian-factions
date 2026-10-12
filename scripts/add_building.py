@@ -123,9 +123,7 @@ def emit_block(entry):
         lines.append("ActiveAnimStart=%d" % start)
         lines.append("ActiveAnimCount=%d" % count)
         lines.append("ActiveAnimRate=%d"  % rate)
-    # Buildup anim block: BSTATE_CONSTRUCTION override. Necessary when our
-    # BSTATE_CONSTRUCTION override: count is the MAKE tileset shape count
-    # (MAKE.ZIP frame count + 1 for the empty shape 0).
+    # The BSTATE_CONSTRUCTION build-up block: its count is the MAKE tileset's shape count (frames + 1 for the empty shape 0).
     buildup = entry.get("buildup_anim")
     if buildup is None:
         # Auto-derive from the bundled MAKE.ZIP frame count when no explicit

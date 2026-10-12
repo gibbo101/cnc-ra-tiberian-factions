@@ -24,8 +24,8 @@ Sensor Array and the Mobile War Factory, built in the same arc. Pairs with
   generators go off; a stunned cannon can't be the launch site.
 - **TS rules kept:** a stunned power plant still produces power, a stunned yard still builds,
   factories keep producing, only yards spark among buildings, and pad-parked aircraft are spared.
-- **Hover units carry split shadows** (TSHVR shapes 64-95 via `ts_hover_split_shadow.py`, TSLIMP
-  10-19 via `ts_pack_limpet.py`). The shadow bobs with the hull; only a stun settles the hull 3 px
+- **Hover units carry split shadows** (TSHVR shapes 64-95, TSLIMP 10-19, packed by
+  `ts_pack_hd_buildings.py`). The shadow bobs with the hull; only a stun settles the hull 3 px
   onto a still shadow over ~0.8 s, lifting back over the stun's last ~0.8 s.
 - **Diggers (stage D):** a stunned digger reroutes to `Find_Emerge_Cell` (OpenTS `empulse.cpp` +
   `tunnel.cpp` Stop_Moving), explodes if there is none, and carries on if it is within a cell's

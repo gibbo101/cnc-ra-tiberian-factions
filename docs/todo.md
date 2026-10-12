@@ -16,19 +16,13 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 - **Check `asset-packs/` for unused files.** The rest of the checkout has been through it: every
   tracked script and art source is named by a build step, script or doc. The asset-pack instance
   owns `asset-packs/`, so it checks that folder.
-- **Fix the balance data bugs** (`known-issues.md`, "Balance data"), each with a play test:
-  - the mod's `aftrmath.ini` overrides `[155mm] Range` (6 over the intended 8) and `[E3] Owner`
-    (allies over allies,soviet): set the intended values there too, after deciding E3's owner;
-  - `Inaccurate=` is dead (EA reads `Inaccuate`): turn projectile inaccuracy back on, through the
-    key or a `// TF:` parser fix, and retune the artillery range if the scatter changes it.
 - **Shrink the package.** The build is 1,137 MB unpacked, 772 MB zipped (5.0.0: 1,456 MB, zip
   1.0 GB), with each frame stored once, copied ZIPs shared at staging and cameos staged as RLE TGA
   (`docs/asset-packs.md`). Where the rest goes: 182 MB of sidebar cameos, the 177 MB UI atlas (same size as EA's),
   67 MB of movies, 51 MB of lobby thumbnails (same-size swaps for EA's), 43 MB CONFIG.MEG. Leads:
   `TSWEAP2.ZIP` (2.5 MB), the pre-rebuild war factory overlay, which the game never draws, can go
-  once the map editor's factory overlay (`editor_manifest.py`) and the war-factory Aseprite scripts
-  read the current layers; whether the launcher takes a DXT DDS for a loose cameo (an in-game check
-  of every faction's sidebar).
+  once the map editor's factory overlay (`editor_manifest.py`) reads the current layers; whether the
+  launcher takes a DXT DDS for a loose cameo (an in-game check of every faction's sidebar).
   It grows from here: TS Nod (21 buildings and 19 units in the HD hand-offs) and the TS HD
   rebuilds. Restage a build folder clean (`stage_asset_packs.py --full`, as
   `package-for-workshop.sh` does) before measuring it.
@@ -140,10 +134,12 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   in `~/Desktop/Tiberian Factions/`. The TS Nod wall is already in, dormant, and so is the Rocket
   Infantry (`TSE3`, `TechLevel=-1`, TS GDI's owners and barracks): give it TS Nod's owner, Hand of Nod
   and TechLevel 2 then. The other Nod infantry cameos wait in `ts-hd-cameos/waiting-for-units/`.
+  Check the Tick Tank's shot in play then: `tsttnk_muzzle.h` is measured from the unit's position, but
+  `Fire_Coord` adds it to the art-dropped centre, which may start the shot 29 leptons south.
 - **TS Pavement (GAPAVE), alongside TS Nod.** It turns cells into pavement: it keeps Tiberium off
   build space and blocks subterranean units. Costs: placement logic like the wall divert (the
-  building becomes ground) and square-grid ground art, since TS's is isometric (the Firestorm
-  panels were rebuilt the same way, `scripts/ts_pack_fsdf.py`).
+  building becomes ground) and square-grid ground art, since TS's is isometric (as the HD Firestorm
+  sections are, `scripts/ts_pack_hd_buildings.py`).
 - **The TS HD rebuild:** branch `ts-buildings-hd`, worktree `../worktrees/tf-ts-hd`, skill
   `ts-to-ra-hd-art`.
 - **Big units show through a TS war factory's shut door (fix in test):** the HD harvester, Mobile War Factory,

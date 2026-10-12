@@ -3,8 +3,8 @@
 into one watertight solid, as the HD art chat's building STLs are (1 cell = 32 mm, Z up, the base on Z = 0).
 
 The parts are voxelised at 0.25 mm and filled, anything under 1 mm thick is thickened to about that, loose specks
-under 3 mm3 are left out, and each separate piece is dropped onto the bed in place. Writes OUT_DIR/<model>.stl and a
-README-stl.txt listing them. Needs trimesh, scipy and scikit-image.
+under 3 mm3 are left out, and each separate piece is dropped onto the bed in place. Writes OUT_DIR/<model>.stl.
+Needs trimesh, scipy and scikit-image.
 usage: glb_to_stl.py OUT_DIR GLB[:root,root...][@base] ...
 License: GPL v3.
 """

@@ -16,9 +16,10 @@ left. Engine reference: OpenTS (`reference/OpenTS/code/`); data: TS's own `RULES
   `Rate=` is frames per minute: OpenTS `animtype.cpp` delay = TICKS_PER_MINUTE / Rate). The AI
   doesn't build it (TS's AI never raises the field either).
 - **Sections** (`TSFSDF`): 1x1, not selectable, insignificant, no build-up, $250, power −2, 200 HP
-  concrete, prerequisite TSFGEN, `BaseNormal=no`, `Adjacent=3`. Art from `scripts/ts_pack_fsdf.py`:
-  frame = own neighbour sections (N1 E2 S4 W8), +16 damaged, +32 live (`BuildingClass::Shape_Number`;
-  the damaged groups repeat the undamaged art). Walkable while `HouseClass::IsFirestormLive` is false
+  concrete, prerequisite TSFGEN, `BaseNormal=no`, `Adjacent=3`. HD art from
+  `scripts/ts_pack_hd_buildings.py`, cameo from `scripts/ts_pack_fsdf.py`: frame = own neighbour
+  sections (N1 E2 S4 W8), +16 damaged, +32 live (`BuildingClass::Shape_Number`; the damaged groups
+  repeat the undamaged art). Walkable while `HouseClass::IsFirestormLive` is false
   (the mine and Limpet pattern in `Can_Enter_Cell` and `What_Action`); sorts under units; doesn't keep
   a player alive. Sections chain only from other own sections (`TF_Section_Chains_To` in
   `display.cpp`, and the placement ghost's distance map, `Calculate_Placement_Distances` in

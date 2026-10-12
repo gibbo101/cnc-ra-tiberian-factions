@@ -195,8 +195,9 @@ bbox-centred paste **moves the sprite** even when every body pixel is in the sam
   shades brighter on its own table), and **carries no shadow** (a hull in water keeps its shadow under
   the surface, as RA's ships do). **Never run `ts_reshadow.py` over the water
   frames.**
-- The Titan, Wolverine, MCV and harvester are HD rebuilds, rendered from 3D models with one light for
-  every facing (`scripts/ts_pack_hd_buildings.py` UNITS; the models are in the TS-HD pack's `3d/`).
+- Every TS unit and the RA2 tanks are HD rebuilds, rendered from 3D models with one light for every
+  facing (`scripts/ts_pack_hd_buildings.py` UNITS; the models are in the TS-HD pack's `3d/`). The
+  relight rules above don't apply to them.
 - **Voxel-mesh upscale: tried and rejected (harvester A/B in game).** `scripts/vxl_mesh_render.py`
   (marching cubes + Taubin smoothing + denoised vertex colours, TS lighting) renders a smoother hull,
   but at game sprite scale the 1-voxel ribs and panel lines ARE the detail, and any smoothing that
@@ -237,9 +238,8 @@ Two stances of one entity, or a deployable and the building it becomes, must the
 - The Juggernaut's walk frames sat 10 classic px north of its deployed frames, which read as a
   gap under the box, a bar across the hull, and a hop north on pack-up. Fixed by dropping the
   walk frames onto the deployed ground line (`WALK_DROP` in `scripts/ts_pack_jugg.py`).
-- The Limpet Mine sat 5.8 classic px below the cell centre where the drone's shadow sat 11.6, so
-  deploying hopped it north. Fixed by dropping the mine and its build-up onto the drone's line
-  (`BLDG_DROP` in `scripts/ts_pack_limpet.py`).
+- The Limpet Mine sits on the drone's shadow line, 11.6 classic px below the cell centre: a mine
+  higher than that hops north the moment the drone deploys.
 
 Measure, do not eyeball: read the lowest opaque pixel per frame in full canvas space (add the
 meta `crop` offset) and divide by the density. For reference, TS's 1x1 buildings sit about +10 to
@@ -263,15 +263,6 @@ The launcher places a unit's box at the unit's centre and ignores
 contract 7); only `DimensionX/Y` is ours. The airborne Jumpjet's lifted `CenterCoordY` does move
 its box, but that path is infantry in flight and does not carry over to a ground vehicle. Buildings differ: see contract 7, where the box is the
 plot's and the art must be seated on the plot.
-
-## 16. Growing a unit's frame count doesn't add its tiles
-
-`ts_pack_infantry.patch_tileset` skips a unit already in `RA_UNITS.XML` ("already in, left as
-is"), so repacking a unit with more frames leaves the new shapes without a `<Tile>` entry and
-they draw as white boxes. After adding frames, add the new `<Tile>` entries by hand (or remove
-the unit's old block first so the helper writes them all), and grow the classic stub in
-`build_tfassets.sh` to the same count, then rebuild TFASSETS.MIX (contract 12). Splitting the
-Hover MLRS (64 -> 96) and Limpet Drone (10 -> 20) shadows hit this twice.
 
 ## House quality policy for TS-sourced assets
 
@@ -346,25 +337,12 @@ highest quality the pipeline can produce.** Concretely:
   54° house camera).
 - **Voxel turreted units** lay out hull frames 0-31 and turret 32-63 (TS4TNK, R2APOC, R2PRIS,
   TSSONIC); the layout lives in their pack scripts.
-- **VOXEL RENDER LEDGER (keep this current).** RA/TD Remastered HD unit sprites match a
-  **~32° camera** (the 54° default read top-down, commit 51469c8c), so
-  EVERY ground-vehicle voxel renders at `--elev 32`; the vxl_render default
-  is 54 and reads alien next to RA art. Current renders, all
-  `--px-per-voxel 12 --team-green 0,200,0 --elev 32`:
-  TSAPC (yaw0 0 + face_fix; water hull
-  `apcw.vxl` same camera → `ts_pack_tsapc_water.py`), TSSONIC (yaw0 90, no reorder, `--canvas 628`)
-  + SONICTUR (**`--hva SONICTUR.HVA`** — the turret's pose is in the HVA; without it the render is
-  38 px taller and sits 78 px lower, `--canvas 624`), TSHVR (yaw0 90, `--canvas 500`) + HVRTUR (**`--z-clip 10`** drum clip,
-  `--canvas 660`) → `ts_pack_hvr_hmec.py`, TSHMEC (yaw0 90, **`--elev 35`**, `--hva HMEC.HVA
-  --hva-frame f` for f in 0 2 4 6 8 11 13 15, `--canvas 1000`, dirs `ts35_hmec_<f>`, PLUS the same
-  renders with **`--shadow 0.6,-0.2`** into `ts35sh_hmec_<f>`: the body set owns the union fit, the
-  shadow set is what ships; canvas 576 / stub 72 so the east-cast shadow of the E-facing barrel
-  fits; NOT in `ts_reshadow.py`) → same script.
-  Aircraft: DSHP dropship `--yaw0 180 --elev 32 --canvas 656 --px-per-voxel 6.4 --team-green
-  255,204,51` → `ts_pack_dropship.py`. After ANY repack: `ts_reshadow.py` (not on water frames), then
-  `ts_recrop_to_shipped.py` — see contract 11. VXLs
-  re-extractable from TIBSUN.MIX LOCAL.MIX via tools/ts_extract.py.
-  Frame-0 convention: yaw0 90 ⇒ frame 0 = N advancing CCW (zip-native);
-  yaw0 0 ⇒ E-start, needs the wave's +8 face_fix.
+- **Voxel renders.** RA/TD Remastered HD unit sprites match a **~32° camera** (the 54°
+  `vxl_render.py` default reads top-down beside RA art), so a ground-vehicle voxel renders at
+  `--px-per-voxel 12 --team-green 0,200,0 --elev 32`. Every TS unit and the RA2 tanks ship as HD
+  rebuilds instead, packed, seated and shadowed by `ts_pack_hd_buildings.py` (UNITS): nothing
+  reshadows or re-crops them after a repack. VXLs are re-extractable from TIBSUN.MIX LOCAL.MIX via
+  `tools/ts_extract.py`. Frame-0 convention: yaw0 90 ⇒ frame 0 = N advancing CCW (zip-native);
+  yaw0 0 ⇒ E-start, needs the +8 face_fix.
 - **Audio:** every TS unit ships its authentic TS sounds (weapon reports, and voices in time), under
   their own sample names; the format rules are in `td-audio-routing-recipe.md`.
