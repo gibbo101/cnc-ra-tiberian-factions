@@ -168,8 +168,9 @@ def readme(mod, listed):
                   "was reviewed in play before release."]
     else:
         lines += ["These sprites were rendered from the game's own 3D models; no AI generated the art."]
+    makers = "Electronic Arts'" if w["game"] == "CNC3" else "Westwood's and Electronic Arts'"
     lines += ["The scripts and tools that build this pack, and Tiberian Factions' code, were written with AI "
-              "assistance. The original designs, sounds and voices are Westwood's and Electronic Arts'.", ""]
+              f"assistance. The original designs, sounds and voices are {makers}.", ""]
     lines += ["## Credits", "", f"Original {game} art and sounds: Electronic Arts."]
     if w["game"] in ("TS", "RA2"):
         lines += [f"HD rebuilds of the {game} designs and preparation for Remastered: gibbo101."]
