@@ -84,6 +84,7 @@
 */
 #include "sidebarglyphx.h"
 #include "utracker.h"
+#include "tf_asset_pack.h"
 
 /***********************************************************************************************
  * CellClass::CellClass -- Constructor for cell objects.                                       *
@@ -2711,7 +2712,7 @@ bool CellClass::Goodie_Check(FootClass* object)
             }
 
             // TF: skirmish unit crates draw evenly from every faction's crate vehicles, faction MCVs included
-            // when bases are on; never the stock-campaign MCVs.
+            // when bases are on; never the stock-campaign MCVs, nor TS vehicles without the TS-HD-Assets pack.
             if (utp == NULL && Session.Type != GAME_NORMAL) {
                 UnitType pool[UNIT_COUNT];
                 int count = 0;
@@ -2721,6 +2722,9 @@ bool CellClass::Goodie_Check(FootClass* object)
                         continue;
                     }
                     if (ut.Is_MCV() && !Session.Options.Bases) {
+                        continue;
+                    }
+                    if (TF_Is_TS_Pack_Type(&ut) && !TF_TS_Pack_Present()) {
                         continue;
                     }
                     pool[count++] = u;
