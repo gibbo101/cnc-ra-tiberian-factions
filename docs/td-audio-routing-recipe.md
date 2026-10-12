@@ -240,11 +240,9 @@ the localized channel, and a weapon report on the non-localized one. The rules a
 
 Never probe audio through the launcher-fired credit tick: any loose override silences it.
 
-Six older sounds still ride **dormant hosts**, base TD samples no RA event references: `BONUS_UNLOCK`
-(hover missile), `DINOATK1` (railgun), `DINODIE1` (Mk. II tusks), `DINOMOUT` (Titan 120mm),
-`DINOYES` (dropship landing) and `STRUGGLE` (dropship takeoff). A `TD?_SFX_*` sample is a safe host
-only if no `RAC_` / `RAR_` event and no `SFX_GUI_*` event references it; GUI events fire in RA mode
-too (`SFX_GUI_Generic_Bad_Sound` plays SCOLD1).
+Every sound ships under its own new name, which loads on both channels: no sound rides a base TD
+sample's name. A loose file named after a base sample replaces that sample everywhere it plays, GUI
+events included (`SFX_GUI_Generic_Bad_Sound` plays SCOLD1).
 
 With the audio routing pipeline proven, every future TD asset port follows the same recipe:
 

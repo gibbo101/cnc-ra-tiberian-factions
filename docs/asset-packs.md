@@ -50,8 +50,8 @@ only the `RA_` files. A pack's XML files are what a modder copies, and what the 
   `resources/`.
 - Sounds: `TS_SFX_EVA_*` EVA, `TS_SFX_UNT_*` voices, other `TS*` effects; RA2 and C&C3 crew lines
   (`SE`/`MO`/`AT` takes) apart from their weapon and engine sounds. `TF_MBX_*` (the EVA mailbox)
-  and `TSLACHG2R` stay. TS sounds bundled under TD sample names (`TDR_SFX_DINOATK1` and friends)
-  stay with the events that play them.
+  and `TSLACHG2R` stay. Every TS sound ships under its own `TS*` name, so its file and events go to
+  the TS pack.
 - XML entries follow their object, cameo or samples. A sound event goes to a pack only when every
   sample it plays is in that pack.
 
