@@ -5615,9 +5615,11 @@ MoveType BuildingClass::Can_Enter_Cell(CELL cell, FacingType) const
     }
 
     // TF: the shroud test is on the first ground row, under any art headroom rows.
-    if (!Debug_Map && ScenarioInit == 0 && Session.Type == GAME_NORMAL && House->IsPlayerControl
-        && !Map[(CELL)(cell + Class->Placement_Ghost_Rows_Above() * MAP_CELL_W)].IsMapped) {
-        return (MOVE_NO);
+    if (!Debug_Map && ScenarioInit == 0 && Session.Type == GAME_NORMAL && House->IsPlayerControl) {
+        int const ground = cell + Class->Placement_Ghost_Rows_Above() * MAP_CELL_W;
+        if (ground < 0 || ground >= MAP_CELL_TOTAL || !Map[(CELL)ground].IsMapped) {
+            return (MOVE_NO);
+        }
     }
 
     return (Class->Legal_Placement(cell) ? MOVE_OK : MOVE_NO);
