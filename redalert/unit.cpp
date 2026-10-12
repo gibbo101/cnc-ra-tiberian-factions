@@ -2155,23 +2155,6 @@ bool UnitClass::Try_To_Deploy(void)
                                     : (*this == UNIT_TSLPST) ? DIR_E
                                     : (*this == UNIT_TSTTNK) ? DIR_S
                                                              : DIR_SE;
-#if TF_DEV_BUILD
-#define TF_LIMP_TRACE(step)                                                                                 \
-    do {                                                                                                     \
-        const char* prof = getenv("USERPROFILE");                                                             \
-        char path[512];                                                                                      \
-        snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", prof ? prof : "."); \
-        FILE* lf = fopen(path, "a");                                                                          \
-        if (lf != NULL) {                                                                                    \
-            fprintf(lf, "frame=%d LIMPET-DEPLOY %s id=%d cell=%d\n", (int)Frame, step, (int)ID,                 \
-                    (int)Coord_Cell(Center_Coord()));                                                          \
-            fclose(lf);                                                                                      \
-        }                                                                                                    \
-    } while (0)
-#else
-#define TF_LIMP_TRACE(step)
-#endif
-            TF_LIMP_TRACE("begin");
             Mark(MARK_UP);
             CELL cell = TF_Deploy_Origin();
             if (!BuildingTypeClass::As_Reference(into).Legal_Placement(cell)) {
@@ -2195,23 +2178,17 @@ bool UnitClass::Try_To_Deploy(void)
                 IsDeploying = true;
                 return (true);
             }
-            TF_LIMP_TRACE("placement legal");
             BuildingClass* building = new BuildingClass(into, House->Class->House);
-            TF_LIMP_TRACE("mine constructed");
             if (building != NULL && building->Unlimbo(Cell_Coord(cell))) {
-                TF_LIMP_TRACE("mine unlimboed");
                 if (into != STRUCT_TSDLIMP) {
                     Sound_Effect(VOC_TS_PLACE_BUILDING_DOWN, Center_Coord());
                 }
                 building->Revealed(House);
-                TF_LIMP_TRACE("mine revealed");
                 building->Strength = max(1, (int)(Health_Ratio() * (int)building->Class->MaxStrength));
                 Stun();
-                TF_LIMP_TRACE("drone stunned, deleting");
                 delete this;
                 return (true);
             }
-            TF_LIMP_TRACE("unlimbo failed");
             delete building;
             Mark(MARK_DOWN);
             IsDeploying = false;

@@ -25,8 +25,7 @@ Build dev and release after each commit; a skirmish before merging.
   head-on logs, each until its `todo.md` or `known-issues.md` item closes; `TF_Dump_Faction_Masks`
   (tool input for cameo_badge_build.py).
 - **Keep until their fixes are signed off in play:** HARV-UNSTICK, HARV-BLACKLIST, HARV-FIELD and
-  `TF_Harv_Logfile` (the harvester follow-ups in `known-issues.md`); `TF_LIMP_TRACE` (Tick Tank and
-  Mobile War Factory deploys); JUGG-LAUNCH, JUGG-SHELL and JUGG-SPLASH (Juggernaut scatter); sidebar
+  `TF_Harv_Logfile` (the harvester follow-ups in `known-issues.md`); sidebar
   evict (Mammoth Mk. II and Mech Division cameos leaving with the Tech Center); the DEPLOY-KEY,
   DEPLOY-FLAG and mod command 1 logs (Mobile War Factory pack-up); the placement-anchor PLACE lines
   (tower plugs); tf_mwf; tf_sort (the war factory bay).

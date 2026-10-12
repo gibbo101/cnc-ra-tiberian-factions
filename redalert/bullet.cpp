@@ -1528,21 +1528,6 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
                 speed = max(1, (dist + frames - 1) / frames);
                 Fly_Speed(255, (MPHType)speed);
                 Riser = max(1, (Rule.Gravity * (frames - 1)) / 2 - 1);
-#if TF_DEV_BUILD
-                if (*this == BULLET_TSBALLISTIC2) {
-                    const char* prof = getenv("USERPROFILE");
-                    char path[512];
-                    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", prof ? prof : ".");
-                    FILE* lf = fopen(path, "a");
-                    if (lf != NULL) {
-                        fprintf(lf, "frame=%d JUGG-LAUNCH from=(%d,%d) aim=(%d,%d) target=(%d,%d) dist=%d frames=%d speed=%d riser=%d dir=%d\n",
-                                (int)Frame, (int)Coord_X(Coord), (int)Coord_Y(Coord), (int)Coord_X(tcoord), (int)Coord_Y(tcoord),
-                                (int)Coord_X(As_Coord(TarCom)), (int)Coord_Y(As_Coord(TarCom)), dist, frames, speed,
-                                (int)Riser, (int)dir);
-                        fclose(lf);
-                    }
-                }
-#endif
             }
         }
         if (Class->IsDropping) {
@@ -1966,22 +1951,6 @@ void BulletClass::Bullet_Explodes(bool forced)
         && ::Distance(Coord, Fuse_Target()) < CELL_LEPTON_W) {
         Coord = Fuse_Target();
     }
-#if TF_DEV_BUILD
-    if (*this == BULLET_TSBALLISTIC2) {
-        const char* prof = getenv("USERPROFILE");
-        char path[512];
-        snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", prof ? prof : ".");
-        FILE* lf = fopen(path, "a");
-        if (lf != NULL) {
-            COORDINATE tc = Target_Legal(TarCom) ? As_Coord(TarCom) : 0;
-            fprintf(lf, "frame=%d JUGG-SHELL impact at=(%d,%d) off=(%d,%d) target=%s dist=%d aimoff=(%d,%d) forced=%d height=%d\n", (int)Frame,
-                    (int)Coord_X(Coord), (int)Coord_Y(Coord), (int)Coord_X(Coord) - (int)Coord_X(tc), (int)Coord_Y(Coord) - (int)Coord_Y(tc),
-                    Target_Legal(TarCom) ? "yes" : "none", tc ? (int)::Distance(Coord, tc) : -1,
-                    (int)Coord_X(Coord) - (int)Coord_X(Fuse_Target()), (int)Coord_Y(Coord) - (int)Coord_Y(Fuse_Target()), (int)forced, (int)Height);
-            fclose(lf);
-        }
-    }
-#endif
     // TF: a delivery pod arrives rather than detonating: no damage, and the destructor sets its cargo down. It is a
     // projectile so no aircraft radio or docking handshake is involved; a wrong handshake freezes the game.
     if (*this == BULLET_TSDROPPOD) {
