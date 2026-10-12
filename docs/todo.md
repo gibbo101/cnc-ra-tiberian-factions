@@ -151,7 +151,8 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   Infantry (`TSE3`, `TechLevel=-1`, TS GDI's owners and barracks): give it TS Nod's owner, Hand of Nod
   and TechLevel 2 then. The other Nod infantry cameos wait in `ts-hd-cameos/waiting-for-units/`.
   Check the Tick Tank's shot in play then: `tsttnk_muzzle.h` is measured from the unit's position, but
-  `Fire_Coord` adds it to the art-dropped centre, which may start the shot 29 leptons south.
+  `Fire_Coord` adds it to the art-dropped centre, which may start the shot 29 leptons south. Listen too to
+  the Devil's Tongue flame (`TSFLAMTNK1`) and the Subterranean APC's dig (`TSSUBDRIL1`) from the TS pack.
 - **TS Pavement (GAPAVE), alongside TS Nod.** It turns cells into pavement: it keeps Tiberium off
   build space and blocks subterranean units. Costs: placement logic like the wall divert (the
   building becomes ground) and square-grid ground art, since TS's is isometric (as the HD Firestorm
