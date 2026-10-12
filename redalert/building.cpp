@@ -4249,7 +4249,6 @@ void BuildingClass::Grand_Opening(bool captured)
                     if (unit->IsInLimbo) {
                         House->Refund_Money(unit->Class->Cost_Of());
                         delete unit;
-                        unit = NULL;
                     }
                 }
             } else {
