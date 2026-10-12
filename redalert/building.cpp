@@ -5483,7 +5483,7 @@ bool Is_TS_Apron_Cell(CELL cell)
         {STRUCT_TSPROC, 1 - MAP_CELL_W},
 
         // The War Factory and the deployed Mobile War Factory, 3x3: centre = row 1 col 1 (the hall).
-        // Walkable, never buildable: the concrete in front of the door (row 3, the door's lane down its middle).
+        // Walkable, never buildable: the concrete in front of the door (row 2, the door's lane down its middle).
         {STRUCT_TSWEAP, MAP_CELL_W - 1},
         {STRUCT_TSWEAP, MAP_CELL_W},
         {STRUCT_TSWEAP, MAP_CELL_W + 1},

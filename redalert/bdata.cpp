@@ -5456,7 +5456,6 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSDEPT, BSTATE_ACTIVE, 0, 35, 3}, // repairing: the same lights, the pad glow on top (TSDEPTRP)
         {STRUCT_TSPLUG, BSTATE_IDLE, 0, 40, 3},  // GAPLUG windows _A(10)+_B(8)+_C(4) -> LCM 40
         {STRUCT_TSDROP, BSTATE_IDLE, 0, 20, 3},  // GTDROP _A dish + _B pad lights (20 healthy + 20 damaged)
-        // TSSILO is static (no TS idle anim): shape 0 healthy, 1 damaged.
     };
 
     for (int sindex = STRUCT_FIRST; sindex < STRUCT_COUNT; sindex++) {
