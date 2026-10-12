@@ -36,6 +36,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   `mastertext.edits.txt` names and `picker_emblems_paint.py` plates move with it.
 - **Nod's cargo plane circles the airstrip** (`known-issues.md`): find why the TDC17 sometimes
   misses its landing on `TDAFLD` and fix it, with a play test of several deliveries.
+- **Railgun turrets for the C&C3 asset pack, before the packs ship.** Render the Mammoth Mk. III and
+  Predator turrets with C&C3's railgun upgrade (`UGRAIL_*` meshes, `cnc3-to-remastered-sprites.md`), the
+  scrolling glow baked still, as extra turret sets in the CNC3 graphics pack. Pack-only art, not used by TF.
 - **Map editor loads the TS-HD-Assets pack with Tiberian Factions.** The pack carries the TS art TF's XML
   points at, so the editor must load it whenever TF is active (from the Mods folder or the Workshop cache)
   and look up art across every active mod. `cnc-map-editor` already merges several mods' manifests.
