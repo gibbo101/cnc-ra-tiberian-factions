@@ -600,13 +600,13 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tsionbm_stub.shp" 15 480 15
 PACK_ARGS+=("$TMPDIR/tsionbm_stub.shp:TSIONBM.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsionrng_stub.shp" 104 51 15
 PACK_ARGS+=("$TMPDIR/tsionrng_stub.shp:TSIONRNG.SHP")
-# C&C3 railgun shot for the Mammoth Mk. II (scripts/c3_rail_beam.py): beam pieces 240 frames and muzzle 5 on 192 px
-# square canvases, impact 15 on 256 px, each / 16 * 3 for the classic dims.
-python3 scripts/gen_stub_shp.py "$TMPDIR/c3railseg_stub.shp" 36 36 240
+# C&C3 railgun shot (scripts/c3_rail_beam.py): beam pieces 720 frames and muzzle 5 on 192 px square canvases, impact
+# 12 on 256 px, each / 16 * 3 for the classic dims.
+python3 scripts/gen_stub_shp.py "$TMPDIR/c3railseg_stub.shp" 36 36 720
 PACK_ARGS+=("$TMPDIR/c3railseg_stub.shp:C3RAILSEG.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/c3railmz_stub.shp" 36 36 5
 PACK_ARGS+=("$TMPDIR/c3railmz_stub.shp:C3RAILMZ.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/c3railhit_stub.shp" 48 48 15
+python3 scripts/gen_stub_shp.py "$TMPDIR/c3railhit_stub.shp" 48 48 12
 PACK_ARGS+=("$TMPDIR/c3railhit_stub.shp:C3RAILHIT.SHP")
 # E.M. Pulse set (scripts/ts_pack_emp.py): pulse ball 64x64, the two impacts 1216x704, the stun
 # sparks 160x144, / 8.

@@ -6,10 +6,10 @@ target, a lens flare at the muzzle and a blue-white glow with sparks at the impa
 docs/cnc3-railgun-beam.md). The launcher blends straight alpha only, so the additive light is baked into RGBA.
 
   C3RAILSEG  one cell of beam pointing east on a square 192 px frame, drawn rotated along the shot: shape
-             (tier * 4 + length) * 15 + frame, with 4 thread-strength tiers by distance along the shot, lengths
-             32/64/96/128 px (the last piece of a shot is shorter) and 15 game frames.
+             ((tier * 3 + phase) * 4 + length) * 12 + frame: 5 thread-strength tiers by cell from the muzzle, the
+             3 cells of the threads' wave, lengths 32/64/96/128 px (a shot's last piece is shorter), 12 game frames.
   C3RAILMZ   the muzzle flash, 5 frames on 192 px, drawn unrotated.
-  C3RAILHIT  the impact glow and sparks, 15 frames on 256 px, the sparks thrown west (drawn rotated to the shot).
+  C3RAILHIT  the impact glow and sparks, 12 frames on 256 px, the sparks thrown west (drawn rotated to the shot).
 
 Inputs: resources/custom-art/c3-railgun-beam/ (FXRailgunThread, FXLenzFlare01, FXFireBlast04, from C&C3's
 static stream). Writes the ZIPs and tiles where scripts/asset_packs.py routes the names.
@@ -37,18 +37,22 @@ UNIT = 4.0          # HD px per C&C3 world unit (the C&C3 tanks' packing scale)
 SEG = 128           # one cell of beam
 SEG_FRAME = 192
 HIT_FRAME = 256
-TIERS = 4
+TIERS = 5           # the threads' strength by cell from the muzzle: ramping in over the first 4, full from the 5th
+PHASES = 3          # the threads' wave spans PHASES cells; a piece draws the part its place along the shot falls on
 LENGTHS = (32, 64, 96, 128)
-FRAMES = 15         # game frames: C&C3 runs its particles at 30 Hz, two to a game frame
+FRAMES = 12         # game frames: the core blazes for about a third of a second, the threads fade after it
 MUZZLE_FRAMES = 5
-THREADS = [(1, 0.0, 1.0), (1, 2.1, 0.85), (2, 4.2, 0.7)]   # cycles per cell, phase, share of the tier's amplitude
+CORE_PX, HALO_PX, THREAD_PX = 10, 34, 5
+THREAD_AMP = 40     # HD px at the strongest tier
+THREADS = [(0.0, 1.0), (2.2, 0.75)]   # phase, share of the tier's amplitude
 
-CORE_K = [(0, (1, 1, 1)), (.5, (1, 1, 1)), (1, (0, 0, 0))]
-THREAD_K = [(0, (1, 1, 1)), (.25, (.12549, .278431, 1)), (.5, (.117647, .219608, .466667)), (.9, (0, 0, 0)),
-            (1, (0, 0, 0))]
-FLASH_K = [(0, (1, 1, 1)), (.33, (.517647, .6, 1)), (.66, (.258824, .643137, .486275)), (1, (0, 0, 0))]
-GLOW_K = [(0, (.72549, .8, .858824)), (.5, (.470588, .717647, .772549)), (1, (0, 0, 0))]
-SPARK_K = [(0, (.552941, .705882, .796078)), (.5, (.203922, .301961, .345098)), (1, (0, 0, 0))]
+# Game-frame keys (age 0..1 over FRAMES), read off C&C3 footage of the upgraded Mammoth firing.
+CORE_K = [(0, (1, 1, 1)), (.3, (1, 1, 1)), (.6, (0, 0, 0)), (1, (0, 0, 0))]
+HALO_K = [(0, (.35, .55, 1)), (.35, (.3, .5, 1)), (.7, (0, 0, 0)), (1, (0, 0, 0))]
+THREAD_K = [(0, (1, 1, 1)), (.45, (.75, .85, 1)), (1, (0, 0, 0))]
+FLASH_K = [(0, (1, 1, 1)), (.5, (.8, .88, 1)), (1, (0, 0, 0))]
+GLOW_K = [(0, (1, 1, 1)), (.4, (.8, .9, 1)), (1, (0, 0, 0))]
+SPARK_K = [(0, (.85, .92, 1)), (.5, (.4, .55, .7)), (1, (0, 0, 0))]
 
 
 def texture(name):
@@ -78,6 +82,32 @@ def bilinear(t, u, v, wrap_v=True):
     fx, fy = (x - x0)[..., None], (y - y0)[..., None]
     return (t[y0, x0] * (1 - fx) * (1 - fy) + t[y0, x1] * fx * (1 - fy)
             + t[y1, x0] * (1 - fx) * fy + t[y1, x1] * fx * fy)
+
+
+def glow(acc, pts, width, colour):
+    """Adds a smooth line through pts (N x 2 px), bright on its axis and fading out to width/2, cut square at its two
+    ends so pieces laid end to end join without a seam."""
+    H, W, _ = acc.shape
+    x0 = int(max(pts[:, 0].min() - width, 0)); x1 = int(min(pts[:, 0].max() + width + 1, W))
+    y0 = int(max(pts[:, 1].min() - width, 0)); y1 = int(min(pts[:, 1].max() + width + 1, H))
+    if x1 <= x0 or y1 <= y0:
+        return
+    yy, xx = np.mgrid[y0:y1, x0:x1].astype(np.float32)
+    best = np.full(xx.shape, 1e9, np.float32)
+    n = len(pts) - 1
+    for i in range(n):
+        a, b = pts[i], pts[i + 1]
+        d = b - a; L2 = float(d @ d) or 1e-6
+        raw = ((xx - a[0]) * d[0] + (yy - a[1]) * d[1]) / L2
+        s = np.clip(raw, 0, 1)
+        dist = np.hypot(xx - (a[0] + s * d[0]), yy - (a[1] + s * d[1]))
+        if i == 0:
+            dist = np.where(raw < 0, 1e9, dist)
+        if i == n - 1:
+            dist = np.where(raw > 1, 1e9, dist)
+        best = np.minimum(best, dist)
+    fall = np.exp(-4.0 * (best / (width / 2)) ** 2)
+    acc[y0:y1, x0:x1] += fall[..., None] * np.array(colour, np.float32)
 
 
 def streak(acc, pts, width, colour, v_per_segment):
@@ -133,38 +163,40 @@ def bake(acc, size):
     return Image.fromarray((np.concatenate([st, al], 2).clip(0, 1) * 255).astype(np.uint8), "RGBA")
 
 
-def segment(t, tier, length):
-    """One beam piece at C&C3 frame t: from x = -SEG/2 for length px, threads at the tier's strength."""
+def segment(f, tier, phase, length):
+    """One beam piece at game frame f: from x = -SEG/2 for length px, the tier-th cell from the muzzle (its threads'
+    strength ramping across it) and the phase-th cell of their wave."""
     acc = np.zeros((SEG_FRAME * SS, SEG_FRAME * SS, 3), np.float32)
     x0 = (SEG_FRAME / 2 - SEG / 2) * SS
     y = SEG_FRAME / 2 * SS
-    px = UNIT * SS
-    if t < 25:
-        streak(acc, np.array([[x0, y], [x0 + length * SS, y]]), (1 + .1 * t) * px, keys(CORE_K, t / 25), False)
-    if t < 30:
-        amp = 12.5 * (tier + 1) / TIERS * px
-        s = np.linspace(0, length / SEG, int(round(12 * length / SEG)) + 1)
-        for cycles, phase, share in THREADS:
-            off = amp * share * np.sin(2 * math.pi * cycles * s + phase)
-            streak(acc, np.stack([x0 + s * SEG * SS, y + off], 1), (1 + .1 * t) * px, keys(THREAD_K, t / 30), True)
+    age = f / FRAMES
+    line = np.array([[x0, y], [x0 + length * SS, y]])
+    glow(acc, line, HALO_PX * SS, keys(HALO_K, age) * .7)
+    glow(acc, line, CORE_PX * SS, keys(CORE_K, age) * 1.4)
+    s = np.linspace(0, length / SEG, int(round(16 * length / SEG)) + 1)
+    amp = THREAD_AMP * SS * np.minimum(1.0, (tier + s) / (TIERS - 1))
+    for shift, share in THREADS:
+        off = amp * share * np.sin(2 * math.pi * (s + phase) / PHASES + shift)
+        glow(acc, np.stack([x0 + s * SEG * SS, y + off], 1), THREAD_PX * SS, keys(THREAD_K, age))
     return bake(acc, SEG_FRAME)
 
 
-def muzzle(t, rng):
+def muzzle(f, rng):
     acc = np.zeros((SEG_FRAME * SS, SEG_FRAME * SS, 3), np.float32)
     c = SEG_FRAME / 2 * SS
-    size = rng["flash"] + sum(rng["damp"] ** k for k in range(t))
-    sprite(acc, T_FLARE, c, c, size * UNIT * SS, keys(FLASH_K, t / 10), math.radians(rng["angle"]))
+    size = rng["flash"] + 2 * f
+    sprite(acc, T_FLARE, c, c, size * UNIT * SS, keys(FLASH_K, f / MUZZLE_FRAMES), math.radians(rng["angle"]))
     return bake(acc, SEG_FRAME)
 
 
-def impact(t, glows, sparks):
+def impact(f, glows, sparks):
     """The hit at the frame centre, the shot arriving from the west, sparks thrown back west."""
     acc = np.zeros((HIT_FRAME * SS, HIT_FRAME * SS, 3), np.float32)
     c = HIT_FRAME / 2 * SS
     px = UNIT * SS
+    t = 2 * f
     for g in glows:
-        sprite(acc, T_BLAST, c, c, max(g[0] - .5 * t, 0) * px, keys(GLOW_K, t / 30), g[1] + g[2] * t)
+        sprite(acc, T_BLAST, c, c, max(g[0] - t, 0) * px, keys(GLOW_K, f / FRAMES), g[1] + g[2] * t)
     if t < 5:
         for vx, vy, damp, size, shade in sparks:
             pos, vel, trail = np.zeros(2), np.array([vx, vy]), [np.zeros(2)]
@@ -195,14 +227,15 @@ def write_zip(name, frames):
 
 def main():
     rng = np.random.default_rng(7)
-    segs = [segment(2 * f, tier, length) for tier in range(TIERS) for length in LENGTHS for f in range(FRAMES)]
+    segs = [segment(f, tier, phase, length) for tier in range(TIERS) for phase in range(PHASES) for length in LENGTHS
+            for f in range(FRAMES)]
     write_zip("C3RAILSEG", segs)
-    flash = {"flash": rng.uniform(15, 25), "damp": rng.uniform(.95, .99), "angle": rng.uniform(-7, 7)}
-    write_zip("C3RAILMZ", [muzzle(2 * f, flash) for f in range(MUZZLE_FRAMES)])
-    glows = [(rng.uniform(20, 30), rng.uniform(0, 7), rng.uniform(-.1, .1)) for _ in range(8)]
+    flash = {"flash": rng.uniform(22, 30), "angle": rng.uniform(-7, 7)}
+    write_zip("C3RAILMZ", [muzzle(f, flash) for f in range(MUZZLE_FRAMES)])
+    glows = [(rng.uniform(32, 48), rng.uniform(0, 7), rng.uniform(-.1, .1)) for _ in range(8)]
     sparks = [(rng.uniform(10, 30), rng.uniform(-5, 5), rng.uniform(.65, .8), rng.uniform(2, 5),
                rng.uniform(-50, 50) / 255) for _ in range(20)]
-    write_zip("C3RAILHIT", [impact(2 * f, glows, sparks) for f in range(FRAMES)])
+    write_zip("C3RAILHIT", [impact(f, glows, sparks) for f in range(FRAMES)])
 
 
 if __name__ == "__main__":
