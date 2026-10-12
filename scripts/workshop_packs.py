@@ -169,14 +169,16 @@ def readme(mod, listed):
     else:
         lines += ["These sprites were rendered from the game's own 3D models; no AI generated the art."]
     makers = "Electronic Arts'" if w["game"] == "CNC3" else "Westwood's and Electronic Arts'"
-    lines += ["The scripts and tools that build this pack, and Tiberian Factions' code, were written with AI "
-              f"assistance. The original designs, sounds and voices are {makers}.", ""]
+    code = "The scripts and tools that build this pack, and Tiberian Factions' code," if w["required"] else \
+        "The scripts and tools that build this pack"
+    lines += [f"{code} were written with AI assistance. The original designs, sounds and voices are {makers}.", ""]
     lines += ["## Credits", "", f"Original {game} art and sounds: Electronic Arts."]
     if w["game"] in ("TS", "RA2"):
         lines += [f"HD rebuilds of the {game} designs and preparation for Remastered: gibbo101."]
     else:
         lines += ["Rendered for Remastered from the game's own models by gibbo101."]
-    lines += ["", "## More C&C projects by gibbo101", ""] + [f"- {m}" for m in D.MORE_MODS] + [""]
+    more = [m for m in D.MORE_MODS if w["required"] or "Tiberian Factions" not in m]
+    lines += ["", "## More C&C projects by gibbo101", ""] + [f"- {m}" for m in more] + [""]
     return "\n".join(lines)
 
 
