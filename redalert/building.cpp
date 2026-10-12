@@ -5282,52 +5282,16 @@ bool TF_Gate_Lets_Through(FootClass* foot, CELL cell)
     return (true);
 }
 
-/***********************************************************************************************
- * Is_TS_Weap_Exit_Cell -- Is this cell a TS war factory's doorstep?                          *
- *                                                                                             *
- *    A vehicle leaving the TS bay rides a rail onto its doorstep before it is free to turn,   *
- *    so that tile has to stay empty. An idle guard or a parked tank standing on it makes the  *
- *    new vehicle path around its own doorway -- the reverse-then-forward jink -- and shoves    *
- *    it back through the building it is trying to leave. Same treatment as the refinery dock  *
- *    pad below: everything except the vehicle currently leaving reads the cell as impassable. *
- *                                                                                             *
- *    The War Factory's doorstep is XYCELL(1,3), the middle of the concrete in front of its    *
- *    door; the deployed Mobile War Factory's is XYCELL(4,3), one row south of its 5x3 plot on *
- *    the eastern column, where its bay points.                                                *
- *=============================================================================================*/
+// True for a TS war factory's doorstep, XYCELL(1,2) of its 3x3 plot, which a vehicle leaving the bay rides
+// onto before it may turn; every other mover reads it as impassable.
 bool Is_TS_Weap_Exit_Cell(CELL cell)
 {
-    if ((unsigned)cell >= MAP_CELL_TOTAL) {
+    if ((unsigned)cell >= MAP_CELL_TOTAL || Cell_X(cell) < 1 || Cell_Y(cell) < 2) {
         return (false);
     }
-
-    /*
-    **	Walk back from the candidate to where each war factory's north-west
-    **	corner would be, and confirm one of that type stands there, read from a
-    **	cell it occupies.
-    */
-    static const struct
-    {
-        StructType type;
-        int dx, dy;
-        int probe;
-    } _doorsteps[] = {
-        {STRUCT_TSWEAP, 1, 2, 0},
-        {STRUCT_TSDWEAP, 1, 2, 0},
-    };
-    for (int i = 0; i < (int)(sizeof(_doorsteps) / sizeof(_doorsteps[0])); i++) {
-        int x = Cell_X(cell) - _doorsteps[i].dx;
-        int y = Cell_Y(cell) - _doorsteps[i].dy;
-        if (x < 0 || y < 0) {
-            continue;
-        }
-        CELL origin = XY_Cell(x, y);
-        BuildingClass const* b = Map[(CELL)(origin + _doorsteps[i].probe)].Cell_Building();
-        if (b != NULL && *b == _doorsteps[i].type && Coord_Cell(b->Coord) == origin) {
-            return (true);
-        }
-    }
-    return (false);
+    CELL origin = XY_Cell(Cell_X(cell) - 1, Cell_Y(cell) - 2);
+    BuildingClass const* b = Map[origin].Cell_Building();
+    return (b != NULL && b->Is_TS_War_Factory() && Coord_Cell(b->Coord) == origin);
 }
 
 bool Is_Refinery_Dock_Cell(CELL cell)
