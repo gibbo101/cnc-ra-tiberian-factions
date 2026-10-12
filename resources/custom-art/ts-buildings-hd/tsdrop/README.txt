@@ -43,9 +43,9 @@ What it is (the picture's parts, placed and sized to GTDROP 00 and GTDROPMK):
   notch      TS's grey concrete slope in the deck's north-west notch, rising to a ledge at the back, a low dark parapet
              along it
   block      the Upgrade Center's: the long block on the deck's north part, its house-green slope to the south, the
-             purple band, the roof with the radar dish (GTDROP_A) hipped down at both ends, the upright end wall at the
-             east end with three pipes and the light post; two antennas on its east end, two on the tower; a pillar
-             under the roof's overhang at its front-left corner
+             purple band, the roof with the radar dish (GTDROP_A, on an arm from its post) hipped down at both ends,
+             the upright end wall at the east end with three pipes and the light post; two antennas on its east end,
+             two on the tower; a pillar under the roof's overhang at its front-left corner
 
 Every frame is on the RA grid's full canvas, in place, with a -trim.png.
 
@@ -102,3 +102,6 @@ My calls (each easy to change):
   - TS-angle scale: the Upgrade Center's, so the shared block is the same size; the foundation's centre on the canvas
     centre (the mod's v1 pad was drawn 2.36x bigger and has no placement for this building to match).
   - The build-up at the mod's 19 frames.
+
+Re-rendering (src/): as the Upgrade Center's (its README): whole-building frames (building/, build-up/) go through
+src/cleanalpha.py afterwards. gdropfinal.py build takes its frame list comma-separated (11,12,13), not spaced.

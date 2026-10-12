@@ -67,7 +67,7 @@ What it is (read from TS's frames; GTPLUGMK shows it go up):
   sockets    two round sockets one cell apart on the deck's south part: low, round-topped house-green collars round grey
              plates with four holes for the plugs to slot into (the plugs stand in them)
   roof kit   antennas: the tallest at the west end with two lamps (GTPLUG_B), a T-bar one, a fork in the middle and
-             three more; a small dish on a post on the box (GTPLUG_A turns it)
+             three more; a small dish on a post on the box, held by an arm into the middle of its back (GTPLUG_A turns it)
 
 Every frame is on the RA grid's full canvas, in place, with a -trim.png.
 
@@ -175,3 +175,7 @@ My calls (each easy to change):
     dish, the Drop Pod Node's two lights on top and the uplink dish on its side. They turn as TS's frames do.
   - On the RA grid each plug is turned so you see the same faces of it as TS's. One plug alone goes in the
     right-hand socket, a second in the left-hand one.
+
+Re-rendering (src/): run with the other art folders' shared modules on the path and numpy, scipy, Pillow and
+scikit-image installed. Frames of the whole building (building/, build-up/) go through src/cleanalpha.py afterwards:
+the renderer leaves a faint alpha veil over the render window that the delivered frames do not have.

@@ -784,6 +784,9 @@ def scene(X, Y, p=None, layout='ts', prog=None, parts=None, level=0, merge=True,
         ctr = np.array([cx, cy, z0 + dd['post'][1] + dd['R'] * 0.55]) + n * dd['off']
         lo, hi, mm = rod_interval(x, y, ctr - n * dd['t'] / 2, ctr + n * (dd['t'] / 2 + dd['depth'] * 0.3), dd['R'])
         acc_a.add(lo, hi, DISH, mm, 'dish')
+        # the mount: an arm from the post's top into the middle of the dish's back, so the dish never floats
+        lo, hi, mm = rod_interval(x, y, (cx, cy, z0 + dd['post'][1] - 0.5), ctr - n * dd['t'] / 2, dd['post'][0] * 0.8)
+        acc_a.add(lo, hi, DMOUNT, mm, 'post')
     return hd.Scene(H, C, acc.slabs() + acc_a.slabs() + acc_l.slabs() + pack_slabs(pacc.values(), X.shape),
                     extra)
 
