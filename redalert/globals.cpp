@@ -213,7 +213,7 @@ PKey SlowKey;
 */
 // TF: one slot per type with a rules.ini Name= override; a type that finds no free slot keeps its
 // stock name.
-char const* NameOverride[256]; // TF: room for every rules.ini Name= override
+char const* NameOverride[256];
 int NameIDOverride[256];
 #endif
 

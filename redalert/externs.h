@@ -127,7 +127,7 @@ extern int CarrierLaunchDelay;
 #endif
 
 #ifdef FIXIT_NAME_OVERRIDE
-extern char const* NameOverride[256]; // TF: one slot per Name= override, with room past rules.ini's 140
+extern char const* NameOverride[256]; // TF: one slot per Name= override, with room to spare
 extern int NameIDOverride[256];
 #endif
 
