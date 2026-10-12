@@ -82,9 +82,10 @@ superweapon payload, or dormant.
 | TSLPST | | 6 | 950 | 600 | TSWEAP, TSRADR | Mobile Sensor Array (deploys TSDPSA) |
 | TSHVR | HVR | 7 | 900 | 230 | TSWEAP, TSRADR | Hover MLRS |
 | TSSONIC | SONIC | 9 | 1300 | 500 | TSWEAP, TSTECH | Disruptor |
-| TS4TNK | 4TNK | 9 | 1700 | 600 | TSWEAP, TSTECH | Mammoth Mk. I |
+| TS4TNK | 4TNK | −1 | 1700 | 600 | | Mammoth Mk. I: arrives only in pairs by dropship (TS4PAIR) |
 | TSHMEC | HMEC | 10 | 3000 | 800 | TSDROP, TSTECH | Mammoth Mk. II, bay-delivered |
 | TSMDIV | | 10 | 2800 | — | TSDROP, TSTECH | Mech Division token: 3 Titans + 2 Wolverines |
+| TS4PAIR | | 10 | 3200 | — | TSDROP, TSTECH | Mk. I Reserve token: two reinstated Mk. Is |
 | TSMWAR | | 10 | 1800 | 800 | TSWEAP, TSPLUG | Mobile War Factory (deploys TSDWEAP) |
 | TSSUBTANK / TSSAPC | | −1 | 750 / 800 | 300 / 175 | | Devil's Tongue, Subterranean APC: crate finds |
 | TSTTNK | TTNK | −1 | 800 | 350 | | Tick Tank, Nod's: a crate find; digs in as TSTICK (TS [GATICK]). Sidebar side `scripts/ts_pack_ttnk.py`, fire points `scripts/ts_ttnk_muzzle.py` |
@@ -250,9 +251,11 @@ south of the plot (`TF_Bay_Ramp_Foot`), and walks to the bay's rally point (`Ral
 a real factory) or two rows out. The art is drawn on a 3x3 whose north row holds only antennas, so
 the plot is the deck's 3x2 and the canvas is padded to centre on it.
 
-- **Mech Division** (`UNIT_TSMDIV`) is a token the pod expands into 3 Titans + 2 Wolverines, single
-  file every 9 frames. **The Mk. II field cap** (`TF_MK2_CAP` in `house.cpp`) is heap-counted:
-  the CSII quantity fold aliases mod-unit `UQuantity` slots.
+- **Group orders** are tokens the pod expands, single file every 9 frames (`TF_Group_Manifest`):
+  the Mech Division (`UNIT_TSMDIV`) into 3 Titans + 2 Wolverines, the Mk. I Reserve
+  (`UNIT_TS4PAIR`) into two Mammoth Mk. Is, the only way a Mk. I is fielded. **The Mk. II field
+  cap** (`TF_MK2_CAP` in `house.cpp`) is heap-counted: the CSII quantity fold aliases mod-unit
+  `UQuantity` slots.
 - **The cooldown arms at pod launch, per house,** through one list (`TF_Is_Dropship_Delivered`:
   the factory binding, both order gates, the sidebar keep-alive and the locked cameo). Through the
   cooldown every unit it delivers shows its `_LK` cameo (dimmed, red X; `scripts/ts_mk2_cooldown_cameos.py`,

@@ -123,8 +123,8 @@ UNITS = [
     # udata.cpp ctors, names from CCDATA/rules.ini). Walkers pack the body as facing
     # blocks of walk_frames (standing frame = facing * walk_frames; unit.cpp gait
     # contract) — TSTITN/TSSMEC 8 facings x 12, TSHMEC 32 x 8; TSTITN's 32-facing
-    # turret block sits right after the body (96-127). The TSMDIV purchase token
-    # (id 49) never touches the map and is deliberately absent.
+    # turret block sits right after the body (96-127). The TSMDIV and TS4PAIR purchase
+    # tokens (ids 49, 63) never touch the map and are deliberately absent.
     {'id': 37, 'kind': 'vehicle', 'name': 'tshvr', 'display_name': 'Hover MLRS', 'owner': 'GoodGuy', 'body_frames': ['Frames32Full'], 'turret_frames': ['Frames32Full'], 'turret': None, 'turret2': None, 'turret_offset': 0, 'turret_y': 0, 'flags': ['Turret', 'Armed']},
     {'id': 38, 'kind': 'vehicle', 'name': 'tstitn', 'display_name': 'Titan', 'owner': 'GoodGuy', 'body_frames': ['Frames08Cardinal'], 'walk_frames': 12, 'turret_frames': ['Frames32Full'], 'turret': None, 'turret2': None, 'turret_offset': 0, 'turret_y': 0, 'flags': ['Turret', 'Armed']},
     {'id': 53, 'kind': 'vehicle', 'name': 'tsjugg', 'display_name': 'Juggernaut', 'owner': 'Germany', 'body_frames': ['Frames08Cardinal'], 'walk_frames': 15, 'turret_frames': [], 'turret': None, 'turret2': None, 'turret_offset': 0, 'turret_y': 0, 'flags': ['Armed']},

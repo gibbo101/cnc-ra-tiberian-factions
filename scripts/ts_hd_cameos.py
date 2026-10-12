@@ -25,7 +25,7 @@ import ts_mk2_cooldown_cameos  # noqa: E402
 
 SRC = os.path.join(asset_packs.REPO, "resources", "custom-art", "ts-hd-cameos")
 SRGB = os.path.join(asset_packs.pack_data("TS-HD-Graphics-Pack"), "ART", "TEXTURES", "SRGB")
-BAY_DELIVERED = {"BuildIcon_TS_MammothMk2", "BuildIcon_TS_MechDivision"}
+BAY_DELIVERED = {"BuildIcon_TS_MammothMk2", "BuildIcon_TS_MechDivision", "BuildIcon_TS_MammothMk1Pair"}
 BAY_ICON = "BuildIcon_TS_Drop"
 NAME_BAND_TOP = 195  # the launcher's name band covers the cameo below this row (UI_SIDEBAR_CONSTRUCTIONENTRY.BUI)
 INSET = (100, 75)

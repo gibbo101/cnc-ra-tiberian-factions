@@ -259,6 +259,9 @@ PACK_ARGS+=("$TMPDIR/tsdshp_stub.shp:TSDSHP.SHP")
 # map, the stub exists purely so One_Time resolves its Image cleanly.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsmdiv_stub.shp" 16 16 1
 PACK_ARGS+=("$TMPDIR/tsmdiv_stub.shp:TSMDIV.SHP")
+# The Mk. I Reserve token (UNIT_TS4PAIR), the same: the pod lands two Mammoth Mk. Is.
+python3 scripts/gen_stub_shp.py "$TMPDIR/ts4pair_stub.shp" 16 16 1
+PACK_ARGS+=("$TMPDIR/ts4pair_stub.shp:TS4PAIR.SHP")
 # TS units wave (Harvester / Wolverine / Disruptor / Amphibious APC) -- same
 # HD-only stub pattern; frame counts match the HD zips (rot-only, walk, or
 # body+turret) and dims match each unit's rules.ini ShapeSize.

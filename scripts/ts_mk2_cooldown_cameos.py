@@ -27,6 +27,7 @@ XML = Path(asset_packs.buildables_xml_of(None))
 LOCKED = {
     "TSHMEC": ("BuildIcon_TS_MammothMk2", "TEXT_UNIT"),
     "TSMDIV": ("BuildIcon_TS_MechDivision", "TEXT_UNIT"),
+    "TS4PAIR": ("BuildIcon_TS_MammothMk1Pair", "TEXT_UNIT"),
     "TSGHOST": ("BuildIcon_TS_Ghost", "TEXT_UNIT"),
     "TSMWAR": ("BuildIcon_TS_MobileWarFactory", "TEXT_UNIT"),
     "TSPLUG": ("BuildIcon_TS_Plug", "TEXT_STRUCTURE"),

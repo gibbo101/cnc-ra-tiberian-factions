@@ -35,6 +35,13 @@
 			<BuildIcon>BuildIcon_TS_MechDivision</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TS4PAIR" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TS4PAIR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TS4PAIR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_MammothMk1Pair</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<ObjectTypeClass Name="RA_TSSUBTANK" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TSSUBTANK</ObjectNameTextID>
