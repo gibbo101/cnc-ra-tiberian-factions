@@ -36,13 +36,16 @@ def is_rle_cameo(path):
 
 
 def copy_newer(src, dst):
-    """Copy unless dst already has src's size and is no older, keeping rsync-friendly mtimes. A sidebar cameo
-    is written run-length encoded (the launcher reads RLE TGA), the same pixels at about four fifths the size."""
+    """Copy unless dst already has src's size and is no older, keeping rsync-friendly mtimes. A sidebar cameo is
+    written run-length encoded (the launcher reads RLE TGA) with src's mtime, and is current only at that mtime."""
     cameo = os.path.basename(src).upper().startswith("BUILDICON_") and src.upper().endswith(".TGA")
     if os.path.exists(dst):
         a, b = os.stat(src), os.stat(dst)
-        same = is_rle_cameo(dst) if cameo else a.st_size == b.st_size
-        if same and b.st_mtime >= a.st_mtime:
+        if cameo:
+            same = is_rle_cameo(dst) and b.st_mtime_ns == a.st_mtime_ns
+        else:
+            same = a.st_size == b.st_size and b.st_mtime >= a.st_mtime
+        if same:
             return dst
     if cameo:
         Image.open(src).save(dst, compression="tga_rle")

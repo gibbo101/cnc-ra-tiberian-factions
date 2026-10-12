@@ -2,9 +2,9 @@
 """Write redalert/tspuls_muzzle.h: the EMP Cannon's barrel tip per turret frame, as the lepton
 offset from the building's centre that its pulse ball charges at and fires from.
 
-The cannon is the TSPULST layer (32 frames, CCW from north), on the mound's canvas and its classic
-stub (48 px wide), drawn with its canvas centre on the building's centre lowered by
-TSPULS_TURRET_Y (building.cpp). Each head frame also carries the drum it turns on and its shadow
+The cannon is the TSPULST layer (32 frames, CCW from north) on its own canvas, drawn with its canvas
+centre on the building's centre lowered by TSPULS_TURRET_Y (building.cpp); the mound's canvas centres
+on the building's centre, so the two line up by their centres. Each head frame also carries the drum it turns on and its shadow
 on the mound and the ground, so the head is first told apart from them: a pixel that is the
 mound's own colour at that spot, lit or darkened, is the mound; a dark see-through pixel off the
 mound is the ground shadow; of what is left, the largest connected piece is the head.
@@ -28,7 +28,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ZIP = asset_packs.art_zip("TSPULST", "STRUCTURES")
 MOUND = asset_packs.art_zip("TSPULS", "STRUCTURES")
 OUT = os.path.join(HERE, "..", "redalert", "tspuls_muzzle.h")
-STUB = 48                 # classic px the canvas width maps onto
+STUB = 48                 # classic px the mound's canvas width maps onto
 TURRET_Y = 10             # classic px: building.cpp TSPULS_TURRET_Y
 PITCH = 0.6               # the fleet camera's north-south foreshortening
 LEPTONS_PER_CLASSIC = 256 / 24
@@ -84,24 +84,33 @@ def head_mask(head, mound):
     return largest_piece(on & ~is_mound & ~ground)
 
 
+def mound_under(mound, shape, lift):
+    """The mound on a canvas of the head's shape: the pixel each head pixel lands on in game."""
+    H, W = shape
+    Hm, Wm = mound.shape[:2]
+    dy, dx = (Hm - H) // 2 + lift, (Wm - W) // 2
+    out = np.zeros(shape + (4,), np.float32)
+    ys, xs = slice(max(0, -dy), min(H, Hm - dy)), slice(max(0, -dx), min(W, Wm - dx))
+    out[ys, xs] = mound[ys.start + dy:ys.stop + dy, xs.start + dx:xs.stop + dx]
+    return out
+
+
 def main():
     z = zipfile.ZipFile(ZIP)
-    names = sorted(n[:-4] for n in z.namelist() if n.endswith(".tga"))
-    mz = zipfile.ZipFile(MOUND)
-    mound = canvas(mz, sorted(n[:-4] for n in mz.namelist() if n.endswith(".tga"))[0])
-    H, W = mound.shape[:2]
-    k = STUB / W
+    heads = asset_packs.shape_frames("TSPULST", "STRUCTURES")
+    names = [heads[f][:-4] for f in range(32)]
+    mound = canvas(zipfile.ZipFile(MOUND), asset_packs.shape_frames("TSPULS", "STRUCTURES")[0][:-4])
+    k = STUB / mound.shape[1]
     lift = round(TURRET_Y / k)
-    # the mound where each head pixel lands in game: the head draws lift canvas px lower
-    seen_mound = np.zeros_like(mound)
-    seen_mound[:H - lift] = mound[lift:]
 
     fit = []
     for f, n in enumerate(names):
         theta = math.radians(f * 11.25)
         if math.cos(theta) < -1e-9:
             continue
-        ys, xs = np.nonzero(head_mask(canvas(z, n), seen_mound))
+        head = canvas(z, n)
+        H, W = head.shape[:2]
+        ys, xs = np.nonzero(head_mask(head, mound_under(mound, (H, W), lift)))
         xs = xs - W / 2
         ys = ys - H / 2
         dx, dy = -math.sin(theta), -math.cos(theta) * PITCH

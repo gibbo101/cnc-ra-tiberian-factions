@@ -183,6 +183,19 @@ def tileset_xml(name, kind):
     return tileset_xml_of(graphics_pack(name), kind)
 
 
+def shape_frames(name, kind):
+    """Shape number -> the art ZIP member (no folder) its first frame names in the object's tileset XML.
+    Deduplicated ZIPs share members between shapes, so a shape's member is never found by ZIP position."""
+    text = open(tileset_xml(name, kind), encoding="utf-8").read()
+    out = {}
+    for tile in re.findall(r"<Tile>(.*?)</Tile>", text, re.S):
+        key = re.search(r"<Name>\s*([^<\s]+)\s*</Name>\s*<Shape>\s*(\d+)\s*</Shape>", tile)
+        frame = re.search(r"<Frame>\s*(?:[^\\<\s]+\\)?([^<\s]+?)\s*</Frame>", tile)
+        if key and frame and key.group(1).upper() == name.upper():
+            out[int(key.group(2))] = frame.group(1)
+    return out
+
+
 def cameo_tga(icon):
     stem = re.sub(r"\.tga$", "", os.path.basename(icon), flags=re.I)
     return _made(os.path.join(data_root(cameo_pack(stem)), "ART", "TEXTURES", "SRGB", f"{stem}.tga"))

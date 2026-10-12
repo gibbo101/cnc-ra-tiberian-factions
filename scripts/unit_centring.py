@@ -106,6 +106,15 @@ def frame_names(data):
     return sorted(n for n in data if n.lower().endswith(".tga"))
 
 
+def shape_names(name, members):
+    """The ZIP's frame names indexed by shape number, through the tileset XML (shapes may share a
+    member); a ZIP whose members the XML doesn't all name is read in member order."""
+    by_lower = {n.lower(): n for n in members}
+    shapes = asset_packs.shape_frames(name, "UNITS")
+    names = [by_lower.get(shapes.get(s, "").lower()) for s in range(max(shapes, default=-1) + 1)]
+    return names if names and all(names) else frame_names(members)
+
+
 def body_box(data, tga, density):
     """(left, top, right, bottom) of the frame's opaque pixels, classic px from the unit centre."""
     meta = json.loads(data[tga[:-4] + ".meta"])
@@ -118,16 +127,14 @@ def body_box(data, tga, density):
             (x0 + b[2] - w / 2) / density, (y0 + b[3] - h / 2) / density)
 
 
-def hull_offset(data, hull_frames):
-    """Median vertical centre of the hull's opaque pixels over its frames, classic px (+ = below)."""
-    names = frame_names(data)[:hull_frames]
-    centres = [(b[1] + b[3]) / 2 for b in (body_box(data, n, UNIT_DENSITY) for n in names) if b]
+def hull_offset(data, names, hull_frames):
+    """Median vertical centre of the hull's opaque pixels over its frames (names by shape), classic px (+ = below)."""
+    centres = [(b[1] + b[3]) / 2 for b in (body_box(data, n, UNIT_DENSITY) for n in names[:hull_frames]) if b]
     return statistics.median(centres)
 
 
-def selection_box(data, hull_frames, per_facing, turret, seats):
-    """Width and height for _art_boxes: median art width; twice the median reach from centre."""
-    names = frame_names(data)
+def selection_box(data, names, per_facing, turret, seats):
+    """Width and height for _art_boxes (names by shape): median art width; twice the median reach from centre."""
     widths, tops, bottoms = [], [], []
     for f in range(32):
         boxes = [body_box(data, names[f * per_facing], UNIT_DENSITY)]
@@ -213,10 +220,11 @@ def audit():
             if not name.startswith(VOXEL_PREFIXES):
                 continue
             _, data = read_zip(path)
-            if len(frame_names(data)) < 32:
+            names = shape_names(name, data)
+            if len(names) < 32:
                 continue
-            offset = hull_offset(data, 32)
-            size = json.loads(data[frame_names(data)[0][:-4] + ".meta"])["size"][1]
+            offset = hull_offset(data, names, 32)
+            size = json.loads(data[names[0][:-4] + ".meta"])["size"][1]
             if name in UNITS:
                 mark = "centred by this script"
             elif size == 208:
@@ -239,7 +247,7 @@ def main():
     for name, (hull_frames, per_facing, turret, seat_key, partners) in UNITS.items():
         path = asset_packs.art_zip(name, "UNITS")
         _, data = read_zip(path)
-        offset = hull_offset(data, hull_frames)
+        offset = hull_offset(data, shape_names(name, data), hull_frames)
         dy = -round(offset * UNIT_DENSITY)
         status = "centred" if abs(offset) < TOLERANCE else f"off by {offset:+.1f}, move {dy:+d} canvas px"
         print(f"{name:10} hull {offset:+5.1f} classic px: {status}")
@@ -261,7 +269,7 @@ def main():
     print("\nSelection boxes from the centred art (classic px, for _art_boxes in udata.cpp):")
     for name, (hull_frames, per_facing, turret, seat_key, _) in UNITS.items():
         _, data = read_zip(asset_packs.art_zip(name, "UNITS"))
-        w, h = selection_box(data, hull_frames, per_facing, turret, seats_for(seat_key))
+        w, h = selection_box(data, shape_names(name, data), per_facing, turret, seats_for(seat_key))
         print(f"        {{UNIT_{name}, {w}, {h}}},")
 
 

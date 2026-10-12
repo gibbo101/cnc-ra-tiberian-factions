@@ -2,7 +2,8 @@
 """How much of a unit waiting in a TS war factory's bay shows past the shut door, and how far back it must wait.
 
 Composites the packed art as the game layers it: the factory body, the unit at its seat, the near face, the shut
-door. A unit pixel the near face and door leave uncovered shows. Seats are leptons below the plot's north edge.
+door. A unit pixel the near face and door leave uncovered shows. Seats are leptons below the plot's north edge;
+the factory's canvases centre on its 3x3 plot, whole cells at 128 px each.
 --switch: how deep, leaving with the door open, the unit's full art stops showing above the doorway (over the
 roof); the antenna-less bay frames draw until then (UnitClass::TF_Hides_Antenna).
 
@@ -10,6 +11,7 @@ Usage: wf_bay_sim.py UNIT FRAMES SEAT [--mobile] [--search | --switch]   (FRAMES
        the Titan's legs and upper body together: 48-59+112)
 License: GPL v3.
 """
+import functools
 import glob
 import io
 import json
@@ -22,17 +24,34 @@ import numpy as np
 from PIL import Image
 
 REPO = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")
-CANVAS_PX = 480 / 90  # war factory canvas px per classic px
+sys.path.insert(0, os.path.join(REPO, "scripts"))
+import asset_packs  # noqa: E402
+
+CANVAS_PX = 128 / 24  # war factory canvas px per classic px
 LEP_PX = 128 / 256  # war factory canvas px per lepton
-PLOT_X, PLOT_Y = 240 - 192, 320 - 192  # the 3x3 plot's north-west corner on the canvas
+PLOT_HALF = 192  # canvas px from the 3x3 plot's centre to its edge
 
 
-def frame(name, i):
+def plot_corner(size):
+    """The 3x3 plot's north-west corner on a factory canvas of this size."""
+    return size[0] / 2 - PLOT_HALF, size[1] / 2 - PLOT_HALF
+
+
+@functools.lru_cache(maxsize=None)
+def shapes(name):
+    """The object's art ZIP and its shape number -> member map from the tileset XML."""
     path = glob.glob(f"{REPO}/asset-packs/*/Data/ART/TEXTURES/SRGB/RED_ALERT/*/{name}.ZIP")[0]
+    return path, asset_packs.shape_frames(name, os.path.basename(os.path.dirname(path)))
+
+
+@functools.lru_cache(maxsize=None)
+def frame(name, i):
+    path, members = shapes(name)
     z = zipfile.ZipFile(path)
-    names = sorted(n for n in z.namelist() if n.endswith(".tga"))
-    meta = json.loads(z.read(names[i].replace(".tga", ".meta")))
-    img = Image.open(io.BytesIO(z.read(names[i]))).convert("RGBA")
+    by_lower = {n.lower(): n for n in z.namelist()}
+    tga = by_lower[members[i].lower()]
+    meta = json.loads(z.read(by_lower[tga.lower()[:-4] + ".meta"]))
+    img = Image.open(io.BytesIO(z.read(tga))).convert("RGBA")
     canvas = Image.new("RGBA", tuple(meta["size"]), (0, 0, 0, 0))
     canvas.paste(img, tuple(meta["crop"][:2]))
     return canvas
@@ -49,8 +68,7 @@ def opaque(img):
 
 
 def door_stages(factory):
-    path = glob.glob(f"{REPO}/asset-packs/*/Data/ART/TEXTURES/SRGB/RED_ALERT/*/{factory}DR.ZIP")[0]
-    return len([n for n in zipfile.ZipFile(path).namelist() if n.endswith(".tga")]) // 2
+    return len(shapes(factory + "DR")[1]) // 2
 
 
 def unit_mask(unit, layers, seat, size):
@@ -61,7 +79,8 @@ def unit_mask(unit, layers, seat, size):
         img = frame(unit, i)
         img = img.resize((round(img.width * scale), round(img.height * scale)), Image.LANCZOS)
         layer = Image.new("RGBA", size, (0, 0, 0, 0))
-        cx, cy = PLOT_X + 384 * LEP_PX, PLOT_Y + seat * LEP_PX
+        plot_x, plot_y = plot_corner(size)
+        cx, cy = plot_x + 384 * LEP_PX, plot_y + seat * LEP_PX
         layer.paste(img, (round(cx - img.width / 2), round(cy - img.height / 2)), img)
         mask |= np.asarray(layer)[..., 3] > 96
     return mask

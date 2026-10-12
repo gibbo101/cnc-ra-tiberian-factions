@@ -2,7 +2,7 @@
 """ModDB showcase GIFs of the TS GDI art as the game draws it, in GDI gold: the TS-era frames a release
 shipped beside this checkout's HD frames (before-after/), and the HD frames alone (hd-only/).
 
-Usage: moddb_showcase.py OUT_DIR [SUBJECT ...] [--old-rev main]
+Usage: moddb_showcase.py OUT_DIR [SUBJECT ...] [--old-rev v5.0.0]
 Both sides are composited from the packed zips with the DLL's layering, seats and timing, and the
 launcher's alpha cutoff (docs/launcher-render-contracts.md)."""
 
@@ -27,7 +27,7 @@ HD_PACK = "asset-packs/TS-HD-Graphics-Pack"
 BODY_SHAPE = [(32 - d) % 32 for d in range(32)]
 HOVER_BOB = [0, -1, -2, -2, -1, 0, 1, 1]
 
-# Hover_Rack_Seat on this branch, classic px per hull frame.
+# A snapshot of Hover_Rack_Seat in redalert/udata.cpp, classic px per hull frame: recopy it when that changes.
 HVR_SEAT_HD = [
     (0, 5), (2, 5), (3, 5), (5, 4), (6, 4), (8, 3), (8, 2), (9, 1),
     (9, 0), (9, -1), (9, -2), (8, -3), (7, -3), (5, -4), (4, -4), (2, -5),
@@ -294,7 +294,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("out_dir", type=Path)
     ap.add_argument("subjects", nargs="*", help=f"default: all of {', '.join(SUBJECTS)}")
-    ap.add_argument("--old-rev", default="main", help="the revision whose TS-era zips are the before side")
+    ap.add_argument("--old-rev", default="v5.0.0", help="the revision whose TS-era zips are the before side")
     args = ap.parse_args()
     for name in args.subjects or SUBJECTS:
         if name not in SUBJECTS:

@@ -694,7 +694,7 @@ def keep_centred(packed):
         if name in packed:
             path = asset_packs.art_zip(name, "UNITS")
             _, data = uc.read_zip(path)
-            offset = uc.hull_offset(data, hull_frames)
+            offset = uc.hull_offset(data, uc.shape_names(name, data), hull_frames)
             if abs(offset) >= uc.TOLERANCE:
                 dy = -round(offset * uc.UNIT_DENSITY)
                 uc.shift_zip(path, dy)
@@ -714,7 +714,10 @@ def keep_centred(packed):
 
 def main(argv):
     every = list(BUILDINGS) + list(UNITS) + list(APRONS)
-    asked = [a for a in argv if a in every] or every
+    unknown = [a for a in argv if a not in every]
+    if unknown:
+        sys.exit(f"ts_pack_hd_buildings.py: not a building, unit or apron: {' '.join(unknown)}")
+    asked = argv or every
     for name in asked:
         if name in UNITS:
             pack_unit(name, UNITS[name])

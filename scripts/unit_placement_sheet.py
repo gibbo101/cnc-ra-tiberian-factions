@@ -121,7 +121,7 @@ def main():
                         label = item
                         hull_frames, per_facing, turret, seat, _ = uc.UNITS.get(item, (32, 1, None, None, ()))
                         z = zip_at(asset_packs.art_zip(item, "UNITS"), rev)
-                        density, names, box = uc.UNIT_DENSITY, tgas(z), boxes.get(item)
+                        density, names, box = uc.UNIT_DENSITY, uc.shape_names(item, z.namelist()), boxes.get(item)
                         parts = [(names[f * per_facing], (0, 0))]
                         if turret is not None:
                             parts.append((names[turret + f], uc.seats_for(seat)[f]))
