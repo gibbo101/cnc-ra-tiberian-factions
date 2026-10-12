@@ -897,16 +897,18 @@ public:
     static void const* WarFactoryOverlay;
     // TF: the TD war factory's door overlay, TD's WEAP2 packed as TDWEAP2.SHP, drawn over STRUCT_TDWEAP.
     static void const* WarFactoryOverlayTd;
-    // TF: the TS war factory's door layers (TSWEAPDR/UD/NF/NU), each loaded at the factory's stub size, which
+    // TF: the TS war factory's door layers (TSWEAPDR/UD/NF/NU/NP), each loaded at the factory's stub size, which
     // sets the box the launcher draws it in.
     static void const* TsWeapShutter;
     static void const* TsWeapUnderDoor;
     static void const* TsWeapFront;
     static void const* TsWeapFrontOpen;
-    static void const* TsDweapShutter; // the Mobile War Factory's TSDWEAPDR/UD/NF/NU layers
+    static void const* TsWeapDoorFrame;
+    static void const* TsDweapShutter; // the Mobile War Factory's TSDWEAPDR/UD/NF/NU/NP layers
     static void const* TsDweapUnderDoor;
     static void const* TsDweapFront;
     static void const* TsDweapFrontOpen;
+    static void const* TsDweapDoorFrame;
     static void const* TsRefineryFlame;
     static void const* TsPulseTurret; // TS EMP cannon PULSCAN layer (TSPULST.SHP stub, 32 facings)
     static void const* TsRefineryFront;

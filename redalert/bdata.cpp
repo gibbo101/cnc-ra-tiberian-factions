@@ -4790,10 +4790,12 @@ void const* BuildingTypeClass::TsWeapShutter;
 void const* BuildingTypeClass::TsWeapUnderDoor;
 void const* BuildingTypeClass::TsWeapFront;
 void const* BuildingTypeClass::TsWeapFrontOpen;
+void const* BuildingTypeClass::TsWeapDoorFrame;
 void const* BuildingTypeClass::TsDweapShutter;
 void const* BuildingTypeClass::TsDweapUnderDoor;
 void const* BuildingTypeClass::TsDweapFront;
 void const* BuildingTypeClass::TsDweapFrontOpen;
+void const* BuildingTypeClass::TsDweapDoorFrame;
 void const* BuildingTypeClass::TsRefineryFlame;
 void const* BuildingTypeClass::TsPulseTurret;
 void const* BuildingTypeClass::TsRefineryFront;
@@ -5516,6 +5518,8 @@ void BuildingTypeClass::One_Time(void)
     TsWeapFront = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"TSWEAPNU", ".SHP");
     TsWeapFrontOpen = MFCD::Retrieve(fullname);
+    _makepath(fullname, NULL, NULL, (char const*)"TSWEAPNP", ".SHP");
+    TsWeapDoorFrame = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"TSDWEAPDR", ".SHP");
     TsDweapShutter = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"TSDWEAPUD", ".SHP");
@@ -5524,6 +5528,8 @@ void BuildingTypeClass::One_Time(void)
     TsDweapFront = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"TSDWEAPNU", ".SHP");
     TsDweapFrontOpen = MFCD::Retrieve(fullname);
+    _makepath(fullname, NULL, NULL, (char const*)"TSDWEAPNP", ".SHP");
+    TsDweapDoorFrame = MFCD::Retrieve(fullname);
     // TS refinery event layer (fireball burst), sized to its stub.
     _makepath(fullname, NULL, NULL, (char const*)"TSPROCFR", ".SHP");
     TsRefineryFlame = MFCD::Retrieve(fullname);
