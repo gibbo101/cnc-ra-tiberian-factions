@@ -1877,6 +1877,20 @@ static bool TF_Is_Sub(VesselClass const* vessel)
             || t == VESSEL_TDMSUB);
 }
 
+// Whether the house still has a building an enemy could attack and find. Most added types set no scan bit
+// (TF_Building_Scan_Bit), so the defeat checks count buildings here; mines are insignificant or no target.
+static bool TF_Has_Standing_Building(HouseClass const* house)
+{
+    for (int i = 0; i < Buildings.Count(); i++) {
+        BuildingClass const* b = Buildings.Ptr(i);
+        if (b != NULL && b->House == house && !b->IsInLimbo && b->Strength > 0 && b->Class->IsLegalTarget
+            && !b->Class->IsInsignificant) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
 // True when a house's only forces left are submarines: at least one sub, and no building, unit, aircraft,
 // other vessel or non-civilian infantry of any faction.
 static bool TF_Only_Subs_Left(HouseClass const* house)
@@ -1894,10 +1908,8 @@ static bool TF_Only_Subs_Left(HouseClass const* house)
     if (subs == 0) {
         return (false);
     }
-    for (int i = 0; i < Buildings.Count(); i++) {
-        if (Buildings.Ptr(i)->House == house && Buildings.Ptr(i)->IsActive) {
-            return (false);
-        }
+    if (TF_Has_Standing_Building(house)) {
+        return (false);
     }
     for (int i = 0; i < Units.Count(); i++) {
         if (Units.Ptr(i)->House == house && Units.Ptr(i)->IsActive) {
@@ -1940,19 +1952,6 @@ extern bool MPSuperWeaponDisable;
  *   07/17/1995 JLB : Limits EVA speaking unless the player can do something.                  *
  *=============================================================================================*/
 extern void Recalculate_Placement_Distances();
-
-// Whether the house still has a building an enemy could attack. Most added types set no scan bit
-// (TF_Building_Scan_Bit), so the multiplayer defeat check counts buildings here; mines are no legal target.
-static bool TF_Has_Standing_Building(HouseClass const* house)
-{
-    for (int i = 0; i < Buildings.Count(); i++) {
-        BuildingClass const* b = Buildings.Ptr(i);
-        if (b != NULL && b->House == house && !b->IsInLimbo && b->Strength > 0 && b->Class->IsLegalTarget) {
-            return (true);
-        }
-    }
-    return (false);
-}
 
 // Per house, the radar sting's debounce (cleared each match by TF_AI_Clocks_Reset): the state last sounded, the
 // state being timed, and the frames it has held.
