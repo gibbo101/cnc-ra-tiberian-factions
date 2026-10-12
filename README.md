@@ -44,9 +44,9 @@ GDI and Nod aren't reskins. They're complete factions with their own bases, armi
 
 ## How to play
 
-Subscribe on the Steam Workshop, then enable **"Tiberian Factions for Red Alert"** from the mod list when you launch Red Alert in C&C Remastered. Start a skirmish, and GDI, Nod, and TS GDI will appear as selectable factions alongside Allies and Soviets, for you and for the AI.
+Subscribe on the Steam Workshop to **Tiberian Factions for Red Alert** and to **Tiberian Sun HD Assets**, which carries the Tiberian Sun art and sounds. Enable both from the mod list when you launch Red Alert in C&C Remastered, then restart the game: it only picks up a change to enabled mods after a restart. Start a skirmish, and GDI, Nod, and TS GDI will appear as selectable factions alongside Allies and Soviets, for you and for the AI. Without the asset pack the mod still plays, but TS GDI is locked.
 
-(Alternatively, download the release zip from GitHub and extract it into `Documents/CnCRemastered/Mods/Red_Alert/`.)
+(Alternatively, download the release zip from GitHub and extract both folders it holds into `Documents/CnCRemastered/Mods/Red_Alert/`.)
 
 ## Graphics
 
@@ -91,6 +91,10 @@ CMAKE_TOOLCHAIN_FILE=cmake/i686-mingw-w64-toolchain.cmake \
 Override the SSH target with `DECK_HOST=user@hostname ./deploy.sh` if your Deck isn't named `steamdeck` on your Tailnet.
 
 The build stages the asset packs into the mod folder (`scripts/stage_asset_packs.py`). After a data-only change, with no DLL rebuild, restage with `python3 scripts/stage_asset_packs.py --full build/remaster/Vanilla_RA`.
+
+## AI disclosure
+
+Tiberian Factions' code, scripts and tools are written with AI assistance. How its HD art was made is set out in the asset packs' own READMEs.
 
 ## Credits
 
