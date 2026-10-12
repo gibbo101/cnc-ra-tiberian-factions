@@ -2215,6 +2215,11 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
     */
     if (TechnoClass::Unlimbo(coord, dir)) {
 
+        // TF: a newly built EMP cannon's turret starts at its type's facing, so its build-up shows it there too.
+        if (*this == STRUCT_TSPULS && !ScenarioInit) {
+            PrimaryFacing = Class->StartFace;
+        }
+
         if (joins_walls) {
             short const* offset = Class->Occupy_List();
             while (offset != NULL && *offset != REFRESH_EOL) {
