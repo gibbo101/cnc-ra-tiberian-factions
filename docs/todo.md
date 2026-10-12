@@ -39,6 +39,11 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 - **Railgun turrets for the C&C3 asset pack, before the packs ship.** Render the Mammoth Mk. III and
   Predator turrets with C&C3's railgun upgrade (`UGRAIL_*` meshes, `cnc3-to-remastered-sprites.md`), the
   scrolling glow baked still, as extra turret sets in the CNC3 graphics pack. Pack-only art, not used by TF.
+- **Save compatibility, before campaigns ship.** A save is the DLL's objects as stored, so it loads only into a
+  build with the same layout. Stamp each save with a fingerprint the DLL computes (sizes of the saved classes,
+  counts of the type lists) and refuse or grey out saves whose fingerprint differs, or that need the TS-HD-Assets
+  pack when it is missing; autosave at every campaign mission start, so a layout-changing update costs at most
+  the mission in progress. Campaigns wait for a stable roster (every faction's types, TS Nod included).
 - **C&C3's railgun beam for the Mammoth Mk. II and Ghost Stalker.** Remastered cannot draw TS's particle
   beam, so the shot is a sprite coil today. Take C&C3's railgun beam textures (reinstall C&C3:
   `cnc3-to-remastered-sprites.md`) and draw the beam along the shot as the Prism Tank's is; preview first.
