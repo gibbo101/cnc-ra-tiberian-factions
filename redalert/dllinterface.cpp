@@ -6151,20 +6151,18 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     }
 
     /*
-    **  TS war factories: the near face and the roll-up door sort south of a
+    **  TS war factories: the door frame and the roll-up door sort south of a
     **  vehicle seated in the bay, so they draw over it while it waits, and north
     **  of anything standing on the concrete in front. The War Factory's sort
-    **  point is its 3x3 plot's centre (row 1.5), the near face +192 (row 2.25):
+    **  point is its 3x3 plot's centre (row 1.5), the frame +192 (row 2.25):
     **  0.75 rows past its door's threshold (row 1.91), the vehicle seat sorting at
     **  the threshold. The deployed Mobile War Factory's door is 20 leptons deeper.
     */
-    if (shape_file_name != NULL
-        && (strcmp(shape_file_name, "TSDWEAPNF") == 0 || strcmp(shape_file_name, "TSDWEAPNU") == 0)) {
+    if (shape_file_name != NULL && strcmp(shape_file_name, "TSDWEAPNP") == 0) {
         new_object.SortOrder =
             (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 212)) >> 3);
     }
-    if (shape_file_name != NULL
-        && (strcmp(shape_file_name, "TSWEAPNF") == 0 || strcmp(shape_file_name, "TSWEAPNU") == 0)) {
+    if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAPNP") == 0) {
         new_object.SortOrder =
             (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 192)) >> 3);
     }
@@ -6200,7 +6198,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         DriveClass const* drive = (DriveClass const*)object;
 
         /*
-        **  A unit riding out of a TS war factory's door on its rail sorts just under the near face
+        **  A unit riding out of a TS war factory's door on its rail sorts just under the door frame
         **  and the door (Sort_Y +192 / +200, 20 deeper for the Mobile War Factory) until its body has
         **  cleared the threshold, so the doorway's frame keeps drawing over the part of it still
         **  inside. Its upper body and turret take their keys from this one.
