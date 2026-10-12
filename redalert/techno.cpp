@@ -3725,6 +3725,21 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
      *   07/03/1995 JLB : Moving platforms fire inaccurate projectiles.                            *
      *   02/22/1996 JLB : Handles camera "weapon" case.                                            *
      *=============================================================================================*/
+    void TechnoClass::Set_Beam_Line(COORDINATE source, COORDINATE dest, unsigned char colour)
+    {
+        int x, y, x1, y1;
+        Map.Coord_To_Pixel(source, x, y);
+        Map.Coord_To_Pixel(dest, x1, y1);
+        Lines[0][0] = x + Map.TacPixelX;
+        Lines[0][1] = y + Map.TacPixelY;
+        Lines[0][2] = x1 + Map.TacPixelX;
+        Lines[0][3] = y1 + Map.TacPixelY;
+        Lines[0][4] = colour;
+        LineCount = 1;
+        LineFrame = 0;
+        LineMaxFrames = 5;
+    }
+
     BulletClass* TechnoClass::Fire_At(TARGET target, int which)
     {
         assert(IsActive);
@@ -3820,6 +3835,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             }
             // TF: a RailBeam weapon with a projectile draws C&C3's railgun shot to the target as it fires.
             if (weapon->IsRailBeam && !weapon->IsRailgun) {
+                Set_Beam_Line(fire_coord, target_coord, 0x0A);
                 TF_Railgun_Beam((int)Coord_X(fire_coord),
                                 (int)Coord_Y(fire_coord),
                                 (int)Coord_X(target_coord) - (int)Coord_X(fire_coord),
@@ -4121,19 +4137,8 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 }
                 }
 
-                int x, y, x1, y1;
-                Map.Coord_To_Pixel(source, x, y);
-                Map.Coord_To_Pixel(dest, x1, y1);
-                x += Map.TacPixelX;
-                x1 += Map.TacPixelX;
-                y += Map.TacPixelY;
-                y1 += Map.TacPixelY;
-                if (!weapon->IsSonic && !weapon->IsRailBeam) {
-                bool const small_rail = (weapon->ID == WEAPON_TSLTRAIL);
-                Lines[0][0] = x; Lines[0][1] = y; Lines[0][2] = x1; Lines[0][3] = y1; Lines[0][4] = small_rail ? 0x9F : 0x0A;
-                LineCount = 1;
-                LineFrame = 0;
-                LineMaxFrames = 5;
+                if (!weapon->IsSonic) {
+                    Set_Beam_Line(source, dest, (weapon->ID == WEAPON_TSLTRAIL) ? 0x9F : 0x0A);
                 }
                 Map.Flag_To_Redraw(true);
 

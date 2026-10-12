@@ -180,11 +180,6 @@ public:
     int RailLife;
     void Rail_Spark_AI(void);
 
-    // TF: a C&C3 railgun piece (ANIM_C3_RAILSEG, ANIM_C3_RAILHIT) is drawn turned onto the shot, a beam segment from
-    // its own block of the art. Every other anim keeps DIR_N and block 0.
-    DirType BeamDir;
-    int BeamShape;
-
     /*
     **	This counter tells how many more times the animation should loop before it
     **	terminates.

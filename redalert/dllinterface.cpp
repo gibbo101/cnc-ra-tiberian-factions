@@ -6365,15 +6365,6 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             new_object.Scale = 0x0100 + (int)((double)amp * cos(phase));
         }
 
-        // TF: the launcher turns an export by Rotation only when it is typed as a unit, so a C&C3 railgun piece goes as
-        // one, its ID kept clear of the real units' range.
-        if (object != NULL && object->What_Am_I() == RTTI_ANIM
-            && (((AnimTypeClass const&)object->Class_Of()).Type == ANIM_C3_RAILSEG
-                || ((AnimTypeClass const&)object->Class_Of()).Type == ANIM_C3_RAILHIT)) {
-            new_object.Type = UNIT;
-            new_object.ID += 5000;
-        }
-
         new_object.VisibleFlags = CNCObjectStruct::VISIBLE_FLAGS_ALL;
         new_object.SpiedByFlags = 0U;
 

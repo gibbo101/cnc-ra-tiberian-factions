@@ -257,7 +257,7 @@ void AnimClass::Draw_It(int x, int y, WindowNumberType window) const
         void const* shapefile = Get_Image_Data();
         if (shapefile != NULL) {
             void const* transtable = NULL;
-            int shapenum = Class->Start + Fetch_Stage() + BeamShape; // TF: a railgun segment's art block
+            int shapenum = Class->Start + Fetch_Stage();
             void const* remap = NULL;
             ShapeFlags_Type flags = SHAPE_CENTER | SHAPE_WIN_REL;
             bool alt = false;
@@ -337,7 +337,7 @@ void AnimClass::Draw_It(int x, int y, WindowNumberType window) const
                               flags,
                               remap,
                               transtable,
-                              BeamDir, // TF: DIR_N but for a railgun piece turned onto its shot
+                              DIR_N,
                               Class->VirtualScale,
                               width,
                               height);
@@ -617,8 +617,6 @@ AnimClass::AnimClass(AnimType animnum, COORDINATE coord, unsigned char timedelay
     , RailBlend(0.0f)
     , RailFade(0.0f)
     , RailLife(0)
-    , BeamDir(DIR_N)
-    , BeamShape(0)
     , Loops(1)
     , IsToDelete(false)
     , IsBrandNew(true)
@@ -846,51 +844,47 @@ int TF_Railgun_Coil(bool small, int sx, int sy, int dx, int dy, int dist)
     return (longest);
 }
 
-// Lays C&C3's railgun shot from (sx, sy) along (dx, dy) in leptons: one-cell beam pieces turned onto the shot, threads
-// growing from the muzzle, the muzzle flash and the impact. Returns the frames a TS railgun holds, its coil life.
+// Lays C&C3's railgun shot from (sx, sy) along (dx, dy) in leptons: glow dots on the core line, two threads of dots
+// in long sine waves growing from the muzzle, the muzzle flash and the impact. Returns the frames a TS railgun holds.
 int TF_Railgun_Beam(int sx, int sy, int dx, int dy)
 {
     enum
     {
-        PIECE = 256,    // leptons in one cell of beam art
-        QUARTER = 64,   // the art's shortest piece
-        TIERS = 5,      // the threads' strength by cell from the muzzle, full from the 5th
-        PHASES = 3,     // cells in the threads' wave
-        FRAMES = 12,    // stages of each beam piece's art block
-        HOLD = 75,      // TS's coil life, which sets the Mk. II's rate of fire
+        GLOW_STEP = 16,   // leptons between the core's glow dots
+        THREAD_STEP = 12, // leptons between a thread's dots
+        HOLD = 75,        // TS's coil life, which sets the Mk. II's rate of fire
     };
-    int const dist = (int)sqrt((double)dx * dx + (double)dy * dy);
-    if (dist <= 0) {
+    static double const THREAD_SWING = 80.0; // leptons: a thread's widest swing, reached 4 cells out
+    static double const THREAD_SHIFT[2] = {0.0, 2.2};
+    static double const THREAD_SHARE[2] = {1.0, 0.75};
+
+    double const dist = sqrt((double)dx * dx + (double)dy * dy);
+    if (dist < 1.0) {
         return (0);
     }
-    DirType const dir = ::Direction(XY_Coord(sx, sy), XY_Coord(sx + dx, sy + dy));
-    DirType const turn = (DirType)(((int)dir - (int)DIR_E) & 0xFF);
-    int const full = dist / PIECE;
-    int last = (dist % PIECE + QUARTER / 2) / QUARTER;
-    for (int i = 0; i <= full; i++) {
-        int quarters = (i < full) ? 4 : last;
-        if (quarters == 0) {
-            break;
+    double const ux = dx / dist, uy = dy / dist;
+    for (int d = 0; d <= (int)dist; d += GLOW_STEP) {
+        int x = sx + (int)(ux * d), y = sy + (int)(uy * d);
+        if (x >= 0 && y >= 0) {
+            new AnimClass(ANIM_C3_RAILGLOW, XY_Coord(x, y));
         }
-        int along = i * PIECE + PIECE / 2;
-        int x = sx + dx * along / dist;
-        int y = sy + dy * along / dist;
-        if (x < 0 || y < 0) {
-            continue;
-        }
-        AnimClass* piece = new AnimClass(ANIM_C3_RAILSEG, XY_Coord(x, y));
-        if (piece == NULL) {
-            break;
-        }
-        piece->BeamDir = turn;
-        piece->BeamShape = ((min(i, TIERS - 1) * PHASES + i % PHASES) * 4 + quarters - 1) * FRAMES;
     }
-    new AnimClass(ANIM_C3_RAILMZ, XY_Coord(sx, sy));
-    if (sx + dx >= 0 && sy + dy >= 0) {
-        AnimClass* hit = new AnimClass(ANIM_C3_RAILHIT, XY_Coord(sx + dx, sy + dy));
-        if (hit != NULL) {
-            hit->BeamDir = turn;
+    for (int t = 0; t < 2; t++) {
+        for (int d = 0; d <= (int)dist; d += THREAD_STEP) {
+            double cells = d / 256.0;
+            double swing = THREAD_SWING * THREAD_SHARE[t] * min(1.0, cells / 4.0);
+            double off = swing * sin(2.0 * 3.14159265 * cells / 3.0 + THREAD_SHIFT[t]);
+            int x = sx + (int)(ux * d - uy * off), y = sy + (int)(uy * d + ux * off);
+            if (x >= 0 && y >= 0) {
+                new AnimClass(ANIM_C3_RAILTHRD, XY_Coord(x, y));
+            }
         }
+    }
+    if (sx >= 0 && sy >= 0) {
+        new AnimClass(ANIM_C3_RAILMZ, XY_Coord(sx, sy));
+    }
+    if (sx + dx >= 0 && sy + dy >= 0) {
+        new AnimClass(ANIM_C3_RAILHIT, XY_Coord(sx + dx, sy + dy));
     }
     return (HOLD);
 }

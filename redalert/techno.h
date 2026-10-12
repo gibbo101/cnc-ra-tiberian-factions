@@ -254,6 +254,8 @@ public:
     int LineCount;
     int LineFrame;
     int LineMaxFrames;
+    // TF: lays one beam line from source to dest in the given palette colour, drawn for 5 render frames.
+    void Set_Beam_Line(COORDINATE source, COORDINATE dest, unsigned char colour);
 
     /*
     **	This is the amount of money spent to produce this object. This value really
