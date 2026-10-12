@@ -3204,7 +3204,9 @@ int AircraftClass::Mission_Attack(void)
             int const dist = ::Distance(Center_Coord(), tc);
             int const off = (int)(signed char)((int)::Direction(Center_Coord(), tc) - (int)PrimaryFacing.Current());
             int const along = (ABS(off) > 64) ? -dist : dist;
-            if (TFBombsThisRun < 5 && along <= (2 - (int)TFBombsThisRun) * CELL_LEPTON_W) {
+            // A run opens only nose-on: still facing away after the loop's turn, every bomb would pass at once.
+            bool const opened = (TFBombsThisRun > 0 || ABS(off) <= 64);
+            if (TFBombsThisRun < 5 && opened && along <= (2 - (int)TFBombsThisRun) * CELL_LEPTON_W) {
                 Fire_At(::As_Target(Coord_Cell(Center_Coord())), 0);
                 Map[::As_Cell(TarCom)].Incoming(Coord, true);
                 TFBombsThisRun++;
