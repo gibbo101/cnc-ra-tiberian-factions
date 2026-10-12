@@ -10,13 +10,12 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ## Next version: first jobs
 
-- **Whole-cell canvases for the rest of the TS HD buildings** (the `ts-to-ra-hd-art` canvas rule). Done:
-  walls, Radar, Component Tower family, Power Plant, Barracks, Tech Center, Sensor Array, EMP Cannon. Left:
-  the Construction Yard, Upgrade Center, Dropship Bay, Refinery, War Factory and Mobile War Factory, whose
-  seats, exits, sockets and aprons were set against today's boxes (a play test each); the Firestorm Wall
-  section (its 33-wide stub sits half a classic px east, so the move shows; source via `ts_rebuild_art.sh`);
-  whether the Tech Center's wedge shadow may be cut to fit its box; Helipad, Silo, Firestorm Generator,
-  Limpet Mine and Tick Tank are whole cells but larger than their boxes.
+- **Whole-cell canvases for the rest of the TS HD buildings** (the `ts-to-ra-hd-art` canvas rule). Left: the
+  Firestorm Wall section (its 33-wide stub sits half a classic px east, so the move shows; source via
+  `ts_rebuild_art.sh`); whether the Tech Center's wedge shadow may be cut to fit its box; Helipad, Silo,
+  Firestorm Generator, Limpet Mine and Tick Tank are whole cells but larger than their boxes, as are the
+  Construction Yard, Upgrade Center, Dropship Bay, Refinery and both war factories (their boxes keep
+  today's placement grids).
 - **Check `asset-packs/` for unused files.** The rest of the checkout has been through it: every
   tracked script and art source is named by a build step, script or doc. The asset-pack instance
   owns `asset-packs/`, so it checks that folder.
