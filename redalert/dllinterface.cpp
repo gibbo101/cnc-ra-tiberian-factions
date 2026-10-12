@@ -6155,7 +6155,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     **  vehicle seated in the bay, so they draw over it while it waits, and north
     **  of anything standing on the concrete in front. The War Factory's sort
     **  point is its 3x3 plot's centre (row 1.5), the frame +192 (row 2.25):
-    **  0.75 rows past its door's threshold (row 1.91), the vehicle seat sorting at
+    **  0.34 rows past its door's threshold (row 1.91), the vehicle seat sorting at
     **  the threshold. The deployed Mobile War Factory's door is 20 leptons deeper.
     */
     if (shape_file_name != NULL && strcmp(shape_file_name, "TSDWEAPNP") == 0) {
