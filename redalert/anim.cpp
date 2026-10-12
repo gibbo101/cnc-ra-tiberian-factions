@@ -611,7 +611,6 @@ AnimClass::AnimClass(AnimType animnum, COORDINATE coord, unsigned char timedelay
     , SonicVictim(TARGET_NONE)
     , SonicFirer(TARGET_NONE)
     , SonicHouse(HOUSE_NONE)
-    , SonicDir(DIR_N)
     , SonicT(-1)
     , SonicTether(TARGET_NONE)
     , RailSpeed(0.0f)

@@ -4148,7 +4148,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                             wave->Set_Stage(stage);
                             wave->SonicFirer = As_Target();
                             wave->SonicHouse = House->Class->House;
-                            wave->SonicDir = ::Direction(XY_Coord(sx, sy), XY_Coord(sx + ddx, sy + ddy));
                             wave->SonicT = (d * 256) / dist;
                             wave->SonicTether = target;
                             if (cc != anchored) {
