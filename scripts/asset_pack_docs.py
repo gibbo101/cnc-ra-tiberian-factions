@@ -18,22 +18,35 @@ import asset_packs as A  # noqa: E402
 
 REPO_URL = "https://github.com/gibbo101/cnc-ra-tiberian-factions"
 
-MORE_MODS = [
-    "**Tiberian Factions** adds GDI and Nod as playable factions to Red Alert Remastered: "
-    "[Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3729834253), "
-    "[ModDB](https://www.moddb.com/mods/tiberian-factions-for-red-alert), "
-    f"[GitHub]({REPO_URL})",
-    "**OpenTS Pad** ports the OpenTS rebuild of Tiberian Sun to Linux and the Steam Deck, with "
-    "controller play: [GitHub](https://github.com/gibbo101/opents-pad)",
-    "**Renegade Pad** brings controller play to C&C Renegade (an OpenW3D fork, built for the Steam Deck): "
-    "[GitHub](https://github.com/gibbo101/renegade-pad)",
-    "**C&C Map Editor** is a Linux-native, mod-aware map editor for C&C Remastered (Red Alert and "
-    "Tiberian Dawn): [GitHub](https://github.com/gibbo101/cnc-map-editor)",
-    "**PS1 Link Cable** plays two-player link-cable PS1 games such as C&C Retaliation between two "
-    "Steam Decks over LAN: [GitHub](https://github.com/gibbo101/ps1-lan-link)",
-    "**Steam Workshop Uploader** publishes Workshop items natively on Linux; it is how these packs "
-    "ship: [GitHub](https://github.com/gibbo101/steam-workshop-uploader)",
-]
+WORKSHOP_URL = "https://steamcommunity.com/sharedfiles/filedetails/?id="
+
+# gibbo101's projects, keyed so a page can leave itself out (more_mods): "TF", or a Workshop pack's name
+MORE_MODS = {
+    "TF": "**Tiberian Factions** adds GDI and Nod as playable factions to Red Alert Remastered: "
+          "[Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3729834253), "
+          "[ModDB](https://www.moddb.com/mods/tiberian-factions-for-red-alert), "
+          f"[GitHub]({REPO_URL})",
+    "OpenTS Pad": "**OpenTS Pad** ports the OpenTS rebuild of Tiberian Sun to Linux and the Steam Deck, with "
+                  "controller play: [GitHub](https://github.com/gibbo101/opents-pad)",
+    "Renegade Pad": "**Renegade Pad** brings controller play to C&C Renegade (an OpenW3D fork, built for the Steam "
+                    "Deck): [GitHub](https://github.com/gibbo101/renegade-pad)",
+    "Map Editor": "**C&C Map Editor** is a Linux-native, mod-aware map editor for C&C Remastered (Red Alert and "
+                  "Tiberian Dawn): [GitHub](https://github.com/gibbo101/cnc-map-editor)",
+    "PS1 Link": "**PS1 Link Cable** plays two-player link-cable PS1 games such as C&C Retaliation between two "
+                "Steam Decks over LAN: [GitHub](https://github.com/gibbo101/ps1-lan-link)",
+    "Uploader": "**Steam Workshop Uploader** publishes Workshop items natively on Linux; it is how these packs "
+                "ship: [GitHub](https://github.com/gibbo101/steam-workshop-uploader)",
+}
+_packs = {}
+for _mod, _w in A.WORKSHOP.items():
+    _link = f" [Steam Workshop]({WORKSHOP_URL}{_w['workshop_id']})" if _w.get("workshop_id") else ""
+    _packs[_mod] = f"**{_w['name']}**: {_w['description']}{_link}"
+MORE_MODS = {"TF": MORE_MODS.pop("TF"), **_packs, **MORE_MODS}
+
+
+def more_mods(exclude=None):
+    """The project list entries, without the page's own."""
+    return [text for key, text in MORE_MODS.items() if key != exclude]
 
 GAMES = {
     "TS": "Tiberian Sun",
@@ -141,7 +154,8 @@ def readme(pack):
     if pack in CREDIT:
         lines += ["", CREDIT[pack]]
     lines += ["", "## More C&C projects by gibbo101", ""]
-    lines += [f"- {m}" for m in MORE_MODS]
+    lines += [f"- {m}" for m in more_mods(A.required_mod(pack) or next(
+        (mod for mod, w in A.WORKSHOP.items() if pack in w["packs"]), None))]
     lines.append("")
     return "\n".join(lines)
 

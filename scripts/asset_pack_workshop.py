@@ -84,7 +84,7 @@ def bbcode(pack):
     if pack in DOCS.CREDIT:
         out.append(DOCS.CREDIT[pack])
     out += ["", "[h2]More C&C projects by gibbo101[/h2]", "[list]"]
-    for mod in DOCS.MORE_MODS:
+    for mod in DOCS.more_mods(next((m for m, w in A.WORKSHOP.items() if pack in w["packs"]), None)):
         out.append("[*]" + re.sub(r"\*\*(.+?)\*\*", r"[b]\1[/b]", re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r"[url=\2]\1[/url]", mod)))
     out.append("[/list]")
     text = "\n".join(out)
