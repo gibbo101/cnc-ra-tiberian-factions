@@ -6,8 +6,7 @@ Usage:  workshop_packs.py <out dir> [mod ...]   (every Workshop pack when none i
 Each mod is a data-only Red Alert mod folder: ccmod.json, README.md, every file of its source packs
 under Data/ART and Data/AUDIO (a later pack's copy of a path wins), and its XML: one file per
 launcher XML, the source packs' entries together, complete on their own (no ZIP shared with another
-mod). CCDATA/veterancy_mod.xml lists those files for the Veterancy & more DLL, which loads them by
-itself; any other DLL mod copies the entries into its own XML. A pack Tiberian Factions requires also
+mod); a DLL mod copies the entries into its own XML. A pack Tiberian Factions requires also
 carries its marker in CCDATA, which the mod's DLL reads to know the pack is enabled.
 
 scripts/stage_asset_packs.py builds the required packs beside the staged mod the same way.
@@ -24,19 +23,18 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import asset_packs as A  # noqa: E402
 import asset_pack_docs as D  # noqa: E402
 
-# Launcher XML -> (folder under Data/XML, the file name for a pack, veterancy_mod.xml tag)
+# Launcher XML -> (folder under Data/XML, the file name for a pack)
 XML_NAMES = {
-    os.path.join("XML", "TILESETS", "RA_UNITS.XML"): ("TILESETS", "{id}_UNITS.XML", "Units"),
-    os.path.join("XML", "TILESETS", "RA_STRUCTURES.XML"): ("TILESETS", "{id}_STRUCTURES.XML", "Structures"),
-    os.path.join("XML", "TILESETS", "RA_VFX.XML"): ("TILESETS", "{id}_VFX.XML", "Vfx"),
-    os.path.join("XML", "TILESETS", "RA_TERRAIN_TEMPERATE.XML"): ("TILESETS", "{id}_TERRAIN_TEMPERATE.XML", None),
-    os.path.join("XML", "TILESETS", "RA_TERRAIN_SNOW.XML"): ("TILESETS", "{id}_TERRAIN_SNOW.XML", None),
-    os.path.join("XML", "TILESETS", "RA_TERRAIN_INTERIOR.XML"): ("TILESETS", "{id}_TERRAIN_INTERIOR.XML", None),
+    os.path.join("XML", "TILESETS", "RA_UNITS.XML"): ("TILESETS", "{id}_UNITS.XML"),
+    os.path.join("XML", "TILESETS", "RA_STRUCTURES.XML"): ("TILESETS", "{id}_STRUCTURES.XML"),
+    os.path.join("XML", "TILESETS", "RA_VFX.XML"): ("TILESETS", "{id}_VFX.XML"),
+    os.path.join("XML", "TILESETS", "RA_TERRAIN_TEMPERATE.XML"): ("TILESETS", "{id}_TERRAIN_TEMPERATE.XML"),
+    os.path.join("XML", "TILESETS", "RA_TERRAIN_SNOW.XML"): ("TILESETS", "{id}_TERRAIN_SNOW.XML"),
+    os.path.join("XML", "TILESETS", "RA_TERRAIN_INTERIOR.XML"): ("TILESETS", "{id}_TERRAIN_INTERIOR.XML"),
     os.path.join("XML", "OBJECTS", "UNITS", "RABUILDABLES.XML"): (os.path.join("OBJECTS", "UNITS"),
-                                                                 "{id}Buildables.xml", "GameObjects"),
-    os.path.join("XML", "AUDIO", "SFXEVENTSNONLOCALIZED.XML"): ("AUDIO", "SFXEvents{id}.xml", "SFXEvents"),
-    os.path.join("XML", "AUDIO", "SFXEVENTSLOCALIZED.XML"): ("AUDIO", "SFXEventsLocalized{id}.xml",
-                                                             "LocalizedSFXEvents"),
+                                                                 "{id}Buildables.xml"),
+    os.path.join("XML", "AUDIO", "SFXEVENTSNONLOCALIZED.XML"): ("AUDIO", "SFXEvents{id}.xml"),
+    os.path.join("XML", "AUDIO", "SFXEVENTSLOCALIZED.XML"): ("AUDIO", "SFXEventsLocalized{id}.xml"),
 }
 
 
@@ -92,25 +90,16 @@ def write_if_changed(path, text):
 
 
 def write_xml(mod, folder):
-    """The mod's XML files and the veterancy_mod.xml list of them; returns {veterancy tag: file name}."""
-    listed, files = {}, {}
+    """The mod's XML files; returns {launcher XML: the pack's file name}."""
+    files = {}
     for rel, pack_file, root, _ in A.XML_FILES:
-        sub, pattern, tag = XML_NAMES[rel]
+        sub, pattern = XML_NAMES[rel]
         text = combined_xml(mod, rel, pack_file, root)
         if text is None:
             continue
         name = pattern.format(id=A.WORKSHOP[mod]["xml_id"])
         write_if_changed(os.path.join(folder, "Data", "XML", sub, name), text)
         files[rel] = name
-        if tag:
-            listed[tag] = name
-    tiles = "".join(f"\t\t<{t}>{listed.get(t, '')}</{t}>\n" for t in ("Structures", "Units", "Vfx"))
-    file_list = ('<?xml version="1.0" encoding="utf-8"?>\n<Files>\n'
-                 f"\t<SFXEvents>{listed.get('SFXEvents', '')}</SFXEvents>\n"
-                 f"\t<LocalizedSFXEvents>{listed.get('LocalizedSFXEvents', '')}</LocalizedSFXEvents>\n"
-                 f"\t<GameObjects>{listed.get('GameObjects', '')}</GameObjects>\n"
-                 f"\t<TileSets>\n{tiles}\t</TileSets>\n</Files>\n")
-    write_if_changed(os.path.join(folder, "CCDATA", "veterancy_mod.xml"), file_list)
     return files
 
 
