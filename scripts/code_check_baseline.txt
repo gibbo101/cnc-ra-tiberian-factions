@@ -14,9 +14,7 @@ redalert/unit.cpp	a date	** follows the TD logic verbatim here -- Luke, 2026-08-
 redalert/unit.cpp	a personal name	** follows the TD logic verbatim here -- Luke, 2026-08-05 00:45).
 redalert/unit.cpp	a personal name	** or a queued harvester drives across the baked docked truck (Luke,
 resources/remaster_mods/Vanilla_RA/CCDATA/rules.ini	a date	apron art restored as the ground visual (2026-08-04); placement-blocking moved to Is_TS_Apron_Cell
-scripts/build_tfassets.sh	a date	against a sprite at THIS size and signed off 2026-08-19. Changing these
 scripts/build_tfassets.sh	a date	little-missile dims and the dropship renders TINY (live report, 2026-08-12).
-scripts/build_tfassets.sh	a personal name	The rack seat table (udata.cpp Hover_Rack_Seat) was eye-dialled by Luke
 scripts/ts_pack_tree.py	a date	2026-08-04). Margin 21 = art bottom 3 classic below the plot's south
 scripts/ts_pack_tree.py	a personal name	ON the top (plot) row, slab owns the entire bottom row (Luke, 23:40).
 scripts/ts_pack_tree.py	a personal name	the 3x2 size-up made the 2x2 power plant "look like a toy" (Luke,

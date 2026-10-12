@@ -221,15 +221,8 @@ if [[ -f "$DESERT_MIX" ]]; then
     done
 fi
 
-# TS-spike -- TSHVR (Hover MLRS) classic stub. HD-only unit (voxel-rendered
-# tileset, no classic art); the stub declares the classic dimensions the
-# launcher sizes the sprite, health bar and selection box from.
-# ⚠ 48x48 (tank-sized) is DELIBERATE and matches [TSHVR] ShapeSize=48,48.
-# The rack seat table (udata.cpp Hover_Rack_Seat) was eye-dialled by Luke
-# against a sprite at THIS size and signed off 2026-08-19. Changing these
-# dims rescales the sprite and invalidates every dialled seat -- do not
-# "correct" it to 64x64 without redoing the whole seat arc.
-# 96 frames: hull 0-31, rack 32-63, shadow 64-95 (the HD art's own shadow block).
+# TSHVR (Hover MLRS) stub, 96 frames of HD art: hull 0-31, rack 32-63, shadow 64-95.
+# ⚠ 48x48 matches ShapeSize=48,48: Hover_Rack_Seat (udata.cpp) is classic px at this size, so resizing moves every seat.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tshvr_stub.shp" 48 48 96
 PACK_ARGS+=("$TMPDIR/tshvr_stub.shp:TSHVR.SHP")
 
@@ -345,7 +338,7 @@ if os.path.exists(manifest):
     want = json.load(open(manifest)).get(ini)
     if want and list(want) != [w, h]:
         sys.exit(f"{ini}: stub is {w}x{h} but the packed canvas needs {want[0]}x{want[1]}. "
-                 f"Re-run scripts/ts_pack_tree.py, or correct the stub here.")
+                 f"Re-run scripts/ts_pack_hd_buildings.py or scripts/ts_pack_tree.py, or correct the stub here.")
 PY
     python3 scripts/gen_stub_shp.py "$2" "$3" "$4" "$5"
 }
@@ -356,12 +349,9 @@ ts_stub TSPROC "$TMPDIR/tsproc_stub.shp" 96 120 2
 PACK_ARGS+=("$TMPDIR/tsproc_stub.shp:TSPROC.SHP")
 ts_stub TSPROC "$TMPDIR/tsprocmk_stub.shp" 96 120 24
 PACK_ARGS+=("$TMPDIR/tsprocmk_stub.shp:TSPROCMAKE.SHP")
-# The refinery's event layers share its canvas: the flare stack's fire (20 lit, then 20 empty) and the dock
-# lid (5 + 5), whose source is gone: scripts/recanvas_zip.py moves it to a new canvas.
+# The flare stack's fire (20 lit, then 20 empty) shares the refinery's canvas.
 ts_stub TSPROC "$TMPDIR/tsprocfr_stub.shp" 96 120 40
 PACK_ARGS+=("$TMPDIR/tsprocfr_stub.shp:TSPROCFR.SHP")
-ts_stub TSPROC "$TMPDIR/tsprocld_stub.shp" 96 120 10
-PACK_ARGS+=("$TMPDIR/tsprocld_stub.shp:TSPROCLD.SHP")
 # ...and its front, drawn over a docked truck: the idle loop's 32 frames masked to the building in front of
 # the dock lane.
 ts_stub TSPROC "$TMPDIR/tsprocnf_stub.shp" 96 120 32

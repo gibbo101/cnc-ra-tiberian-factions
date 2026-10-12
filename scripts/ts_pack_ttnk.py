@@ -18,17 +18,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import asset_packs
 import ts_shp
 
-ART = os.environ.get("TS_ART_DIR")
-if not ART:
+if not os.environ.get("TS_ART_DIR"):
     raise SystemExit("set TS_ART_DIR to the folder holding TICKICON.SHP and CAMEO.PAL")
-MOD = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
-                                   "resources", "remaster_mods", "Vanilla_RA"))
+import ts_pack_infantry as inf  # noqa: E402
+
+ART = inf.ART
 ICON = "BuildIcon_TS_TickTank"
-ENTRIES = (("RA_TSTTNK", "TEXT_UNIT_TSTTNK"), ("RA_TSTICK", "TEXT_STRUCTURE_TSTICK"))
-TEXT = (("TEXT_UNIT_TSTTNK", "Tick Tank"),
-        ("TEXT_UNIT_TSTTNK_DESC", "Nod tank that digs in for heavy armour. Deploy to dig in."),
-        ("TEXT_STRUCTURE_TSTICK", "Deployed Tick Tank"),
-        ("TEXT_STRUCTURE_TSTICK_DESC", "A Tick Tank dug in. Deploy again to dig it out."))
 
 
 def cameo():
@@ -41,42 +36,9 @@ def cameo():
     print(f"wrote {asset_packs.cameo_tga(ICON)}")
 
 
-def buildables():
-    rab = asset_packs.buildables_xml(ICON)
-    xml = open(rab, encoding="utf-8").read()
-    add = ""
-    for name, text in ENTRIES:
-        if f'Name="{name}"' in xml:
-            continue
-        add += ('\t<ObjectTypeClass Name="%s" Classification="CNCBuildableObject" CanInstantiate="False">\n'
-                "\t\t<CNCEncyclopediaComponent>\n"
-                "\t\t\t<ObjectNameTextID>%s</ObjectNameTextID>\n"
-                "\t\t\t<ObjectDescriptionTextID>%s_DESC</ObjectDescriptionTextID>\n"
-                "\t\t\t<BuildIcon>%s</BuildIcon>\n"
-                "\t\t</CNCEncyclopediaComponent>\n"
-                "\t</ObjectTypeClass>\n" % (name, text, text, ICON))
-    if add:
-        idx = xml.rindex("</ObjectTypeClass>") + len("</ObjectTypeClass>")
-        xml = xml[:idx] + "\n\n" + add.rstrip("\n") + xml[idx:]
-        open(rab, "w", encoding="utf-8").write(xml)
-        print(f"patched {os.path.basename(rab)}")
-
-
-def modtext():
-    path = f"{MOD}/Data/ModText.csv"
-    text = open(path, "rb").read().decode("utf-16")
-    eol = "\r\n" if "\r\n" in text else "\n"
-    sample = next(l for l in text.splitlines() if l.startswith('"TEXT_UNIT_TDA10"'))
-    tail = sample.split('"A-10 Warthog"', 1)[1]
-    new = "".join(f'"{key}",,,"{val}"{tail}{eol}' for key, val in TEXT if f'"{key}"' not in text)
-    if new:
-        if not text.endswith(eol):
-            text += eol
-        open(path, "wb").write((text + new).encode("utf-16"))
-        print(f"patched ModText.csv (+{new.count(eol)} rows)")
-
-
 if __name__ == "__main__":
     cameo()
-    buildables()
-    modtext()
+    inf.sidebar("TSTTNK", ICON)
+    inf.text_rows("TSTTNK", "Tick Tank", "Nod tank that digs in for heavy armour. Deploy to dig in.")
+    inf.sidebar("TSTICK", ICON, kind="STRUCTURE")
+    inf.text_rows("TSTICK", "Deployed Tick Tank", "A Tick Tank dug in. Deploy again to dig it out.", kind="STRUCTURE")

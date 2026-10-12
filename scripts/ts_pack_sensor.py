@@ -18,7 +18,6 @@ sys.path.insert(0, HERE)
 import asset_packs
 import ts_shp
 import ts_pack_infantry as inf
-import ts_pack_limpet as limp
 
 ART = inf.ART
 RAW = f"{ART}/.raw"
@@ -42,10 +41,10 @@ def main():
     inf.text_rows("TSLPST", "Mobile Sensor Array",
                   "Unarmed support vehicle. Deploys into a sensor that shows you cloaked and "
                   "underground enemies nearby. Deploy again to move it.")
-    limp.sidebar_building("TSDPSA", "BuildIcon_TS_SensorArray")
-    limp.text_rows_building("TSDPSA", "Sensor Array",
-                            "A deployed Mobile Sensor Array. Shows you cloaked and underground "
-                            "enemies nearby. Deploy again to pack it up.")
+    inf.sidebar("TSDPSA", "BuildIcon_TS_SensorArray", kind="STRUCTURE")
+    inf.text_rows("TSDPSA", "Sensor Array",
+                  "A deployed Mobile Sensor Array. Shows you cloaked and underground "
+                  "enemies nearby. Deploy again to pack it up.", kind="STRUCTURE")
 
 
 if __name__ == "__main__":

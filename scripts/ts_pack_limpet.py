@@ -1,21 +1,13 @@
 #!/usr/bin/env python3
-"""Package the TS Limpet Drone's mine (Firestorm) into the mod tree:
-  TSDLIMP.ZIP (structures)      20 frames: DLIMPET body (healthy / damaged) under the
-                                DLIMP_A blink, 10 healthy then 10 damaged
-  TSDLIMPMAKE.ZIP (structures)  19 frames: the DLIMPMK build-up (42 TS frames resampled)
-plus BuildIcon_TS_LimpetDrone.tga (Firestorm ships no LIMPICON: the gold drone on TS's
-vehicle cameo plate, rebuilt from the cameos that share it), the base RA_TSLIMP / RA_TSDLIMP sidebar entries, the ModText rows and the
-five LIMP*.AUD sounds as TS<NAME>.WAV. Art, cameo, tiles, sidebar entries and sounds go to the
-tree asset_packs.py routes each name to (the TS-Graphics-Pack and TS-SFX-Pack); the ModText rows
-to the mod's own ModText.csv. The drone's own art (TSLIMP: its blink 0-9 and its shadows 10-19)
-is the HD rebuild's, packed by scripts/ts_pack_hd_buildings.py.
-Scale: the mine and its build-up run at F_BLDG on 256 canvases over a 48x48 classic stub: the
-building density is 5.33x rather than the units' 8x, so F_BLDG is 2/3 of the units' TS SHP factor
-F_UNIT and the mine comes out the same TS-relative size as the drone. TS source (48,48), the
-mine's centre, lands on the canvas centre for the mine and its build-up alike, so the ladder
-ends where the mine sits.
-Inputs (set TS_ART_DIR): shp_dlimpet, shp_dlimp_a, shp_dlimpmk (ts_shp.py with
-UNITTEM.PAL), shp_xxicon (CAMEO.PAL, --no-remap), .raw/LIMP*.AUD.
+"""The sidebar side and sounds of the TS Limpet Drone (TSLIMP) and its mine (TSDLIMP):
+BuildIcon_TS_LimpetDrone.tga (Firestorm ships no LIMPICON: the gold drone on TS's vehicle cameo
+plate, rebuilt from the cameos that share it), the base RA_TSLIMP / RA_TSDLIMP sidebar entries, the
+ModText rows and the five LIMP*.AUD sounds as TS<NAME>.WAV. Cameo, sidebar entries and sounds go
+to the tree asset_packs.py routes each name to (the TS-Graphics-Pack and TS-SFX-Pack); the ModText
+rows to the mod's own ModText.csv. The drone's and the mine's art is the HD rebuilds', packed by
+scripts/ts_pack_hd_buildings.py.
+Inputs (set TS_ART_DIR): .raw/LIMPED.SHP, UNITTEM.PAL and CAMEO.PAL, the vehicle cameo SHPs in
+VEHICLE_CAMEOS, .raw/LIMP*.AUD.
 License: GPL v3.
 """
 import os
@@ -30,74 +22,7 @@ import asset_packs
 import ts_pack_infantry as inf
 
 ART = inf.ART
-F_UNIT = 6.4              # the mod-wide TS SHP factor (ts_pack_units_wave.py), at 8x-classic unit density
-F_BLDG = F_UNIT * 2.0 / 3.0  # buildings ship at 5.33x-classic, so their art scales by 2/3 to match on screen
-BLDG_CANVAS = 256
-# The mine's base lands where the drone's shadow does, 11.6 classic px below the cell centre,
-# which is also where TS's other 1x1 buildings sit (TSPION +12, TSSEEK +10.3, TSPODS +9.4).
-# Anything higher and the mine jumps north of the drone the moment it deploys.
-BLDG_DROP = 31.0                                  # canvas px the mine and its build-up come down
-BLDG_ANCHOR = (48, 48 - BLDG_DROP / F_BLDG)
 SOUNDS = ("LIMPBOM1", "LIMPQ3", "LIMPQ4", "LIMPC3", "LIMPC4")
-
-
-def frame(stem, i):
-    return Image.open(f"{ART}/shp_{stem}/frame-{i:04d}.png").convert("RGBA")
-
-
-def crisp(img, canvas, anchor=None, factor=None):
-    """hq4x then LANCZOS to the given factor. The anchor (source px) lands on the canvas
-    centre; by default the centre of the image's opaque bounding box."""
-    if factor is None:
-        factor = F_UNIT
-    if anchor is None:
-        b = img.getbbox()
-        anchor = ((b[0] + b[2]) / 2.0, (b[1] + b[3]) / 2.0)
-    rgb = Image.new("RGB", img.size, (0, 0, 0))
-    rgb.paste(img, (0, 0), img)
-    big = hqx.hq4x(rgb).convert("RGBA")
-    big.putalpha(img.split()[3].resize((img.width * 4, img.height * 4), Image.LANCZOS))
-    scaled = big.resize((round(img.width * factor), round(img.height * factor)), Image.LANCZOS)
-    out = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
-    inf.safe_paste(out, scaled, round(canvas / 2 - anchor[0] * factor), round(canvas / 2 - anchor[1] * factor))
-    return out
-
-
-def mine_frames():
-    # DLIMPET.SHP: 3 poses (healthy, damaged, spare) then 3 shadows. DLIMP_A: 10 blink
-    # frames then 10 shadows; TS anims pack healthy then damaged in the usable window.
-    out = []
-    for pose in (0, 1):
-        base = inf.with_shadow(frame("dlimpet", pose), frame("dlimpet", 3 + pose))
-        for b in range(10):
-            comp = base.copy()
-            comp.alpha_composite(frame("dlimp_a", b))
-            out.append(crisp(comp, BLDG_CANVAS, BLDG_ANCHOR, F_BLDG))
-    return out
-
-
-def make_frames(count=19):
-    # DLIMPMK.SHP: 42 build-up frames then 42 shadows, resampled to RA's ladder length.
-    total = 42
-    picks = [round(i * (total - 1) / (count - 1)) for i in range(count)]
-    return [crisp(inf.with_shadow(frame("dlimpmk", i), frame("dlimpmk", total + i)), BLDG_CANVAS, BLDG_ANCHOR, F_BLDG)
-            for i in picks]
-
-
-def patch_struct_tileset(name, count):
-    import re
-    path = asset_packs.tileset_xml(name, "STRUCTURES")
-    xml = open(path, encoding="utf-8").read()
-    pat = re.compile(r"\t<Tile>\n\t\t<Key>\n\t\t\t<Name>" + re.escape(name) + r"</Name>.*?</Tile>\n", re.S)
-    xml, removed = pat.subn("", xml)
-    tile = ("\t<Tile>\n\t\t<Key>\n\t\t\t<Name>%s</Name>\n\t\t\t<Shape>%d</Shape>\n\t\t</Key>\n"
-            "\t\t<Value>\n\t\t\t<Frames>\n\t\t\t\t<Frame>%s\\%s-%04d.tga</Frame>\n\t\t\t</Frames>\n\t\t</Value>\n\t</Tile>\n")
-    blocks = "".join(tile % (name, s, name.lower(), name.lower(), s) for s in range(count))
-    idx = xml.rindex("</Tiles>")
-    open(path, "w", encoding="utf-8").write(xml[:idx] + blocks + xml[idx:])
-    print(f"patched {os.path.basename(path)}: {name} -> {count} tiles (replaced {removed})")
-
-
 VEHICLE_CAMEOS = ("SMCHICON", "SONIICON", "APCICON", "HARVICON", "MCVICON", "JUGGICON",
                   "OTRNICON", "SEEKICON")
 CAMEO_FIT = 32   # the drone's height on the 48px plate: the fill TS's own vehicle cameos have
@@ -152,37 +77,6 @@ def cameo():
     inf.cameo("limpicon", "BuildIcon_TS_LimpetDrone")
 
 
-def sidebar_building(ini, icon):
-    """Base RA_<INI> entry for a structure that never reaches the sidebar (name/description
-    lookups only), placed like the unit entries (ts_pack_infantry.add_entry)."""
-    key = f"RA_{ini}"
-    entry = ('\t<ObjectTypeClass Name="%s" Classification="CNCBuildableObject" CanInstantiate="False">\n'
-             "\t\t<CNCEncyclopediaComponent>\n"
-             "\t\t\t<ObjectNameTextID>TEXT_STRUCTURE_%s</ObjectNameTextID>\n"
-             "\t\t\t<ObjectDescriptionTextID>TEXT_STRUCTURE_%s_DESC</ObjectDescriptionTextID>\n"
-             "\t\t\t<BuildIcon>%s</BuildIcon>\n"
-             "\t\t</CNCEncyclopediaComponent>\n"
-             "\t</ObjectTypeClass>\n" % (key, ini, ini, icon))
-    inf.add_entry(key, icon, entry)
-
-
-def text_rows_building(ini, display, desc):
-    raw = open(inf.CSV, "rb").read()
-    text = raw.decode("utf-16")
-    eol = "\r\n" if "\r\n" in text else "\n"
-    sample = next(l for l in text.splitlines() if l.startswith('"TEXT_UNIT_TDA10"'))
-    tail = sample.split('"A-10 Warthog"', 1)[1]
-    new = ""
-    for key, val in ((f"TEXT_STRUCTURE_{ini}", display), (f"TEXT_STRUCTURE_{ini}_DESC", desc)):
-        if f'"{key}"' not in text:
-            new += f'"{key}",,,"{val}"{tail}{eol}'
-    if new:
-        if not text.endswith(eol):
-            text += eol
-        open(inf.CSV, "wb").write((text + new).encode("utf-16"))
-        print(f"patched ModText.csv: TEXT_STRUCTURE_{ini}")
-
-
 def sounds():
     for aud in SOUNDS:
         pcm = f"{ART}/.raw/{aud}.pcm.wav"
@@ -194,35 +88,16 @@ def sounds():
 
 
 def main():
-    if asset_packs.hd_owned("TSDLIMP"):
-        print("TSDLIMP: HD art (ts_pack_hd_buildings.py), not written")
-    else:
-        mine = mine_frames()
-        inf.write_zip(asset_packs.art_zip("TSDLIMP", "STRUCTURES"), "tsdlimp", mine)
-        patch_struct_tileset("TSDLIMP", len(mine))
-        make = make_frames()
-        inf.write_zip(asset_packs.art_zip("TSDLIMPMAKE", "STRUCTURES"), "tsdlimpmake", make)
-        patch_struct_tileset("TSDLIMPMAKE", len(make))
     cameo()
     inf.sidebar("TSLIMP", "BuildIcon_TS_LimpetDrone")
     inf.text_rows("TSLIMP", "Limpet Drone",
                   "Unarmed hover drone. Deploys into a cloaked mine that latches onto the next enemy "
                   "vehicle, slowing it and revealing what it sees until it visits a repair bay.")
-    sidebar_building("TSDLIMP", "BuildIcon_TS_LimpetDrone")
-    text_rows_building("TSDLIMP", "Limpet Mine",
-                       "A settled Limpet Drone. Cloaked; leaps onto the next enemy vehicle to pass. "
-                       "Deploy again to pick it up.")
+    inf.sidebar("TSDLIMP", "BuildIcon_TS_LimpetDrone", kind="STRUCTURE")
+    inf.text_rows("TSDLIMP", "Limpet Mine",
+                  "A settled Limpet Drone. Cloaked; leaps onto the next enemy vehicle to pass. "
+                  "Deploy again to pick it up.", kind="STRUCTURE")
     sounds()
-    out = os.environ.get("TSLIMP_SHEET")
-    if out:
-        cols = mine[::2] + make[::3]
-        w = 256
-        sh = Image.new("RGBA", (w * 10, w * ((len(cols) + 9) // 10)), (70, 110, 70, 255))
-        for k, fr in enumerate(cols):
-            fr = fr.resize((w, w)) if fr.width != w else fr
-            sh.alpha_composite(fr, ((k % 10) * w, (k // 10) * w))
-        sh.save(out)
-        print(f"wrote {out}")
 
 
 if __name__ == "__main__":

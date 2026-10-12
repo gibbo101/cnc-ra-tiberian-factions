@@ -2221,7 +2221,6 @@
 			<BuildIcon>BuildIcon_TS_Puls</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
-	<!-- END generated locked cameos -->
 	<!-- BEGIN generated TS-tree badge variants (_G = the TS GDI emblem) -->
 	<ObjectTypeClass Name="RA_TSAPC_G" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
