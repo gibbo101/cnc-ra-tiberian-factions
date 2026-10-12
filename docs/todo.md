@@ -36,6 +36,8 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   `mastertext.edits.txt` names and `picker_emblems_paint.py` plates move with it.
 - **Nod's cargo plane circles the airstrip** (`known-issues.md`): find why the TDC17 sometimes
   misses its landing on `TDAFLD` and fix it, with a play test of several deliveries.
+- **The Orca Bomber's five-bomb pass** (`known-issues.md`): find why a pass drops two or three
+  bombs, and make each pass lay all five across the target, with a play test of a full sortie.
 - **Light orange selection box on a limpeted unit.** TS draws a limpeted object's bracket from
   another frame set (OpenTS techno.cpp:1455). The launcher's box is `CNC_SELECT_BOX.TGA` (white,
   atlas 3027,4088 128x128), tinted as it is drawn, and no data lever reaches the tint. Route: find

@@ -19,6 +19,13 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
   instead of landing. Seen before and after the dead-code pass, so not caused by it. Cause not yet
   looked into; the delivery path is in `cargo-plane-port.md`.
 
+### The Orca Bomber drops two or three bombs a pass, over more passes
+- **Severity:** minor (seen in play).
+- TS's Orca Bomber lays all five bombs of a pass in a line across the target. Ours drops two or
+  three a pass and makes more passes to use up its ten. The run (`AircraftClass::Mission_Attack`,
+  `TF_BOMB_LOOP`) releases a bomb by its distance along the line to the target, from two cells short
+  to two past, and ends at a point four cells beyond it. Cause not yet looked into.
+
 ### Infantry pushed aside in a narrow pass lose their orders (suspected)
 - **Severity:** minor.
 - When a vehicle drives through a one-cell pass, `DriveClass::Drain_Infantry_Along` (`drive.cpp`)
