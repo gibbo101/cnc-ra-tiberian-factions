@@ -845,6 +845,11 @@ void BulletClass::AI(void)
                 TFStage = 1;
                 TFDwell = TICKS_PER_SECOND * 4;
                 Sound_Effect(VOC_TS_DROPDWN1, Coord); // TS's own "dropship lands"
+                // TF: EVA tells a human owner "reinforcements have arrived" as the dropship touches down.
+                HouseClass* owner = (TFPodHouse != HOUSE_NONE) ? HouseClass::As_Pointer(TFPodHouse) : NULL;
+                if (owner != NULL && owner->IsHuman) {
+                    Speak(VOX_REINFORCEMENTS, owner);
+                }
             }
             break;
 
