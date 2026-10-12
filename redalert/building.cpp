@@ -4231,6 +4231,7 @@ void BuildingClass::Grand_Opening(bool captured)
                 **	Try to place down the harvesters. If it could not be placed, then try
                 **	to place it in a nearby location.
                 */
+                // TF: TSPROC's harvester faces out across the plate, away from the dock lane.
                 if (!unit->Unlimbo(Cell_Coord(cell), (*this == STRUCT_TSPROC) ? DIR_SE : DIR_W)) {
                     /*
                     **	Check multiple times for clear locations.
@@ -6827,6 +6828,7 @@ int BuildingClass::Mission_Repair(void)
                     break;
                 }
             }
+            // TF: the TS depot waits URepairRate between steps (see the IsReadyToCommence override above).
             return ((*this == STRUCT_TSDEPT) ? (int)(Rule.RepairRate * TICKS_PER_MINUTE) : 1);
 
         default:
