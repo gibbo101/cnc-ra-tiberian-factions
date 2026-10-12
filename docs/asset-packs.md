@@ -22,7 +22,8 @@ asset-packs/TS-Graphics-Pack/
   Data/XML/TILESETS/TS_UNITS.XML ...          (entries for RA_UNITS.XML ...)
   Data/XML/OBJECTS/UNITS/TSBUILDABLES.XML      (entries for RABUILDABLES.XML)
   Data/XML/AUDIO/SFXEVENTS[NON]LOCALIZED_TS.XML (entries for SFXEVENTS[NON]LOCALIZED.XML)
-  3d/<name>.glb, 3d/README.md                (TS-HD only: the HD rebuilds' glTF models, never staged)
+  3d/<name>.glb, 3d/README.md                (TS-HD only: the HD rebuilds' glTF models, never staged;
+                                              scripts/glb_to_stl.py makes print-ready STL files from them)
 ```
 
 | Pack | Holds |
