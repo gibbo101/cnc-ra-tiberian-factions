@@ -39,9 +39,11 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   `mastertext.edits.txt` names and `picker_emblems_paint.py` plates move with it.
 - **Nod's cargo plane circles the airstrip** (`known-issues.md`): find why the TDC17 sometimes
   misses its landing on `TDAFLD` and fix it, with a play test of several deliveries.
-- **TD copies of the asset packs, with each pack's first release.** TD reads art only from
-  `SRGB/TIBERIAN_DAWN/`, so a TD copy carries its art there with TD tileset and sound XML. Every pack goes up
-  as two Workshop items, one per game, so neither game's players download the other's copy as the packs grow.
+- **TD copy of TS-HD-Assets, with its first release.** RA2-HD-Assets and CNC3-Assets ship as one Workshop
+  item per game; TS-HD-Assets is built for Red Alert only so far (`asset_packs.WORKSHOP` hosts). TD reads art
+  only from `SRGB/TIBERIAN_DAWN/`, and TD has no interior theatre for TS-HD's interior bibs.
+- **TS-HD-Assets page contents in plain words** before it ships: units by side with their file names, as the RA2
+  and C&C3 pages have (`asset_packs.WORKSHOP` contents); its page is near the Workshop's 8,000 characters.
 - **Grey out saves that can't load, before the next release.** The save version refuses a save whose class
   sizes or type-list lengths differ (`saveload.cpp`), and InstanceServerG crashes on a refused load (an assert in
   its save-load manager). Grey the Load button with a reason for those saves, vanilla and other mods' saves
