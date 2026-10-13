@@ -198,11 +198,6 @@ def readme(mod, listed, host):
     lines = [f"# {w['name']}", "", w["description"].format(host=h["name"]) +
              " Built for Command & Conquer Remastered Collection.", "",
              "This is an asset pack: on its own it adds nothing to the game. A mod has to use it.", ""]
-    ids = w.get("workshop_ids", {})
-    twins = [f"[{A.HOSTS[o]['name']}]({D.WORKSHOP_URL}{ids[o]})" if o in ids else A.HOSTS[o]["name"]
-             for o in w["hosts"] if o != host]
-    if twins:
-        lines += [f"Also available for {' and '.join(twins)}.", ""]
     if w["required"] and host == "RA":
         lines += ["## Playing Tiberian Factions", "",
                   f"[Tiberian Factions]({TF_URL}) needs this pack for its {game} factions.", "",
