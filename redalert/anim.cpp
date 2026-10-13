@@ -845,13 +845,13 @@ int TF_Railgun_Coil(bool small, int sx, int sy, int dx, int dy, int dist)
 }
 
 // Lays C&C3's railgun shot from (sx, sy) along (dx, dy) in leptons: glow dots on the core line, the muzzle flash
-// and the impact. Returns the frames a TS railgun holds.
-int TF_Railgun_Beam(int sx, int sy, int dx, int dy)
+// and the impact, in blue or the Ghost Stalker's orange. Returns the frames a TS railgun holds.
+int TF_Railgun_Beam(bool orange, int sx, int sy, int dx, int dy)
 {
     enum
     {
         GLOW_STEP = 16, // leptons between the core's glow dots
-        HOLD = 75,      // TS's coil life, which sets the Mk. II's rate of fire
+        HOLD = 75,      // TS's coil life, which sets a TS railgun's rate of fire
     };
 
     double const dist = sqrt((double)dx * dx + (double)dy * dy);
@@ -862,14 +862,14 @@ int TF_Railgun_Beam(int sx, int sy, int dx, int dy)
     for (int d = 0; d <= (int)dist; d += GLOW_STEP) {
         int x = sx + (int)(ux * d), y = sy + (int)(uy * d);
         if (x >= 0 && y >= 0) {
-            new AnimClass(ANIM_C3_RAILGLOW, XY_Coord(x, y));
+            new AnimClass(orange ? ANIM_C3_RAILGLOWO : ANIM_C3_RAILGLOW, XY_Coord(x, y));
         }
     }
     if (sx >= 0 && sy >= 0) {
-        new AnimClass(ANIM_C3_RAILMZ, XY_Coord(sx, sy));
+        new AnimClass(orange ? ANIM_C3_RAILMZO : ANIM_C3_RAILMZ, XY_Coord(sx, sy));
     }
     if (sx + dx >= 0 && sy + dy >= 0) {
-        new AnimClass(ANIM_C3_RAILHIT, XY_Coord(sx + dx, sy + dy));
+        new AnimClass(orange ? ANIM_C3_RAILHITO : ANIM_C3_RAILHIT, XY_Coord(sx + dx, sy + dy));
     }
     return (HOLD);
 }

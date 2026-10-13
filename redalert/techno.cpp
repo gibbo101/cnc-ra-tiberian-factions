@@ -3836,7 +3836,8 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             // TF: a RailBeam weapon with a projectile draws C&C3's railgun shot to the target as it fires.
             if (weapon->IsRailBeam && !weapon->IsRailgun) {
                 Set_Beam_Line(fire_coord, target_coord, 0x0A);
-                TF_Railgun_Beam((int)Coord_X(fire_coord),
+                TF_Railgun_Beam(false,
+                                (int)Coord_X(fire_coord),
                                 (int)Coord_Y(fire_coord),
                                 (int)Coord_X(target_coord) - (int)Coord_X(fire_coord),
                                 (int)Coord_Y(target_coord) - (int)Coord_Y(fire_coord));
@@ -4146,7 +4147,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 if (weapon->IsRailgun) {
                     RailCoilEnd = (int)Frame
                                   + (weapon->IsRailBeam
-                                         ? TF_Railgun_Beam(sx, sy, ddx, ddy)
+                                         ? TF_Railgun_Beam(weapon->ID == WEAPON_TSLTRAIL, sx, sy, ddx, ddy)
                                          : TF_Railgun_Coil(weapon->ID == WEAPON_TSLTRAIL, sx, sy, ddx, ddy, dist));
                     // TF: a railgun's warhead sets off its explosion where the shot lands.
                     WarheadType burst = (weapon->WarheadPtr != NULL) ? WarheadType(weapon->WarheadPtr->ID) : WARHEAD_NONE;

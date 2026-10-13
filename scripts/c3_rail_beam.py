@@ -2,13 +2,14 @@
 """Render C&C3's railgun shot (FX_RailGunFire, FX_RailGunHit) as HD anim frames for the RailBeam weapons.
 
 C&C3 draws the shot as a core in a glow, a flare at the muzzle and a bloom with sparks at the impact
-(docs/cnc3-railgun-beam.md); here every piece is in the core line's blue. The launcher draws an exported sprite
+(docs/cnc3-railgun-beam.md); here every piece is in its core line's colour. The launcher draws an exported sprite
 unrotated, so every piece is round and TF_Railgun_Beam lays glow dots along the core line. The launcher blends straight
 alpha only, so the additive light is baked into RGBA.
 
   C3RAILGLOW  the core's blue glow, a soft dot on 64 px, 12 frames.
   C3RAILMZ    the muzzle flash, 5 frames on 192 px.
   C3RAILHIT   the impact bloom with sparks thrown all round, 12 frames on 256 px.
+  C3RAILGLOWO, C3RAILMZO, C3RAILHITO: the same in the Ghost Stalker's orange.
 
 Inputs: resources/custom-art/c3-railgun-beam/ (FXRailgunThread, FXLenzFlare01, FXFireBlast04, from C&C3's
 static stream). Writes the ZIPs and tiles where scripts/asset_packs.py routes the names.
@@ -38,11 +39,18 @@ FRAMES = 12         # game frames: the core blazes for about a third of a second
 MUZZLE_FRAMES = 5
 GLOW_PX = 34
 
-# Game-frame keys (age 0..1 over FRAMES), all in the core line's blue (palette 0x0A).
-HALO_K = [(0, (.35, .55, 1)), (.35, (.3, .5, 1)), (.7, (0, 0, 0)), (1, (0, 0, 0))]
-FLASH_K = [(0, (.65, .7, 1)), (.5, (.45, .5, 1)), (1, (0, 0, 0))]
-GLOW_K = [(0, (.65, .7, 1)), (.4, (.45, .5, 1)), (1, (0, 0, 0))]
-SPARK_K = [(0, (.55, .62, 1)), (.5, (.3, .38, .8)), (1, (0, 0, 0))]
+# Game-frame keys (age 0..1 over FRAMES) per set, each in its core line's colour: the blue of palette 0x0A, and the
+# orange of TS [SmallRailgunSys] LaserColor=255,128,0 (the Ghost Stalker, names suffixed O).
+SETS = {
+    "": {"halo": [(0, (.35, .55, 1)), (.35, (.3, .5, 1)), (.7, (0, 0, 0)), (1, (0, 0, 0))],
+         "flash": [(0, (.65, .7, 1)), (.5, (.45, .5, 1)), (1, (0, 0, 0))],
+         "glow": [(0, (.65, .7, 1)), (.4, (.45, .5, 1)), (1, (0, 0, 0))],
+         "spark": [(0, (.55, .62, 1)), (.5, (.3, .38, .8)), (1, (0, 0, 0))]},
+    "O": {"halo": [(0, (1, .5, .1)), (.35, (1, .45, .05)), (.7, (0, 0, 0)), (1, (0, 0, 0))],
+          "flash": [(0, (1, .68, .3)), (.5, (1, .5, .1)), (1, (0, 0, 0))],
+          "glow": [(0, (1, .68, .3)), (.4, (1, .5, .1)), (1, (0, 0, 0))],
+          "spark": [(0, (1, .48, .1)), (.5, (.8, .32, .03)), (1, (0, 0, 0))]},
+}
 
 
 def texture(name):
@@ -136,22 +144,22 @@ def dot(f, size, px, colour_keys, gain):
     return bake(acc, size)
 
 
-def muzzle(f, rng):
+def muzzle(f, rng, flash_keys):
     acc = np.zeros((MUZZLE_FRAME * SS, MUZZLE_FRAME * SS, 3), np.float32)
     c = MUZZLE_FRAME / 2 * SS
     size = rng["flash"] + 2 * f
-    sprite(acc, T_FLARE, c, c, size * UNIT * SS, keys(FLASH_K, f / MUZZLE_FRAMES), math.radians(rng["angle"]))
+    sprite(acc, T_FLARE, c, c, size * UNIT * SS, keys(flash_keys, f / MUZZLE_FRAMES), math.radians(rng["angle"]))
     return bake(acc, MUZZLE_FRAME)
 
 
-def impact(f, glows, sparks):
+def impact(f, glows, sparks, glow_keys, spark_keys):
     """The hit at the frame centre, its sparks thrown all round so it needs no turning."""
     acc = np.zeros((HIT_FRAME * SS, HIT_FRAME * SS, 3), np.float32)
     c = HIT_FRAME / 2 * SS
     px = UNIT * SS
     t = 2 * f
     for g in glows:
-        sprite(acc, T_BLAST, c, c, max(g[0] - t, 0) * px, keys(GLOW_K, f / FRAMES), g[1] + g[2] * t)
+        sprite(acc, T_BLAST, c, c, max(g[0] - t, 0) * px, keys(glow_keys, f / FRAMES), g[1] + g[2] * t)
     if t < 5:
         for vx, vy, damp, size, shade in sparks:
             pos, vel, trail = np.zeros(2), np.array([vx, vy]), [np.zeros(2)]
@@ -159,7 +167,7 @@ def impact(f, glows, sparks):
                 pos = pos + vel; vel = vel * damp; trail.append(pos.copy())
             pts = np.array([[c + p[0] * px, c + p[1] * px] for p in trail[-6:]])
             if np.hypot(*(pts[-1] - pts[0])) > 1:
-                streak(acc, pts, size * px * .5, np.clip(keys(SPARK_K, t / 5) + shade, 0, None), False)
+                streak(acc, pts, size * px * .5, np.clip(keys(spark_keys, t / 5) + shade, 0, None), False)
     return bake(acc, HIT_FRAME)
 
 
@@ -181,16 +189,17 @@ def write_zip(name, frames):
 
 def main():
     rng = np.random.default_rng(7)
-    write_zip("C3RAILGLOW", [dot(f, GLOW_FRAME, GLOW_PX, HALO_K, 1.0) for f in range(FRAMES)])
     flash = {"flash": rng.uniform(22, 30), "angle": rng.uniform(-7, 7)}
-    write_zip("C3RAILMZ", [muzzle(f, flash) for f in range(MUZZLE_FRAMES)])
     glows = [(rng.uniform(32, 48), rng.uniform(0, 7), rng.uniform(-.1, .1)) for _ in range(8)]
     sparks = []
     for _ in range(20):
         a, v = rng.uniform(0, 2 * math.pi), rng.uniform(10, 30)
         sparks.append((v * math.cos(a), v * math.sin(a), rng.uniform(.65, .8), rng.uniform(2, 5),
                        rng.uniform(-50, 50) / 255))
-    write_zip("C3RAILHIT", [impact(f, glows, sparks) for f in range(FRAMES)])
+    for suffix, k in SETS.items():
+        write_zip("C3RAILGLOW" + suffix, [dot(f, GLOW_FRAME, GLOW_PX, k["halo"], 1.0) for f in range(FRAMES)])
+        write_zip("C3RAILMZ" + suffix, [muzzle(f, flash, k["flash"]) for f in range(MUZZLE_FRAMES)])
+        write_zip("C3RAILHIT" + suffix, [impact(f, glows, sparks, k["glow"], k["spark"]) for f in range(FRAMES)])
 
 
 if __name__ == "__main__":
