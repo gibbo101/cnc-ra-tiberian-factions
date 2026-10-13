@@ -231,7 +231,7 @@ def readme(mod, listed, host):
                   f"[source]({D.REPO_URL}).", ""]
     lines += layout(mod)
     if w.get("contents"):
-        lines += ["## Contents", ""] + [f"- {line}" for line in w["contents"]] + [""]
+        lines += ["## Contents", ""] + [f"- {line}" for line in w["contents"]] + ["", "More content to come.", ""]
     lines += ["## Files", ""]
     for title, names in contents(mod).items():
         lines += [f"**{title}** ({len(names)}): " + ", ".join(names), ""]
