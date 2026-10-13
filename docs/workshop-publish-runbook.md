@@ -183,24 +183,28 @@ The zip has `Vanilla_RA/` at its root (ModDB links to it). Then bump the local `
 
 ## Asset packs
 
-Each `asset-packs/<Pack>/` folder is its own Workshop item (`docs/asset-packs.md`).
+Each Workshop pack in `asset_packs.WORKSHOP` goes up as one item per game it is built for:
+`<mod>` for Red Alert and `<mod>-TD` for Tiberian Dawn, because each game reads art only from its
+own folder (`docs/asset-packs.md`).
 
 ```bash
-python3 scripts/asset_pack_docs.py       # README.md and ccmod.json per pack, from its contents
-python3 scripts/asset_pack_workshop.py   # uploads, manifests and previews (one pack: name it)
+python3 scripts/asset_pack_docs.py       # README.md and ccmod.json per source pack, from its contents
+python3 scripts/asset_pack_workshop.py   # uploads, manifests and previews (one item: name it)
 ```
 
-`asset_pack_workshop.py` stages each pack as `dist/asset-pack-uploads/<Pack>/<Pack>/` (the
-named-subfolder layout, so a pack also shows in the in-game mod list, as TD-Assets does), writes
-`tools/workshop-uploader/packs/<Pack>.json` with a BBCode description built from the pack's
-contents, and draws `tools/workshop-uploader/packs/<Pack>.jpg`. A manifest that already exists
-keeps its `publishedfileid` and `visibility`; a new one starts Private (`2`).
+`asset_pack_workshop.py` builds each item with `scripts/workshop_packs.py` into
+`dist/asset-pack-uploads/<Item>/<Item>/` (the named-subfolder layout, so it also shows in the
+in-game mod list), writes `tools/workshop-uploader/packs/<Item>.json` with the item's README as
+its BBCode description, and writes `tools/workshop-uploader/packs/<Item>.jpg` from the pack's
+in-game shot in `resources/workshop-previews/<mod>.jpg`, or tiles its art when it has none. A
+manifest that already exists keeps its `publishedfileid` and `visibility`; a new one starts
+Private (`2`).
 
 Publish (Step 0 applies: restart Steam first):
 
 ```bash
 cd tools/workshop-uploader
-dotnet run --no-build -- packs/<Pack>.json "v1.0.0: first release"
+dotnet run --no-build -- packs/<Item>.json "v1.0.0: first release"
 ```
 
 The first publish creates the item and writes its `publishedfileid` back into the manifest:
