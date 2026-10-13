@@ -142,22 +142,16 @@ def tga_bytes(img):
     return buf.getvalue()
 
 
-def write_zip(path, name, frames, square=False):
-    """Center-symmetric crop + meta -- identical contract to the other packers.
-    square=True keeps the full square frame: a sprite exported with Rotation
-    is clipped to the UNROTATED frame rectangle (contract 8), so rotated art
-    must never be bbox-cropped."""
+def write_zip(path, name, frames):
+    """Center-symmetric crop + meta -- identical contract to the other packers."""
     with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED) as z:
         for i, img in enumerate(frames):
             base = f'{name}-{i:04d}'
             W, H = img.width, img.height
-            if square:
-                b = (0, 0, W, H)
-            else:
-                bb = img.getbbox() or (W // 2 - 1, H // 2 - 1, W // 2 + 1, H // 2 + 1)
-                x0 = min(bb[0], W - bb[2])
-                y0 = min(bb[1], H - bb[3])
-                b = (x0, y0, W - x0, H - y0)
+            bb = img.getbbox() or (W // 2 - 1, H // 2 - 1, W // 2 + 1, H // 2 + 1)
+            x0 = min(bb[0], W - bb[2])
+            y0 = min(bb[1], H - bb[3])
+            b = (x0, y0, W - x0, H - y0)
             z.writestr(base + '.tga', tga_bytes(img.crop(b)))
             z.writestr(base + '.meta', json.dumps(
                 {'size': [W, H], 'crop': [b[0], b[1], b[2], b[3]]}))
