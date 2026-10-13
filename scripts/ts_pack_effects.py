@@ -4,7 +4,8 @@ infantry deaths, water splashes, the Firestorm overlay and the missile and shell
 
   Vehicle, aircraft and building deaths: TS [<unit>] Explosion=TWLT070,S_BANG48,S_BRNL58,S_CLSN58,S_TUMU60,
     picked at random (S_CLSN58 ships with ts_pack_towerfx.py as TSCLSN58).
-  Debris: [General] MetallicDebris=DBRIS1LG..DBRS10SM, each a bouncing 15-frame tumble that bursts as TWLT036.
+  Debris: [General] MetallicDebris=DBRIS1LG..DBRS10SM, each a bouncing 15-frame tumble. The large ones burst as
+    TWLT036; the small ones' TWLT024 is in none of TS's archives.
   Warhead impacts: [HE]/[ARTYHE] AnimList adds XGRYMED1, XGRYMED2, EXPLOMED, EXPLOLRG to the SAM set;
     [ORCAHE] is EXPLOMED, EXPLOLRG.
   Fires: [AudioVisual] OnFire=FIRE3,FIRE2,FIRE1 (art.ini FIRE1 Next=FIRE2, FIRE2 Next=FIRE3).
@@ -13,7 +14,7 @@ infantry deaths, water splashes, the Firestorm overlay and the missile and shell
   Water: SplashList=H2O_EXP3,H2O_EXP2,H2O_EXP1 (art.ini AltPalette=yes: the unit palette).
   Firestorm: FirestormActiveAnim=GAFSDF_A, temperate GTFSDF_A (NewTheater, the unit palette).
   In flight: [DRAGON] (32 facings, Trailer=SMOKEY2) and [120MM], against the unit palette as TS draws bullets.
-  Reports: EXPNEW09/10/11/12/15, ELECTRO1, SSPLASH1-3, under TS-prefixed names.
+  Reports: EXPNEW06/09/10/11/12/15, ELECTRO1, SSPLASH1-3, under TS-prefixed names.
 
 Firestorm's DROPPODY and DROPPODY2 are byte-identical to DROPPOD and DROPPOD2 (TSDPOD1/2, ts_pack_pods.py).
 Inputs (set TS_ART_DIR): $TS_ART_DIR/.raw/ from scripts/ts_rebuild_art.sh. Every anim upscales as
@@ -47,7 +48,8 @@ ANIMS = [
     *[(f"DBRIS{i}LG" if i < 10 else "DBRS10LG", f"TSDBR{i:02d}L", "anim") for i in range(1, 11)],
     *[(f"DBRIS{i}SM" if i < 10 else "DBRS10SM", f"TSDBR{i:02d}S", "anim") for i in range(1, 11)],
 ]
-SOUNDS = ("EXPNEW09", "EXPNEW10", "EXPNEW11", "EXPNEW12", "EXPNEW15", "ELECTRO1", "SSPLASH1", "SSPLASH2", "SSPLASH3")
+SOUNDS = ("EXPNEW06", "EXPNEW09", "EXPNEW10", "EXPNEW11", "EXPNEW12", "EXPNEW15", "ELECTRO1",
+          "SSPLASH1", "SSPLASH2", "SSPLASH3")
 
 
 def pack_shadowed(shp, name, pal):
