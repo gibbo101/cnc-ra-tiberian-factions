@@ -1,7 +1,7 @@
 # C&C3 railgun shot
 
-**Status:** Reference. The Mammoth Mk. II fires with C&C3's railgun shot in blue and the Ghost Stalker in orange; any
-weapon can, with `RailBeam=yes`.
+**Status:** Reference. The Mammoth Mk. II fires with C&C3's railgun shot in blue and the Ghost Stalker in orange.
+Every railgun (`IsRailgun`) draws it, and a projectile weapon can, with `RailBeam=yes`.
 
 C&C3's upgraded Mammoth and Predator fire `FX_RailGunFire` and hit with `FX_RailGunHit`: a white-hot core in a blue
 glow, pale threads in long slow waves around it, a flare at the muzzle and a white bloom with sparks at the impact.
@@ -27,8 +27,8 @@ Every piece is in the core line's colour. The Ghost Stalker's shot (`WEAPON_TSLT
 `Explosion`. C&C3's threads are left out: blue thread dots read as a helix around the line, which the shot does not
 want.
 
-`TF_Railgun_Beam` (`anim.cpp`) lays the dots, flash and impact; it returns 75 frames, TS's coil life, which a
-railgun (`IsRailgun`) holds before it may fire again, so the Mk. II's rate of fire is TS's. A weapon with a
+`TF_Railgun_Beam` (`anim.cpp`) lays the dots, flash and impact; it returns 75 frames, TS's railgun particle life,
+which a railgun (`IsRailgun`) holds before it may fire again, so the Mk. II's rate of fire is TS's. A weapon with a
 projectile and `RailBeam=yes` draws the shot as it fires, alongside its (usually `Invisible`) bullet.
 
 A shot across the Mk. II's 8 cells lays some 130 anims, so `AnimMax` is at least 2048 (`rules.cpp`).

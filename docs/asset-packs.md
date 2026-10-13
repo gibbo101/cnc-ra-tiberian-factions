@@ -41,7 +41,7 @@ only the `RA_` files. A pack's XML files are what a modder copies, and what the 
 
 `scripts/asset_packs.py` decides from a file's name alone, so nothing needs registering:
 
-- Art: `TS*` and `RAILFX` (not `TSLA*`, RA's Tesla Coil), `R2*`, `C3<letter>` (bare `C3` is RA's
+- Art: `TS*` (not `TSLA*`, RA's Tesla Coil), `R2*`, `C3<letter>` (bare `C3` is RA's
   civilian). The HD-rebuilt TS objects in its `TS_HD` list go to TS-HD.
 - Cameos: the plain `BuildIcon_` of those objects. An HD cameo (`scripts/ts_hd_cameos.py`) goes in
   TS-HD beside its classic one in TS-Graphics-Pack. Staging copies a file two packs carry from the

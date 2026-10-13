@@ -48,39 +48,14 @@ it because TD's `LineMaxFrames = 5` sends 0–4.
 **Rule:** `LineMaxFrames <= 5` for anything using the `Lines[]` beam path.
 Related: `MAX_OBJECT_LINES = 3` (dllinterface.h ABI — cannot grow).
 
-## 4. Custom anim types DO render; the white box is the sub-object endpoint bug
+## 4. Custom anim types render; a stage without a tile draws the white box
 
-⚠️ **Corrected 2026-08-22.** This entry used to read "new anim TYPES are
-launcher-dead — a DLL-added `AnimType` renders the white placeholder regardless
-of tileset registration". That is falsified by our own Ion Cannon:
-
-- `ANIM_TD_ION_CANNON` is a **DLL-added** anim type (`adata.cpp`).
-- Its art is **mod-shipped**, not base-MEG: `TDIONSFX.ZIP`, 5.6MB, in the mod's
-  own `RED_ALERT/VFX/` directory. The code comment claiming it resolves to the
-  base game's `ionsfx` frames is wrong.
-- It is registered exactly like any other tile, 32 shapes in `RA_VFX.XML`.
-- It renders, play-verified in the superweapon arc.
-
-So a DLL-added anim type with mod-shipped art and a tileset entry is a working
-combination. `RAILFX` failed for a different, separately-documented reason: an
-anim spawned inside the firer's or the target's own cell attaches to that object
-and exports through the launcher's **sub-object** path, which draws the white
-placeholder box (`techno.cpp`, the "endpoint-box bug"). The fix — start the
-helix a full cell clear of both endpoints — was applied to `ANIM_PIFFPIFF` and
-**RAILFX was never retried after it**. RAILFX's art is fine: 12 frames, valid
-meta, real pixels, all 12 shapes registered, correct XML scope (checked).
-
-Still true: avoid the `AnimClass` ctor's `timedelay` param — vanilla never uses
-it and delayed anims export in a pre-start state.
-
-**Corrected again 2026-08-24: the cell rule is FALSE.** The white box is drawn
-for any anim STAGE that has no tile in the tileset XML (proven: bumping
-TSSONICW to 25 stages with 8 tiles declared boxed stages 8-24; the sonic
-discs now spawn inside the firer's own cell and draw no box). RAILFX at the
-time had fewer tiles declared than stages, which is what the "endpoint box"
-was. The export loop draws every layer object, anims included, as its own
-root (`dllinterface.cpp`, `CurrentDrawCount = 0` per object) — a free anim
-never becomes a sub-object by position.
+A DLL-added `AnimType` with mod-shipped art and a tileset entry renders like any other: the Ion Cannon's
+`TDIONSFX.ZIP`, the C&C3 railgun shot. The launcher draws its white placeholder box for any anim stage
+that has no tile in the tileset XML, wherever the anim sits. The export loop draws every layer object,
+anims included, as its own root (`dllinterface.cpp`, `CurrentDrawCount = 0` per object), so a free anim
+never becomes a sub-object by position. Avoid the `AnimClass` ctor's `timedelay` param: vanilla never
+uses it, and delayed anims export in a pre-start state.
 
 **Rule:** custom-art anims are viable anywhere. Declare exactly as many tiles
 as the anim has stages (have the generator patch the XML, as

@@ -303,14 +303,12 @@ The Hover MLRS keeps its own float.
   tick so sweeps read as rotation.
 
 **Mammoth Mk. II (TSHMEC) railgun.** TS has no railgun art: `[MechRailgun]` drives
-`LargeRailgunSys`, a particle system with no `Image=`. Ours is TS's helix maths (the `IsRailgun`
-branch in `techno.cpp`): 19 sparks a cell, radius 15 leptons, .03 rad per lepton, ±15 lepton jitter,
-`ANIM_RAILFX` sparks from `scripts/ts_gen_railfx.py` fading blue (25,70,205) to grey over ~1 s. It
+`LargeRailgunSys`, a particle system with no `Image=`. Ours draws C&C3's railgun shot
+(`cnc3-railgun-beam.md`) from the `IsRailgun` branch in `techno.cpp`. It
 damages units within 128 leptons of the line, any building whose cell it crosses, and the aimed
 target always: a building's aim cell can be an occupancy hole (the TSPROC dock lane) or walkable
-apron, which the sweep never finds. The Disruptor's aimed target rides its last disc. The anim heap floor is 1024 (a max-range shot lays ~150 sparks). The muzzle flash is
-TS's `gunfire.shp` (`ANIM_TS_GUNFIRE`, `Anim=TSGUNFIRE`). The coil lives 1.2 s; TS locks the gun
-until its ~2.4 s coil dies, and ours keeps the 1.5 s ROF instead.
+apron, which the sweep never finds. The Disruptor's aimed target rides its last disc. The muzzle flash is TS's `gunfire.shp`
+(`ANIM_TS_GUNFIRE`, `Anim=TSGUNFIRE`).
 
 **Disruptor (TSSONIC).** TS's wave is a screen-space pixel displacement (OpenTS `wave.cpp`), which
 the launcher can't do, and TS ships no sonic-wave art.
