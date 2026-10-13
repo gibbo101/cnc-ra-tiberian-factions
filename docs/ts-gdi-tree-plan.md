@@ -308,7 +308,7 @@ The Hover MLRS keeps its own float.
 damages units within 128 leptons of the line, any building whose cell it crosses, and the aimed
 target always: a building's aim cell can be an occupancy hole (the TSPROC dock lane) or walkable
 apron, which the sweep never finds. The Disruptor's aimed target rides its last disc. The muzzle flash is TS's `gunfire.shp`
-(`ANIM_TS_GUNFIRE`, `Anim=TSGUNFIRE`).
+(`ANIM_TS_GUNFIRE`, `Anim=TSGUNFIRE`) under the shot's own.
 
 **Disruptor (TSSONIC).** TS's wave is a screen-space pixel displacement (OpenTS `wave.cpp`), which
 the launcher can't do, and TS ships no sonic-wave art.

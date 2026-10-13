@@ -1,7 +1,7 @@
 # C&C3 railgun shot
 
 **Status:** Reference. The Mammoth Mk. II fires with C&C3's railgun shot in blue and the Ghost Stalker in orange.
-Every railgun (`IsRailgun`) draws it, and a projectile weapon can, with `RailBeam=yes`.
+Every railgun (`IsRailgun`) draws it.
 
 C&C3's upgraded Mammoth and Predator fire `FX_RailGunFire` and hit with `FX_RailGunHit`: a white-hot core in a blue
 glow, pale threads in long slow waves around it, a flare at the muzzle and a white bloom with sparks at the impact.
@@ -17,7 +17,7 @@ pieces laid along the line, plus the launcher's own beam line.
   drawn at any angle with a flare at each end, for 5 render frames.
 - **Glow:** `C3RAILGLOW` dots every 16 leptons along the core, a soft blue glow fading over 12 frames.
 - **Muzzle and impact:** `C3RAILMZ` (5 frames) and `C3RAILHIT` (12 frames), round, the impact's sparks thrown all
-  round.
+  round. The muzzle flash sits over the weapon's own `Anim=` flash (TS's `GUNFIRE`).
 - **Explosion:** where the shot lands, the warhead's explosion (`Combat_Anim`): RailShot's `Explosion=4` throws the
   C&C3 tanks' small burst on land (its damage capped at their shells' 59) and a splash on water. A warhead with no
   `Explosion` throws none.
@@ -27,11 +27,10 @@ Every piece is in the core line's colour. The Ghost Stalker's shot (`WEAPON_TSLT
 `Explosion`. C&C3's threads are left out: blue thread dots read as a helix around the line, which the shot does not
 want.
 
-`TF_Railgun_Beam` (`anim.cpp`) lays the dots, flash and impact; it returns 75 frames, TS's railgun particle life,
-which a railgun (`IsRailgun`) holds before it may fire again, so the Mk. II's rate of fire is TS's. A weapon with a
-projectile and `RailBeam=yes` draws the shot as it fires, alongside its (usually `Invisible`) bullet.
+`TF_Railgun_Beam` (`tf_railgun.cpp`) lays the dots, flash and impact; it returns 75 frames, TS's railgun particle life,
+which a railgun (`IsRailgun`) holds before it may fire again, so the Mk. II's rate of fire is TS's.
 
-A shot across the Mk. II's 8 cells lays some 130 anims, so `AnimMax` is at least 2048 (`rules.cpp`).
+A shot across the Mk. II's 8 cells lays some 130 anims that live 12 frames; `AnimMax` is at least 1024 (`rules.cpp`).
 
 ## Art
 
