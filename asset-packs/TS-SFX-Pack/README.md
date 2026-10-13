@@ -27,7 +27,7 @@ Tiberian Sun weapon, unit and structure sound effects, for Command & Conquer Rem
 
 Original Tiberian Sun assets: Electronic Arts. Prepared for Remastered by gibbo101 for Tiberian Factions.
 
-## More C&C projects by me
+## My other C&C projects
 
 - **Tiberian Factions** adds GDI and Nod as playable factions to Red Alert Remastered: [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3729834253), [ModDB](https://www.moddb.com/mods/tiberian-factions-for-red-alert), [GitHub](https://github.com/gibbo101/cnc-ra-tiberian-factions)
 - **Red Alert 2 HD Assets**: Red Alert 2 units, sounds and voices for Red Alert and Tiberian Dawn, in HD.

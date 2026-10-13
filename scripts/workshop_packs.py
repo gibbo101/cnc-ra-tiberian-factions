@@ -259,7 +259,7 @@ def readme(mod, listed, host):
         lines += [f"HD rebuilds of the {game} designs and preparation for Remastered: gibbo101."]
     else:
         lines += ["Rendered for Remastered from the game's own models by gibbo101."]
-    lines += ["", "## More C&C projects by me", ""] + [f"- {m}" for m in D.more_mods(mod)] + [""]
+    lines += ["", "## My other C&C projects", ""] + [f"- {m}" for m in D.more_mods(mod)] + [""]
     return "\n".join(lines)
 
 
