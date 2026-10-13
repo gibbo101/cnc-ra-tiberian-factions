@@ -66,8 +66,15 @@ extern bool DLLLoad(Straw& file);
 /*
 ********************************** Defines **********************************
 */
+// The type lists' lengths, each weighted by its own prime, so a save from a build whose lists differ won't load.
+#define TF_TYPE_COUNTS                                                                                                 \
+    (ANIM_COUNT * 3 + UNIT_COUNT * 5 + STRUCT_COUNT * 7 + INFANTRY_COUNT * 11 + AIRCRAFT_COUNT * 13                    \
+     + VESSEL_COUNT * 17 + WEAPON_COUNT * 19 + WARHEAD_COUNT * 23 + BULLET_COUNT * 29 + OVERLAY_COUNT * 31             \
+     + SMUDGE_COUNT * 37 + TERRAIN_COUNT * 41 + TEMPLATE_COUNT * 43 + HOUSE_COUNT * 47)
+
+// TF: the version also carries TF_TYPE_COUNTS, since adding or removing a type changes no class's size.
 #define SAVEGAME_VERSION                                                                                               \
-    (DESCRIP_MAX + 0x01000006                                                                                          \
+    (DESCRIP_MAX + 0x01000006 + TF_TYPE_COUNTS                                                                         \
      + (sizeof(AircraftClass) + sizeof(AircraftTypeClass) + sizeof(AnimClass) + sizeof(AnimTypeClass)                  \
         + sizeof(BaseClass) + sizeof(BuildingClass) + sizeof(BuildingTypeClass) + sizeof(BulletClass)                  \
         + sizeof(BulletTypeClass) + sizeof(CellClass) + sizeof(FactoryClass) + sizeof(HouseClass)                      \
