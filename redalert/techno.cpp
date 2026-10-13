@@ -3833,15 +3833,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             } else {
                 delete bullet;
             }
-            // TF: a RailBeam weapon with a projectile draws C&C3's railgun shot to the target as it fires.
-            if (weapon->IsRailBeam && !weapon->IsRailgun) {
-                Set_Beam_Line(fire_coord, target_coord, 0x0A);
-                TF_Railgun_Beam(false,
-                                (int)Coord_X(fire_coord),
-                                (int)Coord_Y(fire_coord),
-                                (int)Coord_X(target_coord) - (int)Coord_X(fire_coord),
-                                (int)Coord_Y(target_coord) - (int)Coord_Y(fire_coord));
-            }
             /*
             **	TF: the TS FireballLauncher's shot is the first particle of a stream the
             **	unit keeps spawning for the next 30 frames (TS FireStreamSys Lifetime).

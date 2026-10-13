@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render C&C3's railgun shot (FX_RailGunFire, FX_RailGunHit) as HD anim frames for the RailBeam weapons.
+"""Render C&C3's railgun shot (FX_RailGunFire, FX_RailGunHit) as HD anim frames for the railguns.
 
 C&C3 draws the shot as a core in a glow, a flare at the muzzle and a bloom with sparks at the impact
 (docs/cnc3-railgun-beam.md); here every piece is in its core line's colour. The launcher draws an exported sprite

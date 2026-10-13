@@ -73,7 +73,6 @@ WeaponTypeClass::WeaponTypeClass(char const* name)
     , IsTDPort(false)
     , IsRailgun(false)
     , IsSonic(false)
-    , IsRailBeam(false)
     , IsPrismBeam(false)
     , AmbientDamage(0)
     , Burst(1)
@@ -220,7 +219,6 @@ bool WeaponTypeClass::Read_INI(CCINIClass& ini)
         IsTurboBoosted = ini.Get_Bool(Name(), "TurboBoost", IsTurboBoosted);
         IsRailgun = ini.Get_Bool(Name(), "IsRailgun", IsRailgun);
         IsSonic = ini.Get_Bool(Name(), "IsSonic", IsSonic);
-        IsRailBeam = ini.Get_Bool(Name(), "RailBeam", IsRailBeam);
         IsPrismBeam = ini.Get_Bool(Name(), "IsPrismBeam", IsPrismBeam);
         AmbientDamage = ini.Get_Int(Name(), "AmbientDamage", AmbientDamage);
 
