@@ -534,7 +534,8 @@ A unit here is done: no open art, geometry or behaviour work.
   `SOUNDS01.MIX`, voxels at the top level.
 - **Railgun colours are TS's own:** the Ghost Stalker's `SmallRailgunSys` is orange (255,128,0), the
   Mk. II's `LargeRailgunSys` blue (25,20,255) (OpenTS `partsys.cpp` `Railgun_AI`), each drawn as one
-  thin line in palette index 0x9F and 0x0A. The Disruptor draws no `Lines[]` beam: the launcher's
+  thin line in palette index 0x9F and 0x0A, under C&C3's railgun shot in the same colour
+  (`cnc3-railgun-beam.md`). The Disruptor draws no `Lines[]` beam: the launcher's
   endpoint bursts made it read as a laser with stars on it.
 
 ---
