@@ -18,12 +18,20 @@ import json
 import os
 import re
 import shutil
+import struct
 import sys
 import zipfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import asset_packs as A  # noqa: E402
 import asset_pack_docs as D  # noqa: E402
+import mix_tools  # noqa: E402
+
+STUBS = os.path.join(A.MOD, "CCDATA", "TFASSETS.MIX")
+C3_SEATS = os.path.join(A.REPO, "redalert", "c3tanks.h")
+# Objects drawn at another object's classic size: the rail tanks are their tanks with other turrets
+SHAPE_LIKE = {"C3MK3RAIL": "C3MK3", "C3PREDRAIL": "C3PRED"}
+SHAPE_SECTION = {"UNITS": "Units", "STRUCTURES": "Structures", "VFX": "Animations"}
 
 # Launcher XML -> (folder under Data/XML, the file name for a pack)
 XML_NAMES = {
@@ -211,10 +219,19 @@ def readme(mod, listed, host):
                   "Walkers, units with rolling treads or offset turrets, and buildings with doors, docks or add-ons "
                   "use Tiberian Factions' own layouts and need the matching DLL code, which is in its "
                   f"[source]({D.REPO_URL}).", ""]
+    lines += layout(mod)
     lines += ["## Contents", ""]
     for title, names in contents(mod).items():
         lines += [f"**{title}** ({len(names)}): " + ", ".join(names), ""]
     lines += ["XML files: " + ", ".join(f"`{n}`" for n in sorted(listed.values())) + ".", ""]
+    shapes = shape_data(mod)
+    lines += ["## Shape data", "", "Each object's classic-mode SHP: its size in classic pixels and its frame count."]
+    if any("width=" not in row for rows in shapes.values() for row in rows):
+        lines[-1] += (" An object without a size has no classic stub in Tiberian Factions: a layer drawn with "
+                      "another object, or a unit drawn only in HD.")
+    lines += [""]
+    for section, rows in shapes.items():
+        lines += [f"**{section}**", "", "```"] + rows + ["```", ""]
     lines += ["## AI disclosure", ""]
     if w["game"] in ("TS", "RA2"):
         lines += ["The HD art in this pack was made with AI assistance. The 3D models behind the sprites were built "
@@ -233,6 +250,58 @@ def readme(mod, listed, host):
         lines += ["Rendered for Remastered from the game's own models by gibbo101."]
     lines += ["", "## More C&C projects by gibbo101", ""] + [f"- {m}" for m in D.more_mods(mod)] + [""]
     return "\n".join(lines)
+
+
+def layout(mod):
+    """README notes on the order of a pack's unit frames, and where a C&C3 tank seats its turret."""
+    game = A.WORKSHOP[mod]["game"]
+    if game == "RA2":
+        return ["## Frame layout", "",
+                "R2APOC and R2PRIS use the stock tank layout: frames 0-31 are the hull and 32-63 the turret, "
+                "32 facings each, counter-clockwise from north.", ""]
+    if game != "CNC3":
+        return []
+    lines = ["## Frame layout", "",
+             "C3MK3, C3PRED, C3MK3RAIL and C3PREDRAIL: frames 0-95 are the hull, 32 facings counter-clockwise from "
+             "north with 3 tread steps each (frame = 3 x facing + step; step the treads while the tank drives), "
+             "and 96-127 the turret, 32 facings. The turret frames are centred on the canvas: draw the turret over "
+             "the hull moved by its seat for the hull's facing, in classic pixels (x east, y south), for hull facings "
+             "0-31 counter-clockwise from north:",
+             ""]
+    text = open(C3_SEATS, encoding="utf-8").read()
+    for tank in ("C3MK3", "C3PRED"):
+        seats = re.search(r"_%s_seat_px\[32\]\[2\] = \{(.*?)\};" % tank.lower(), text).group(1)
+        pairs = " ".join(f"{x},{y}" for x, y in re.findall(r"\{(-?\d+), (-?\d+)\}", seats))
+        lines += [f"{tank} (and {tank}RAIL): `{pairs}`", ""]
+    return lines
+
+
+def shape_data(mod):
+    """Section -> 'NAME width=W height=H frames=N' rows: the size of the object's classic stub, one frame per tile,
+    in the source packs' tileset order."""
+    _, _, entries, blob = mix_tools.read_mix(STUBS)
+    stubs = {crc: offset for crc, offset, _ in entries}
+    out = {}
+    for pack in A.WORKSHOP[mod]["packs"]:
+        for kind in A.KINDS:
+            path = A.tileset_xml_of(pack, kind)
+            if not os.path.exists(path):
+                continue
+            section = SHAPE_SECTION.get(kind, "Terrain (" + kind[len("TERRAIN_"):].lower() + ")")
+            counts = {}
+            for name in re.findall(r"<Name>\s*([^<\s]+)\s*</Name>", open(path, encoding="utf-8-sig").read()):
+                counts[name.upper()] = counts.get(name.upper(), 0) + 1
+            rows = out.setdefault(section, [])
+            for name, frames in counts.items():
+                offset = stubs.get(mix_tools.ww_crc(SHAPE_LIKE.get(name, name) + ".SHP"))
+                if offset is None:
+                    row = f"{name} frames={frames}"
+                else:
+                    width, height = struct.unpack("<2H", blob[offset + 6:offset + 10])
+                    row = f"{name} width={width} height={height} frames={frames}"
+                if row not in rows:
+                    rows.append(row)
+    return {section: rows for section, rows in out.items() if rows}
 
 
 def build(mod, folder, host="RA"):
