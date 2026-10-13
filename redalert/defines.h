@@ -3036,7 +3036,6 @@ typedef enum AnimType : short
     ANIM_TS_FSGRND,     // TS FSGRND: sparks where something on the ground meets a live Firestorm.
     ANIM_TS_FSAIR,      // TS FSAIR: sparks where something in the air meets a live Firestorm (19 frames).
     ANIM_C3_RAILGLOW,   // C&C3 railgun shot: a glow dot on the core line (TF_Railgun_Beam).
-    ANIM_C3_RAILTHRD,   // C&C3 railgun shot: a dot of one of its threads.
     ANIM_C3_RAILMZ,     // C&C3 railgun muzzle flash.
     ANIM_C3_RAILHIT,    // C&C3 railgun impact bloom and sparks.
 
