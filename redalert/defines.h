@@ -1413,6 +1413,7 @@ typedef enum BulletType : char
     BULLET_TSBALLISTIC2,    // Firestorm [Ballistic2]: the Juggernaut's arcing, inaccurate 120MM shell.
     BULLET_TSPULSBALL,      // TS [PulsPr]: the EMP Cannon's pulse ball. It lands as an E.M. Pulse, doing no damage.
     BULLET_TSCANNON,        // TS [Cannon]: the Tick Tank's arcing 120MM shell.
+    BULLET_TSCANNON2,       // TS [Cannon2] flying level: the Mammoth Mk. I's 120MM shell.
 
     BULLET_COUNT,
     BULLET_FIRST = 0
@@ -3039,6 +3040,50 @@ typedef enum AnimType : short
     ANIM_C3_RAILGLOWO,  // The Ghost Stalker's orange C&C3 railgun shot: a glow dot on the core line.
     ANIM_C3_RAILMZO,    // The Ghost Stalker's orange railgun muzzle flash.
     ANIM_C3_RAILHITO,   // The Ghost Stalker's orange railgun impact bloom and sparks.
+    ANIM_TS_TWLT070,    // TS TWLT070: one of the five blasts a TS object dies in, picked at random (TF_TS_Death_Anim).
+    ANIM_TS_TWLT036,    // TS TWLT036: a large debris shard bursting where it lands.
+    ANIM_TS_BANG48,     // TS S_BANG48: one of the five TS death blasts.
+    ANIM_TS_BRNL58,     // TS S_BRNL58: one of the five TS death blasts.
+    ANIM_TS_TUMU60,     // TS S_TUMU60: one of the five TS death blasts.
+    ANIM_TS_XGRYMED1,   // TS XGRYMED1: a mid-sized [HE] or [ARTYHE] impact.
+    ANIM_TS_XGRYMED2,   // TS XGRYMED2: a mid-sized [HE] or [ARTYHE] impact.
+    ANIM_TS_EXPLOMED,   // TS EXPLOMED: a large [HE], [ARTYHE] or [ORCAHE] impact.
+    ANIM_TS_EXPLOLRG,   // TS EXPLOLRG: the largest [HE], [ARTYHE] or [ORCAHE] impact.
+    ANIM_TS_FIRE1,      // TS FIRE1: a TS building's big fire, burning down into FIRE2.
+    ANIM_TS_FIRE2,      // TS FIRE2: a TS building's fire, burning down into FIRE3.
+    ANIM_TS_FIRE3,      // TS FIRE3: a TS building's small fire.
+    ANIM_TS_DEATH_A,    // TS DEATH_A: a TS soldier's body, left after a death sequence. One of six picked at random.
+    ANIM_TS_DEATH_B,
+    ANIM_TS_DEATH_C,
+    ANIM_TS_DEATH_D,
+    ANIM_TS_DEATH_E,
+    ANIM_TS_DEATH_F,
+    ANIM_TS_FLAMEGUY,   // TS FLAMEGUY: a burning TS soldier running for water, then collapsing (TF_TS_Flaming_Guy_AI).
+    ANIM_TS_ELECTRO,    // TS ELECTRO: an electrocuted TS soldier, then a FIRE1 where he stood.
+    ANIM_TS_H2O_EXP1,   // TS H2O_EXP1: the largest splash for a TS shot landing in water.
+    ANIM_TS_H2O_EXP2,   // TS H2O_EXP2: a mid-sized splash.
+    ANIM_TS_H2O_EXP3,   // TS H2O_EXP3: the smallest splash.
+    ANIM_TS_FSDF,       // TS GAFSDF_A: the glow over a live Firestorm Wall Section, looping while the field is up.
+    ANIM_TS_DBRIS1LG,  // TS DBRIS1LG: a large metal shard thrown by a TS death; it bursts as TWLT036 where it lands.
+    ANIM_TS_DBRIS2LG,
+    ANIM_TS_DBRIS3LG,
+    ANIM_TS_DBRIS4LG,
+    ANIM_TS_DBRIS5LG,
+    ANIM_TS_DBRIS6LG,
+    ANIM_TS_DBRIS7LG,
+    ANIM_TS_DBRIS8LG,
+    ANIM_TS_DBRIS9LG,
+    ANIM_TS_DBRIS10LG,
+    ANIM_TS_DBRIS1SM,  // TS DBRIS1SM: a small metal shard thrown by a TS death.
+    ANIM_TS_DBRIS2SM,
+    ANIM_TS_DBRIS3SM,
+    ANIM_TS_DBRIS4SM,
+    ANIM_TS_DBRIS5SM,
+    ANIM_TS_DBRIS6SM,
+    ANIM_TS_DBRIS7SM,
+    ANIM_TS_DBRIS8SM,
+    ANIM_TS_DBRIS9SM,
+    ANIM_TS_DBRIS10SM,
 
     ANIM_COUNT,
     ANIM_FIRST = 0
@@ -4356,6 +4401,15 @@ typedef enum VocType : short
     VOC_TS_GATEUP1,  // TS gate rising (GATEUP1, [General] GateUp=). Bundled TSGATEUP1.WAV.
     VOC_TSLACHG2R,   // The Tesla Coil charge-up (TSLACHG2) reversed: the Tesla gate's arcs winding down. TSLACHG2R.WAV.
     VOC_TS_RKETINF1, // TS Rocket Infantry's bazooka (RKETINF1, [Bazooka] Report=). Bundled TSRKETINF1.WAV.
+    VOC_TS_EXPNEW06, // TS debris burst (TWLT036 Report=EXPNEW06). Bundled TSEXPNEW06.WAV.
+    VOC_TS_EXPNEW09, // TS large blast (TWLT070 and EXPLOLRG Report=EXPNEW09). Bundled TSEXPNEW09.WAV.
+    VOC_TS_EXPNEW11, // TS blast (S_BANG48 Report=EXPNEW11). Bundled TSEXPNEW11.WAV.
+    VOC_TS_EXPNEW12, // TS blast (S_BRNL58, XGRYMED2 and EXPLOMED Report=EXPNEW12). Bundled TSEXPNEW12.WAV.
+    VOC_TS_EXPNEW15, // TS blast (S_TUMU60 and XGRYMED1 Report=EXPNEW15). Bundled TSEXPNEW15.WAV.
+    VOC_TS_ELECTRO1, // TS electrocution (ELECTRO Report=ELECTRO1). Bundled TSELECTRO1.WAV.
+    VOC_TS_SSPLASH1, // TS splash (H2O_EXP1 Report=SSPLASH1). Bundled TSSSPLASH1.WAV.
+    VOC_TS_SSPLASH2, // TS splash (H2O_EXP2 Report=SSPLASH2). Bundled TSSSPLASH2.WAV.
+    VOC_TS_SSPLASH3, // TS splash (H2O_EXP3 Report=SSPLASH3). Bundled TSSSPLASH3.WAV.
 
     VOC_COUNT,
     VOC_FIRST = 0
