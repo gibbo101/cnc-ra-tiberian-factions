@@ -2410,6 +2410,9 @@ static AnimTypeClass const TsDig(ANIM_TS_DIG, "TSDIG", 64, 18, false, false, fal
 
 // TS Ion Cannon strike (SPC_TS_ION_CANNON): the beam deals all its damage (AnimClass::Middle); the ring is TS's
 // IonBlast=RING1 flash. Art from scripts/ts_pack_ion.py, the beam pre-tiled, as the launcher can't tile anims.
+static AnimTypeClass const TsIonBeam(ANIM_TS_ION_BEAM, "TSIONBM", 48, 11, false, false, false, true, true, false, false, false, false, 0, 2, 0, 0, 0, 15, 0, VOC_TS_ION1, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsIonRing(ANIM_TS_ION_RING, "TSIONRNG", 48, 7, false, false, false, false, false, false, true, false, false, 0, 1, 0, 0, 0, 15, 0, VOC_NONE, ANIM_NONE, 15, 0x100);
+
 // C&C3's railgun shot (scripts/c3_rail_beam.py), laid along the line by TF_Railgun_Beam: core glow dots, the muzzle
 // flash and the impact, in blue and in the Ghost Stalker's orange (the O set).
 static AnimTypeClass const C3RailGlow(ANIM_C3_RAILGLOW, "C3RAILGLOW", 12, 0, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
@@ -2418,9 +2421,6 @@ static AnimTypeClass const C3RailHit(ANIM_C3_RAILHIT, "C3RAILHIT", 48, 0, false,
 static AnimTypeClass const C3RailGlowO(ANIM_C3_RAILGLOWO, "C3RAILGLOWO", 12, 0, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
 static AnimTypeClass const C3RailMzO(ANIM_C3_RAILMZO, "C3RAILMZO", 36, 0, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 5, 0, VOC_NONE, ANIM_NONE, 5, 0x100);
 static AnimTypeClass const C3RailHitO(ANIM_C3_RAILHITO, "C3RAILHITO", 48, 0, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
-
-static AnimTypeClass const TsIonBeam(ANIM_TS_ION_BEAM, "TSIONBM", 48, 11, false, false, false, true, true, false, false, false, false, 0, 2, 0, 0, 0, 15, 0, VOC_TS_ION1, ANIM_NONE, 15, 0x100);
-static AnimTypeClass const TsIonRing(ANIM_TS_ION_RING, "TSIONRNG", 48, 7, false, false, false, false, false, false, true, false, false, 0, 1, 0, 0, 0, 15, 0, VOC_NONE, ANIM_NONE, 15, 0x100);
 
 // TS Drop Pod strike (SPC_TS_DROPPODS, OpenTS droppod.cpp), art from scripts/ts_pack_pods.py. The husks lie on the
 // ground layer for 5 loops, so the trooper walks over its pod; the falling pod lays SMOKEY every 6 frames.

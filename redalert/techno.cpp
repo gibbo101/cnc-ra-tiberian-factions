@@ -3704,6 +3704,22 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         return (true);
     }
 
+    // TF: draws the launcher's laser line from source to dest in a palette colour, for its 5 render frames.
+    void TechnoClass::Set_Beam_Line(COORDINATE source, COORDINATE dest, unsigned char colour)
+    {
+        int x, y, x1, y1;
+        Map.Coord_To_Pixel(source, x, y);
+        Map.Coord_To_Pixel(dest, x1, y1);
+        Lines[0][0] = x + Map.TacPixelX;
+        Lines[0][1] = y + Map.TacPixelY;
+        Lines[0][2] = x1 + Map.TacPixelX;
+        Lines[0][3] = y1 + Map.TacPixelY;
+        Lines[0][4] = colour;
+        LineCount = 1;
+        LineFrame = 0;
+        LineMaxFrames = 5;
+    }
+
     /***********************************************************************************************
      * TechnoClass::Fire_At -- Fires projectile at target specified.                               *
      *                                                                                             *
@@ -3725,21 +3741,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
      *   07/03/1995 JLB : Moving platforms fire inaccurate projectiles.                            *
      *   02/22/1996 JLB : Handles camera "weapon" case.                                            *
      *=============================================================================================*/
-    void TechnoClass::Set_Beam_Line(COORDINATE source, COORDINATE dest, unsigned char colour)
-    {
-        int x, y, x1, y1;
-        Map.Coord_To_Pixel(source, x, y);
-        Map.Coord_To_Pixel(dest, x1, y1);
-        Lines[0][0] = x + Map.TacPixelX;
-        Lines[0][1] = y + Map.TacPixelY;
-        Lines[0][2] = x1 + Map.TacPixelX;
-        Lines[0][3] = y1 + Map.TacPixelY;
-        Lines[0][4] = colour;
-        LineCount = 1;
-        LineFrame = 0;
-        LineMaxFrames = 5;
-    }
-
     BulletClass* TechnoClass::Fire_At(TARGET target, int which)
     {
         assert(IsActive);
