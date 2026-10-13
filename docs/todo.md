@@ -42,10 +42,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 - **Rail tanks share the plain tanks' frames, before the packs ship.** `C3PREDRAIL.ZIP` and `C3MK3RAIL.ZIP`
   repeat 96 of their 128 frames; ship only the 32 rail-turret frames and point the other tiles at `C3PRED.ZIP` /
   `C3MK3.ZIP`, as `TDC17P` does with `TDC17.ZIP`, then check the rail Predator in game.
-- **TD copies of the three asset packs, with the packs' first release.** A `game_type` holding both "RA" and
-  "TD" lists one item in both games, but each game reads art from its own `SRGB/` folder. Test whether TD draws
-  art from `RED_ALERT/`: if it does, one item serves both; if not, a separate TD item, so TF players don't
-  download TD copies.
+- **TD copies of the three asset packs, with the packs' first release.** Each goes up as its own item with
+  `game_type` TD and its art under `SRGB/TIBERIAN_DAWN/` (TD reads only that folder), with a TD tileset XML, so
+  TF players don't download TD copies.
 - **Grey out saves that can't load, before the next release.** The save version refuses a save whose class
   sizes or type-list lengths differ (`saveload.cpp`), and InstanceServerG crashes on a refused load (an assert in
   its save-load manager). Grey the Load button with a reason for those saves, vanilla and other mods' saves
