@@ -45,11 +45,13 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 - **TD copies of the three asset packs, with the packs' first release.** Each goes up again as its own item
   with `game_type` TD, as other authors pair RA and TD items (the launcher has no shared game type), so TF
   players don't download TD copies. First load one in TD on the desktop and check the launcher log.
-- **Save compatibility, before campaigns ship.** The save version already refuses a save whose class sizes or
-  type-list lengths differ (`saveload.cpp`); a reorder of equal length still gets through. Left: find what the
-  launcher shows for a refused save, flag saves that need the TS-HD-Assets pack when it is missing, and autosave
-  at every campaign mission start, so a layout-changing update costs at most the mission in progress. Campaigns
-  wait for a stable roster (every faction's types, TS Nod included).
+- **Grey out saves that can't load, before the next release.** The save version refuses a save whose class
+  sizes or type-list lengths differ (`saveload.cpp`), and InstanceServerG crashes on a refused load (an assert in
+  its save-load manager). Grey the Load button with a reason for those saves, vanilla and other mods' saves
+  included, using the load screen's disabled state that EA uses for a missing custom map.
+- **Save compatibility, before campaigns ship.** Flag saves that need the TS-HD-Assets pack when it is missing,
+  and autosave at every campaign mission start, so a layout-changing update costs at most the mission in
+  progress. A reorder of equal length still passes the save version. Campaigns wait for a stable roster.
 - **Map editor loads the TS-HD-Assets pack with Tiberian Factions.** The pack carries the TS art TF's XML
   points at, so the editor must load it whenever TF is active (from the Mods folder or the Workshop cache)
   and look up art across every active mod. `cnc-map-editor` already merges several mods' manifests.
