@@ -2,20 +2,20 @@
 """The C&C3 tanks with their railgun upgrade, for the C&C3 pack: C3MK3RAIL and C3PREDRAIL.
 
 C&C3's railgun upgrade shows the UGRAIL meshes and hides nothing: a sleeve round each barrel, a cable over the
-turret and a forked tip past the muzzle, on the Mammoth's texture sheet for both tanks. Each RAIL unit is its tank's
-shipped tileset (C3MK3, C3PRED: hull 0-95, turret 96-127, scripts/c3_pack_tanks.py) with the 32 turret frames
-re-rendered with the rails and a baked glow on their blue conduit (scripts/c3_render.py --rails --glow). Only the
-pack carries them: Tiberian Factions has no unit that draws them (asset_packs.PACK_ONLY).
+turret and a forked tip past the muzzle, on the Mammoth's texture sheet for both tanks. Each RAIL unit has its
+tank's tileset layout (C3MK3, C3PRED: hull 0-95, turret 96-127, scripts/c3_pack_tanks.py): its hull tiles name the
+tank's own ZIP members, and its ZIP holds only the 32 turret frames re-rendered with the rails and a baked glow on
+their blue conduit (scripts/c3_render.py --rails --glow). Only the pack carries them: Tiberian Factions has no unit
+that draws them (asset_packs.PACK_ONLY).
 
   extract <stream dir>   adds the UGRAIL meshes to model/<model>.npz as model/<model>_rail.npz
   render                 renders the 32 rail turret facings to renders/<model>_rail/
-  pack                   writes the RAIL ZIPs and their tiles where scripts/asset_packs.py routes the names
+  pack                   writes the RAIL turret ZIPs and their tiles where scripts/asset_packs.py routes the names
 
 Inputs (set C3_ART_DIR): model/<model>.npz from tools/cnc3/c3_extract_model.py (workspace), and for extract the
 C&C3 stream folder that tool reads.
 License: GPL v3.
 """
-import io
 import json
 import os
 import subprocess
@@ -134,29 +134,24 @@ def packed_turret(path, canvas, drop):
     return out
 
 
-def shipped_frames(tank):
-    """The tank's shipped frames as full canvases, in tileset order."""
-    frames = []
+def canvas_size(tank):
+    """The width of the tank's shipped frame canvas."""
     with zipfile.ZipFile(asset_packs.art_zip(tank, "UNITS")) as z:
-        shapes = asset_packs.shape_frames(tank, "UNITS")
-        for tga in (shapes[i] for i in sorted(shapes)):
-            meta = json.loads(z.read(tga[:-4] + ".meta"))
-            full = Image.new("RGBA", tuple(meta["size"]), (0, 0, 0, 0))
-            full.paste(Image.open(io.BytesIO(z.read(tga))).convert("RGBA"), tuple(meta["crop"][:2]))
-            frames.append(full)
-    return frames
+        member = asset_packs.shape_frames(tank, "UNITS")[0]
+        return json.loads(z.read(member[:-4] + ".meta"))["size"][0]
 
 
 def pack():
     drops = json.load(open(os.path.join(HERE, "unit_art_drop.json")))
     for model, (tank, rail, *_) in TANKS.items():
-        frames = shipped_frames(tank)
-        canvas = frames[0].width
-        for f in range(FACINGS):
-            frames[TURRET + f] = packed_turret(os.path.join(ART, "renders", model + "_rail", f"frame-{f:04d}.png"),
-                                               canvas, drops[tank])
-        P.write_zip(asset_packs.art_zip(rail, "UNITS"), rail.lower(), frames)
-        P.patch_tileset(rail, len(frames))
+        canvas = canvas_size(tank)
+        turret = [packed_turret(os.path.join(ART, "renders", model + "_rail", f"frame-{f:04d}.png"), canvas, drops[tank])
+                  for f in range(FACINGS)]
+        P.write_zip(asset_packs.art_zip(rail, "UNITS"), rail.lower(), turret, TURRET)
+        hull = asset_packs.shape_frames(tank, "UNITS")
+        frames = [f"{tank.lower()}\\{hull[i]}" for i in range(TURRET)]
+        frames += [f"{rail.lower()}\\{rail.lower()}-{TURRET + f:04d}.tga" for f in range(FACINGS)]
+        P.patch_tileset(rail, len(frames), frames)
 
 
 def main(argv):

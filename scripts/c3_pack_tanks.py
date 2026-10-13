@@ -80,9 +80,10 @@ def tga_bytes(img):
     return buf.getvalue()
 
 
-def write_zip(path, name, frames):
+def write_zip(path, name, frames, first=0):
+    """The frames as <name>-NNNN members numbered from first, each cropped symmetrically round its art."""
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
-        for i, img in enumerate(frames):
+        for i, img in enumerate(frames, first):
             base = f"{name}-{i:04d}"
             W, H = img.width, img.height
             bb = img.getbbox() or (W // 2 - 1, H // 2 - 1, W // 2 + 1, H // 2 + 1)
@@ -94,7 +95,8 @@ def write_zip(path, name, frames):
     print(f"wrote {path} ({len(frames)} frames)")
 
 
-def patch_tileset(name, count):
+def patch_tileset(name, count, frames=None):
+    """The object's tiles in its UNITS tileset: shape i takes frames[i] (zip\\member), or its own ZIP's member i."""
     import re
     sub = name.lower()
     units_xml = asset_packs.tileset_xml(name, "UNITS")
@@ -102,7 +104,8 @@ def patch_tileset(name, count):
     xml = re.sub(r"\t*<Tile>\s*<Key>\s*<Name>" + re.escape(name) + r"</Name>.*?</Tile>\n?", "", xml, flags=re.S)
     block = ('\t<Tile>\n\t\t<Key>\n\t\t\t<Name>%s</Name>\n\t\t\t<Shape>%d</Shape>\n\t\t</Key>\n'
              '\t\t<Value>\n\t\t\t<Frames>\n\t\t\t\t<Frame>%s</Frame>\n\t\t\t</Frames>\n\t\t</Value>\n\t</Tile>\n')
-    blocks = "".join(block % (name, i, f"{sub}\\{sub}-{i:04d}.tga") for i in range(count))
+    frames = frames or [f"{sub}\\{sub}-{i:04d}.tga" for i in range(count)]
+    blocks = "".join(block % (name, i, frames[i]) for i in range(count))
     idx = xml.rindex("</Tiles>")
     open(units_xml, "w", encoding="utf-8").write(xml[:idx] + blocks + xml[idx:])
     print(f"patched {os.path.basename(units_xml)}: {name} -> {count} tiles")
