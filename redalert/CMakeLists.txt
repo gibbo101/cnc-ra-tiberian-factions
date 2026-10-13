@@ -202,6 +202,7 @@ if(BUILD_REMASTERRA)
         dllinterfaceeditor.cpp
         tf_launcher.cpp
         tf_asset_pack.cpp
+        tf_railgun.cpp
         sidebarglyphx.cpp
         ${REDALERT_SRC}
         ${REDALERT_HEADERS}
