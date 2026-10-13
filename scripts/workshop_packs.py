@@ -31,6 +31,11 @@ STUBS = os.path.join(A.MOD, "CCDATA", "TFASSETS.MIX")
 C3_SEATS = os.path.join(A.REPO, "redalert", "c3tanks.h")
 # Objects drawn at another object's classic size: the rail tanks are their tanks with other turrets
 SHAPE_LIKE = {"C3MK3RAIL": "C3MK3", "C3PREDRAIL": "C3PRED"}
+# Units with no classic stub that take a stock image's (idata.cpp, udata.cpp), and those images' classic sizes as
+# Red Alert's own MIX files hold them (E1.SHP in REDALERT.MIX/HIRES.MIX, MCV.SHP in MAIN.MIX/CONQUER.MIX)
+STOCK_IMAGE = {"TSE1": "E1", "TSE2": "E1", "TSE3": "E1", "TSENGINEER": "E1", "TSGHOST": "E1", "TSMEDIC": "E1",
+               "TSMCV": "MCV"}
+STOCK_SIZE = {"E1": (50, 39), "MCV": (48, 48)}
 SHAPE_SECTION = {"UNITS": "Units", "STRUCTURES": "Structures", "VFX": "Animations"}
 
 # Launcher XML -> (folder under Data/XML, the file name for a pack)
@@ -226,9 +231,9 @@ def readme(mod, listed, host):
     lines += ["XML files: " + ", ".join(f"`{n}`" for n in sorted(listed.values())) + ".", ""]
     shapes = shape_data(mod)
     lines += ["## Shape data", "", "Each object's classic-mode SHP: its size in classic pixels and its frame count."]
-    if any("width=" not in row for rows in shapes.values() for row in rows):
-        lines[-1] += (" An object without a size has no classic stub in Tiberian Factions: a layer drawn with "
-                      "another object, or a unit drawn only in HD.")
+    if any("(" in row for rows in shapes.values() for row in rows):
+        lines[-1] += (" A unit marked with a stock image takes that image's size; a layer has no SHP of its own and "
+                      "is drawn with the object named.")
     lines += [""]
     for section, rows in shapes.items():
         lines += [f"**{section}**", "", "```"] + rows + ["```", ""]
@@ -294,14 +299,32 @@ def shape_data(mod):
             rows = out.setdefault(section, [])
             for name, frames in counts.items():
                 offset = stubs.get(mix_tools.ww_crc(SHAPE_LIKE.get(name, name) + ".SHP"))
-                if offset is None:
-                    row = f"{name} frames={frames}"
+                if name in STOCK_IMAGE:
+                    width, height = STOCK_SIZE[STOCK_IMAGE[name]]
+                    row = f"{name} width={width} height={height} frames={frames} (stock {STOCK_IMAGE[name]} image)"
+                elif offset is None:
+                    parents = [n for n in counts if n != name and name.startswith(n)] + \
+                        [n for n in all_names(mod) if n != name and name.startswith(n)]
+                    parent = max(parents, key=len) if parents else name[:-1]
+                    row = f"{name} frames={frames} (layer of {parent})"
                 else:
                     width, height = struct.unpack("<2H", blob[offset + 6:offset + 10])
                     row = f"{name} width={width} height={height} frames={frames}"
                 if row not in rows:
                     rows.append(row)
     return {section: rows for section, rows in out.items() if rows}
+
+
+def all_names(mod):
+    """Every object name in the mod's source packs' tilesets."""
+    names = set()
+    for pack in A.WORKSHOP[mod]["packs"]:
+        for kind in A.KINDS:
+            path = A.tileset_xml_of(pack, kind)
+            if os.path.exists(path):
+                names.update(n.upper() for n in re.findall(r"<Name>\s*([^<\s]+)\s*</Name>",
+                                                            open(path, encoding="utf-8-sig").read()))
+    return names
 
 
 def build(mod, folder, host="RA"):

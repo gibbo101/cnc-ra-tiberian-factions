@@ -1,13 +1,13 @@
 [h1]Shape data[/h1]
 
-Each object's classic-mode SHP: its size in classic pixels and its frame count. An object without a size has no classic stub in Tiberian Factions: a layer drawn with another object, or a unit drawn only in HD.
+Each object's classic-mode SHP: its size in classic pixels and its frame count. A unit marked with a stock image takes that image's size; a layer has no SHP of its own and is drawn with the object named.
 
 [b]Units[/b]
 
 [code]
 TSTITN width=56 height=56 frames=128
 TSHARV width=72 height=72 frames=64
-TSMCV frames=32
+TSMCV width=48 height=48 frames=32 (stock MCV image)
 TSSMEC width=48 height=48 frames=128
 TS4TNK width=64 height=64 frames=64
 TSAPC width=48 height=48 frames=64
@@ -25,17 +25,17 @@ TSSUBTANK width=48 height=48 frames=113
 TSHUNT width=48 height=48 frames=8
 TSLIMP width=24 height=24 frames=20
 TSJUGG width=56 height=56 frames=202
-TSE1 frames=292
-TSE2 frames=292
-TSENGINEER frames=292
-TSGHOST frames=292
-TSMEDIC frames=307
+TSE1 width=50 height=39 frames=292 (stock E1 image)
+TSE2 width=50 height=39 frames=292 (stock E1 image)
+TSENGINEER width=50 height=39 frames=292 (stock E1 image)
+TSGHOST width=50 height=39 frames=292 (stock E1 image)
+TSMEDIC width=50 height=39 frames=307 (stock E1 image)
 TSJUMPJET width=50 height=39 frames=451
 TSORCATRAN width=62 height=62 frames=32
 TSTTNK width=48 height=48 frames=64
-TSJUGGBAY frames=15
-TSTITNBAY frames=1
-TSE3 frames=292
+TSJUGGBAY frames=15 (layer of TSJUGG)
+TSTITNBAY frames=1 (layer of TSTITN)
+TSE3 width=50 height=39 frames=292 (stock E1 image)
 [/code]
 
 [b]Structures[/b]
@@ -45,27 +45,27 @@ TSWALL width=24 height=24 frames=48
 TSNWALL width=24 height=24 frames=48
 TSGATEH width=72 height=24 frames=20
 TSGATEHMAKE width=72 height=24 frames=10
-TSGATEHX frames=12
-TSGATEHL frames=4
+TSGATEHX frames=12 (layer of TSGATEH)
+TSGATEHL frames=4 (layer of TSGATEH)
 TSGATEV width=24 height=72 frames=20
 TSGATEVMAKE width=24 height=72 frames=10
-TSGATEVX frames=66
-TSGATEVL frames=40
+TSGATEVX frames=66 (layer of TSGATEV)
+TSGATEVL frames=40 (layer of TSGATEV)
 TSNGATEH width=72 height=24 frames=14
 TSNGATEHMAKE width=72 height=24 frames=7
-TSNGATEHX frames=12
-TSNGATEHL frames=4
+TSNGATEHX frames=12 (layer of TSNGATEH)
+TSNGATEHL frames=4 (layer of TSNGATEH)
 TSNGATEV width=24 height=72 frames=14
 TSNGATEVMAKE width=24 height=72 frames=7
-TSNGATEVX frames=48
-TSNGATEVL frames=28
+TSNGATEVX frames=48 (layer of TSNGATEV)
+TSNGATEVL frames=28 (layer of TSNGATEV)
 TSCTWR width=48 height=72 frames=2
 TSCTWRMAKE width=48 height=72 frames=17
-TSVULCT frames=128
-TSROCKT frames=128
-TSCSAMT frames=128
-TSCTWRX frames=50
-TSWEAP2 frames=18
+TSVULCT frames=128 (layer of TSVULC)
+TSROCKT frames=128 (layer of TSROCK)
+TSCSAMT frames=128 (layer of TSCSAM)
+TSCTWRX frames=50 (layer of TSCTWR)
+TSWEAP2 frames=18 (layer of TSWEAP)
 TSSILO width=48 height=72 frames=128
 TSSILOMAKE width=48 height=72 frames=24
 TSPROCFR width=96 height=120 frames=40
@@ -93,7 +93,7 @@ TSDPSA width=48 height=72 frames=10
 TSDPSAMAKE width=48 height=72 frames=36
 TSDEPT width=72 height=72 frames=70
 TSDEPTMAKE width=72 height=72 frames=19
-TSDEPTRP frames=14
+TSDEPTRP frames=14 (layer of TSDEPT)
 TSHPAD width=48 height=72 frames=16
 TSHPADMAKE width=48 height=72 frames=24
 TSDROP width=96 height=96 frames=40
@@ -119,8 +119,8 @@ TSDWEAPDR width=96 height=72 frames=24
 TSDWEAPUD width=96 height=72 frames=4
 TSTICK width=48 height=48 frames=128
 TSTICKMAKE width=48 height=48 frames=25
-TSTICKT frames=128
-TSPLUGP frames=96
+TSTICKT frames=128 (layer of TSTICK)
+TSPLUGP frames=96 (layer of TSPLUG)
 TSWEAPNP width=96 height=96 frames=64
 TSDWEAPNP width=96 height=72 frames=240
 [/code]
@@ -175,23 +175,23 @@ TSDSHP width=123 height=123 frames=4
 [b]Terrain (temperate)[/b]
 
 [code]
-TSPROCBB frames=15
-TSWEAPBB frames=9
-TSDWEAPBB frames=9
+TSPROCBB frames=15 (layer of TSPROC)
+TSWEAPBB frames=9 (layer of TSWEAP)
+TSDWEAPBB frames=9 (layer of TSDWEAP)
 [/code]
 
 [b]Terrain (snow)[/b]
 
 [code]
-TSPROCBB frames=15
-TSWEAPBB frames=9
-TSDWEAPBB frames=9
+TSPROCBB frames=15 (layer of TSPROC)
+TSWEAPBB frames=9 (layer of TSWEAP)
+TSDWEAPBB frames=9 (layer of TSDWEAP)
 [/code]
 
 [b]Terrain (interior)[/b]
 
 [code]
-TSPROCBB frames=15
-TSWEAPBB frames=9
-TSDWEAPBB frames=9
+TSPROCBB frames=15 (layer of TSPROC)
+TSWEAPBB frames=9 (layer of TSWEAP)
+TSDWEAPBB frames=9 (layer of TSDWEAP)
 [/code]
