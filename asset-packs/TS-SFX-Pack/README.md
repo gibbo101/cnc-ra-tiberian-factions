@@ -4,7 +4,7 @@ Tiberian Sun weapon, unit and structure sound effects, for Command & Conquer Rem
 
 ## Contents
 
-**Sounds (Data/AUDIO)** (36): TS120MMX9, TSBIGGGUN1, TSCHAINGN1, TSCOMMUP1, TSCREDDWN1, TSCREDUP1, TSDEPLOY, TSEXPNEW10, TSEXPNEW13, TSEXPNEW14, TSFIRSTRM1, TSGATEDWN1, TSGATEUP1, TSGLNCH4, TSGUN4, TSHEALER1, TSHUNTR2, TSINFGUN3, TSION1, TSJUGGER1, TSJUMPJET1, TSLIMPBOM1, TSLIMPC3, TSLIMPC4, TSLIMPQ3, TSLIMPQ4, TSMETEOR, TSMISL1, TSORCADWN1, TSORCAMIS1, TSORCAUP1, TSPLACE2, TSPLSECAN2, TSRADARDN1, TSRKETINF1, TSSAMSHOT1
+**Sounds (Data/AUDIO)** (44): TS120MMF, TS120MMX9, TSBIGGGUN1, TSCHAINGN1, TSCOMMUP1, TSCREDDWN1, TSCREDUP1, TSDEPLOY, TSDROPDWN1, TSDROPUP1, TSEXPNEW10, TSEXPNEW13, TSEXPNEW14, TSFIRSTRM1, TSFLAMTNK1, TSGATEDWN1, TSGATEUP1, TSGLNCH4, TSGUN4, TSHEALER1, TSHOVRMIS1, TSHUNTR2, TSINFGUN3, TSION1, TSJUGGER1, TSJUMPJET1, TSLIMPBOM1, TSLIMPC3, TSLIMPC4, TSLIMPQ3, TSLIMPQ4, TSMETEOR, TSMISL1, TSORCADWN1, TSORCAMIS1, TSORCAUP1, TSPLACE2, TSPLSECAN2, TSRADARDN1, TSRAILUSE5, TSRKETINF1, TSSAMSHOT1, TSSONIC4, TSSUBDRIL1
 
 ## Using it
 
@@ -30,6 +30,8 @@ Original Tiberian Sun assets: Electronic Arts. Prepared for Remastered by gibbo1
 ## More C&C projects by gibbo101
 
 - **Tiberian Factions** adds GDI and Nod as playable factions to Red Alert Remastered: [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3729834253), [ModDB](https://www.moddb.com/mods/tiberian-factions-for-red-alert), [GitHub](https://github.com/gibbo101/cnc-ra-tiberian-factions)
+- **Red Alert 2 HD Assets**: Red Alert 2 units, sounds and voices for Red Alert, in HD.
+- **C&C3 Tiberium Wars Assets**: Command & Conquer 3 units, sounds and voices for Red Alert, in HD.
 - **OpenTS Pad** ports the OpenTS rebuild of Tiberian Sun to Linux and the Steam Deck, with controller play: [GitHub](https://github.com/gibbo101/opents-pad)
 - **Renegade Pad** brings controller play to C&C Renegade (an OpenW3D fork, built for the Steam Deck): [GitHub](https://github.com/gibbo101/renegade-pad)
 - **C&C Map Editor** is a Linux-native, mod-aware map editor for C&C Remastered (Red Alert and Tiberian Dawn): [GitHub](https://github.com/gibbo101/cnc-map-editor)
