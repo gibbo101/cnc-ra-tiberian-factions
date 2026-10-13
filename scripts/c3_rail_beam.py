@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Render C&C3's railgun shot (FX_RailGunFire, FX_RailGunHit) as HD anim frames for the RailBeam weapons.
 
-C&C3 draws the shot as a white-hot core in a blue glow, a flare at the muzzle and a white bloom with sparks at the
-impact (docs/cnc3-railgun-beam.md). The launcher draws an exported sprite unrotated, so every piece here is round and
-TF_Railgun_Beam lays glow dots along the core line. The launcher blends straight alpha only, so the additive light is
-baked into RGBA.
+C&C3 draws the shot as a core in a glow, a flare at the muzzle and a bloom with sparks at the impact
+(docs/cnc3-railgun-beam.md); here every piece is in the core line's blue. The launcher draws an exported sprite
+unrotated, so every piece is round and TF_Railgun_Beam lays glow dots along the core line. The launcher blends straight
+alpha only, so the additive light is baked into RGBA.
 
   C3RAILGLOW  the core's blue glow, a soft dot on 64 px, 12 frames.
   C3RAILMZ    the muzzle flash, 5 frames on 192 px.
@@ -38,11 +38,11 @@ FRAMES = 12         # game frames: the core blazes for about a third of a second
 MUZZLE_FRAMES = 5
 GLOW_PX = 34
 
-# Game-frame keys (age 0..1 over FRAMES), read off C&C3 footage of the upgraded Mammoth firing.
+# Game-frame keys (age 0..1 over FRAMES), all in the core line's blue (palette 0x0A).
 HALO_K = [(0, (.35, .55, 1)), (.35, (.3, .5, 1)), (.7, (0, 0, 0)), (1, (0, 0, 0))]
-FLASH_K = [(0, (1, 1, 1)), (.5, (.8, .88, 1)), (1, (0, 0, 0))]
-GLOW_K = [(0, (1, 1, 1)), (.4, (.8, .9, 1)), (1, (0, 0, 0))]
-SPARK_K = [(0, (.85, .92, 1)), (.5, (.4, .55, .7)), (1, (0, 0, 0))]
+FLASH_K = [(0, (.65, .7, 1)), (.5, (.45, .5, 1)), (1, (0, 0, 0))]
+GLOW_K = [(0, (.65, .7, 1)), (.4, (.45, .5, 1)), (1, (0, 0, 0))]
+SPARK_K = [(0, (.55, .62, 1)), (.5, (.3, .38, .8)), (1, (0, 0, 0))]
 
 
 def texture(name):
@@ -116,8 +116,8 @@ def sprite(acc, t, cx, cy, size, colour, angle=0.0):
 
 
 def bake(acc, size):
-    """Additive light to straight-alpha RGBA at size px (alpha = the brightest channel)."""
-    acc = np.clip(acc, 0, 1)
+    """Additive light to straight-alpha RGBA at size px (alpha = the brightest channel); overbright light keeps its hue."""
+    acc = acc / np.maximum(acc.max(axis=2, keepdims=True), 1.0)
     a = acc.max(axis=2, keepdims=True)
     pm = Image.fromarray((np.concatenate([acc, a], 2) * 255).astype(np.uint8), "RGBA").resize((size, size),
                                                                                              Image.LANCZOS)
