@@ -36,9 +36,6 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   `mastertext.edits.txt` names and `picker_emblems_paint.py` plates move with it.
 - **Nod's cargo plane circles the airstrip** (`known-issues.md`): find why the TDC17 sometimes
   misses its landing on `TDAFLD` and fix it, with a play test of several deliveries.
-- **Railgun turrets for the C&C3 asset pack, before the packs ship.** Render the Mammoth Mk. III and
-  Predator turrets with C&C3's railgun upgrade (`UGRAIL_*` meshes, `cnc3-to-remastered-sprites.md`), the
-  scrolling glow baked still, as extra turret sets in the CNC3 graphics pack. Pack-only art, not used by TF.
 - **Rail tanks share the plain tanks' frames, before the packs ship.** `C3PREDRAIL.ZIP` and `C3MK3RAIL.ZIP`
   repeat 96 of their 128 frames; ship only the 32 rail-turret frames and point the other tiles at `C3PRED.ZIP` /
   `C3MK3.ZIP`, as `TDC17P` does with `TDC17.ZIP`, then check the rail Predator in game.
