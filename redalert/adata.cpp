@@ -2422,6 +2422,53 @@ static AnimTypeClass const C3RailGlowO(ANIM_C3_RAILGLOWO, "C3RAILGLOWO", 12, 0, 
 static AnimTypeClass const C3RailMzO(ANIM_C3_RAILMZO, "C3RAILMZO", 36, 0, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 5, 0, VOC_NONE, ANIM_NONE, 5, 0x100);
 static AnimTypeClass const C3RailHitO(ANIM_C3_RAILHITO, "C3RAILHITO", 48, 0, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
 
+// TS effects packed by scripts/ts_pack_effects.py, timed by TS art.ini (delay = 900 / Rate). The fires take RA's
+// per-tick burn damage of the RA fires they stand in for on TS buildings.
+static AnimTypeClass const TsTwlt070(ANIM_TS_TWLT070, "TSTWLT70", 46, 8, false, true, false, true, true, false, false, true, false, 0, 2, 0, 0, 0, 17, 0, VOC_TS_EXPNEW09, ANIM_NONE, 17, 0x100);
+static AnimTypeClass const TsTwlt036(ANIM_TS_TWLT036, "TSTWLT36", 23, 8, false, true, false, true, true, false, false, true, false, 0, 2, 0, 0, 0, 17, 0, VOC_TS_EXPNEW06, ANIM_NONE, 17, 0x100);
+static AnimTypeClass const TsBang48(ANIM_TS_BANG48, "TSBANG48", 24, 6, false, true, false, true, true, false, false, true, false, 0, 2, 0, 0, 0, 13, 0, VOC_TS_EXPNEW11, ANIM_NONE, 13, 0x100);
+static AnimTypeClass const TsBrnl58(ANIM_TS_BRNL58, "TSBRNL58", 40, 5, false, true, false, true, true, false, false, true, false, 0, 2, 0, 0, 0, 10, 0, VOC_TS_EXPNEW12, ANIM_NONE, 10, 0x100);
+static AnimTypeClass const TsTumu60(ANIM_TS_TUMU60, "TSTUMU60", 44, 5, false, true, false, true, true, false, false, true, false, 0, 2, 0, 0, 0, 10, 0, VOC_TS_EXPNEW15, ANIM_NONE, 10, 0x100);
+static AnimTypeClass const TsXgryMed1(ANIM_TS_XGRYMED1, "TSXGRYM1", 22, 0, false, false, false, false, false, false, false, true, false, 0, 2, 0, 0, 0, 15, 0, VOC_TS_EXPNEW15, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsXgryMed2(ANIM_TS_XGRYMED2, "TSXGRYM2", 26, 0, false, false, false, false, false, false, false, true, false, 0, 2, 0, 0, 0, 14, 0, VOC_TS_EXPNEW12, ANIM_NONE, 14, 0x100);
+static AnimTypeClass const TsExploMed(ANIM_TS_EXPLOMED, "TSEXPMED", 31, 5, false, false, false, true, true, false, false, true, false, 0, 2, 0, 0, 0, 15, 0, VOC_TS_EXPNEW12, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsExploLrg(ANIM_TS_EXPLOLRG, "TSEXPLRG", 39, 7, false, false, false, true, true, false, false, true, false, 0, 2, 0, 0, 0, 20, 0, VOC_TS_EXPNEW09, ANIM_NONE, 20, 0x100);
+static AnimTypeClass const TsFire1(ANIM_TS_FIRE1, "TSFIRE1", 16, 0, false, false, false, true, false, false, true, true, false, fixed(1, 10), 2, 0, 0, -1, 18, 4, VOC_NONE, ANIM_TS_FIRE2, 18, 0x100);
+static AnimTypeClass const TsFire2(ANIM_TS_FIRE2, "TSFIRE2", 10, 0, false, false, false, true, false, false, true, true, false, fixed(1, 16), 2, 0, 0, -1, 18, 6, VOC_NONE, ANIM_TS_FIRE3, 18, 0x100);
+static AnimTypeClass const TsFire3(ANIM_TS_FIRE3, "TSFIRE3", 5, 0, false, false, false, false, false, false, true, true, false, fixed(1, 32), 2, 0, 0, -1, 18, 5, VOC_NONE, ANIM_NONE, 18, 0x100);
+static AnimTypeClass const TsDeathA(ANIM_TS_DEATH_A, "TSDEATHA", 20, 0, false, false, false, false, false, false, true, false, false, 0, 90, 0, 0, 0, 4, 0, VOC_NONE, ANIM_NONE, 4, 0x100);
+static AnimTypeClass const TsDeathB(ANIM_TS_DEATH_B, "TSDEATHB", 20, 0, false, false, false, false, false, false, true, false, false, 0, 90, 0, 0, 0, 4, 0, VOC_NONE, ANIM_NONE, 4, 0x100);
+static AnimTypeClass const TsDeathC(ANIM_TS_DEATH_C, "TSDEATHC", 20, 0, false, false, false, false, false, false, true, false, false, 0, 90, 0, 0, 0, 4, 0, VOC_NONE, ANIM_NONE, 4, 0x100);
+static AnimTypeClass const TsDeathD(ANIM_TS_DEATH_D, "TSDEATHD", 20, 0, false, false, false, false, false, false, true, false, false, 0, 90, 0, 0, 0, 4, 0, VOC_NONE, ANIM_NONE, 4, 0x100);
+static AnimTypeClass const TsDeathE(ANIM_TS_DEATH_E, "TSDEATHE", 25, 0, false, false, false, false, false, false, true, false, false, 0, 90, 0, 0, 0, 4, 0, VOC_NONE, ANIM_NONE, 4, 0x100);
+static AnimTypeClass const TsDeathF(ANIM_TS_DEATH_F, "TSDEATHF", 25, 0, false, false, false, false, false, false, true, false, false, 0, 90, 0, 0, 0, 4, 0, VOC_NONE, ANIM_NONE, 4, 0x100);
+static AnimTypeClass const TsFlameGuy(ANIM_TS_FLAMEGUY, "TSFLMGUY", 31, 0, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 148, 0, VOC_NONE, ANIM_NONE, 148, 0x100);
+static AnimTypeClass const TsElectro(ANIM_TS_ELECTRO, "TSELECTR", 25, 0, false, false, false, true, false, false, true, false, false, 0, 1, 0, 0, 3, 14, 5, VOC_TS_ELECTRO1, ANIM_TS_FIRE1, 14, 0x100);
+static AnimTypeClass const TsH2OExp1(ANIM_TS_H2O_EXP1, "TSH2O1", 41, 0, false, true, false, false, false, false, true, true, false, 0, 2, 0, 0, 0, 16, 0, VOC_TS_SSPLASH1, ANIM_NONE, 16, 0x100);
+static AnimTypeClass const TsH2OExp2(ANIM_TS_H2O_EXP2, "TSH2O2", 20, 0, false, true, false, false, false, false, true, true, false, 0, 2, 0, 0, 0, 16, 0, VOC_TS_SSPLASH2, ANIM_NONE, 16, 0x100);
+static AnimTypeClass const TsH2OExp3(ANIM_TS_H2O_EXP3, "TSH2O3", 20, 0, false, true, false, false, false, false, true, true, false, 0, 2, 0, 0, 0, 16, 0, VOC_TS_SSPLASH3, ANIM_NONE, 16, 0x100);
+static AnimTypeClass const TsFsdf(ANIM_TS_FSDF, "TSFSDFA", 24, 0, false, false, false, false, false, false, false, true, false, 0, 3, 0, 0, 4, 8, -1, VOC_NONE, ANIM_NONE, 8, 0x100);
+static AnimTypeClass const TsDbris1Lg(ANIM_TS_DBRIS1LG, "TSDBR01L", 8, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris2Lg(ANIM_TS_DBRIS2LG, "TSDBR02L", 7, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris3Lg(ANIM_TS_DBRIS3LG, "TSDBR03L", 6, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris4Lg(ANIM_TS_DBRIS4LG, "TSDBR04L", 6, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris5Lg(ANIM_TS_DBRIS5LG, "TSDBR05L", 4, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris6Lg(ANIM_TS_DBRIS6LG, "TSDBR06L", 5, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris7Lg(ANIM_TS_DBRIS7LG, "TSDBR07L", 5, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris8Lg(ANIM_TS_DBRIS8LG, "TSDBR08L", 5, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris9Lg(ANIM_TS_DBRIS9LG, "TSDBR09L", 5, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris10Lg(ANIM_TS_DBRIS10LG, "TSDBR10L", 5, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris1Sm(ANIM_TS_DBRIS1SM, "TSDBR01S", 4, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris2Sm(ANIM_TS_DBRIS2SM, "TSDBR02S", 4, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris3Sm(ANIM_TS_DBRIS3SM, "TSDBR03S", 3, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris4Sm(ANIM_TS_DBRIS4SM, "TSDBR04S", 3, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris5Sm(ANIM_TS_DBRIS5SM, "TSDBR05S", 3, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris6Sm(ANIM_TS_DBRIS6SM, "TSDBR06S", 3, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris7Sm(ANIM_TS_DBRIS7SM, "TSDBR07S", 3, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris8Sm(ANIM_TS_DBRIS8SM, "TSDBR08S", 3, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris9Sm(ANIM_TS_DBRIS9SM, "TSDBR09S", 3, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsDbris10Sm(ANIM_TS_DBRIS10SM, "TSDBR10S", 3, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+
 // TS Drop Pod strike (SPC_TS_DROPPODS, OpenTS droppod.cpp), art from scripts/ts_pack_pods.py. The husks lie on the
 // ground layer for 5 loops, so the trooper walks over its pod; the falling pod lays SMOKEY every 6 frames.
 static AnimTypeClass const TsDropPod1(ANIM_TS_DROPPOD1, "TSDPOD1", 24, 4, false, false, false, false, false, false, true, false, false, 0, 4, 0, 0, 0, 8, 5, VOC_NONE, ANIM_NONE, 8, 0x100);
@@ -2640,6 +2687,50 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(C3RailGlowO);
     new AnimTypeClass(C3RailMzO);
     new AnimTypeClass(C3RailHitO);
+    new AnimTypeClass(TsTwlt070);
+    new AnimTypeClass(TsTwlt036);
+    new AnimTypeClass(TsBang48);
+    new AnimTypeClass(TsBrnl58);
+    new AnimTypeClass(TsTumu60);
+    new AnimTypeClass(TsXgryMed1);
+    new AnimTypeClass(TsXgryMed2);
+    new AnimTypeClass(TsExploMed);
+    new AnimTypeClass(TsExploLrg);
+    new AnimTypeClass(TsFire1);
+    new AnimTypeClass(TsFire2);
+    new AnimTypeClass(TsFire3);
+    new AnimTypeClass(TsDeathA);
+    new AnimTypeClass(TsDeathB);
+    new AnimTypeClass(TsDeathC);
+    new AnimTypeClass(TsDeathD);
+    new AnimTypeClass(TsDeathE);
+    new AnimTypeClass(TsDeathF);
+    new AnimTypeClass(TsFlameGuy);
+    new AnimTypeClass(TsElectro);
+    new AnimTypeClass(TsH2OExp1);
+    new AnimTypeClass(TsH2OExp2);
+    new AnimTypeClass(TsH2OExp3);
+    new AnimTypeClass(TsFsdf);
+    new AnimTypeClass(TsDbris1Lg);
+    new AnimTypeClass(TsDbris2Lg);
+    new AnimTypeClass(TsDbris3Lg);
+    new AnimTypeClass(TsDbris4Lg);
+    new AnimTypeClass(TsDbris5Lg);
+    new AnimTypeClass(TsDbris6Lg);
+    new AnimTypeClass(TsDbris7Lg);
+    new AnimTypeClass(TsDbris8Lg);
+    new AnimTypeClass(TsDbris9Lg);
+    new AnimTypeClass(TsDbris10Lg);
+    new AnimTypeClass(TsDbris1Sm);
+    new AnimTypeClass(TsDbris2Sm);
+    new AnimTypeClass(TsDbris3Sm);
+    new AnimTypeClass(TsDbris4Sm);
+    new AnimTypeClass(TsDbris5Sm);
+    new AnimTypeClass(TsDbris6Sm);
+    new AnimTypeClass(TsDbris7Sm);
+    new AnimTypeClass(TsDbris8Sm);
+    new AnimTypeClass(TsDbris9Sm);
+    new AnimTypeClass(TsDbris10Sm);
 }
 
 /***********************************************************************************************

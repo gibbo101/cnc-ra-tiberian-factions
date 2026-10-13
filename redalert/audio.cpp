@@ -454,6 +454,15 @@ struct SoundEffectNameStruct
     {"TSGATEUP1", 5, IN_NOVAR},   // VOC_TS_GATEUP1 -- TS gate rising
     {"TSLACHG2R", 5, IN_NOVAR},   // VOC_TSLACHG2R -- Tesla gate arcs winding down
     {"TSRKETINF1", 1, IN_NOVAR},  // VOC_TS_RKETINF1 -- TS Rocket Infantry bazooka
+    {"TSEXPNEW06", 1, IN_NOVAR},  // VOC_TS_EXPNEW06 -- TS debris burst
+    {"TSEXPNEW09", 1, IN_NOVAR},  // VOC_TS_EXPNEW09 -- TS large blast
+    {"TSEXPNEW11", 1, IN_NOVAR},  // VOC_TS_EXPNEW11 -- TS blast
+    {"TSEXPNEW12", 1, IN_NOVAR},  // VOC_TS_EXPNEW12 -- TS blast
+    {"TSEXPNEW15", 1, IN_NOVAR},  // VOC_TS_EXPNEW15 -- TS blast
+    {"TSELECTRO1", 1, IN_NOVAR},  // VOC_TS_ELECTRO1 -- TS electrocution
+    {"TSSSPLASH1", 1, IN_NOVAR},  // VOC_TS_SSPLASH1 -- TS large splash
+    {"TSSSPLASH2", 1, IN_NOVAR},  // VOC_TS_SSPLASH2 -- TS splash
+    {"TSSSPLASH3", 1, IN_NOVAR},  // VOC_TS_SSPLASH3 -- TS small splash
 };
 
 //

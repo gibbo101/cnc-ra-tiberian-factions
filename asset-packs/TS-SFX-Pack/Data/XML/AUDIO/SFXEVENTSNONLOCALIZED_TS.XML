@@ -697,4 +697,148 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
       <entry> TSSONIC4.WAV </entry>
     </SampleNamesList>
   </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSEXPNEW06" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSEXPNEW06.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSEXPNEW06" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSEXPNEW06.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSEXPNEW09" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSEXPNEW09.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSEXPNEW09" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSEXPNEW09.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSEXPNEW11" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSEXPNEW11.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSEXPNEW11" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSEXPNEW11.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSEXPNEW12" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSEXPNEW12.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSEXPNEW12" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSEXPNEW12.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSEXPNEW15" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSEXPNEW15.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSEXPNEW15" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSEXPNEW15.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSELECTRO1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSELECTRO1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSELECTRO1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSELECTRO1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSSSPLASH1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSSSPLASH1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSSSPLASH1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSSSPLASH1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSSSPLASH2" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSSSPLASH2.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSSSPLASH2" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSSSPLASH2.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSSSPLASH3" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSSSPLASH3.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSSSPLASH3" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSSSPLASH3.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
 </SFXEvents>

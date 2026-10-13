@@ -691,6 +691,99 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tscanist_stub.shp" 4 3 32
 PACK_ARGS+=("$TMPDIR/tscanist_stub.shp:TSCANIST.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsdiscus_stub.shp" 4 2 32
 PACK_ARGS+=("$TMPDIR/tsdiscus_stub.shp:TSDISCUS.SHP")
+# TS effects and in-flight art from scripts/ts_pack_effects.py: classic size = HD canvas / 8.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tstwlt70_stub.shp" 46 35 17
+PACK_ARGS+=("$TMPDIR/tstwlt70_stub.shp:TSTWLT70.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tstwlt36_stub.shp" 23 18 17
+PACK_ARGS+=("$TMPDIR/tstwlt36_stub.shp:TSTWLT36.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsbang48_stub.shp" 24 24 13
+PACK_ARGS+=("$TMPDIR/tsbang48_stub.shp:TSBANG48.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsbrnl58_stub.shp" 40 29 10
+PACK_ARGS+=("$TMPDIR/tsbrnl58_stub.shp:TSBRNL58.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tstumu60_stub.shp" 44 30 10
+PACK_ARGS+=("$TMPDIR/tstumu60_stub.shp:TSTUMU60.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsxgrym1_stub.shp" 20 22 15
+PACK_ARGS+=("$TMPDIR/tsxgrym1_stub.shp:TSXGRYM1.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsxgrym2_stub.shp" 26 20 14
+PACK_ARGS+=("$TMPDIR/tsxgrym2_stub.shp:TSXGRYM2.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsexpmed_stub.shp" 31 26 15
+PACK_ARGS+=("$TMPDIR/tsexpmed_stub.shp:TSEXPMED.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsexplrg_stub.shp" 39 31 20
+PACK_ARGS+=("$TMPDIR/tsexplrg_stub.shp:TSEXPLRG.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsfire1_stub.shp" 16 15 18
+PACK_ARGS+=("$TMPDIR/tsfire1_stub.shp:TSFIRE1.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsfire2_stub.shp" 10 8 18
+PACK_ARGS+=("$TMPDIR/tsfire2_stub.shp:TSFIRE2.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsfire3_stub.shp" 4 5 18
+PACK_ARGS+=("$TMPDIR/tsfire3_stub.shp:TSFIRE3.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdeatha_stub.shp" 20 20 4
+PACK_ARGS+=("$TMPDIR/tsdeatha_stub.shp:TSDEATHA.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdeathb_stub.shp" 20 20 4
+PACK_ARGS+=("$TMPDIR/tsdeathb_stub.shp:TSDEATHB.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdeathc_stub.shp" 20 20 4
+PACK_ARGS+=("$TMPDIR/tsdeathc_stub.shp:TSDEATHC.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdeathd_stub.shp" 20 20 4
+PACK_ARGS+=("$TMPDIR/tsdeathd_stub.shp:TSDEATHD.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdeathe_stub.shp" 25 25 4
+PACK_ARGS+=("$TMPDIR/tsdeathe_stub.shp:TSDEATHE.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdeathf_stub.shp" 25 25 4
+PACK_ARGS+=("$TMPDIR/tsdeathf_stub.shp:TSDEATHF.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsflmguy_stub.shp" 31 31 148
+PACK_ARGS+=("$TMPDIR/tsflmguy_stub.shp:TSFLMGUY.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tselectr_stub.shp" 25 20 14
+PACK_ARGS+=("$TMPDIR/tselectr_stub.shp:TSELECTR.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsh2o1_stub.shp" 41 40 16
+PACK_ARGS+=("$TMPDIR/tsh2o1_stub.shp:TSH2O1.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsh2o2_stub.shp" 20 19 16
+PACK_ARGS+=("$TMPDIR/tsh2o2_stub.shp:TSH2O2.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsh2o3_stub.shp" 20 19 16
+PACK_ARGS+=("$TMPDIR/tsh2o3_stub.shp:TSH2O3.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsfsdfa_stub.shp" 24 24 8
+PACK_ARGS+=("$TMPDIR/tsfsdfa_stub.shp:TSFSDFA.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr01l_stub.shp" 7 8 15
+PACK_ARGS+=("$TMPDIR/tsdbr01l_stub.shp:TSDBR01L.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr02l_stub.shp" 7 7 15
+PACK_ARGS+=("$TMPDIR/tsdbr02l_stub.shp:TSDBR02L.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr03l_stub.shp" 6 4 15
+PACK_ARGS+=("$TMPDIR/tsdbr03l_stub.shp:TSDBR03L.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr04l_stub.shp" 6 5 15
+PACK_ARGS+=("$TMPDIR/tsdbr04l_stub.shp:TSDBR04L.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr05l_stub.shp" 4 4 15
+PACK_ARGS+=("$TMPDIR/tsdbr05l_stub.shp:TSDBR05L.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr06l_stub.shp" 5 5 15
+PACK_ARGS+=("$TMPDIR/tsdbr06l_stub.shp:TSDBR06L.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr07l_stub.shp" 5 5 15
+PACK_ARGS+=("$TMPDIR/tsdbr07l_stub.shp:TSDBR07L.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr08l_stub.shp" 5 5 15
+PACK_ARGS+=("$TMPDIR/tsdbr08l_stub.shp:TSDBR08L.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr09l_stub.shp" 5 5 15
+PACK_ARGS+=("$TMPDIR/tsdbr09l_stub.shp:TSDBR09L.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr10l_stub.shp" 5 5 15
+PACK_ARGS+=("$TMPDIR/tsdbr10l_stub.shp:TSDBR10L.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr01s_stub.shp" 4 4 15
+PACK_ARGS+=("$TMPDIR/tsdbr01s_stub.shp:TSDBR01S.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr02s_stub.shp" 4 3 15
+PACK_ARGS+=("$TMPDIR/tsdbr02s_stub.shp:TSDBR02S.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr03s_stub.shp" 3 2 15
+PACK_ARGS+=("$TMPDIR/tsdbr03s_stub.shp:TSDBR03S.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr04s_stub.shp" 3 3 15
+PACK_ARGS+=("$TMPDIR/tsdbr04s_stub.shp:TSDBR04S.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr05s_stub.shp" 3 2 15
+PACK_ARGS+=("$TMPDIR/tsdbr05s_stub.shp:TSDBR05S.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr06s_stub.shp" 3 3 15
+PACK_ARGS+=("$TMPDIR/tsdbr06s_stub.shp:TSDBR06S.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr07s_stub.shp" 3 3 15
+PACK_ARGS+=("$TMPDIR/tsdbr07s_stub.shp:TSDBR07S.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr08s_stub.shp" 3 3 15
+PACK_ARGS+=("$TMPDIR/tsdbr08s_stub.shp:TSDBR08S.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr09s_stub.shp" 2 3 15
+PACK_ARGS+=("$TMPDIR/tsdbr09s_stub.shp:TSDBR09S.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdbr10s_stub.shp" 3 3 15
+PACK_ARGS+=("$TMPDIR/tsdbr10s_stub.shp:TSDBR10S.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdragon_stub.shp" 8 8 32
+PACK_ARGS+=("$TMPDIR/tsdragon_stub.shp:TSDRAGON.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/ts120mm_stub.shp" 12 12 1
+PACK_ARGS+=("$TMPDIR/ts120mm_stub.shp:TS120MM.SHP")
 
 # Repack into TFASSETS.MIX with TD-prefix renames.
 python3 scripts/mix_tools.py pack "$OUTMIX" "${PACK_ARGS[@]}"
