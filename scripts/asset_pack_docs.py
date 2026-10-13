@@ -166,7 +166,7 @@ def readme(pack):
 def ccmod(pack):
     return {
         "name": pack,
-        "description": ABOUT[pack] + ", for Red Alert Remastered mods.",
+        "description": A.mod_list_text(ABOUT[pack] + ", for Red Alert Remastered mods."),
         "author": "gibbo101",
         "load_order": 2,
         "version_high": 1,

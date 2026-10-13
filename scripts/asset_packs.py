@@ -96,6 +96,11 @@ HOSTS = {
 }
 
 
+def mod_list_text(text):
+    """Text for a ccmod.json name or description: the game's mod list reads & as a shortcut marker, && as one &."""
+    return text.replace("&", "&&")
+
+
 def item(mod, host):
     """The Workshop item (and mod folder) name of a Workshop pack for one game."""
     return mod if host == "RA" else f"{mod}-{host}"

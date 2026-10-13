@@ -165,7 +165,8 @@ def write_manifest(mod, folder, host):
     """ccmod.json, and for a pack Tiberian Factions requires, the CCDATA marker carrying its version."""
     w = A.WORKSHOP[mod]
     high, low = w["version"]
-    manifest = {"name": w["name"], "description": w["description"].format(host=A.HOSTS[host]["name"]),
+    manifest = {"name": A.mod_list_text(w["name"]),
+                "description": A.mod_list_text(w["description"].format(host=A.HOSTS[host]["name"])),
                 "author": "gibbo101", "load_order": 2, "version_high": high, "version_low": low, "game_type": host}
     write_if_changed(os.path.join(folder, "ccmod.json"), json.dumps(manifest, indent=4) + "\n")
     if w.get("marker") and host == "RA":
