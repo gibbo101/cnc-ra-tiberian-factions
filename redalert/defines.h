@@ -3038,6 +3038,9 @@ typedef enum AnimType : short
     ANIM_C3_RAILGLOW,   // C&C3 railgun shot: a glow dot on the core line (TF_Railgun_Beam).
     ANIM_C3_RAILMZ,     // C&C3 railgun muzzle flash.
     ANIM_C3_RAILHIT,    // C&C3 railgun impact bloom and sparks.
+    ANIM_C3_RAILGLOWO,  // The Ghost Stalker's orange C&C3 railgun shot: a glow dot on the core line.
+    ANIM_C3_RAILMZO,    // The Ghost Stalker's orange railgun muzzle flash.
+    ANIM_C3_RAILHITO,   // The Ghost Stalker's orange railgun impact bloom and sparks.
 
     ANIM_COUNT,
     ANIM_FIRST = 0
