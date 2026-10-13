@@ -844,19 +844,15 @@ int TF_Railgun_Coil(bool small, int sx, int sy, int dx, int dy, int dist)
     return (longest);
 }
 
-// Lays C&C3's railgun shot from (sx, sy) along (dx, dy) in leptons: glow dots on the core line, two threads of dots
-// in long sine waves growing from the muzzle, the muzzle flash and the impact. Returns the frames a TS railgun holds.
+// Lays C&C3's railgun shot from (sx, sy) along (dx, dy) in leptons: glow dots on the core line, the muzzle flash
+// and the impact. Returns the frames a TS railgun holds.
 int TF_Railgun_Beam(int sx, int sy, int dx, int dy)
 {
     enum
     {
-        GLOW_STEP = 16,   // leptons between the core's glow dots
-        THREAD_STEP = 12, // leptons between a thread's dots
-        HOLD = 75,        // TS's coil life, which sets the Mk. II's rate of fire
+        GLOW_STEP = 16, // leptons between the core's glow dots
+        HOLD = 75,      // TS's coil life, which sets the Mk. II's rate of fire
     };
-    static double const THREAD_SWING = 80.0; // leptons: a thread's widest swing, reached 4 cells out
-    static double const THREAD_SHIFT[2] = {0.0, 2.2};
-    static double const THREAD_SHARE[2] = {1.0, 0.75};
 
     double const dist = sqrt((double)dx * dx + (double)dy * dy);
     if (dist < 1.0) {
@@ -867,17 +863,6 @@ int TF_Railgun_Beam(int sx, int sy, int dx, int dy)
         int x = sx + (int)(ux * d), y = sy + (int)(uy * d);
         if (x >= 0 && y >= 0) {
             new AnimClass(ANIM_C3_RAILGLOW, XY_Coord(x, y));
-        }
-    }
-    for (int t = 0; t < 2; t++) {
-        for (int d = 0; d <= (int)dist; d += THREAD_STEP) {
-            double cells = d / 256.0;
-            double swing = THREAD_SWING * THREAD_SHARE[t] * min(1.0, cells / 4.0);
-            double off = swing * sin(2.0 * 3.14159265 * cells / 3.0 + THREAD_SHIFT[t]);
-            int x = sx + (int)(ux * d - uy * off), y = sy + (int)(uy * d + ux * off);
-            if (x >= 0 && y >= 0) {
-                new AnimClass(ANIM_C3_RAILTHRD, XY_Coord(x, y));
-            }
         }
     }
     if (sx >= 0 && sy >= 0) {

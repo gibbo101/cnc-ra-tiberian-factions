@@ -600,12 +600,10 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tsionbm_stub.shp" 15 480 15
 PACK_ARGS+=("$TMPDIR/tsionbm_stub.shp:TSIONBM.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsionrng_stub.shp" 104 51 15
 PACK_ARGS+=("$TMPDIR/tsionrng_stub.shp:TSIONRNG.SHP")
-# C&C3 railgun shot (scripts/c3_rail_beam.py): glow dot 64 px, thread dot 32 px and impact 256 px, 12 frames each,
-# muzzle 192 px 5 frames, each / 16 * 3 for the classic dims.
+# C&C3 railgun shot (scripts/c3_rail_beam.py): glow dot 64 px and impact 256 px, 12 frames each, muzzle 192 px
+# 5 frames, each / 16 * 3 for the classic dims.
 python3 scripts/gen_stub_shp.py "$TMPDIR/c3railglow_stub.shp" 12 12 12
 PACK_ARGS+=("$TMPDIR/c3railglow_stub.shp:C3RAILGLOW.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/c3railthrd_stub.shp" 6 6 12
-PACK_ARGS+=("$TMPDIR/c3railthrd_stub.shp:C3RAILTHRD.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/c3railmz_stub.shp" 36 36 5
 PACK_ARGS+=("$TMPDIR/c3railmz_stub.shp:C3RAILMZ.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/c3railhit_stub.shp" 48 48 12

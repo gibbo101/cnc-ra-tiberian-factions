@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 """Render C&C3's railgun shot (FX_RailGunFire, FX_RailGunHit) as HD anim frames for the RailBeam weapons.
 
-C&C3 draws the shot as a white-hot core in a blue glow with pale threads in long slow waves around it, a flare at the
-muzzle and a white bloom with sparks at the impact (docs/cnc3-railgun-beam.md). The launcher draws an exported sprite
-unrotated, so every piece here is round and TF_Railgun_Beam lays it along the shot: glow dots on the core line, thread
-dots on the threads' sine paths. The launcher blends straight alpha only, so the additive light is baked into RGBA.
+C&C3 draws the shot as a white-hot core in a blue glow, a flare at the muzzle and a white bloom with sparks at the
+impact (docs/cnc3-railgun-beam.md). The launcher draws an exported sprite unrotated, so every piece here is round and
+TF_Railgun_Beam lays glow dots along the core line. The launcher blends straight alpha only, so the additive light is
+baked into RGBA.
 
   C3RAILGLOW  the core's blue glow, a soft dot on 64 px, 12 frames.
-  C3RAILTHRD  a thread, a small white dot on 32 px, 12 frames.
   C3RAILMZ    the muzzle flash, 5 frames on 192 px.
   C3RAILHIT   the impact bloom with sparks thrown all round, 12 frames on 256 px.
 
@@ -34,14 +33,13 @@ from ts_gen_sonicwave import patch_tileset  # noqa: E402
 TEX = os.path.join(SCRIPTS, "..", "resources", "custom-art", "c3-railgun-beam")
 SS = 2              # supersample
 UNIT = 4.0          # HD px per C&C3 world unit (the C&C3 tanks' packing scale)
-GLOW_FRAME, THREAD_FRAME, MUZZLE_FRAME, HIT_FRAME = 64, 32, 192, 256
-FRAMES = 12         # game frames: the core blazes for about a third of a second, the threads fade after it
+GLOW_FRAME, MUZZLE_FRAME, HIT_FRAME = 64, 192, 256
+FRAMES = 12         # game frames: the core blazes for about a third of a second, then fades
 MUZZLE_FRAMES = 5
-GLOW_PX, THREAD_PX = 34, 10
+GLOW_PX = 34
 
 # Game-frame keys (age 0..1 over FRAMES), read off C&C3 footage of the upgraded Mammoth firing.
 HALO_K = [(0, (.35, .55, 1)), (.35, (.3, .5, 1)), (.7, (0, 0, 0)), (1, (0, 0, 0))]
-THREAD_K = [(0, (1, 1, 1)), (.45, (.75, .85, 1)), (1, (0, 0, 0))]
 FLASH_K = [(0, (1, 1, 1)), (.5, (.8, .88, 1)), (1, (0, 0, 0))]
 GLOW_K = [(0, (1, 1, 1)), (.4, (.8, .9, 1)), (1, (0, 0, 0))]
 SPARK_K = [(0, (.85, .92, 1)), (.5, (.4, .55, .7)), (1, (0, 0, 0))]
@@ -184,7 +182,6 @@ def write_zip(name, frames):
 def main():
     rng = np.random.default_rng(7)
     write_zip("C3RAILGLOW", [dot(f, GLOW_FRAME, GLOW_PX, HALO_K, 1.0) for f in range(FRAMES)])
-    write_zip("C3RAILTHRD", [dot(f, THREAD_FRAME, THREAD_PX, THREAD_K, 1.3) for f in range(FRAMES)])
     flash = {"flash": rng.uniform(22, 30), "angle": rng.uniform(-7, 7)}
     write_zip("C3RAILMZ", [muzzle(f, flash) for f in range(MUZZLE_FRAMES)])
     glows = [(rng.uniform(32, 48), rng.uniform(0, 7), rng.uniform(-.1, .1)) for _ in range(8)]

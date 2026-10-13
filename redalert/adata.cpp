@@ -2418,10 +2418,9 @@ static AnimTypeClass const TsDig(ANIM_TS_DIG, "TSDIG", 64, 18, false, false, fal
 
 // TS Ion Cannon strike (SPC_TS_ION_CANNON): the beam deals all its damage (AnimClass::Middle); the ring is TS's
 // IonBlast=RING1 flash. Art from scripts/ts_pack_ion.py, the beam pre-tiled, as the launcher can't tile anims.
-// C&C3's railgun shot (scripts/c3_rail_beam.py), laid along the line by TF_Railgun_Beam: core glow and thread dots,
-// the muzzle flash and the impact.
+// C&C3's railgun shot (scripts/c3_rail_beam.py), laid along the line by TF_Railgun_Beam: core glow dots, the muzzle
+// flash and the impact.
 static AnimTypeClass const C3RailGlow(ANIM_C3_RAILGLOW, "C3RAILGLOW", 12, 0, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
-static AnimTypeClass const C3RailThrd(ANIM_C3_RAILTHRD, "C3RAILTHRD", 6, 0, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
 static AnimTypeClass const C3RailMz(ANIM_C3_RAILMZ, "C3RAILMZ", 36, 0, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 5, 0, VOC_NONE, ANIM_NONE, 5, 0x100);
 static AnimTypeClass const C3RailHit(ANIM_C3_RAILHIT, "C3RAILHIT", 48, 0, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
 
@@ -2643,7 +2642,6 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(TsFsGrnd);
     new AnimTypeClass(TsFsAir);
     new AnimTypeClass(C3RailGlow);
-    new AnimTypeClass(C3RailThrd);
     new AnimTypeClass(C3RailMz);
     new AnimTypeClass(C3RailHit);
 }
