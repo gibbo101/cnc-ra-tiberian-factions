@@ -36,6 +36,7 @@ ART = os.environ.get("C3_ART_DIR")
 GLOW = 1.0
 FACINGS = 32
 TURRET = 96  # first turret frame in the tank's tileset
+FRINGE = 8  # alpha up to which a packed pixel is resampling fringe
 # model -> (tank, rail unit, C&C3 skeleton, container, rail meshes)
 TANKS = {
     "mammoth": ("C3MK3", "C3MK3RAIL", "GUMAMM_SKL", "GUMAMM_SKN", ["UGRAIL_01", "UGRAIL_02"]),
@@ -118,12 +119,15 @@ def render():
 
 def packed_turret(path, canvas, drop):
     """A render packed as c3_pack_tanks.packed packs a turret, on the 1000 px render's pixel grid at any canvas
-    size, then dropped as unit_centring.py drops the shipped frames."""
+    size, then dropped as unit_centring.py drops the shipped frames. Only a resampling fringe may fall off the canvas."""
     im = Image.open(path).convert("RGBA")
     size = round(1000 * P.PACK_PPU / P.RENDER_PPU) * im.width // 1000
     scaled = im.resize((size, size), Image.LANCZOS)
     fr = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
     ox, oy = round(canvas / 2 - size / 2), round(canvas / 2 - size / 2)
+    box = scaled.getchannel("A").point(lambda a: 255 if a > FRINGE else 0).getbbox()
+    if box and (ox + box[0] < 0 or oy + box[1] < 0 or ox + box[2] > canvas or oy + box[3] > canvas - drop):
+        raise SystemExit(f"{path}: content clipped -- grow ShapeSize")
     fr.alpha_composite(scaled, (max(ox, 0), max(oy, 0)), (max(-ox, 0), max(-oy, 0)))
     out = Image.new("RGBA", fr.size, (0, 0, 0, 0))
     out.paste(fr.crop((0, 0, canvas, canvas - drop)), (0, drop))
