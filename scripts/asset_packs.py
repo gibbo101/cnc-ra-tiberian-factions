@@ -77,6 +77,16 @@ WORKSHOP = {
 }
 REQUIRED = [mod for mod, w in WORKSHOP.items() if w["required"]]
 
+# Objects only the Workshop packs carry: art for other mods that no Tiberian Factions type draws, so its build leaves
+# out their ZIPs and tiles (scripts/stage_asset_packs.py).
+PACK_ONLY = ("C3MK3RAIL", "C3PREDRAIL")
+
+
+def drop_pack_only(text):
+    """A tileset XML's text without the PACK_ONLY objects' tiles."""
+    names = "|".join(map(re.escape, PACK_ONLY))
+    return re.sub(r"[ \t]*<Tile>\s*<Key>\s*<Name>(?:%s)</Name>.*?</Tile>\r?\n?" % names, "", text, flags=re.S)
+
 
 def required_mod(pack):
     """The required Workshop mod that carries a pack's art and audio, or None for the mod's own."""

@@ -3,8 +3,8 @@
 
 Usage:  stage_asset_packs.py <mod dir> [--full]
 
-Copies every pack's Data/ART and Data/AUDIO into <mod dir>/Data, except the packs a required
-Workshop mod carries: that mod is built whole in the folder beside it (scripts/workshop_packs.py). Then
+Copies every pack's Data/ART and Data/AUDIO into <mod dir>/Data, except the PACK_ONLY objects and the packs a
+required Workshop mod carries: that mod is built whole in the folder beside it (scripts/workshop_packs.py). Then
 writes each of the mod's XML files that packs contribute to: the mod's own file from resources/,
 with every pack's entries in place of that pack's marker (before the closing tag when the file has
 no marker).
@@ -98,7 +98,7 @@ def stage(mod_dir, full=False):
     if stray:
         raise SystemExit("asset-pack files or XML entries are in resources/remaster_mods/Vanilla_RA: "
                          f"{', '.join(sorted(stray))}. Run scripts/asset_packs.py split, then build again.")
-    texts = {rel: merged(rel, pack_file, root) for rel, pack_file, root, _ in A.XML_FILES}
+    texts = {rel: A.drop_pack_only(merged(rel, pack_file, root)) for rel, pack_file, root, _ in A.XML_FILES}
     texts, shared = share_tileset_zips.share(texts, share_tileset_zips.zip_sources())
     if full:
         copy_tree(A.MOD, mod_dir, {os.path.join("DATA", rel) for rel in shared})
@@ -120,6 +120,7 @@ def stage(mod_dir, full=False):
                 continue
             later = set().union(*(pack_files(p, sub) for p in packs[i + 1:]))
             skip = later | {os.path.relpath(rel, sub.upper()) for rel in shared if rel.startswith(sub.upper() + os.sep)}
+            skip |= {os.path.relpath(A.art_zip(name, "UNITS"), src).upper() for name in A.PACK_ONLY}
             copy_tree(src, os.path.join(data, sub), skip)
     for mod in A.REQUIRED:
         workshop_packs.build(mod, os.path.join(os.path.dirname(os.path.normpath(mod_dir)), mod))
