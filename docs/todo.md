@@ -43,9 +43,8 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   repeat 96 of their 128 frames; ship only the 32 rail-turret frames and point the other tiles at `C3PRED.ZIP` /
   `C3MK3.ZIP`, as `TDC17P` does with `TDC17.ZIP`, then check the rail Predator in game.
 - **TD copies of the asset packs, with each pack's first release.** TD reads art only from
-  `SRGB/TIBERIAN_DAWN/`, so a TD copy carries its art there with TD tileset and sound XML. RA2-HD-Assets and
-  CNC3-Assets: one Workshop item each, holding an RA mod and a TD mod. TS-HD-Assets: separate RA and TD items,
-  so TF players don't download the TD copy.
+  `SRGB/TIBERIAN_DAWN/`, so a TD copy carries its art there with TD tileset and sound XML. Every pack goes up
+  as two Workshop items, one per game, so neither game's players download the other's copy as the packs grow.
 - **Grey out saves that can't load, before the next release.** The save version refuses a save whose class
   sizes or type-list lengths differ (`saveload.cpp`), and InstanceServerG crashes on a refused load (an assert in
   its save-load manager). Grey the Load button with a reason for those saves, vanilla and other mods' saves
