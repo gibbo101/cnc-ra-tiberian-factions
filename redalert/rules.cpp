@@ -628,7 +628,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     /*
     **	Special case: double maximum animations to accomodate lots of action
     */
-    AnimMax = max(AnimMax, 2048); // railgun shots (some 300 dots each) + TS railgun coils + Disruptor bands
+    AnimMax = max(AnimMax, 1024); // TF: railgun shots (some 130 short-lived dots each) + Disruptor bands
     // TF: the heaps hold every coded type whatever [Maximums] says; one short misaligns each later type.
     WeaponMax = max(WeaponMax, (int)WEAPON_COUNT);
     WarheadMax = max(WarheadMax, (int)WARHEAD_COUNT);
