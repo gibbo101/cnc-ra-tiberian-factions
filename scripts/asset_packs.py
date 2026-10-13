@@ -68,8 +68,8 @@ WORKSHOP = {
         "hosts": ("RA", "TD"),
         "name": "Red Alert 2 HD Assets",
         "description": "Red Alert 2 units, sounds and voices for {host}, in HD.",
-        "contents": ["**Units:** Apocalypse Tank, Prism Tank", "A sidebar cameo for each unit",
-                     "Each unit's voices and weapon sounds"],
+        "contents": ["**Soviet:** Apocalypse Tank (R2APOC)", "**Allies:** Prism Tank (R2PRIS)",
+                     "A sidebar cameo for each unit", "Each unit's voices and weapon sounds"],
     },
     "CNC3-Assets": {
         "packs": ("CNC3-Graphics-Pack", "CNC3-SFX-Pack", "CNC3-Voices-eng"),
@@ -77,9 +77,11 @@ WORKSHOP = {
         "hosts": ("RA", "TD"),
         "name": "C&C3 Tiberium Wars Assets",
         "description": "Command & Conquer 3 units, effects, sounds and voices for {host}, in HD.",
-        "contents": ["**Units:** Mammoth Tank Mk. III and Predator Tank, each also with its railgun upgrade",
-                     "**Effects:** the railgun shot, in blue and in orange", "A sidebar cameo for each tank",
-                     "Each tank's voices and weapon sounds"],
+        "contents": ["**GDI:** Mammoth Tank Mk. III (C3MK3), Predator Tank (C3PRED), and both with the railgun "
+                     "upgrade (C3MK3RAIL, C3PREDRAIL)",
+                     "**Effects:** the railgun shot, in blue (C3RAILGLOW, C3RAILMZ, C3RAILHIT) and in orange "
+                     "(C3RAILGLOWO, C3RAILMZO, C3RAILHITO)",
+                     "A sidebar cameo for each tank", "Each tank's voices and weapon sounds"],
     },
 }
 REQUIRED = [mod for mod, w in WORKSHOP.items() if w["required"]]
