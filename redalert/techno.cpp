@@ -4148,6 +4148,12 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                                   + (weapon->IsRailBeam
                                          ? TF_Railgun_Beam(sx, sy, ddx, ddy)
                                          : TF_Railgun_Coil(weapon->ID == WEAPON_TSLTRAIL, sx, sy, ddx, ddy, dist));
+                    // TF: a railgun's warhead sets off its explosion where the shot lands.
+                    WarheadType burst = (weapon->WarheadPtr != NULL) ? WarheadType(weapon->WarheadPtr->ID) : WARHEAD_NONE;
+                    AnimType blast = Combat_Anim(weapon->AmbientDamage, burst, Map[Coord_Cell(dest)].Land_Type());
+                    if (blast != ANIM_NONE) {
+                        new AnimClass(blast, dest);
+                    }
                 }
 
                 if (weapon->IsSonic) {

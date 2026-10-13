@@ -319,6 +319,10 @@ AnimType Combat_Anim(int damage, WarheadType warhead, LandType land)
     if (warhead == WARHEAD_R2APOCAP) {
         damage = min(damage, 40);
     }
+    // TF: the Mk. II's railgun bursts like the C&C3 tanks' 59-damage shells, not the large fireball its 200 would pick.
+    if (warhead == WARHEAD_RAILSHOT) {
+        damage = min(damage, 59);
+    }
 
     static AnimType _aplist[] = {
         ANIM_VEH_HIT3, // Small fragment throwing explosion -- burn/exp mix.
