@@ -58,7 +58,7 @@ WORKSHOP = {
     "TS-HD-Assets": {
         "packs": ("TS-Graphics-Pack", "TS-HD-Graphics-Pack", "TS-SFX-Pack", "TS-EVA-eng", "TS-Voices-eng"),
         "required": True, "marker": "TSHDPACK.INI", "xml_id": "TSHDAssets", "version": (1, 0), "game": "TS",
-        "prefix": "TS", "hosts": ("RA",),
+        "prefix": "TS", "hosts": ("RA",), "coming_soon": True,
         "name": "Tiberian Sun HD Assets",
         "description": "Tiberian Sun units, buildings, effects, sounds and EVA for {host}, in HD.",
     },

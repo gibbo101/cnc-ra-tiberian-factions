@@ -42,7 +42,8 @@ for _mod, _w in A.WORKSHOP.items():
     _ids = _w.get("workshop_ids", {})
     _links = ", ".join(f"[Steam Workshop, {A.HOSTS[h]['name']}]({WORKSHOP_URL}{_ids[h]})" for h in _w["hosts"] if h in _ids)
     _hosts = " and ".join(A.HOSTS[h]["name"] for h in _w["hosts"])
-    _packs[_mod] = f"**{_w['name']}**: {_w['description'].format(host=_hosts)}" + (f" {_links}" if _links else "")
+    _soon = " (coming soon)" if _w.get("coming_soon") else ""
+    _packs[_mod] = f"**{_w['name']}**{_soon}: {_w['description'].format(host=_hosts)}" + (f" {_links}" if _links else "")
 MORE_MODS = {"TF": MORE_MODS.pop("TF"), **_packs, **MORE_MODS}
 
 

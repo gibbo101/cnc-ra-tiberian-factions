@@ -37,7 +37,7 @@ Original Command & Conquer 3: Tiberium Wars assets: Electronic Arts. Prepared fo
 ## More C&C projects by gibbo101
 
 - **Tiberian Factions** adds GDI and Nod as playable factions to Red Alert Remastered: [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3729834253), [ModDB](https://www.moddb.com/mods/tiberian-factions-for-red-alert), [GitHub](https://github.com/gibbo101/cnc-ra-tiberian-factions)
-- **Tiberian Sun HD Assets**: Tiberian Sun units, buildings, effects, sounds and EVA for Red Alert, in HD.
+- **Tiberian Sun HD Assets** (coming soon): Tiberian Sun units, buildings, effects, sounds and EVA for Red Alert, in HD.
 - **Red Alert 2 HD Assets**: Red Alert 2 units, sounds and voices for Red Alert and Tiberian Dawn, in HD.
 - **OpenTS Pad** ports the OpenTS rebuild of Tiberian Sun to Linux and the Steam Deck, with controller play: [GitHub](https://github.com/gibbo101/opents-pad)
 - **Renegade Pad** brings controller play to C&C Renegade (an OpenW3D fork, built for the Steam Deck): [GitHub](https://github.com/gibbo101/renegade-pad)
