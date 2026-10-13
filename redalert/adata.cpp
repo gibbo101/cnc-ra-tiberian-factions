@@ -2390,14 +2390,6 @@ static AnimTypeClass const ChemSW(ANIM_CHEM_SW, "TDCHEM-SW", 48, 9, false, false
 static AnimTypeClass const ChemW(ANIM_CHEM_W, "TDCHEM-W", 48, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 static AnimTypeClass const ChemNW(ANIM_CHEM_NW, "TDCHEM-NW", 48, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 
-// TS railgun spark (ANIM_RAILFX), a [LargeRailgunPart] particle of the Mk. II's coil: TF_Railgun_Coil lays it and
-// AnimClass::Rail_Spark_AI moves, stages and ends it. Art from scripts/ts_gen_railfx.py, blue fading to grey.
-static AnimTypeClass const RailFx(ANIM_RAILFX, "RAILFX", 24, 3, false, false, false, false, false, false, false, false, false, 0, 4, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
-
-// TS light railgun spark (ANIM_TS_RAILFXS), the Ghost Stalker's coil: a [SmallRailgunPart] particle run like RAILFX,
-// (200,200,200) fading to (150,150,150). Art from scripts/ts_gen_railfx.py.
-static AnimTypeClass const TsRailFxS(ANIM_TS_RAILFXS, "TSRAILFXS", 24, 3, false, false, false, false, false, false, false, false, false, 0, 4, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
-
 // TS S_BANG34 (ANIM_TS_SBANG34), TS [General] InfantryExplode: the burst of a jumpjet shot down in the air.
 // art.ini [S_BANG34]: Normalized, Translucent, Crater, Scorch, Report=EXPNEW10.
 static AnimTypeClass const TsSBang34(ANIM_TS_SBANG34, "TSBANG34", 17, 5, false, true, false, true, true, false, false, true, false, 0, 2, 0, 0, 0, 13, 0, VOC_TS_EXPNEW10, ANIM_NONE, 13, 0x100);
@@ -2603,9 +2595,8 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(BeaconVirtual);
 #endif
 
-    // MUST stay last and in this order: these fill the enum slots after the virtual anims, from ANIM_RAILFX on, and
+    // MUST stay last and in this order: these fill the enum slots after the virtual anims, from ANIM_TS_SONICWAVE on, and
     // the heap ID is the registration order.
-    new AnimTypeClass(RailFx);
     new AnimTypeClass(TsSonicWave);
     new AnimTypeClass(TsGunfire);
     new AnimTypeClass(TsDig);
@@ -2634,7 +2625,6 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(TsXgrySml2);
     new AnimTypeClass(TsExploSml);
     new AnimTypeClass(TsSmokey2);
-    new AnimTypeClass(TsRailFxS);
     new AnimTypeClass(TsSBang34);
     new AnimTypeClass(TsPulsBall);
     new AnimTypeClass(TsPulseFx1);

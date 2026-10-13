@@ -11,7 +11,7 @@ enabled mod, so the mod keeps only the XML naming them.
 
 A file's pack follows from its name alone, so every pack script asks this module for its output
 paths and a new TS, RA2 or C&C3 asset lands in its pack without a list to maintain:
-  graphics   TS* and RAILFX (not TSLA*, RA's Tesla Coil), R2*, C3<letter> (bare C3 is RA's
+  graphics   TS* (not TSLA*, RA's Tesla Coil), R2*, C3<letter> (bare C3 is RA's
              civilian). The HD-rebuilt TS walls, gates and component towers go to TS-HD.
   cameos     the plain BuildIcon of each of those objects; an HD cameo (scripts/ts_hd_cameos.py)
              sits in TS-HD beside the classic one and wins at staging. Badged, locked and faction-mask
@@ -124,7 +124,7 @@ def graphics_pack(name):
     n = name.upper()
     if n.startswith("TSLA"):
         return None
-    if n.startswith("TS") or n == "RAILFX":
+    if n.startswith("TS"):
         if n.startswith(TS_HD) or n in TS_HD_EXACT:
             return "TS-HD-Graphics-Pack"
         return "TS-Graphics-Pack"

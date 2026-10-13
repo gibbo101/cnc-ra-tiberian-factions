@@ -840,7 +840,7 @@ TechnoClass::TechnoClass(RTTIType rtti, int id, HousesType house)
     , PrimaryFacing(DIR_N)
     , Arm(0)
     , SonicBandEnd(0)
-    , RailCoilEnd(0)
+    , RailHoldEnd(0)
     , BurstShot(0)
     , Ammo(-1)
     , ElectricZapDelay(-1)
@@ -3365,7 +3365,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             return (FIRE_REARM);
         if (weapon->IsSonic && (int)Frame < SonicBandEnd)
             return (FIRE_REARM);
-        if (weapon->IsRailgun && (int)Frame < RailCoilEnd)
+        if (weapon->IsRailgun && (int)Frame < RailHoldEnd)
             return (FIRE_REARM);
 
         /*
@@ -4145,10 +4145,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
 
                 enum { SONIC_SWEEP_STAGES = AnimClass::SONIC_LEAD_STAGES };
                 if (weapon->IsRailgun) {
-                    RailCoilEnd = (int)Frame
-                                  + (weapon->IsRailBeam
-                                         ? TF_Railgun_Beam(weapon->ID == WEAPON_TSLTRAIL, sx, sy, ddx, ddy)
-                                         : TF_Railgun_Coil(weapon->ID == WEAPON_TSLTRAIL, sx, sy, ddx, ddy, dist));
+                    RailHoldEnd = (int)Frame + TF_Railgun_Beam(weapon->ID == WEAPON_TSLTRAIL, sx, sy, ddx, ddy);
                     // TF: a railgun's warhead sets off its explosion where the shot lands.
                     WarheadType burst = (weapon->WarheadPtr != NULL) ? WarheadType(weapon->WarheadPtr->ID) : WARHEAD_NONE;
                     AnimType blast = Combat_Anim(weapon->AmbientDamage, burst, Map[Coord_Cell(dest)].Land_Type());

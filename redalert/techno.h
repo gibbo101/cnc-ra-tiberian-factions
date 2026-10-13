@@ -227,9 +227,9 @@ public:
     // keeps one WaveClass per firer; a cut band shortens it.
     int SonicBandEnd;
 
-    // TF: the frame this object's last railgun coil fades. A railgun can't fire while its coil lives, as TS keeps
-    // one railgun particle system per firer.
-    int RailCoilEnd;
+    // TF: the frame this object's last railgun shot clears. A railgun can't fire before it, as TS keeps one railgun
+    // particle system per firer.
+    int RailHoldEnd;
 
     // TF: the shot of a Juggernaut's salvo it fires next (0 to its Burst less one): RA's own salvo stops at two.
     int BurstShot;

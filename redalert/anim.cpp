@@ -613,10 +613,6 @@ AnimClass::AnimClass(AnimType animnum, COORDINATE coord, unsigned char timedelay
     , SonicHouse(HOUSE_NONE)
     , SonicT(-1)
     , SonicTether(TARGET_NONE)
-    , RailSpeed(0.0f)
-    , RailBlend(0.0f)
-    , RailFade(0.0f)
-    , RailLife(0)
     , Loops(1)
     , IsToDelete(false)
     , IsBrandNew(true)
@@ -762,88 +758,6 @@ AnimClass::~AnimClass(void)
 #endif
 }
 
-// A random step in [-0.5, 0.5], as TS's Random_Double(-0.5, 0.5), from the non-critical generator:
-// railgun sparks are cosmetic.
-static double TF_Rail_Jitter(void)
-{
-    return (Sim_Random_Pick(-500, 500) / 1000.0);
-}
-
-// Lays a TS railgun coil of spark anims along a shot, as OpenTS ParticleSystemClass::Railgun_AI. small picks
-// the Ghost Stalker's [SmallRailgunSys] over the Mk. II's; returns the frames until the last spark fades.
-int TF_Railgun_Coil(bool small, int sx, int sy, int dx, int dy, int dist)
-{
-    struct RailgunSystemType
-    {
-        AnimType Spark;
-        double PerLepton;      // ParticlesPerCoord
-        double Radius;         // SpiralRadius
-        double Turn;           // SpiralDeltaPerCoord
-        double Position;       // PositionPerturbationCoefficient
-        double Movement;       // MovementPerturbationCoefficient
-        double VelocityJitter; // VelocityPerturbationCoefficient
-        double Velocity;       // the particle's Velocity
-        double ColorSpeed;     // the particle's ColorSpeed
-        int MaxEC;             // the particle's MaxEC
-    };
-    static RailgunSystemType const _small = {ANIM_TS_RAILFXS, .1, 6.0, .035, 20.0, .3, .6, .4, .03, 70};
-    static RailgunSystemType const _large = {ANIM_RAILFX, .15, 15.0, .03, 30.0, .4, .6, .3, .009, 70};
-    RailgunSystemType const& sys = small ? _small : _large;
-
-    if (dist <= 0) {
-        return (0);
-    }
-    double px = -(double)dy / dist;
-    double py = (double)dx / dist;
-    int count = (int)(dist * sys.PerLepton);
-    double walk = 0.0;
-    int longest = 0;
-    for (int i = 0; i < count; i++) {
-        double frac = (double)i / count;
-        double angle = dist * frac * sys.Turn;
-        double spiral[3] = {px * cos(angle), py * cos(angle), sin(angle)};
-
-        double pos[3];
-        pos[0] = sx + dx * frac + spiral[0] * sys.Radius + TF_Rail_Jitter() * sys.Position;
-        pos[1] = sy + dy * frac + spiral[1] * sys.Radius + TF_Rail_Jitter() * sys.Position;
-        pos[2] = spiral[2] * sys.Radius + TF_Rail_Jitter() * sys.Position;
-
-        double dir[3];
-        double length = 0.0;
-        for (int k = 0; k < 3; k++) {
-            dir[k] = spiral[k] + TF_Rail_Jitter() * sys.Movement;
-            length += dir[k] * dir[k];
-        }
-        length = sqrt(length);
-
-        double step = (TF_Rail_Jitter() + walk) * (sys.VelocityJitter * 0.5);
-        walk = (step > sys.VelocityJitter) ? sys.VelocityJitter : ((step < -sys.Movement) ? -sys.Movement : step);
-
-        int x = (int)pos[0];
-        int y = (int)(pos[1] - pos[2]);
-        if (x < 0 || y < 0) {
-            continue;
-        }
-        AnimClass* spark = new AnimClass(sys.Spark, XY_Coord(x, y));
-        if (spark == NULL) {
-            break;
-        }
-        for (int k = 0; k < 3; k++) {
-            spark->RailPos[k] = (float)pos[k];
-            spark->RailDir[k] = (length > 0.0) ? (float)(dir[k] / length) : 0.0f;
-        }
-        spark->RailSpeed = (float)(walk + sys.Velocity);
-        spark->RailBlend = 0.0f;
-        spark->RailFade = (float)sys.ColorSpeed;
-        spark->RailLife = sys.MaxEC + Sim_Random_Pick(0, 9);
-        spark->Set_Stage(0);
-        if (spark->RailLife > longest) {
-            longest = spark->RailLife;
-        }
-    }
-    return (longest);
-}
-
 // Lays C&C3's railgun shot from (sx, sy) along (dx, dy) in leptons: glow dots on the core line, the muzzle flash
 // and the impact, in blue or the Ghost Stalker's orange. Returns the frames a TS railgun holds.
 int TF_Railgun_Beam(bool orange, int sx, int sy, int dx, int dy)
@@ -851,7 +765,7 @@ int TF_Railgun_Beam(bool orange, int sx, int sy, int dx, int dy)
     enum
     {
         GLOW_STEP = 16, // leptons between the core's glow dots
-        HOLD = 75,      // TS's coil life, which sets a TS railgun's rate of fire
+        HOLD = 75,      // TS's railgun particle life, which sets a TS railgun's rate of fire
     };
 
     double const dist = sqrt((double)dx * dx + (double)dy * dy);
@@ -874,32 +788,6 @@ int TF_Railgun_Beam(bool orange, int sx, int sy, int dx, int dy)
     return (HOLD);
 }
 
-// One frame of a TS railgun spark, as OpenTS ParticleClass::Railgun_Behavior_AI: it drifts, and its colour
-// blends toward its list's second colour on a 12-stage ladder. It deletes itself when its life runs out.
-void AnimClass::Rail_Spark_AI(void)
-{
-    if (IsToDelete || --RailLife <= 0) {
-        delete this;
-        return;
-    }
-    for (int k = 0; k < 3; k++) {
-        RailPos[k] += RailDir[k] * RailSpeed;
-    }
-    RailSpeed += (float)(TF_Rail_Jitter() * 0.1);
-    RailBlend += RailFade + (float)((TF_Rail_Jitter() + 0.5) * 0.05);
-    if (RailBlend > 1.0f) {
-        RailBlend = 1.0f;
-    }
-    int x = (int)RailPos[0];
-    int y = (int)(RailPos[1] - RailPos[2]);
-    if (x < 0 || y < 0) {
-        delete this;
-        return;
-    }
-    Coord = XY_Coord(x, y);
-    Set_Stage((int)(RailBlend * 11.0f + 0.5f));
-}
-
 /***********************************************************************************************
  * AnimClass::AI -- This is the low level anim processor.                                      *
  *                                                                                             *
@@ -917,11 +805,6 @@ void AnimClass::Rail_Spark_AI(void)
  *=============================================================================================*/
 void AnimClass::AI(void)
 {
-    if (Class->Type == ANIM_RAILFX || Class->Type == ANIM_TS_RAILFXS) {
-        Rail_Spark_AI();
-        return;
-    }
-
 #ifdef VIC
     assert(Anims.ID(this) == ID);
     assert(IsActive);

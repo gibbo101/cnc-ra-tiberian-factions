@@ -12,8 +12,8 @@ tank along the firing line. Measured on a 834x465 capture:
 
   * band thickness ~39px against a 108px unit selection box -> the band is
     ~0.36 of the unit's own width. For our 56px ShapeSize Disruptor that is
-    ~20 classic px, and at the 5.33 canvas-per-classic-px VFX ratio (RAILFX:
-    128px canvas, 24 classic dim) that is ~107px inside a 128px canvas.
+    ~20 classic px, and at 5.33 canvas px per classic px (a 128px canvas
+    for a 24 classic dim) that is ~107px inside a 128px canvas.
   * mean band colour (121,176,105) over (122,94,59) terrain. Solving the
     alpha composite gives roughly (130,235,140) at ~60% alpha.
   * the interior is mottled rather than flat -- it reads as rippling pressure.
@@ -51,7 +51,7 @@ from PIL import Image, ImageDraw, ImageFilter
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import asset_packs
 
-CANVAS = 128          # 5.33 canvas px per classic px -> 24 classic dim, as RAILFX
+CANVAS = 128          # 5.33 canvas px per classic px -> 24 classic dim
 FRAMES = 25           # anim stages at 5 ticks each (adata.cpp): ~3.2s at ~40 ticks/s, the TS band's life
 LEAD_STAGES = 5       # fully transparent lead-in = the outward sweep (SONIC_SWEEP_STAGES)
 DIAMETER = 80.0       # ~15 classic px: 25% under the TS polygon (+-100 leptons = 18.75 px)

@@ -170,16 +170,6 @@ public:
     int SonicT;        // this disc's place on the muzzle->target line, 0-256; -1 once the band is cut loose
     TARGET SonicTether; // what the band was fired at: the firer must keep aiming at it or the band retracts
 
-    // TF: a TS railgun spark (ANIM_RAILFX, ANIM_TS_RAILFXS) moves as an OpenTS BEHAVIOR_RAILGUN particle.
-    // RailPos is in leptons with Z above the ground; RailBlend runs 0 to 1 toward its second colour.
-    float RailPos[3];
-    float RailDir[3];
-    float RailSpeed;
-    float RailBlend;
-    float RailFade;
-    int RailLife;
-    void Rail_Spark_AI(void);
-
     /*
     **	This counter tells how many more times the animation should loop before it
     **	terminates.

@@ -1,19 +1,14 @@
 #!/usr/bin/env python3
-"""The sidebar side of the TS walkers, and the rail spark tileset:
+"""The sidebar side of the TS walkers:
   - TSTITN, TSHMEC  art packed from the HD rebuilds by scripts/ts_pack_hd_buildings.py; their
                  cameos, buildable entries and text are written here.
-  - RAILFX pad   the spark tileset padded to 12 shapes (6 real + 6 blank):
-                 WINDOW_VIRTUAL anim draws ignore the stage cap (anim.cpp:328),
-                 so dying sparks request shapes >= Stages — blanks absorb them
-                 instead of the launcher's white placeholder box.
-  - TS_VFX.XML tile run (REPLACING any existing entries), TSBUILDABLES.XML, ModText.csv,
-    BuildIcons (TS cameos via CAMEO.PAL).
+  - TSBUILDABLES.XML, ModText.csv, BuildIcons (TS cameos via CAMEO.PAL).
 Cameos and XML go to the tree asset_packs.py routes each name to.
 
 Inputs (set TS_ART_DIR):
   $TS_ART_DIR/shp_mmchicon2, shp_hmecicon2  decoded TS cameos (CAMEO.PAL!)
 """
-import io, json, os, re, sys, zipfile
+import os, sys
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -26,33 +21,8 @@ if not ART:
 MOD = os.environ.get("TF_MOD_DIR", asset_packs.MOD)
 
 
-def tga_bytes(img):
-    buf = io.BytesIO()
-    img.save(buf, format="TGA")
-    return buf.getvalue()
-
-
 # TSTITN (Titan, with its muzzle table redalert/tstitn_muzzle.h), TSHMEC (Mammoth Mk. II) and
 # TSHVR (Hover MLRS) are packed from their HD art by scripts/ts_pack_hd_buildings.py.
-
-# ---- RAILFX: repack existing 6 real frames + 6 blank pad shapes ----
-RAILFX_ZIP = asset_packs.art_zip("RAILFX", "VFX")
-src = zipfile.ZipFile(RAILFX_ZIP)
-real = []
-for i in range(6):
-    meta = json.loads(src.read(f"railfx-{i:04d}.meta"))
-    tga = src.read(f"railfx-{i:04d}.tga")
-    real.append((tga, meta))
-blank = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
-blank_tga = tga_bytes(blank.crop((0, 0, 2, 2)))
-with zipfile.ZipFile(RAILFX_ZIP, "w", zipfile.ZIP_DEFLATED) as z:
-    for i, (tga, meta) in enumerate(real):
-        z.writestr(f"railfx-{i:04d}.tga", tga)
-        z.writestr(f"railfx-{i:04d}.meta", json.dumps(meta))
-    for i in range(6, 12):
-        z.writestr(f"railfx-{i:04d}.tga", blank_tga)
-        z.writestr(f"railfx-{i:04d}.meta", json.dumps({"size": [128, 128], "crop": [0, 0, 2, 2]}))
-print("repacked RAILFX.ZIP (6 real + 6 blank shapes)")
 
 # ---- BuildIcons (CAMEO.PAL decodes) ----
 for src_d, out in [("shp_mmchicon2", "BuildIcon_TS_Titan"),
@@ -68,27 +38,6 @@ for src_d, out in [("shp_mmchicon2", "BuildIcon_TS_Titan"),
     big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
     big.save(asset_packs.cameo_tga(out))
     print(f"wrote {asset_packs.cameo_tga(out)}")
-
-# ---- Tileset XML (replace-capable) ----
-def tile_block(name, shape, frame_path):
-    return ("\t<Tile>\n\t\t<Key>\n\t\t\t<Name>%s</Name>\n\t\t\t<Shape>%d</Shape>\n\t\t</Key>\n"
-            "\t\t<Value>\n\t\t\t<Frames>\n\t\t\t\t<Frame>%s</Frame>\n\t\t\t</Frames>\n\t\t</Value>\n\t</Tile>\n"
-            % (name, shape, frame_path))
-
-def patch_tileset(xml_path, name, count, subdir=None):
-    sub = subdir or name.lower()
-    xml = open(xml_path, encoding="utf-8").read()
-    # drop any existing Tile blocks for this name (any indentation)
-    xml = re.sub(
-        r"\t*<Tile>\s*<Key>\s*<Name>" + re.escape(name) + r"</Name>.*?</Tile>\n?",
-        "", xml, flags=re.S)
-    blocks = "".join(tile_block(name, s, f"{sub}\\{sub}-{s:04d}.tga") for s in range(count))
-    idx = xml.rindex("</Tiles>")
-    xml = xml[:idx] + blocks + xml[idx:]
-    open(xml_path, "w", encoding="utf-8").write(xml)
-    print(f"patched {os.path.basename(xml_path)}: {name} -> {count} tiles")
-
-patch_tileset(asset_packs.tileset_xml("RAILFX", "VFX"), "RAILFX", 12)
 
 # ---- Sidebar entries, in the buildables XML of each cameo's tree ----
 def buildable(name, text, icon):

@@ -141,7 +141,6 @@ class BuildingClass* TS_Refinery_Lane_Owner(CELL cell); // TS refinery dock lane
 
 extern int Get_CD_Drive(void);
 extern void Fatal(char const* message, ...);
-extern int TF_Railgun_Coil(bool small, int sx, int sy, int dx, int dy, int dist);
 extern int TF_Railgun_Beam(bool orange, int sx, int sy, int dx, int dy); // C&C3's railgun shot, a RailBeam weapon's (anim.cpp)
 extern void TF_Sensor_Tick(void); // announces newly sensed cloaked/buried enemies (building.cpp)
 extern bool TF_Is_Sensed(HouseClass const* house, COORDINATE coord); // inside a friendly Sensor Array's range (building.cpp)

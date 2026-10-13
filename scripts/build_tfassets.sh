@@ -228,8 +228,7 @@ PACK_ARGS+=("$TMPDIR/tshvr_stub.shp:TSHVR.SHP")
 
 # TS walkers (Titan + Mammoth Mk. II) -- same HD-only stub pattern. Titan gets
 # the tank box; the Mk. II's larger 56x56 box makes it render, select and
-# health-bar as the hulk it is. RAILFX is the railgun helix spark anim (dims
-# only; 6 frames).
+# health-bar as the hulk it is.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tstitn_stub.shp" 56 56 128
 PACK_ARGS+=("$TMPDIR/tstitn_stub.shp:TSTITN.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tshmec_stub.shp" 72 72 256
@@ -573,10 +572,6 @@ ts_stub TSSILO "$TMPDIR/tssilo_stub.shp" 48 72 2
 PACK_ARGS+=("$TMPDIR/tssilo_stub.shp:TSSILO.SHP")
 ts_stub TSSILO "$TMPDIR/tssilomk_stub.shp" 48 72 24
 PACK_ARGS+=("$TMPDIR/tssilomk_stub.shp:TSSILOMAKE.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/railfx_stub.shp" 24 24 12
-PACK_ARGS+=("$TMPDIR/railfx_stub.shp:RAILFX.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsrailfxs_stub.shp" 24 24 12
-PACK_ARGS+=("$TMPDIR/tsrailfxs_stub.shp:TSRAILFXS.SHP")
 # TS Jumpjet Infantry: its own stub at E1's 50x39 carrying all 451 poses, since classic drawing
 # drops any frame past the shape's count and E1 has 438. TSBANG34 is its shot-down burst.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsjumpjet_stub.shp" 50 39 451
