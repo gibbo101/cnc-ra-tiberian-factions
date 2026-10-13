@@ -39,9 +39,8 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   `mastertext.edits.txt` names and `picker_emblems_paint.py` plates move with it.
 - **Nod's cargo plane circles the airstrip** (`known-issues.md`): find why the TDC17 sometimes
   misses its landing on `TDAFLD` and fix it, with a play test of several deliveries.
-- **Rail tanks share the plain tanks' frames, before the packs ship.** `C3PREDRAIL.ZIP` and `C3MK3RAIL.ZIP`
-  repeat 96 of their 128 frames; ship only the 32 rail-turret frames and point the other tiles at `C3PRED.ZIP` /
-  `C3MK3.ZIP`, as `TDC17P` does with `TDC17.ZIP`, then check the rail Predator in game.
+- **Check in play: the rail Mk. III and Predator from the C&C3 pack.** Their hull tiles name the plain tanks'
+  ZIP members; check both draw whole in game (hull and rail turret) with the pack enabled, in RA and TD.
 - **TD copies of the asset packs, with each pack's first release.** TD reads art only from
   `SRGB/TIBERIAN_DAWN/`, so a TD copy carries its art there with TD tileset and sound XML. Every pack goes up
   as two Workshop items, one per game, so neither game's players download the other's copy as the packs grow.

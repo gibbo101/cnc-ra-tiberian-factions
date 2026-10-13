@@ -286,8 +286,9 @@ rather than using Blender: you need exact control of camera, light and colour.
   barrel, a cable, a forked tip) and hides nothing. `scripts/c3_rail_turrets.py` adds them to the model
   (`extract`), renders the 32 turret facings with `c3_render.py --rails --glow` (`render`; a facing whose
   rail tip reaches the 1000 px canvas renders on 2000 px, packed on the same pixel grid) and writes each
-  tank's shipped tileset with those turret frames (`pack`). The glow on the blue conduit is ours: C&C3's
-  spec map leaves the rails unlit. Only the C&C3 pack carries them.
+  rail tank's ZIP with only those 32 turret frames (`pack`). Its hull tiles (0-95) name the plain tank's
+  ZIP members, which the launcher has open because the plain tank's own tiles are in the same pack. The glow
+  on the blue conduit is ours: C&C3's spec map leaves the rails unlit. Only the C&C3 pack carries them.
 
 ## 8. DLL side (needs a Vanilla Conquer based DLL)
 
