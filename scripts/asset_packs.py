@@ -58,24 +58,45 @@ WORKSHOP = {
     "TS-HD-Assets": {
         "packs": ("TS-Graphics-Pack", "TS-HD-Graphics-Pack", "TS-SFX-Pack", "TS-EVA-eng", "TS-Voices-eng"),
         "required": True, "marker": "TSHDPACK.INI", "xml_id": "TSHDAssets", "version": (1, 0), "game": "TS",
-        "prefix": "TS",
+        "prefix": "TS", "hosts": ("RA",),
         "name": "Tiberian Sun HD Assets",
-        "description": "Tiberian Sun units, buildings, effects, sounds and EVA for Red Alert, in HD.",
+        "description": "Tiberian Sun units, buildings, effects, sounds and EVA for {host}, in HD.",
     },
     "RA2-HD-Assets": {
         "packs": ("RA2-Graphics-Pack", "RA2-SFX-Pack", "RA2-Voices-eng"),
         "required": False, "xml_id": "RA2HDAssets", "version": (1, 0), "game": "RA2", "prefix": "R2",
+        "hosts": ("RA", "TD"),
         "name": "Red Alert 2 HD Assets",
-        "description": "Red Alert 2 units, sounds and voices for Red Alert, in HD.",
+        "description": "Red Alert 2 units, sounds and voices for {host}, in HD.",
     },
     "CNC3-Assets": {
         "packs": ("CNC3-Graphics-Pack", "CNC3-SFX-Pack", "CNC3-Voices-eng"),
         "required": False, "xml_id": "CNC3Assets", "version": (1, 0), "game": "CNC3", "prefix": "C3",
+        "hosts": ("RA", "TD"),
         "name": "C&C3 Tiberium Wars Assets",
-        "description": "Command & Conquer 3 units, effects, sounds and voices for Red Alert, in HD.",
+        "description": "Command & Conquer 3 units, effects, sounds and voices for {host}, in HD.",
     },
 }
 REQUIRED = [mod for mod, w in WORKSHOP.items() if w["required"]]
+
+# The game a Workshop item is for: its ccmod game_type and art folder under ART/TEXTURES/SRGB, the prefix of its
+# launcher XML and buildable names, and its terrain theatres by RA theatre. A game reads art only from its own folder.
+HOSTS = {
+    "RA": {"name": "Red Alert", "art": "RED_ALERT", "root": "Red_Alert", "prefix": "RA", "buildables": "RABUILDABLES",
+           "theatres": {"TEMPERATE": "TEMPERATE", "SNOW": "SNOW", "INTERIOR": "INTERIOR"}},
+    "TD": {"name": "Tiberian Dawn", "art": "TIBERIAN_DAWN", "root": "Tiberian_Dawn", "prefix": "TD",
+           "buildables": "CNCBUILDABLES", "theatres": {"TEMPERATE": "TEMPERATE", "SNOW": "WINTER"}},
+}
+
+
+def item(mod, host):
+    """The Workshop item (and mod folder) name of a Workshop pack for one game."""
+    return mod if host == "RA" else f"{mod}-{host}"
+
+
+def items():
+    """(item, mod, host) for every Workshop item."""
+    return [(item(mod, host), mod, host) for mod, w in WORKSHOP.items() for host in w["hosts"]]
 
 # Objects only the Workshop packs carry: art for other mods that no Tiberian Factions type draws, so its build leaves
 # out their ZIPs and tiles (scripts/stage_asset_packs.py).

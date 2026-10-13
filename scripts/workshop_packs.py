@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Build the Workshop asset-pack mods (asset_packs.WORKSHOP) from the asset-packs/ source folders.
 
-Usage:  workshop_packs.py <out dir> [mod ...]   (every Workshop pack when none is named)
+Usage:  workshop_packs.py <out dir> [item ...]   (every Workshop item when none is named)
 
-Each mod is a data-only Red Alert mod folder: ccmod.json, README.md, every file of its source packs
-under Data/ART and Data/AUDIO (a later pack's copy of a path wins), and its XML: one file per
-launcher XML, the source packs' entries together, complete on their own (no ZIP shared with another
-mod); a DLL mod copies the entries into its own XML. A pack Tiberian Factions requires also
-carries its marker in CCDATA, which the mod's DLL reads to know the pack is enabled.
+Each item is a data-only mod for one game (asset_packs.items: Red Alert, or Tiberian Dawn as <mod>-TD):
+ccmod.json, README.md, every file of its source packs under Data/ART and Data/AUDIO (a later pack's copy
+of a path wins; a TD item's art moves to TD's own folder), and its XML: one file per launcher XML, the
+source packs' entries together, complete on their own (no ZIP shared with another mod), in that game's
+names and texture roots; a DLL mod copies the entries into its own XML. A pack Tiberian Factions requires
+also carries its marker in CCDATA, which the mod's DLL reads to know the pack is enabled.
 
 scripts/stage_asset_packs.py builds the required packs beside the staged mod the same way.
 
@@ -18,6 +19,7 @@ import os
 import re
 import shutil
 import sys
+import zipfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import asset_packs as A  # noqa: E402
@@ -47,7 +49,20 @@ def copy_newer(src, dst):
     return shutil.copy2(src, dst)
 
 
-def copy_binaries(mod, folder):
+def host_path(rel, host):
+    """A path under Data/ART for the host game: Red Alert art moves to that game's folder and theatre."""
+    parts = rel.split(os.sep)
+    if host == "RA" or parts[:3] != ["TEXTURES", "SRGB", "RED_ALERT"]:
+        return rel
+    h = A.HOSTS[host]
+    if parts[3] == "TERRAIN":
+        if parts[4] not in h["theatres"]:
+            raise SystemExit(f"{h['name']} has no {parts[4].lower()} theatre for {rel}")
+        parts[4] = h["theatres"][parts[4]]
+    return os.path.join("TEXTURES", "SRGB", h["art"], *parts[3:])
+
+
+def copy_binaries(mod, folder, host):
     """Every file under the mod's source packs' Data/ART and Data/AUDIO; a later pack's copy of a path wins."""
     packs = A.WORKSHOP[mod]["packs"]
     for i, pack in enumerate(packs):
@@ -60,7 +75,7 @@ def copy_binaries(mod, folder):
                     rel = os.path.relpath(os.path.join(d, f), src)
                     if rel.upper() in later:
                         continue
-                    dst = os.path.join(folder, "Data", sub, rel)
+                    dst = os.path.join(folder, "Data", sub, host_path(rel, host) if sub == "ART" else rel)
                     os.makedirs(os.path.dirname(dst), exist_ok=True)
                     copy_newer(os.path.join(d, f), dst)
 
@@ -89,35 +104,68 @@ def write_if_changed(path, text):
         open(path, "w", encoding="utf-8", newline="").write(text)
 
 
-def write_xml(mod, folder):
-    """The mod's XML files; returns {launcher XML: the pack's file name}."""
+def host_xml(rel, text, host):
+    """A launcher XML's path and text for the host game: its tileset names and texture roots, its buildable names."""
+    if host == "RA":
+        return rel, text
+    h = A.HOSTS[host]
+    if os.path.basename(rel) == "RABUILDABLES.XML":
+        text = re.sub(r'(<ObjectTypeClass\s+Name=")RA_', r"\g<1>%s_" % h["prefix"], text)
+        return os.path.join(os.path.dirname(rel), h["buildables"] + ".XML"), text
+    if os.sep + "TILESETS" + os.sep not in rel:
+        return rel, text
+    kind = os.path.basename(rel)[len("RA_"):-len(".XML")]
+    if kind.startswith("TERRAIN_"):
+        theatre = kind[len("TERRAIN_"):]
+        if theatre not in h["theatres"]:
+            if re.search(r"<Tile>", text):
+                raise SystemExit(f"{h['name']} has no {theatre.lower()} theatre for {rel}")
+            return None, None
+        kind = "TERRAIN_" + h["theatres"][theatre]
+    text = re.sub(r'(<TilesetTypeClass\s+name=")RA_\w+', lambda m: m.group(1) + h["prefix"] + "_" +
+                  "_".join(w.capitalize() if w != "VFX" else w for w in kind.split("_")), text)
+    text = re.sub(r"(<RootTexturePath>)Red_Alert\\[^<]*", lambda m: m.group(1) + h["root"] + "\\" +
+                  "\\".join(w.capitalize() if w != "VFX" else w for w in A.kind_dir(kind).split(os.sep)), text)
+    return os.path.join(os.path.dirname(rel), f"{h['prefix']}_{kind}.XML"), text
+
+
+def write_xml(mod, folder, host):
+    """The mod's XML files; returns {the host's launcher XML: the pack's file name}."""
     files = {}
     for rel, pack_file, root, _ in A.XML_FILES:
         sub, pattern = XML_NAMES[rel]
         text = combined_xml(mod, rel, pack_file, root)
         if text is None:
             continue
+        target, text = host_xml(rel, text, host)
+        if target is None:
+            continue
         name = pattern.format(id=A.WORKSHOP[mod]["xml_id"])
+        if host != "RA" and sub == "TILESETS":
+            name = os.path.basename(target).replace(A.HOSTS[host]["prefix"], A.WORKSHOP[mod]["xml_id"], 1)
         write_if_changed(os.path.join(folder, "Data", "XML", sub, name), text)
-        files[rel] = name
+        files[target] = name
     return files
 
 
-def write_manifest(mod, folder):
+def write_manifest(mod, folder, host):
     """ccmod.json, and for a pack Tiberian Factions requires, the CCDATA marker carrying its version."""
     w = A.WORKSHOP[mod]
     high, low = w["version"]
-    manifest = {"name": w["name"], "description": w["description"], "author": "gibbo101", "load_order": 2,
-                "version_high": high, "version_low": low, "game_type": "RA"}
+    manifest = {"name": w["name"], "description": w["description"].format(host=A.HOSTS[host]["name"]),
+                "author": "gibbo101", "load_order": 2, "version_high": high, "version_low": low, "game_type": host}
     write_if_changed(os.path.join(folder, "ccmod.json"), json.dumps(manifest, indent=4) + "\n")
-    if w.get("marker"):
+    if w.get("marker") and host == "RA":
         write_if_changed(os.path.join(folder, "CCDATA", w["marker"]),
                          f"[Pack]\nName={mod}\nVersion={high}.{low}\n")
 
 
 GAME = {"TS": "Tiberian Sun", "RA2": "Red Alert 2", "CNC3": "Command & Conquer 3: Tiberium Wars"}
 TF_URL = "https://steamcommunity.com/sharedfiles/filedetails/?id=3729834253"
-EA_EXAMPLE_URL = "https://github.com/electronicarts/CnC_Remastered_Collection/blob/master/REDALERT/ADATA.CPP#L2590"
+EA_EXAMPLE_URL = {
+    "RA": "https://github.com/electronicarts/CnC_Remastered_Collection/blob/master/REDALERT/ADATA.CPP#L2590",
+    "TD": "https://github.com/electronicarts/CnC_Remastered_Collection/blob/master/TIBERIANDAWN/UDATA.CPP#L1681",
+}
 
 
 def contents(mod):
@@ -129,13 +177,19 @@ def contents(mod):
     return {title: sorted(names) for title, names in out.items()}
 
 
-def readme(mod, listed):
+def readme(mod, listed, host):
     """The pack's README.md: what it is, how players and modders use it, contents and credits."""
     w = A.WORKSHOP[mod]
+    h = A.HOSTS[host]
     game = GAME[w["game"]]
-    lines = [f"# {w['name']}", "", w["description"] + " Built for Command & Conquer Remastered Collection.", "",
+    lines = [f"# {w['name']}", "", w["description"].format(host=h["name"]) +
+             " Built for Command & Conquer Remastered Collection.", "",
              "This is an asset pack: on its own it adds nothing to the game. A mod has to use it.", ""]
-    if w["required"]:
+    twins = [A.HOSTS[o]["name"] for o in w["hosts"] if o != host]
+    if twins:
+        lines += [f"The same pack for {' and '.join(twins)} is a separate item: each game reads art only from its own "
+                  "folder.", ""]
+    if w["required"] and host == "RA":
         lines += ["## Playing Tiberian Factions", "",
                   f"[Tiberian Factions]({TF_URL}) needs this pack for its {game} factions.", "",
                   "1. Subscribe to Tiberian Factions and to this pack.",
@@ -149,9 +203,9 @@ def readme(mod, listed):
               "base game's own assets.", "",
               "Enable this pack beside your mod (the game finds its art and sounds in any enabled mod) and copy "
               "the entries you need from this pack's `Data/XML` files into your mod's "
-              "`RA_*.XML`, `RABUILDABLES.XML` and `SFXEVENTS*.XML`. Each object needs a classic-mode SHP with the "
-              "same frame count (a transparent stub is enough) and its `ImageData` set in your DLL's `Init` or "
-              f"`One_Time` ([EA's example]({EA_EXAMPLE_URL})).", ""]
+              f"`{h['prefix']}_*.XML`, `{h['buildables']}.XML` and `SFXEVENTS*.XML`. Each object needs a classic-mode "
+              "SHP with the same frame count (a transparent stub is enough) and its `ImageData` set in your DLL's "
+              f"`Init` or `One_Time` ([EA's example]({EA_EXAMPLE_URL[host]})).", ""]
     if w["game"] == "TS":
         lines += ["Most units use the stock layout: one frame per facing, then a turret block where they have one. "
                   "Walkers, units with rolling treads or offset turrets, and buildings with doors, docks or add-ons "
@@ -165,7 +219,7 @@ def readme(mod, listed):
     if w["game"] in ("TS", "RA2"):
         lines += ["The HD art in this pack was made with AI assistance. The 3D models behind the sprites were built "
                   "and refined with AI tools, then rendered, checked and fitted to the game by hand, and every asset "
-                  "was reviewed in play before release."]
+                  "was reviewed in play in Red Alert before release."]
     else:
         lines += ["These sprites were rendered from the game's own 3D models; no AI generated the art."]
     makers = "Electronic Arts'" if w["game"] == "CNC3" else "Westwood's and Electronic Arts'"
@@ -181,23 +235,55 @@ def readme(mod, listed):
     return "\n".join(lines)
 
 
-def build(mod, folder):
-    """The whole Workshop folder for one asset-pack mod."""
-    write_manifest(mod, folder)
-    copy_binaries(mod, folder)
-    listed = write_xml(mod, folder)
-    write_if_changed(os.path.join(folder, "README.md"), readme(mod, listed))
+def build(mod, folder, host="RA"):
+    """The whole Workshop folder for one asset-pack mod, for one game."""
+    write_manifest(mod, folder, host)
+    copy_binaries(mod, folder, host)
+    listed = write_xml(mod, folder, host)
+    write_if_changed(os.path.join(folder, "README.md"), readme(mod, listed, host))
+    check(folder, host)
+
+
+def check(folder, host):
+    """Stop if a tile's frame has no file in the item, or a ZIP has no tile of its own name to open it."""
+    art = os.path.join(folder, "Data", "ART", "TEXTURES", "SRGB", A.HOSTS[host]["art"])
+    zips = {}
+    for d, _, fs in os.walk(art):
+        for f in fs:
+            if f.upper().endswith(".ZIP"):
+                rel = os.path.relpath(os.path.join(d, f), art).replace(os.sep, "\\").upper()
+                zips[rel[:-4]] = {n.upper() for n in zipfile.ZipFile(os.path.join(d, f)).namelist()}
+    named, problems = set(), []
+    tilesets = os.path.join(folder, "Data", "XML", "TILESETS")
+    for f in sorted(os.listdir(tilesets)) if os.path.isdir(tilesets) else []:
+        text = open(os.path.join(tilesets, f), encoding="utf-8-sig").read()
+        root = re.search(r"<RootTexturePath>([^<]+)</RootTexturePath>", text).group(1)
+        if not root.upper().startswith(A.HOSTS[host]["root"].upper() + "\\"):
+            problems.append(f"{f}: root {root} is not {A.HOSTS[host]['name']}'s")
+        folder_key = root.split("\\", 1)[1].upper()
+        for name, frames in re.findall(r"<Name>([^<]+)</Name>.*?<Frames>(.*?)</Frames>", text, re.S):
+            named.add(f"{folder_key}\\{name.upper()}")
+            for frame in re.findall(r"<Frame>([^<]+)</Frame>", frames):
+                z, _, tga = frame.upper().partition("\\")
+                if tga not in zips.get(f"{folder_key}\\{z}", ()):
+                    problems.append(f"{f}: {name} frame {frame} is not in {folder_key}\\{z}.ZIP")
+    problems += [f"{z}.ZIP has no tile named {z.rsplit(chr(92), 1)[1]}, so the game never opens it"
+                 for z in zips if z not in named]
+    if problems:
+        raise SystemExit(f"{folder}:\n  " + "\n  ".join(problems[:20]))
 
 
 def main(argv):
     if not argv:
         raise SystemExit(__doc__)
-    out, mods = argv[0], argv[1:] or list(A.WORKSHOP)
-    for mod in mods:
-        if mod not in A.WORKSHOP:
-            raise SystemExit(f"not a Workshop pack: {mod}")
-        build(mod, os.path.join(out, mod))
-        print(f"built {os.path.join(out, mod)}")
+    out, wanted = argv[0], argv[1:]
+    known = {i: (mod, host) for i, mod, host in A.items()}
+    for name in wanted or list(known):
+        if name not in known:
+            raise SystemExit(f"not a Workshop item: {name} (items: {', '.join(known)})")
+        mod, host = known[name]
+        build(mod, os.path.join(out, name), host)
+        print(f"built {os.path.join(out, name)}")
 
 
 if __name__ == "__main__":
