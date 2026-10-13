@@ -198,6 +198,19 @@ def render(m, yaw_deg, part, ppu, canvas, elev_deg, tread_phase=0.0, ss=3, turre
     n /= np.linalg.norm(n, axis=1, keepdims=True) + 1e-12
     is_tread = m.mat[tv[:, 0]] == 1
 
+    def normal_mapped(sel, tex, suv):
+        """The selected pixels' normals bent by a tangent-space normal map."""
+        t = interp(T)[sel]
+        bn = interp(B)[sel]
+        nm = sample(tex, suv)[:, :3] / 127.5 - 1.0
+        nb = n[sel]
+        t = t - nb * (t * nb).sum(1, keepdims=True)
+        t /= np.linalg.norm(t, axis=1, keepdims=True) + 1e-12
+        bn = bn - nb * (bn * nb).sum(1, keepdims=True)
+        bn /= np.linalg.norm(bn, axis=1, keepdims=True) + 1e-12
+        pn = t * nm[:, 0:1] + bn * nm[:, 1:2] + nb * nm[:, 2:3]
+        return pn / (np.linalg.norm(pn, axis=1, keepdims=True) + 1e-12)
+
     rgb = np.zeros((len(ys), 3), dtype=np.float32)
     is_rail = m.mat[tv[:, 0]] == 2
     body = ~is_tread & ~is_rail
@@ -206,17 +219,7 @@ def render(m, yaw_deg, part, ppu, canvas, elev_deg, tread_phase=0.0, ss=3, turre
         ruv = uv[is_rail]
         col = sample(m.rail_body, ruv)[:, :3]
         rgb[is_rail] = col
-        t = interp(T)[is_rail]
-        bn = interp(B)[is_rail]
-        nm = sample(m.rail_normal, ruv)[:, :3] / 127.5 - 1.0
-        nb = n[is_rail]
-        t = t - nb * (t * nb).sum(1, keepdims=True)
-        t /= np.linalg.norm(t, axis=1, keepdims=True) + 1e-12
-        bn = bn - nb * (bn * nb).sum(1, keepdims=True)
-        bn /= np.linalg.norm(bn, axis=1, keepdims=True) + 1e-12
-        pn = t * nm[:, 0:1] + bn * nm[:, 1:2] + nb * nm[:, 2:3]
-        pn /= np.linalg.norm(pn, axis=1, keepdims=True) + 1e-12
-        n[is_rail] = pn
+        n[is_rail] = normal_mapped(is_rail, m.rail_normal, ruv)
         if glow > 0:
             blue = np.clip((col[:, 2] - np.maximum(col[:, 0], col[:, 1]) - 20.0) / 60.0, 0, 1)
             emissive[is_rail] = glow * blue[:, None] * np.array([90.0, 170.0, 255.0])
@@ -231,18 +234,7 @@ def render(m, yaw_deg, part, ppu, canvas, elev_deg, tread_phase=0.0, ss=3, turre
         white = np.clip((lum - 170.0) / 40.0, 0, 1) * np.clip(1 - sat * 3, 0, 1)
         mask = mask * (1 - white)
         rgb[body] = col * (1 - mask) + team * mask
-        # tangent-space normal map
-        t = interp(T)[body]
-        bn = interp(B)[body]
-        nm = sample(m.normal, buv)[:, :3] / 127.5 - 1.0
-        nb = n[body]
-        t = t - nb * (t * nb).sum(1, keepdims=True)
-        t /= np.linalg.norm(t, axis=1, keepdims=True) + 1e-12
-        bn = bn - nb * (bn * nb).sum(1, keepdims=True)
-        bn /= np.linalg.norm(bn, axis=1, keepdims=True) + 1e-12
-        pn = t * nm[:, 0:1] + bn * nm[:, 1:2] + nb * nm[:, 2:3]
-        pn /= np.linalg.norm(pn, axis=1, keepdims=True) + 1e-12
-        n[body] = pn
+        n[body] = normal_mapped(body, m.normal, buv)
     if is_tread.any():
         tuv = uv[is_tread].copy()
         tuv[:, 0] -= m.dudx_sign * tread_phase * m.link_pitch
