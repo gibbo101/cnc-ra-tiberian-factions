@@ -69,6 +69,8 @@ only the `RA_` files. A pack's XML files are what a modder copies, and what the 
   MCVs) keeps its own ZIP in the source tree, so a reskin touches one type. Staging draws its frames
   from the first identical ZIP and leaves the copy out of the build (`scripts/share_tileset_zips.py`;
   run it alone to list what it would leave out).
+- **Pack-only objects:** `asset_packs.PACK_ONLY` names art only the Workshop pack carries (the C&C3
+  railgun tanks): staging leaves out their ZIPs and tiles, so the mod ships no art it never draws.
 - **Cameos** stay uncompressed in the source; staging writes each `BuildIcon_*` TGA run-length
   encoded, the same pixels at about four fifths the size.
 - **Build:** the CMake post-build step copies `resources/remaster_mods/Vanilla_RA`, then

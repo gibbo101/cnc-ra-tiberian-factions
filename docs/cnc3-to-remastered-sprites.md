@@ -282,6 +282,12 @@ rather than using Blender: you need exact control of camera, light and colour.
   portraits are square: crop the centre 4:3 band, then resize.
 - **Classic stub:** Remastered still needs a classic-mode SHP of the same frame count, sized
   canvas / 8 (ours: 64x64 and 48x48, 128 frames each).
+- **Railgun upgrade (`C3MK3RAIL`, `C3PREDRAIL`):** C&C3 shows the `UGRAIL` meshes (a sleeve round each
+  barrel, a cable, a forked tip) and hides nothing. `scripts/c3_rail_turrets.py` adds them to the model
+  (`extract`), renders the 32 turret facings with `c3_render.py --rails --glow` (`render`; a facing whose
+  rail tip reaches the 1000 px canvas renders on 2000 px, packed on the same pixel grid) and writes each
+  tank's shipped tileset with those turret frames (`pack`). The glow on the blue conduit is ours: C&C3's
+  spec map leaves the rails unlit. Only the C&C3 pack carries them.
 
 ## 8. DLL side (needs a Vanilla Conquer based DLL)
 
