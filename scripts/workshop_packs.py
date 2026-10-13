@@ -219,10 +219,10 @@ def readme(mod, listed, host):
               f"`{h['prefix']}_*.XML`, `{h['buildables']}.XML` and `SFXEVENTS*.XML`. Each object needs a classic-mode "
               "SHP with the same frame count (a transparent stub is enough) and its `ImageData` set in your DLL's "
               f"`Init` or `One_Time` ([EA's example]({EA_EXAMPLE_URL[host]})).", "",
-              "Some stock tiles are animated: they hold several `<Frame>`s and an `<AnimationData>` FPS (the Red Alert "
-              "Heavy Tank and Mammoth Tank turrets have 8 frames at 5 FPS). When you point an existing tile at this "
-              "pack's art, replace its whole `<Frames>` list and remove its `<AnimationData>`, or the stock frames keep "
-              "playing between yours.", ""]
+              "Some stock tiles are animated: they hold several `<Frame>`s and an `<AnimationData>` FPS"
+              + (" (the Red Alert Heavy Tank and Mammoth Tank turrets have 8 frames at 5 FPS)" if host == "RA" else "")
+              + ". When you point an existing tile at this pack's art, replace its whole `<Frames>` list and remove its "
+              f"`<AnimationData>`, or you'll see the {host} frames constantly switch with yours.", ""]
     if w["game"] == "TS":
         lines += ["Most units use the stock layout: one frame per facing, then a turret block where they have one. "
                   "Walkers, units with rolling treads or offset turrets, and buildings with doors, docks or add-ons "
