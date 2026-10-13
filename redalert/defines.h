@@ -2996,7 +2996,6 @@ typedef enum AnimType : short
     ANIM_BEACON_VIRTUAL,     // Beacon (virtual).
 #endif
 
-    ANIM_RAILFX, // TS railgun particle: a small blue spark, spawned in a helix along the MechRailgun line.
     ANIM_TS_SONICWAVE, // TS Disruptor wave: a translucent disc (TSSONICW), spawned in a chain along the SonicZap line.
     ANIM_TS_GUNFIRE,    // TS GUNFIRE muzzle flash: Anim= of the TS railguns and TS120mmx.
     ANIM_TS_DIG,        // TS DIG mound: the earth burst as a subterranean vehicle digs in or emerges.
@@ -3025,7 +3024,6 @@ typedef enum AnimType : short
     ANIM_TS_XGRYSML2,
     ANIM_TS_EXPLOSML,
     ANIM_TS_SMOKEY2,    // TS SMOKEY2 puff: the SAM missile's trail (art.ini [DRAGON] Trailer=SMOKEY2).
-    ANIM_TS_RAILFXS,    // TS light railgun particle: a small grey spark in a helix along the Ghost Stalker's beam.
     ANIM_TS_SBANG34,    // TS S_BANG34: the InfantryExplode burst a jumpjet makes when it is shot down.
     ANIM_TS_PULSBALL,   // TS PULSBALL: the EMP Cannon's pulse ball charging at the barrel before it fires (23 frames).
     ANIM_TS_PULSEFX1,   // TS PULSEFX1: an E.M. Pulse impact, flat on the ground. TS picks it or PULSEFX2 at random.
