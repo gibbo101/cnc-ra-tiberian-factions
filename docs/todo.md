@@ -39,6 +39,10 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   `mastertext.edits.txt` names and `picker_emblems_paint.py` plates move with it.
 - **Nod's cargo plane circles the airstrip** (`known-issues.md`): find why the TDC17 sometimes
   misses its landing on `TDAFLD` and fix it, with a play test of several deliveries.
+- **Release zips for the TS-HD split.** `package-for-workshop.sh` stages only `Vanilla_RA/`: it also stages
+  `TS-HD-Assets/` and builds the ModDB zip with both folders side by side (players unzip into `Mods/Red_Alert/` and
+  enable both), plus a zip of `TS-HD-Assets/` alone for an add-on on TF's ModDB page. The RA2 and C&C3 packs stay
+  off TF's ModDB page: they are Workshop-only libraries.
 - **TD copy of TS-HD-Assets, with its first release.** RA2-HD-Assets and CNC3-Assets ship as one Workshop
   item per game; TS-HD-Assets is built for Red Alert only so far (`asset_packs.WORKSHOP` hosts). TD reads art
   only from `SRGB/TIBERIAN_DAWN/`, and TD has no interior theatre for TS-HD's interior bibs.
