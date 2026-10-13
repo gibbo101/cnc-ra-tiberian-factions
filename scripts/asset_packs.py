@@ -72,7 +72,7 @@ WORKSHOP = {
         "packs": ("CNC3-Graphics-Pack", "CNC3-SFX-Pack", "CNC3-Voices-eng"),
         "required": False, "xml_id": "CNC3Assets", "version": (1, 0), "game": "CNC3", "prefix": "C3",
         "name": "C&C3 Tiberium Wars Assets",
-        "description": "Command & Conquer 3 units, sounds and voices for Red Alert, in HD.",
+        "description": "Command & Conquer 3 units, effects, sounds and voices for Red Alert, in HD.",
     },
 }
 REQUIRED = [mod for mod, w in WORKSHOP.items() if w["required"]]
