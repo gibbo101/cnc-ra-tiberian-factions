@@ -198,9 +198,10 @@ in-game mod list), writes `tools/workshop-uploader/packs/<Item>.json` with the i
 its BBCode description, and writes `tools/workshop-uploader/packs/<Item>.jpg` from the pack's
 in-game shot in `resources/workshop-previews/<mod>.jpg`, or tiles its art when it has none. A
 manifest that already exists keeps its `publishedfileid` and `visibility`; a new one starts
-Private (`2`). When a page would pass the Workshop's 8,000 characters, its shape data moves to
-`packs/<Item>-shape-data.txt`, BBCode to post as a pinned discussion on the item, and its long
-sound lists give their count.
+Private (`2`). The item's shape data and frame layouts grow with the pack, so they stay off the
+page: `packs/<Item>-shape-data.txt` holds them in BBCode for a pinned "Shape data" discussion on
+the item, and the README in the item's folder has them too. When a page would pass the Workshop's
+8,000 characters, its long sound lists give their count.
 
 Publish (Step 0 applies: restart Steam first):
 

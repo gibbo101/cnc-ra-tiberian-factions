@@ -1,0 +1,31 @@
+[h1]Shape data[/h1]
+
+Each object's classic-mode SHP: its size in classic pixels and its frame count.
+
+[b]Units[/b]
+
+[code]
+C3MK3 width=64 height=64 frames=128
+C3PRED width=48 height=48 frames=128
+C3MK3RAIL width=64 height=64 frames=128
+C3PREDRAIL width=48 height=48 frames=128
+[/code]
+
+[b]Animations[/b]
+
+[code]
+C3RAILGLOW width=12 height=12 frames=12
+C3RAILMZ width=36 height=36 frames=5
+C3RAILHIT width=48 height=48 frames=12
+C3RAILGLOWO width=12 height=12 frames=12
+C3RAILMZO width=36 height=36 frames=5
+C3RAILHITO width=48 height=48 frames=12
+[/code]
+
+[h2]Frame layout[/h2]
+
+C3MK3, C3PRED, C3MK3RAIL and C3PREDRAIL: frames 0-95 are the hull, 32 facings counter-clockwise from north with 3 tread steps each (frame = 3 x facing + step; step the treads while the tank drives), and 96-127 the turret, 32 facings. The turret frames are centred on the canvas: draw the turret over the hull moved by its seat for the hull's facing, in classic pixels (x east, y south), for hull facings 0-31 counter-clockwise from north:
+
+C3MK3 (and C3MK3RAIL): 0,-1 0,-1 -1,-1 -1,-1 -2,-1 -2,-1 -2,0 -2,0 -2,0 -2,0 -2,0 -2,1 -2,1 -1,1 -1,1 -1,1 0,1 0,1 1,1 1,1 2,1 2,1 2,0 2,0 2,0 2,0 2,0 2,-1 2,-1 1,-1 1,-1 1,-1
+
+C3PRED (and C3PREDRAIL): 0,2 1,2 1,2 2,1 2,1 3,1 3,1 3,0 3,0 3,0 3,-1 3,-1 2,-1 2,-1 1,-2 1,-2 0,-2 -1,-2 -1,-2 -2,-1 -2,-1 -3,-1 -3,-1 -3,0 -3,0 -3,0 -3,1 -3,1 -2,1 -2,1 -1,2 -1,2
