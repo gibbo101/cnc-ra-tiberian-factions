@@ -229,7 +229,9 @@ def readme(mod, listed, host):
                   "use Tiberian Factions' own layouts and need the matching DLL code, which is in its "
                   f"[source]({D.REPO_URL}).", ""]
     lines += layout(mod)
-    lines += ["## Contents", ""]
+    if w.get("contents"):
+        lines += ["## Contents", ""] + [f"- {line}" for line in w["contents"]] + [""]
+    lines += ["## Files", ""]
     for title, names in contents(mod).items():
         lines += [f"**{title}** ({len(names)}): " + ", ".join(names), ""]
     lines += ["XML files: " + ", ".join(f"`{n}`" for n in sorted(listed.values())) + ".", ""]

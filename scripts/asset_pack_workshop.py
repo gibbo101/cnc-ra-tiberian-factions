@@ -118,8 +118,11 @@ def description_of(item, readme):
     Per-object data (shape data, frame layouts) grows with the pack, so it goes in the post, never the page."""
     page, shapes = section(readme, "Shape data")
     page, layout = section(page, "Frame layout")
+    if "\n## Contents\n" in page:
+        page, _ = section(page, "Files")
     note = ("## Shape data\n\nThe classic sizes and frame counts of every object, and the frame layouts, are in "
-            "the pinned discussion \"Shape data\" and in the README in the pack's folder.\n\n")
+            "the pinned discussion \"Shape data\". The README in the pack's folder has them too, with every file "
+            "in the pack.\n\n")
     head, _, tail = page.partition("## AI disclosure")
     page = head + note + "## AI disclosure" + tail
     for candidate in (page, shortened(page, "Sounds"), shortened(page)):

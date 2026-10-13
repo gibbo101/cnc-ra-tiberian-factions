@@ -68,6 +68,8 @@ WORKSHOP = {
         "hosts": ("RA", "TD"),
         "name": "Red Alert 2 HD Assets",
         "description": "Red Alert 2 units, sounds and voices for {host}, in HD.",
+        "contents": ["**Units:** Apocalypse Tank, Prism Tank", "A sidebar cameo for each unit",
+                     "Each unit's voices and weapon sounds"],
     },
     "CNC3-Assets": {
         "packs": ("CNC3-Graphics-Pack", "CNC3-SFX-Pack", "CNC3-Voices-eng"),
@@ -75,6 +77,9 @@ WORKSHOP = {
         "hosts": ("RA", "TD"),
         "name": "C&C3 Tiberium Wars Assets",
         "description": "Command & Conquer 3 units, effects, sounds and voices for {host}, in HD.",
+        "contents": ["**Units:** Mammoth Tank Mk. III and Predator Tank, each also with its railgun upgrade",
+                     "**Effects:** the railgun shot, in blue and in orange", "A sidebar cameo for each tank",
+                     "Each tank's voices and weapon sounds"],
     },
 }
 REQUIRED = [mod for mod, w in WORKSHOP.items() if w["required"]]
