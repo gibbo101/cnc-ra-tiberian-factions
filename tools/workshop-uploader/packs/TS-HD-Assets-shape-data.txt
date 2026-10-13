@@ -1,0 +1,197 @@
+[h1]Shape data[/h1]
+
+Each object's classic-mode SHP: its size in classic pixels and its frame count. An object without a size has no classic stub in Tiberian Factions: a layer drawn with another object, or a unit drawn only in HD.
+
+[b]Units[/b]
+
+[code]
+TSTITN width=56 height=56 frames=128
+TSHARV width=72 height=72 frames=64
+TSMCV frames=32
+TSSMEC width=48 height=48 frames=128
+TS4TNK width=64 height=64 frames=64
+TSAPC width=48 height=48 frames=64
+TSCARRY width=56 height=56 frames=32
+TSHMEC width=72 height=72 frames=256
+TSHVR width=48 height=48 frames=96
+TSLPST width=48 height=48 frames=32
+TSMEMP width=48 height=48 frames=32
+TSMWAR width=48 height=48 frames=32
+TSORCA width=48 height=48 frames=32
+TSORCAB width=48 height=48 frames=32
+TSSAPC width=48 height=48 frames=113
+TSSONIC width=56 height=56 frames=64
+TSSUBTANK width=48 height=48 frames=113
+TSHUNT width=48 height=48 frames=8
+TSLIMP width=24 height=24 frames=20
+TSJUGG width=56 height=56 frames=202
+TSE1 frames=292
+TSE2 frames=292
+TSENGINEER frames=292
+TSGHOST frames=292
+TSMEDIC frames=307
+TSJUMPJET width=50 height=39 frames=451
+TSORCATRAN width=62 height=62 frames=32
+TSTTNK width=48 height=48 frames=64
+TSJUGGBAY frames=15
+TSTITNBAY frames=1
+TSE3 frames=292
+[/code]
+
+[b]Structures[/b]
+
+[code]
+TSWALL width=24 height=24 frames=48
+TSNWALL width=24 height=24 frames=48
+TSGATEH width=72 height=24 frames=20
+TSGATEHMAKE width=72 height=24 frames=10
+TSGATEHX frames=12
+TSGATEHL frames=4
+TSGATEV width=24 height=72 frames=20
+TSGATEVMAKE width=24 height=72 frames=10
+TSGATEVX frames=66
+TSGATEVL frames=40
+TSNGATEH width=72 height=24 frames=14
+TSNGATEHMAKE width=72 height=24 frames=7
+TSNGATEHX frames=12
+TSNGATEHL frames=4
+TSNGATEV width=24 height=72 frames=14
+TSNGATEVMAKE width=24 height=72 frames=7
+TSNGATEVX frames=48
+TSNGATEVL frames=28
+TSCTWR width=48 height=72 frames=2
+TSCTWRMAKE width=48 height=72 frames=17
+TSVULCT frames=128
+TSROCKT frames=128
+TSCSAMT frames=128
+TSCTWRX frames=50
+TSWEAP2 frames=18
+TSSILO width=48 height=72 frames=128
+TSSILOMAKE width=48 height=72 frames=24
+TSPROCFR width=96 height=120 frames=40
+TSPROC width=96 height=120 frames=32
+TSPROCMAKE width=96 height=120 frames=24
+TSWEAPNF width=96 height=96 frames=64
+TSWEAPNU width=96 height=96 frames=64
+TSWEAPDR width=96 height=96 frames=18
+TSWEAPUD width=96 height=96 frames=4
+TSWEAP width=96 height=96 frames=64
+TSWEAPMAKE width=96 height=96 frames=26
+TSPILE width=72 height=72 frames=112
+TSPILEMAKE width=72 height=72 frames=24
+TSTECH width=72 height=72 frames=16
+TSTECHMAKE width=72 height=72 frames=24
+TSFACT width=72 height=72 frames=100
+TSFACTMAKE width=72 height=72 frames=32
+TSPOWR width=48 height=72 frames=72
+TSPOWRMAKE width=48 height=72 frames=24
+TSTURB width=24 height=24 frames=2
+TSPROCNF width=96 height=120 frames=32
+TSRADR width=48 height=96 frames=56
+TSRADRMAKE width=48 height=96 frames=26
+TSDPSA width=48 height=72 frames=10
+TSDPSAMAKE width=48 height=72 frames=36
+TSDEPT width=72 height=72 frames=70
+TSDEPTMAKE width=72 height=72 frames=19
+TSDEPTRP frames=14
+TSHPAD width=48 height=72 frames=16
+TSHPADMAKE width=48 height=72 frames=24
+TSDROP width=96 height=96 frames=40
+TSDROPMAKE width=96 height=96 frames=19
+TSPLUG width=72 height=96 frames=80
+TSPLUGMAKE width=72 height=96 frames=24
+TSPION width=24 height=24 frames=2
+TSPODS width=24 height=24 frames=2
+TSSEEK width=24 height=24 frames=2
+TSPULS width=48 height=48 frames=2
+TSPULSMAKE width=48 height=48 frames=13
+TSPULST width=48 height=72 frames=32
+TSFGEN width=72 height=72 frames=98
+TSFGENMAKE width=72 height=72 frames=19
+TSFSDF width=48 height=48 frames=64
+TSDLIMP width=48 height=48 frames=20
+TSDLIMPMAKE width=48 height=48 frames=42
+TSDWEAP width=96 height=72 frames=240
+TSDWEAPMAKE width=96 height=72 frames=19
+TSDWEAPNF width=96 height=72 frames=240
+TSDWEAPNU width=96 height=72 frames=240
+TSDWEAPDR width=96 height=72 frames=24
+TSDWEAPUD width=96 height=72 frames=4
+TSTICK width=48 height=48 frames=128
+TSTICKMAKE width=48 height=48 frames=25
+TSTICKT frames=128
+TSPLUGP frames=96
+TSWEAPNP width=96 height=96 frames=64
+TSDWEAPNP width=96 height=72 frames=240
+[/code]
+
+[b]Animations[/b]
+
+[code]
+TSSONICW width=24 height=24 frames=25
+TSGUNFIRE width=24 height=24 frames=3
+TSDIG width=64 height=64 frames=37
+TSFIRE width=20 height=20 frames=76
+TSIONBM width=15 height=480 frames=15
+TSIONRNG width=104 height=51 frames=15
+TSDPOD1 width=24 height=24 frames=8
+TSDPOD2 width=24 height=24 frames=8
+TSDRPEXP width=50 height=34 frames=12
+TSPODRNG width=50 height=26 frames=20
+TSSMOKEY width=16 height=15 frames=11
+TSPODBLT width=24 height=24 frames=1
+TSMGUNN width=9 height=9 frames=3
+TSMGUNNE width=9 height=9 frames=3
+TSMGUNE width=9 height=9 frames=3
+TSMGUNSE width=9 height=9 frames=3
+TSMGUNS width=9 height=9 frames=3
+TSMGUNSW width=9 height=9 frames=3
+TSMGUNW width=9 height=9 frames=3
+TSMGUNNW width=9 height=9 frames=3
+TSPIFF width=30 height=18 frames=12
+TSCLSN16 width=16 height=8 frames=13
+TSCLSN22 width=22 height=11 frames=13
+TSCLSN30 width=31 height=15 frames=18
+TSCLSN42 width=44 height=21 frames=18
+TSCLSN58 width=62 height=29 frames=18
+TSXGRY1 width=10 height=10 frames=15
+TSXGRY2 width=18 height=14 frames=13
+TSEXPSML width=14 height=12 frames=14
+TSSMOKY2 width=8 height=7 frames=11
+TSCANIST width=4 height=3 frames=32
+TSDISCUS width=4 height=2 frames=32
+TSBANG34 width=17 height=17 frames=13
+TSPULSBL width=8 height=8 frames=23
+TSPULSF1 width=152 height=88 frames=21
+TSPULSF2 width=152 height=88 frames=15
+TSEMPFX width=20 height=18 frames=27
+TSFSIDLE width=12 height=136 frames=19
+TSFSGRND width=12 height=66 frames=19
+TSFSAIR width=12 height=28 frames=19
+TSMEMPFX width=144 height=72 frames=12
+TSDSHP width=123 height=123 frames=4
+[/code]
+
+[b]Terrain (temperate)[/b]
+
+[code]
+TSPROCBB frames=15
+TSWEAPBB frames=9
+TSDWEAPBB frames=9
+[/code]
+
+[b]Terrain (snow)[/b]
+
+[code]
+TSPROCBB frames=15
+TSWEAPBB frames=9
+TSDWEAPBB frames=9
+[/code]
+
+[b]Terrain (interior)[/b]
+
+[code]
+TSPROCBB frames=15
+TSWEAPBB frames=9
+TSDWEAPBB frames=9
+[/code]

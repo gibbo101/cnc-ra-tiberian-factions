@@ -11,6 +11,8 @@ For each item (a Workshop pack for one game: <mod>, or <mod>-TD for Tiberian Daw
                                              README, the game's tags and the upload folder. A manifest that
                                              exists keeps its publishedfileid and visibility; a new one starts
                                              Private (2), to be promoted after a self-test.
+  tools/workshop-uploader/packs/<Item>-shape-data.txt  when the shape data does not fit the description: the
+                                             same list in BBCode, for a pinned discussion post on the item
   tools/workshop-uploader/packs/<Item>.jpg   the preview, under the uploader's 1 MB limit: the pack's
                                              in-game shot from resources/workshop-previews/<mod>.jpg, or else
                                              its art tiled under its name.
@@ -61,8 +63,15 @@ def inline(text):
 
 def bbcode(readme):
     """The item's README.md as a Workshop description."""
-    out, in_list = [], None
+    out, in_list, in_code = [], None, False
     for line in readme.splitlines():
+        if line.strip() == "```":
+            out.append("[/code]" if in_code else "[code]")
+            in_code = not in_code
+            continue
+        if in_code:
+            out.append(line)
+            continue
         bullet = re.match(r"(\d+\.|-) (.*)", line)
         if bullet:
             kind = "olist" if bullet.group(1)[0].isdigit() else "list"
@@ -86,6 +95,40 @@ def bbcode(readme):
     return "\n".join(out).strip() + "\n"
 
 
+def section(readme, heading):
+    """(the README without its '## heading' section, that section's text)."""
+    start = readme.find(f"## {heading}\n")
+    if start < 0:
+        return readme, ""
+    end = readme.find("\n## ", start + 1)
+    end = len(readme) if end < 0 else end + 1
+    return readme[:start] + readme[end:], readme[start:end]
+
+
+def shortened(readme, titles=""):
+    """The README with each contents list of over 24 names whose title starts with titles given as its count."""
+    return re.sub(r"^(\*\*(%s[^*]*)\*\* \((\d+)\)): .*$" % re.escape(titles),
+                  lambda m: m.group(0) if int(m.group(3)) <= 24 else f"{m.group(1)}: listed in the README in the "
+                  "pack's folder", readme, flags=re.M)
+
+
+def description_of(item, readme):
+    """The Workshop description under the limit, and the shape data text for a discussion post if it moved out."""
+    text = bbcode(readme)
+    if len(text) <= DESCRIPTION_LIMIT:
+        return text, None
+    rest, shapes = section(readme, "Shape data")
+    note = ("## Shape data\n\nThe classic sizes and frame counts of every object are in the pinned discussion "
+            "\"Shape data\", and in the README in the pack's folder.\n\n")
+    head, _, tail = rest.partition("## AI disclosure")
+    rest = head + note + "## AI disclosure" + tail
+    for candidate in (rest, shortened(rest, "Sounds"), shortened(rest)):
+        text = bbcode(candidate)
+        if len(text) <= DESCRIPTION_LIMIT:
+            return text, bbcode(shapes.replace("## Shape data", "# Shape data", 1))
+    raise SystemExit(f"{item}: description is {len(text)} characters, over the Workshop's {DESCRIPTION_LIMIT}")
+
+
 def title(mod, host):
     return f"{A.WORKSHOP[mod]['name']} for {A.HOSTS[host]['name']}"
 
@@ -93,10 +136,12 @@ def title(mod, host):
 def manifest(item, mod, host, folder, content):
     path = os.path.join(MANIFESTS, f"{item}.json")
     old = json.load(open(path)) if os.path.exists(path) else {}
-    description = bbcode(open(os.path.join(folder, "README.md"), encoding="utf-8").read())
-    if len(description) > DESCRIPTION_LIMIT:
-        raise SystemExit(f"{item}: description is {len(description)} characters, over the Workshop's "
-                         f"{DESCRIPTION_LIMIT}")
+    description, shapes = description_of(item, open(os.path.join(folder, "README.md"), encoding="utf-8").read())
+    post = os.path.join(MANIFESTS, f"{item}-shape-data.txt")
+    if shapes:
+        open(post, "w", encoding="utf-8").write(shapes)
+    elif os.path.exists(post):
+        os.remove(post)
     data = {
         "appid": 1213210,
         "publishedfileid": old.get("publishedfileid", ""),
