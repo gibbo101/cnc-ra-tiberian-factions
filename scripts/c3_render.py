@@ -18,9 +18,13 @@ Tread animation: the belts' U coordinate scrolls by the tread phase in link pitc
 forwards, a track's top run travels forwards relative to the hull and its ground run backwards,
 so rising phase moves the top run the way the nose points (against the model's tread_dudx sign).
 
+Railgun upgrade: a model from scripts/c3_rail_turrets.py carries the UGRAIL meshes as material 2, drawn only with
+--rails, on the Mammoth's texture sheet and with no house colour, as ObjectsNOD.fx draws them; C&C3 lights them like
+the body. --glow adds a self-lit term on the painted blue conduit, our own touch.
+
 Usage:
   c3_render.py <model.npz> <out_dir> --part hull|turret [--frames 32] [--tread-steps 3]
-               [--ppu 13] [--canvas 1000] [--damaged]
+               [--ppu 13] [--canvas 1000] [--damaged] [--rails] [--glow 1]
 Writes frame-FFFF.png (hull: frame = facing * tread_steps + step; turret: frame = facing).
 Hull renders pivot on the ground point under the centre of the hull's own footprint, so the
 hull sits centred on the canvas as EA's vehicles do; turret renders pivot on the turret bone,
@@ -93,6 +97,9 @@ class Model:
         self.house = load_rgba(os.path.join(base, tex["house"]))
         self.treads = load_rgba(os.path.join(base, tex["treads"]))
         self.normal = load_rgba(os.path.join(base, tex["normal"]))
+        if "rail_body" in tex:
+            self.rail_body = load_rgba(os.path.join(base, tex["rail_body"]))
+            self.rail_normal = load_rgba(os.path.join(base, tex["rail_normal"]))
         self.link_pitch = self._link_pitch()
         self.team_mean = self._team_mean()
 
@@ -119,7 +126,8 @@ class Model:
         return (4 + int(np.argmax(ac[4:]))) / w
 
 
-def render(m, yaw_deg, part, ppu, canvas, elev_deg, tread_phase=0.0, ss=3, turret_on_hull_origin=False):
+def render(m, yaw_deg, part, ppu, canvas, elev_deg, tread_phase=0.0, ss=3, turret_on_hull_origin=False,
+           rails=False, glow=0.0):
     E = math.radians(elev_deg)
     sinE, cosE = math.sin(E), math.cos(E)
     tri_part = m.part[m.tris[:, 0]]
@@ -129,6 +137,8 @@ def render(m, yaw_deg, part, ppu, canvas, elev_deg, tread_phase=0.0, ss=3, turre
     else:
         tsel = tri_part == 1
         origin = m.hull_centre if turret_on_hull_origin else np.array([m.turret_pivot[0], m.turret_pivot[1], 0.0])
+    if not rails:
+        tsel &= m.mat[m.tris[:, 0]] != 2
     tris = m.tris[tsel]
 
     yaw = math.radians(yaw_deg)
@@ -189,7 +199,27 @@ def render(m, yaw_deg, part, ppu, canvas, elev_deg, tread_phase=0.0, ss=3, turre
     is_tread = m.mat[tv[:, 0]] == 1
 
     rgb = np.zeros((len(ys), 3), dtype=np.float32)
-    body = ~is_tread
+    is_rail = m.mat[tv[:, 0]] == 2
+    body = ~is_tread & ~is_rail
+    emissive = np.zeros((len(ys), 3), dtype=np.float32)
+    if is_rail.any():
+        ruv = uv[is_rail]
+        col = sample(m.rail_body, ruv)[:, :3]
+        rgb[is_rail] = col
+        t = interp(T)[is_rail]
+        bn = interp(B)[is_rail]
+        nm = sample(m.rail_normal, ruv)[:, :3] / 127.5 - 1.0
+        nb = n[is_rail]
+        t = t - nb * (t * nb).sum(1, keepdims=True)
+        t /= np.linalg.norm(t, axis=1, keepdims=True) + 1e-12
+        bn = bn - nb * (bn * nb).sum(1, keepdims=True)
+        bn /= np.linalg.norm(bn, axis=1, keepdims=True) + 1e-12
+        pn = t * nm[:, 0:1] + bn * nm[:, 1:2] + nb * nm[:, 2:3]
+        pn /= np.linalg.norm(pn, axis=1, keepdims=True) + 1e-12
+        n[is_rail] = pn
+        if glow > 0:
+            blue = np.clip((col[:, 2] - np.maximum(col[:, 0], col[:, 1]) - 20.0) / 60.0, 0, 1)
+            emissive[is_rail] = glow * blue[:, None] * np.array([90.0, 170.0, 255.0])
     if body.any():
         buv = uv[body]
         col = sample(m.body, buv)[:, :3]
@@ -220,7 +250,7 @@ def render(m, yaw_deg, part, ppu, canvas, elev_deg, tread_phase=0.0, ss=3, turre
 
     lam = np.clip(n @ LIGHT, 0, 1)
     shade = np.interp(lam * TS_LIGHT_LEN * 16, np.arange(32), TS_VPL_SCALE)
-    rgb = np.clip(rgb * shade[:, None], 0, 255)
+    rgb = np.clip(rgb * shade[:, None] + emissive, 0, 255)
 
     img = np.zeros((S, S, 4), dtype=np.float32)
     img[ys, xs, :3] = rgb
@@ -249,6 +279,8 @@ def main():
     ap.add_argument("--stock-turret", action="store_true",
                     help="turret frames stay where they sit on the hull at the hull's own heading, "
                          "for a stock engine that draws every turret at the unit centre")
+    ap.add_argument("--rails", action="store_true", help="draw the railgun-upgrade meshes (scripts/c3_rail_turrets.py)")
+    ap.add_argument("--glow", type=float, default=0.0, help="bake a self-lit glow onto the rails' blue conduit")
     a = ap.parse_args()
     m = Model(a.model, a.damaged)
     print(f"link pitch {m.link_pitch:.4f} U, scroll sign {m.dudx_sign:+.0f}")
@@ -260,7 +292,8 @@ def main():
             continue
         yaw = a.yaw0 + f * 360.0 / a.frames
         for st in range(steps):
-            img = render(m, yaw, a.part, a.ppu, a.canvas, a.elev, st / steps, turret_on_hull_origin=a.stock_turret)
+            img = render(m, yaw, a.part, a.ppu, a.canvas, a.elev, st / steps, turret_on_hull_origin=a.stock_turret,
+                         rails=a.rails, glow=a.glow)
             img.save(os.path.join(a.out, f"frame-{f * steps + st:04d}.png"))
         print(f"facing {f}", flush=True)
 
