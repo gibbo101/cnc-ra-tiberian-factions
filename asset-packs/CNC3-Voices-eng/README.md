@@ -27,7 +27,7 @@ Command & Conquer 3 unit voice lines (English), for Command & Conquer Remastered
 
 Original Command & Conquer 3: Tiberium Wars assets: Electronic Arts. Prepared for Remastered by gibbo101 for Tiberian Factions.
 
-## More C&C projects by gibbo101
+## More C&C projects by me
 
 - **Tiberian Factions** adds GDI and Nod as playable factions to Red Alert Remastered: [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3729834253), [ModDB](https://www.moddb.com/mods/tiberian-factions-for-red-alert), [GitHub](https://github.com/gibbo101/cnc-ra-tiberian-factions)
 - **Tiberian Sun HD Assets** (coming soon): Tiberian Sun units, buildings, effects, sounds and EVA for Red Alert, in HD.

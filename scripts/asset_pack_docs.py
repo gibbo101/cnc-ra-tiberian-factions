@@ -156,7 +156,7 @@ def readme(pack):
               f"Original {game} assets: Electronic Arts. Prepared for Remastered by gibbo101 for Tiberian Factions."]
     if pack in CREDIT:
         lines += ["", CREDIT[pack]]
-    lines += ["", "## More C&C projects by gibbo101", ""]
+    lines += ["", "## More C&C projects by me", ""]
     lines += [f"- {m}" for m in more_mods(A.required_mod(pack) or next(
         (mod for mod, w in A.WORKSHOP.items() if pack in w["packs"]), None))]
     lines.append("")

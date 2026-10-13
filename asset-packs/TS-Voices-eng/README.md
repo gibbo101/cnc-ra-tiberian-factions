@@ -27,7 +27,7 @@ Tiberian Sun unit voice lines (English), for Command & Conquer Remastered Collec
 
 Original Tiberian Sun assets: Electronic Arts. Prepared for Remastered by gibbo101 for Tiberian Factions.
 
-## More C&C projects by gibbo101
+## More C&C projects by me
 
 - **Tiberian Factions** adds GDI and Nod as playable factions to Red Alert Remastered: [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3729834253), [ModDB](https://www.moddb.com/mods/tiberian-factions-for-red-alert), [GitHub](https://github.com/gibbo101/cnc-ra-tiberian-factions)
 - **Red Alert 2 HD Assets**: Red Alert 2 units, sounds and voices for Red Alert and Tiberian Dawn, in HD.
