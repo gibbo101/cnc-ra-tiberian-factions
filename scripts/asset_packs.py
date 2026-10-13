@@ -65,7 +65,7 @@ WORKSHOP = {
     "RA2-HD-Assets": {
         "packs": ("RA2-Graphics-Pack", "RA2-SFX-Pack", "RA2-Voices-eng"),
         "required": False, "xml_id": "RA2HDAssets", "version": (1, 0), "game": "RA2", "prefix": "R2",
-        "hosts": ("RA", "TD"),
+        "hosts": ("RA", "TD"), "workshop_ids": {"RA": "3819308290", "TD": "3819308459"},
         "name": "Red Alert 2 HD Assets",
         "description": "Red Alert 2 units, sounds and voices for {host}, in HD.",
         "contents": ["**Soviet:** Apocalypse Tank (R2APOC)", "**Allies:** Prism Tank (R2PRIS)",
@@ -74,7 +74,7 @@ WORKSHOP = {
     "CNC3-Assets": {
         "packs": ("CNC3-Graphics-Pack", "CNC3-SFX-Pack", "CNC3-Voices-eng"),
         "required": False, "xml_id": "CNC3Assets", "version": (1, 0), "game": "CNC3", "prefix": "C3",
-        "hosts": ("RA", "TD"),
+        "hosts": ("RA", "TD"), "workshop_ids": {"RA": "3819308545", "TD": "3819308668"},
         "name": "C&C3 Tiberium Wars Assets",
         "description": "Command & Conquer 3 units, effects, sounds and voices for {host}, in HD.",
         "contents": ["**GDI:** Mammoth Tank Mk. III (C3MK3), Predator Tank (C3PRED), and both with the railgun "
