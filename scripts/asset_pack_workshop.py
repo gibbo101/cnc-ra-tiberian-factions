@@ -11,8 +11,6 @@ For each item (a Workshop pack for one game: <mod>, or <mod>-TD for Tiberian Daw
                                              README, the game's tags and the upload folder. A manifest that
                                              exists keeps its publishedfileid and visibility; a new one starts
                                              Private (2), to be promoted after a self-test.
-  tools/workshop-uploader/packs/<Item>-shape-data.txt  the item's shape data and frame layouts in BBCode, for a
-                                             pinned "Shape data" discussion post (they grow with the pack)
   tools/workshop-uploader/packs/<Item>.jpg   the preview, under the uploader's 1 MB limit: the pack's
                                              in-game shot from resources/workshop-previews/<mod>.jpg, or else
                                              its art tiled under its name.
@@ -113,22 +111,20 @@ def shortened(readme, titles=""):
 
 
 def description_of(item, readme):
-    """The Workshop description, and the text of the item's pinned "Shape data" discussion post.
-
-    Per-object data (shape data, frame layouts) grows with the pack, so it goes in the post, never the page."""
-    page, shapes = section(readme, "Shape data")
-    page, layout = section(page, "Frame layout")
+    """The Workshop description: the README without its per-object sections (shape data, frame layouts, file lists),
+    which grow with the pack and stay in the README in the item's folder."""
+    page, _ = section(readme, "Shape data")
+    page, _ = section(page, "Frame layout")
     if "\n## Contents\n" in page:
         page, _ = section(page, "Files")
-    note = ("## Shape data\n\nThe classic sizes and frame counts of every object, and the frame layouts, are in "
-            "the pinned discussion \"Shape data\". The README in the pack's folder has them too, with every file "
-            "in the pack.\n\n")
+    note = ("## Shape data\n\nThe classic sizes and frame counts of every object, the frame layouts and every file "
+            "in the pack are in the README in the pack's folder.\n\n")
     head, _, tail = page.partition("## AI disclosure")
     page = head + note + "## AI disclosure" + tail
     for candidate in (page, shortened(page, "Sounds"), shortened(page)):
         text = bbcode(candidate)
         if len(text) <= DESCRIPTION_LIMIT:
-            return text, bbcode("# Shape data\n\n" + shapes.split("\n", 1)[1] + layout)
+            return text
     raise SystemExit(f"{item}: description is {len(text)} characters, over the Workshop's {DESCRIPTION_LIMIT}")
 
 
@@ -139,8 +135,7 @@ def title(mod, host):
 def manifest(item, mod, host, folder, content):
     path = os.path.join(MANIFESTS, f"{item}.json")
     old = json.load(open(path)) if os.path.exists(path) else {}
-    description, shapes = description_of(item, open(os.path.join(folder, "README.md"), encoding="utf-8").read())
-    open(os.path.join(MANIFESTS, f"{item}-shape-data.txt"), "w", encoding="utf-8").write(shapes)
+    description = description_of(item, open(os.path.join(folder, "README.md"), encoding="utf-8").read())
     data = {
         "appid": 1213210,
         "publishedfileid": old.get("publishedfileid", ""),
