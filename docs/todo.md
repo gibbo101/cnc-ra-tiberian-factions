@@ -28,6 +28,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   `package-for-workshop.sh` does) before measuring it.
 - **Check in play: "Unable to comply, building in progress"** speaks in the picked side's voice
   (the era mailbox's ninth line), including after a faction switch between matches.
+- **Check in play: a spy in TD and TS buildings.** In an enemy TD or TS power plant, refinery or silo, the
+  spy's owner sees that enemy's power or money (any building that makes power or stores Tiberium counts).
+  Decision: whether Nod's Airstrip or the TS Helipad give a bonus as RA's Airfield (parabombs) and Sub Pen do.
 - **Lobby faction picker in timeline order:** RA Allies, Soviets, TD GDI, Nod, TS GDI (TS Nod when
   it lands). The rows follow the launcher's country order (`faction-select-identity.md`), and the
   launcher keys HUD colour, EVA channel and crest slot on each country's RA side, so the Soviets can
