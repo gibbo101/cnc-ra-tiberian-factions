@@ -120,7 +120,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3railglow\c3railglow-0010.tga</Frame>
+				<Frame>c3railglow\c3railglow-0009.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -131,7 +131,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3railglow\c3railglow-0011.tga</Frame>
+				<Frame>c3railglow\c3railglow-0009.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -439,7 +439,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3railglowo\c3railglowo-0010.tga</Frame>
+				<Frame>c3railglowo\c3railglowo-0009.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -450,7 +450,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3railglowo\c3railglowo-0011.tga</Frame>
+				<Frame>c3railglowo\c3railglowo-0009.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
