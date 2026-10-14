@@ -443,6 +443,8 @@ enum PackState
     PACK_ENABLED,
     PACK_ON_NEXT_START,
     PACK_INSTALLED_OFF,
+    PACK_DOWNLOADED,  // in its Workshop folder, but not yet in the launcher's mod list
+    PACK_DOWNLOADING, // subscribed, and Steam is still downloading it
     PACK_MISSING
 };
 
@@ -509,6 +511,72 @@ char* Mod_Manager(void)
     return (char*)((ModManagerFn)MOD_MANAGER_GET)();
 }
 
+/*
+**	The folder of the pack's Workshop download (the item folder's subfolder holding the marker), beside the
+**	game's install; false when it hasn't downloaded.
+*/
+bool Downloaded_Pack_Folder(int pack, char* out, size_t size)
+{
+    char item[MAX_PATH];
+    DWORD length = GetModuleFileNameA(NULL, item, sizeof(item));
+    char* name = length > 0 && length < sizeof(item) ? strrchr(item, '\\') : NULL;
+    if (name == NULL) {
+        return false;
+    }
+    snprintf(name, sizeof(item) - (name - item), "\\..\\..\\workshop\\content\\1213210\\%s", PACKS[pack].WorkshopId);
+    char pattern[MAX_PATH];
+    snprintf(pattern, sizeof(pattern), "%s\\*", item);
+    WIN32_FIND_DATAA found;
+    HANDLE find = FindFirstFileA(pattern, &found);
+    if (find == INVALID_HANDLE_VALUE) {
+        return false;
+    }
+    bool any = false;
+    do {
+        if ((found.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && found.cFileName[0] != '.') {
+            snprintf(out, size, "%s\\%s", item, found.cFileName);
+            any = Has_Pack_Marker(out, PACKS[pack].Marker) && Has_Pack_Marker(out, "ccmod.json");
+        }
+    } while (!any && FindNextFileA(find, &found));
+    FindClose(find);
+    return any;
+}
+
+/*
+**	Steam's progress on a subscribed pack still downloading, in percent (0 before the size is known); -1 when
+**	Steam isn't downloading it.
+*/
+typedef void*(__cdecl* SteamUgcFn)(void);
+typedef unsigned(__cdecl* ItemStateFn)(void* ugc, unsigned long long item);
+typedef bool(__cdecl* ItemDownloadInfoFn)(void* ugc, unsigned long long item, unsigned long long* done, unsigned long long* total);
+const unsigned ITEM_SUBSCRIBED = 1;
+const unsigned ITEM_INSTALLED = 4;
+const unsigned ITEM_DOWNLOADING = 16;
+const unsigned ITEM_DOWNLOAD_PENDING = 32;
+
+int Pack_Download_Percent(int pack)
+{
+    HMODULE steam = GetModuleHandleA("steam_api.dll");
+    SteamUgcFn get = steam ? (SteamUgcFn)GetProcAddress(steam, "SteamAPI_SteamUGC_v018") : NULL;
+    ItemStateFn state = steam ? (ItemStateFn)GetProcAddress(steam, "SteamAPI_ISteamUGC_GetItemState") : NULL;
+    ItemDownloadInfoFn info =
+        steam ? (ItemDownloadInfoFn)GetProcAddress(steam, "SteamAPI_ISteamUGC_GetItemDownloadInfo") : NULL;
+    void* ugc = get ? get() : NULL;
+    if (ugc == NULL || state == NULL || info == NULL) {
+        return -1;
+    }
+    unsigned long long item = strtoull(PACKS[pack].WorkshopId, NULL, 10);
+    unsigned flags = state(ugc, item);
+    if (!(flags & ITEM_SUBSCRIBED) || !(flags & (ITEM_DOWNLOADING | ITEM_DOWNLOAD_PENDING))) {
+        return -1;
+    }
+    unsigned long long done = 0, total = 0;
+    if (!info(ugc, item, &done, &total) || total == 0) {
+        return 0;
+    }
+    return (int)(done * 100 / total);
+}
+
 PackState Pack_State(int pack)
 {
     const char* marker = PACKS[pack].Marker;
@@ -531,6 +599,13 @@ PackState Pack_State(int pack)
                 state = found < state ? found : state;
             }
         }
+    }
+    char folder[MAX_PATH];
+    if (state == PACK_MISSING && Downloaded_Pack_Folder(pack, folder, sizeof(folder))) {
+        state = PACK_DOWNLOADED;
+    }
+    if (state == PACK_MISSING && Pack_Download_Percent(pack) >= 0) {
+        state = PACK_DOWNLOADING;
     }
     return state;
 }
@@ -566,6 +641,20 @@ void __fastcall Dialog_Closed(void*, void*, int)
 {
 }
 
+// The action a two-button message box runs when its action button is clicked; the box reports that button as 2.
+const int DIALOG_ACTION_BUTTON = 2;
+void (*DialogAction)(void) = NULL;
+
+void __fastcall Dialog_Choice(void*, void*, int button)
+{
+    Pack_Log("dialog: button %d", button);
+    void (*action)(void) = DialogAction;
+    DialogAction = NULL;
+    if (button == DIALOG_ACTION_BUTTON && action != NULL) {
+        action();
+    }
+}
+
 void Free_WString(MsvcWString* s)
 {
     if (s->Capacity >= 8) {
@@ -573,7 +662,11 @@ void Free_WString(MsvcWString* s)
     }
 }
 
-void Show_Message(const wchar_t* body)
+/*
+**	ClientG's message box with `action_text` on its first button, which runs `action`, and OK on the second;
+**	with no action, OK alone.
+*/
+void Show_Message(const wchar_t* body, const wchar_t* action_text = NULL, void (*action)(void) = NULL)
 {
     MsvcWString text = {};
     text.Capacity = 7;
@@ -584,13 +677,23 @@ void Show_Message(const wchar_t* body)
     second.Capacity = 7;
     MsvcWString ok = {};
     ok.Capacity = 7;
-    ((TextLookupFn)TEXT_LOOKUP)((void*)TEXT_MANAGER, &ok, "TEXT_OK");
     MsvcString f = {}, g = {}, h = {};
     f.capacity = g.capacity = h.capacity = 15;
-    DialogCallback callback = {NULL, (SIZE_T)&Dialog_Closed};
-    ((ShowDialogFn)SHOW_DIALOG)(&callback, &text, &none, &ok, &second, 1, 1, 0, 2, 3, &f, &g, &h);
+    if (action == NULL) {
+        ((TextLookupFn)TEXT_LOOKUP)((void*)TEXT_MANAGER, &ok, "TEXT_OK");
+        DialogCallback callback = {NULL, (SIZE_T)&Dialog_Closed};
+        ((ShowDialogFn)SHOW_DIALOG)(&callback, &text, &none, &ok, &second, 1, 1, 0, 2, 3, &f, &g, &h);
+    } else {
+        ((WStringAssignFn)WSTRING_ASSIGN)(&ok, action_text, (unsigned)wcslen(action_text));
+        ((WStringAssignFn)WSTRING_ASSIGN)(&second, L"TEXT_OK", 7);
+        DialogAction = action;
+        static int target = 0;
+        DialogCallback callback = {&target, (SIZE_T)&Dialog_Choice};
+        ((ShowDialogFn)SHOW_DIALOG)(&callback, &text, &none, &ok, &second, 1, 0, 0, 0, 3, &f, &g, &h);
+    }
     Free_WString(&text);
     Free_WString(&ok);
+    Free_WString(&second);
 }
 
 /*
@@ -598,6 +701,59 @@ void Show_Message(const wchar_t* body)
 **	a time, so a lobby full of TS GDI slots, or the slot echoing the player's own pick, shows one.
 */
 const DWORD PACK_POPUP_HOLD_MS = 10000;
+
+void Open_Pack_Page(int pack);
+void Enable_Packs_And_Restart(void);
+
+/*
+**	Leaves the skirmish lobby as its Back button does: cancels the game, closes the lobby and returns to the main
+**	menu, which stays alive underneath. False when no lobby is open or its Back button is unavailable.
+*/
+const SIZE_T LOBBY_HOLDER = 0x1FA8050;
+const SIZE_T LOBBY_BACK = 0x71C790;
+const DWORD LOBBY_SCREEN = 0x4;
+const DWORD LOBBY_OBJECT = 0x330;
+const DWORD LOBBY_CLOSED_FLAGS = 0xBF;
+const DWORD LOBBY_BACK_BUTTON = 0x5C;
+const DWORD WIDGET_USABLE = 0x70;
+
+typedef void(__thiscall* LobbyBackFn)(void* lobby, int unused);
+typedef bool(__thiscall* WidgetUsableFn)(void* widget);
+
+bool Leave_Lobby(void)
+{
+    char* holder = *(char**)LOBBY_HOLDER;
+    unsigned char* screen = holder != NULL ? *(unsigned char**)(holder + LOBBY_SCREEN) : NULL;
+    if (screen == NULL || (screen[LOBBY_CLOSED_FLAGS] & 8)) {
+        return false;
+    }
+    char* lobby = *(char**)(screen + LOBBY_OBJECT);
+    void* back = lobby != NULL ? *(void**)(lobby + LOBBY_BACK_BUTTON) : NULL;
+    if (back == NULL || !((WidgetUsableFn)(*(SIZE_T**)back)[WIDGET_USABLE / 4])(back)) {
+        return false;
+    }
+    ((LobbyBackFn)LOBBY_BACK)(lobby, 0);
+    return true;
+}
+
+/*
+**	The lobby popup's GET IT: on the next UI tick, outside the message box's own click, back to the main menu,
+**	where the panel shows the download, then the pack's page over it.
+*/
+const UINT LOBBY_LEAVE_DELAY_MS = 50;
+
+void CALLBACK Lobby_Get_Tick(HWND, UINT, UINT_PTR timer, DWORD)
+{
+    KillTimer(NULL, timer);
+    bool left = Leave_Lobby();
+    Pack_Log("lobby get: left lobby %d", (int)left);
+    Open_Pack_Page(TS_HD_PACK);
+}
+
+void Get_TS_HD_Pack(void)
+{
+    SetTimer(NULL, 0, LOBBY_LEAVE_DELAY_MS, Lobby_Get_Tick);
+}
 
 void Pack_Popup(void)
 {
@@ -608,19 +764,27 @@ void Pack_Popup(void)
         return;
     }
     shown = now;
-    Show_Message(state != PACK_MISSING ? L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod, which is installed but "
-                                         L"not loaded. Enable it in Mods and restart the game."
-                                       : L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod. Subscribe to it on the "
-                                         L"Steam Workshop, enable it in Mods and restart the game.");
+    if (state == PACK_DOWNLOADING) {
+        Show_Message(L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod, which Steam is still downloading.");
+    } else if (state == PACK_MISSING) {
+        Show_Message(L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod, free on the Steam Workshop.",
+                     L"GET IT ON THE WORKSHOP",
+                     &Get_TS_HD_Pack);
+    } else {
+        Show_Message(L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod, which is installed but not loaded.",
+                     state == PACK_ON_NEXT_START ? L"RESTART" : L"ENABLE AND RESTART",
+                     &Enable_Packs_And_Restart);
+    }
 }
 
 /*
-**	The lobby's faction pick: the stock handler, then the pack popup when the local player has
-**	just picked Tiberian Sun GDI.
+**	The lobby's faction pick, the player's own or for an AI slot: the stock handler, then the pack popup when
+**	the pick turned a slot to Tiberian Sun GDI.
 */
 const SIZE_T FACTION_PICKED = 0x676760;
 const SIZE_T FACTION_PICKED_CAVE = 0x1BE95C0;
 const SIZE_T LOBBY_FACTION = 0x20E0CF8;
+const DWORD SLOT_FACTION = 0x1DA8;
 const int LOBBY_TS_GDI = 7;
 
 typedef void(__thiscall* FactionPickedFn)(void* slot, int event);
@@ -628,10 +792,12 @@ typedef void(__thiscall* FactionPickedFn)(void* slot, int event);
 void __fastcall Faction_Picked(void* slot, void*, int event)
 {
     int before = *(const int*)LOBBY_FACTION;
+    int slot_before = *(const int*)((const char*)slot + SLOT_FACTION);
     ((FactionPickedFn)FACTION_PICKED_CAVE)(slot, event);
     int after = *(const int*)LOBBY_FACTION;
-    Pack_Log("faction pick %d -> %d", before, after);
-    if (after != before && after == LOBBY_TS_GDI) {
+    int slot_after = *(const int*)((const char*)slot + SLOT_FACTION);
+    Pack_Log("faction pick %d -> %d, slot %d -> %d", before, after, slot_before, slot_after);
+    if ((after != before && after == LOBBY_TS_GDI) || (slot_after != slot_before && slot_after == LOBBY_TS_GDI)) {
         Pack_Popup();
     }
 }
@@ -642,7 +808,6 @@ void __fastcall Faction_Picked(void* slot, void*, int event)
 */
 const SIZE_T SLOT_SET_FACTION = 0x677950;
 const SIZE_T SLOT_SET_FACTION_CAVE = 0x1BE9650;
-const DWORD SLOT_FACTION = 0x1DA8;
 
 typedef void(__thiscall* SlotSetFactionFn)(void* slot, int faction);
 
@@ -692,7 +857,88 @@ const SIZE_T POST_TO_LAUNCHER = 0x11790F0;
 const SIZE_T LAUNCHER_LINK = 0x1FAD3CC;
 const DWORD RESTART_WAIT_MS = 5000;
 
+const SIZE_T PROFILE_ENABLED_MODS = 0x20E0D88;
+const SIZE_T CLIENT_NEW = 0x9509A0;
+
 typedef void(__thiscall* SetModEnabledFn)(void* mm, DWORD id, int on);
+typedef void*(__cdecl* ClientNewFn)(size_t size);
+
+struct DwordVector
+{
+    DWORD* First;
+    DWORD* Last;
+    DWORD* End;
+};
+
+/*
+**	The launcher's ID for a mod folder: zlib's CRC-32 of its ccmod.json name followed by "high.low"; 0 if unreadable.
+*/
+DWORD Mod_Id(const char* folder)
+{
+    char path[MAX_PATH];
+    snprintf(path, sizeof(path), "%s\\ccmod.json", folder);
+    FILE* f = fopen(path, "r");
+    if (f == NULL) {
+        return 0;
+    }
+    char text[2048];
+    size_t length = fread(text, 1, sizeof(text) - 1, f);
+    fclose(f);
+    text[length] = 0;
+    const char* name = strstr(text, "\"name\"");
+    const char* high = strstr(text, "\"version_high\"");
+    const char* low = strstr(text, "\"version_low\"");
+    name = name != NULL ? strchr(strchr(name + 6, ':'), '"') : NULL;
+    const char* name_end = name != NULL ? strchr(name + 1, '"') : NULL;
+    int h = -1, l = -1;
+    if (name_end == NULL || high == NULL || low == NULL || sscanf(strchr(high, ':') + 1, "%d", &h) != 1
+        || sscanf(strchr(low, ':') + 1, "%d", &l) != 1) {
+        return 0;
+    }
+    char key[256];
+    int size = snprintf(key, sizeof(key), "%.*s%d.%d", (int)(name_end - name - 1), name + 1, h, l);
+    DWORD crc = 0xFFFFFFFF;
+    for (int i = 0; i < size; i++) {
+        crc ^= (unsigned char)key[i];
+        for (int bit = 0; bit < 8; bit++) {
+            crc = (crc >> 1) ^ (0xEDB88320 & (0 - (crc & 1)));
+        }
+    }
+    return ~crc;
+}
+
+/*
+**	Adds a mod ID to the profile's enabled list, growing it on the launcher's own heap, so the next start loads
+**	a mod the launcher hasn't listed yet.
+*/
+void Profile_Enable(DWORD id)
+{
+    DwordVector* list = (DwordVector*)PROFILE_ENABLED_MODS;
+    for (DWORD* p = list->First; p != NULL && p < list->Last; p++) {
+        if (*p == id) {
+            return;
+        }
+    }
+    size_t size = list->First != NULL ? list->Last - list->First : 0;
+    size_t capacity = list->First != NULL ? list->End - list->First : 0;
+    if (size == capacity) {
+        size_t grown = capacity < 8 ? 8 : capacity * 2;
+        DWORD* block = (DWORD*)((ClientNewFn)CLIENT_NEW)(grown * sizeof(DWORD));
+        if (block == NULL) {
+            return;
+        }
+        if (size > 0) {
+            memcpy(block, list->First, size * sizeof(DWORD));
+        }
+        if (list->First != NULL) {
+            ((ClientFreeFn)CLIENT_FREE)(list->First);
+        }
+        list->First = block;
+        list->Last = block + size;
+        list->End = block + grown;
+    }
+    *list->Last++ = id;
+}
 typedef void(__thiscall* ProfileSaveFn)(void* profile, int a, int notify, int immediate);
 typedef void*(__cdecl* RestartMessageFn)(void);
 typedef void(__thiscall* PostToLauncherFn)(void* link, void* message);
@@ -703,8 +949,12 @@ void Enable_Packs_And_Restart(void)
     if (mm == NULL) {
         return;
     }
+    PackState states[PACK_COUNT];
     for (int pack = 0; pack < PACK_COUNT; pack++) {
-        if (Pack_State(pack) != PACK_INSTALLED_OFF) {
+        states[pack] = Pack_State(pack);
+    }
+    for (int pack = 0; pack < PACK_COUNT; pack++) {
+        if (states[pack] != PACK_INSTALLED_OFF) {
             continue;
         }
         char* last = *(char**)(mm + 0x1C);
@@ -713,6 +963,17 @@ void Enable_Packs_And_Restart(void)
                 Pack_Log("enable: pack %d, mod id %08lx", pack, (unsigned long)*(const DWORD*)(r + MOD_ID));
                 ((SetModEnabledFn)SET_MOD_ENABLED)(mm, *(const DWORD*)(r + MOD_ID), 1);
                 break;
+            }
+        }
+    }
+    // Set_Mod_Enabled rebuilds the profile list from the mod list, so downloaded packs' IDs go in after it.
+    for (int pack = 0; pack < PACK_COUNT; pack++) {
+        char folder[MAX_PATH];
+        if (states[pack] == PACK_DOWNLOADED && Downloaded_Pack_Folder(pack, folder, sizeof(folder))) {
+            DWORD id = Mod_Id(folder);
+            Pack_Log("enable: pack %d downloaded, mod id %08lx", pack, (unsigned long)id);
+            if (id != 0) {
+                Profile_Enable(id);
             }
         }
     }
@@ -769,25 +1030,115 @@ void Set_Text(void* widget, const wchar_t* text)
     Free_WString(&s);
 }
 
-void __stdcall Menu_Bound(const DWORD* regs)
+/*
+**	Fills the panel from the packs' states: hidden when every pack is loaded.
+*/
+void Refresh_Panel(void* menu)
 {
-    void* menu = (void*)regs[1];
     PackState states[PACK_COUNT];
     int waiting = 0;
     PanelPack = -1;
     for (int pack = 0; pack < PACK_COUNT; pack++) {
         states[pack] = Pack_State(pack);
-        Pack_Log("main menu: pack %d state %d", pack, (int)states[pack]);
         if (states[pack] != PACK_ENABLED) {
             waiting++;
             PanelPack = PanelPack < 0 ? pack : PanelPack;
         }
     }
+    void* get = Find_Widget(menu, "TF_Pack_Get", AS_TEXT_BUTTON);
+    void* enable = Find_Widget(menu, "TF_Pack_Enable", AS_TEXT_BUTTON);
     Set_Hidden(Find_Widget(menu, "TF_Pack_Frame", AS_QUAD), PanelPack < 0);
     Set_Hidden(Find_Widget(menu, "TF_Pack_Status", AS_TEXT), PanelPack < 0);
     for (int pack = 0; pack < PACK_COUNT; pack++) {
         Set_Hidden(Find_Widget(menu, PACKS[pack].Logo, AS_QUAD), pack != PanelPack);
     }
+    PackState state = PanelPack < 0 ? PACK_ENABLED : states[PanelPack];
+    Set_Hidden(get, state != PACK_MISSING);
+    Set_Hidden(enable, state == PACK_ENABLED || state == PACK_MISSING || state == PACK_DOWNLOADING);
+    if (PanelPack < 0) {
+        return;
+    }
+    wchar_t line[160];
+    if (state == PACK_MISSING) {
+        swprintf(line, 160, L"NEEDED FOR %ls", PACKS[PanelPack].NeededFor);
+    } else if (state == PACK_DOWNLOADING) {
+        int percent = Pack_Download_Percent(PanelPack);
+        swprintf(line, 160, percent > 0 ? L"DOWNLOADING... %d%%" : L"DOWNLOADING...", percent);
+    } else {
+        swprintf(line,
+                 160,
+                 L"%ls",
+                 state == PACK_ON_NEXT_START ? L"SWITCHED ON: RESTART TO LOAD IT"
+                 : state == PACK_DOWNLOADED  ? L"DOWNLOADED: RESTART TO SWITCH IT ON"
+                                             : L"INSTALLED BUT SWITCHED OFF");
+    }
+    if (waiting > 1) {
+        size_t used = wcslen(line);
+        swprintf(line + used, 160 - used, L" (+%d MORE)", waiting - 1);
+    }
+    Set_Text(Find_Widget(menu, "TF_Pack_Status", AS_TEXT), line);
+}
+
+/*
+**	The main menu lives for the whole session, so a 2-second timer on its UI thread refreshes the panel while
+**	a pack still needs the player: a pack subscribed or switched on meanwhile shows up without a restart.
+*/
+const UINT PANEL_POLL_MS = 2000;
+void* PanelMenu = NULL;
+UINT_PTR PanelTimer = 0;
+
+void CALLBACK Panel_Poll(HWND, UINT, UINT_PTR, DWORD)
+{
+    if (PanelMenu != NULL && PanelPack >= 0) {
+        Refresh_Panel(PanelMenu);
+    }
+}
+
+/*
+**	The mod's version from its ccmod.json, as the release names it: version_high.(version_low / 10).(version_low % 10).
+*/
+void Mod_Version(wchar_t* out, size_t size)
+{
+    char path[MAX_PATH] = "";
+    HMODULE self = NULL;
+    GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                       (LPCSTR)&Mod_Version,
+                       &self);
+    DWORD length = GetModuleFileNameA(self, path, sizeof(path));
+    char* data = length > 0 && length < sizeof(path) ? strrchr(path, '\\') : NULL;
+    if (data != NULL) {
+        *data = 0;
+        data = strrchr(path, '\\');
+    }
+    int high = -1, low = -1;
+    if (data != NULL) {
+        snprintf(data, sizeof(path) - (data - path), "\\ccmod.json");
+        FILE* f = fopen(path, "r");
+        char line[160];
+        while (f != NULL && fgets(line, sizeof(line), f) != NULL) {
+            const char* at = strstr(line, "\"version_high\"");
+            if (at != NULL) {
+                sscanf(strchr(at, ':') + 1, "%d", &high);
+            }
+            at = strstr(line, "\"version_low\"");
+            if (at != NULL) {
+                sscanf(strchr(at, ':') + 1, "%d", &low);
+            }
+        }
+        if (f != NULL) {
+            fclose(f);
+        }
+    }
+    if (high < 0 || low < 0) {
+        swprintf(out, size, L"TIBERIAN FACTIONS");
+    } else {
+        swprintf(out, size, L"TIBERIAN FACTIONS %d.%d.%d", high, low / 10, low % 10);
+    }
+}
+
+void __stdcall Menu_Bound(const DWORD* regs)
+{
+    void* menu = (void*)regs[1];
     void* get = Find_Widget(menu, "TF_Pack_Get", AS_TEXT_BUTTON);
     void* enable = Find_Widget(menu, "TF_Pack_Enable", AS_TEXT_BUTTON);
     if (get != NULL) {
@@ -796,25 +1147,15 @@ void __stdcall Menu_Bound(const DWORD* regs)
     if (enable != NULL) {
         ((BindEventFn)BIND_EVENT)(menu, CLICK_EVENT, enable, (void*)&Pack_Enable_Click, 0);
     }
-    if (PanelPack < 0) {
-        Set_Hidden(get, true);
-        Set_Hidden(enable, true);
-        return;
+    wchar_t version[64];
+    Mod_Version(version, 64);
+    Set_Text(Find_Widget(menu, "TF_Version", AS_TEXT), version);
+    PanelMenu = menu;
+    Refresh_Panel(menu);
+    Pack_Log("main menu %p: panel pack %d", menu, PanelPack);
+    if (PanelTimer == 0) {
+        PanelTimer = SetTimer(NULL, 0, PANEL_POLL_MS, Panel_Poll);
     }
-    PackState state = states[PanelPack];
-    Set_Hidden(get, state != PACK_MISSING);
-    Set_Hidden(enable, state == PACK_MISSING);
-    wchar_t line[160];
-    if (state == PACK_MISSING) {
-        swprintf(line, 160, L"NEEDED FOR %ls", PACKS[PanelPack].NeededFor);
-    } else {
-        swprintf(line, 160, L"%ls", state == PACK_ON_NEXT_START ? L"SWITCHED ON: RESTART TO LOAD IT" : L"INSTALLED BUT SWITCHED OFF");
-    }
-    if (waiting > 1) {
-        size_t used = wcslen(line);
-        swprintf(line + used, 160 - used, L" (+%d MORE)", waiting - 1);
-    }
-    Set_Text(Find_Widget(menu, "TF_Pack_Status", AS_TEXT), line);
 }
 
 /*
@@ -995,6 +1336,7 @@ bool Panel_Calls_Match(void)
         {SET_TEXT, {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x1C}},
         {AS_QUAD, {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x64}},
         {MOD_MANAGER_GET, {0xA1, 0x10, 0x45, 0xFA, 0x01, 0x85}},
+        {LOBBY_BACK, {0x56, 0x8B, 0xF1, 0xE8, 0xB8, 0xFB}},
     };
     for (size_t i = 0; i < sizeof(calls) / sizeof(calls[0]); i++) {
         if (memcmp((const void*)calls[i].Address, calls[i].Bytes, sizeof(calls[i].Bytes)) != 0) {
