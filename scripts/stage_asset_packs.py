@@ -23,39 +23,11 @@ import re
 import shutil
 import sys
 
-from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import asset_packs as A  # noqa: E402
 import share_tileset_zips  # noqa: E402
 import workshop_packs  # noqa: E402
-
-TGA_RLE = 10
-
-
-def is_rle_cameo(path):
-    with open(path, "rb") as f:
-        return f.read(3)[2:] == bytes([TGA_RLE])
-
-
-def copy_newer(src, dst):
-    """Copy unless dst already has src's size and is no older, keeping rsync-friendly mtimes. A sidebar cameo is
-    written run-length encoded (the launcher reads RLE TGA) with src's mtime, and is current only at that mtime."""
-    cameo = os.path.basename(src).upper().startswith("BUILDICON_") and src.upper().endswith(".TGA")
-    if os.path.exists(dst):
-        a, b = os.stat(src), os.stat(dst)
-        if cameo:
-            same = is_rle_cameo(dst) and b.st_mtime_ns == a.st_mtime_ns
-        else:
-            same = a.st_size == b.st_size and b.st_mtime >= a.st_mtime
-        if same:
-            return dst
-    if cameo:
-        Image.open(src).save(dst, compression="tga_rle")
-        shutil.copystat(src, dst)
-        return dst
-    return shutil.copy2(src, dst)
-
 
 def copy_tree(src, dst, skip=frozenset()):
     """Copy src over dst, leaving out the paths (relative to src, upper case) in skip."""
@@ -63,7 +35,7 @@ def copy_tree(src, dst, skip=frozenset()):
         def ignore(d, names):
             rel = os.path.relpath(d, src)
             return [n for n in names if os.path.normpath(os.path.join(rel, n)).upper() in skip]
-        shutil.copytree(src, dst, copy_function=copy_newer, dirs_exist_ok=True, ignore=ignore)
+        shutil.copytree(src, dst, copy_function=A.copy_newer, dirs_exist_ok=True, ignore=ignore)
 
 
 def pack_files(pack, sub):

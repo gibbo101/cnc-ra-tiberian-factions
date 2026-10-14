@@ -17,7 +17,6 @@ License: GPL v3.
 import json
 import os
 import re
-import shutil
 import struct
 import sys
 import zipfile
@@ -51,15 +50,6 @@ XML_NAMES = {
     os.path.join("XML", "AUDIO", "SFXEVENTSNONLOCALIZED.XML"): ("AUDIO", "SFXEvents{id}.xml"),
     os.path.join("XML", "AUDIO", "SFXEVENTSLOCALIZED.XML"): ("AUDIO", "SFXEventsLocalized{id}.xml"),
 }
-
-
-def copy_newer(src, dst):
-    """Copy unless dst already has src's size and mtime."""
-    if os.path.exists(dst):
-        a, b = os.stat(src), os.stat(dst)
-        if a.st_size == b.st_size and int(a.st_mtime) == int(b.st_mtime):
-            return dst
-    return shutil.copy2(src, dst)
 
 
 def host_path(rel, host):
@@ -96,7 +86,7 @@ def copy_binaries(mod, folder, host):
                         continue
                     dst = os.path.join(folder, "Data", sub, target)
                     os.makedirs(os.path.dirname(dst), exist_ok=True)
-                    copy_newer(os.path.join(d, f), dst)
+                    A.copy_newer(os.path.join(d, f), dst)
                     wanted.add(os.path.normcase(dst))
     for sub in ("ART", "AUDIO"):
         for d, _, fs in os.walk(os.path.join(folder, "Data", sub)):
@@ -326,7 +316,7 @@ def shape_data(mod):
     out = {}
     for pack in A.WORKSHOP[mod]["packs"]:
         for kind in A.KINDS:
-            path = A.tileset_xml_of(pack, kind)
+            path = A.pack_tileset_path(pack, kind)
             if not os.path.exists(path):
                 continue
             section = SHAPE_SECTION.get(kind, "Terrain (" + kind[len("TERRAIN_"):].lower() + ")")
@@ -357,7 +347,7 @@ def all_names(mod):
     names = set()
     for pack in A.WORKSHOP[mod]["packs"]:
         for kind in A.KINDS:
-            path = A.tileset_xml_of(pack, kind)
+            path = A.pack_tileset_path(pack, kind)
             if os.path.exists(path):
                 names.update(n.upper() for n in re.findall(r"<Name>\s*([^<\s]+)\s*</Name>",
                                                             open(path, encoding="utf-8-sig").read()))
@@ -394,12 +384,17 @@ def check(folder, host):
         for f in fs:
             if f.upper().endswith(".ZIP"):
                 rel = os.path.relpath(os.path.join(d, f), art).replace(os.sep, "\\").upper()
-                zips[rel[:-4]] = {n.upper() for n in zipfile.ZipFile(os.path.join(d, f)).namelist()}
+                with zipfile.ZipFile(os.path.join(d, f)) as z:
+                    zips[rel[:-4]] = {n.upper() for n in z.namelist()}
     named, problems = set(), []
     tilesets = os.path.join(folder, "Data", "XML", "TILESETS")
     for f in sorted(os.listdir(tilesets)) if os.path.isdir(tilesets) else []:
         text = open(os.path.join(tilesets, f), encoding="utf-8-sig").read()
-        root = re.search(r"<RootTexturePath>([^<]+)</RootTexturePath>", text).group(1)
+        found = re.search(r"<RootTexturePath>([^<]+)</RootTexturePath>", text)
+        if found is None:
+            problems.append(f"{f}: no RootTexturePath")
+            continue
+        root = found.group(1)
         if not root.upper().startswith(A.HOSTS[host]["root"].upper() + "\\"):
             problems.append(f"{f}: root {root} is not {A.HOSTS[host]['name']}'s")
         folder_key = root.split("\\", 1)[1].upper()

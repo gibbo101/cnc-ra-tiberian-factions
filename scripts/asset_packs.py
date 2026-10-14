@@ -266,12 +266,16 @@ def art_dir(name, kind):
     return os.path.dirname(art_zip(name, kind))
 
 
+def pack_tileset_path(pack, kind):
+    """A pack's tileset XML path for a kind, whether or not the file exists."""
+    return os.path.join(pack_data(pack), "XML", "TILESETS", f"{PACKS[pack]}_{kind}.XML")
+
+
 def tileset_xml_of(pack, kind):
     mod_file = os.path.join(MOD, "Data", "XML", "TILESETS", f"RA_{kind}.XML")
     if pack is None:
         return mod_file
-    return _pack_xml(os.path.join(pack_data(pack), "XML", "TILESETS", f"{PACKS[pack]}_{kind}.XML"),
-                     mod_file, "Tiles")
+    return _pack_xml(pack_tileset_path(pack, kind), mod_file, "Tiles")
 
 
 def tileset_xml(name, kind):
@@ -295,6 +299,35 @@ def shape_frames(name, kind):
 def cameo_tga(icon):
     stem = re.sub(r"\.tga$", "", os.path.basename(icon), flags=re.I)
     return _made(os.path.join(data_root(cameo_pack(stem)), "ART", "TEXTURES", "SRGB", f"{stem}.tga"))
+
+
+TGA_RLE = 10
+
+
+def is_rle_cameo(path):
+    with open(path, "rb") as f:
+        return f.read(3)[2:] == bytes([TGA_RLE])
+
+
+def copy_newer(src, dst):
+    """Copy unless dst already has src's size and is no older, keeping rsync-friendly mtimes. A sidebar cameo is
+    written run-length encoded (the launcher reads RLE TGA) with src's mtime, and is current only at that mtime."""
+    import shutil
+    from PIL import Image
+    cameo = os.path.basename(src).upper().startswith("BUILDICON_") and src.upper().endswith(".TGA")
+    if os.path.exists(dst):
+        a, b = os.stat(src), os.stat(dst)
+        if cameo:
+            same = is_rle_cameo(dst) and b.st_mtime_ns == a.st_mtime_ns
+        else:
+            same = a.st_size == b.st_size and b.st_mtime >= a.st_mtime
+        if same:
+            return dst
+    if cameo:
+        Image.open(src).save(dst, compression="tga_rle")
+        shutil.copystat(src, dst)
+        return dst
+    return shutil.copy2(src, dst)
 
 
 HD_CAMEO_ART = os.path.join(REPO, "resources", "custom-art", "ts-hd-cameos")
