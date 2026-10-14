@@ -1415,6 +1415,7 @@ typedef enum BulletType : char
     BULLET_TSCANNON,        // TS [Cannon]: the Tick Tank's arcing 120MM shell.
     BULLET_TSCANNON2,       // TS [Cannon2] flying level: the Mammoth Mk. I's 120MM shell.
     BULLET_R2APOCMISSILE,   // The Apocalypse's anti-air missile: RA's MISSILE art on TS's [AAHeatSeeker] path.
+    BULLET_TSINVISIBLE,     // TS [Invisible]: the Titan's unseen shot, ground only, bursting in TS's lists.
 
     BULLET_COUNT,
     BULLET_FIRST = 0
