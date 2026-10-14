@@ -63,14 +63,15 @@ def copy_newer(src, dst):
 
 
 def host_path(rel, host):
-    """A path under Data/ART for the host game: Red Alert art moves to that game's folder and theatre."""
+    """A path under Data/ART for the host game: Red Alert art moves to that game's folder and theatre. None for
+    terrain of a theatre the game lacks, which no map of that game can use."""
     parts = rel.split(os.sep)
     if host == "RA" or parts[:3] != ["TEXTURES", "SRGB", "RED_ALERT"]:
         return rel
     h = A.HOSTS[host]
     if parts[3] == "TERRAIN":
         if parts[4] not in h["theatres"]:
-            raise SystemExit(f"{h['name']} has no {parts[4].lower()} theatre for {rel}")
+            return None
         parts[4] = h["theatres"][parts[4]]
     return os.path.join("TEXTURES", "SRGB", h["art"], *parts[3:])
 
@@ -90,7 +91,10 @@ def copy_binaries(mod, folder, host):
                     rel = os.path.relpath(os.path.join(d, f), src)
                     if rel.upper() in later:
                         continue
-                    dst = os.path.join(folder, "Data", sub, host_path(rel, host) if sub == "ART" else rel)
+                    target = host_path(rel, host) if sub == "ART" else rel
+                    if target is None:
+                        continue
+                    dst = os.path.join(folder, "Data", sub, target)
                     os.makedirs(os.path.dirname(dst), exist_ok=True)
                     copy_newer(os.path.join(d, f), dst)
                     wanted.add(os.path.normcase(dst))
@@ -126,7 +130,8 @@ def write_if_changed(path, text):
 
 
 def host_xml(rel, text, host):
-    """A launcher XML's path and text for the host game: its tileset names and texture roots, its buildable names."""
+    """A launcher XML's path and text for the host game: its tileset names and texture roots, its buildable names.
+    (None, None) for the terrain of a theatre the game lacks."""
     if host == "RA":
         return rel, text
     h = A.HOSTS[host]
@@ -139,8 +144,6 @@ def host_xml(rel, text, host):
     if kind.startswith("TERRAIN_"):
         theatre = kind[len("TERRAIN_"):]
         if theatre not in h["theatres"]:
-            if re.search(r"<Tile>", text):
-                raise SystemExit(f"{h['name']} has no {theatre.lower()} theatre for {rel}")
             return None, None
         kind = "TERRAIN_" + h["theatres"][theatre]
     text = re.sub(r'(<TilesetTypeClass\s+name=")RA_\w+', lambda m: m.group(1) + h["prefix"] + "_" +
@@ -199,6 +202,16 @@ def contents(mod):
     return {title: sorted(names) for title, names in out.items()}
 
 
+def host_section(title, host):
+    """A README section title for the host game: a terrain section under the host's theatre name, None for a
+    theatre the host lacks."""
+    m = re.match(r"Terrain \((\w+)\)$", title)
+    if m is None:
+        return title
+    theatre = A.HOSTS[host]["theatres"].get(m.group(1).upper())
+    return f"Terrain ({theatre.lower()})" if theatre else None
+
+
 def readme(mod, listed, host):
     """The pack's README.md: what it is, how players and modders use it, contents and credits."""
     w = A.WORKSHOP[mod]
@@ -242,7 +255,9 @@ def readme(mod, listed, host):
         lines += ["## Contents", ""] + [f"- {line}" for line in w["contents"]] + ["", "More content to come.", ""]
     lines += ["## Files", ""]
     for title, names in contents(mod).items():
-        lines += [f"**{title}** ({len(names)}): " + ", ".join(names), ""]
+        title = host_section(title, host)
+        if title:
+            lines += [f"**{title}** ({len(names)}): " + ", ".join(names), ""]
     lines += ["XML files: " + ", ".join(f"`{n}`" for n in sorted(listed.values())) + ".", ""]
     shapes = shape_data(mod)
     lines += ["## Shape data", "", "Each object's classic-mode SHP: its size in classic pixels and its frame count."]
@@ -251,7 +266,9 @@ def readme(mod, listed, host):
                       "is drawn with the object named.")
     lines += [""]
     for section, rows in shapes.items():
-        lines += [f"**{section}**", "", "```"] + rows + ["```", ""]
+        section = host_section(section, host)
+        if section:
+            lines += [f"**{section}**", "", "```"] + rows + ["```", ""]
     lines += ["## AI disclosure", ""]
     if w["game"] in ("TS", "RA2"):
         lines += ["The HD art in this pack was made with AI assistance. The 3D models behind the sprites were built "
