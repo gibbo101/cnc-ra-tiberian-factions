@@ -37,24 +37,36 @@ void TF_Note_Mod_Path(const char* mod_path)
         path[--len] = 0;
     }
     snprintf(path + len, sizeof(path) - len, "\\%s", PACK_MARKER);
-    FILE* f = fopen(path, "r");
-    if (f == NULL) {
-        return;
+    int high = -1, low = -1;
+    if (TF_Read_Pack_Marker(path, &high, &low)) {
+        PackHigh = high;
+        PackLow = low;
     }
+}
+
+bool TF_Read_Pack_Marker(const char* marker_path, int* high, int* low)
+{
+    FILE* f = fopen(marker_path, "r");
+    if (f == NULL) {
+        return false;
+    }
+    bool found = false;
     char line[128];
     while (fgets(line, sizeof(line), f) != NULL) {
-        int high = 0, low = 0;
-        if (sscanf(line, "Version=%d.%d", &high, &low) == 2) {
-            PackHigh = high;
-            PackLow = low;
-        }
+        found = found || sscanf(line, "Version=%d.%d", high, low) == 2;
     }
     fclose(f);
+    return found;
+}
+
+bool TF_Pack_Version_Current(int high, int low)
+{
+    return (high > PACK_NEEDS_HIGH || (high == PACK_NEEDS_HIGH && low >= PACK_NEEDS_LOW));
 }
 
 bool TF_TS_Pack_Present(void)
 {
-    return (PackHigh > PACK_NEEDS_HIGH || (PackHigh == PACK_NEEDS_HIGH && PackLow >= PACK_NEEDS_LOW));
+    return TF_Pack_Version_Current(PackHigh, PackLow);
 }
 
 bool TF_Is_TS_Pack_Type(TechnoTypeClass const* type)

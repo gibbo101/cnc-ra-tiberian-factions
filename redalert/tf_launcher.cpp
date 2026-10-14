@@ -5,6 +5,7 @@
 */
 #include "function.h"
 #include "tf_launcher.h"
+#include "tf_asset_pack.h"
 
 extern "C" {
 #include "puff.h"
@@ -440,6 +441,7 @@ const int TS_HD_PACK = 0;
 enum PackState
 {
     PACK_ENABLED,
+    PACK_OUTDATED, // loaded, but older than this build's XML needs
     PACK_ON_NEXT_START,
     PACK_INSTALLED_OFF,
     PACK_DOWNLOADED,  // in its Workshop folder, but not yet in the launcher's mod list
@@ -560,7 +562,11 @@ PackState Pack_State(int pack)
         && roots->Last - roots->First < 64) {
         for (const MsvcString* root = roots->First; root < roots->Last; root++) {
             if (Has_Pack_Marker(String_Chars(root), marker)) {
-                return PACK_ENABLED;
+                char path[MAX_PATH];
+                snprintf(path, sizeof(path), "%s\\%s", String_Chars(root), marker);
+                int high = -1, low = -1;
+                bool current = TF_Read_Pack_Marker(path, &high, &low) && TF_Pack_Version_Current(high, low);
+                return current ? PACK_ENABLED : PACK_OUTDATED;
             }
         }
     }
@@ -737,7 +743,12 @@ void Pack_Popup(void)
         return;
     }
     shown = now;
-    if (state == PACK_DOWNLOADING) {
+    if (state == PACK_OUTDATED) {
+        Show_Message(L"Tiberian Sun GDI needs a newer Tiberian Sun HD Assets mod. Let Steam update it, then restart "
+                     L"the game.",
+                     L"GET IT ON THE WORKSHOP",
+                     &Get_TS_HD_Pack);
+    } else if (state == PACK_DOWNLOADING) {
         Show_Message(L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod, which Steam is still downloading.");
     } else if (state == PACK_MISSING) {
         Show_Message(L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod, free on the Steam Workshop.",
@@ -1018,14 +1029,17 @@ void Refresh_Panel(void* menu)
         Set_Hidden(Find_Widget(menu, PACKS[pack].Logo, AS_QUAD), pack != PanelPack);
     }
     PackState state = PanelPack < 0 ? PACK_ENABLED : states[PanelPack];
-    Set_Hidden(get, state != PACK_MISSING);
-    Set_Hidden(enable, state == PACK_ENABLED || state == PACK_MISSING || state == PACK_DOWNLOADING);
+    Set_Hidden(get, state != PACK_MISSING && state != PACK_OUTDATED);
+    Set_Hidden(enable,
+               state == PACK_ENABLED || state == PACK_OUTDATED || state == PACK_MISSING || state == PACK_DOWNLOADING);
     if (PanelPack < 0) {
         return;
     }
     wchar_t line[160];
     if (state == PACK_MISSING) {
         swprintf(line, 160, L"NEEDED FOR %ls", PACKS[PanelPack].NeededFor);
+    } else if (state == PACK_OUTDATED) {
+        swprintf(line, 160, L"OUT OF DATE: LET STEAM UPDATE IT, THEN RESTART");
     } else if (state == PACK_DOWNLOADING) {
         int percent = Pack_Download_Percent(PanelPack);
         swprintf(line, 160, percent > 0 ? L"DOWNLOADING... %d%%" : L"DOWNLOADING...", percent);

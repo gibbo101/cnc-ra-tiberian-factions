@@ -16,6 +16,13 @@ void TF_Note_Mod_Path(const char* mod_path);
 bool TF_TS_Pack_Present(void);
 
 /*
+**	Reads a pack marker file's Version=high.low; false when it is missing or has none. A pack is current when its
+**	version is at least the one this build's XML needs.
+*/
+bool TF_Read_Pack_Marker(const char* marker_path, int* high, int* low);
+bool TF_Pack_Version_Current(int high, int low);
+
+/*
 **	True for a type whose art and audio the TS-HD-Assets pack carries (IniName TS*, not RA's
 **	Tesla TSLA*).
 */
