@@ -120,6 +120,13 @@ elif [[ -z "$STRIP_BIN" ]]; then
     echo "WARNING: i686-w64-mingw32-strip not found — shipping UNSTRIPPED DLL ($(du -h "$STAGED_DLL" | cut -f1))." >&2
 fi
 
+# --- ModDB zips: the mod with its required asset packs beside it, and each pack alone ---------------
+REQUIRED_DIRS=()
+while read -r mod; do
+    REQUIRED_DIRS+=("build/remaster/$mod")
+done < <(python3 scripts/asset_packs.py required)
+python3 scripts/moddb_zips.py dist/moddb "$STAGE_DIR/$SUBFOLDER_NAME" "${REQUIRED_DIRS[@]}"
+
 echo "✓ Workshop staging ready ($(du -sh "$STAGE_DIR/$SUBFOLDER_NAME" | cut -f1)):"
 ls -la "$STAGE_DIR/"
 echo
