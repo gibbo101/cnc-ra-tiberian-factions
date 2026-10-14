@@ -95,7 +95,7 @@ void TF_Clear_Pack_Notice(void)
 
 void TF_Pack_Notice_Tick(void)
 {
-    // Messages sent before the match renders are dropped, as the difficulty announcements' are.
+    // A message sent before the match renders is dropped, so the notice waits for frame 30.
     if (NoticePending && Frame >= 30) {
         On_Message(Notice, 30.0f, -1);
         NoticePending = false;
