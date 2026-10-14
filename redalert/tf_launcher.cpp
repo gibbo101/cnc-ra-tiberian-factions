@@ -136,6 +136,36 @@ bool Redirect_Call(SIZE_T site, SIZE_T hook)
 }
 
 /*
+**	True when `at` starts with `stock` (position independent, 5 to 17 bytes) and `cave` has
+**	room for a register-snapshot stub around them.
+*/
+bool Snapshot_Ready(SIZE_T at, const unsigned char* stock, size_t length, SIZE_T cave)
+{
+    return length >= 5 && length <= 17 && memcmp((const void*)at, stock, length) == 0
+           && Cave_Is_Free(cave, (int)(15 + length));
+}
+
+/*
+**	A register-snapshot hook: pushfd / pushad / push esp / call `hit` / popad / popfd /
+**	displaced instructions / jmp back. `hit` reads the pushad block (edi first).
+*/
+bool Snapshot_Hook(SIZE_T at, const unsigned char* stock, size_t length, SIZE_T cave, SIZE_T hit)
+{
+    unsigned char stub[32] = {0x9C, 0x60, 0x54, 0xE8};
+    TF_Put_Rel32(stub + 4, cave + 8, hit);
+    stub[8] = 0x61;
+    stub[9] = 0x9D;
+    memcpy(stub + 10, stock, length);
+    stub[10 + length] = 0xE9;
+    TF_Put_Rel32(stub + 11 + length, cave + 15 + length, at + length);
+    unsigned char jump[32];
+    memset(jump, 0x90, length);
+    jump[0] = 0xE9;
+    TF_Put_Rel32(jump + 1, at + 5, cave);
+    return TF_Write_Own_Code(cave, stub, 15 + length) && TF_Write_Own_Code(at, jump, length);
+}
+
+/*
 **	Instance fields the campaign page reads. The house is ClientG's ExternalFactionType.
 */
 const DWORD INSTANCE_FACTION = 0x488;
@@ -739,36 +769,6 @@ void __stdcall Stage_Check_Hit(const DWORD* regs)
     if (count == 1) {
         *(unsigned char*)(stage + 0x70) = 1;
     }
-}
-
-/*
-**	True when `at` starts with `stock` (position independent, 5 to 17 bytes) and `cave` has
-**	room for a register-snapshot stub around them.
-*/
-bool Snapshot_Ready(SIZE_T at, const unsigned char* stock, size_t length, SIZE_T cave)
-{
-    return length >= 5 && length <= 17 && memcmp((const void*)at, stock, length) == 0
-           && Cave_Is_Free(cave, (int)(15 + length));
-}
-
-/*
-**	A register-snapshot hook: pushfd / pushad / push esp / call `hit` / popad / popfd /
-**	displaced instructions / jmp back. `hit` reads the pushad block (edi first).
-*/
-bool Snapshot_Hook(SIZE_T at, const unsigned char* stock, size_t length, SIZE_T cave, SIZE_T hit)
-{
-    unsigned char stub[32] = {0x9C, 0x60, 0x54, 0xE8};
-    TF_Put_Rel32(stub + 4, cave + 8, hit);
-    stub[8] = 0x61;
-    stub[9] = 0x9D;
-    memcpy(stub + 10, stock, length);
-    stub[10 + length] = 0xE9;
-    TF_Put_Rel32(stub + 11 + length, cave + 15 + length, at + length);
-    unsigned char jump[32];
-    memset(jump, 0x90, length);
-    jump[0] = 0xE9;
-    TF_Put_Rel32(jump + 1, at + 5, cave);
-    return TF_Write_Own_Code(cave, stub, 15 + length) && TF_Write_Own_Code(at, jump, length);
 }
 
 /*
