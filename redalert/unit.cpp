@@ -487,6 +487,9 @@ void UnitClass::AI(void)
         return;
     }
 
+    // TF: a damaged TS vehicle trails TS's smoke and sparks.
+    TF_TS_Damage_AI(this);
+
     // TF: the RA harvester's dust loop wraps here, every frame: Mission_Unload runs too seldom, so the bucket would
     // bob. See docs/harvester-docking-rework-plan.md.
     if (IsDumping && (*this == UNIT_HARVESTER || *this == UNIT_TDHARV || *this == UNIT_TSHARV)) {
@@ -1610,7 +1613,8 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
         **	When damaged and below half strength, start smoking if
         **	it isn't already smoking.
         */
-        if (Health_Ratio() <= Rule.ConditionYellow && !IsAnimAttached) {
+        // TF: a TS vehicle smokes TS's way instead (TF_TS_Damage_AI).
+        if (Health_Ratio() <= Rule.ConditionYellow && !IsAnimAttached && !TF_TS_Effects(Class)) {
 #ifdef FIXIT_ANTS
             if (*this != UNIT_ANT1 && *this != UNIT_ANT2 && *this != UNIT_ANT3) {
 #endif

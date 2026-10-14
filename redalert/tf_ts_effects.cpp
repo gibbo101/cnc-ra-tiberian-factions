@@ -1,6 +1,6 @@
 /*
-**	Tiberian Sun's own effects for TS objects: death blasts and debris, fires, infantry deaths and
-**	the burning soldier, after OpenTS. The art is packed by scripts/ts_pack_effects.py.
+**	Tiberian Sun's own effects for TS objects: death blasts and debris, damage smoke and sparks,
+**	fires, infantry deaths and the burning soldier, after OpenTS. The art is packed by scripts/ts_pack_effects.py.
 */
 #include "function.h"
 #include "tf_asset_pack.h"
@@ -60,6 +60,59 @@ const DebrisCount TSDebris[] = {
 
 // The emitter ring sits at the bottom of its frame: drawn this far north, it lands on the section's centre.
 const int FIRESTORM_RING_LIFT = 85;
+
+// TS [SmallGreySSys] and [SmallGreySmoke]: a puff every SpawnFrames=5 ticks up to ParticleCap=15, which with its
+// 20 states at 4-5 ticks each comes to one every 6. It rises at Velocity=9, slowing by Deacc=.05 to 3.
+enum
+{
+    SMOKE_SPAWN_TICKS = 6,
+    SMOKE_DRIFT_MAX = 5,
+};
+const double SMOKE_RISE = 9.0;
+const double SMOKE_RISE_MIN = 3.0;
+const double SMOKE_DEACC = 0.05;
+
+// TS [General] ConditionYellowSparkingProbability=.01, ConditionRedSparkingProbability=.02, per tick, in percent.
+const int SPARK_PERCENT_YELLOW = 1;
+const int SPARK_PERCENT_RED = 2;
+
+// TS DamageSmokeOffset in leptons above the ground: Z less the X,Y step down the screen ([MMCH] 100,100,275,
+// [HMEC] 300,300,425). Every other TS vehicle and aircraft smokes from its centre.
+int Smoke_Lift(TechnoTypeClass const* type)
+{
+    if (_stricmp(type->IniName, "TSTITN") == 0) {
+        return (275 - 100);
+    }
+    if (_stricmp(type->IniName, "TSHMEC") == 0) {
+        return (425 - 300);
+    }
+    return (0);
+}
+
+void Move_To(AnimClass* anim, COORDINATE coord);
+
+// Rises and drifts a smoke puff one tick (OpenTS ParticleClass::Smoke_Behavior_AI).
+void Puff_AI(AnimClass* anim)
+{
+    if (Frame & 1) {
+        if (Sim_Random_Pick(0, 3) == 0) {
+            int step = Sim_Random_Pick(-1, 1);
+            if (Sim_Random_Pick(0, 1) == 0) {
+                anim->TFVelX = max(-(double)SMOKE_DRIFT_MAX, min((double)SMOKE_DRIFT_MAX, anim->TFVelX + step));
+            } else {
+                anim->TFVelY = max(-(double)SMOKE_DRIFT_MAX, min((double)SMOKE_DRIFT_MAX, anim->TFVelY + step));
+            }
+        }
+        anim->TFPosX += anim->TFVelX;
+        anim->TFPosY += anim->TFVelY;
+    }
+    anim->TFPosZ += anim->TFVelZ;
+    if (anim->TFVelZ > SMOKE_RISE_MIN) {
+        anim->TFVelZ -= SMOKE_DEACC;
+    }
+    COORDINATE ground = XY_Coord((int)anim->TFPosX, (int)anim->TFPosY);
+    Move_To(anim, Coord_Move(ground, DIR_N, (unsigned short)anim->TFPosZ));
+}
 
 // TS [FLAMEGUY]: RunningFrames=6 per facing over 8 facings, then the collapse.
 enum
@@ -355,6 +408,29 @@ void TF_TS_Firestorm_Glow(BuildingClass* section, bool lit)
     }
 }
 
+void TF_TS_Damage_AI(TechnoClass* techno)
+{
+    TechnoTypeClass const* type = techno->Techno_Type_Class();
+    if (techno->IsInLimbo || !TF_TS_Effects(type) || techno->Health_Ratio() > Rule.ConditionYellow) {
+        return;
+    }
+    COORDINATE centre = techno->Center_Coord();
+    int lift = techno->Height + Smoke_Lift(type);
+    if (((Frame + techno->ID) % SMOKE_SPAWN_TICKS) == 0) {
+        AnimClass* puff = new AnimClass(ANIM_TS_SGRYSMK1, Coord_Move(centre, DIR_N, lift));
+        if (puff != NULL) {
+            puff->TFPosX = Coord_X(centre);
+            puff->TFPosY = Coord_Y(centre);
+            puff->TFPosZ = lift;
+            puff->TFVelZ = SMOKE_RISE;
+        }
+    }
+    int chance = (techno->Health_Ratio() <= Rule.ConditionRed) ? SPARK_PERCENT_RED : SPARK_PERCENT_YELLOW;
+    if (Sim_Random_Pick(0, 99) < chance) {
+        new AnimClass(ANIM_TS_SPARKS, Coord_Move(centre, DIR_N, lift));
+    }
+}
+
 bool TF_TS_Anim_AI(AnimClass* anim)
 {
     if (Is_Shard(*anim)) {
@@ -362,6 +438,9 @@ bool TF_TS_Anim_AI(AnimClass* anim)
     }
     if (*anim == ANIM_TS_FLAMEGUY) {
         Flaming_Guy_AI(anim);
+    }
+    if (*anim == ANIM_TS_SGRYSMK1) {
+        Puff_AI(anim);
     }
     return (false);
 }

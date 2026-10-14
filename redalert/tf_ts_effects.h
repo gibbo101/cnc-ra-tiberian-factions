@@ -6,6 +6,7 @@
 class AnimClass;
 class BuildingClass;
 class BulletTypeClass;
+class TechnoClass;
 class TechnoTypeClass;
 
 /*
@@ -48,6 +49,12 @@ AnimType TF_TS_Infantry_Death(int infdeath);
 **	A TS soldier's body, picked at random from TS's DeadBodies.
 */
 AnimType TF_TS_Dead_Body(void);
+
+/*
+**	A damaged TS vehicle or aircraft, below yellow health, trails TS's grey smoke and now and then
+**	throws a spark burst (TS DamageParticleSystems=SparkSys,SmallGreySSys). Called every tick.
+*/
+void TF_TS_Damage_AI(TechnoClass* techno);
 
 /*
 **	Lights or clears TS's flashing emitter ring (GAFSDF_A) on a Firestorm Wall Section. TS lights

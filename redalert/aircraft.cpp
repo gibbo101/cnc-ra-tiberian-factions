@@ -1027,6 +1027,9 @@ void AircraftClass::AI(void)
         return;
     }
 
+    // TF: a damaged TS aircraft trails TS's smoke and sparks.
+    TF_TS_Damage_AI(this);
+
     /*
     **	A Mission change can always occur if the aircraft is landed or flying.
     */
