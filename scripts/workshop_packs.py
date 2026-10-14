@@ -154,8 +154,8 @@ def host_xml(rel, text, host):
 
 
 def write_xml(mod, folder, host):
-    """The mod's XML files; returns {the host's launcher XML: the pack's file name}."""
-    files = {}
+    """The mod's XML files; returns {the host's launcher XML: the pack's file name} and the paths written."""
+    files, written = {}, []
     for rel, pack_file, root, _ in A.XML_FILES:
         sub, pattern = XML_NAMES[rel]
         text = combined_xml(mod, rel, pack_file, root)
@@ -167,22 +167,27 @@ def write_xml(mod, folder, host):
         name = pattern.format(id=A.WORKSHOP[mod]["xml_id"])
         if host != "RA" and sub == "TILESETS":
             name = os.path.basename(target).replace(A.HOSTS[host]["prefix"], A.WORKSHOP[mod]["xml_id"], 1)
-        write_if_changed(os.path.join(folder, "Data", "XML", sub, name), text)
+        path = os.path.join(folder, "Data", "XML", sub, name)
+        write_if_changed(path, text)
         files[target] = name
-    return files
+        written.append(path)
+    return files, written
 
 
 def write_manifest(mod, folder, host):
-    """ccmod.json, and for a pack Tiberian Factions requires, the CCDATA marker carrying its version."""
+    """ccmod.json, and for a pack Tiberian Factions requires, the CCDATA marker carrying its version; returns the
+    marker's path, or None."""
     w = A.WORKSHOP[mod]
     high, low = w["version"]
     manifest = {"name": A.mod_list_text(w["name"]),
                 "description": A.mod_list_text(w["description"].format(host=A.HOSTS[host]["name"])),
                 "author": "gibbo101", "load_order": 2, "version_high": high, "version_low": low, "game_type": host}
     write_if_changed(os.path.join(folder, "ccmod.json"), json.dumps(manifest, indent=4) + "\n")
-    if w.get("marker") and host == "RA":
-        write_if_changed(os.path.join(folder, "CCDATA", w["marker"]),
-                         f"[Pack]\nName={mod}\nVersion={high}.{low}\n")
+    if not (w.get("marker") and host == "RA"):
+        return None
+    marker = os.path.join(folder, "CCDATA", w["marker"])
+    write_if_changed(marker, f"[Pack]\nName={mod}\nVersion={high}.{low}\n")
+    return marker
 
 
 GAME = {"TS": "Tiberian Sun", "RA2": "Red Alert 2", "CNC3": "Command & Conquer 3: Tiberium Wars"}
@@ -359,11 +364,24 @@ def all_names(mod):
     return names
 
 
+def prune(folder, sub, keep):
+    """Delete every file under folder/sub that isn't one of the paths in keep, and the folders left empty."""
+    keep = {os.path.normcase(p) for p in keep}
+    for d, _, fs in os.walk(os.path.join(folder, sub), topdown=False):
+        for f in fs:
+            if os.path.normcase(os.path.join(d, f)) not in keep:
+                os.remove(os.path.join(d, f))
+        if not os.listdir(d):
+            os.rmdir(d)
+
+
 def build(mod, folder, host="RA"):
-    """The whole Workshop folder for one asset-pack mod, for one game."""
-    write_manifest(mod, folder, host)
+    """The whole Workshop folder for one asset-pack mod, for one game, and nothing an earlier build left."""
+    marker = write_manifest(mod, folder, host)
     copy_binaries(mod, folder, host)
-    listed = write_xml(mod, folder, host)
+    listed, written = write_xml(mod, folder, host)
+    prune(folder, os.path.join("Data", "XML"), written)
+    prune(folder, "CCDATA", [marker] if marker else [])
     write_if_changed(os.path.join(folder, "README.md"), readme(mod, listed, host))
     check(folder, host)
 
