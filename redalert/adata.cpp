@@ -2468,6 +2468,8 @@ static AnimTypeClass const TsDbris7Sm(ANIM_TS_DBRIS7SM, "TSDBR07S", 3, 0, false,
 static AnimTypeClass const TsDbris8Sm(ANIM_TS_DBRIS8SM, "TSDBR08S", 3, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
 static AnimTypeClass const TsDbris9Sm(ANIM_TS_DBRIS9SM, "TSDBR09S", 3, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
 static AnimTypeClass const TsDbris10Sm(ANIM_TS_DBRIS10SM, "TSDBR10S", 3, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 15, 15, -1, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsSgrySmk1(ANIM_TS_SGRYSMK1, "TSSGRYSM", 7, 0, false, false, false, false, false, false, false, true, false, 0, 4, 0, 0, 0, 20, 0, VOC_NONE, ANIM_NONE, 20, 0x100);
+static AnimTypeClass const TsSparks(ANIM_TS_SPARKS, "TSSPARKS", 40, 0, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 20, 0, VOC_NONE, ANIM_NONE, 20, 0x100);
 
 // TS Drop Pod strike (SPC_TS_DROPPODS, OpenTS droppod.cpp), art from scripts/ts_pack_pods.py. The husks lie on the
 // ground layer for 5 loops, so the trooper walks over its pod; the falling pod lays SMOKEY every 6 frames.
@@ -2731,6 +2733,8 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(TsDbris8Sm);
     new AnimTypeClass(TsDbris9Sm);
     new AnimTypeClass(TsDbris10Sm);
+    new AnimTypeClass(TsSgrySmk1);
+    new AnimTypeClass(TsSparks);
 }
 
 /***********************************************************************************************

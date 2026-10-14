@@ -784,6 +784,10 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tsdragon_stub.shp" 8 8 32
 PACK_ARGS+=("$TMPDIR/tsdragon_stub.shp:TSDRAGON.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/ts120mm_stub.shp" 12 12 1
 PACK_ARGS+=("$TMPDIR/ts120mm_stub.shp:TS120MM.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tssgrysm_stub.shp" 7 7 20
+PACK_ARGS+=("$TMPDIR/tssgrysm_stub.shp:TSSGRYSM.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tssparks_stub.shp" 40 40 20
+PACK_ARGS+=("$TMPDIR/tssparks_stub.shp:TSSPARKS.SHP")
 
 # Repack into TFASSETS.MIX with TD-prefix renames.
 python3 scripts/mix_tools.py pack "$OUTMIX" "${PACK_ARGS[@]}"
