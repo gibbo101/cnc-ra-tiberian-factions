@@ -88,6 +88,11 @@ void TF_Queue_Pack_Notice(const char* instead)
     NoticePending = true;
 }
 
+void TF_Clear_Pack_Notice(void)
+{
+    NoticePending = false;
+}
+
 void TF_Pack_Notice_Tick(void)
 {
     // Messages sent before the match renders are dropped, as the difficulty announcements' are.

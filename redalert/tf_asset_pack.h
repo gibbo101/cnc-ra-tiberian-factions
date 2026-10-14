@@ -34,5 +34,6 @@ bool TF_Is_TS_Pack_Type(TechnoTypeClass const* type);
 */
 void TF_Queue_Pack_Notice(const char* instead);
 void TF_Pack_Notice_Tick(void);
+void TF_Clear_Pack_Notice(void);
 
 #endif
