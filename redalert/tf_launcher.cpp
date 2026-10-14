@@ -413,15 +413,35 @@ const char* Campaign_Page_Install(void)
 
 
 /*
-**	The TS-HD-Assets pack as the launcher sees it: enabled (one of its mod roots carries the pack's
-**	CCDATA marker), installed but switched off, or missing.
+**	The asset packs the mod requires, as the launcher sees them in its own mod list: loaded (one of this
+**	session's mod roots holds the pack's marker), switched on for the next start, switched off, or missing.
 */
 const SIZE_T MOD_ROOTS = 0x1FE4C28;
-const char PACK_MARKER[] = "CCDATA\\TSHDPACK.INI";
+const SIZE_T MOD_MANAGER_GET = 0x5E8CB0;
+const DWORD MOD_RECORD_SIZE = 0xBC;
+const DWORD MOD_FOLDER = 0x78;
+const DWORD MOD_ID = 0xA8;
+const DWORD MOD_ENABLED = 0xB9;
+
+struct PackInfo
+{
+    const char* Marker;       // the file every copy of the pack carries, from its folder
+    const char* Logo;         // its logo in the menu's pack panel (scripts/pack_panel_art.py)
+    const char* WorkshopId;   // its Red Alert Workshop item
+    const wchar_t* NeededFor; // what needs it, for the panel's status line
+};
+
+// One row per required asset pack (asset_packs.WORKSHOP); the panel shows the first that needs the player.
+const PackInfo PACKS[] = {
+    {"CCDATA\\TSHDPACK.INI", "TF_Logo_TSHD", "3819642604", L"THE TIBERIAN SUN GDI FACTION"},
+};
+const int PACK_COUNT = sizeof(PACKS) / sizeof(PACKS[0]);
+const int TS_HD_PACK = 0;
 
 enum PackState
 {
     PACK_ENABLED,
+    PACK_ON_NEXT_START,
     PACK_INSTALLED_OFF,
     PACK_MISSING
 };
@@ -432,6 +452,8 @@ struct MsvcStringVector
     MsvcString* Last;
     MsvcString* End;
 };
+
+typedef void*(__cdecl* ModManagerFn)(void);
 
 #if TF_DEV_BUILD
 /*
@@ -463,78 +485,54 @@ void Pack_Log(const char*, ...)
 }
 #endif
 
-// The pack's Red Alert item on the Steam Workshop.
-#define TS_HD_WORKSHOP_ID "3819642604"
-const char TS_HD_WORKSHOP_PAGE[] = "https://steamcommunity.com/sharedfiles/filedetails/?id=" TS_HD_WORKSHOP_ID;
-
 /*
-**	True when `folder` holds the pack's marker.
+**	True when the mod folder `folder` holds `marker`.
 */
-bool Has_Pack_Marker(const char* folder)
+bool Has_Pack_Marker(const char* folder, const char* marker)
 {
     char path[MAX_PATH];
     size_t length = strlen(folder);
     const char* slash = (length > 0 && (folder[length - 1] == '\\' || folder[length - 1] == '/')) ? "" : "\\";
-    snprintf(path, sizeof(path), "%s%s%s", folder, slash, PACK_MARKER);
+    snprintf(path, sizeof(path), "%s%s%s", folder, slash, marker);
     return GetFileAttributesA(path) != INVALID_FILE_ATTRIBUTES;
 }
 
 /*
-**	True when any folder directly under `parent` holds the pack's marker.
+**	The launcher's mod manager, whose mod list the Mods screen shows; NULL on another launcher build.
 */
-bool Any_Pack_Under(const char* parent)
+char* Mod_Manager(void)
 {
-    char pattern[MAX_PATH];
-    snprintf(pattern, sizeof(pattern), "%s\\*", parent);
-    WIN32_FIND_DATAA found;
-    HANDLE find = FindFirstFileA(pattern, &found);
-    if (find == INVALID_HANDLE_VALUE) {
-        return false;
+    static const unsigned char getter[7] = {0xA1, 0x10, 0x45, 0xFA, 0x01, 0x85, 0xC0};
+    if (memcmp((const void*)MOD_MANAGER_GET, getter, sizeof(getter)) != 0) {
+        return NULL;
     }
-    bool any = false;
-    do {
-        if ((found.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && found.cFileName[0] != '.') {
-            char folder[MAX_PATH];
-            snprintf(folder, sizeof(folder), "%s\\%s", parent, found.cFileName);
-            any = any || Has_Pack_Marker(folder);
-        }
-    } while (!any && FindNextFileA(find, &found));
-    FindClose(find);
-    return any;
+    return (char*)((ModManagerFn)MOD_MANAGER_GET)();
 }
 
-PackState Pack_State(void)
+PackState Pack_State(int pack)
 {
+    const char* marker = PACKS[pack].Marker;
     const MsvcStringVector* roots = (const MsvcStringVector*)MOD_ROOTS;
     if (!IsBadReadPtr(roots, sizeof(*roots)) && roots->First != NULL && roots->Last >= roots->First
         && roots->Last - roots->First < 64) {
         for (const MsvcString* root = roots->First; root < roots->Last; root++) {
-            Pack_Log("mod root: %s", String_Chars(root));
-            if (Has_Pack_Marker(String_Chars(root))) {
+            if (Has_Pack_Marker(String_Chars(root), marker)) {
                 return PACK_ENABLED;
             }
         }
     }
-    char folder[MAX_PATH];
-    const char* up = getenv("USERPROFILE");
-    if (up != NULL) {
-        snprintf(folder, sizeof(folder), "%s\\Documents\\CnCRemastered\\Mods\\Red_Alert", up);
-        if (Any_Pack_Under(folder)) {
-            return PACK_INSTALLED_OFF;
+    PackState state = PACK_MISSING;
+    char* mm = Mod_Manager();
+    if (mm != NULL) {
+        char* last = *(char**)(mm + 0x1C);
+        for (char* r = *(char**)(mm + 0x18); r != NULL && r < last; r += MOD_RECORD_SIZE) {
+            if (Has_Pack_Marker(String_Chars((const MsvcString*)(r + MOD_FOLDER)), marker)) {
+                PackState found = *(const unsigned char*)(r + MOD_ENABLED) ? PACK_ON_NEXT_START : PACK_INSTALLED_OFF;
+                state = found < state ? found : state;
+            }
         }
     }
-    char game[MAX_PATH];
-    DWORD length = GetModuleFileNameA(NULL, game, sizeof(game));
-    char* name = length > 0 && length < sizeof(game) ? strrchr(game, '\\') : NULL;
-    if (name != NULL) {
-        *name = 0;
-        snprintf(folder, sizeof(folder), "%s\\..\\..\\workshop\\content\\1213210\\" TS_HD_WORKSHOP_ID, game);
-        Pack_Log("workshop item: %s", folder);
-        if (Any_Pack_Under(folder)) {
-            return PACK_INSTALLED_OFF;
-        }
-    }
-    return PACK_MISSING;
+    return state;
 }
 
 /*
@@ -604,16 +602,16 @@ const DWORD PACK_POPUP_HOLD_MS = 10000;
 void Pack_Popup(void)
 {
     static DWORD shown = 0;
-    PackState state = Pack_State();
+    PackState state = Pack_State(TS_HD_PACK);
     DWORD now = GetTickCount();
     if (state == PACK_ENABLED || (shown != 0 && now - shown < PACK_POPUP_HOLD_MS)) {
         return;
     }
     shown = now;
-    Show_Message(state == PACK_INSTALLED_OFF ? L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod, which is installed but "
-                                               L"switched off. Enable it in Mods and restart the game."
-                                             : L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod. Subscribe to it on the "
-                                               L"Steam Workshop, enable it in Mods and restart the game.");
+    Show_Message(state != PACK_MISSING ? L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod, which is installed but "
+                                         L"not loaded. Enable it in Mods and restart the game."
+                                       : L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod. Subscribe to it on the "
+                                         L"Steam Workshop, enable it in Mods and restart the game.");
 }
 
 /*
@@ -662,54 +660,161 @@ void __fastcall Slot_Set_Faction(void* slot, void*, int faction)
 }
 
 /*
-**	The pack's Workshop page in the Steam overlay.
+**	A pack's Workshop page in the Steam overlay.
 */
-
 typedef void*(__cdecl* SteamFriendsFn)(void);
 typedef void(__cdecl* OverlayToWebPageFn)(void* friends, const char* url, int mode);
 
-void Open_Pack_Page(void)
+void Open_Pack_Page(int pack)
 {
+    char url[96];
+    snprintf(url, sizeof(url), "https://steamcommunity.com/sharedfiles/filedetails/?id=%s", PACKS[pack].WorkshopId);
     HMODULE steam = GetModuleHandleA("steam_api.dll");
     SteamFriendsFn get = steam ? (SteamFriendsFn)GetProcAddress(steam, "SteamAPI_SteamFriends_v017") : NULL;
     OverlayToWebPageFn open =
         steam ? (OverlayToWebPageFn)GetProcAddress(steam, "SteamAPI_ISteamFriends_ActivateGameOverlayToWebPage") : NULL;
     void* friends = get ? get() : NULL;
-    Pack_Log("pack page: steam_api %p friends %p", (void*)steam, friends);
+    Pack_Log("pack page: steam_api %p friends %p, %s", (void*)steam, friends, url);
     if (friends != NULL && open != NULL) {
-        open(friends, TS_HD_WORKSHOP_PAGE, 0);
+        open(friends, url, 0);
     }
 }
 
 /*
-**	The main menu's pack notice (scripts/bui_mainmenu_pack_notice.py): its button opens the pack's
-**	page, and the line that fits the pack's state shows under the menu box.
+**	Switches on every required pack that is installed but off, as the Mods screen's checkbox does, saves the
+**	profile, and asks the launcher to restart the game (as the Mods screen's RESTART NOW does).
+*/
+const SIZE_T SET_MOD_ENABLED = 0x7BB7A0;
+const SIZE_T PROFILE = 0x20E0CB0;
+const SIZE_T PROFILE_SAVE = 0x14D8420;
+const SIZE_T RESTART_MESSAGE = 0x1177810;
+const SIZE_T POST_TO_LAUNCHER = 0x11790F0;
+const SIZE_T LAUNCHER_LINK = 0x1FAD3CC;
+const DWORD RESTART_WAIT_MS = 5000;
+
+typedef void(__thiscall* SetModEnabledFn)(void* mm, DWORD id, int on);
+typedef void(__thiscall* ProfileSaveFn)(void* profile, int a, int notify, int immediate);
+typedef void*(__cdecl* RestartMessageFn)(void);
+typedef void(__thiscall* PostToLauncherFn)(void* link, void* message);
+
+void Enable_Packs_And_Restart(void)
+{
+    char* mm = Mod_Manager();
+    if (mm == NULL) {
+        return;
+    }
+    for (int pack = 0; pack < PACK_COUNT; pack++) {
+        if (Pack_State(pack) != PACK_INSTALLED_OFF) {
+            continue;
+        }
+        char* last = *(char**)(mm + 0x1C);
+        for (char* r = *(char**)(mm + 0x18); r != NULL && r < last; r += MOD_RECORD_SIZE) {
+            if (Has_Pack_Marker(String_Chars((const MsvcString*)(r + MOD_FOLDER)), PACKS[pack].Marker)) {
+                Pack_Log("enable: pack %d, mod id %08lx", pack, (unsigned long)*(const DWORD*)(r + MOD_ID));
+                ((SetModEnabledFn)SET_MOD_ENABLED)(mm, *(const DWORD*)(r + MOD_ID), 1);
+                break;
+            }
+        }
+    }
+    ((ProfileSaveFn)PROFILE_SAVE)((void*)PROFILE, 1, 0, 1);
+    void* link = *(void**)LAUNCHER_LINK;
+    Pack_Log("restart: launcher link %p", link);
+    if (link != NULL) {
+        ((PostToLauncherFn)POST_TO_LAUNCHER)(link, ((RestartMessageFn)RESTART_MESSAGE)());
+        Sleep(RESTART_WAIT_MS);
+    }
+}
+
+/*
+**	The main menu's pack panel (scripts/bui_mainmenu_pack_notice.py), top right: shown for the first required
+**	pack that is not loaded, with its logo, a status line and GET IT (missing) or ENABLE AND RESTART.
 */
 const SIZE_T MENU_BIND_HOOK = 0x6B185B;
 const SIZE_T MENU_BIND_CAVE = 0x1BE95E0;
 const SIZE_T AS_TEXT_BUTTON = 0x5EF8A0;
+const SIZE_T AS_QUAD = 0x5ED0F0;
+const SIZE_T SET_TEXT = 0xF1D270;
 const SIZE_T BIND_EVENT = 0x6A9F50;
 const int CLICK_EVENT = 0x21;
 
 typedef void(__thiscall* BindEventFn)(void* menu, int event, void* widget, void* handler, int data);
+typedef void(__thiscall* SetTextFn)(void* widget, const MsvcWString* text);
+
+int PanelPack = -1;
 
 void __stdcall Pack_Get_Click(void*)
 {
-    Open_Pack_Page();
+    if (PanelPack >= 0) {
+        Open_Pack_Page(PanelPack);
+    }
+}
+
+void __stdcall Pack_Enable_Click(void*)
+{
+    Enable_Packs_And_Restart();
+}
+
+/*
+**	Sets a text widget's text; NULL is ignored.
+*/
+void Set_Text(void* widget, const wchar_t* text)
+{
+    if (widget == NULL) {
+        return;
+    }
+    MsvcWString s = {};
+    s.Capacity = 7;
+    ((WStringAssignFn)WSTRING_ASSIGN)(&s, text, (unsigned)wcslen(text));
+    ((SetTextFn)SET_TEXT)(widget, &s);
+    Free_WString(&s);
 }
 
 void __stdcall Menu_Bound(const DWORD* regs)
 {
     void* menu = (void*)regs[1];
-    PackState state = Pack_State();
-    Pack_Log("main menu: pack state %d", (int)state);
-    Set_Hidden(Find_Widget(menu, "TF_Pack_Missing", AS_TEXT), state != PACK_MISSING);
-    Set_Hidden(Find_Widget(menu, "TF_Pack_Off", AS_TEXT), state != PACK_INSTALLED_OFF);
-    void* button = Find_Widget(menu, "TF_Pack_Get", AS_TEXT_BUTTON);
-    if (button != NULL) {
-        ((BindEventFn)BIND_EVENT)(menu, CLICK_EVENT, button, (void*)&Pack_Get_Click, 0);
-        Set_Hidden(button, state != PACK_MISSING);
+    PackState states[PACK_COUNT];
+    int waiting = 0;
+    PanelPack = -1;
+    for (int pack = 0; pack < PACK_COUNT; pack++) {
+        states[pack] = Pack_State(pack);
+        Pack_Log("main menu: pack %d state %d", pack, (int)states[pack]);
+        if (states[pack] != PACK_ENABLED) {
+            waiting++;
+            PanelPack = PanelPack < 0 ? pack : PanelPack;
+        }
     }
+    Set_Hidden(Find_Widget(menu, "TF_Pack_Frame", AS_QUAD), PanelPack < 0);
+    Set_Hidden(Find_Widget(menu, "TF_Pack_Status", AS_TEXT), PanelPack < 0);
+    for (int pack = 0; pack < PACK_COUNT; pack++) {
+        Set_Hidden(Find_Widget(menu, PACKS[pack].Logo, AS_QUAD), pack != PanelPack);
+    }
+    void* get = Find_Widget(menu, "TF_Pack_Get", AS_TEXT_BUTTON);
+    void* enable = Find_Widget(menu, "TF_Pack_Enable", AS_TEXT_BUTTON);
+    if (get != NULL) {
+        ((BindEventFn)BIND_EVENT)(menu, CLICK_EVENT, get, (void*)&Pack_Get_Click, 0);
+    }
+    if (enable != NULL) {
+        ((BindEventFn)BIND_EVENT)(menu, CLICK_EVENT, enable, (void*)&Pack_Enable_Click, 0);
+    }
+    if (PanelPack < 0) {
+        Set_Hidden(get, true);
+        Set_Hidden(enable, true);
+        return;
+    }
+    PackState state = states[PanelPack];
+    Set_Hidden(get, state != PACK_MISSING);
+    Set_Hidden(enable, state == PACK_MISSING);
+    wchar_t line[160];
+    if (state == PACK_MISSING) {
+        swprintf(line, 160, L"NEEDED FOR %ls", PACKS[PanelPack].NeededFor);
+    } else {
+        swprintf(line, 160, L"%ls", state == PACK_ON_NEXT_START ? L"SWITCHED ON: RESTART TO LOAD IT" : L"INSTALLED BUT SWITCHED OFF");
+    }
+    if (waiting > 1) {
+        size_t used = wcslen(line);
+        swprintf(line + used, 160 - used, L" (+%d MORE)", waiting - 1);
+    }
+    Set_Text(Find_Widget(menu, "TF_Pack_Status", AS_TEXT), line);
 }
 
 /*
@@ -810,7 +915,7 @@ SaveCheck Save_Loadable(const unsigned char* d, size_t n)
         if (memcmp(out + i, TF_SAVE_MARKER, 4) == 0) {
             if (*(const DWORD*)(out + i + 4) == TF_Save_Version()) {
                 bool needs_pack = (*(const DWORD*)(out + i + 8) & TF_SAVE_TS_PACK) != 0;
-                check = (needs_pack && Pack_State() != PACK_ENABLED) ? SAVE_NEEDS_PACK : SAVE_LOADABLE;
+                check = (needs_pack && Pack_State(TS_HD_PACK) != PACK_ENABLED) ? SAVE_NEEDS_PACK : SAVE_LOADABLE;
             }
             break;
         }
@@ -872,12 +977,39 @@ bool Load_Reason_Install(void)
     return TF_Write_Own_Code(LOAD_REASON_CAVE, cave, sizeof(cave)) && TF_Write_Own_Code(LOAD_REASON, jump, sizeof(jump));
 }
 
+/*
+**	True when the launcher functions the pack panel calls still start as this launcher build's do.
+*/
+bool Panel_Calls_Match(void)
+{
+    struct Prologue
+    {
+        SIZE_T Address;
+        unsigned char Bytes[6];
+    };
+    static const Prologue calls[] = {
+        {SET_MOD_ENABLED, {0x55, 0x8B, 0xEC, 0x51, 0x8B, 0xC1}},
+        {PROFILE_SAVE, {0x55, 0x8B, 0xEC, 0x8B, 0x45, 0x10}},
+        {RESTART_MESSAGE, {0x6A, 0x08, 0xE8, 0x89, 0x91, 0x7D}},
+        {POST_TO_LAUNCHER, {0x55, 0x8B, 0xEC, 0xFF, 0x75, 0x08}},
+        {SET_TEXT, {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x1C}},
+        {AS_QUAD, {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x64}},
+        {MOD_MANAGER_GET, {0xA1, 0x10, 0x45, 0xFA, 0x01, 0x85}},
+    };
+    for (size_t i = 0; i < sizeof(calls) / sizeof(calls[0]); i++) {
+        if (memcmp((const void*)calls[i].Address, calls[i].Bytes, sizeof(calls[i].Bytes)) != 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
 const char* Pack_Notice_Install(void)
 {
     static const unsigned char picked_stock[6] = {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x24};
     static const unsigned char slot_stock[6] = {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x44};
     static const unsigned char bind_stock[7] = {0x6A, 0x15, 0x68, 0xF0, 0x7E, 0xC1, 0x01};
-    if (!Detour_Ready(FACTION_PICKED, picked_stock, sizeof(picked_stock), FACTION_PICKED_CAVE)
+    if (!Panel_Calls_Match() || !Detour_Ready(FACTION_PICKED, picked_stock, sizeof(picked_stock), FACTION_PICKED_CAVE)
         || !Detour_Ready(SLOT_SET_FACTION, slot_stock, sizeof(slot_stock), SLOT_SET_FACTION_CAVE)
         || !Snapshot_Ready(MENU_BIND_HOOK, bind_stock, sizeof(bind_stock), MENU_BIND_CAVE)) {
         return "pack notice: unknown launcher build, left alone";
