@@ -46,9 +46,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   states and actions (`pack-panel.md`) and a borrowed stock screen, as the CAMPAIGNS page borrowed Mission Select.
 - **H (jump to the home base) does nothing** (`known-issues.md`): find which side owns the key and fix it, with a
   play test on each faction.
-- **Check TS-HD-Assets-TD in game** before it publishes, as the RA2 and C&C3 TD items were: a stock-unit repaint
-  mod beside it in Tiberian Dawn, temperate and winter maps. It leaves out the interior bibs (TD has no interior
-  theatre).
+- **TD asset-pack items don't draw in Tiberian Dawn** (`known-issues.md`): find why, then publish TS-HD-Assets-TD
+  (item 3819642832, Private; `asset_packs.WORKSHOP` hosts it RA-only until then) and recheck the public RA2 and C&C3
+  TD items.
 - **Save compatibility, before campaigns ship.** Flag saves that need the TS-HD-Assets pack when it is missing,
   and autosave at every campaign mission start, so a layout-changing update costs at most the mission in
   progress. A reorder of equal length still passes the save version. Campaigns wait for a stable roster.

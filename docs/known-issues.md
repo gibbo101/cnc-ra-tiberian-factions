@@ -46,6 +46,13 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 
 ## Audio and launcher art
 
+### TD asset-pack art doesn't draw in Tiberian Dawn
+- **Severity:** major for modders using the TD items (TF itself only uses the RA items).
+- A TD repaint test mod pointing stock TD units and bibs at TS-HD-Assets-TD's art draws the missing-texture frog:
+  TD logs every frame as not found, though the item holds them at `TIBERIAN_DAWN/UNITS/<NAME>.ZIP` in the RA
+  item's format. A single ZIP in its own mod, a distinct mod name and either load order all fail the same way.
+  Untested: whether the public RA2 and C&C3 TD items work, and how DCJD's RA Assets (a working TD art mod) is laid out.
+
 ### GDI and Nod players' RA special infantry answer in TD soldier voices (suspected)
 - **Severity:** cosmetic.
 - `InfantryClass::Response_Select`, `Response_Move` and `Response_Attack` (`infantry.cpp`) return
