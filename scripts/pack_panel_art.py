@@ -33,7 +33,10 @@ LAYOUT = {                             # inside the panel, panel pixels
     'status': (12, 176, 429, 26),
     'button': (12, 220, 429, 50),
 }
-SCALE = 2                              # texture pixels per core pixel, for a sharp logo at 4K
+SCALE = 2                              # logo texture pixels per core pixel, for a sharp logo at 4K
+# The frame stays at the menu box's own scale: shrunk much further (a 2x texture on a 1280x800 screen) its fine
+# horizontal grain bands, as the launcher draws menu images without mipmaps.
+FRAME_SCALE = 1
 # Workshop pack id -> (logo source, tag under it)
 PACK_LOGOS = {
     'TSHD': (SCRIPT_DIR / 'title_work/key-art/tiberiansun-logo_2x.png', 'HD ASSETS'),
@@ -42,10 +45,10 @@ GOLD_TOP, GOLD_BOTTOM = (255, 232, 150), (196, 132, 34)
 
 
 def frame(atlas):
-    """The box region nine-sliced to the panel's size, at SCALE."""
+    """The box region nine-sliced to the panel's size, at FRAME_SCALE."""
     x, y, w, h = BOX_REGION
     src = atlas.crop((x, y, x + w, y + h))
-    W, H = PANEL[2] * SCALE, PANEL[3] * SCALE
+    W, H = PANEL[2] * FRAME_SCALE, PANEL[3] * FRAME_SCALE
     c = CORNER
     out = Image.new('RGBA', (W, H))
     cols = ((0, c, 0, c), (c, w - c, c, W - c), (w - c, w, W - c, W))
