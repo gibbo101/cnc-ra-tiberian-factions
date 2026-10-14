@@ -584,8 +584,29 @@ void Show_Message(const wchar_t* body)
 }
 
 /*
-**	The lobby's faction pick: the stock handler, then, when the local player has just picked
-**	Tiberian Sun GDI without the pack enabled, a message box saying what to do.
+**	The message box for a lobby slot playing Tiberian Sun GDI without the pack enabled; one box at
+**	a time, so a lobby full of TS GDI slots, or the slot echoing the player's own pick, shows one.
+*/
+const DWORD PACK_POPUP_HOLD_MS = 10000;
+
+void Pack_Popup(void)
+{
+    static DWORD shown = 0;
+    PackState state = Pack_State();
+    DWORD now = GetTickCount();
+    if (state == PACK_ENABLED || (shown != 0 && now - shown < PACK_POPUP_HOLD_MS)) {
+        return;
+    }
+    shown = now;
+    Show_Message(state == PACK_INSTALLED_OFF ? L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod, which is installed but "
+                                               L"switched off. Enable it in Mods and restart the game."
+                                             : L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod. Subscribe to it on the "
+                                               L"Steam Workshop, enable it in Mods and restart the game.");
+}
+
+/*
+**	The lobby's faction pick: the stock handler, then the pack popup when the local player has
+**	just picked Tiberian Sun GDI.
 */
 const SIZE_T FACTION_PICKED = 0x676760;
 const SIZE_T FACTION_PICKED_CAVE = 0x1BE95C0;
@@ -599,16 +620,32 @@ void __fastcall Faction_Picked(void* slot, void*, int event)
     int before = *(const int*)LOBBY_FACTION;
     ((FactionPickedFn)FACTION_PICKED_CAVE)(slot, event);
     int after = *(const int*)LOBBY_FACTION;
-    if (after == before || after != LOBBY_TS_GDI) {
-        return;
+    Pack_Log("faction pick %d -> %d", before, after);
+    if (after != before && after == LOBBY_TS_GDI) {
+        Pack_Popup();
     }
-    PackState state = Pack_State();
-    Pack_Log("faction pick %d -> %d, pack state %d", before, after, (int)state);
-    if (state != PACK_ENABLED) {
-        Show_Message(state == PACK_INSTALLED_OFF ? L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod, which is installed but "
-                                                   L"switched off. Enable it in Mods and restart the game."
-                                                 : L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod. Subscribe to it on the "
-                                                   L"Steam Workshop, enable it in Mods and restart the game.");
+}
+
+/*
+**	A lobby slot taking its faction from the lobby's settings, the player's own or an AI's, as
+**	the lobby opens or updates: the pack popup when a slot turns to Tiberian Sun GDI.
+*/
+const SIZE_T SLOT_SET_FACTION = 0x677950;
+const SIZE_T SLOT_SET_FACTION_CAVE = 0x1BE9650;
+const DWORD SLOT_FACTION = 0x1DA8;
+
+typedef void(__thiscall* SlotSetFactionFn)(void* slot, int faction);
+
+void __fastcall Slot_Set_Faction(void* slot, void*, int faction)
+{
+    int before = *(const int*)((const char*)slot + SLOT_FACTION);
+    ((SlotSetFactionFn)SLOT_SET_FACTION_CAVE)(slot, faction);
+    int after = *(const int*)((const char*)slot + SLOT_FACTION);
+    if (after != before) {
+        Pack_Log("slot %p faction %d -> %d", slot, before, after);
+    }
+    if (after != before && after == LOBBY_TS_GDI) {
+        Pack_Popup();
     }
 }
 
@@ -684,7 +721,17 @@ const DWORD ENTRY_FILE = 0x40;
 const size_t SAVE_HEAD_BYTES = 0x40000;
 
 unsigned char SaveRefused = 0;
-char SaveRefusedText[] = "THIS SAVE IS FROM ANOTHER VERSION OR MOD AND CAN'T BE LOADED";
+const char SaveOtherVersionText[] = "THIS SAVE IS FROM ANOTHER VERSION OR MOD AND CAN'T BE LOADED";
+const char SaveNeedsPackText[] = "THIS SAVE NEEDS THE TIBERIAN SUN HD ASSETS MOD: ENABLE IT AND RESTART";
+const char* SaveRefusedText = SaveOtherVersionText;
+DWORD SaveRefusedLength = sizeof(SaveOtherVersionText) - 1;
+
+enum SaveCheck
+{
+    SAVE_LOADABLE,
+    SAVE_OTHER_VERSION,
+    SAVE_NEEDS_PACK
+};
 
 typedef void*(__cdecl* SteamStorageFn)(void);
 typedef int(__cdecl* StorageSizeFn)(void* storage, const char* name);
@@ -723,14 +770,15 @@ unsigned char* Read_Save(const char* name, size_t* size)
 }
 
 /*
-**	True when a .sav's DLL data starts with this build's marker and version. The file is ClientG's
+**	Whether this build can load a .sav: its DLL data must start with this build's marker and
+**	version, and a save made with the TS-HD pack needs the pack enabled now. The file is ClientG's
 **	chunk file: a zlib stream to the size at 0x10, a chunk index ending in a sync flush, then the
 **	instance chunk (a 20-byte header with its size at +8, raw deflate) holding the DLL's data.
 */
-bool Save_Loadable(const unsigned char* d, size_t n)
+SaveCheck Save_Loadable(const unsigned char* d, size_t n)
 {
     if (n < 0x24 || d[0] != 'C' || d[1] != 'H') {
-        return false;
+        return SAVE_OTHER_VERSION;
     }
     size_t p = 0x24 + *(const DWORD*)(d + 0x10);
     size_t k = 0;
@@ -741,7 +789,7 @@ bool Save_Loadable(const unsigned char* d, size_t n)
         }
     }
     if (k == 0 || k + 20 > n) {
-        return false;
+        return SAVE_OTHER_VERSION;
     }
     unsigned long source = *(const DWORD*)(d + k + 8);
     if (source > n - k - 20) {
@@ -749,65 +797,72 @@ bool Save_Loadable(const unsigned char* d, size_t n)
     }
     unsigned char* out = (unsigned char*)calloc(SAVE_HEAD_BYTES, 1);
     if (out == NULL) {
-        return false;
+        return SAVE_OTHER_VERSION;
     }
     unsigned long length = SAVE_HEAD_BYTES;
     puff(out, &length, d + k + 20, &source);
-    bool loadable = false;
-    for (size_t i = 0; i + 8 <= SAVE_HEAD_BYTES; i++) {
+    SaveCheck check = SAVE_OTHER_VERSION;
+    for (size_t i = 0; i + 12 <= SAVE_HEAD_BYTES; i++) {
         if (memcmp(out + i, TF_SAVE_MARKER, 4) == 0) {
-            loadable = *(const DWORD*)(out + i + 4) == TF_Save_Version();
+            if (*(const DWORD*)(out + i + 4) == TF_Save_Version()) {
+                bool needs_pack = (*(const DWORD*)(out + i + 8) & TF_SAVE_TS_PACK) != 0;
+                check = (needs_pack && Pack_State() != PACK_ENABLED) ? SAVE_NEEDS_PACK : SAVE_LOADABLE;
+            }
             break;
         }
     }
     free(out);
-    return loadable;
+    return check;
 }
 
 /*
 **	Save_Loadable for a listed save, read once per file name.
 */
-bool Listed_Save_Loadable(const char* name)
+SaveCheck Listed_Save_Check(const char* name)
 {
     static char last[MAX_PATH] = "";
-    static bool last_loadable = false;
+    static SaveCheck last_check = SAVE_OTHER_VERSION;
     if (strcmp(name, last) == 0) {
-        return last_loadable;
+        return last_check;
     }
     size_t size = 0;
     unsigned char* data = Read_Save(name, &size);
-    last_loadable = data != NULL && Save_Loadable(data, size);
+    last_check = data != NULL ? Save_Loadable(data, size) : SAVE_OTHER_VERSION;
     free(data);
     snprintf(last, sizeof(last), "%s", name);
-    Pack_Log("save %s: %s", name, last_loadable ? "loadable" : "refused");
-    return last_loadable;
+    Pack_Log("save %s: check %d", name, (int)last_check);
+    return last_check;
 }
 
 void __stdcall Load_Map_Checked(DWORD* regs)
 {
     const MsvcString* file = (const MsvcString*)(regs[1] + ENTRY_FILE);
-    SaveRefused = Listed_Save_Loadable(String_Chars(file)) ? 0 : 1;
+    SaveCheck check = Listed_Save_Check(String_Chars(file));
+    SaveRefused = check != SAVE_LOADABLE ? 1 : 0;
+    SaveRefusedText = check == SAVE_NEEDS_PACK ? SaveNeedsPackText : SaveOtherVersionText;
+    SaveRefusedLength = (DWORD)strlen(SaveRefusedText);
     if (SaveRefused) {
         regs[7] = 0;
     }
 }
 
 /*
-**	At the missing-map reason: cmp byte [SaveRefused],0 / je stock / push our text / jmp back;
-**	stock: the original push 0x1C / push "TEXT_LOAD_MISSING_CUSTOM_MAP" / jmp back.
+**	At the missing-map reason: cmp byte [SaveRefused],0 / je stock / push [length] / push [text] /
+**	jmp back; stock: the original push 0x1C / push "TEXT_LOAD_MISSING_CUSTOM_MAP" / jmp back.
 */
 bool Load_Reason_Install(void)
 {
     static const unsigned char stock[7] = {0x6A, 0x1C, 0x68, 0x1C, 0x20, 0xC1, 0x01};
-    if (memcmp((const void*)LOAD_REASON, stock, sizeof(stock)) != 0 || !Cave_Is_Free(LOAD_REASON_CAVE, 33)) {
+    if (memcmp((const void*)LOAD_REASON, stock, sizeof(stock)) != 0 || !Cave_Is_Free(LOAD_REASON_CAVE, 38)) {
         return false;
     }
-    unsigned char cave[33] = {0x80, 0x3D, 0, 0, 0, 0, 0x00, 0x74, 0x0C, 0x6A, (unsigned char)(sizeof(SaveRefusedText) - 1),
-                              0x68, 0, 0, 0, 0, 0xE9, 0, 0, 0, 0, 0x6A, 0x1C, 0x68, 0x1C, 0x20, 0xC1, 0x01, 0xE9};
+    unsigned char cave[38] = {0x80, 0x3D, 0, 0, 0, 0, 0x00, 0x74, 0x11, 0xFF, 0x35, 0, 0, 0, 0, 0xFF, 0x35, 0, 0,
+                              0, 0, 0xE9, 0, 0, 0, 0, 0x6A, 0x1C, 0x68, 0x1C, 0x20, 0xC1, 0x01, 0xE9};
     *(DWORD*)(cave + 2) = (DWORD)(SIZE_T)&SaveRefused;
-    *(DWORD*)(cave + 12) = (DWORD)(SIZE_T)SaveRefusedText;
-    TF_Put_Rel32(cave + 17, LOAD_REASON_CAVE + 21, LOAD_REASON_RESUME);
-    TF_Put_Rel32(cave + 29, LOAD_REASON_CAVE + 33, LOAD_REASON_RESUME);
+    *(DWORD*)(cave + 11) = (DWORD)(SIZE_T)&SaveRefusedLength;
+    *(DWORD*)(cave + 17) = (DWORD)(SIZE_T)&SaveRefusedText;
+    TF_Put_Rel32(cave + 22, LOAD_REASON_CAVE + 26, LOAD_REASON_RESUME);
+    TF_Put_Rel32(cave + 34, LOAD_REASON_CAVE + 38, LOAD_REASON_RESUME);
     unsigned char jump[7] = {0xE9, 0, 0, 0, 0, 0x90, 0x90};
     TF_Put_Rel32(jump + 1, LOAD_REASON + 5, LOAD_REASON_CAVE);
     return TF_Write_Own_Code(LOAD_REASON_CAVE, cave, sizeof(cave)) && TF_Write_Own_Code(LOAD_REASON, jump, sizeof(jump));
@@ -816,12 +871,15 @@ bool Load_Reason_Install(void)
 const char* Pack_Notice_Install(void)
 {
     static const unsigned char picked_stock[6] = {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x24};
+    static const unsigned char slot_stock[6] = {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x44};
     static const unsigned char bind_stock[7] = {0x6A, 0x15, 0x68, 0xF0, 0x7E, 0xC1, 0x01};
     if (!Detour_Ready(FACTION_PICKED, picked_stock, sizeof(picked_stock), FACTION_PICKED_CAVE)
+        || !Detour_Ready(SLOT_SET_FACTION, slot_stock, sizeof(slot_stock), SLOT_SET_FACTION_CAVE)
         || !Snapshot_Ready(MENU_BIND_HOOK, bind_stock, sizeof(bind_stock), MENU_BIND_CAVE)) {
         return "pack notice: unknown launcher build, left alone";
     }
     if (!Detour(FACTION_PICKED, picked_stock, sizeof(picked_stock), FACTION_PICKED_CAVE, (SIZE_T)&Faction_Picked)
+        || !Detour(SLOT_SET_FACTION, slot_stock, sizeof(slot_stock), SLOT_SET_FACTION_CAVE, (SIZE_T)&Slot_Set_Faction)
         || !Snapshot_Hook(MENU_BIND_HOOK, bind_stock, sizeof(bind_stock), MENU_BIND_CAVE, (SIZE_T)&Menu_Bound)) {
         return "pack notice: write failed";
     }
