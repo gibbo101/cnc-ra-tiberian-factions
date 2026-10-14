@@ -43,15 +43,16 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   `TS-HD-Assets/` and builds the ModDB zip with both folders side by side (players unzip into `Mods/Red_Alert/` and
   enable both), plus a zip of `TS-HD-Assets/` alone for an add-on on TF's ModDB page. The RA2 and C&C3 packs stay
   off TF's ModDB page: they are Workshop-only libraries.
-- **TD copy of TS-HD-Assets, in its first release (decided).** RA2-HD-Assets and CNC3-Assets ship as one Workshop
-  item per game; TS-HD-Assets is built for Red Alert only so far (`asset_packs.WORKSHOP` hosts). TD reads art
-  only from `SRGB/TIBERIAN_DAWN/`, and TD has no interior theatre for TS-HD's interior bibs.
+- **Check TS-HD-Assets-TD in game** before it publishes, as the RA2 and C&C3 TD items were: a stock-unit repaint
+  mod beside it in Tiberian Dawn, temperate and winter maps. It leaves out the interior bibs (TD has no interior
+  theatre).
 - **Main-menu box when the TS-HD-Assets pack is missing,** in place of the in-match notice: a panel on the main
   menu with a button that opens the pack's Workshop page in the Steam overlay. Not subscribed: "required for the TS
   factions", get it. Subscribed but not enabled: enable it in Mods and restart. To check first: whether the pack's
   `Add_Mod_Path` arrives before the menu shows, hiding the panel at runtime, and the overlay link on the Deck.
-- **TS-HD-Assets page contents in plain words** before it ships: units by side with their file names, as the RA2
-  and C&C3 pages have (`asset_packs.WORKSHOP` contents); its page is near the Workshop's 8,000 characters.
+- **TS-HD-Assets preview shot:** an in-game screenshot for `resources/workshop-previews/TS-HD-Assets.jpg`, as
+  the RA2 and C&C3 packs have; without one the stager tiles a few objects' art. The page's contents lines need the
+  maintainer's OK.
 - **Grey out saves that can't load, before the next release.** The save version refuses a save whose class
   sizes or type-list lengths differ (`saveload.cpp`), and InstanceServerG crashes on a refused load (an assert in
   its save-load manager). Grey the Load button with a reason for those saves, vanilla and other mods' saves
