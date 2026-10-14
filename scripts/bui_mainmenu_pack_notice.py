@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""Write the loose main menu: the CONFIG.MEG menu from bui_mainmenu_build.py plus the TS-HD pack notice.
+"""Write the loose main menu: the CONFIG.MEG menu from bui_mainmenu_build.py plus the asset-pack panel.
 
 usage: bui_mainmenu_pack_notice.py <edited RA_MAIN_MENU.BUI> <out loose RA_MAIN_MENU.BUI>
 
-In the menu box, above BUILD and VERSION, it adds two centred lines of text, one for a missing pack
-and one for a pack that is installed but switched off; under the box, a button that opens the
-pack's Workshop page. All three start
-hidden; the launcher layer (redalert/tf_launcher.cpp) shows the ones that fit at the menu.
+Adds the pack panel top right (the Westwood plate's mirror), every piece hidden and placed straight in
+ScreenFitter_Group: the frame (TF_Pack_Frame) and one logo per required pack (TF_Logo_<id>), images cloned from
+the menu box's Button_BG; a centred status line (TF_Pack_Status); and two buttons, GET IT ON THE STEAM WORKSHOP
+and ENABLE AND RESTART. The launcher layer (redalert/tf_launcher.cpp) shows the pieces for a pack that is missing
+or switched off, and sets the status line. Sizes and textures come
+from scripts/pack_panel_art.py. The credits hot spot that covered the top right moves onto the Westwood plate.
 A loose file overrides the CONFIG.MEG member at any size (docs/bui-front-end-modding.md).
 License: GPL v3.
 """
@@ -14,56 +16,62 @@ import copy
 import struct
 import sys
 
-from bui_tree import chain_to, last_id, load, micro, string_body, string_value, write_loose
+from bui_tree import chain_to, last_id, load, micro, rename_widget, renumber, string_body, string_value, write_loose
+from pack_panel_art import LAYOUT, PACK_LOGOS, PANEL
 
+SCREEN_GROUP = b'ScreenFitter_Group'
+QUAD_SOURCE = b'Button_BG'
 TEXT_SOURCE = b'Version'
 BUTTON_SOURCE = b'Button_Exit'
-SCREEN_GROUP = b'ScreenFitter_Group'
-MENU_BOX = (0.307, 0.302, 0.416, 0.566)
-
-TEXT_RECT = (MENU_BOX[0], 0.796, MENU_BOX[2], 0.018)
-MENU_BUTTONS = (0.3507, 0.3287)
-BUTTON_RECT = (MENU_BUTTONS[0], 0.888, MENU_BUTTONS[1], 0.040)
+CREDITS = b'Jurassic_Button_1'
+CORE = (1920, 1080)
+FIT_ORIGIN = (0.03281, -0.02315)   # ScreenFitter_Group on screen: screen = origin + span * child
+FIT_SPAN = (0.90417, 1.04167)
+PLATE = (53, 24, 453, 118)         # the Westwood plate, core pixels
 ALIGN_CENTRE = 1
-NOTICES = [
-    (b'TF_Pack_Missing', b'TIBERIAN SUN GDI NEEDS THE TIBERIAN SUN HD ASSETS MOD'),
-    (b'TF_Pack_Off', b'TIBERIAN SUN HD ASSETS IS INSTALLED BUT OFF: ENABLE IT IN MODS AND RESTART'),
-]
-BUTTON = (b'TF_Pack_Get', b'GET TIBERIAN SUN HD ASSETS')
+STATUS = b'NEEDED FOR THE TIBERIAN SUN GDI FACTION'
+BUTTONS = ((b'TF_Pack_Get', b'GET IT ON THE STEAM WORKSHOP'), (b'TF_Pack_Enable', b'ENABLE AND RESTART'))
 
 
-def element_of(roots, name):
-    """The widget's element node (id 1) and the group node holding it."""
-    chain = next(c for c in (chain_to(r, name) for r in roots) if c)
+def element_of(node, name):
+    """The widget's element node (id 1) under `node`."""
+    chain = chain_to(node, name)
     for i in range(len(chain) - 1, 0, -1):
         if chain[i][0] == 1 and chain[i - 1][0] == 0:
-            return chain[i], chain[i - 1]
+            return chain[i]
     raise ValueError(name)
 
 
-def group_node(roots, name):
-    """The container node a group widget's members sit in (the node holding its header)."""
-    chain = next(c for c in (chain_to(r, name) for r in roots) if c)
-    assert chain[-2][0] == 0 and isinstance(chain[-2][1], list)
-    return chain[-2]
+def element_in(roots, name):
+    return element_of(next(r for r in roots if chain_to(r, name)), name)
 
 
-def clone(roots, source, name, label, rect, fresh):
-    """A hidden copy of widget `source` named `name`, showing `label`, at `rect`."""
-    element, _ = element_of(roots, source)
-    copy_ = copy.deepcopy(element)
-    header = chain_to(copy_, source)[-1]
-    for c in header[1]:
-        if c[0] == 5 and not isinstance(c[1], list):
-            c[1][:] = string_body(name)
+def fitted(x, y, w, h):
+    """A core-pixel rect in ScreenFitter_Group's units."""
+    return ((x / CORE[0] - FIT_ORIGIN[0]) / FIT_SPAN[0], (y / CORE[1] - FIT_ORIGIN[1]) / FIT_SPAN[1],
+            w / CORE[0] / FIT_SPAN[0], h / CORE[1] / FIT_SPAN[1])
+
+
+def in_panel(x, y, w, h):
+    """A rect in panel pixels, in ScreenFitter_Group's units."""
+    return fitted(PANEL[0] + x, PANEL[1] + y, w, h)
+
+
+def set_header(element, old, new, rect, hidden):
+    """Rename a widget and set its rect and hidden flag."""
+    header = chain_to(element, old)[-1]
+    if new != old:
+        assert rename_widget(element, old, new) >= 1, old
     w = header[1][0][1]
-    at, size = micro(w, 0x01)
-    struct.pack_into('<I', w, at, fresh)
     at, size = micro(w, 0x02)
     assert size == 16
     struct.pack_into('<4f', w, at, *rect)
-    at, size = micro(w, 0x09)
-    w[at] = 1
+    at, _ = micro(w, 0x09)
+    w[at] = 1 if hidden else 0
+
+
+def set_label(element, label):
+    """Replace a text or button widget's label: its first string leaf with id 1."""
     labels = []
 
     def collect(node):
@@ -74,10 +82,21 @@ def clone(roots, source, name, label, rect, fresh):
                     labels.append(c)
                 collect(c)
 
-    collect(copy_)
-    assert labels, name
+    collect(element)
+    assert labels
     labels[0][1][:] = string_body(label)
-    return copy_
+
+
+def set_texture(quad, texture):
+    """Point an image widget at a texture: the string leaf with id 2 in its texture node."""
+    for c in quad[1]:
+        if c[0] == 4:
+            for t in c[1]:
+                if t[0] == 1 and isinstance(t[1], list):
+                    leaf = next(x for x in t[1] if x[0] == 2)
+                    leaf[1][:] = string_body(texture)
+                    return
+    raise ValueError('no texture node')
 
 
 def centre_text(node):
@@ -91,17 +110,40 @@ def centre_text(node):
     return 0
 
 
+def panel(roots):
+    """The pack panel's widgets, frame first so the rest draws over it; ids not yet renumbered."""
+    quad = element_in(roots, QUAD_SOURCE)
+    frame = copy.deepcopy(quad)
+    set_header(frame, QUAD_SOURCE, b'TF_Pack_Frame', fitted(*PANEL), hidden=True)
+    set_texture(frame, b'tf_ui_pack_panel')
+    widgets = [frame]
+    for pack in PACK_LOGOS:
+        logo = copy.deepcopy(quad)
+        set_header(logo, QUAD_SOURCE, b'TF_Logo_' + pack.encode(), in_panel(*LAYOUT['logo']), hidden=True)
+        set_texture(logo, b'tf_ui_pack_logo_' + pack.lower().encode())
+        widgets.append(logo)
+    status = copy.deepcopy(element_in(roots, TEXT_SOURCE))
+    set_header(status, TEXT_SOURCE, b'TF_Pack_Status', in_panel(*LAYOUT['status']), hidden=True)
+    set_label(status, STATUS)
+    assert centre_text(status) == 1
+    widgets.append(status)
+    for name, label in BUTTONS:
+        button = copy.deepcopy(element_in(roots, BUTTON_SOURCE))
+        set_header(button, BUTTON_SOURCE, name, in_panel(*LAYOUT['button']), hidden=True)
+        set_label(button, label)
+        widgets.append(button)
+    return widgets
+
+
 def main(src, out):
     base, roots = load(src)
-    screen_group = group_node(roots, SCREEN_GROUP)
+    screen_group = chain_to(next(r for r in roots if chain_to(r, SCREEN_GROUP)), SCREEN_GROUP)[-2]
     fresh = last_id(roots)
-    for name, label in NOTICES:
-        fresh += 0x10000
-        text = clone(roots, TEXT_SOURCE, name, label, TEXT_RECT, fresh)
-        assert centre_text(text) == 1, name
-        screen_group[1].append(text)
-    fresh += 0x10000
-    screen_group[1].append(clone(roots, BUTTON_SOURCE, BUTTON[0], BUTTON[1], BUTTON_RECT, fresh))
+    for widget in panel(roots):
+        fresh = renumber(widget, fresh)
+        screen_group[1].append(widget)
+    credits = element_in(roots, CREDITS)
+    set_header(credits, CREDITS, CREDITS, fitted(*PLATE), hidden=False)
     write_loose(base, roots, out)
     print('wrote', out)
 
