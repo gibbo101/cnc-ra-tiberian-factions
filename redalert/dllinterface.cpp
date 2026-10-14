@@ -12445,8 +12445,10 @@ bool DLLExportClass::Save(Pipe& pipe)
 {
     // TF: the marker and save version lead the save, so the launcher can grey out a save this build can't load.
     unsigned int tf_version = TF_Save_Version();
+    unsigned int tf_flags = TF_TS_Pack_Present() ? TF_SAVE_TS_PACK : 0;
     pipe.Put(TF_SAVE_MARKER, 4);
     pipe.Put(&tf_version, sizeof(tf_version));
+    pipe.Put(&tf_flags, sizeof(tf_flags));
 
     /*
     ** Version first
@@ -12513,11 +12515,13 @@ bool DLLExportClass::Save(Pipe& pipe)
  **************************************************************************************************/
 bool DLLExportClass::Load(Straw& file)
 {
-    // TF: the marker and save version Save writes first; any other save is refused.
+    // TF: the marker, save version and flags Save writes first; any other save is refused.
     char tf_marker[4];
     unsigned int tf_version = 0;
+    unsigned int tf_flags = 0;
     if (file.Get(tf_marker, sizeof(tf_marker)) != sizeof(tf_marker) || memcmp(tf_marker, TF_SAVE_MARKER, 4) != 0
-        || file.Get(&tf_version, sizeof(tf_version)) != sizeof(tf_version) || tf_version != TF_Save_Version()) {
+        || file.Get(&tf_version, sizeof(tf_version)) != sizeof(tf_version) || tf_version != TF_Save_Version()
+        || file.Get(&tf_flags, sizeof(tf_flags)) != sizeof(tf_flags)) {
         return false;
     }
 
