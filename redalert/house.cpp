@@ -141,6 +141,7 @@
 ** New sidebar for GlyphX multiplayer. ST - 8/7/2019 10:10AM
 */
 #include "sidebarglyphx.h"
+#include "tf_ts_effects.h"
 
 TFixedIHeapClass<HouseClass::BuildChoiceClass> HouseClass::BuildChoice;
 
@@ -1237,8 +1238,8 @@ static bool TF_Is_Own_Wall_Section(HouseClass const* house, StructType type, CEL
 }
 
 /*
-**	Raises or drops the house's Firestorm: every section it owns turns into the live wall or
-**	back into a walkable pad, and is redrawn. Dropping it is announced to its owner.
+**	Raises or drops the house's Firestorm: every section turns into the live wall, its posts lit by
+**	TS's emitter rings, or back into a walkable pad. Dropping it is announced to its owner.
 */
 void TF_Firestorm_Set(HouseClass* house, bool on)
 {
@@ -1250,6 +1251,7 @@ void TF_Firestorm_Set(HouseClass* house, bool on)
         BuildingClass* b = Buildings.Ptr(i);
         if (b != NULL && b->IsActive && !b->IsInLimbo && *b == STRUCT_TSFSDF && b->House == house) {
             b->Mark(MARK_CHANGE);
+            TF_TS_Firestorm_Glow(b, on);
         }
     }
     if (!on && house == PlayerPtr) {
@@ -1318,6 +1320,9 @@ static void TF_Firestorm_Burn(HouseClass* house)
         }
         CELL cell = Coord_Cell(b->Coord);
 
+        if ((Frame % 8) == 0) {
+            TF_TS_Firestorm_Glow(b, true);
+        }
         if ((Frame % 8) == 0 && Random_Pick(0, 15) == 0) {
             int joins = b->Shape_Number() & 15;
             if (joins != 5 && joins != 10) {
