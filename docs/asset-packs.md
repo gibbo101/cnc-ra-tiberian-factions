@@ -3,14 +3,14 @@
 **Status:** Reference. The TS, RA2 and C&C3 asset packs: layout, routing by name, staging into
 the build, and publishing.
 
-The mod's Tiberian Sun, Red Alert 2 and C&C3 assets live in `asset-packs/`, one folder per Steam
-Workshop item, so other modders can take them. Tiberian Factions' own files stay in
-`resources/remaster_mods/Vanilla_RA/`. The build stages both into one mod.
+The mod's Tiberian Sun, Red Alert 2 and C&C3 assets live in `asset-packs/`, one source folder per pack.
+`asset_packs.WORKSHOP` builds the Workshop items from them (`scripts/workshop_packs.py`): TS-HD-Assets,
+RA2-HD-Assets and CNC3-Assets, each as a Red Alert item and a Tiberian Dawn one. Tiberian Factions' own files stay
+in `resources/remaster_mods/Vanilla_RA/`.
 
 ## Layout
 
-Each `asset-packs/<Pack>/` folder is exactly what is uploaded to the Workshop, in the TD-Assets
-layout:
+Each `asset-packs/<Pack>/` source folder has the TD-Assets layout:
 
 ```
 asset-packs/TS-HD-Graphics-Pack/
@@ -89,9 +89,25 @@ only the `RA_` files. A pack's XML files are what a modder copies, and what the 
   Red Alert, or `<mod>-TD` for Tiberian Dawn) and writes its manifest and preview; the steps are in
   `docs/workshop-publish-runbook.md` (Asset packs).
 
+## Required packs
+
+`asset_packs.REQUIRED` lists the Workshop items the mod depends on: TS-HD-Assets, built from the TS source packs.
+The mod keeps only their XML entries; their art and audio ship in the item.
+
+- **Build and deploy:** staging builds each required item whole in the folder beside the mod
+  (`build/remaster/TS-HD-Assets`), and `deploy.sh` mirrors both folders. `deploy.sh --mod-only` mirrors the mod
+  alone, for testing the item subscribed from the Workshop.
+- **Detection:** the item carries `CCDATA/TSHDPACK.INI` with its version. The DLL reads it from each enabled mod's
+  CCDATA path (`tf_asset_pack.cpp`): without it, a TS GDI pick plays another side and crates skip TS units. The
+  launcher finds the marker in its mod list to show the main menu's pack panel and the lobby popup
+  (`pack-panel.md`), and saves record whether the pack was on.
+- **TS Nod:** TS-Nod-Graphics-Pack holds TS Nod's HD art (`asset_packs.TS_NOD`). It is in no Workshop item yet:
+  staging copies it into the mod for the crate units, until TS Nod ships and joins TS-HD-Assets.
+- **ModDB:** `package-for-workshop.sh` zips the mod with each required item beside it, and each item alone
+  (`scripts/moddb_zips.py`).
+
 ## Not yet in the packs
 
 - Classic-mode stub SHPs: they are built into `CCDATA/TFASSETS.MIX` with the mod's own TD art.
   The pack READMEs point modders at `scripts/gen_stub_shp.py`.
-- The TS sounds bundled under TD sample names stay with the mod until their events are renamed.
 - Only English audio exists, so there are no other language packs.
