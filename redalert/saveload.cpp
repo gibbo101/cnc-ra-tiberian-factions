@@ -547,8 +547,9 @@ bool Load_Game(const char* file_name)
     /*
     ** Load the DLLs variables first, in case we need to do something different based on version
     */
-    if (RunningAsDLL) {
-        DLLLoad(fstraw);
+    // TF: a save the DLL refuses stops here, before the rest is read out of step.
+    if (RunningAsDLL && !DLLLoad(fstraw)) {
+        return (false);
     }
 #endif
     /*
