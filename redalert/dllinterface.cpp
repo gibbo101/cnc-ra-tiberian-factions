@@ -12521,13 +12521,15 @@ bool DLLExportClass::Save(Pipe& pipe)
  **************************************************************************************************/
 bool DLLExportClass::Load(Straw& file)
 {
-    // TF: the marker, save version and flags Save writes first; any other save is refused.
+    // TF: the marker, save version and flags Save writes first; any other save, or one that needs the TS-HD pack
+    // while it is missing, is refused.
     char tf_marker[4];
     unsigned int tf_version = 0;
     unsigned int tf_flags = 0;
     if (file.Get(tf_marker, sizeof(tf_marker)) != sizeof(tf_marker) || memcmp(tf_marker, TF_SAVE_MARKER, 4) != 0
         || file.Get(&tf_version, sizeof(tf_version)) != sizeof(tf_version) || tf_version != TF_Save_Version()
-        || file.Get(&tf_flags, sizeof(tf_flags)) != sizeof(tf_flags)) {
+        || file.Get(&tf_flags, sizeof(tf_flags)) != sizeof(tf_flags)
+        || ((tf_flags & TF_SAVE_TS_PACK) && !TF_TS_Pack_Present())) {
         return false;
     }
 
