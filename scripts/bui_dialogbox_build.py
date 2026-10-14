@@ -16,8 +16,8 @@ import zlib
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from bui_tree import (HEADER, leaves, parse_all, replace_texture_set, serialise, string_body,  # noqa: E402
-                      string_value, write_same_size)
+from bui_tree import (HEADER, headers, leaves, micro, parse_all, replace_texture_set, serialise,  # noqa: E402
+                      string_body, string_value, write_same_size)
 
 # Widget tints, edited in place before parsing: (offset of the 03 10 tag, stock RGBA, new RGBA).
 # The green is Tiberian Dawn's own dialog's.
@@ -33,6 +33,8 @@ STRING_LEAVES = FRAME_TEXTURES + [(b'20 Point Outline', b'20 Point Outline Green
                                   (PLACEHOLDER, b'Dialog Box Statement or Choices Text')]
 TEXTURE_SETS = [(b'RA_Frame_Tooltip_Sidebar', b'Frame_Tooltip_Sidebar'),
                 (b'RA_Search_BTN_Red', b'TF_MainMenuSteelButton_Textures')]
+# The button row: stock (0.0133, 0.8626, 0.9735, 0.0824) sits under the divider, too low for a long label's height.
+BUTTON_ROW = (b'Group_Buttons', (0.0133, 0.845, 0.9735, 0.115))
 # How many times each name appears in the base; a different count means the base changed.
 EXPECTED = {b'20 Point Outline': 3, b'RA_Search_BTN_Red': 3}
 
@@ -64,6 +66,14 @@ def main(base, out):
     for old, _ in STRING_LEAVES + TEXTURE_SETS:
         want = EXPECTED.get(old, 1)
         assert seen.get(old, 0) == want, f'{old!r} found {seen.get(old, 0)} times, expected {want}'
+
+    name, rect = BUTTON_ROW
+    rows = list(headers(roots, name))
+    assert len(rows) == 1, f'{name!r} found {len(rows)} times'
+    widget = rows[0][1][0][1]
+    at, size = micro(widget, 0x02)
+    assert size == 16
+    struct.pack_into('<4f', widget, at, *rect)
 
     pad = write_same_size(d, roots, out)
     print(f'wrote {out}: {len(d)} bytes (payload {len(raw)}, pad {pad})')
