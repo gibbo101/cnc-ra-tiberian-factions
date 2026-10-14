@@ -1,6 +1,6 @@
 # The CAMPAIGNS page
 
-**Status:** Reference. Built for 5.1.0: Mission Select becomes the CAMPAIGNS page, with a tab per
+**Status:** Reference. Ships in 5.5.0: Mission Select becomes the CAMPAIGNS page, with a tab per
 faction and every faction tab reading COMING SOON until its campaign lands.
 **Open:** the mission carrier (dev builds only), Continue and Start over in the bottom bar, greying
 Start on an empty tab, the TS Nod tab, a New Game campaign-select screen.
