@@ -1178,10 +1178,8 @@ unsigned char* Read_Save(const char* name, size_t* size)
 }
 
 /*
-**	Whether this build can load a .sav: its DLL data must start with this build's marker and
-**	version, and a save made with the TS-HD pack needs the pack enabled now. The file is ClientG's
-**	chunk file: a zlib stream to the size at 0x10, a chunk index ending in a sync flush, then the
-**	instance chunk (a 20-byte header with its size at +8, raw deflate) holding the DLL's data.
+**	Whether this build can load a .sav: this build's marker and version, and the TS-HD pack loaded if the save
+**	needs it. The chunk-file layout it walks is in docs/pack-panel.md.
 */
 SaveCheck Save_Loadable(const unsigned char* d, size_t n)
 {
