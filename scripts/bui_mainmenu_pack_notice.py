@@ -7,7 +7,8 @@ Adds the pack panel top right (the Westwood plate's mirror), every piece hidden 
 ScreenFitter_Group: the frame (TF_Pack_Frame) and one logo per required pack (TF_Logo_<id>), images cloned from
 the menu box's Button_BG; a centred status line (TF_Pack_Status); and two buttons, GET IT ON THE STEAM WORKSHOP
 and ENABLE AND RESTART. The launcher layer (redalert/tf_launcher.cpp) shows the pieces for a pack that is missing
-or switched off, and sets the status line. Sizes and textures come
+or switched off, and sets the status line. TF_Version, centred between BUILD and VERSION in the menu box, shows
+the mod's version, which the launcher layer reads from ccmod.json. Sizes and textures come
 from scripts/pack_panel_art.py. The credits hot spot that covered the top right moves onto the Westwood plate.
 A loose file overrides the CONFIG.MEG member at any size (docs/bui-front-end-modding.md).
 License: GPL v3.
@@ -30,6 +31,7 @@ FIT_SPAN = (0.90417, 1.04167)
 PLATE = (53, 24, 453, 118)         # the Westwood plate, core pixels
 ALIGN_CENTRE = 1
 STATUS = b'NEEDED FOR THE TIBERIAN SUN GDI FACTION'
+VERSION_RECT = (0.426, 0.822, 0.18, 0.017)   # centred on the menu box, on BUILD and VERSION's row
 BUTTONS = ((b'TF_Pack_Get', b'GET IT ON THE STEAM WORKSHOP'), (b'TF_Pack_Enable', b'ENABLE AND RESTART'))
 
 
@@ -142,6 +144,12 @@ def main(src, out):
     for widget in panel(roots):
         fresh = renumber(widget, fresh)
         screen_group[1].append(widget)
+    version = copy.deepcopy(element_in(roots, TEXT_SOURCE))
+    set_header(version, TEXT_SOURCE, b'TF_Version', VERSION_RECT, hidden=False)
+    set_label(version, b'TIBERIAN FACTIONS')
+    assert centre_text(version) == 1
+    fresh = renumber(version, fresh)
+    screen_group[1].append(version)
     credits = element_in(roots, CREDITS)
     set_header(credits, CREDITS, CREDITS, fitted(*PLATE), hidden=False)
     write_loose(base, roots, out)
