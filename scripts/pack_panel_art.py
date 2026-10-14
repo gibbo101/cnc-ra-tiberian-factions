@@ -31,7 +31,7 @@ PANEL = (1414, 24, 453, 290)           # core x, y, w, h: the Westwood plate's m
 LAYOUT = {                             # inside the panel, panel pixels
     'logo': (30, 12, 393, 158),
     'status': (12, 176, 429, 26),
-    'button': (30, 224, 393, 44),
+    'button': (12, 220, 429, 50),
 }
 SCALE = 2                              # texture pixels per core pixel, for a sharp logo at 4K
 # Workshop pack id -> (logo source, tag under it)
