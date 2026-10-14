@@ -2,6 +2,61 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [5.5.0] — 2026-10-XX
+
+A Tiberian Sun rises in high definition! GDI's arsenal from the future came
+through the Chronosphere's rift rough around the edges. Now every building,
+vehicle and soldier stands rebuilt, sharper than ever. Kane will not be pleased.
+
+- Every Tiberian Sun GDI building, unit and infantry rebuilt in HD!
+- New HD sidebar cameos!
+- New railgun shots for the Mammoth Mk. II and the Ghost Stalker
+- Mammoth Mk. II now fires from its rail gun cannons.
+- Easy setup for the new Tiberian Sun HD Assets pack on the main menu.
+
+### Required: Tiberian Sun HD Assets
+Tiberian Sun GDI's HD art, sounds and EVA now ship as their own free Workshop
+item, **Tiberian Sun HD Assets**. Subscribe to it beside Tiberian Factions and
+enable both. The main menu shows a panel when the pack is missing or switched
+off.
+Without the pack, Tiberian Factions still plays, but its Tiberian Sun faction is
+locked.
+
+### Added
+- **Tiberian Sun GDI in HD.** Every TS GDI building, vehicle, aircraft and
+  infantry unit is rebuilt from 3D models at Remastered's resolution, on whole
+  map cells.
+- **HD sidebar cameos** for every TS GDI unit and building.
+- **Mammoth Mk. I Reserve.** The Dropship Bay lands two Mammoth Mk. Is.
+- **Updated railgun shots.**
+- **Load Game knows a save it can't load.** A save from another version, from
+  vanilla or another mod, or one that needs Tiberian Sun HD Assets while it is
+  off, is greyed out with the reason instead of crashing the game.
+- The main menu shows the Tiberian Factions version.
+- The Dropship Bay tells you when its reload is done.
+- New Campaign screen replaces Mission Select. Allied and Soviets campaign removed in preparation for Tiberian Factions campaign missions (Coming...'soon')
+
+### Changed
+- Renamed some TS buildings to match their correct name.
+- Adjusted TS GDI's starting units.
+- The TS Service Depot repairs at Tiberian Sun's rate.
+- The Orca Bomber lays its bombs in a line across the target.
+
+### Fixed
+- GDI and Nod build slower on low power.
+- A building placed on the map's top row counts toward unlocking the next ones.
+- Spies read every faction's power and money.
+- A skirmish or LAN player is not out while a building they hold still stands,
+  and AI attacks ignore a defeated player's buildings.
+- On a LAN host, the radar crest, tab icons and EVA follow the host's own side.
+- A damaged harvester sent for repair docks at any refinery type.
+- A second Construction Yard no longer shows a deploy cursor.
+- The TS Engineer shows the capture cursor over any building it can take.
+- "Unable to comply, building in progress" speaks in your side's voice.
+
+### Note
+Saves from 5.0.x and earlier can't be loaded in 5.5.0.
+
 ## [5.0.0] — 2026-10-04
 
 Another Tiberian faction joins the fray! A Chronosphere accident tears a hole
