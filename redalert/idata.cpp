@@ -573,7 +573,7 @@ static InfantryTypeClass const TdE1(INFANTRY_TDE1, // Infantry type number.
 );
 
 // TS Light Infantry (INFANTRY_TSE1): TS art.ini [E1Sequence] as {frame, count, frames per facing}, in DoType order.
-// TS has no gestures (the stand stands in) and two deaths: Die1 for gunfire and fire, Die2 for explosions and grenades.
+// No gestures (the stand stands in). Die1 is gunfire's, Die2 explosions'; TF_TS_Infantry_Death plays the rest.
 static DoInfoStruct TsE1DoControls[DO_COUNT] = {
     {0, 1, 1},     // DO_STAND_READY      Ready
     {0, 1, 1},     // DO_STAND_GUARD      Guard

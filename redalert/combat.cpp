@@ -37,6 +37,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include "tf_ts_effects.h"
 
 /***********************************************************************************************
  * Modify_Damage -- Adjusts damage to reflect the nature of the target.                        *
@@ -283,6 +284,79 @@ static AnimType TF_TS_Anim_Band(AnimType const* list, int count, int damage)
     return (list[min(damage / 25, count - 1)]);
 }
 
+// The impact for TS explosion sets 20-25 ([SA], [AP]/[RPG], [SAMWH], [HE], [ARTYHE], [ORCAHE]); a Conventional
+// one lands in water as TS's splash, in 35-point damage bands (OpenTS Combat_Anim).
+static AnimType TF_TS_Set_Anim(int set, int damage, LandType land)
+{
+    static AnimType const _ts_ap[] = {ANIM_TS_CLSN16, ANIM_TS_CLSN22, ANIM_TS_CLSN30, ANIM_TS_CLSN42, ANIM_TS_CLSN58};
+    static AnimType const _ts_sam[] = {ANIM_TS_XGRYSML1, ANIM_TS_XGRYSML2, ANIM_TS_EXPLOSML};
+    static AnimType const _ts_he[] = {ANIM_TS_XGRYSML1,
+                                      ANIM_TS_XGRYSML2,
+                                      ANIM_TS_EXPLOSML,
+                                      ANIM_TS_XGRYMED1,
+                                      ANIM_TS_XGRYMED2,
+                                      ANIM_TS_EXPLOMED,
+                                      ANIM_TS_EXPLOLRG,
+                                      ANIM_TS_TWLT070};
+    static AnimType const _ts_orca[] = {ANIM_TS_EXPLOMED, ANIM_TS_EXPLOLRG};
+    static AnimType const _ts_splash[] = {ANIM_TS_H2O_EXP3, ANIM_TS_H2O_EXP2, ANIM_TS_H2O_EXP1};
+    enum
+    {
+        DAMAGE_PER_SPLASH_ANIM = 35
+    };
+
+    bool conventional = (set == 21 || set >= 23);
+    if (land == LAND_WATER && conventional) {
+        int splash = min(damage, DAMAGE_PER_SPLASH_ANIM * (int)ARRAY_SIZE(_ts_splash) - 1);
+        return (_ts_splash[splash / DAMAGE_PER_SPLASH_ANIM]);
+    }
+    switch (set) {
+    case 20:
+        return (ANIM_TS_PIFFPIFF);
+    case 21:
+        return (TF_TS_Anim_Band(_ts_ap, ARRAY_SIZE(_ts_ap), damage));
+    case 22:
+        return (TF_TS_Anim_Band(_ts_sam, ARRAY_SIZE(_ts_sam), damage));
+    case 23:
+        return (TF_TS_Anim_Band(_ts_he, ARRAY_SIZE(_ts_he), damage));
+    case 24:
+        return (TF_TS_Anim_Band(_ts_he, ARRAY_SIZE(_ts_he) - 1, damage));
+    case 25:
+        return (TF_TS_Anim_Band(_ts_orca, ARRAY_SIZE(_ts_orca), damage));
+    default:
+        return (ANIM_NONE);
+    }
+}
+
+// A TS object's shot bursts as TS's AnimList for its warhead, an RA SA, AP or HE warhead taking TS's [SA], [AP]
+// or [HE] list; any other shot keeps the RA anim it was given.
+AnimType TF_TS_Shot_Anim(AnimType anim, int damage, WarheadType warhead, LandType land, bool tsshot)
+{
+    if (damage == 0 || warhead == WARHEAD_NONE) {
+        return (anim);
+    }
+    int set = WarheadTypeClass::As_Pointer(warhead)->ExplosionSet;
+    if (tsshot) {
+        switch (set) {
+        case 2:
+            set = 20;
+            break;
+        case 4:
+            set = 21;
+            break;
+        case 5:
+            set = 23;
+            break;
+        default:
+            break;
+        }
+    }
+    if (set < 20 || set > 25) {
+        return (anim);
+    }
+    return (TF_TS_Set_Anim(set, damage, land));
+}
+
 /***********************************************************************************************
  * Combat_Anim -- Determines explosion animation to play.                                      *
  *                                                                                             *
@@ -384,22 +458,14 @@ AnimType Combat_Anim(int damage, WarheadType warhead, LandType land)
             return (_waterlist[(ARRAY_SIZE(_waterlist) - 1) * fixed(min(damage, 150), 150)]);
         return (_firelist[(ARRAY_SIZE(_firelist) - 1) * fixed(min(damage, 150), 150)]);
 
-    // TF: TS warhead AnimLists, explosion sets 20-22: [SA], [RPG] and [SAMWH]. [RPG] is Conventional=yes, so a blast
-    // on water takes the splash instead.
+    // TF: TS warhead AnimLists, explosion sets 20-25 (TF_TS_Set_Anim).
     case 20:
-        return (ANIM_TS_PIFFPIFF);
-
-    case 21: {
-        static AnimType const _ts_rpg[] = {ANIM_TS_CLSN16, ANIM_TS_CLSN22, ANIM_TS_CLSN30, ANIM_TS_CLSN42, ANIM_TS_CLSN58};
-        if (land == LAND_WATER)
-            return (_waterlist[(ARRAY_SIZE(_waterlist) - 1) * fixed(min(damage, 150), 150)]);
-        return (TF_TS_Anim_Band(_ts_rpg, ARRAY_SIZE(_ts_rpg), damage));
-    }
-
-    case 22: {
-        static AnimType const _ts_sam[] = {ANIM_TS_XGRYSML1, ANIM_TS_XGRYSML2, ANIM_TS_EXPLOSML};
-        return (TF_TS_Anim_Band(_ts_sam, ARRAY_SIZE(_ts_sam), damage));
-    }
+    case 21:
+    case 22:
+    case 23:
+    case 24:
+    case 25:
+        return (TF_TS_Set_Anim(wptr->ExplosionSet, damage, land));
 
     case 1:
         return (ANIM_PIFF);

@@ -54,6 +54,7 @@
 
 #include "function.h"
 #include "keyframe.h"
+#include "tf_ts_effects.h"
 #define VIC 1
 
 /***********************************************************************************************
@@ -280,6 +281,19 @@ void AnimClass::Draw_It(int x, int y, WindowNumberType window) const
 
             case ANIM_TS_ION_BEAM:
                 flags = flags | SHAPE_BOTTOM;
+                break;
+
+            // TF: TS's splashes rise by their art.ini YDrawOffset (-18, -10, -8 TS pixels; a classic pixel is two).
+            case ANIM_TS_H2O_EXP1:
+                y -= 9;
+                break;
+
+            case ANIM_TS_H2O_EXP2:
+                y -= 5;
+                break;
+
+            case ANIM_TS_H2O_EXP3:
+                y -= 4;
                 break;
 
             case ANIM_FLAG:
@@ -612,6 +626,16 @@ AnimClass::AnimClass(AnimType animnum, COORDINATE coord, unsigned char timedelay
     , SonicHouse(HOUSE_NONE)
     , SonicT(-1)
     , SonicTether(TARGET_NONE)
+    // TF: the TS shard and burning-soldier state starts at rest (tf_ts_effects.cpp).
+    , TFPosX(0.0)
+    , TFPosY(0.0)
+    , TFPosZ(0.0)
+    , TFVelX(0.0)
+    , TFVelY(0.0)
+    , TFVelZ(0.0)
+    , TFRunTo(0)
+    , TFRunSteps(0)
+    , IsTFRunEnd(false)
     , Loops(1)
     , IsToDelete(false)
     , IsBrandNew(true)
@@ -830,6 +854,11 @@ void AnimClass::AI(void)
     */
     if (IsToDelete) {
         delete this;
+        return;
+    }
+
+    // TF: a TS debris shard flies and a burning TS soldier runs before the frame logic.
+    if (TF_TS_Anim_AI(this)) {
         return;
     }
 

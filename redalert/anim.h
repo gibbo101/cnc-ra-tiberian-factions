@@ -169,6 +169,12 @@ public:
     HousesType SonicHouse; // the firer's house: Disruptors of this house are immune (TS TypeImmune)
     int SonicT;        // this disc's place on the muzzle->target line, 0-256; -1 once the band is cut loose
     TARGET SonicTether; // what the band was fired at: the firer must keep aiming at it or the band retracts
+    // TF: a TS debris shard's flight and a burning TS soldier's run (tf_ts_effects.cpp).
+    double TFPosX, TFPosY, TFPosZ; // the shard's position in leptons, Z its height above the ground
+    double TFVelX, TFVelY, TFVelZ; // its velocity in leptons per tick
+    COORDINATE TFRunTo;            // the cell centre the burning soldier runs to; 0 while he has none
+    int TFRunSteps;                // cells he has run
+    bool IsTFRunEnd;               // he has stopped and burns out where he stands
 
     /*
     **	This counter tells how many more times the animation should loop before it

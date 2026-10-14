@@ -51,6 +51,7 @@
 
 #include "function.h"
 #include <math.h>
+#include "tf_ts_effects.h"
 
 /***********************************************************************************************
  * BulletClass::BulletClass -- Bullet constructor.                                             *
@@ -753,9 +754,10 @@ void BulletClass::AI(void)
     assert(Bullets.ID(this) == ID);
     assert(IsActive);
 
-    // TF: the TS SAM missile trails SMOKEY2 puffs (TS art.ini [DRAGON] Trailer=SMOKEY2), each drawn where the
-    // missile appears: screen-up is map-north, so it sits north by its height.
-    if (*this == BULLET_TSAAHEATSEEKER && !IsInLimbo && (Frame % 3) == 0) {
+    // TF: TS's DRAGON missiles and the Apocalypse's trail SMOKEY2 puffs (TS art.ini [DRAGON] Trailer=SMOKEY2),
+    // each north of the missile by its height, as screen-up is map-north.
+    if ((*this == BULLET_TSAAHEATSEEKER || *this == BULLET_TSHELLFIRE || *this == BULLET_R2APOCMISSILE) && !IsInLimbo
+        && (Frame % 3) == 0) {
         new AnimClass(ANIM_TS_SMOKEY2, Coord_Move(Coord, DIR_N, Height));
     }
 
@@ -941,7 +943,7 @@ void BulletClass::AI(void)
                     COORDINATE hit = Coord_Scatter(lz, CELL_LEPTON_W / 3, false);
                     Sound_Effect(VOC_TS_GUN4, Coord);
                     Explosion_Damage(hit, 2 * TF_POD_STRAFE_DAMAGE, NULL, WARHEAD_SA);
-                    new AnimClass(ANIM_PIFFPIFF, hit);
+                    new AnimClass(ANIM_TS_PIFFPIFF, hit);
                 }
             }
         } else {
@@ -959,7 +961,7 @@ void BulletClass::AI(void)
                     delete trooper;
                 }
                 Explosion_Damage(Coord, 100, NULL, WARHEAD_HE);
-                new AnimClass(ANIM_FBALL1, Coord);
+                new AnimClass(ANIM_TS_XGRYMED2, Coord);
             }
             delete this;
             return;
@@ -2048,6 +2050,16 @@ void BulletClass::Bullet_Explodes(bool forced)
             anim = (AnimType)(ANIM_VEH_HIT1 + (anim - ANIM_WATER_EXP1));
         }
     }
+
+    // TF: a TS object's shot or a TS warhead bursts in TS's AnimList, and on a ship's own cell it bursts rather
+    // than splashes.
+    LandType burst = land;
+    if (land == LAND_WATER && Is_Target_Vessel(TarCom)
+        && Coord_Cell(Coord) == Coord_Cell(As_Vessel(TarCom)->Center_Coord())) {
+        burst = LAND_CLEAR;
+    }
+    bool tsshot = (Payback != NULL) ? TF_TS_Effects(Payback->Techno_Type_Class()) : TF_TS_Effects_Bullet(Class);
+    anim = TF_TS_Shot_Anim(anim, Strength, Warhead, burst, tsshot);
 
     if (anim != ANIM_NONE) {
         AnimClass* aptr = new AnimClass(anim, Coord);

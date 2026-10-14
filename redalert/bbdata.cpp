@@ -208,6 +208,7 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TSPulsBall");    // BULLET_TSPULSBALL (TS [PulsPr] -- the EMP Cannon's lobbed pulse ball)
     new BulletTypeClass("TSCannon");      // BULLET_TSCANNON (TS [Cannon] -- the Tick Tank's shell)
     new BulletTypeClass("TSCannon2");     // BULLET_TSCANNON2 (TS [Cannon2] -- the Mammoth Mk. I's level shell)
+    new BulletTypeClass("R2ApocMissile"); // BULLET_R2APOCMISSILE (the Apocalypse's anti-air missile)
 
     // TF: TD-ported bullets run TD's own AI and Unlimbo; the flag is set here, as rules.ini cannot set it.
     BulletTypes.Ptr((int)BULLET_SSM)->IsTDPort = true;

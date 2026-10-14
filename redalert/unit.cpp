@@ -103,6 +103,7 @@
 extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
 #include "keyframe.h"
 #include "common/miscasm.h"
+#include "tf_ts_effects.h"
 
 extern void Logic_Switch_Player_Context(ObjectClass* object);
 extern void Logic_Switch_Player_Context(HouseClass* object);
@@ -1486,6 +1487,9 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
                 anim = ANIM_NAPALM3;
             }
 
+            // TF: a TS vehicle dies in one of TS's blasts and throws its metal shards.
+            anim = TF_TS_Effect(Class, anim);
+            TF_TS_Throw_Debris(Class, Coord);
             new AnimClass(anim, Coord);
 
             /*

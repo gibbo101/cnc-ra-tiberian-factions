@@ -118,6 +118,7 @@
 ** New sidebar for GlyphX multiplayer. ST - 8/2/2019 2:35PM
 */
 #include "sidebarglyphx.h"
+#include "tf_ts_effects.h"
 
 // The vehicle a deployed TS building packs back into on a deploy or move order (the Limpet Mine drone,
 // the Mobile Sensor Array, the Mobile War Factory); UNIT_NONE for every other building.
@@ -2422,6 +2423,8 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
             }
 
             Sound_Effect(VOC_KABOOM22, Coord);
+            // TF: a TS building burns and blows up with TS's fires and blasts and throws its metal shards.
+            TF_TS_Throw_Debris(Class, Center_Coord());
             while (*offset != REFRESH_EOL) {
                 COORDINATE scatter_coord;
                 int delay;
@@ -2437,18 +2440,18 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
                     scatter_coord = Coord_Scatter(Cell_Coord(cell), 0x0080);
                     delay = Random_Pick(0, 7);
                     loop = Random_Pick(1, 3);
-                    new AnimClass(ANIM_FIRE_SMALL, scatter_coord, delay, loop);
+                    new AnimClass(TF_TS_Effect(Class, ANIM_FIRE_SMALL), scatter_coord, delay, loop);
 
                     if (Percent_Chance(50)) {
                         scatter_coord = Coord_Scatter(Cell_Coord(cell), 0x0040);
                         delay = Random_Pick(0, 7);
                         loop = Random_Pick(1, 3);
-                        new AnimClass(ANIM_FIRE_MED, scatter_coord, delay, loop);
+                        new AnimClass(TF_TS_Effect(Class, ANIM_FIRE_MED), scatter_coord, delay, loop);
                     }
                 }
                 scatter_coord = Coord_Scatter(Cell_Coord(cell), 0x0040);
                 delay = Random_Pick(0, 3);
-                new AnimClass(ANIM_FBALL1, scatter_coord, delay);
+                new AnimClass(TF_TS_Effect(Class, ANIM_FBALL1), scatter_coord, delay);
             }
 
             shakes = Class->Cost_Of() / 400;
@@ -2588,6 +2591,7 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
 
         case RESULT_MAJOR:
             Sound_Effect(VOC_KABOOM1, Coord);
+            // TF: a TS building's damage fires are TS's OnFire fires.
             while (*offset != REFRESH_EOL) {
                 CELL cell = Coord_Cell(Coord) + *offset++;
                 AnimClass* anim = NULL;
@@ -2608,7 +2612,7 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
                     case 5: {
                         COORDINATE scatter_coord = Coord_Scatter(Cell_Coord(cell), 0x0060);
                         int loop = Random_Pick(1, 3);
-                        anim = new AnimClass(ANIM_ON_FIRE_SMALL, scatter_coord, 0, loop);
+                        anim = new AnimClass(TF_TS_Effect(Class, ANIM_ON_FIRE_SMALL), scatter_coord, 0, loop);
                         break;
                     }
 
@@ -2617,12 +2621,15 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
                     case 8: {
                         COORDINATE scatter_coord = Coord_Scatter(Cell_Coord(cell), 0x0060);
                         int loop = Random_Pick(1, 3);
-                        anim = new AnimClass(ANIM_ON_FIRE_MED, scatter_coord, 0, loop);
+                        anim = new AnimClass(TF_TS_Effect(Class, ANIM_ON_FIRE_MED), scatter_coord, 0, loop);
                         break;
                     }
 
                     case 9:
-                        anim = new AnimClass(ANIM_ON_FIRE_BIG, Coord_Scatter(Cell_Coord(cell), 0x0060), 0, 1);
+                        anim = new AnimClass(TF_TS_Effect(Class, ANIM_ON_FIRE_BIG),
+                                             Coord_Scatter(Cell_Coord(cell), 0x0060),
+                                             0,
+                                             1);
                         break;
 
                     default:
@@ -2639,7 +2646,7 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
                             COORDINATE scatter_coord = Coord_Scatter(Cell_Coord(cell), 0x0060);
                             int delay = Random_Pick(0, 7);
                             int loop = Random_Pick(1, 3);
-                            anim = new AnimClass(ANIM_FIRE_SMALL, scatter_coord, delay, loop);
+                            anim = new AnimClass(TF_TS_Effect(Class, ANIM_FIRE_SMALL), scatter_coord, delay, loop);
                         }
                     }
                 }

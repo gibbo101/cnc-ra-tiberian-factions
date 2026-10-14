@@ -234,6 +234,8 @@ bool Is_Speaking(void);
 int Modify_Damage(int damage, WarheadType warhead, ArmorType armor, int distance);
 void Explosion_Damage(COORDINATE coord, int strength, TechnoClass* source, WarheadType warhead);
 AnimType Combat_Anim(int damage, WarheadType warhead, LandType land);
+// The burst for a shot: TS's AnimList for a TS warhead, or for an RA SA, AP or HE warhead a TS object fires (tsshot).
+AnimType TF_TS_Shot_Anim(AnimType anim, int damage, WarheadType warhead, LandType land, bool tsshot);
 void Wide_Area_Damage(COORDINATE coord, LEPTON radius, int damage, TechnoClass* source, WarheadType warhead);
 
 /*

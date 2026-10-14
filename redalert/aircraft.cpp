@@ -92,6 +92,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include "tf_ts_effects.h"
 
 // TF: attack-move (CFE port) -- launcher-side Shift state, per local player.
 extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
@@ -1904,7 +1905,9 @@ ResultType AircraftClass::Take_Damage(int& damage, int distance, WarheadType war
         Death_Announcement();
         COORDINATE coord = Target_Coord();
         if (!(coord & HIGH_COORD_MASK)) {
-            new AnimClass(ANIM_FBALL1, coord);
+            // TF: a TS aircraft dies in one of TS's blasts and throws its metal shards.
+            new AnimClass(TF_TS_Effect(Class, ANIM_FBALL1), coord);
+            TF_TS_Throw_Debris(Class, coord);
         }
 
         /*
@@ -3048,7 +3051,7 @@ void AircraftClass::TF_Hunter_Seeker_Detonate(void)
 
     // Deleted as Edge_Of_World_AI deletes a spent aircraft: the destructor unlinks the layers. A manual
     // Map.Remove or Take_Damage's death path here crashes the game.
-    new AnimClass(ANIM_FBALL1, here);
+    new AnimClass(TF_TS_Effect(Class, ANIM_FBALL1), here);
     delete this;
 }
 

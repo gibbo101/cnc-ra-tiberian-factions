@@ -92,6 +92,7 @@ extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
 ** New sidebar for GlyphX multiplayer. ST - 8/7/2019 10:10AM
 */
 #include "sidebarglyphx.h"
+#include "tf_ts_effects.h"
 
 int const InfantryClass::HumanShape[32] = {0, 0, 7, 7, 7, 7, 6, 6, 6, 6, 5, 5, 5, 5, 5, 4,
                                            4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 0};
@@ -411,6 +412,16 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
         }
         if (Class->IsDog) {
             sound = altsound = VOC_DOG_HURT;
+        }
+
+        // TF: a TS soldier blown apart, set alight or electrocuted becomes TS's anim for it (OpenTS Take_Damage).
+        int infdeath = WarheadTypeClass::As_Pointer(warhead)->InfantryDeath;
+        AnimType tsdeath = TF_TS_Effects(Class) ? TF_TS_Infantry_Death(infdeath) : ANIM_NONE;
+        if (tsdeath != ANIM_NONE) {
+            Sound_Effect((infdeath == 4) ? altsound : sound, Coord);
+            new AnimClass(tsdeath, Coord);
+            delete this;
+            return (res);
         }
 
         /*
@@ -4325,17 +4336,22 @@ void InfantryClass::Doing_AI(void)
             if (Fetch_Stage() >= Class->DoControls[Doing].Count) {
                 AnimClass* anim = NULL;
                 LandType land = Map[Center_Coord()].Land_Type();
+                // TF: a TS soldier leaves one of TS's bodies after any death sequence, in place of RA's corpses.
+                bool tsbody = TF_TS_Effects(Class);
                 if (land != LAND_ROCK && land != LAND_WATER && land != LAND_RIVER) {
-                    if (Doing == DO_GUN_DEATH && !Class->IsDog && Height == 0) {
+                    if (tsbody && Height == 0) {
+                        anim = new AnimClass(TF_TS_Dead_Body(), Center_Coord());
+                    }
+                    if (!tsbody && Doing == DO_GUN_DEATH && !Class->IsDog && Height == 0) {
                         anim = new AnimClass(ANIM_CORPSE1, Coord_Add(Center_Coord(), XYP_Coord(-2, 4)));
                     }
-                    if (Doing == DO_GRENADE_DEATH && !Class->IsDog && Height == 0) {
+                    if (!tsbody && Doing == DO_GRENADE_DEATH && !Class->IsDog && Height == 0) {
                         anim = new AnimClass(ANIM_CORPSE1, Coord_Add(Center_Coord(), XYP_Coord(-10, 3)));
                     }
-                    if (Doing == DO_EXPLOSION_DEATH && !Class->IsDog && Height == 0) {
+                    if (!tsbody && Doing == DO_EXPLOSION_DEATH && !Class->IsDog && Height == 0) {
                         anim = new AnimClass(ANIM_CORPSE3, Coord_Add(Center_Coord(), XYP_Coord(-2, 4)));
                     }
-                    if (Doing == DO_EXPLOSION2_DEATH && !Class->IsDog && Height == 0) {
+                    if (!tsbody && Doing == DO_EXPLOSION2_DEATH && !Class->IsDog && Height == 0) {
                         anim = new AnimClass(ANIM_CORPSE2, Center_Coord());
                     }
                 }
