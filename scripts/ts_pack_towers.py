@@ -19,7 +19,7 @@ body and any redrawn body carry: the ring's width sets the turret's scale and th
 ring's centre sets where the turret sits, so a new body needs no hand-dialled seat.
 
 Frame sets written (TSHD_STRUCTURES.XML patched to match), in the TS-HD-Graphics-Pack, with
-the BuildIcon_TS_* cameos in the TS-Graphics-Pack (each name routed by asset_packs.py):
+the BuildIcon_TS_* cameos beside them (each name routed by asset_packs.py):
   TSCTWR       2      body healthy, body damaged
   TSCTWRMAKE   17     construction; from the body's own buildup frames if it has
                       them, otherwise a rise-from-the-ground mask reveal

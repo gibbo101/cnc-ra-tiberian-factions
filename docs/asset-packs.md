@@ -13,23 +13,23 @@ Each `asset-packs/<Pack>/` folder is exactly what is uploaded to the Workshop, i
 layout:
 
 ```
-asset-packs/TS-Graphics-Pack/
+asset-packs/TS-HD-Graphics-Pack/
   ccmod.json                 (scripts/asset_pack_docs.py)
   README.md                  (scripts/asset_pack_docs.py: contents, how to use, credits)
   Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS|STRUCTURES|VFX|TERRAIN/<THEATRE>/<NAME>.ZIP
   Data/ART/TEXTURES/SRGB/BuildIcon_<name>.tga
   Data/AUDIO/<NAME>.WAV, Data/AUDIO/EN-US/<NAME>_EN-US.WAV
-  Data/XML/TILESETS/TS_UNITS.XML ...          (entries for RA_UNITS.XML ...)
-  Data/XML/OBJECTS/UNITS/TSBUILDABLES.XML      (entries for RABUILDABLES.XML)
-  Data/XML/AUDIO/SFXEVENTS[NON]LOCALIZED_TS.XML (entries for SFXEVENTS[NON]LOCALIZED.XML)
+  Data/XML/TILESETS/TSHD_UNITS.XML ...          (entries for RA_UNITS.XML ...)
+  Data/XML/OBJECTS/UNITS/TSHDBUILDABLES.XML      (entries for RABUILDABLES.XML)
+  Data/XML/AUDIO/SFXEVENTS[NON]LOCALIZED_TSHD.XML (entries for SFXEVENTS[NON]LOCALIZED.XML)
   3d/<name>.glb, 3d/README.md                (TS-HD only: the HD rebuilds' glTF models, never staged;
                                               scripts/glb_to_stl.py makes print-ready STL files from them)
 ```
 
 | Pack | Holds |
 |---|---|
-| TS-Graphics-Pack | TS structure, effect and apron art; plain TS cameos |
-| TS-HD-Graphics-Pack | HD rebuilds of TS objects (GDI buildings, units, infantry, walls, gates, component towers), their HD cameos and 3D models |
+| TS-HD-Graphics-Pack | HD rebuilds of TS GDI's objects (buildings, units, infantry, walls, gates, component towers), their HD cameos and 3D models, and TS's effects |
+| TS-Nod-Graphics-Pack | HD rebuilds of TS Nod's objects, held out of TS-HD-Assets until TS Nod ships whole; the mod carries them for its crate units |
 | TS-SFX-Pack, TS-EVA-eng, TS-Voices-eng | TS effects, EVA lines, unit voices |
 | RA2-Graphics-Pack, RA2-SFX-Pack, RA2-Voices-eng | RA2 tanks, their weapon and engine sounds, their crews |
 | CNC3-Graphics-Pack, CNC3-SFX-Pack, CNC3-Voices-eng | C&C3 tanks, their weapon takes, their crews |
@@ -42,10 +42,10 @@ only the `RA_` files. A pack's XML files are what a modder copies, and what the 
 `scripts/asset_packs.py` decides from a file's name alone, so nothing needs registering:
 
 - Art: `TS*` (not `TSLA*`, RA's Tesla Coil), `R2*`, `C3<letter>` (bare `C3` is RA's
-  civilian). The HD-rebuilt TS objects in its `TS_HD` list go to TS-HD.
-- Cameos: the plain `BuildIcon_` of those objects. An HD cameo (`scripts/ts_hd_cameos.py`) goes in
-  TS-HD beside its classic one in TS-Graphics-Pack. Staging copies a file two packs carry from the
-  later pack only, and the variant bakers read the HD one (`cameo_source`). The `_G`, `_LK` and `_<n>`
+  civilian). TS art goes to TS-HD, TS Nod's (its `TS_NOD` lists) to TS-Nod.
+- Cameos: the plain `BuildIcon_` of those objects (`scripts/ts_hd_cameos.py` installs the HD ones). A
+  TS-named cameo of the mod's own object stays in `resources/` (`OWN_TS_CAMEOS`: TD Nod's Stealth
+  Generator, drawn from TS art). The `_G`, `_LK` and `_<n>`
   variants and the `SW_`/`SG_` superweapon cameos drive the mod's sidebar and stay in
   `resources/`.
 - Sounds: `TS_SFX_EVA_*` EVA, `TS_SFX_UNT_*` voices, other `TS*` effects; RA2 and C&C3 crew lines
@@ -59,7 +59,7 @@ only the `RA_` files. A pack's XML files are what a modder copies, and what the 
 
 - **Pack scripts** take every output and input path from `asset_packs` by name (`art_zip`,
   `tileset_xml`, `cameo_tga`, `buildables_xml`, `sound_wav`, `sfx_xml`). A new TS unit's art lands
-  in TS-Graphics-Pack with no other change.
+  in TS-HD-Graphics-Pack with no other change; a new TS Nod object needs its name in `TS_NOD`.
 - **One copy of each frame:** in an object tileset (structures, units, effects), a shape whose image
   matches an earlier one in its ZIP names that one in the tileset XML, and the copy leaves the ZIP.
   TERRAIN tiles (bibs, smudges) stay one file per shape: the launcher draws a cell only from the frame

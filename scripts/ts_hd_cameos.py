@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Install the HD sidebar cameos (resources/custom-art/ts-hd-cameos/BuildIcon_*.png, 341x256, from the HD
-art chat) into the TS-HD-Graphics-Pack, then rebake every badged and locked variant from them.
+art chat) into the TS packs, then rebake every badged and locked variant from them.
 
-Each PNG becomes BuildIcon_<name>.tga in the TS-HD pack, beside the classic cameo in TS-Graphics-Pack;
-staging copies the HD one (scripts/stage_asset_packs.py) and the bakers read it (asset_packs.cameo_source).
+Each PNG becomes BuildIcon_<name>.tga in the pack asset_packs.cameo_tga routes it to (TS-HD-Graphics-Pack, or
+TS-Nod-Graphics-Pack for Nod's), where staging and the variant bakers read it.
 The units the Dropship Bay delivers get its HD cameo as an inset, bottom right, above the sidebar's name band.
 Superweapon cameos (BuildIcon_SW_*) belong to the mod, so they replace the mod's own file, and the TS GDI badge
 copy (BuildIcon_SG_*) is rebaked where one exists. Run this after any TS packer that writes those cameos.
@@ -24,7 +24,6 @@ import cameo_badge_build  # noqa: E402
 import ts_mk2_cooldown_cameos  # noqa: E402
 
 SRC = os.path.join(asset_packs.REPO, "resources", "custom-art", "ts-hd-cameos")
-SRGB = os.path.join(asset_packs.pack_data("TS-HD-Graphics-Pack"), "ART", "TEXTURES", "SRGB")
 BAY_DELIVERED = {"BuildIcon_TS_MammothMk2", "BuildIcon_TS_MechDivision", "BuildIcon_TS_MammothMk1Pair"}
 BAY_ICON = "BuildIcon_TS_Drop"
 NAME_BAND_TOP = 195  # the launcher's name band covers the cameo below this row (UI_SIDEBAR_CONSTRUCTIONENTRY.BUI)
@@ -64,7 +63,6 @@ def ts_badge(img, icon):
 
 
 def main():
-    os.makedirs(SRGB, exist_ok=True)
     icons = set()
     for png in sorted(glob.glob(os.path.join(SRC, "BuildIcon_*.png"))):
         stem = os.path.splitext(os.path.basename(png))[0]
@@ -73,13 +71,11 @@ def main():
             sys.exit(f"{stem}: {img.size[0]}x{img.size[1]}, a cameo is 341x256")
         if stem in BAY_DELIVERED:
             img = bay_badge(img)
+        img.save(asset_packs.cameo_tga(stem))
         if stem.startswith("BuildIcon_SW_"):
-            img.save(asset_packs.cameo_tga(stem))
             ts_badge(img, stem.replace("BuildIcon_SW_", "BuildIcon_SG_"))
-        else:
-            img.save(os.path.join(SRGB, f"{stem}.tga"))
         icons.add(stem)
-    print(f"installed {len(icons)} HD cameos into {SRGB}")
+    print(f"installed {len(icons)} HD cameos")
     inis = users(icons)
     cameo_badge_build.main(inis)
     if any(icon in icons for icon, _ in ts_mk2_cooldown_cameos.LOCKED.values()):

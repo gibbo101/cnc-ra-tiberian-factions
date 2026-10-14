@@ -11,8 +11,8 @@ lands on a 512 canvas (64x64 classic stub x 8), model-space centred so the
 mound sits on the vehicle's draw anchor like the TS anim does.
 
 Inputs (set TS_ART_DIR): $TS_ART_DIR/raw/DIG.SHP + $TS_ART_DIR/raw/ANIM.PAL
-Outputs: Data/ART/.../RED_ALERT/VFX/TSDIG.ZIP + 37 TSDIG tiles in TS_VFX.XML, in the
-TS-Graphics-Pack (asset_packs.py routes the name).
+Outputs: Data/ART/.../RED_ALERT/VFX/TSDIG.ZIP + 37 TSDIG tiles in TSHD_VFX.XML, in the
+TS-HD-Graphics-Pack (asset_packs.py routes the name).
 The classic stub (TSDIG.SHP, 64x64x37) is built by scripts/build_tfassets.sh.
 """
 import io, json, os, re, sys, zipfile

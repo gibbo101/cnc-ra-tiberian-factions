@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The Firestorm Wall Section's cameo, BuildIcon_TS_Fsdf.tga, from TS's FSPICON, for the TS-Graphics-Pack
+"""The Firestorm Wall Section's cameo, BuildIcon_TS_Fsdf.tga, from TS's FSPICON, for the TS-HD-Graphics-Pack
 (asset_packs.py routes it). The section's art is the HD rebuild's, packed by scripts/ts_pack_hd_buildings.py.
 
 Inputs: $TS_ART_DIR/shp_fspicon (scripts/ts_rebuild_art.sh).

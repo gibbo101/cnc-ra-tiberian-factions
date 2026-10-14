@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ObjectTypeList>
+	<ObjectTypeClass Name="RA_TSSUBTANK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSSUBTANK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSSUBTANK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_DevilsTongue</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSSAPC" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSSAPC</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSSAPC_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_SubAPC</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSE3" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSE3</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSE3_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_RocketInfantry</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSNGATEH" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSNGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSNGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSNGATEH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSNGATEV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSNGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSNGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSNGATEV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSNWALL" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSNWALL</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSNWALL_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_NWall</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSTTNK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSTTNK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSTTNK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_TickTank</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSTICK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSTICK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSTICK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_TickTank</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+</ObjectTypeList>

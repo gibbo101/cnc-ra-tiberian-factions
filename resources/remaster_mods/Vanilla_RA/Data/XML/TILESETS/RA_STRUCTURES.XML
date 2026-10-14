@@ -38566,8 +38566,8 @@
 					</Frames>
 				</Value>
 			</Tile>
-			<!-- asset-pack: TS-Graphics-Pack -->
 	<!-- asset-pack: TS-HD-Graphics-Pack -->
+	<!-- asset-pack: TS-Nod-Graphics-Pack -->
 	<Tile>
 		<Key>
 			<Name>ALGATEH</Name>

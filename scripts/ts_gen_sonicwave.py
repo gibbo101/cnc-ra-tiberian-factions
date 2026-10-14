@@ -43,7 +43,7 @@ so the game runs ~40 ticks/s there and the stage delay is 5.
 Tuning lives entirely in the constants below.
 
 Usage:  ts_gen_sonicwave.py [OUTDIR]
-Without OUTDIR the ZIPs and their TS_VFX.XML tile runs go to the TS-Graphics-Pack
+Without OUTDIR the ZIPs and their TSHD_VFX.XML tile runs go to the TS-HD-Graphics-Pack
 (asset_packs.py routes each name); with it, only the ZIPs are written, there.
 """
 import io, json, math, os, re, sys, zipfile

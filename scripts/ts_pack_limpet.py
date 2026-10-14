@@ -3,7 +3,7 @@
 BuildIcon_TS_LimpetDrone.tga (Firestorm ships no LIMPICON: the gold drone on TS's vehicle cameo
 plate, rebuilt from the cameos that share it), the base RA_TSLIMP / RA_TSDLIMP sidebar entries, the
 ModText rows and the five LIMP*.AUD sounds as TS<NAME>.WAV. Cameo, sidebar entries and sounds go
-to the tree asset_packs.py routes each name to (the TS-Graphics-Pack and TS-SFX-Pack); the ModText
+to the tree asset_packs.py routes each name to (the TS-HD-Graphics-Pack and TS-SFX-Pack); the ModText
 rows to the mod's own ModText.csv. The drone's and the mine's art is the HD rebuilds', packed by
 scripts/ts_pack_hd_buildings.py.
 Inputs (set TS_ART_DIR): .raw/LIMPED.SHP, UNITTEM.PAL and CAMEO.PAL, the vehicle cameo SHPs in

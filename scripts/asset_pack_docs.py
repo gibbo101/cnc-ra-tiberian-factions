@@ -58,8 +58,9 @@ GAMES = {
 }
 
 ABOUT = {
-    "TS-Graphics-Pack": "Tiberian Sun structures, effects and sidebar cameos as HD sprites",
-    "TS-HD-Graphics-Pack": "Tiberian Sun GDI buildings, units, infantry, walls, gates and component towers, rebuilt as HD art",
+    "TS-HD-Graphics-Pack": "Tiberian Sun GDI buildings, units, infantry, walls, gates and component towers, rebuilt as HD "
+                           "art, with Tiberian Sun's effects",
+    "TS-Nod-Graphics-Pack": "Tiberian Sun Nod units, walls and gates, rebuilt as HD art",
     "TS-SFX-Pack": "Tiberian Sun weapon, unit and structure sound effects",
     "TS-EVA-eng": "Tiberian Sun EVA announcer lines (English)",
     "TS-Voices-eng": "Tiberian Sun unit voice lines (English)",
@@ -125,7 +126,7 @@ def xml_targets(pack):
 
 
 def readme(pack):
-    game = GAMES[A.PACKS[pack].replace("TSHD", "TS")]
+    game = GAMES[re.sub(r"^TS[A-Z]+$", "TS", A.PACKS[pack])]
     lines = [f"# {pack}", "",
              f"{ABOUT[pack]}, for Command & Conquer Remastered Collection mods (Red Alert). One of the "
              f"asset packs from [Tiberian Factions]({REPO_URL}).", ""]

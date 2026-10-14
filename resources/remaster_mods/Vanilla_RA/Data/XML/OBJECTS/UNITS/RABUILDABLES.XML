@@ -1918,7 +1918,8 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
-	<!-- asset-pack: TS-Graphics-Pack -->
+	<!-- asset-pack: TS-HD-Graphics-Pack -->
+	<!-- asset-pack: TS-Nod-Graphics-Pack -->
 
 	<ObjectTypeClass Name="RA_TDGFACT" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
@@ -7523,7 +7524,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TSDWEAP</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSDWEAP_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TS_Dweap</BuildIcon>
+			<BuildIcon>BuildIcon_TS_MobileWarFactory</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 

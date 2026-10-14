@@ -19,7 +19,7 @@ healthy model with progressively broken crest and darkened faces.
 
 Outputs, each in the tree asset_packs.py routes its name to: TSWALL.ZIP and its
 TSHD_STRUCTURES.XML tile run (TS-HD-Graphics-Pack), BuildIcon_TS_Wall.tga
-(TS-Graphics-Pack, from WALLICON, CAMEO.PAL), and scripts/ts_stub_dims.json's
+(TS-HD-Graphics-Pack, from WALLICON, CAMEO.PAL), and scripts/ts_stub_dims.json's
 TSWALL entry.
 
 Usage: ts_pack_walls.py [--preview <out.png>]   (preview = a composed scene only)

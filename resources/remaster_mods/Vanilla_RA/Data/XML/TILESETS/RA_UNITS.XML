@@ -187606,9 +187606,10 @@
 					</Frames>
 				</Value>
 			</Tile>
-	<!-- asset-pack: TS-Graphics-Pack -->
 	<!-- asset-pack: RA2-Graphics-Pack -->
 	<!-- asset-pack: CNC3-Graphics-Pack -->
+	<!-- asset-pack: TS-HD-Graphics-Pack -->
+	<!-- asset-pack: TS-Nod-Graphics-Pack -->
 </Tiles>
 	</TilesetTypeClass>
 </Tilesets>

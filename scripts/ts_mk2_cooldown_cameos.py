@@ -51,7 +51,7 @@ TEMPLATE = """\t<ObjectTypeClass Name="RA_{ini}_{tag}" Classification="CNCBuilda
 
 def bake_locked():
     for ini, (icon, _) in LOCKED.items():
-        base = Image.open(asset_packs.cameo_source(icon)).convert("RGBA")
+        base = Image.open(asset_packs.cameo_tga(icon)).convert("RGBA")
         img = ImageEnhance.Brightness(base).enhance(0.40)
         draw = ImageDraw.Draw(img)
         w, h = img.size

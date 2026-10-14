@@ -38,8 +38,8 @@ PACKS_DIR = os.path.join(REPO, "asset-packs")
 
 # pack -> prefix of its XML files
 PACKS = {
-    "TS-Graphics-Pack": "TS",
     "TS-HD-Graphics-Pack": "TSHD",
+    "TS-Nod-Graphics-Pack": "TSNOD",
     "TS-SFX-Pack": "TS",
     "TS-EVA-eng": "TS",
     "TS-Voices-eng": "TS",
@@ -56,7 +56,7 @@ PACKS = {
 # their CCDATA marker; the others are libraries for other modders, and the mod keeps its own copies.
 WORKSHOP = {
     "TS-HD-Assets": {
-        "packs": ("TS-Graphics-Pack", "TS-HD-Graphics-Pack", "TS-SFX-Pack", "TS-EVA-eng", "TS-Voices-eng"),
+        "packs": ("TS-HD-Graphics-Pack", "TS-SFX-Pack", "TS-EVA-eng", "TS-Voices-eng"),
         "required": True, "marker": "TSHDPACK.INI", "xml_id": "TSHDAssets", "version": (1, 0), "game": "TS",
         "prefix": "TS", "hosts": ("RA",), "coming_soon": True,
         "name": "Tiberian Sun HD Assets",
@@ -126,18 +126,14 @@ def required_mod(pack):
     return next((mod for mod in REQUIRED if pack in WORKSHOP[mod]["packs"]), None)
 
 
-# HD rebuilds of TS objects (resources/custom-art): every art name that starts with one of these,
-# so an object's MAKE, door, lamp, turret and apron layers travel with it
-TS_HD = ("TSWALL", "TSNWALL", "TSGATEH", "TSGATEV", "TSNGATEH", "TSNGATEV", "TSCTWR", "TSVULC", "TSROCK", "TSCSAM",
-         "TSFACT", "TSPILE", "TSPOWR", "TSSILO", "TSTECH", "TSTURB", "TSPROC", "TSWEAP", "TSHARV", "TSTITN",
-         "TSMCV", "TSSMEC", "TSRADR", "TSDPSA", "TSDEPT", "TSHPAD", "TSDROP", "TS4TNK", "TSAPC", "TSCARRY",
-         "TSDSHP", "TSHMEC", "TSHVR", "TSLPST", "TSMEMP", "TSMWAR", "TSORCA", "TSSAPC", "TSSUBTANK", "TSHUNT",
-         "TSJUGG", "TSLIMP", "TSPLUG", "TSPION", "TSPODS", "TSSEEK", "TSFGEN", "TSFSDF", "TSDLIMP", "TSDWEAP",
-         "TSTTNK", "TSTICK")
-# ...and these names exactly: other art that starts with them stays in the TS pack (the Disruptor's
-# sonic wave, TSSONICW; the EMP cannon's pulse ball and flashes, TSPULSBL, TSPULSF1, TSPULSF2)
-TS_HD_EXACT = ("TSSONIC", "TSPULS", "TSPULSMAKE", "TSPULST",
-               "TSE1", "TSE2", "TSENGINEER", "TSGHOST", "TSMEDIC", "TSJUMPJET", "TSE3")
+# TS Nod's art, which the TS-HD-Assets pack leaves out until TS Nod ships whole. Tiberian Factions carries it meanwhile
+# for its crate units. Every art name that starts with one of these, so an object's layers travel with it...
+TS_NOD = ("TSTTNK", "TSTICK", "TSSUBTANK", "TSSAPC", "TSNWALL", "TSNGATEH", "TSNGATEV")
+# ...these names exactly, and these sidebar cameos (BuildIcon_<name>)
+TS_NOD_EXACT = ("TSE3",)
+TS_NOD_CAMEOS = ("TS_TICKTANK", "TS_DEVILSTONGUE", "TS_SUBAPC", "TS_NWALL", "TS_ROCKETINFANTRY")
+# TS-named cameos of the mod's own objects: TD Nod's Stealth Generator (TDSTEAL) is drawn from TS art
+OWN_TS_CAMEOS = ("TS_STEALTHGEN",)
 
 # tileset kinds: RA_<KIND>.XML in the mod; art folder under RED_ALERT/
 KINDS = ("UNITS", "STRUCTURES", "VFX", "TERRAIN_TEMPERATE", "TERRAIN_SNOW", "TERRAIN_INTERIOR")
@@ -158,9 +154,9 @@ def graphics_pack(name):
     if n.startswith("TSLA"):
         return None
     if n.startswith("TS"):
-        if n.startswith(TS_HD) or n in TS_HD_EXACT:
-            return "TS-HD-Graphics-Pack"
-        return "TS-Graphics-Pack"
+        if n.startswith(TS_NOD) or n in TS_NOD_EXACT:
+            return "TS-Nod-Graphics-Pack"
+        return "TS-HD-Graphics-Pack"
     if n.startswith("R2"):
         return "RA2-Graphics-Pack"
     if re.match(r"C3[A-Z]", n):
@@ -181,10 +177,13 @@ def cameo_pack(icon):
     name = m.group(1)
     if CAMEO_VARIANT.search(name) or re.match(r"(SW|SG)_", name, re.I):
         return None
+    if name.upper() in OWN_TS_CAMEOS:
+        return None
+    if name.upper() in TS_NOD_CAMEOS:
+        return "TS-Nod-Graphics-Pack"
     if re.match(r"TS_", name, re.I):
-        return "TS-Graphics-Pack"
-    pack = graphics_pack(name)
-    return "TS-Graphics-Pack" if pack == "TS-HD-Graphics-Pack" else pack
+        return "TS-HD-Graphics-Pack"
+    return graphics_pack(name)
 
 
 def sound_pack(sample):
@@ -275,13 +274,6 @@ def shape_frames(name, kind):
 def cameo_tga(icon):
     stem = re.sub(r"\.tga$", "", os.path.basename(icon), flags=re.I)
     return _made(os.path.join(data_root(cameo_pack(stem)), "ART", "TEXTURES", "SRGB", f"{stem}.tga"))
-
-
-def cameo_source(icon):
-    """The plain cameo the sidebar shows, to bake variants from: the TS-HD pack's, once it has one."""
-    stem = re.sub(r"\.tga$", "", os.path.basename(icon), flags=re.I)
-    hd = os.path.join(pack_data("TS-HD-Graphics-Pack"), "ART", "TEXTURES", "SRGB", f"{stem}.tga")
-    return hd if os.path.exists(hd) else cameo_tga(stem)
 
 
 def buildables_xml_of(pack):

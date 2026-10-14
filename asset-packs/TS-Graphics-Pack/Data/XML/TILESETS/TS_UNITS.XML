@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<Tilesets>
-	<TilesetTypeClass name="RA_Units">
-		<RootTexturePath>Red_Alert\Units</RootTexturePath>
-		<Tiles>
-</Tiles>
-	</TilesetTypeClass>
-</Tilesets>

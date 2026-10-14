@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<Tilesets>
+	<TilesetTypeClass name="RA_VFX">
+		<RootTexturePath>Red_Alert\VFX</RootTexturePath>
+		<Tiles>
+</Tiles>
+	</TilesetTypeClass>
+</Tilesets>

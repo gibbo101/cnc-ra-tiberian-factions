@@ -8,7 +8,7 @@ team remap, hq4x per the house policy, model-space centred on a 160 canvas
 (20x20 classic stub x 8: 32 TS px = 2/3 of a TS cell = 2/3 of an RA cell).
 
 Inputs: $TS_ART_DIR/raw/FLAMEALL.SHP + $TS_ART_DIR/raw/ANIM.PAL
-Outputs: RED_ALERT/VFX/TSFIRE.ZIP + 76 TSFIRE tiles in TS_VFX.XML, in the TS-Graphics-Pack
+Outputs: RED_ALERT/VFX/TSFIRE.ZIP + 76 TSFIRE tiles in TSHD_VFX.XML, in the TS-HD-Graphics-Pack
 (asset_packs.py routes the name).
 """
 import io, json, os, re, sys, zipfile
