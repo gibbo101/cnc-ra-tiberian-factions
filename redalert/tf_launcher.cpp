@@ -6,6 +6,10 @@
 #include "function.h"
 #include "tf_launcher.h"
 
+extern "C" {
+#include "puff.h"
+}
+
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
@@ -667,6 +671,148 @@ void __stdcall Menu_Bound(const DWORD* regs)
     }
 }
 
+/*
+**	The load screen's check of the selected save: a save this build can't load (no TF save marker,
+**	or another version's) takes the stock path for a missing custom map, with our reason.
+*/
+const SIZE_T LOAD_MAP_CHECKED = 0x64E4D6;
+const SIZE_T LOAD_MAP_CAVE = 0x1BE9600;
+const SIZE_T LOAD_REASON = 0x64E540;
+const SIZE_T LOAD_REASON_RESUME = 0x64E547;
+const SIZE_T LOAD_REASON_CAVE = 0x1BE9620;
+const DWORD ENTRY_FILE = 0x40;
+const size_t SAVE_HEAD_BYTES = 0x40000;
+
+unsigned char SaveRefused = 0;
+char SaveRefusedText[] = "THIS SAVE IS FROM ANOTHER VERSION OR MOD AND CAN'T BE LOADED";
+
+typedef void*(__cdecl* SteamStorageFn)(void);
+typedef int(__cdecl* StorageSizeFn)(void* storage, const char* name);
+typedef int(__cdecl* StorageReadFn)(void* storage, const char* name, void* data, int size);
+
+/*
+**	A cloud save's bytes through Steam's remote storage, in a malloc'd block; NULL when unreadable.
+*/
+unsigned char* Read_Save(const char* name, size_t* size)
+{
+    HMODULE steam = GetModuleHandleA("steam_api.dll");
+    SteamStorageFn get = steam ? (SteamStorageFn)GetProcAddress(steam, "SteamAPI_SteamRemoteStorage_v016") : NULL;
+    StorageSizeFn file_size = steam ? (StorageSizeFn)GetProcAddress(steam, "SteamAPI_ISteamRemoteStorage_GetFileSize") : NULL;
+    StorageReadFn read = steam ? (StorageReadFn)GetProcAddress(steam, "SteamAPI_ISteamRemoteStorage_FileRead") : NULL;
+    void* storage = get ? get() : NULL;
+    if (storage == NULL || file_size == NULL || read == NULL) {
+        return NULL;
+    }
+    char path[MAX_PATH];
+    snprintf(path, sizeof(path), "save_game/%s", name);
+    int bytes = file_size(storage, path);
+    if (bytes <= 0) {
+        snprintf(path, sizeof(path), "%s", name);
+        bytes = file_size(storage, path);
+    }
+    if (bytes <= 0) {
+        return NULL;
+    }
+    unsigned char* data = (unsigned char*)malloc(bytes);
+    if (data != NULL && read(storage, path, data, bytes) != bytes) {
+        free(data);
+        data = NULL;
+    }
+    *size = (size_t)bytes;
+    return data;
+}
+
+/*
+**	True when a .sav's DLL data starts with this build's marker and version. The file is ClientG's
+**	chunk file: a zlib stream to the size at 0x10, a chunk index ending in a sync flush, then the
+**	instance chunk (a 20-byte header with its size at +8, raw deflate) holding the DLL's data.
+*/
+bool Save_Loadable(const unsigned char* d, size_t n)
+{
+    if (n < 0x24 || d[0] != 'C' || d[1] != 'H') {
+        return false;
+    }
+    size_t p = 0x24 + *(const DWORD*)(d + 0x10);
+    size_t k = 0;
+    for (size_t i = p; i + 4 <= n && i < p + 4096; i++) {
+        if (d[i] == 0 && d[i + 1] == 0 && d[i + 2] == 0xFF && d[i + 3] == 0xFF) {
+            k = i + 4;
+            break;
+        }
+    }
+    if (k == 0 || k + 20 > n) {
+        return false;
+    }
+    unsigned long source = *(const DWORD*)(d + k + 8);
+    if (source > n - k - 20) {
+        source = (unsigned long)(n - k - 20);
+    }
+    unsigned char* out = (unsigned char*)calloc(SAVE_HEAD_BYTES, 1);
+    if (out == NULL) {
+        return false;
+    }
+    unsigned long length = SAVE_HEAD_BYTES;
+    puff(out, &length, d + k + 20, &source);
+    bool loadable = false;
+    for (size_t i = 0; i + 8 <= SAVE_HEAD_BYTES; i++) {
+        if (memcmp(out + i, TF_SAVE_MARKER, 4) == 0) {
+            loadable = *(const DWORD*)(out + i + 4) == TF_Save_Version();
+            break;
+        }
+    }
+    free(out);
+    return loadable;
+}
+
+/*
+**	Save_Loadable for a listed save, read once per file name.
+*/
+bool Listed_Save_Loadable(const char* name)
+{
+    static char last[MAX_PATH] = "";
+    static bool last_loadable = false;
+    if (strcmp(name, last) == 0) {
+        return last_loadable;
+    }
+    size_t size = 0;
+    unsigned char* data = Read_Save(name, &size);
+    last_loadable = data != NULL && Save_Loadable(data, size);
+    free(data);
+    snprintf(last, sizeof(last), "%s", name);
+    Pack_Log("save %s: %s", name, last_loadable ? "loadable" : "refused");
+    return last_loadable;
+}
+
+void __stdcall Load_Map_Checked(DWORD* regs)
+{
+    const MsvcString* file = (const MsvcString*)(regs[1] + ENTRY_FILE);
+    SaveRefused = Listed_Save_Loadable(String_Chars(file)) ? 0 : 1;
+    if (SaveRefused) {
+        regs[7] = 0;
+    }
+}
+
+/*
+**	At the missing-map reason: cmp byte [SaveRefused],0 / je stock / push our text / jmp back;
+**	stock: the original push 0x1C / push "TEXT_LOAD_MISSING_CUSTOM_MAP" / jmp back.
+*/
+bool Load_Reason_Install(void)
+{
+    static const unsigned char stock[7] = {0x6A, 0x1C, 0x68, 0x1C, 0x20, 0xC1, 0x01};
+    if (memcmp((const void*)LOAD_REASON, stock, sizeof(stock)) != 0 || !Cave_Is_Free(LOAD_REASON_CAVE, 33)) {
+        return false;
+    }
+    unsigned char cave[33] = {0x80, 0x3D, 0, 0, 0, 0, 0x00, 0x74, 0x0C, 0x6A, (unsigned char)(sizeof(SaveRefusedText) - 1),
+                              0x68, 0, 0, 0, 0, 0xE9, 0, 0, 0, 0, 0x6A, 0x1C, 0x68, 0x1C, 0x20, 0xC1, 0x01, 0xE9};
+    *(DWORD*)(cave + 2) = (DWORD)(SIZE_T)&SaveRefused;
+    *(DWORD*)(cave + 12) = (DWORD)(SIZE_T)SaveRefusedText;
+    TF_Put_Rel32(cave + 17, LOAD_REASON_CAVE + 21, LOAD_REASON_RESUME);
+    TF_Put_Rel32(cave + 29, LOAD_REASON_CAVE + 33, LOAD_REASON_RESUME);
+    unsigned char jump[7] = {0xE9, 0, 0, 0, 0, 0x90, 0x90};
+    TF_Put_Rel32(jump + 1, LOAD_REASON + 5, LOAD_REASON_CAVE);
+    return TF_Write_Own_Code(LOAD_REASON_CAVE, cave, sizeof(cave)) && TF_Write_Own_Code(LOAD_REASON, jump, sizeof(jump));
+}
+
 const char* Pack_Notice_Install(void)
 {
     static const unsigned char picked_stock[6] = {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x24};
@@ -678,6 +824,11 @@ const char* Pack_Notice_Install(void)
     if (!Detour(FACTION_PICKED, picked_stock, sizeof(picked_stock), FACTION_PICKED_CAVE, (SIZE_T)&Faction_Picked)
         || !Snapshot_Hook(MENU_BIND_HOOK, bind_stock, sizeof(bind_stock), MENU_BIND_CAVE, (SIZE_T)&Menu_Bound)) {
         return "pack notice: write failed";
+    }
+    static const unsigned char checked_stock[5] = {0x8B, 0x4F, 0x74, 0x85, 0xC0};
+    if (!Snapshot_Ready(LOAD_MAP_CHECKED, checked_stock, sizeof(checked_stock), LOAD_MAP_CAVE) || !Load_Reason_Install()
+        || !Snapshot_Hook(LOAD_MAP_CHECKED, checked_stock, sizeof(checked_stock), LOAD_MAP_CAVE, (SIZE_T)&Load_Map_Checked)) {
+        return "pack notice installed; save check: unknown launcher build, left alone";
     }
     return "pack notice installed";
 }
