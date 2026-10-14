@@ -6,6 +6,7 @@
 #include "function.h"
 #include "tf_launcher.h"
 
+#include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
 #include <cctype>
@@ -33,6 +34,14 @@ struct MsvcWString
     unsigned Size;
     unsigned Capacity;
 };
+
+/*
+**	The characters of an MSVC std::string, inline or on the heap.
+*/
+const char* String_Chars(const MsvcString* s)
+{
+    return s->capacity >= 16 ? *(char* const*)s->buf : s->buf;
+}
 
 typedef void*(__thiscall* WidgetFindFn)(void* scene, const MsvcString* name);
 typedef void*(__thiscall* AsWidgetFn)(void* owner, int zero, void* widget);
@@ -368,6 +377,219 @@ const char* Campaign_Page_Install(void)
     return "campaign page installed";
 }
 
+
+/*
+**	The TS-HD-Assets pack as the launcher sees it: enabled (one of its mod roots carries the pack's
+**	CCDATA marker), installed but switched off, or missing.
+*/
+const SIZE_T MOD_ROOTS = 0x1FE4C28;
+const char PACK_MARKER[] = "CCDATA\\TSHDPACK.INI";
+
+enum PackState
+{
+    PACK_ENABLED,
+    PACK_INSTALLED_OFF,
+    PACK_MISSING
+};
+
+struct MsvcStringVector
+{
+    MsvcString* First;
+    MsvcString* Last;
+    MsvcString* End;
+};
+
+#if TF_DEV_BUILD
+/*
+**	Appends a line to Documents/CnCRemastered/tf_launcher_pack.log.
+*/
+void Pack_Log(const char* format, ...)
+{
+    static int lines = 0;
+    const char* up = getenv("USERPROFILE");
+    if (up == NULL || lines++ > 400) {
+        return;
+    }
+    char path[MAX_PATH];
+    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_launcher_pack.log", up);
+    FILE* f = fopen(path, "a");
+    if (f == NULL) {
+        return;
+    }
+    va_list args;
+    va_start(args, format);
+    vfprintf(f, format, args);
+    va_end(args);
+    fputc('\n', f);
+    fclose(f);
+}
+#else
+void Pack_Log(const char*, ...)
+{
+}
+#endif
+
+/*
+**	True when `folder` holds the pack's marker.
+*/
+bool Has_Pack_Marker(const char* folder)
+{
+    char path[MAX_PATH];
+    size_t length = strlen(folder);
+    const char* slash = (length > 0 && (folder[length - 1] == '\\' || folder[length - 1] == '/')) ? "" : "\\";
+    snprintf(path, sizeof(path), "%s%s%s", folder, slash, PACK_MARKER);
+    return GetFileAttributesA(path) != INVALID_FILE_ATTRIBUTES;
+}
+
+/*
+**	True when any folder directly under `parent` holds the pack's marker.
+*/
+bool Any_Pack_Under(const char* parent)
+{
+    char pattern[MAX_PATH];
+    snprintf(pattern, sizeof(pattern), "%s\\*", parent);
+    WIN32_FIND_DATAA found;
+    HANDLE find = FindFirstFileA(pattern, &found);
+    if (find == INVALID_HANDLE_VALUE) {
+        return false;
+    }
+    bool any = false;
+    do {
+        if ((found.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && found.cFileName[0] != '.') {
+            char folder[MAX_PATH];
+            snprintf(folder, sizeof(folder), "%s\\%s", parent, found.cFileName);
+            any = any || Has_Pack_Marker(folder);
+        }
+    } while (!any && FindNextFileA(find, &found));
+    FindClose(find);
+    return any;
+}
+
+PackState Pack_State(void)
+{
+    const MsvcStringVector* roots = (const MsvcStringVector*)MOD_ROOTS;
+    if (!IsBadReadPtr(roots, sizeof(*roots)) && roots->First != NULL && roots->Last >= roots->First
+        && roots->Last - roots->First < 64) {
+        for (const MsvcString* root = roots->First; root < roots->Last; root++) {
+            Pack_Log("mod root: %s", String_Chars(root));
+            if (Has_Pack_Marker(String_Chars(root))) {
+                return PACK_ENABLED;
+            }
+        }
+    }
+    char folder[MAX_PATH];
+    const char* up = getenv("USERPROFILE");
+    if (up != NULL) {
+        snprintf(folder, sizeof(folder), "%s\\Documents\\CnCRemastered\\Mods\\Red_Alert", up);
+        if (Any_Pack_Under(folder)) {
+            return PACK_INSTALLED_OFF;
+        }
+    }
+    if (Any_Pack_Under("..\\..\\workshop\\content\\1213210")) {
+        return PACK_INSTALLED_OFF;
+    }
+    return PACK_MISSING;
+}
+
+/*
+**	ClientG's message box: body text and one OK button, closed by the player.
+*/
+const SIZE_T SHOW_DIALOG = 0x1502EA0;
+const SIZE_T CLIENT_FREE = 0x950B20;
+
+struct DialogCallback
+{
+    void* Target;
+    SIZE_T Invoker;
+};
+
+typedef void(__cdecl* ShowDialogFn)(const DialogCallback* callback,
+                                    const MsvcWString* body,
+                                    const MsvcWString* button_key,
+                                    const MsvcWString* button_text,
+                                    const MsvcWString* second_key,
+                                    int a,
+                                    int b,
+                                    int c,
+                                    int d,
+                                    int e,
+                                    const MsvcString* f,
+                                    const MsvcString* g,
+                                    const MsvcString* h);
+typedef void(__cdecl* ClientFreeFn)(void* block);
+
+void __fastcall Dialog_Closed(void*, void*, int)
+{
+}
+
+void Free_WString(MsvcWString* s)
+{
+    if (s->Capacity >= 8) {
+        ((ClientFreeFn)CLIENT_FREE)(s->Pointer);
+    }
+}
+
+void Show_Message(const wchar_t* body)
+{
+    MsvcWString text = {};
+    text.Capacity = 7;
+    ((WStringAssignFn)WSTRING_ASSIGN)(&text, body, (unsigned)wcslen(body));
+    MsvcWString none = {};
+    none.Capacity = 7;
+    MsvcWString second = {};
+    second.Capacity = 7;
+    MsvcWString ok = {};
+    ok.Capacity = 7;
+    ((TextLookupFn)TEXT_LOOKUP)((void*)TEXT_MANAGER, &ok, "TEXT_OK");
+    MsvcString f = {}, g = {}, h = {};
+    f.capacity = g.capacity = h.capacity = 15;
+    DialogCallback callback = {NULL, (SIZE_T)&Dialog_Closed};
+    ((ShowDialogFn)SHOW_DIALOG)(&callback, &text, &none, &ok, &second, 1, 1, 0, 2, 3, &f, &g, &h);
+    Free_WString(&text);
+    Free_WString(&ok);
+}
+
+/*
+**	The lobby's faction pick: the stock handler, then, when the local player has just picked
+**	Tiberian Sun GDI without the pack enabled, a message box saying what to do.
+*/
+const SIZE_T FACTION_PICKED = 0x676760;
+const SIZE_T FACTION_PICKED_CAVE = 0x1BE95C0;
+const SIZE_T LOBBY_FACTION = 0x20E0CF8;
+const int LOBBY_TS_GDI = 7;
+
+typedef void(__thiscall* FactionPickedFn)(void* slot, int event);
+
+void __fastcall Faction_Picked(void* slot, void*, int event)
+{
+    int before = *(const int*)LOBBY_FACTION;
+    ((FactionPickedFn)FACTION_PICKED_CAVE)(slot, event);
+    int after = *(const int*)LOBBY_FACTION;
+    if (after == before || after != LOBBY_TS_GDI) {
+        return;
+    }
+    PackState state = Pack_State();
+    Pack_Log("faction pick %d -> %d, pack state %d", before, after, (int)state);
+    if (state != PACK_ENABLED) {
+        Show_Message(state == PACK_INSTALLED_OFF ? L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod, which is installed but "
+                                                   L"switched off. Enable it in Mods and restart the game."
+                                                 : L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod. Subscribe to it on the "
+                                                   L"Steam Workshop, enable it in Mods and restart the game.");
+    }
+}
+
+const char* Pack_Notice_Install(void)
+{
+    static const unsigned char picked_stock[6] = {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x24};
+    if (!Detour_Ready(FACTION_PICKED, picked_stock, sizeof(picked_stock), FACTION_PICKED_CAVE)) {
+        return "pack notice: unknown launcher build, left alone";
+    }
+    if (!Detour(FACTION_PICKED, picked_stock, sizeof(picked_stock), FACTION_PICKED_CAVE, (SIZE_T)&Faction_Picked)) {
+        return "pack notice: write failed";
+    }
+    return "pack notice installed";
+}
+
 #if TF_DEV_BUILD
 /*
 **	The mission carrier, unfinished (docs/campaigns-page.md): a mod mission launches under a
@@ -403,14 +625,6 @@ struct InstanceNameView
 typedef char(__thiscall* LaunchSendFn)(void* ipc, const void* name, void* settings, int mode, int a, int b);
 typedef void(__thiscall* MenuReturnFn)(void* menu);
 typedef void(__stdcall* ShowCreditsFn)(void* unused);
-
-/*
-**	The characters of an MSVC std::string, inline or on the heap.
-*/
-const char* String_Chars(const MsvcString* s)
-{
-    return s->capacity >= 16 ? *(char* const*)s->buf : s->buf;
-}
 
 /*
 **	An instance's key as ClientG computes it: the CRC32 of the upper-case name.
@@ -592,13 +806,15 @@ const char* TF_Launcher_Install(void)
         return "launcher: could not pin the DLL, left alone";
     }
     const char* page = Campaign_Page_Install();
+    const char* notice = Pack_Notice_Install();
+    static char result[192];
 #if TF_DEV_BUILD
-    static char result[128];
-    snprintf(result, sizeof(result), "%s; %s", page, Carrier_Install());
-    return result;
+    snprintf(result, sizeof(result), "%s; %s; %s", page, notice, Carrier_Install());
 #else
-    return page;
+    snprintf(result, sizeof(result), "%s; %s", page, notice);
 #endif
+    Pack_Log("install: %s", result);
+    return result;
 }
 
 bool TF_Launcher_Take_Carrier_Map(char* map, size_t size)
