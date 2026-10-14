@@ -60,7 +60,8 @@ done
 MODS_SUFFIX="steamapps/compatdata/1213210/pfx/drive_c/users/steamuser/Documents/CnCRemastered/Mods/Red_Alert/"
 LOCAL_ROOT="build/remaster/"
 LOCAL_OUTPUT="${LOCAL_ROOT}Vanilla_RA/"
-mapfile -t REQUIRED_MODS < <(python3 scripts/asset_packs.py required)
+REQUIRED_LIST="$(python3 scripts/asset_packs.py required)"
+mapfile -t REQUIRED_MODS <<< "$REQUIRED_LIST"
 if [[ "$DESKTOP" -eq 1 ]]; then
     TARGET_ROOT="$HOME/.steam/steam/$MODS_SUFFIX"
     TARGET_HOST=""
@@ -132,6 +133,12 @@ FOLDERS=(Vanilla_RA "${REQUIRED_MODS[@]}")
 if [[ "$MOD_ONLY" -eq 1 ]]; then
     FOLDERS=(Vanilla_RA)
 fi
+for folder in "${FOLDERS[@]}"; do
+    if [[ ! -d "$LOCAL_ROOT$folder" ]]; then
+        echo "ERROR: $LOCAL_ROOT$folder is missing; build first (drop --no-build)." >&2
+        exit 1
+    fi
+done
 BACKUP=""
 
 # Lists one folder's changes into CHANGES, DELETIONS and REPLACED.
