@@ -650,30 +650,23 @@ void __fastcall Slot_Set_Faction(void* slot, void*, int faction)
 }
 
 /*
-**	The pack's Workshop page in the Steam overlay; until the pack has a Workshop id, a Workshop
-**	search for it.
+**	The pack's Workshop page (its Red Alert item) in the Steam overlay.
 */
-const unsigned long long TS_HD_WORKSHOP_ID = 0;
+const char TS_HD_WORKSHOP_PAGE[] = "https://steamcommunity.com/sharedfiles/filedetails/?id=3819642604";
 
 typedef void*(__cdecl* SteamFriendsFn)(void);
 typedef void(__cdecl* OverlayToWebPageFn)(void* friends, const char* url, int mode);
 
 void Open_Pack_Page(void)
 {
-    char url[160];
-    if (TS_HD_WORKSHOP_ID != 0) {
-        snprintf(url, sizeof(url), "https://steamcommunity.com/sharedfiles/filedetails/?id=%llu", TS_HD_WORKSHOP_ID);
-    } else {
-        snprintf(url, sizeof(url), "https://steamcommunity.com/workshop/browse/?appid=1213210&searchtext=Tiberian+Sun+HD+Assets");
-    }
     HMODULE steam = GetModuleHandleA("steam_api.dll");
     SteamFriendsFn get = steam ? (SteamFriendsFn)GetProcAddress(steam, "SteamAPI_SteamFriends_v017") : NULL;
     OverlayToWebPageFn open =
         steam ? (OverlayToWebPageFn)GetProcAddress(steam, "SteamAPI_ISteamFriends_ActivateGameOverlayToWebPage") : NULL;
     void* friends = get ? get() : NULL;
-    Pack_Log("pack page: steam_api %p friends %p, %s", (void*)steam, friends, url);
+    Pack_Log("pack page: steam_api %p friends %p", (void*)steam, friends);
     if (friends != NULL && open != NULL) {
-        open(friends, url, 0);
+        open(friends, TS_HD_WORKSHOP_PAGE, 0);
     }
 }
 
