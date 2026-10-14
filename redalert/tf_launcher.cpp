@@ -867,15 +867,21 @@ DWORD Mod_Id(const char* folder)
     const char* name = strstr(text, "\"name\"");
     const char* high = strstr(text, "\"version_high\"");
     const char* low = strstr(text, "\"version_low\"");
-    name = name != NULL ? strchr(strchr(name + 6, ':'), '"') : NULL;
+    const char* colon = name != NULL ? strchr(name + 6, ':') : NULL;
+    name = colon != NULL ? strchr(colon, '"') : NULL;
     const char* name_end = name != NULL ? strchr(name + 1, '"') : NULL;
+    high = high != NULL ? strchr(high, ':') : NULL;
+    low = low != NULL ? strchr(low, ':') : NULL;
     int h = -1, l = -1;
-    if (name_end == NULL || high == NULL || low == NULL || sscanf(strchr(high, ':') + 1, "%d", &h) != 1
-        || sscanf(strchr(low, ':') + 1, "%d", &l) != 1) {
+    if (name_end == NULL || high == NULL || low == NULL || sscanf(high + 1, "%d", &h) != 1
+        || sscanf(low + 1, "%d", &l) != 1) {
         return 0;
     }
     char key[256];
     int size = snprintf(key, sizeof(key), "%.*s%d.%d", (int)(name_end - name - 1), name + 1, h, l);
+    if (size <= 0 || size >= (int)sizeof(key)) {
+        return 0;
+    }
     DWORD crc = 0xFFFFFFFF;
     for (int i = 0; i < size; i++) {
         crc ^= (unsigned char)key[i];
@@ -1096,12 +1102,14 @@ void Mod_Version(wchar_t* out, size_t size)
         char line[160];
         while (f != NULL && fgets(line, sizeof(line), f) != NULL) {
             const char* at = strstr(line, "\"version_high\"");
+            at = at != NULL ? strchr(at, ':') : NULL;
             if (at != NULL) {
-                sscanf(strchr(at, ':') + 1, "%d", &high);
+                sscanf(at + 1, "%d", &high);
             }
             at = strstr(line, "\"version_low\"");
+            at = at != NULL ? strchr(at, ':') : NULL;
             if (at != NULL) {
-                sscanf(strchr(at, ':') + 1, "%d", &low);
+                sscanf(at + 1, "%d", &low);
             }
         }
         if (f != NULL) {
