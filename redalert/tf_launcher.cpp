@@ -517,7 +517,10 @@ bool Downloaded_Pack_Folder(int pack, char* out, size_t size)
 */
 typedef void*(__cdecl* SteamUgcFn)(void);
 typedef unsigned(__cdecl* ItemStateFn)(void* ugc, unsigned long long item);
-typedef bool(__cdecl* ItemDownloadInfoFn)(void* ugc, unsigned long long item, unsigned long long* done, unsigned long long* total);
+typedef bool(__cdecl* ItemDownloadInfoFn)(void* ugc,
+                                          unsigned long long item,
+                                          unsigned long long* done,
+                                          unsigned long long* total);
 const unsigned ITEM_SUBSCRIBED = 1;
 const unsigned ITEM_INSTALLED = 4;
 const unsigned ITEM_DOWNLOADING = 16;
@@ -1152,7 +1155,8 @@ unsigned char* Read_Save(const char* name, size_t* size)
 {
     HMODULE steam = GetModuleHandleA("steam_api.dll");
     SteamStorageFn get = steam ? (SteamStorageFn)GetProcAddress(steam, "SteamAPI_SteamRemoteStorage_v016") : NULL;
-    StorageSizeFn file_size = steam ? (StorageSizeFn)GetProcAddress(steam, "SteamAPI_ISteamRemoteStorage_GetFileSize") : NULL;
+    StorageSizeFn file_size =
+        steam ? (StorageSizeFn)GetProcAddress(steam, "SteamAPI_ISteamRemoteStorage_GetFileSize") : NULL;
     StorageReadFn read = steam ? (StorageReadFn)GetProcAddress(steam, "SteamAPI_ISteamRemoteStorage_FileRead") : NULL;
     void* storage = get ? get() : NULL;
     if (storage == NULL || file_size == NULL || read == NULL) {
@@ -1270,7 +1274,8 @@ bool Load_Reason_Install(void)
     TF_Put_Rel32(cave + 34, LOAD_REASON_CAVE + 38, LOAD_REASON_RESUME);
     unsigned char jump[7] = {0xE9, 0, 0, 0, 0, 0x90, 0x90};
     TF_Put_Rel32(jump + 1, LOAD_REASON + 5, LOAD_REASON_CAVE);
-    return TF_Write_Own_Code(LOAD_REASON_CAVE, cave, sizeof(cave)) && TF_Write_Own_Code(LOAD_REASON, jump, sizeof(jump));
+    return TF_Write_Own_Code(LOAD_REASON_CAVE, cave, sizeof(cave))
+           && TF_Write_Own_Code(LOAD_REASON, jump, sizeof(jump));
 }
 
 /*
@@ -1318,7 +1323,8 @@ const char* Pack_Notice_Install(void)
     }
     static const unsigned char checked_stock[5] = {0x8B, 0x4F, 0x74, 0x85, 0xC0};
     if (!Snapshot_Ready(LOAD_MAP_CHECKED, checked_stock, sizeof(checked_stock), LOAD_MAP_CAVE) || !Load_Reason_Install()
-        || !Snapshot_Hook(LOAD_MAP_CHECKED, checked_stock, sizeof(checked_stock), LOAD_MAP_CAVE, (SIZE_T)&Load_Map_Checked)) {
+        || !Snapshot_Hook(
+            LOAD_MAP_CHECKED, checked_stock, sizeof(checked_stock), LOAD_MAP_CAVE, (SIZE_T)&Load_Map_Checked)) {
         return "pack notice installed; save check: unknown launcher build, left alone";
     }
     return "pack notice installed";
