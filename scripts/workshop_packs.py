@@ -76,8 +76,10 @@ def host_path(rel, host):
 
 
 def copy_binaries(mod, folder, host):
-    """Every file under the mod's source packs' Data/ART and Data/AUDIO; a later pack's copy of a path wins."""
+    """Every file under the mod's source packs' Data/ART and Data/AUDIO, and no other; a later pack's copy of a
+    path wins."""
     packs = A.WORKSHOP[mod]["packs"]
+    wanted = set()
     for i, pack in enumerate(packs):
         for sub in ("ART", "AUDIO"):
             src = os.path.join(A.pack_data(pack), sub)
@@ -91,6 +93,12 @@ def copy_binaries(mod, folder, host):
                     dst = os.path.join(folder, "Data", sub, host_path(rel, host) if sub == "ART" else rel)
                     os.makedirs(os.path.dirname(dst), exist_ok=True)
                     copy_newer(os.path.join(d, f), dst)
+                    wanted.add(os.path.normcase(dst))
+    for sub in ("ART", "AUDIO"):
+        for d, _, fs in os.walk(os.path.join(folder, "Data", sub)):
+            for f in fs:
+                if os.path.normcase(os.path.join(d, f)) not in wanted:
+                    os.remove(os.path.join(d, f))
 
 
 def combined_xml(mod, rel, pack_file, root):
