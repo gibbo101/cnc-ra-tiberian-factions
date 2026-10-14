@@ -3086,6 +3086,8 @@ typedef enum AnimType : short
     ANIM_TS_DBRIS8SM,
     ANIM_TS_DBRIS9SM,
     ANIM_TS_DBRIS10SM,
+    ANIM_TS_SGRYSMK1,   // TS SGRYSMK1: a puff of a damaged TS vehicle's or aircraft's smoke (SmallGreySSys), rising.
+    ANIM_TS_SPARKS,     // A damaged TS vehicle's or aircraft's spark burst (SparkSys), rendered from TS's particle rules.
 
     ANIM_COUNT,
     ANIM_FIRST = 0
