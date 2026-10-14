@@ -14,6 +14,8 @@ infantry deaths, water splashes, the Firestorm overlay and the missile and shell
   Water: SplashList=H2O_EXP3,H2O_EXP2,H2O_EXP1 (art.ini AltPalette=yes: the unit palette).
   Firestorm: FirestormActiveAnim=GAFSDF_A, temperate GTFSDF_A (NewTheater, the unit palette).
   In flight: [DRAGON] (32 facings, Trailer=SMOKEY2) and [120MM], against the unit palette as TS draws bullets.
+  Damage: DamageParticleSystems=SparkSys,SmallGreySSys. SmallGreySmoke's SGRYSMK1 at TS's Translucency=25; TS
+    draws sparks as pixels, so TSSPARKS renders a [SparkSys] burst from [Spark]'s velocities and ColorList.
   Reports: EXPNEW06/09/10/11/12/15, ELECTRO1, SSPLASH1-3, under TS-prefixed names.
 
 Firestorm's DROPPODY and DROPPODY2 are byte-identical to DROPPOD and DROPPOD2 (TSDPOD1/2, ts_pack_pods.py).
@@ -22,6 +24,7 @@ ts_pack_towerfx.py does (hq4x onto the TS canvas x 4, whole 8 px cells), so its 
 License: GPL v3.
 """
 import os
+import random
 import subprocess
 import sys
 
@@ -29,9 +32,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import asset_packs  # noqa: E402
 import ts_shp  # noqa: E402
-from PIL import Image  # noqa: E402
+from PIL import Image, ImageDraw, ImageFilter  # noqa: E402
 from ts_pack_pods import RAW, patch_tileset, write_zip  # noqa: E402
-from ts_pack_towerfx import canvas_dims, hq4x, pack  # noqa: E402
+from ts_pack_towerfx import canvas_dims, frames_of, hq4x, pack  # noqa: E402
 
 # TS art -> (our name, palette)
 ANIMS = [
@@ -72,6 +75,63 @@ def pack_shadowed(shp, name, pal):
     print(f"SUMMARY {name} frames={len(frames)} canvas={cw}x{ch} stub={cw // 8}x{ch // 8}")
 
 
+def pack_translucent(shp, name, pal, opacity):
+    """An anim drawn see-through in TS (Translucency=), its alpha scaled to match."""
+    frames, (cw, ch) = frames_of(shp, pal)
+    for f in frames:
+        f.putalpha(f.getchannel("A").point(lambda a: int(a * opacity)))
+    write_zip(asset_packs.art_zip(name, "VFX"), name.lower(), frames)
+    patch_tileset(asset_packs.tileset_xml(name, "VFX"), name, len(frames))
+    print(f"SUMMARY {name} frames={len(frames)} canvas={cw}x{ch} stub={cw // 8}x{ch // 8}")
+
+
+# TS [Spark]: XVelocity=10, YVelocity=10, MinZVelocity=40, ZVelocityRange=15, ColorSpeed=.13 (+0-.05 a tick),
+# ColorList white, yellow, red, black; [SparkSys] ParticleCap=12; [General] Gravity=6.
+SPARK_COLOURS = [(255, 255, 255), (200, 200, 80), (200, 10, 10), (0, 0, 0)]
+SPARK_FRAMES = 20
+LEPTON_TS_PX = 48 / 256
+
+
+def render_sparks(name):
+    """A [SparkSys] burst as frames: 12 sparks thrown from the frame centre two a tick, each falling under TS
+    gravity back to its start height and fading through TS's ColorList."""
+    rng = random.Random(1213210)
+    w, h = 80, 80
+    sparks = []
+    for i in range(12):
+        sparks.append(dict(t0=i // 2, vx=rng.uniform(-10, 10), vy=rng.uniform(-10, 10),
+                           vz=40 + rng.uniform(0, 15), speed=0.13 + rng.uniform(0, 0.05)))
+    frames = []
+    for t in range(SPARK_FRAMES):
+        im = Image.new("RGBA", (w * 4, h * 4), (0, 0, 0, 0))
+        glow = Image.new("RGBA", im.size, (0, 0, 0, 0))
+        d, g = ImageDraw.Draw(im), ImageDraw.Draw(glow)
+        for s in sparks:
+            age = t - s["t0"]
+            if age < 0:
+                continue
+            x, y, z, vz = 0.0, 0.0, 0.0, s["vz"]
+            for _ in range(age + 1):
+                vz -= 6
+                x, y, z = x + s["vx"], y + s["vy"], z + vz
+            if z < 0:
+                continue
+            ci = min(age * s["speed"], len(SPARK_COLOURS) - 1.001)
+            a, b = SPARK_COLOURS[int(ci)], SPARK_COLOURS[int(ci) + 1]
+            f = ci - int(ci)
+            col = tuple(int(a[k] + (b[k] - a[k]) * f) for k in range(3))
+            px = (w / 2 + x * LEPTON_TS_PX) * 4
+            py = (h / 2 + (y - z) * LEPTON_TS_PX) * 4
+            d.ellipse([px - 2, py - 2, px + 2, py + 2], fill=col + (255,))
+            g.ellipse([px - 6, py - 6, px + 6, py + 6], fill=col + (110,))
+        out = glow.filter(ImageFilter.GaussianBlur(3))
+        out.alpha_composite(im)
+        frames.append(out)
+    write_zip(asset_packs.art_zip(name, "VFX"), name.lower(), frames)
+    patch_tileset(asset_packs.tileset_xml(name, "VFX"), name, len(frames))
+    print(f"SUMMARY {name} frames={len(frames)} canvas={w * 4}x{h * 4} stub={w // 2}x{h // 2}")
+
+
 def main(only):
     pals = {"anim": ts_shp.load_pal(f"{RAW}/ANIM.PAL"), "unit": ts_shp.load_pal(f"{RAW}/UNITTEM.PAL")}
     for shp, name, pal in ANIMS:
@@ -79,6 +139,10 @@ def main(only):
             pack(f"{shp}.SHP", name, pals[pal])
     if not only or "TSFLMGUY" in only:
         pack_shadowed("FLAMEGUY.SHP", "TSFLMGUY", pals["unit"])
+    if not only or "TSSGRYSM" in only:
+        pack_translucent("SGRYSMK1.SHP", "TSSGRYSM", pals["anim"], 0.75)
+    if not only or "TSSPARKS" in only:
+        render_sparks("TSSPARKS")
     for aud in SOUNDS:
         if only and f"TS{aud}" not in only:
             continue
