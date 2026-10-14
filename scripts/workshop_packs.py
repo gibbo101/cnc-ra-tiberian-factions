@@ -229,7 +229,7 @@ def readme(mod, listed, host):
     lines += ["If the game crashes on the splash screen, the extra art needs more video memory than it has: add "
               "`NOSPLASHPRELOAD` to the game's launch options.", ""]
     lines += ["## Using the assets in your own mod", "",
-              f"Every object, cameo and sound is named with the `{w["prefix"]}` prefix, so nothing clashes with the "
+              f"Every object, cameo and sound is named with the `{w['prefix']}` prefix, so nothing clashes with the "
               "base game's own assets.", "",
               "Enable this pack beside your mod (the game finds its art and sounds in any enabled mod) and copy "
               "the entries you need from this pack's `Data/XML` files into your mod's "
