@@ -10,7 +10,6 @@ extern "C" {
 #include "puff.h"
 }
 
-#include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
 #include <cctype>
@@ -457,36 +456,6 @@ struct MsvcStringVector
 
 typedef void*(__cdecl* ModManagerFn)(void);
 
-#if TF_DEV_BUILD
-/*
-**	Appends a line to Documents/CnCRemastered/tf_launcher_pack.log.
-*/
-void Pack_Log(const char* format, ...)
-{
-    static int lines = 0;
-    const char* up = getenv("USERPROFILE");
-    if (up == NULL || lines++ > 400) {
-        return;
-    }
-    char path[MAX_PATH];
-    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_launcher_pack.log", up);
-    FILE* f = fopen(path, "a");
-    if (f == NULL) {
-        return;
-    }
-    va_list args;
-    va_start(args, format);
-    vfprintf(f, format, args);
-    va_end(args);
-    fputc('\n', f);
-    fclose(f);
-}
-#else
-void Pack_Log(const char*, ...)
-{
-}
-#endif
-
 /*
 **	True when the mod folder `folder` holds `marker`.
 */
@@ -647,7 +616,6 @@ void (*DialogAction)(void) = NULL;
 
 void __fastcall Dialog_Choice(void*, void*, int button)
 {
-    Pack_Log("dialog: button %d", button);
     void (*action)(void) = DialogAction;
     DialogAction = NULL;
     if (button == DIALOG_ACTION_BUTTON && action != NULL) {
@@ -745,8 +713,7 @@ const UINT LOBBY_LEAVE_DELAY_MS = 50;
 void CALLBACK Lobby_Get_Tick(HWND, UINT, UINT_PTR timer, DWORD)
 {
     KillTimer(NULL, timer);
-    bool left = Leave_Lobby();
-    Pack_Log("lobby get: left lobby %d", (int)left);
+    Leave_Lobby();
     Open_Pack_Page(TS_HD_PACK);
 }
 
@@ -796,7 +763,6 @@ void __fastcall Faction_Picked(void* slot, void*, int event)
     ((FactionPickedFn)FACTION_PICKED_CAVE)(slot, event);
     int after = *(const int*)LOBBY_FACTION;
     int slot_after = *(const int*)((const char*)slot + SLOT_FACTION);
-    Pack_Log("faction pick %d -> %d, slot %d -> %d", before, after, slot_before, slot_after);
     if ((after != before && after == LOBBY_TS_GDI) || (slot_after != slot_before && slot_after == LOBBY_TS_GDI)) {
         Pack_Popup();
     }
@@ -816,9 +782,6 @@ void __fastcall Slot_Set_Faction(void* slot, void*, int faction)
     int before = *(const int*)((const char*)slot + SLOT_FACTION);
     ((SlotSetFactionFn)SLOT_SET_FACTION_CAVE)(slot, faction);
     int after = *(const int*)((const char*)slot + SLOT_FACTION);
-    if (after != before) {
-        Pack_Log("slot %p faction %d -> %d", slot, before, after);
-    }
     if (after != before && after == LOBBY_TS_GDI) {
         Pack_Popup();
     }
@@ -839,7 +802,6 @@ void Open_Pack_Page(int pack)
     OverlayToWebPageFn open =
         steam ? (OverlayToWebPageFn)GetProcAddress(steam, "SteamAPI_ISteamFriends_ActivateGameOverlayToWebPage") : NULL;
     void* friends = get ? get() : NULL;
-    Pack_Log("pack page: steam_api %p friends %p, %s", (void*)steam, friends, url);
     if (friends != NULL && open != NULL) {
         open(friends, url, 0);
     }
@@ -960,7 +922,6 @@ void Enable_Packs_And_Restart(void)
         char* last = *(char**)(mm + 0x1C);
         for (char* r = *(char**)(mm + 0x18); r != NULL && r < last; r += MOD_RECORD_SIZE) {
             if (Has_Pack_Marker(String_Chars((const MsvcString*)(r + MOD_FOLDER)), PACKS[pack].Marker)) {
-                Pack_Log("enable: pack %d, mod id %08lx", pack, (unsigned long)*(const DWORD*)(r + MOD_ID));
                 ((SetModEnabledFn)SET_MOD_ENABLED)(mm, *(const DWORD*)(r + MOD_ID), 1);
                 break;
             }
@@ -971,7 +932,6 @@ void Enable_Packs_And_Restart(void)
         char folder[MAX_PATH];
         if (states[pack] == PACK_DOWNLOADED && Downloaded_Pack_Folder(pack, folder, sizeof(folder))) {
             DWORD id = Mod_Id(folder);
-            Pack_Log("enable: pack %d downloaded, mod id %08lx", pack, (unsigned long)id);
             if (id != 0) {
                 Profile_Enable(id);
             }
@@ -979,7 +939,6 @@ void Enable_Packs_And_Restart(void)
     }
     ((ProfileSaveFn)PROFILE_SAVE)((void*)PROFILE, 1, 0, 1);
     void* link = *(void**)LAUNCHER_LINK;
-    Pack_Log("restart: launcher link %p", link);
     if (link != NULL) {
         ((PostToLauncherFn)POST_TO_LAUNCHER)(link, ((RestartMessageFn)RESTART_MESSAGE)());
         Sleep(RESTART_WAIT_MS);
@@ -1152,7 +1111,6 @@ void __stdcall Menu_Bound(const DWORD* regs)
     Set_Text(Find_Widget(menu, "TF_Version", AS_TEXT), version);
     PanelMenu = menu;
     Refresh_Panel(menu);
-    Pack_Log("main menu %p: panel pack %d", menu, PanelPack);
     if (PanelTimer == 0) {
         PanelTimer = SetTimer(NULL, 0, PANEL_POLL_MS, Panel_Poll);
     }
@@ -1280,7 +1238,6 @@ SaveCheck Listed_Save_Check(const char* name)
     last_check = data != NULL ? Save_Loadable(data, size) : SAVE_OTHER_VERSION;
     free(data);
     snprintf(last, sizeof(last), "%s", name);
-    Pack_Log("save %s: check %d", name, (int)last_check);
     return last_check;
 }
 
@@ -1562,7 +1519,6 @@ const char* TF_Launcher_Install(void)
 #else
     snprintf(result, sizeof(result), "%s; %s", page, notice);
 #endif
-    Pack_Log("install: %s", result);
     return result;
 }
 
