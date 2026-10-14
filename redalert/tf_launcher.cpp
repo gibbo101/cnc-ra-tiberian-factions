@@ -549,6 +549,9 @@ int Pack_Download_Percent(int pack)
     return (int)(done * 100 / total);
 }
 
+/*
+**	A required pack's state, from this session's mod roots, the launcher's mod list, its Workshop folder and Steam.
+*/
 PackState Pack_State(int pack)
 {
     const char* marker = PACKS[pack].Marker;
@@ -1098,6 +1101,9 @@ void Mod_Version(wchar_t* out, size_t size)
     }
 }
 
+/*
+**	The main menu built: binds the panel's buttons, shows the mod's version, fills the panel and starts its poll.
+*/
 void __stdcall Menu_Bound(const DWORD* regs)
 {
     void* menu = (void*)regs[1];
@@ -1243,6 +1249,9 @@ SaveCheck Listed_Save_Check(const char* name)
     return last_check;
 }
 
+/*
+**	The load screen's selected save: one this build can't load takes the missing-map path, with our reason.
+*/
 void __stdcall Load_Map_Checked(DWORD* regs)
 {
     const MsvcString* file = (const MsvcString*)(regs[1] + ENTRY_FILE);
@@ -1306,6 +1315,9 @@ bool Panel_Calls_Match(void)
     return true;
 }
 
+/*
+**	Installs the pack panel, the lobby popup and the save check; leaves them all out on another launcher build.
+*/
 const char* Pack_Notice_Install(void)
 {
     static const unsigned char picked_stock[6] = {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x24};
