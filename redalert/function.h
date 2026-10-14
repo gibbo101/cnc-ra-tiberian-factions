@@ -150,6 +150,8 @@ extern bool TF_Dev_Cheats(void); // TF dev-cheats runtime gate (see defines.h TF
 extern bool TF_Dev_Reveal(void); // full-map reveal on its own (tf_dev_reveal.flag) even when the other cheats are off
 extern long TF_Building_Scan_Bit(int btype); // building Type -> its BScan/ActiveBScan/OldBScan bit
 extern bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type); // Prerequisite= names a TS-tree building (house.cpp)
+extern unsigned TF_Save_Version(void); // the save version this build writes and loads (saveload.cpp)
+#define TF_SAVE_MARKER "TFSV"          // leads the DLL's save data, before TF_Save_Version (dllinterface.cpp)
 extern InfantryType TF_Side_Rifleman(TechnoTypeClass const* type); // the crew a TD or TS object leaves (techno.cpp)
 extern bool TF_Gate_Lets_Through(FootClass* foot, CELL cell); // opens a friendly gate ahead; true once passable (building.cpp)
 extern BuildingClass* TF_Firestorm_Wall_At(CELL cell, HouseClass const* shooter);       // live section stopping shooter's fire (house.cpp)

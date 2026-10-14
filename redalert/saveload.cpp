@@ -86,6 +86,16 @@ extern bool DLLLoad(Straw& file);
         + sizeof(ScenarioClass) + sizeof(ChronalVortexClass)))
 //										sizeof(Waypoint)))
 
+// The version Save_Game writes, which the save marker carries so the launcher can tell a save it can't load.
+unsigned TF_Save_Version(void)
+{
+    unsigned version = SAVEGAME_VERSION;
+#ifdef FIXIT_CSII
+    version++;
+#endif
+    return version;
+}
+
 static int Reconcile_Players(void);
 extern bool Is_Mission_Counterstrike(char* file_name);
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
