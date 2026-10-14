@@ -985,6 +985,12 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
     memset(TFLobbyPrevSlots, 0, sizeof(TFLobbyPrevSlots));
 
     int humans = 0;
+    TF_Clear_Pack_Notice(); // TF: a notice left from a match that ended before it showed is dropped.
+    // TF: only the host simulates and its messages reach only the host, so the pack notice is for a lone human.
+    int tf_lobby_humans = 0;
+    for (int i = 0; i < num_players; i++) {
+        tf_lobby_humans += player_list[i].IsAI ? 0 : 1;
+    }
     for (int i = 0; i < num_players; i++) {
         CNCPlayerInfoStruct& player_info = player_list[i];
 
@@ -1017,7 +1023,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
             static const HousesType _instead[] = {HOUSE_GOOD, HOUSE_BAD, HOUSE_ENGLAND, HOUSE_USSR};
             static const char* const _instead_name[] = {"GDI", "Nod", "Allied", "Soviet"};
             player_info.House = _instead[i % 4];
-            if (!player_info.IsAI) {
+            if (!player_info.IsAI && tf_lobby_humans == 1) {
                 TF_Queue_Pack_Notice(_instead_name[i % 4]);
             }
         }
