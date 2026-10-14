@@ -27,6 +27,8 @@
 #   --no-build       Skip cmake and the restage; deploy the existing build output as-is.
 #   --dry-run        Show what would change and stop.
 #   --no-delete      Drop the --delete flag (rare; mirrors-only mode).
+#   --mod-only       Deploy Tiberian Factions alone and leave the asset-pack folders as they are (testing
+#                    a pack subscribed from the Workshop, with no local copy in Mods).
 #   --yes            Skip the deletion confirmation prompt.
 #
 # License: GPL v3 (inherited from Vanilla Conquer base).
@@ -36,6 +38,7 @@ cd "$(dirname "$0")"
 
 NO_BUILD=0
 DRY_RUN=0
+MOD_ONLY=0
 DELETE_FLAG="--delete --filter=P_/CustomMaps/"
 AUTO_YES=0
 DESKTOP=0
@@ -48,6 +51,7 @@ for arg in "$@"; do
         --no-build) NO_BUILD=1 ;;
         --dry-run)  DRY_RUN=1 ;;
         --no-delete) DELETE_FLAG="" ;;
+        --mod-only) MOD_ONLY=1 ;;
         --yes|-y)   AUTO_YES=1 ;;
         *) echo "Unknown flag: $arg" >&2; exit 2 ;;
     esac
@@ -125,6 +129,9 @@ fi
 
 # The mod folders this deploy mirrors: Tiberian Factions, then each required asset-pack mod.
 FOLDERS=(Vanilla_RA "${REQUIRED_MODS[@]}")
+if [[ "$MOD_ONLY" -eq 1 ]]; then
+    FOLDERS=(Vanilla_RA)
+fi
 BACKUP=""
 
 # Lists one folder's changes into CHANGES, DELETIONS and REPLACED.
