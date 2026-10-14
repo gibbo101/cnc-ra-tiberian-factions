@@ -2221,8 +2221,9 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
         }
 
         // TF: a building is on the map when its footprint is; an art-headroom row may sit past the map edge.
-        if (!IsLocked) {
-            IsLocked = Map.In_Radar((CELL)(Coord_Cell(Coord) + *Class->Occupy_List()));
+        short const* footprint = Class->Occupy_List();
+        if (!IsLocked && footprint != NULL && *footprint != REFRESH_EOL) {
+            IsLocked = Map.In_Radar((CELL)(Coord_Cell(Coord) + *footprint));
         }
 
         if (joins_walls) {
