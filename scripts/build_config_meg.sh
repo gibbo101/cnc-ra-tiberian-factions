@@ -79,6 +79,8 @@ EDIT_GUI="scripts/gui_work/GUITEXTURESETS.edited.XML"
 
 echo "==> Rebuilding edited RA_MAIN_MENU.BUI from base"
 python3 scripts/bui_mainmenu_build.py "$BASE_BUI" "$EDIT_BUI"
+echo "==> Writing the loose main menu with the TS-HD pack notice"
+(cd scripts && python3 bui_mainmenu_pack_notice.py "../$EDIT_BUI" ../resources/remaster_mods/Vanilla_RA/Data/ART/GUI/RA_MAIN_MENU.BUI)
 
 echo "==> Rebuilding edited RA_DIALOGBOX_SOVIET.BUI from base (the menu's confirmation box)"
 python3 scripts/bui_dialogbox_build.py "$BASE_DLG" "$EDIT_DLG"

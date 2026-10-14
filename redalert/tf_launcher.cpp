@@ -608,13 +608,75 @@ void __fastcall Faction_Picked(void* slot, void*, int event)
     }
 }
 
+/*
+**	The pack's Workshop page in the Steam overlay; until the pack has a Workshop id, a Workshop
+**	search for it.
+*/
+const unsigned long long TS_HD_WORKSHOP_ID = 0;
+
+typedef void*(__cdecl* SteamFriendsFn)(void);
+typedef void(__cdecl* OverlayToWebPageFn)(void* friends, const char* url, int mode);
+
+void Open_Pack_Page(void)
+{
+    char url[160];
+    if (TS_HD_WORKSHOP_ID != 0) {
+        snprintf(url, sizeof(url), "https://steamcommunity.com/sharedfiles/filedetails/?id=%llu", TS_HD_WORKSHOP_ID);
+    } else {
+        snprintf(url, sizeof(url), "https://steamcommunity.com/workshop/browse/?appid=1213210&searchtext=Tiberian+Sun+HD+Assets");
+    }
+    HMODULE steam = GetModuleHandleA("steam_api.dll");
+    SteamFriendsFn get = steam ? (SteamFriendsFn)GetProcAddress(steam, "SteamAPI_SteamFriends_v017") : NULL;
+    OverlayToWebPageFn open =
+        steam ? (OverlayToWebPageFn)GetProcAddress(steam, "SteamAPI_ISteamFriends_ActivateGameOverlayToWebPage") : NULL;
+    void* friends = get ? get() : NULL;
+    Pack_Log("pack page: steam_api %p friends %p, %s", (void*)steam, friends, url);
+    if (friends != NULL && open != NULL) {
+        open(friends, url, 0);
+    }
+}
+
+/*
+**	The main menu's pack notice (scripts/bui_mainmenu_pack_notice.py): its button opens the pack's
+**	page, and the line that fits the pack's state shows under the menu box.
+*/
+const SIZE_T MENU_BIND_HOOK = 0x6B185B;
+const SIZE_T MENU_BIND_CAVE = 0x1BE95E0;
+const SIZE_T AS_TEXT_BUTTON = 0x5EF8A0;
+const SIZE_T BIND_EVENT = 0x6A9F50;
+const int CLICK_EVENT = 0x21;
+
+typedef void(__thiscall* BindEventFn)(void* menu, int event, void* widget, void* handler, int data);
+
+void __stdcall Pack_Get_Click(void*)
+{
+    Open_Pack_Page();
+}
+
+void __stdcall Menu_Bound(const DWORD* regs)
+{
+    void* menu = (void*)regs[1];
+    PackState state = Pack_State();
+    Pack_Log("main menu: pack state %d", (int)state);
+    Set_Hidden(Find_Widget(menu, "TF_Pack_Missing", AS_TEXT), state != PACK_MISSING);
+    Set_Hidden(Find_Widget(menu, "TF_Pack_Off", AS_TEXT), state != PACK_INSTALLED_OFF);
+    void* button = Find_Widget(menu, "TF_Pack_Get", AS_TEXT_BUTTON);
+    if (button != NULL) {
+        ((BindEventFn)BIND_EVENT)(menu, CLICK_EVENT, button, (void*)&Pack_Get_Click, 0);
+        Set_Hidden(button, state != PACK_MISSING);
+    }
+}
+
 const char* Pack_Notice_Install(void)
 {
     static const unsigned char picked_stock[6] = {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x24};
-    if (!Detour_Ready(FACTION_PICKED, picked_stock, sizeof(picked_stock), FACTION_PICKED_CAVE)) {
+    static const unsigned char bind_stock[7] = {0x6A, 0x15, 0x68, 0xF0, 0x7E, 0xC1, 0x01};
+    if (!Detour_Ready(FACTION_PICKED, picked_stock, sizeof(picked_stock), FACTION_PICKED_CAVE)
+        || !Snapshot_Ready(MENU_BIND_HOOK, bind_stock, sizeof(bind_stock), MENU_BIND_CAVE)) {
         return "pack notice: unknown launcher build, left alone";
     }
-    if (!Detour(FACTION_PICKED, picked_stock, sizeof(picked_stock), FACTION_PICKED_CAVE, (SIZE_T)&Faction_Picked)) {
+    if (!Detour(FACTION_PICKED, picked_stock, sizeof(picked_stock), FACTION_PICKED_CAVE, (SIZE_T)&Faction_Picked)
+        || !Snapshot_Hook(MENU_BIND_HOOK, bind_stock, sizeof(bind_stock), MENU_BIND_CAVE, (SIZE_T)&Menu_Bound)) {
         return "pack notice: write failed";
     }
     return "pack notice installed";
