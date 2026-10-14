@@ -2220,6 +2220,11 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
             PrimaryFacing = Class->StartFace;
         }
 
+        // TF: a building is on the map when its footprint is; an art-headroom row may sit past the map edge.
+        if (!IsLocked) {
+            IsLocked = Map.In_Radar((CELL)(Coord_Cell(Coord) + *Class->Occupy_List()));
+        }
+
         if (joins_walls) {
             short const* offset = Class->Occupy_List();
             while (offset != NULL && *offset != REFRESH_EOL) {
