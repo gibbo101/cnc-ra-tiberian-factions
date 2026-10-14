@@ -2,7 +2,7 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
-## [5.5.0] — 2026-10-XX
+## [5.5.0] — 2026-10-14
 
 A Tiberian Sun rises in high definition! GDI's arsenal from the future came
 through the Chronosphere's rift rough around the edges. Now every building,
