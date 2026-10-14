@@ -463,6 +463,10 @@ void Pack_Log(const char*, ...)
 }
 #endif
 
+// The pack's Red Alert item on the Steam Workshop.
+#define TS_HD_WORKSHOP_ID "3819642604"
+const char TS_HD_WORKSHOP_PAGE[] = "https://steamcommunity.com/sharedfiles/filedetails/?id=" TS_HD_WORKSHOP_ID;
+
 /*
 **	True when `folder` holds the pack's marker.
 */
@@ -519,8 +523,16 @@ PackState Pack_State(void)
             return PACK_INSTALLED_OFF;
         }
     }
-    if (Any_Pack_Under("..\\..\\workshop\\content\\1213210")) {
-        return PACK_INSTALLED_OFF;
+    char game[MAX_PATH];
+    DWORD length = GetModuleFileNameA(NULL, game, sizeof(game));
+    char* name = length > 0 && length < sizeof(game) ? strrchr(game, '\\') : NULL;
+    if (name != NULL) {
+        *name = 0;
+        snprintf(folder, sizeof(folder), "%s\\..\\..\\workshop\\content\\1213210\\" TS_HD_WORKSHOP_ID, game);
+        Pack_Log("workshop item: %s", folder);
+        if (Any_Pack_Under(folder)) {
+            return PACK_INSTALLED_OFF;
+        }
     }
     return PACK_MISSING;
 }
@@ -650,9 +662,8 @@ void __fastcall Slot_Set_Faction(void* slot, void*, int faction)
 }
 
 /*
-**	The pack's Workshop page (its Red Alert item) in the Steam overlay.
+**	The pack's Workshop page in the Steam overlay.
 */
-const char TS_HD_WORKSHOP_PAGE[] = "https://steamcommunity.com/sharedfiles/filedetails/?id=3819642604";
 
 typedef void*(__cdecl* SteamFriendsFn)(void);
 typedef void(__cdecl* OverlayToWebPageFn)(void* friends, const char* url, int mode);
