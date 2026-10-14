@@ -2,7 +2,7 @@
 """The sidebar side of the TS walkers:
   - TSTITN, TSHMEC  art packed from the HD rebuilds by scripts/ts_pack_hd_buildings.py; their
                  cameos, buildable entries and text are written here.
-  - TSBUILDABLES.XML, ModText.csv, BuildIcons (TS cameos via CAMEO.PAL).
+  - TSHDBUILDABLES.XML, ModText.csv, BuildIcons (TS cameos via CAMEO.PAL).
 Cameos and XML go to the tree asset_packs.py routes each name to.
 
 Inputs (set TS_ART_DIR):

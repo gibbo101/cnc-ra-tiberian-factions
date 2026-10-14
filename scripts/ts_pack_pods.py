@@ -18,7 +18,7 @@ Also emits:
   (AssetName "SW_TSPods"), in the mod's own tree.
 - AUDIO/TSGUN4.WAV — the Vulcan2 strafe report under its OWN sample name
   (ffmpeg: Westwood AUD -> MS-ADPCM WAV, the proven novel-name format rules).
-Anims, their TS_VFX.XML tile runs and the sounds go to the tree asset_packs.py routes each
+Anims, their TSHD_VFX.XML tile runs and the sounds go to the tree asset_packs.py routes each
 name to (the TS packs).
 
 Inputs (set TS_ART_DIR): $TS_ART_DIR/.raw/{DROPPOD.SHP,DROPPOD2.SHP,

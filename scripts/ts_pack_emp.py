@@ -17,7 +17,7 @@ bullet.cpp Detonate). All decoded against ANIM.PAL with no team remap, scaled x4
   launcher draws noise under transparent cameo pixels), in the mod's own tree.
 - AUDIO/TSPLSECAN2.WAV: the cannon's report ([EMPulseWeapon] Report=PLSECAN2) under its
   own sample name, Westwood AUD -> MS-ADPCM WAV.
-Anims, their TS_VFX.XML tile runs and the sound go to the tree asset_packs.py routes each
+Anims, their TSHD_VFX.XML tile runs and the sound go to the tree asset_packs.py routes each
 name to (the TS packs).
 
 Inputs (set TS_ART_DIR): $TS_ART_DIR/.raw/{PULSBALL,PULSEFX1,PULSEFX2,PULSICON,EMP_FX01}.SHP,

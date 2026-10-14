@@ -12,9 +12,9 @@ enabled mod, so the mod keeps only the XML naming them.
 A file's pack follows from its name alone, so every pack script asks this module for its output
 paths and a new TS, RA2 or C&C3 asset lands in its pack without a list to maintain:
   graphics   TS* (not TSLA*, RA's Tesla Coil), R2*, C3<letter> (bare C3 is RA's
-             civilian). The HD-rebuilt TS walls, gates and component towers go to TS-HD.
+             civilian). TS art goes to TS-HD, TS Nod's (TS_NOD) to TS-Nod.
   cameos     the plain BuildIcon of each of those objects; an HD cameo (scripts/ts_hd_cameos.py)
-             sits in TS-HD beside the classic one and wins at staging. Badged, locked and faction-mask
+             replaces the classic one in the same file (save_classic_cameo). Badged, locked and faction-mask
              variants, and the superweapon icons, drive Tiberian Factions' sidebar and
              stay with the mod.
   sounds     TS_SFX_EVA_* EVA, TS_SFX_UNT_* unit voices, other TS* effects; RA2 and C&C3 crew

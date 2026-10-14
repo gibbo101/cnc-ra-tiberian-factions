@@ -8,7 +8,7 @@ required Workshop mod carries: that mod is built whole in the folder beside it (
 writes each of the mod's XML files that packs contribute to: the mod's own file from resources/,
 with every pack's entries in place of that pack's marker (before the closing tag when the file has
 no marker).
-A file two packs carry (an HD cameo over its classic one) is copied from the later pack only, and a tileset
+A file two packs carry is copied from the later pack only, and a tileset
 ZIP that copies another's frames is left out (scripts/share_tileset_zips.py).
 The XML always starts from the source tree, so staging twice gives the same result.
 

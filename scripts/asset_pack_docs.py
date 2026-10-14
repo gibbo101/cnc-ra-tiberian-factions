@@ -20,7 +20,7 @@ REPO_URL = "https://github.com/gibbo101/cnc-ra-tiberian-factions"
 
 WORKSHOP_URL = "https://steamcommunity.com/sharedfiles/filedetails/?id="
 
-# gibbo101's projects, keyed so a page can leave itself out (more_mods): "TF", or a Workshop pack's name
+# The author's projects, keyed so a page can leave itself out (more_mods): "TF", or a Workshop pack's name
 MORE_MODS = {
     "TF": "**Tiberian Factions** adds GDI and Nod as playable factions to Red Alert Remastered: "
           "[Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3729834253), "

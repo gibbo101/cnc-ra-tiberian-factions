@@ -1,6 +1,6 @@
 # C&C3 railgun shot
 
-**Status:** Reference. The Mammoth Mk. II fires with C&C3's railgun shot in blue and the Ghost Stalker in orange.
+**Status:** Reference, as of 5.5.0. The Mammoth Mk. II fires with C&C3's railgun shot in blue and the Ghost Stalker in orange.
 Every railgun (`IsRailgun`) draws it.
 
 C&C3's upgraded Mammoth and Predator fire `FX_RailGunFire` and hit with `FX_RailGunHit`: a white-hot core in a blue

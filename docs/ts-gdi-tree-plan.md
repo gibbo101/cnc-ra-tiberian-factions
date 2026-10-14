@@ -1,6 +1,6 @@
 # TS GDI tree
 
-**Status:** Reference; every TS GDI entity listed here is on main and shipped in 5.0.0.
+**Status:** Reference; every TS GDI entity listed here is in the mod as of 5.5.0.
 **Open:** the queue at the end.
 
 What is built, how each piece was ported, and the traps that cost time. The faction itself (lobby
