@@ -44,6 +44,8 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   downloading, missing) and GET IT or ENABLE AND RESTART. Required packs (TS-HD-Assets) show as the top-right
   panel does; optional ones (a desert theatre, the TD maps) are offered without a nag. Built on the pack panel's
   states and actions (`pack-panel.md`) and a borrowed stock screen, as the CAMPAIGNS page borrowed Mission Select.
+- **H (jump to the home base) does nothing** (`known-issues.md`): find which side owns the key and fix it, with a
+  play test on each faction.
 - **Check TS-HD-Assets-TD in game** before it publishes, as the RA2 and C&C3 TD items were: a stock-unit repaint
   mod beside it in Tiberian Dawn, temperate and winter maps. It leaves out the interior bibs (TD has no interior
   theatre).
