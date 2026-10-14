@@ -61,6 +61,26 @@ WORKSHOP = {
         "prefix": "TS", "hosts": ("RA", "TD"), "coming_soon": True,
         "name": "Tiberian Sun HD Assets",
         "description": "Tiberian Sun units, buildings, effects, sounds and EVA for {host}, in HD.",
+        "contents": ["**GDI infantry:** Light Infantry (TSE1), Disc Thrower (TSE2), Engineer (TSENGINEER), Medic "
+                     "(TSMEDIC), Jumpjet Infantry (TSJUMPJET), Ghost Stalker (TSGHOST)",
+                     "**GDI vehicles:** Wolverine (TSSMEC), Titan (TSTITN), Amphibious APC (TSAPC), Hover MLRS (TSHVR), "
+                     "Mobile Sensor Array (TSLPST), Mobile EMP (TSMEMP), Juggernaut (TSJUGG), Disruptor (TSSONIC), "
+                     "Mammoth Mk. I (TS4TNK), Mammoth Mk. II (TSHMEC), Limpet Drone (TSLIMP), Harvester (TSHARV), "
+                     "MCV (TSMCV), Mobile War Factory (TSMWAR)",
+                     "**GDI aircraft:** Orca Fighter (TSORCA), Orca Bomber (TSORCAB), Orca Transport (TSORCATRAN), "
+                     "Carryall (TSCARRY), Hunter Seeker (TSHUNT), Dropship (TSDSHP)",
+                     "**GDI buildings:** Construction Yard (TSFACT), Power Plant (TSPOWR) and Turbine (TSTURB), Barracks "
+                     "(TSPILE), Tiberium Refinery (TSPROC), Silo (TSSILO), War Factory (TSWEAP), Radar (TSRADR), "
+                     "Helipad (TSHPAD), Service Depot (TSDEPT), Tech Center (TSTECH), Dropship Bay (TSDROP), Upgrade "
+                     "Center (TSPLUG) with the Ion Cannon Uplink (TSPION), Seeker Control (TSSEEK) and Drop Pod Node "
+                     "(TSPODS), EMP Cannon (TSPULS), Firestorm Generator (TSFGEN), Sensor Array (TSDPSA), Limpet Mine "
+                     "(TSDLIMP)",
+                     "**GDI defences:** Concrete Wall (TSWALL), Gates (TSGATEH, TSGATEV), Firestorm Wall (TSFSDF), "
+                     "Component Tower (TSCTWR) with its Vulcan (TSVULCT), RPG (TSROCKT) and SAM (TSCSAMT) tops",
+                     "**Effects:** Tiberian Sun's explosions, muzzle flashes, smoke and fire, the Ion Cannon beam, the "
+                     "drop pods, the EMP pulse, the Firestorm and the Disruptor's wave",
+                     "A sidebar cameo for each unit and building",
+                     "GDI's unit voices, weapon and building sounds, and the EVA"],
     },
     "RA2-HD-Assets": {
         "packs": ("RA2-Graphics-Pack", "RA2-SFX-Pack", "RA2-Voices-eng"),
