@@ -43,9 +43,13 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   `TS-HD-Assets/` and builds the ModDB zip with both folders side by side (players unzip into `Mods/Red_Alert/` and
   enable both), plus a zip of `TS-HD-Assets/` alone for an add-on on TF's ModDB page. The RA2 and C&C3 packs stay
   off TF's ModDB page: they are Workshop-only libraries.
-- **TD copy of TS-HD-Assets, with its first release.** RA2-HD-Assets and CNC3-Assets ship as one Workshop
+- **TD copy of TS-HD-Assets, in its first release (decided).** RA2-HD-Assets and CNC3-Assets ship as one Workshop
   item per game; TS-HD-Assets is built for Red Alert only so far (`asset_packs.WORKSHOP` hosts). TD reads art
   only from `SRGB/TIBERIAN_DAWN/`, and TD has no interior theatre for TS-HD's interior bibs.
+- **Main-menu box when the TS-HD-Assets pack is missing,** in place of the in-match notice: a panel on the main
+  menu with a button that opens the pack's Workshop page in the Steam overlay. Not subscribed: "required for the TS
+  factions", get it. Subscribed but not enabled: enable it in Mods and restart. To check first: whether the pack's
+  `Add_Mod_Path` arrives before the menu shows, hiding the panel at runtime, and the overlay link on the Deck.
 - **TS-HD-Assets page contents in plain words** before it ships: units by side with their file names, as the RA2
   and C&C3 pages have (`asset_packs.WORKSHOP` contents); its page is near the Workshop's 8,000 characters.
 - **Grey out saves that can't load, before the next release.** The save version refuses a save whose class
@@ -65,11 +69,6 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   atlas 3027,4088 128x128), tinted as it is drawn, and no data lever reaches the tint. Route: find
   the tint in ClientG and patch it at the launcher's startup load, keyed on a field the DLL sets
   for limpeted objects (`launcher-vs-dll-ownership.md`, "Launcher-resident patches").
-- **Decision: the TS roster balance pass.** Every TS unit ships TS's exact stats, and TS fights at
-  a bigger scale: the Mk. II railgun and Hover MLRS reach 8 cells, the Disruptor and Titan 6,
-  against an RA heavy tank at 4.75 and a TD medium at about 4. Range first, then damage, ROF, HP,
-  cost, speed and the Devil's Tongue stream. Known deviation: the Mk. II AA tusks carry RA
-  MammothTusk stats (7.5 range) instead of TS's 6.
 
 ## Needs a LAN game with a second human
 
@@ -151,6 +150,11 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ## Tiberian Sun
 
+- **The TS roster balance pass, once TS Nod has shipped.** Every TS unit ships TS's exact stats, and
+  TS fights at a bigger scale: the Mk. II railgun and Hover MLRS reach 8 cells, the Disruptor and
+  Titan 6, against an RA heavy tank at 4.75 and a TD medium at about 4. Range first, then damage,
+  ROF, HP, cost, speed and the Devil's Tongue stream. Known deviation: the Mk. II AA tusks carry RA
+  MammothTusk stats (7.5 range) instead of TS's 6.
 - **TS Nod, the sixth faction:** France as `HOUSEF_TSNOD`, `Faction9`, CABAL from `SPEECH02.MIX`,
   one more `ERAS` entry in `scripts/eva_mailbox_build.py`, an emblem at
   `scripts/tab_emblems/tsnod.png`, and a crest region. The atlas can grow to 8192x8192 for it
