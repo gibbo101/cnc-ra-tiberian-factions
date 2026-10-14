@@ -22,8 +22,7 @@ def main():
     if os.path.exists(icon):
         im = Image.open(icon)
         big = im.resize((im.width * 8, im.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-        big.save(asset_packs.cameo_tga("BuildIcon_TS_Fsdf"))
-        print("wrote BuildIcon_TS_Fsdf.tga")
+        asset_packs.save_classic_cameo(big, "BuildIcon_TS_Fsdf")
 
 
 if __name__ == "__main__":

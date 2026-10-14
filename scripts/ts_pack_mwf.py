@@ -30,9 +30,7 @@ def cameo():
     flat = Image.new("RGBA", icon.size, (0, 0, 0, 255))
     flat.alpha_composite(icon)
     big = flat.resize((flat.width * 8, flat.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    path = asset_packs.cameo_tga("BuildIcon_TS_MobileWarFactory")
-    big.save(path)
-    print(f"wrote {path}")
+    asset_packs.save_classic_cameo(big, "BuildIcon_TS_MobileWarFactory")
 
 
 def main():

@@ -37,8 +37,7 @@ if os.path.exists(f"{ART}/CAMEO.PAL"):
         size, frs = ts_shp.decode_shp(f"{ART}/{shp}.SHP")
         icon = ts_shp.frame_to_rgba(frs[0], pal, (16, 31), (0, 200, 0))
         big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-        big.save(asset_packs.cameo_tga(out))
-        print(f"wrote {asset_packs.cameo_tga(out)}")
+        asset_packs.save_classic_cameo(big, out)
 
 # ---- Sidebar entries, in the buildables XML of each cameo's tree ----
 def buildable(name, text, icon):

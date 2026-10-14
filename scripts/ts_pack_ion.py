@@ -112,8 +112,7 @@ def main():
     cameo_pal = ts_shp.load_pal(f"{RAW}/CAMEO.PAL")
     _, _, icon = decode("IONCICON.SHP", cameo_pal)[0]
     big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    big.save(asset_packs.cameo_tga("BuildIcon_SW_TSION"))
-    print(f"wrote {asset_packs.cameo_tga('BuildIcon_SW_TSION')}")
+    asset_packs.save_classic_cameo(big, "BuildIcon_SW_TSION")
 
     # TS ION1 strike sound under its own sample name (novel-name path).
     out_wav = asset_packs.sound_wav("TSION1.WAV")

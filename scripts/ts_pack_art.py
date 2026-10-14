@@ -19,8 +19,7 @@ MOD = asset_packs.MOD
 for src, out in [("shp_hovricon", "BuildIcon_TS_HoverMLRS"), ("shp_powricon", "BuildIcon_TS_PowerPlant")]:
     icon = Image.open(f"{SCRATCH}/{src}/frame-0000.png")
     big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    big.save(asset_packs.cameo_tga(out))
-    print(f"wrote {asset_packs.cameo_tga(out)}")
+    asset_packs.save_classic_cameo(big, out)
 
 # ---- Sidebar entries, in the buildables XML of each cameo's tree ----
 def buildable(name, text, icon):

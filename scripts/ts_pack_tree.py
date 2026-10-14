@@ -1188,17 +1188,15 @@ def emit_sidebar_data(ini, display, desc, icon_dir):
     TS-tree entries are never faction-badged, so only _0 exists."""
     import re
     icon_name = f"BuildIcon_TS_{ini[2:].title()}"
-    icon_path = asset_packs.cameo_tga(icon_name)
-    os.makedirs(os.path.dirname(icon_path), exist_ok=True)
     # Hand-made art in resources/custom-cameos is canonical for its icon name;
     # only generate from the TS cameo when no override exists.
     custom = os.path.abspath(f"{MOD}/../../custom-cameos/{icon_name}.png")
     if os.path.exists(custom):
-        Image.open(custom).convert("RGBA").resize((341, 256), Image.LANCZOS).save(icon_path)
+        big = Image.open(custom).convert("RGBA").resize((341, 256), Image.LANCZOS)
     else:
         icon = Image.open(f"{ART}/{icon_dir}/frame-0000.png")
         big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-        big.save(icon_path)
+    asset_packs.save_classic_cameo(big, icon_name)
 
     text_id = f"TEXT_STRUCTURE_{ini}"
     for key in (f"RA_{ini}", f"RA_{ini}_0"):
@@ -1687,8 +1685,7 @@ MCV_ICON = asset_packs.cameo_tga("BuildIcon_TS_MCV")
 if os.path.isdir(f"{ART}/shp_mcvicon") and not os.path.exists(MCV_ICON):
     icon = Image.open(f"{ART}/shp_mcvicon/frame-0000.png")
     big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    big.save(MCV_ICON)
-    print(f"wrote {MCV_ICON}")
+    asset_packs.save_classic_cameo(big, "BuildIcon_TS_MCV")
 
 with open(STUB_MANIFEST, "w") as f:
     json.dump(STUB_DIMS, f, indent=1, sort_keys=True)

@@ -66,8 +66,7 @@ PROJECTILES = {
 def cameo(stem, icon):
     icon_img = Image.open(f"{ART}/shp_{stem}/frame-0000.png").convert("RGBA")
     big = icon_img.resize((icon_img.width * 8, icon_img.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    big.save(asset_packs.cameo_tga(icon))
-    print(f"wrote {icon}.tga")
+    asset_packs.save_classic_cameo(big, icon)
 
 
 HAND_END = "\t<!-- END hand-written TS-tree base cameo entries -->"

@@ -30,14 +30,11 @@ for src_d, out in [("shp_mmchicon2", "BuildIcon_TS_Titan"),
     # Hand-made art in resources/custom-cameos is canonical for its icon name.
     custom = os.path.abspath(f"{MOD}/../../custom-cameos/{out}.png")
     if os.path.exists(custom):
-        Image.open(custom).convert("RGBA").resize((341, 256), Image.LANCZOS).save(
-            asset_packs.cameo_tga(out))
-        print(f"custom {asset_packs.cameo_tga(out)}")
+        asset_packs.save_classic_cameo(Image.open(custom).convert("RGBA").resize((341, 256), Image.LANCZOS), out)
         continue
     icon = Image.open(f"{ART}/{src_d}/frame-0000.png")
     big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    big.save(asset_packs.cameo_tga(out))
-    print(f"wrote {asset_packs.cameo_tga(out)}")
+    asset_packs.save_classic_cameo(big, out)
 
 # ---- Sidebar entries, in the buildables XML of each cameo's tree ----
 def buildable(name, text, icon):

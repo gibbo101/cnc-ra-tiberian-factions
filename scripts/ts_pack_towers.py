@@ -250,9 +250,8 @@ def cameo(icon_dir, name):
     if not os.path.exists(src):
         print(f"no {icon_dir}: cameo {name} not written"); return
     icon = Image.open(src).convert("RGBA")
-    icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS).save(
-        asset_packs.cameo_tga(name))
-    print(f"wrote {name}.tga")
+    big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
+    asset_packs.save_classic_cameo(big, name)
 
 
 def load_bodies():

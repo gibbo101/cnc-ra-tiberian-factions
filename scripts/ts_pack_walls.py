@@ -267,8 +267,7 @@ def pack():
     if icon_dir and os.path.isdir(icon_dir):
         icon = Image.open(f"{icon_dir}/frame-0000.png").convert("RGBA")
         big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-        big.save(asset_packs.cameo_tga("BuildIcon_TS_Wall"))
-        print(f"wrote {asset_packs.cameo_tga('BuildIcon_TS_Wall')}")
+        asset_packs.save_classic_cameo(big, "BuildIcon_TS_Wall")
     else:
         print("no shp_wallicon in TS_ART_DIR: cameo not written")
 

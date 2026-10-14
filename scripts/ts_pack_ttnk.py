@@ -32,8 +32,7 @@ def cameo():
     _, frames = ts_shp.decode_shp(f"{ART}/TICKICON.SHP")
     icon = ts_shp.frame_to_rgba(frames[0], pal, remap=None)
     big = hqx.hq4x(icon.convert("RGB")).convert("RGBA").resize((341, 256), Image.LANCZOS)
-    big.save(asset_packs.cameo_tga(ICON))
-    print(f"wrote {asset_packs.cameo_tga(ICON)}")
+    asset_packs.save_classic_cameo(big, ICON)
 
 
 if __name__ == "__main__":

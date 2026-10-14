@@ -111,8 +111,7 @@ def main():
     cameo_pal = ts_shp.load_pal(f"{RAW}/CAMEO.PAL")
     _, _, icon = decode("PODSICON.SHP", cameo_pal)[0]
     big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    big.save(asset_packs.cameo_tga("BuildIcon_SW_TSPODS"))
-    print(f"wrote {asset_packs.cameo_tga('BuildIcon_SW_TSPODS')}")
+    asset_packs.save_classic_cameo(big, "BuildIcon_SW_TSPODS")
 
     # The Vulcan2 strafe report + the meteor descent whoosh under their own
     # sample names (novel-name path).

@@ -38,14 +38,12 @@ def main():
     cameo_pal = ts_shp.load_pal(f"{RAW}/CAMEO.PAL")
     icon = decode("DETNICON.SHP", cameo_pal)[0]
     big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    big.save(asset_packs.cameo_tga("BuildIcon_SW_TSHUNT"))
-    print(f"wrote {asset_packs.cameo_tga('BuildIcon_SW_TSHUNT')}")
+    asset_packs.save_classic_cameo(big, "BuildIcon_SW_TSHUNT")
     # TS-tree badge (the 'G' digit key): cameo_badge_build's emblem layout.
     badged = big.convert("RGBA")
     emblem = Image.open(EMBLEM).convert("RGBA").resize((90, 90), Image.LANCZOS)
     badged.alpha_composite(emblem, (12, 12))
-    badged.save(asset_packs.cameo_tga("BuildIcon_SG_TSHUNT"))
-    print(f"wrote {asset_packs.cameo_tga('BuildIcon_SG_TSHUNT')}")
+    asset_packs.save_classic_cameo(badged, "BuildIcon_SG_TSHUNT")
 
     out_wav = asset_packs.sound_wav("TSHUNTR2")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f"{RAW}/HUNTER2.AUD",

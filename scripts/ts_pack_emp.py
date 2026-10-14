@@ -66,8 +66,7 @@ def main():
     flat = Image.new("RGBA", icon.size, (0, 0, 0, 255))
     flat.alpha_composite(icon)
     big = flat.resize((flat.width * 8, flat.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    big.save(asset_packs.cameo_tga("BuildIcon_SW_TSEMP"))
-    print(f"wrote {asset_packs.cameo_tga('BuildIcon_SW_TSEMP')}")
+    asset_packs.save_classic_cameo(big, "BuildIcon_SW_TSEMP")
 
     out_wav = asset_packs.sound_wav("TSPLSECAN2")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f"{RAW}/PLSECAN2.AUD",

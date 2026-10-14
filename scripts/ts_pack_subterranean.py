@@ -42,8 +42,7 @@ for shp, out in [("SUBTICON", "BuildIcon_TS_DevilsTongue"),
     size, frs = ts_shp.decode_shp(f"{ART}/{shp}.SHP")
     icon = ts_shp.frame_to_rgba(frs[0], pal, remap=None)
     big = hqx.hq4x(icon.convert("RGB")).convert("RGBA").resize((341, 256), Image.LANCZOS)
-    big.save(asset_packs.cameo_tga(out))
-    print(f"wrote {asset_packs.cameo_tga(out)}")
+    asset_packs.save_classic_cameo(big, out)
 
 # ---- Sidebar entries, in the buildables XML of each cameo's tree ----
 def buildable(name, text, icon):

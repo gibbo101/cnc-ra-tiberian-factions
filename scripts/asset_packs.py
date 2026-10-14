@@ -297,6 +297,21 @@ def cameo_tga(icon):
     return _made(os.path.join(data_root(cameo_pack(stem)), "ART", "TEXTURES", "SRGB", f"{stem}.tga"))
 
 
+HD_CAMEO_ART = os.path.join(REPO, "resources", "custom-art", "ts-hd-cameos")
+
+
+def save_classic_cameo(img, icon):
+    """Save a cameo drawn from the source game's own icon, unless the HD cameo set (scripts/ts_hd_cameos.py) has
+    art for that name: both go to the same file, and the HD one wins."""
+    stem = re.sub(r"\.tga$", "", os.path.basename(icon), flags=re.I)
+    if os.path.exists(os.path.join(HD_CAMEO_ART, f"{stem}.png")):
+        print(f"kept the HD {stem}")
+        return
+    path = cameo_tga(stem)
+    img.save(path)
+    print(f"wrote {path}")
+
+
 def buildables_xml_of(pack):
     mod_file = os.path.join(MOD, "Data", "XML", "OBJECTS", "UNITS", "RABUILDABLES.XML")
     if pack is None:
