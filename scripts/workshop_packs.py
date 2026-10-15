@@ -271,7 +271,8 @@ def readme(mod, listed, host):
               + (" (the Red Alert Heavy Tank and Mammoth Tank turrets have 8 frames at 5 FPS)" if host == "RA" else "")
               + ". When you point an existing tile at this pack's art, replace its whole `<Frames>` list and remove its "
               f"`<AnimationData>`, or you'll see the {host} frames constantly switch with yours. Copy the pack "
-              "object's own tiles as well: the game opens an object's art only when a tile of its name is loaded.", ""]
+              "object's own tiles as well: the game opens an object's art only when a tile with the object's own "
+              "name is loaded.", ""]
     if w["game"] == "TS":
         lines += ["Most units use the stock layout: one frame per facing, then a turret block where they have one. "
                   "Walkers, units with rolling treads or offset turrets, and buildings with doors, docks or add-ons "
@@ -331,8 +332,7 @@ def layout(mod):
              "and 96-127 the turret, 32 facings. The turret frames are centred on the canvas: draw the turret over "
              "the hull moved by its seat, in classic pixels (x east, y south). Each list runs by hull frame, 0-31 "
              "counter-clockwise from north, so index it with `BodyShape[Dir_To_32(PrimaryFacing)]`. Indexed by "
-             "`Dir_To_32` alone, as EA's own turret tables are, it runs clockwise and seats the turret at the wrong "
-             "end:",
+             "`Dir_To_32` alone, as EA's own turret tables are, it runs clockwise and mirrors every seat east to west:",
              ""]
     text = open(C3_SEATS, encoding="utf-8").read()
     for tank in ("C3MK3", "C3PRED"):
