@@ -330,9 +330,8 @@ def layout(mod):
              "C3MK3, C3PRED, C3MK3RAIL and C3PREDRAIL: frames 0-95 are the hull, 32 facings counter-clockwise from "
              "north with 3 tread steps each (frame = 3 x facing + step; step the treads while the tank drives), "
              "and 96-127 the turret, 32 facings. The turret frames are centred on the canvas: draw the turret over "
-             "the hull moved by its seat, in classic pixels (x east, y south). Each list runs by hull frame, 0-31 "
-             "counter-clockwise from north, so index it with `BodyShape[Dir_To_32(PrimaryFacing)]`. Indexed by "
-             "`Dir_To_32` alone, as EA's own turret tables are, it runs clockwise and mirrors every seat east to west:",
+             "the hull moved by its seat, in classic pixels (x east, y south). The seats run clockwise from north, "
+             "as EA's own turret tables do, so index them with `Dir_To_32(PrimaryFacing)`:",
              ""]
     text = open(C3_SEATS, encoding="utf-8").read()
     for tank in ("C3MK3", "C3PRED"):

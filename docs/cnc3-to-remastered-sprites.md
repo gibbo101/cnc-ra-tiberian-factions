@@ -295,7 +295,8 @@ rather than using Blender: you need exact control of camera, light and colour.
 - **Turret seat:** the stock turret draws at the unit centre. For an off-centre turret pivot,
   generate a 32-entry table per hull facing (the pivot's ground point relative to the hull
   centre, rotated and projected, in classic px = packed px / 8) and add it in
-  `UnitTypeClass::Turret_Adjust`, which is called with the hull facing. Emit it from the
+  `UnitTypeClass::Turret_Adjust`, which is called with the hull facing. Order the table by
+  `Dir_To_32`, clockwise from north, as EA's own turret tables are (the frames run the other way). Emit it from the
   packer so art and code cannot drift.
 - **Rolling treads:** the stock engine has one body frame per facing. Add a per-type step count
   and pick `facing * steps + ((frame + unitID) / rate) % steps` while the unit is driving and
@@ -304,11 +305,11 @@ rather than using Blender: you need exact control of camera, light and colour.
 - **Shape cap:** a second draw on an object (the turret) renders NOTHING for shape numbers
   128 and above. Keep turret frames below 128: 32 facings x 3 tread steps = 0-95, turret
   96-127.
-- **Fire points:** project each muzzle bone through the render camera per turret frame and
+- **Fire points:** project each muzzle bone through the render camera per turret facing and
   emit leptons (1 packed canvas px = 4/3 leptons), measured from the turret's ground point
   (the muzzle's height folds into the north-south offset, as the camera draws it). Fire
-  coordinate = unit centre + seat (in leptons, indexed by hull facing) + muzzle offset
-  (indexed by turret facing).
+  coordinate = unit centre + seat (in leptons, indexed by `Dir_To_32` of the hull facing) +
+  muzzle offset (indexed by `Dir_To_32` of the turret facing).
 - **Audio:** loose WAVs under their own (new) sample names resolve; the WAV must be
   MS-ADPCM, because plain PCM crashes the Remastered client. ffmpeg's cdata output is PCM, so
   re-encode: `ffmpeg -i in.wav -c:a adpcm_ms -ar 22050 -ac 1 out.wav` matches the weapon-SFX

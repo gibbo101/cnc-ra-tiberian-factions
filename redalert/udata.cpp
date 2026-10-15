@@ -2723,13 +2723,13 @@ void UnitTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
         break;
 
     case UNIT_C3MK3:
-        x += _c3mk3_seat_px[TechnoClass::BodyShape[Dir_To_32(dir)]][0];
-        y += _c3mk3_seat_px[TechnoClass::BodyShape[Dir_To_32(dir)]][1];
+        x += _c3mk3_seat_px[Dir_To_32(dir)][0];
+        y += _c3mk3_seat_px[Dir_To_32(dir)][1];
         break;
 
     case UNIT_C3PRED:
-        x += _c3pred_seat_px[TechnoClass::BodyShape[Dir_To_32(dir)]][0];
-        y += _c3pred_seat_px[TechnoClass::BodyShape[Dir_To_32(dir)]][1];
+        x += _c3pred_seat_px[Dir_To_32(dir)][0];
+        y += _c3pred_seat_px[Dir_To_32(dir)][1];
         break;
 
     default:
