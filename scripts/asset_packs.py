@@ -106,9 +106,8 @@ WORKSHOP = {
 }
 REQUIRED = [mod for mod, w in WORKSHOP.items() if w["required"]]
 
-# The game a Workshop item is for: its ccmod game_type and art folder under ART/TEXTURES/SRGB, the prefix of its
-# launcher XML and buildable names, its terrain theatres by RA theatre, and whether its terrain art must be loose
-# files (TD's terrain never reads a mod's ZIP). A game reads art only from its own folder.
+# The game a Workshop item is for: its game_type, its own art folder (the only one it reads), its XML and buildable
+# prefix, its terrain theatres by RA theatre, and whether terrain must be loose files (TD's never reads a ZIP).
 HOSTS = {
     "RA": {"name": "Red Alert", "art": "RED_ALERT", "root": "Red_Alert", "prefix": "RA", "buildables": "RABUILDABLES",
            "theatres": {"TEMPERATE": "TEMPERATE", "SNOW": "SNOW", "INTERIOR": "INTERIOR"}, "loose_terrain": False},

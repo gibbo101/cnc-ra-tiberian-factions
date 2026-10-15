@@ -69,15 +69,24 @@ def host_path(rel, host):
 
 def unzip_loose(src, folder):
     """Each file of the ZIP src in folder, written when its bytes differ, with src's mtime; returns the paths."""
-    os.makedirs(folder, exist_ok=True)
+    st = os.stat(src)
     paths = []
     with zipfile.ZipFile(src) as z:
         for name in z.namelist():
-            dst = os.path.join(folder, name)
+            if name.endswith("/"):
+                continue
+            dst = os.path.join(folder, *name.split("/"))
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
             data = z.read(name)
-            if not os.path.exists(dst) or open(dst, "rb").read() != data:
-                open(dst, "wb").write(data)
-                os.utime(dst, ns=(os.stat(src).st_atime_ns, os.stat(src).st_mtime_ns))
+            if os.path.exists(dst):
+                with open(dst, "rb") as fh:
+                    same = fh.read() == data
+            else:
+                same = False
+            if not same:
+                with open(dst, "wb") as fh:
+                    fh.write(data)
+                os.utime(dst, ns=(st.st_atime_ns, st.st_mtime_ns))
             paths.append(dst)
     return paths
 
@@ -101,7 +110,7 @@ def copy_binaries(mod, folder, host):
                     if target is None:
                         continue
                     dst = os.path.join(folder, "Data", sub, target)
-                    if A.HOSTS[host]["loose_terrain"] and is_terrain_zip(target):
+                    if sub == "ART" and A.HOSTS[host]["loose_terrain"] and is_terrain_zip(target):
                         wanted.update(os.path.normcase(p) for p in unzip_loose(os.path.join(d, f), dst[:-4]))
                         continue
                     os.makedirs(os.path.dirname(dst), exist_ok=True)
