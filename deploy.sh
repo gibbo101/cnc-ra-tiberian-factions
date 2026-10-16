@@ -8,8 +8,8 @@
 #
 # Behavior:
 #   1. cmake --workflow --preset remaster, then a full restage of resources/ and the asset packs
-#      into build/remaster/Vanilla_RA/ and the folder of each required asset-pack mod beside it
-#      (scripts/asset_packs.py REQUIRED), fresh folders so nothing stale rides along.
+#      into build/remaster/Vanilla_RA/ and the folder of each asset-pack mod it uses beside it
+#      (scripts/asset_packs.py USED), fresh folders so nothing stale rides along.
 #   2. Refuses to deploy when the game is running on the target, when a target path is not its
 #      Mods/Red_Alert/<folder>, or when a gitignored locked file (the UI atlas, the CAMPAIGNS page
 #      textures, the intro) is missing or differs from its committed md5.
@@ -60,8 +60,8 @@ done
 MODS_SUFFIX="steamapps/compatdata/1213210/pfx/drive_c/users/steamuser/Documents/CnCRemastered/Mods/Red_Alert/"
 LOCAL_ROOT="build/remaster/"
 LOCAL_OUTPUT="${LOCAL_ROOT}Vanilla_RA/"
-REQUIRED_LIST="$(python3 scripts/asset_packs.py required)"
-mapfile -t REQUIRED_MODS <<< "$REQUIRED_LIST"
+USED_LIST="$(python3 scripts/asset_packs.py used)"
+mapfile -t USED_MODS <<< "$USED_LIST"
 if [[ "$DESKTOP" -eq 1 ]]; then
     TARGET_ROOT="$HOME/.steam/steam/$MODS_SUFFIX"
     TARGET_HOST=""
@@ -83,9 +83,9 @@ if [[ "$NO_BUILD" -eq 0 ]]; then
       VC_CXX_FLAGS="-w;-fpermissive" \
       cmake --workflow --preset remaster
     # The CMake copy only runs when the DLL relinks and never deletes, so restage from scratch.
-    echo "==> Restaging $LOCAL_OUTPUT and ${REQUIRED_MODS[*]}"
+    echo "==> Restaging $LOCAL_OUTPUT and ${USED_MODS[*]}"
     scripts/clear_dir.sh "${LOCAL_OUTPUT:?}"
-    for mod in "${REQUIRED_MODS[@]}"; do
+    for mod in "${USED_MODS[@]}"; do
         scripts/clear_dir.sh "${LOCAL_ROOT:?}${mod:?}/"
     done
     python3 scripts/stage_asset_packs.py "$LOCAL_OUTPUT" --full
@@ -128,8 +128,8 @@ if on_target pgrep -x ClientG.exe >/dev/null; then
     exit 1
 fi
 
-# The mod folders this deploy mirrors: Tiberian Factions, then each required asset-pack mod.
-FOLDERS=(Vanilla_RA "${REQUIRED_MODS[@]}")
+# The mod folders this deploy mirrors: Tiberian Factions, then each asset-pack mod it uses.
+FOLDERS=(Vanilla_RA "${USED_MODS[@]}")
 if [[ "$MOD_ONLY" -eq 1 ]]; then
     FOLDERS=(Vanilla_RA)
 fi

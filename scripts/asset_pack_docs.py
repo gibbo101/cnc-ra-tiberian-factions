@@ -70,6 +70,7 @@ ABOUT = {
     "CNC3-Graphics-Pack": "Command & Conquer 3 units and sidebar cameos as HD sprites",
     "CNC3-SFX-Pack": "Command & Conquer 3 weapon sound effects",
     "CNC3-Voices-eng": "Command & Conquer 3 unit voice lines (English)",
+    "TS-Music": "Tiberian Sun and Firestorm's in-game music",
 }
 
 CREDIT = {
@@ -103,6 +104,9 @@ def listing(pack):
             names = sorted(f[:-4] for f in os.listdir(d) if f.upper().endswith(".WAV"))
             if names:
                 out[label] = names
+    tracks = os.path.join(A.PACKS_DIR, pack, "tracks.json")
+    if os.path.exists(tracks):
+        out["Music (Data/AUDIO/MUSIC)"] = sorted(t["name"] for t in json.load(open(tracks)))
     return out
 
 
@@ -158,7 +162,7 @@ def readme(pack):
     if pack in CREDIT:
         lines += ["", CREDIT[pack]]
     lines += ["", "## My other C&C projects", ""]
-    lines += [f"- {m}" for m in more_mods(A.required_mod(pack) or next(
+    lines += [f"- {m}" for m in more_mods(A.used_mod(pack) or next(
         (mod for mod, w in A.WORKSHOP.items() if pack in w["packs"]), None))]
     lines.append("")
     return "\n".join(lines)

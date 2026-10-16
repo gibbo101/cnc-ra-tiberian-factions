@@ -4,7 +4,7 @@
 Usage:  stage_asset_packs.py <mod dir> [--full]
 
 Copies every pack's Data/ART and Data/AUDIO into <mod dir>/Data, except the PACK_ONLY objects and the packs a
-required Workshop mod carries: that mod is built whole in the folder beside it (scripts/workshop_packs.py). Then
+Workshop mod in asset_packs.USED carries: that mod is built whole in the folder beside it (scripts/workshop_packs.py). Then
 writes each of the mod's XML files that packs contribute to: the mod's own file from resources/,
 with every pack's entries in place of that pack's marker (before the closing tag when the file has
 no marker).
@@ -83,7 +83,7 @@ def stage(mod_dir, full=False):
     for i, pack in enumerate(packs):
         for sub in ("ART", "AUDIO"):
             src = os.path.join(A.pack_data(pack), sub)
-            if A.required_mod(pack):
+            if A.used_mod(pack):
                 for d, _, fs in os.walk(src):
                     for f in fs:
                         stale = os.path.join(data, sub, os.path.relpath(os.path.join(d, f), src))
@@ -94,7 +94,7 @@ def stage(mod_dir, full=False):
             skip = later | {os.path.relpath(rel, sub.upper()) for rel in shared if rel.startswith(sub.upper() + os.sep)}
             skip |= {os.path.relpath(A.art_zip(name, "UNITS"), src).upper() for name in A.PACK_ONLY}
             copy_tree(src, os.path.join(data, sub), skip)
-    for mod in A.REQUIRED:
+    for mod in A.USED:
         workshop_packs.build(mod, os.path.join(os.path.dirname(os.path.normpath(mod_dir)), mod))
     for rel, text in texts.items():
         dst = os.path.join(data, rel)

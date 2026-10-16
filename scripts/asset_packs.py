@@ -6,7 +6,7 @@ README.md and a Data/ tree in the launcher's own layout, so another modder can c
 straight into their mod. Tiberian Factions' own files stay in resources/remaster_mods/Vanilla_RA.
 The build stages both (scripts/stage_asset_packs.py): each pack's XML entries are merged into the
 mod's XML files, and its art and audio are copied into the staged mod, or, for the packs a
-REQUIRED Workshop mod carries, into that mod's folder beside it. The launcher finds a file in any
+Workshop mod in USED carries, into that mod's folder beside it. The launcher finds a file in any
 enabled mod, so the mod keeps only the XML naming them.
 
 A file's pack follows from its name alone, so every pack script asks this module for its output
@@ -49,6 +49,7 @@ PACKS = {
     "CNC3-Graphics-Pack": "CNC3",
     "CNC3-SFX-Pack": "CNC3",
     "CNC3-Voices-eng": "CNC3",
+    "TS-Music": "TS",
 }
 
 # The Workshop asset-pack mods, data only, each built from these source packs (scripts/workshop_packs.py).
@@ -103,8 +104,21 @@ WORKSHOP = {
                      "(C3RAILGLOWO, C3RAILMZO, C3RAILHITO)",
                      "A sidebar cameo for each tank", "Each tank's voices and weapon sounds"],
     },
+    "TS-Music": {
+        "packs": ("TS-Music",),
+        "required": False, "used": True, "marker": "TSMUSIC.INI", "xml_id": "TSMusic", "version": (1, 0),
+        "game": "TS", "prefix": "TS", "hosts": ("RA",),
+        "name": "Tiberian Sun Music",
+        "description": "Tiberian Sun and Firestorm's soundtrack for {host}.",
+        "contents": ["**Tiberian Sun:** the 18 in-game themes, from Valves to Pharotek",
+                     "**Firestorm:** the 8 in-game themes, from Elusive to Deploy Machines",
+                     "Each as a Remastered music WAV (TS_MUS_<TITLE>.WAV)"],
+    },
 }
 REQUIRED = [mod for mod, w in WORKSHOP.items() if w["required"]]
+# The Workshop mods Tiberian Factions uses as their own folders beside it: the required ones, and the optional ones
+# whose content it plays when they are enabled.
+USED = [mod for mod, w in WORKSHOP.items() if w["required"] or w.get("used")]
 
 # The game a Workshop item is for: its ccmod game_type and art folder under ART/TEXTURES/SRGB, the prefix of its
 # launcher XML and buildable names, and its terrain theatres by RA theatre. A game reads art only from its own folder.
@@ -141,9 +155,9 @@ def drop_pack_only(text):
     return re.sub(r"[ \t]*<Tile>\s*<Key>\s*<Name>(?:%s)</Name>.*?</Tile>\r?\n?" % names, "", text, flags=re.S)
 
 
-def required_mod(pack):
-    """The required Workshop mod that carries a pack's art and audio, or None for the mod's own."""
-    return next((mod for mod in REQUIRED if pack in WORKSHOP[mod]["packs"]), None)
+def used_mod(pack):
+    """The Workshop mod in USED that carries a pack's art and audio, or None for the mod's own."""
+    return next((mod for mod in USED if pack in WORKSHOP[mod]["packs"]), None)
 
 
 # TS Nod's art, which the TS-HD-Assets pack leaves out until TS Nod ships whole. Tiberian Factions carries it meanwhile
@@ -562,11 +576,11 @@ def split(dry_run=False):
 if __name__ == "__main__":
     import sys
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
-    if cmd == "required":
-        print("\n".join(REQUIRED))
+    if cmd in ("required", "used"):
+        print("\n".join(REQUIRED if cmd == "required" else USED))
         raise SystemExit(0)
     if cmd not in ("split", "check"):
-        raise SystemExit("usage: asset_packs.py split | check | required")
+        raise SystemExit("usage: asset_packs.py split | check | required | used")
     found = split(dry_run=(cmd == "check"))
     for p in PACKS:
         if p in found:
