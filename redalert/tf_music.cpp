@@ -1,7 +1,8 @@
 /*
 **	Skirmish music by faction, inside ClientG.exe 1.153.745903. The launcher names a skirmish's
 **	music `<prefix>_MUS_RA_MULTIPLAYER_MODE` (prefix RAR, RAC or RAB by audio setting); this asks
-**	for `<prefix>_TF_MUS_<FACTION>` first and keeps the stock event when that one is missing.
+**	for `<prefix>_TF_MUS_<LIST>` first, by the player's soundtrack setting and lobby faction, and
+**	keeps the stock event when that one is missing.
 */
 #include "function.h"
 #include "tf_music.h"
@@ -28,18 +29,91 @@ const char* String_Chars(const MsvcString* s)
 const SIZE_T AMBIENT_FIND_CALL = 0x169D018;
 const SIZE_T MUSIC_FIND = 0xE92A90;
 const SIZE_T LOBBY_FACTION = 0x20E0CF8;
-const int LOBBY_TS_GDI = 7;
+const SIZE_T MOD_ROOTS = 0x1FE4C28;
 const char SKIRMISH_EVENT[] = "_MUS_RA_MULTIPLAYER_MODE";
 const size_t PREFIX_LENGTH = 3;
+const char TS_MUSIC_PROBE[] = "\\Data\\AUDIO\\MUSIC\\TS_MUS_VALVES.WAV";
 
 typedef void*(__thiscall* MusicFindFn)(void* manager, const MsvcString* name);
 
 /*
-**	The playlist suffix for the local player's lobby faction, or NULL to keep the stock music.
+**	The playlist each lobby faction value plays under the Faction setting: the lobby value is the
+**	country row plus two (GDI, Nod, Soviet, Allies, then the duplicate rows, TS GDI on Germany's).
 */
-const char* Faction_Playlist(void)
+const char* const FACTION_LISTS[] = {NULL, NULL, "TD", "TD", "RA", "RA", "RA", "TS", "RA", "RA"};
+
+/*
+**	True when an enabled mod supplies the TS-Music pack's tracks, so the launcher can play them.
+*/
+bool TS_Music_Present(void)
 {
-    return *(const int*)LOBBY_FACTION == LOBBY_TS_GDI ? "TF_MUS_TSGDI" : NULL;
+    const MsvcString* const* roots = (const MsvcString* const*)MOD_ROOTS;
+    for (const MsvcString* root = roots[0]; root != NULL && root < roots[1]; root++) {
+        char path[MAX_PATH];
+        const char* chars = String_Chars(root);
+        size_t length = root->size;
+        while (length > 0 && (chars[length - 1] == '\\' || chars[length - 1] == '/')) {
+            length--;
+        }
+        snprintf(path, sizeof(path), "%.*s%s", (int)length, chars, TS_MUSIC_PROBE);
+        if (GetFileAttributesA(path) != INVALID_FILE_ATTRIBUTES) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/*
+**	The player's soundtrack setting (FACTION, MIX, RA, TD or TS) from Documents/CnCRemastered/
+**	tf_music.ini, FACTION when unset.
+*/
+void Read_Soundtrack(char* setting, size_t size)
+{
+    snprintf(setting, size, "FACTION");
+    const char* up = getenv("USERPROFILE");
+    if (up == NULL) {
+        return;
+    }
+    char path[512];
+    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_music.ini", up);
+    FILE* file = fopen(path, "r");
+    if (file == NULL) {
+        return;
+    }
+    char line[64];
+    char value[16];
+    while (fgets(line, sizeof(line), file) != NULL) {
+        if (sscanf(line, "Soundtrack=%15s", value) == 1) {
+            snprintf(setting, size, "%s", value);
+        }
+    }
+    fclose(file);
+}
+
+/*
+**	The TF playlist to ask for (RA, TD, TS or MIX), or NULL to keep the stock rotation, which is
+**	also what MIX falls back to without the TS music.
+*/
+const char* Wanted_Playlist(void)
+{
+    char setting[16];
+    Read_Soundtrack(setting, sizeof(setting));
+    bool ts = TS_Music_Present();
+    int faction = *(const int*)LOBBY_FACTION;
+    const char* by_faction = (faction >= 0 && faction < (int)ARRAY_SIZE(FACTION_LISTS)) ? FACTION_LISTS[faction] : NULL;
+    if (_stricmp(setting, "RA") == 0) {
+        return "RA";
+    }
+    if (_stricmp(setting, "TD") == 0) {
+        return "TD";
+    }
+    if (_stricmp(setting, "MIX") == 0) {
+        return ts ? "MIX" : NULL;
+    }
+    if (_stricmp(setting, "TS") == 0 && ts) {
+        return "TS";
+    }
+    return (by_faction != NULL && (strcmp(by_faction, "TS") != 0 || ts)) ? by_faction : NULL;
 }
 
 #if TF_DEV_BUILD
@@ -57,7 +131,13 @@ void Music_Log(const char* stock, const char* asked, bool found)
     snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_music.log", up);
     FILE* log = fopen(path, "a");
     if (log != NULL) {
-        fprintf(log, "faction=%d stock=%s asked=%s %s\n", *(const int*)LOBBY_FACTION, stock, asked, found ? "FOUND" : "missing");
+        fprintf(log,
+                "faction=%d ts_music=%d stock=%s asked=%s %s\n",
+                *(const int*)LOBBY_FACTION,
+                TS_Music_Present() ? 1 : 0,
+                stock,
+                asked,
+                found ? "FOUND" : "missing");
         fclose(log);
     }
 }
@@ -65,21 +145,23 @@ void Music_Log(const char* stock, const char* asked, bool found)
 
 /*
 **	Stands in for the music manager's find-by-name at the ambient-music call: a skirmish event
-**	is swapped for the faction playlist under the same prefix when that playlist exists.
+**	is swapped for the wanted TF playlist under the same prefix when that playlist exists.
 */
 void* __fastcall Ambient_Find(void* manager, void*, const MsvcString* name)
 {
     const char* chars = String_Chars(name);
-    const char* playlist = Faction_Playlist();
-    if (playlist != NULL && name->size == PREFIX_LENGTH + sizeof(SKIRMISH_EVENT) - 1
-        && _stricmp(chars + PREFIX_LENGTH, SKIRMISH_EVENT) == 0) {
+    if (name->size == PREFIX_LENGTH + sizeof(SKIRMISH_EVENT) - 1 && _stricmp(chars + PREFIX_LENGTH, SKIRMISH_EVENT) == 0) {
+        const char* playlist = Wanted_Playlist();
         static char text[64];
-        int length = snprintf(text, sizeof(text), "%.3s_%s", chars, playlist);
-        MsvcString ours = {};
-        *(char**)ours.buf = text;
-        ours.size = (unsigned)length;
-        ours.capacity = sizeof(text) - 1;
-        void* event = ((MusicFindFn)MUSIC_FIND)(manager, &ours);
+        snprintf(text, sizeof(text), "%.3s_TF_MUS_%s", chars, playlist != NULL ? playlist : "(stock)");
+        void* event = NULL;
+        if (playlist != NULL) {
+            MsvcString ours = {};
+            *(char**)ours.buf = text;
+            ours.size = (unsigned)strlen(text);
+            ours.capacity = sizeof(text) - 1;
+            event = ((MusicFindFn)MUSIC_FIND)(manager, &ours);
+        }
 #if TF_DEV_BUILD
         Music_Log(chars, text, event != NULL);
 #endif
