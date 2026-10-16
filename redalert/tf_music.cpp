@@ -77,11 +77,11 @@ bool TS_Music_Present(void)
 
 /*
 **	The player's soundtrack setting (FACTION, MIX, RA, TD or TS) from Documents/CnCRemastered/
-**	tf_music.ini, FACTION when unset.
+**	tf_music.ini, MIX when unset.
 */
 void Read_Soundtrack(char* setting, size_t size)
 {
-    snprintf(setting, size, "FACTION");
+    snprintf(setting, size, "MIX");
     const char* up = getenv("USERPROFILE");
     if (up == NULL) {
         return;
