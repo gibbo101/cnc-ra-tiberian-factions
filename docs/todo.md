@@ -190,6 +190,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ## Features and ideas
 
+- **Game rules editor** (`game-rules.md`): every faction's unit values and a short list of match
+  rules, edited in the Faction Encyclopedia, DEFAULT / CUSTOM and reset always shown. First: a
+  hand-written `tf_rules.ini` changing one value in a skirmish, then the slider probe.
 - **TS chrono arrival at skirmish start.** A TS player's opening units are held back while a
   chrono vortex opens on their start, then come through one by one and fan out. The vortex is
   launcher-drawn and the DLL can place it (`launcher-render-contracts.md` 10: `VortexActive/X/Y`
