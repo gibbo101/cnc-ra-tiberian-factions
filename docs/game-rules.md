@@ -85,6 +85,11 @@ Existing `[General]` and `[Recharge]` keys, no new code: `BuildSpeed`, `RefundPe
 `IronCurtain`, `AtomDamage`, the crate keys and the superweapon recharge times. Lobby settings
 (credits, Tiberium growth, crates on or off) stay in the lobby.
 
+**Starting credits above 10,000** go in the lobby itself, not here: the lobby's tiers are the
+`CNCStartingCredits` list in `GAMECONSTANTS.XML` (stock 500 to 10,000), which
+`gameconstants_build.py` already edits at the base byte size. The DLL hands the chosen value to
+every house uncapped, and joiners see it in the lobby. Unproven: that the slider sizes to the list.
+
 New DLL features, each its own job: bounty (credits for kills), friendly fire off, AI personality
 per match (balanced, tank rush, air, naval, turtle).
 
