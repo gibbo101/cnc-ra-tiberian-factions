@@ -167,5 +167,49 @@ def main(base_path, listing_path, out_path):
     print(f"OK: {len(tracks)} tracks, {len(final)} bytes (matches base exactly)")
 
 
+# The playlists the faction-music hook asks for (redalert/tf_music.cpp), per audio prefix. Each copies the
+# prefix's skirmish rotation settings; RA and TD take that rotation's own tracks of their game.
+TF_PLAYLISTS = ("RA", "TD", "TS", "MIX")
+AUDIO_PREFIXES = ("RAR", "RAC", "RAB")
+
+
+def tf_playlists(edited, tracks_json):
+    """Text of the <prefix>_TF_MUS_<LIST> events, built from the edited skirmish rotations and the TS-Music
+    pack's track list."""
+    import json
+    ts = [t["name"] for t in json.load(open(tracks_json))]
+    eol = "\r\n" if "\r\n" in edited else "\n"
+    out = []
+    for prefix in AUDIO_PREFIXES:
+        m = re.search(rf'(\t<MusicEvent Name="{prefix}_MUS_RA_MULTIPLAYER_MODE".*?</MusicEvent>)', edited, re.S)
+        if not m:
+            sys.exit(f"ERROR: {prefix}_MUS_RA_MULTIPLAYER_MODE block not found")
+        block = m.group(1)
+        rotation = [e.rsplit(".", 1)[0] for e in re.findall(r"<Entry>\s*(\S+)\s*</Entry>", block)]
+        lists = {"RA": [t for t in rotation if t.upper().startswith("RA")],
+                 "TD": [t for t in rotation if t.upper().startswith("TD")],
+                 "TS": ts,
+                 "MIX": rotation + ts}
+        for name in TF_PLAYLISTS:
+            event = render_block(block, lists[name], eol)
+            out.append(event.replace(f'"{prefix}_MUS_RA_MULTIPLAYER_MODE"', f'"{prefix}_TF_MUS_{name}"', 1) + eol + eol)
+    return "".join(out)
+
+
+def loose(edited_path, tracks_json, out_path):
+    """Writes the mod's loose MUSICEVENTS.XML: the edited member plus the TF playlists. A loose file has no
+    size contract."""
+    raw = open(edited_path, "rb").read().decode("utf-8", errors="surrogateescape")
+    marker = "</MusicEvents>"
+    end = raw.rindex(marker)
+    text = raw[:end] + tf_playlists(raw, tracks_json) + raw[end:]
+    with open(out_path, "wb") as fh:
+        fh.write(text.encode("utf-8", "surrogateescape"))
+    print(f"OK: loose {out_path}, {len(TF_PLAYLISTS) * len(AUDIO_PREFIXES)} TF playlists")
+
+
 if __name__ == "__main__":
-    main(*sys.argv[1:4])
+    if sys.argv[1] == "loose":
+        loose(*sys.argv[2:5])
+    else:
+        main(*sys.argv[1:4])
