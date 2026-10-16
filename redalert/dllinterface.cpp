@@ -7521,14 +7521,6 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_ControlGroup_Request(Co
     }
 }
 
-// Sidebar cameo badges: a buildable's AssetName gets a _<digit> suffix naming which of the player's factions
-// make it, and RABUILDABLES.XML carries a variant per suffix (scripts/cameo_variants_build.py).
-#define TF_FACTION_ALLIES 0x1
-#define TF_FACTION_SOVIET 0x2
-#define TF_FACTION_GDI    0x4
-#define TF_FACTION_NOD    0x8
-#define TF_FACTION_TSGDI  0x10 /* the TS tree; badge digit 'G' */
-
 // Maps an Owner= house mask to the RA and TD faction bits. The badge art is baked from TF_Dump_Faction_Masks'
 // output (scripts/cameo_badge_build.py), so a change here needs the art rebuilt.
 static int TF_Faction_Mask_From_Ownable(int ownable)
@@ -7550,7 +7542,7 @@ static int TF_Faction_Mask_From_Ownable(int ownable)
 }
 
 // The faction bits an entry is badged with: the TS bit for TS-tree types, its Owner= factions otherwise.
-static int TF_Entry_Faction_Mask(TechnoTypeClass const* type)
+int TF_Entry_Faction_Mask(TechnoTypeClass const* type)
 {
     if (type != NULL && TF_Is_TS_Tree_Type(type)) {
         return TF_FACTION_TSGDI;

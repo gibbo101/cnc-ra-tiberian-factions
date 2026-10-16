@@ -156,6 +156,7 @@ extern bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type); // Prerequisite= na
 #define TF_FACTION_GDI    0x4
 #define TF_FACTION_NOD    0x8
 #define TF_FACTION_TSGDI  0x10 /* the TS tree; badge digit 'G' */
+extern int TF_Entry_Faction_Mask(TechnoTypeClass const* type); // the TF_FACTION_ bits a type is badged with (dllinterface.cpp)
 extern int TF_Plug_Layer_Frame(StructType type, int socket, bool damaged); // an Upgrade Centre plug's TSPLUGP frame (building.cpp)
 extern unsigned TF_Save_Version(void); // the save version this build writes and loads (saveload.cpp)
 #define TF_SAVE_MARKER "TFS2"          // leads the DLL's save data: then TF_Save_Version and TF_SAVE_* flags
