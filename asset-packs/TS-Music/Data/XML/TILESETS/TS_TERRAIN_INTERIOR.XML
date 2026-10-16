@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<Tilesets>
+	<TilesetTypeClass name="RA_Terrain_Interior">
+		<RootTexturePath>Red_Alert\Terrain\Interior</RootTexturePath>
+		<Tiles>
+</Tiles>
+	</TilesetTypeClass>
+</Tilesets>

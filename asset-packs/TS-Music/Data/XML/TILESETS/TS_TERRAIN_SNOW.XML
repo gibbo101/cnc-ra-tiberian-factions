@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<Tilesets>
+	<TilesetTypeClass name="RA_Terrain_Snow">
+		<RootTexturePath>Red_Alert\Terrain\Snow</RootTexturePath>
+		<Tiles>
+</Tiles>
+	</TilesetTypeClass>
+</Tilesets>
