@@ -100,6 +100,7 @@ Tiberian Factions' code, scripts and tools are written with AI assistance. How i
 
 - **EA / Petroglyph:** original Tiberian Dawn (1995) and Red Alert (1996), and the 2020 Remastered Collection.
 - **Westwood Studios / EA:** Tiberian Sun (1999) and Red Alert 2 (2000), and **EA Los Angeles:** Command & Conquer 3: Tiberium Wars (2007), whose art and audio the mod uses.
+- **Westwood Studios / EA:** the original game manuals for Command & Conquer, Red Alert, The Aftermath and Tiberian Sun, whose unit and faction descriptions the Faction Encyclopedia quotes.
 - **hazelnut** ([SteamGridDB](https://www.steamgriddb.com/)): the Tiberian Sun GDI emblem on the TS GDI faction's cameo badges and faction icon.
 - **[The Assembly Armada](https://github.com/TheAssemblyArmada):** Vanilla Conquer maintainers.
 

@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
-"""Write the loose main menu: the CONFIG.MEG menu from bui_mainmenu_build.py plus the asset-pack panel.
+"""Write the loose main menu: the CONFIG.MEG menu from bui_mainmenu_build.py, the ADD-ONS row and the pack panel.
 
 usage: bui_mainmenu_pack_notice.py <edited RA_MAIN_MENU.BUI> <out loose RA_MAIN_MENU.BUI>
 
+Adds TIBERIAN FACTIONS ADD-ONS (TF_AddOns, a clone of EXIT GAME) between LAN MODE and REPLAY / OBSERVER, the rows
+under it lower; it opens the ADD-ONS screen (scripts/bui_addons_build.py). FACTION ENCYCLOPEDIA (TF_Encyclopedia)
+goes under it, opening the encyclopedia (scripts/bui_encyclopedia_build.py), and REPLAY / OBSERVER takes BONUS
+GALLERY's row; the gallery's button and its new-content badge move off screen, as the launcher shows them again
+(shrunk, the badge stretched into view).
 Adds the pack panel top right (the Westwood plate's mirror), every piece hidden and placed straight in
-ScreenFitter_Group: the frame (TF_Pack_Frame) and one logo per required pack (TF_Logo_<id>), images cloned from
-the menu box's Button_BG; a centred status line (TF_Pack_Status); and two buttons, GET IT ON THE STEAM WORKSHOP
-and ENABLE AND RESTART. The launcher layer (redalert/tf_launcher.cpp) shows the pieces for a pack that is missing
-or switched off, and sets the status line. TF_Version, centred between BUILD and VERSION in the menu box, shows
-the mod's version, which the launcher layer reads from ccmod.json. Sizes and textures come
+ScreenFitter_Group: the frame (TF_Pack_Frame) and one logo per pack (TF_Logo_<id>), images cloned from the menu
+box's Button_BG; a centred status line (TF_Pack_Status); and GO TO ADD-ONS (TF_Pack_Open). The launcher layer
+(redalert/tf_launcher.cpp) shows the pieces for a required pack that is missing or switched off. TF_Version,
+centred between BUILD and VERSION in the menu box, shows the mod's version, which the launcher layer reads from
+ccmod.json. Sizes and textures come
 from scripts/pack_panel_art.py. The credits hot spot that covered the top right moves onto the Westwood plate.
 A loose file overrides the CONFIG.MEG member at any size (docs/bui-front-end-modding.md).
 License: GPL v3.
@@ -32,7 +37,11 @@ PLATE = (53, 24, 453, 118)         # the Westwood plate, core pixels
 ALIGN_CENTRE = 1
 STATUS = b'NEEDED FOR THE TIBERIAN SUN GDI FACTION'
 VERSION_RECT = (0.426, 0.822, 0.18, 0.017)   # centred on the menu box, on BUILD and VERSION's row
-BUTTONS = ((b'TF_Pack_Get', b'GET IT ON THE STEAM WORKSHOP'), (b'TF_Pack_Enable', b'ENABLE AND RESTART'))
+BUTTONS = ((b'TF_Pack_Open', b'GO TO ADD-ONS'),)
+ADDONS_ROW_Y = 0.3978              # LAN MODE's row + one row, in the button column's units
+ROW_STEP = 0.0995
+OFF_SCREEN_X = -20.0               # far left of the button column, outside any screen
+LOWER_ROWS = (b'Button_Replays', b'Button_Video_Options', b'Button_Help', b'Button_Exit')
 
 
 def element_of(node, name):
@@ -112,6 +121,40 @@ def centre_text(node):
     return 0
 
 
+def rect_of(element, name):
+    """A widget's rect."""
+    w = chain_to(element, name)[-1][1][0][1]
+    at, _ = micro(w, 0x02)
+    return struct.unpack_from('<4f', w, at)
+
+
+def addons_row(roots):
+    """TIBERIAN FACTIONS ADD-ONS and FACTION ENCYCLOPEDIA under LAN MODE, REPLAY / OBSERVER in BONUS GALLERY's row
+    and the rows below it moved down one."""
+    exit_root = next(r for r in roots if chain_to(r, b'Button_Exit'))
+    exit_button = element_of(exit_root, b'Button_Exit')
+    column = next(n for n in chain_to(exit_root, b'Button_Exit') if isinstance(n[1], list) and exit_button in n[1])
+    x, _, w, h = rect_of(exit_button, b'Button_Exit')
+    bonus = element_in(roots, b'Button_Bonus_Content')
+    bonus_y = rect_of(bonus, b'Button_Bonus_Content')[1]
+    for name in LOWER_ROWS:
+        element = element_in(roots, name)
+        rx, ry, rw, rh = rect_of(element, name)
+        ry = bonus_y + ROW_STEP if name == b'Button_Replays' else ry + ROW_STEP
+        set_header(element, name, name, (rx, ry, rw, rh), hidden=False)
+    button = copy.deepcopy(exit_button)
+    set_header(button, b'Button_Exit', b'TF_AddOns', (x, ADDONS_ROW_Y, w, h), hidden=False)
+    set_label(button, b'TIBERIAN FACTIONS ADD-ONS')
+    encyclopedia = copy.deepcopy(exit_button)
+    set_header(encyclopedia, b'Button_Exit', b'TF_Encyclopedia', (x, ADDONS_ROW_Y + ROW_STEP, w, h), hidden=False)
+    set_label(encyclopedia, b'FACTION ENCYCLOPEDIA')
+    for name in (b'Button_Bonus_Content', b'BonusNotification_Group'):
+        element = element_in(roots, name)
+        _, y, w, h = rect_of(element, name)
+        set_header(element, name, name, (OFF_SCREEN_X, y, w, h), hidden=True)
+    return column, [button, encyclopedia]
+
+
 def panel(roots):
     """The pack panel's widgets, frame first so the rest draws over it; ids not yet renumbered."""
     quad = element_in(roots, QUAD_SOURCE)
@@ -139,8 +182,12 @@ def panel(roots):
 
 def main(src, out):
     base, roots = load(src)
+    column, menu_rows = addons_row(roots)
     screen_group = chain_to(next(r for r in roots if chain_to(r, SCREEN_GROUP)), SCREEN_GROUP)[-2]
     fresh = last_id(roots)
+    for row in menu_rows:
+        fresh = renumber(row, fresh)
+        column[1].append(row)
     for widget in panel(roots):
         fresh = renumber(widget, fresh)
         screen_group[1].append(widget)

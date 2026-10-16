@@ -726,6 +726,11 @@ Before declaring a TD-entity port "100% authentic":
       block after the whole run). Take footprints/occupancy/frame layouts from the
       **bdata.cpp/udata.cpp ctors and rules.ini**, never from the enum comments in
       `defines.h` — those went stale once (TSPROC/TSWEAP) and cost a re-verification pass.
+- [ ] **Encyclopedia:** add the entry's text (and any new weapon's name) to
+      `scripts/encyclopedia_work/descriptions.json`, copy a dev build's `Documents/CnCRemastered/tf_encyclopedia.log`
+      to `scripts/encyclopedia_work/entries.tsv`, and run `scripts/encyclopedia_build.sh`, which warns about missing
+      text (`encyclopedia.md`). Its picture is drawn live from its art; a sprite drawn unlike the game's stock view
+      (a new layer, a special frame) needs a case in `TF_Encyclopedia_Sprite`.
 - [ ] `IsTDPort = true` set after registration (for classes that have the flag)
 - [ ] Donor `ImageData` pointer copied if not a building (bullet/anim/aircraft)
 - [ ] Rules.ini values are TD-source raw values (with conversion comments if non-IsTDPort)

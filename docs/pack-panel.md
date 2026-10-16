@@ -1,12 +1,39 @@
-# The pack panel, lobby popup and save check
+# Add-ons: the ADD-ONS screen, pack panel, lobby popup and save check
 
-**Status:** Reference. What the launcher layer (`redalert/tf_launcher.cpp`) does for the required asset packs,
-as of 5.5.0, against ClientG 1.153.745903.
+**Status:** Reference. What the launcher layer (`redalert/tf_launcher.cpp`) does for the asset packs, against
+ClientG 1.153.745903: the panel, popup and save check ship in 5.5.0; the ADD-ONS screen ships in the next release.
 
-A required pack (`asset-packs.md`, Required packs) is found by its CCDATA marker in the launcher's own mod list.
-The launcher layer shows the player what is missing and fixes it in place: the main menu's panel, the lobby's
-popup, and Load Game's check. Every launcher function it calls is checked by its opening bytes at install
-(`Panel_Calls_Match`); on another launcher build none of it installs.
+An add-on is found by a marker file in the launcher's own mod list: a required pack's CCDATA marker
+(`asset-packs.md`, Required packs), any file unique to it otherwise. The ADD-ONS screen gets, switches on and
+switches off add-ons; the main menu's panel and the lobby's popup send the player there; Load Game checks saves.
+Every launcher function they call is checked by its opening bytes at install (`Panel_Calls_Match`); on another
+launcher build none of it installs.
+
+## The ADD-ONS screen
+
+TIBERIAN FACTIONS ADD-ONS, between LAN MODE and FACTION ENCYCLOPEDIA on the main menu, opens a screen of the mod's
+own: `TF_ADDONS.BUI` (`scripts/bui_addons_build.py`), the CAMPAIGNS page's frame with its class set to ClientG's
+`SplashScreen`. A screen's `.BUI` names the C++ class that runs it; `SplashScreen` is registered, used by no stock
+screen and binds nothing, so the launcher layer binds every widget. Opening: `GUIManager()` (`0x5ED5D0`), then
+`Create_Scene_Instance` (`0xF2CB70`, the name `RA/TF_AddOns`), focus (`0xF0E1D0`), and the scene's behaviour object
+at `+0x330` owns the widgets and events. BACK closes the scene (vtable `+0x2CC`) and releases it (`0x55FE10`); the
+main menu stays alive under it. A click handler bound with data `n` is called with the behaviour object plus `n`
+in `ecx`, so one handler serves every row or tab.
+
+- **Tabs** ASSETS, THEATRES and CAMPAIGNS (`PackInfo.Kind`), each a clone of BACK with a glow when open and a badge
+  counting its changes. An empty tab shows COMING SOON.
+- **Rows**, four a tab: a checkbox (TD's, from Bonus Gallery), the pack's logo, name and state. A click on a row
+  outside its checkbox selects it; the checkbox means "on".
+- **The selected pack**, on the right: name, logo, description, what it needs or what needs it, its status and a
+  20-segment download bar.
+- **The top panel** lists the changes waiting (WILL SWITCH ON / WILL SWITCH OFF, knock-on changes with their
+  cause), or how to use the screen.
+- **Dependencies** (`PackInfo.Needs`): ticking a pack ticks what it needs, unticking one unticks what needs it.
+- **APPLY AND RESTART** switches unticked packs off (`0x7BB7A0` with 0), subscribes to ticked packs that are missing
+  (`SteamAPI_ISteamUGC_SubscribeItem`), and once every ticked pack has arrived switches them on and restarts.
+  While packs download it reads WORKING... and BACK reads CANCEL, which stops the wait without switching anything
+  on; the screen covers the menu, so no game starts meanwhile. A pack Steam never starts on within 20 seconds
+  opens its Workshop page. UNDO CHANGES puts every tick back to what is on. Unsubscribing is the Workshop's.
 
 ## Pack states
 
@@ -21,8 +48,11 @@ popup, and Load Game's check. Every launcher function it calls is checked by its
    panel shows `GetItemDownloadInfo`'s percentage.
 5. **Missing.**
 
-`PACKS` in `tf_launcher.cpp` has one row per required pack: its marker, logo widget, Workshop item and what needs
-it.
+A pack downloaded and switched on in this session, not yet in the mod list, reads as switched on for the next
+start; one switched off but still loaded reads as switched off for the next start.
+
+`PACKS` in `tf_launcher.cpp` has one row per add-on, in `scripts/pack_panel_art.py` `PACK_LOGOS` order: its marker,
+logo id, Workshop item, the faction that needs it (none for an optional pack), name, description, kind and needs.
 
 ## Main menu panel
 
@@ -34,21 +64,21 @@ menu images without mipmaps, so a larger frame bands on the Deck) and a logo per
 The main menu is one object for the whole session, so a 2-second `SetTimer` on its UI thread refreshes the panel
 while a pack needs the player. It shows the first such pack, with `+N MORE` when others wait:
 
-- **GET IT ON THE STEAM WORKSHOP** opens the item's page in the Steam overlay.
-- **ENABLE AND RESTART** switches every installed pack on with the Mods screen's own toggle (`0x7BB7A0`), adds a
-  downloaded pack's ID to the profile's enabled list (`0x20E0D88`; the ID is zlib's CRC-32 of `ccmod.json`'s name
-  followed by `high.low`), saves the profile (`0x14D8420` with 1, 0, 1), and posts the launcher's
-  `CL_CLIENT_RESTART` message, as the Mods screen's RESTART NOW does. The game comes back with the pack loaded.
+**GO TO ADD-ONS** opens the ADD-ONS screen with that pack selected and ticked.
+
+Switching on uses the Mods screen's own toggle (`0x7BB7A0`) for an installed pack and adds a downloaded pack's ID
+to the profile's enabled list (`0x20E0D88`; the ID is zlib's CRC-32 of `ccmod.json`'s name followed by
+`high.low`), saves the profile (`0x14D8420` with 1, 0, 1), and restarts by posting the launcher's
+`CL_CLIENT_RESTART` message, as the Mods screen's RESTART NOW does.
 
 A `ccmod.json` version bump changes the ID, and the launcher drops enabled IDs that match no installed mod at
-startup, so an update switches the pack off once; the panel then offers ENABLE AND RESTART.
+startup, so an update switches the pack off once; the panel then offers GO TO ADD-ONS.
 
 ## Lobby popup
 
 Picking TS GDI for any slot, or a slot taking it from the lobby's settings, raises ClientG's message box when the
-pack isn't loaded. Missing: **GET IT ON THE WORKSHOP** leaves the lobby through its own Back handler (`0x71C790`,
-on the next UI tick), so the main menu's panel follows the download, then opens the page. Installed or
-downloaded: **ENABLE AND RESTART**. The box reports its first button as 2 and OK as 3.
+pack isn't loaded. **GO TO ADD-ONS** leaves the lobby through its own Back handler (`0x71C790`, on the next UI
+tick) and opens the ADD-ONS screen with the pack ticked. The box reports its first button as 2 and OK as 3.
 
 ## Load Game check
 

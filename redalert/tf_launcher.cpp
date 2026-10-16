@@ -5,6 +5,7 @@
 */
 #include "function.h"
 #include "tf_launcher.h"
+#include "tf_encyclopedia.h"
 #include "tf_asset_pack.h"
 
 extern "C" {
@@ -15,6 +16,7 @@ extern "C" {
 #include <cstdlib>
 #include <cctype>
 #include <cstring>
+#include <d3d11.h>
 
 namespace {
 
@@ -53,18 +55,20 @@ typedef void(__thiscall* SetHiddenFn)(void* widget, int hidden);
 
 /*
 **	A named widget of a screen or list row, through ClientG's own find and type cast; NULL
-**	when absent. Names fit the 15-character short-string form.
+**	when absent. A name over 15 characters is lent in place: the find only reads it.
 */
 void* Find_Widget(void* owner, const char* name, SIZE_T cast)
 {
     MsvcString text = {};
     size_t length = strlen(name);
     if (length > 15) {
-        return NULL;
+        *(const char**)text.buf = name;
+        text.capacity = (unsigned)length;
+    } else {
+        memcpy(text.buf, name, length + 1);
+        text.capacity = 15;
     }
-    memcpy(text.buf, name, length + 1);
     text.size = (unsigned)length;
-    text.capacity = 15;
     void* widget = ((WidgetFindFn)WIDGET_FIND)(*(void**)((char*)owner + 4), &text);
     return widget == NULL ? NULL : ((AsWidgetFn)cast)(owner, 0, widget);
 }
@@ -423,17 +427,37 @@ const DWORD MOD_FOLDER = 0x78;
 const DWORD MOD_ID = 0xA8;
 const DWORD MOD_ENABLED = 0xB9;
 
-struct PackInfo
+enum AddOnKind
 {
-    const char* Marker;       // the file every copy of the pack carries, from its folder
-    const char* Logo;         // its logo in the menu's pack panel (scripts/pack_panel_art.py)
-    const char* WorkshopId;   // its Red Alert Workshop item
-    const wchar_t* NeededFor; // what needs it, for the panel's status line
+    KIND_ASSETS,
+    KIND_THEATRES,
+    KIND_CAMPAIGNS,
+    KIND_COUNT
 };
 
-// One row per required asset pack (asset_packs.WORKSHOP); the panel shows the first that needs the player.
+struct PackInfo
+{
+    const char* Marker;              // the file every copy of the pack carries, from its folder
+    const char* Id;                  // its logo's id (scripts/pack_panel_art.py PACK_LOGOS)
+    const char* WorkshopId;          // its Red Alert Workshop item
+    const wchar_t* NeededFor;        // the faction that needs it; NULL when none does
+    const wchar_t* Name;             // as the ADD-ONS screen lists it; the font reads & as a shortcut, && as one &
+    const wchar_t* Description[2];   // the ADD-ONS screen's two lines on it, & written as &&
+    AddOnKind Kind;                  // its tab on the ADD-ONS screen
+    const char* Needs[2];            // the Ids of the packs it can't work without
+};
+
+// One row per pack on the ADD-ONS screen, in PACK_LOGOS order (asset_packs.WORKSHOP); the menu's panel shows the
+// first required pack that needs the player.
 const PackInfo PACKS[] = {
-    {"CCDATA\\TSHDPACK.INI", "TF_Logo_TSHD", "3819642604", L"THE TIBERIAN SUN GDI FACTION"},
+    {"CCDATA\\TSHDPACK.INI",
+     "TSHD",
+     "3819642604",
+     L"THE TIBERIAN SUN GDI FACTION",
+     L"TIBERIAN SUN HD ASSETS",
+     {L"Units, buildings, effects, voices and EVA", L"from Tiberian Sun, rebuilt in HD."},
+     KIND_ASSETS,
+     {NULL, NULL}},
 };
 const int PACK_COUNT = sizeof(PACKS) / sizeof(PACKS[0]);
 const int TS_HD_PACK = 0;
@@ -441,7 +465,8 @@ const int TS_HD_PACK = 0;
 enum PackState
 {
     PACK_ENABLED,
-    PACK_OUTDATED, // loaded, but older than this build's XML needs
+    PACK_OUTDATED,      // loaded, but older than this build's XML needs
+    PACK_OFF_NEXT_START, // loaded, but switched off for the next start
     PACK_ON_NEXT_START,
     PACK_INSTALLED_OFF,
     PACK_DOWNLOADED,  // in its Workshop folder, but not yet in the launcher's mod list
@@ -567,7 +592,46 @@ int Pack_Download_Percent(int pack)
 }
 
 /*
-**	A required pack's state, from this session's mod roots, the launcher's mod list, its Workshop folder and Steam.
+**	Subscribes the player to a pack's Workshop item; Steam then downloads it. False without Steam.
+*/
+typedef unsigned long long(__cdecl* SubscribeItemFn)(void* ugc, unsigned long long item);
+
+bool Subscribe_Pack(int pack)
+{
+    SubscribeItemFn subscribe = (SubscribeItemFn)Steam_Export("SteamAPI_ISteamUGC_SubscribeItem");
+    void* ugc = Steam_Ugc();
+    if (subscribe == NULL || ugc == NULL) {
+        return false;
+    }
+    subscribe(ugc, strtoull(PACKS[pack].WorkshopId, NULL, 10));
+    return true;
+}
+
+// Packs downloaded this session and added to the profile's enabled list, which the mod list shows on the next start.
+bool PackQueued[PACK_COUNT];
+
+/*
+**	A pack as the launcher's mod list has it: switched on for the next start if any copy is, switched off if
+**	every copy is, or missing when it lists none.
+*/
+PackState Listed_State(const char* marker)
+{
+    PackState state = PACK_MISSING;
+    char* mm = Mod_Manager();
+    if (mm != NULL) {
+        char* last = *(char**)(mm + 0x1C);
+        for (char* r = *(char**)(mm + 0x18); r != NULL && r < last; r += MOD_RECORD_SIZE) {
+            if (Has_Pack_Marker(String_Chars((const MsvcString*)(r + MOD_FOLDER)), marker)) {
+                PackState found = *(const unsigned char*)(r + MOD_ENABLED) ? PACK_ON_NEXT_START : PACK_INSTALLED_OFF;
+                state = found < state ? found : state;
+            }
+        }
+    }
+    return state;
+}
+
+/*
+**	A pack's state, from this session's mod roots, the launcher's mod list, its Workshop folder and Steam.
 */
 PackState Pack_State(int pack)
 {
@@ -580,30 +644,32 @@ PackState Pack_State(int pack)
                 char path[MAX_PATH];
                 snprintf(path, sizeof(path), "%s\\%s", String_Chars(root), marker);
                 int high = -1, low = -1;
-                bool current = TF_Read_Pack_Marker(path, &high, &low) && TF_Pack_Version_Current(high, low);
-                return current ? PACK_ENABLED : PACK_OUTDATED;
+                bool current = PACKS[pack].NeededFor == NULL
+                               || (TF_Read_Pack_Marker(path, &high, &low) && TF_Pack_Version_Current(high, low));
+                if (!current) {
+                    return PACK_OUTDATED;
+                }
+                return Listed_State(marker) == PACK_INSTALLED_OFF ? PACK_OFF_NEXT_START : PACK_ENABLED;
             }
         }
     }
-    PackState state = PACK_MISSING;
-    char* mm = Mod_Manager();
-    if (mm != NULL) {
-        char* last = *(char**)(mm + 0x1C);
-        for (char* r = *(char**)(mm + 0x18); r != NULL && r < last; r += MOD_RECORD_SIZE) {
-            if (Has_Pack_Marker(String_Chars((const MsvcString*)(r + MOD_FOLDER)), marker)) {
-                PackState found = *(const unsigned char*)(r + MOD_ENABLED) ? PACK_ON_NEXT_START : PACK_INSTALLED_OFF;
-                state = found < state ? found : state;
-            }
-        }
-    }
+    PackState state = Listed_State(marker);
     char folder[MAX_PATH];
     if (state == PACK_MISSING && Downloaded_Pack_Folder(pack, folder, sizeof(folder))) {
-        state = PACK_DOWNLOADED;
+        state = PackQueued[pack] ? PACK_ON_NEXT_START : PACK_DOWNLOADED;
     }
     if (state == PACK_MISSING && Pack_Download_Percent(pack) >= 0) {
         state = PACK_DOWNLOADING;
     }
     return state;
+}
+
+/*
+**	True when this session has the pack loaded: on, out of date, or switched off only from the next start.
+*/
+bool Pack_Loaded(PackState state)
+{
+    return state == PACK_ENABLED || state == PACK_OUTDATED || state == PACK_OFF_NEXT_START;
 }
 
 /*
@@ -697,12 +763,11 @@ void Show_Message(const wchar_t* body, const wchar_t* action_text = NULL, void (
 */
 const DWORD PACK_POPUP_HOLD_MS = 10000;
 
-void Open_Pack_Page(int pack);
-void Enable_Packs_And_Restart(void);
+void Open_AddOns(int pack);
 
 /*
 **	Leaves the skirmish lobby as its Back button does: cancels the game, closes the lobby and returns to the main
-**	menu, which stays alive underneath. False when no lobby is open or its Back button is unavailable.
+**	menu, which stays alive underneath. True with no lobby open; false when one is but its Back button is unusable.
 */
 const SIZE_T LOBBY_HOLDER = 0x1FA8050;
 const SIZE_T LOBBY_BACK = 0x71C790;
@@ -720,7 +785,7 @@ bool Leave_Lobby(void)
     char* holder = *(char**)LOBBY_HOLDER;
     unsigned char* screen = holder != NULL ? *(unsigned char**)(holder + LOBBY_SCREEN) : NULL;
     if (screen == NULL || (screen[LOBBY_CLOSED_FLAGS] & 8)) {
-        return false;
+        return true;
     }
     char* lobby = *(char**)(screen + LOBBY_OBJECT);
     void* back = lobby != NULL ? *(void**)(lobby + LOBBY_BACK_BUTTON) : NULL;
@@ -732,21 +797,22 @@ bool Leave_Lobby(void)
 }
 
 /*
-**	The lobby popup's GET IT: on the next UI tick, outside the message box's own click, back to the main menu,
-**	where the panel shows the download, then the pack's page over it.
+**	The lobby popup's GO TO ADD-ONS: on the next UI tick, outside the message box's own click, back to the main
+**	menu, then the ADD-ONS screen over it with the Tiberian Sun pack selected.
 */
 const UINT LOBBY_LEAVE_DELAY_MS = 50;
 
-void CALLBACK Lobby_Get_Tick(HWND, UINT, UINT_PTR timer, DWORD)
+void CALLBACK Lobby_AddOns_Tick(HWND, UINT, UINT_PTR timer, DWORD)
 {
     KillTimer(NULL, timer);
-    Leave_Lobby();
-    Open_Pack_Page(TS_HD_PACK);
+    if (Leave_Lobby()) {
+        Open_AddOns(TS_HD_PACK);
+    }
 }
 
-void Get_TS_HD_Pack(void)
+void Lobby_AddOns(void)
 {
-    SetTimer(NULL, 0, LOBBY_LEAVE_DELAY_MS, Lobby_Get_Tick);
+    SetTimer(NULL, 0, LOBBY_LEAVE_DELAY_MS, Lobby_AddOns_Tick);
 }
 
 void Pack_Popup(void)
@@ -754,26 +820,19 @@ void Pack_Popup(void)
     static DWORD shown = 0;
     PackState state = Pack_State(TS_HD_PACK);
     DWORD now = GetTickCount();
-    if (state == PACK_ENABLED || (shown != 0 && now - shown < PACK_POPUP_HOLD_MS)) {
+    if (Pack_Loaded(state) || (shown != 0 && now - shown < PACK_POPUP_HOLD_MS)) {
         return;
     }
     shown = now;
-    if (state == PACK_OUTDATED) {
-        Show_Message(L"Tiberian Sun GDI needs a newer Tiberian Sun HD Assets mod. Let Steam update it, then restart "
-                     L"the game.",
-                     L"GET IT ON THE WORKSHOP",
-                     &Get_TS_HD_Pack);
-    } else if (state == PACK_DOWNLOADING) {
-        Show_Message(L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod, which Steam is still downloading.");
-    } else if (state == PACK_MISSING) {
-        Show_Message(L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod, free on the Steam Workshop.",
-                     L"GET IT ON THE WORKSHOP",
-                     &Get_TS_HD_Pack);
-    } else {
-        Show_Message(L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod, which is installed but not loaded.",
-                     state == PACK_ON_NEXT_START ? L"RESTART" : L"ENABLE AND RESTART",
-                     &Enable_Packs_And_Restart);
-    }
+    const wchar_t* body =
+        state == PACK_OUTDATED ? L"Tiberian Sun GDI needs a newer Tiberian Sun HD Assets mod. Let Steam update it, "
+                                 L"then restart the game."
+        : state == PACK_DOWNLOADING ? L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod, which Steam is still "
+                                      L"downloading."
+        : state == PACK_MISSING ? L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod, free on the Steam Workshop."
+                                : L"Tiberian Sun GDI needs the Tiberian Sun HD Assets mod, which is installed but not "
+                                  L"loaded.";
+    Show_Message(body, L"GO TO ADD-ONS", &Lobby_AddOns);
 }
 
 /*
@@ -838,8 +897,7 @@ void Open_Pack_Page(int pack)
 }
 
 /*
-**	Switches on every required pack that is installed but off, as the Mods screen's checkbox does, saves the
-**	profile, and asks the launcher to restart the game (as the Mods screen's RESTART NOW does).
+**	Switching packs on, as the Mods screen's checkbox does, and restarting the game, as its RESTART NOW does.
 */
 const SIZE_T SET_MOD_ENABLED = 0x7BB7A0;
 const SIZE_T PROFILE = 0x20E0CB0;
@@ -937,11 +995,30 @@ void Profile_Enable(DWORD id)
     }
     *list->Last++ = id;
 }
+/*
+**	Takes a mod ID out of the profile's enabled list.
+*/
+void Profile_Remove(DWORD id)
+{
+    DwordVector* list = (DwordVector*)PROFILE_ENABLED_MODS;
+    for (DWORD* p = list->First; p != NULL && p < list->Last; p++) {
+        if (*p == id) {
+            memmove(p, p + 1, (list->Last - p - 1) * sizeof(DWORD));
+            list->Last--;
+            return;
+        }
+    }
+}
+
 typedef void(__thiscall* ProfileSaveFn)(void* profile, int a, int notify, int immediate);
 typedef void*(__cdecl* RestartMessageFn)(void);
 typedef void(__thiscall* PostToLauncherFn)(void* link, void* message);
 
-void Enable_Packs_And_Restart(void)
+/*
+**	Switches on the packs in `packs` (a bit per pack) that are installed but off or downloaded, and saves the
+**	profile; the next start loads them.
+*/
+void Enable_Packs(unsigned packs)
 {
     char* mm = Mod_Manager();
     if (mm == NULL) {
@@ -952,7 +1029,7 @@ void Enable_Packs_And_Restart(void)
         states[pack] = Pack_State(pack);
     }
     for (int pack = 0; pack < PACK_COUNT; pack++) {
-        if (states[pack] != PACK_INSTALLED_OFF) {
+        if (!(packs & (1u << pack)) || (states[pack] != PACK_INSTALLED_OFF && states[pack] != PACK_OFF_NEXT_START)) {
             continue;
         }
         char* last = *(char**)(mm + 0x1C);
@@ -966,14 +1043,52 @@ void Enable_Packs_And_Restart(void)
     // Set_Mod_Enabled rebuilds the profile list from the mod list, so downloaded packs' IDs go in after it.
     for (int pack = 0; pack < PACK_COUNT; pack++) {
         char folder[MAX_PATH];
-        if (states[pack] == PACK_DOWNLOADED && Downloaded_Pack_Folder(pack, folder, sizeof(folder))) {
+        bool wanted = (packs & (1u << pack)) && states[pack] == PACK_DOWNLOADED;
+        if ((wanted || PackQueued[pack]) && Downloaded_Pack_Folder(pack, folder, sizeof(folder))) {
             DWORD id = Mod_Id(folder);
             if (id != 0) {
                 Profile_Enable(id);
+                PackQueued[pack] = true;
             }
         }
     }
     ((ProfileSaveFn)PROFILE_SAVE)((void*)PROFILE, 1, 0, 1);
+}
+
+/*
+**	Switches off the packs in `packs` (a bit per pack) for the next start, as the Mods screen's checkbox does, and
+**	saves the profile; their files stay.
+*/
+void Disable_Packs(unsigned packs)
+{
+    char* mm = Mod_Manager();
+    if (mm == NULL) {
+        return;
+    }
+    for (int pack = 0; pack < PACK_COUNT; pack++) {
+        if (!(packs & (1u << pack))) {
+            continue;
+        }
+        char folder[MAX_PATH];
+        if (PackQueued[pack] && Downloaded_Pack_Folder(pack, folder, sizeof(folder))) {
+            Profile_Remove(Mod_Id(folder));
+        }
+        PackQueued[pack] = false;
+        char* last = *(char**)(mm + 0x1C);
+        for (char* r = *(char**)(mm + 0x18); r != NULL && r < last; r += MOD_RECORD_SIZE) {
+            if (Has_Pack_Marker(String_Chars((const MsvcString*)(r + MOD_FOLDER)), PACKS[pack].Marker)) {
+                ((SetModEnabledFn)SET_MOD_ENABLED)(mm, *(const DWORD*)(r + MOD_ID), 0);
+            }
+        }
+    }
+    Enable_Packs(0);
+}
+
+/*
+**	Asks the launcher to restart the game.
+*/
+void Restart_Game(void)
+{
     void* link = *(void**)LAUNCHER_LINK;
     if (link != NULL) {
         ((PostToLauncherFn)POST_TO_LAUNCHER)(link, ((RestartMessageFn)RESTART_MESSAGE)());
@@ -983,7 +1098,7 @@ void Enable_Packs_And_Restart(void)
 
 /*
 **	The main menu's pack panel (scripts/bui_mainmenu_pack_notice.py), top right: shown for the first required
-**	pack that is not loaded, with its logo, a status line and GET IT (missing) or ENABLE AND RESTART.
+**	pack that is not loaded, with its logo, a status line and GO TO ADD-ONS.
 */
 const SIZE_T MENU_BIND_HOOK = 0x6B185B;
 const SIZE_T MENU_BIND_CAVE = 0x1BE95E0;
@@ -997,18 +1112,6 @@ typedef void(__thiscall* BindEventFn)(void* menu, int event, void* widget, void*
 typedef void(__thiscall* SetTextFn)(void* widget, const MsvcWString* text);
 
 int PanelPack = -1;
-
-void __stdcall Pack_Get_Click(void*)
-{
-    if (PanelPack >= 0) {
-        Open_Pack_Page(PanelPack);
-    }
-}
-
-void __stdcall Pack_Enable_Click(void*)
-{
-    Enable_Packs_And_Restart();
-}
 
 /*
 **	Sets a text widget's text; NULL is ignored.
@@ -1034,23 +1137,21 @@ void Refresh_Panel(void* menu)
     int waiting = 0;
     PanelPack = -1;
     for (int pack = 0; pack < PACK_COUNT; pack++) {
-        states[pack] = Pack_State(pack);
+        states[pack] = PACKS[pack].NeededFor != NULL ? Pack_State(pack) : PACK_ENABLED;
         if (states[pack] != PACK_ENABLED) {
             waiting++;
             PanelPack = PanelPack < 0 ? pack : PanelPack;
         }
     }
-    void* get = Find_Widget(menu, "TF_Pack_Get", AS_TEXT_BUTTON);
-    void* enable = Find_Widget(menu, "TF_Pack_Enable", AS_TEXT_BUTTON);
     Set_Hidden(Find_Widget(menu, "TF_Pack_Frame", AS_QUAD), PanelPack < 0);
     Set_Hidden(Find_Widget(menu, "TF_Pack_Status", AS_TEXT), PanelPack < 0);
+    Set_Hidden(Find_Widget(menu, "TF_Pack_Open", AS_TEXT_BUTTON), PanelPack < 0);
     for (int pack = 0; pack < PACK_COUNT; pack++) {
-        Set_Hidden(Find_Widget(menu, PACKS[pack].Logo, AS_QUAD), pack != PanelPack);
+        char logo[32];
+        snprintf(logo, sizeof(logo), "TF_Logo_%s", PACKS[pack].Id);
+        Set_Hidden(Find_Widget(menu, logo, AS_QUAD), pack != PanelPack);
     }
     PackState state = PanelPack < 0 ? PACK_ENABLED : states[PanelPack];
-    Set_Hidden(get, state != PACK_MISSING && state != PACK_OUTDATED);
-    Set_Hidden(enable,
-               state == PACK_ENABLED || state == PACK_OUTDATED || state == PACK_MISSING || state == PACK_DOWNLOADING);
     if (PanelPack < 0) {
         return;
     }
@@ -1067,7 +1168,7 @@ void Refresh_Panel(void* menu)
                  160,
                  L"%ls",
                  state == PACK_ON_NEXT_START ? L"SWITCHED ON: RESTART TO LOAD IT"
-                 : state == PACK_DOWNLOADED  ? L"DOWNLOADED: RESTART TO SWITCH IT ON"
+                 : state == PACK_DOWNLOADED  ? L"DOWNLOADED: SWITCH IT ON IN ADD-ONS"
                                              : L"INSTALLED BUT SWITCHED OFF");
     }
     if (waiting > 1) {
@@ -1137,18 +1238,1185 @@ void Mod_Version(wchar_t* out, size_t size)
 }
 
 /*
-**	The main menu built: binds the panel's buttons, shows the mod's version, fills the panel and starts its poll.
+**	The ADD-ONS screen (scripts/bui_addons_build.py, docs/pack-panel.md): a scene of our own, run by ClientG's
+**	SplashScreen class, which binds nothing itself, drawn over the main menu until BACK closes it.
+*/
+const SIZE_T GUI_MANAGER = 0x5ED5D0;
+const SIZE_T CREATE_SCENE = 0xF2CB70;
+const SIZE_T SCENE_FOCUS = 0xF0E1D0;
+const SIZE_T SCENE_RELEASE = 0x55FE10;
+const SIZE_T AS_BUTTON = 0x606990;
+const int SCENE_CLOSE = 0x2CC;
+const int SCENE_IMPL = 0x330;
+const UINT ADDONS_POLL_MS = 1000;
+const DWORD SUBSCRIBE_WAIT_MS = 20000;
+const int BAR_SEGMENTS = 20;
+const int ADDON_ROWS = 4;   // rows per tab: ROW_SLOTS in scripts/bui_addons_build.py
+const int DETAIL_LINES = 4; // DETAIL_LINES in scripts/bui_addons_build.py
+const wchar_t* const KIND_NAMES[KIND_COUNT] = {L"ASSETS", L"THEATRES", L"CAMPAIGNS"};
+
+typedef void*(__cdecl* GuiManagerFn)(void);
+typedef void**(__thiscall* CreateSceneFn)(void* manager, void** out, const MsvcString* name, int layer);
+typedef void(__thiscall* SceneFn)(void* scene);
+
+void* AddOnsScene = NULL;
+bool AddOnsTicked[PACK_COUNT];
+bool AddOnsKnockOn[PACK_COUNT]; // ticked or unticked by another pack's checkbox, not its own
+int AddOnsTab = KIND_ASSETS;
+int AddOnsSelected = 0;
+unsigned AddOnsWanted = 0; // the packs APPLY AND RESTART is fetching, a bit per pack
+DWORD AddOnsAsked = 0;
+UINT_PTR AddOnsTimer = 0;
+
+/*
+**	The ADD-ONS screen's behaviour object, which owns its widgets and events; NULL while it is closed.
+*/
+void* AddOns_Screen(void)
+{
+    return AddOnsScene != NULL ? *(void**)((char*)AddOnsScene + SCENE_IMPL) : NULL;
+}
+
+/*
+**	A button of a screen whichever button class it is; NULL when absent.
+*/
+void* Find_Button(void* owner, const char* name)
+{
+    static const SIZE_T casts[] = {AS_BUTTON, AS_ICON_BUTTON, AS_TEXT_BUTTON};
+    for (size_t i = 0; i < sizeof(casts) / sizeof(casts[0]); i++) {
+        void* button = Find_Widget(owner, name, casts[i]);
+        if (button != NULL) {
+            return button;
+        }
+    }
+    return NULL;
+}
+
+/*
+**	A widget of the ADD-ONS screen named `name` followed by `index`.
+*/
+void* Indexed_Widget(void* screen, const char* name, int index, SIZE_T cast)
+{
+    char full[32];
+    snprintf(full, sizeof(full), "%s%d", name, index);
+    return Find_Widget(screen, full, cast);
+}
+
+/*
+**	Shows `text` in a green text widget or, when `warn`, in its amber twin, hiding the other; NULL text hides both.
+*/
+void Set_Twin_Text(void* screen, const char* green, const char* amber, const wchar_t* text, bool warn)
+{
+    void* shown = Find_Widget(screen, warn ? amber : green, AS_TEXT);
+    if (text != NULL) {
+        Set_Text(shown, text);
+    }
+    Set_Hidden(shown, text == NULL);
+    Set_Hidden(Find_Widget(screen, warn ? green : amber, AS_TEXT), true);
+}
+
+/*
+**	Sets and shows a text widget; NULL text hides it.
+*/
+void Show_Text(void* screen, const char* name, const wchar_t* text)
+{
+    void* widget = Find_Widget(screen, name, AS_TEXT);
+    if (text != NULL) {
+        Set_Text(widget, text);
+    }
+    Set_Hidden(widget, text == NULL);
+}
+
+/*
+**	True when a pack is on (an out-of-date one included: only Steam's update changes it), or on from the next start.
+*/
+bool Pack_On(PackState state)
+{
+    return state == PACK_ENABLED || state == PACK_OUTDATED || state == PACK_ON_NEXT_START;
+}
+
+/*
+**	The index of the pack with `id`; -1 when none.
+*/
+int Pack_Index(const char* id)
+{
+    for (int pack = 0; id != NULL && pack < PACK_COUNT; pack++) {
+        if (strcmp(PACKS[pack].Id, id) == 0) {
+            return pack;
+        }
+    }
+    return -1;
+}
+
+/*
+**	True when `pack` can't work without `needed`.
+*/
+bool Pack_Needs(int pack, int needed)
+{
+    for (int i = 0; i < 2; i++) {
+        if (Pack_Index(PACKS[pack].Needs[i]) == needed && needed >= 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/*
+**	The pack on row `row` of the open tab; -1 for an empty row.
+*/
+int Tab_Pack(int row)
+{
+    for (int pack = 0; pack < PACK_COUNT; pack++) {
+        if (PACKS[pack].Kind == AddOnsTab && row-- == 0) {
+            return pack;
+        }
+    }
+    return -1;
+}
+
+/*
+**	Ticks a pack and what it needs, or unticks it and what needs it; `knock_on` marks a pack changed for another's.
+*/
+void Tick_Pack(int pack, bool ticked, bool knock_on)
+{
+    if (AddOnsTicked[pack] == ticked) {
+        return;
+    }
+    AddOnsTicked[pack] = ticked;
+    AddOnsKnockOn[pack] = knock_on;
+    for (int other = 0; other < PACK_COUNT; other++) {
+        if ((ticked && Pack_Needs(pack, other)) || (!ticked && Pack_Needs(other, pack))) {
+            Tick_Pack(other, ticked, true);
+        }
+    }
+}
+
+/*
+**	The pack whose own checkbox caused `pack`'s knock-on change; -1 when none.
+*/
+int Knock_On_Cause(int pack, const PackState* states)
+{
+    for (int other = 0; other < PACK_COUNT; other++) {
+        bool changing = AddOnsTicked[other] != Pack_On(states[other]);
+        if (other != pack && changing && !AddOnsKnockOn[other]
+            && (AddOnsTicked[pack] ? Pack_Needs(other, pack) : Pack_Needs(pack, other))) {
+            return other;
+        }
+    }
+    return -1;
+}
+
+/*
+**	A pack's row text on the ADD-ONS screen: the change its checkbox asks for, else its state; `warn` when it
+**	keeps a faction from playing.
+*/
+void AddOns_State_Text(int pack, const PackState* states, wchar_t* line, size_t size, bool* warn)
+{
+    PackState state = states[pack];
+    int percent = state == PACK_DOWNLOADING ? Pack_Download_Percent(pack) : 0;
+    bool change = AddOnsWanted == 0 && AddOnsTicked[pack] != Pack_On(state) && state != PACK_DOWNLOADING;
+    *warn = PACKS[pack].NeededFor != NULL && !change && (!Pack_On(state) || state == PACK_OUTDATED)
+            && state != PACK_DOWNLOADING;
+    int cause = change && AddOnsKnockOn[pack] ? Knock_On_Cause(pack, states) : -1;
+    if (cause >= 0) {
+        swprintf(line,
+                 size,
+                 AddOnsTicked[pack] ? L"TICKED: NEEDED BY %ls" : L"WILL SWITCH OFF: NEEDS %ls",
+                 PACKS[cause].Name);
+        return;
+    }
+    swprintf(line,
+             size,
+             change && !AddOnsTicked[pack]     ? L"WILL SWITCH OFF"
+             : change && state == PACK_MISSING ? L"WILL DOWNLOAD AND SWITCH ON"
+             : change && state == PACK_OFF_NEXT_START ? L"WILL STAY ON"
+             : change                          ? L"WILL SWITCH ON"
+             : state == PACK_ENABLED           ? L"LOADED"
+             : state == PACK_OUTDATED          ? L"OUT OF DATE: LET STEAM UPDATE IT"
+             : state == PACK_OFF_NEXT_START    ? L"SWITCHED OFF: GONE AFTER A RESTART"
+             : state == PACK_ON_NEXT_START     ? L"READY: RESTART TO LOAD IT"
+             : state == PACK_INSTALLED_OFF     ? L"INSTALLED BUT SWITCHED OFF"
+             : state == PACK_DOWNLOADED        ? L"DOWNLOADED, NOT SWITCHED ON"
+             : state == PACK_DOWNLOADING       ? (percent > 0 ? L"DOWNLOADING %d%%" : L"DOWNLOADING...")
+                                               : L"NOT INSTALLED",
+             percent);
+}
+
+/*
+**	Appends `name` to a comma-separated list in `line`.
+*/
+void Append_Name(wchar_t* line, size_t size, const wchar_t* name)
+{
+    size_t used = wcslen(line);
+    swprintf(line + used, size - used, L"%ls%ls", line[used - 1] == L' ' ? L"" : L", ", name);
+}
+
+/*
+**	The top panel: the changes waiting for APPLY AND RESTART, knock-ons with their cause, or how to use the screen.
+*/
+void Refresh_Changes(void* screen, const PackState* states)
+{
+    wchar_t on[256] = L"WILL SWITCH ON: ", off[256] = L"WILL SWITCH OFF: ";
+    size_t on_empty = wcslen(on), off_empty = wcslen(off);
+    for (int pack = 0; pack < PACK_COUNT; pack++) {
+        if (AddOnsTicked[pack] == Pack_On(states[pack]) || states[pack] == PACK_DOWNLOADING) {
+            continue;
+        }
+        wchar_t name[128];
+        int cause = AddOnsKnockOn[pack] ? Knock_On_Cause(pack, states) : -1;
+        if (cause >= 0) {
+            swprintf(name,
+                     128,
+                     AddOnsTicked[pack] ? L"%ls (NEEDED BY %ls)" : L"%ls (NEEDS %ls)",
+                     PACKS[pack].Name,
+                     PACKS[cause].Name);
+        } else {
+            swprintf(name, 128, L"%ls", PACKS[pack].Name);
+        }
+        Append_Name(AddOnsTicked[pack] ? on : off, 256, name);
+    }
+    bool any_on = wcslen(on) > on_empty, any_off = wcslen(off) > off_empty;
+    if (AddOnsWanted != 0) {
+        Show_Text(screen, "TF_AO_Intro1", L"Getting your add-ons from the Steam Workshop.");
+        Show_Text(screen, "TF_AO_Intro2", L"The game restarts by itself when every download has finished.");
+    } else if (any_on || any_off) {
+        Show_Text(screen, "TF_AO_Intro1", any_on ? on : off);
+        Show_Text(screen, "TF_AO_Intro2", any_on && any_off ? off : NULL);
+    } else {
+        Show_Text(screen, "TF_AO_Intro1", L"Tick the add-ons you want on and untick the ones you want off, then");
+        Show_Text(screen,
+                  "TF_AO_Intro2",
+                  L"APPLY AND RESTART. Ticking an add-on ticks what it needs; unticking it unticks what needs it.");
+    }
+}
+
+/*
+**	The right-hand panel: the selected pack's name, logo, description, what it needs or what needs it, its status
+**	and its download bar; empty when the open tab is.
+*/
+void Refresh_Detail(void* screen, const PackState* states)
+{
+    int pack = PACKS[AddOnsSelected].Kind == AddOnsTab ? AddOnsSelected : -1;
+    for (int other = 0; other < PACK_COUNT; other++) {
+        char logo[32];
+        snprintf(logo, sizeof(logo), "TF_AO_DLogo_%s", PACKS[other].Id);
+        Set_Hidden(Find_Widget(screen, logo, AS_QUAD), other != pack);
+    }
+    Show_Text(screen, "TF_AO_DName", pack >= 0 ? PACKS[pack].Name : NULL);
+    Show_Text(screen, "TF_AO_DDesc1", pack >= 0 ? PACKS[pack].Description[0] : NULL);
+    Show_Text(screen, "TF_AO_DDesc2", pack >= 0 ? PACKS[pack].Description[1] : NULL);
+    wchar_t lines[DETAIL_LINES][128];
+    bool warns[DETAIL_LINES] = {};
+    int count = 0;
+    bool needs = false;
+    for (int other = 0; pack >= 0 && other < PACK_COUNT; other++) {
+        needs |= Pack_Needs(pack, other);
+    }
+    if (pack >= 0 && needs) {
+        swprintf(lines[count++], 128, L"NEEDS:");
+        for (int other = 0; other < PACK_COUNT && count < DETAIL_LINES; other++) {
+            if (Pack_Needs(pack, other)) {
+                bool on = Pack_On(states[other]);
+                swprintf(lines[count],
+                         128,
+                         L"  %ls: %ls",
+                         PACKS[other].Name,
+                         on && AddOnsTicked[other]  ? L"LOADED"
+                         : AddOnsTicked[other]      ? L"TICKED, WILL SWITCH ON"
+                         : on                       ? L"WILL SWITCH OFF"
+                                                    : L"NOT TICKED");
+                warns[count++] = !AddOnsTicked[other];
+            }
+        }
+    } else if (pack >= 0) {
+        int first = count;
+        swprintf(lines[count++], 128, L"NEEDED BY:");
+        if (PACKS[pack].NeededFor != NULL) {
+            swprintf(lines[count++], 128, L"  %ls", PACKS[pack].NeededFor);
+        }
+        for (int other = 0; other < PACK_COUNT && count < DETAIL_LINES; other++) {
+            if (Pack_Needs(other, pack)) {
+                bool going = !AddOnsTicked[other] && Pack_On(states[other]);
+                swprintf(lines[count], 128, going ? L"  %ls: WILL SWITCH OFF TOO" : L"  %ls", PACKS[other].Name);
+                warns[count++] = going;
+            }
+        }
+        count = count == first + 1 ? first : count;
+    }
+    for (int line = 0; line < DETAIL_LINES; line++) {
+        char green[16], amber[16];
+        snprintf(green, sizeof(green), "TF_AO_DLine%d", line);
+        snprintf(amber, sizeof(amber), "TF_AO_DLineW%d", line);
+        Set_Twin_Text(screen, green, amber, line < count ? lines[line] : NULL, line < count && warns[line]);
+    }
+    wchar_t line[96] = L"";
+    bool warn = false;
+    if (pack >= 0) {
+        AddOns_State_Text(pack, states, line, 96, &warn);
+    }
+    Set_Twin_Text(screen, "TF_AO_Status", "TF_AO_StatusW", pack >= 0 ? line : NULL, warn);
+    int percent = pack >= 0 && states[pack] == PACK_DOWNLOADING ? Pack_Download_Percent(pack) : -1;
+    for (int i = 0; i < BAR_SEGMENTS; i++) {
+        Set_Hidden(Indexed_Widget(screen, "TF_AO_Bar", i, AS_QUAD), percent < 0 || i >= percent * BAR_SEGMENTS / 100);
+    }
+}
+
+/*
+**	Fills the ADD-ONS screen from the packs' states: the tabs and their change badges, the open tab's rows or
+**	COMING SOON, the selected pack, the top panel and the bottom bar.
+*/
+void Refresh_AddOns(void)
+{
+    void* screen = AddOns_Screen();
+    if (screen == NULL) {
+        return;
+    }
+    PackState states[PACK_COUNT];
+    int changes = 0, ready = 0, tab_changes[KIND_COUNT] = {};
+    for (int pack = 0; pack < PACK_COUNT; pack++) {
+        states[pack] = Pack_State(pack);
+        bool change = AddOnsTicked[pack] != Pack_On(states[pack]) && states[pack] != PACK_DOWNLOADING;
+        changes += change;
+        tab_changes[PACKS[pack].Kind] += change;
+        ready += states[pack] == PACK_ON_NEXT_START || states[pack] == PACK_OFF_NEXT_START;
+    }
+    wchar_t line[96];
+    bool warn;
+    for (int tab = 0; tab < KIND_COUNT; tab++) {
+        Set_Hidden(Indexed_Widget(screen, "TF_AO_TabGlow", tab, AS_QUAD), tab != AddOnsTab);
+        Set_Hidden(Indexed_Widget(screen, "TF_AO_TabOn", tab, AS_TEXT), tab != AddOnsTab);
+        Set_Hidden(Indexed_Widget(screen, "TF_AO_TabText", tab, AS_TEXT), tab == AddOnsTab);
+        void* badge = Indexed_Widget(screen, "TF_AO_Badge", tab, AS_TEXT);
+        swprintf(line, 96, tab_changes[tab] == 1 ? L"1 CHANGE" : L"%d CHANGES", tab_changes[tab]);
+        Set_Text(badge, line);
+        Set_Hidden(badge, tab_changes[tab] == 0);
+    }
+    Show_Text(screen, "TF_AO_ListHead", KIND_NAMES[AddOnsTab]);
+    Set_Hidden(Find_Widget(screen, "TF_AO_Soon", AS_TEXT), Tab_Pack(0) >= 0);
+    for (int row = 0; row < ADDON_ROWS; row++) {
+        int pack = Tab_Pack(row);
+        Set_Hidden(Indexed_Widget(screen, "TF_AO_Glow", row, AS_QUAD), pack < 0 || pack != AddOnsSelected);
+        Set_Hidden(Indexed_Widget(screen, "TF_AO_Row", row, AS_ICON_BUTTON), pack < 0);
+        void* check = Indexed_Widget(screen, "TF_AO_Check", row, AS_BUTTON);
+        if (check != NULL && pack >= 0) {
+            ((SetToggledFn)SET_TOGGLED)(check, AddOnsTicked[pack], 0, 1);
+        }
+        Set_Hidden(check, pack < 0);
+        for (int other = 0; other < PACK_COUNT; other++) {
+            char logo[32];
+            snprintf(logo, sizeof(logo), "TF_AO_Logo%d_%s", row, PACKS[other].Id);
+            Set_Hidden(Find_Widget(screen, logo, AS_QUAD), other != pack);
+        }
+        char name[16], green[16], amber[16];
+        snprintf(name, sizeof(name), "TF_AO_Name%d", row);
+        snprintf(green, sizeof(green), "TF_AO_State%d", row);
+        snprintf(amber, sizeof(amber), "TF_AO_Warn%d", row);
+        Show_Text(screen, name, pack >= 0 ? PACKS[pack].Name : NULL);
+        if (pack >= 0) {
+            AddOns_State_Text(pack, states, line, 96, &warn);
+        }
+        Set_Twin_Text(screen, green, amber, pack >= 0 ? line : NULL, pack >= 0 && warn);
+    }
+    Refresh_Detail(screen, states);
+    Refresh_Changes(screen, states);
+    bool idle = AddOnsWanted == 0 && changes == 0 && ready == 0;
+    void* label = Find_Widget(screen, "StartButton_Text", AS_TEXT);
+    Set_Text(label,
+             AddOnsWanted != 0 ? L"WORKING..."
+             : changes == 0    ? L"RESTART NOW"
+                               : L"APPLY AND RESTART");
+    Set_Hidden(label, idle);
+    Set_Hidden(Find_Button(screen, "Start_Button"), idle);
+    Set_Hidden(Find_Widget(screen, "TF_AO_UndoText", AS_TEXT), AddOnsWanted != 0 || changes == 0);
+    Set_Hidden(Find_Button(screen, "TF_AO_Undo"), AddOnsWanted != 0 || changes == 0);
+    Set_Text(Find_Widget(screen, "BackButton_Text", AS_TEXT), AddOnsWanted != 0 ? L"CANCEL" : L"BACK");
+}
+
+/*
+**	Closes and releases the ADD-ONS scene; the main menu under it carries on.
+*/
+void Close_AddOns(void)
+{
+    void* scene = AddOnsScene;
+    AddOnsScene = NULL;
+    if (scene != NULL) {
+        ((SceneFn)(*(SIZE_T**)scene)[SCENE_CLOSE / 4])(scene);
+        ((SceneFn)SCENE_RELEASE)(scene);
+    }
+    if (AddOnsTimer != 0) {
+        KillTimer(NULL, AddOnsTimer);
+        AddOnsTimer = 0;
+    }
+}
+
+/*
+**	Once a second while the screen is open: when every pack being fetched has arrived, switches them on and
+**	restarts; a pack Steam never starts on opens its Workshop page instead.
+*/
+void CALLBACK AddOns_Poll(HWND, UINT, UINT_PTR, DWORD)
+{
+    if (AddOnsWanted != 0) {
+        bool waiting = false;
+        for (int pack = 0; pack < PACK_COUNT; pack++) {
+            if (!(AddOnsWanted & (1u << pack))) {
+                continue;
+            }
+            PackState state = Pack_State(pack);
+            bool waiting = state == PACK_MISSING && GetTickCount() - AddOnsAsked < SUBSCRIBE_WAIT_MS;
+            if (state == PACK_DOWNLOADING || waiting) {
+                waiting = true;
+            } else if (state == PACK_MISSING) {
+                AddOnsWanted &= ~(1u << pack);
+                Open_Pack_Page(pack);
+            }
+        }
+        if (!waiting && AddOnsWanted != 0) {
+            unsigned packs = AddOnsWanted;
+            AddOnsWanted = 0;
+            Enable_Packs(packs);
+            Refresh_AddOns();
+            Restart_Game();
+            return;
+        }
+    }
+    Refresh_AddOns();
+}
+
+/*
+**	BACK closes the screen; while packs are on their way it reads CANCEL and stops waiting for them instead, so
+**	nothing switches on and nothing restarts (Steam still finishes the downloads).
+*/
+void __stdcall AddOns_Back_Click(void*)
+{
+    if (AddOnsWanted != 0) {
+        AddOnsWanted = 0;
+        Refresh_AddOns();
+        return;
+    }
+    Close_AddOns();
+}
+
+/*
+**	The row a click on row `screen_plus_row` came from: the event's data is the row, so ClientG calls with the
+**	screen object plus the row. Returns its pack, or -1.
+*/
+int Clicked_Pack(char* screen_plus_row)
+{
+    void* screen = AddOns_Screen();
+    int row = screen != NULL ? (int)(screen_plus_row - (char*)screen) : -1;
+    return row >= 0 && row < ADDON_ROWS ? Tab_Pack(row) : -1;
+}
+
+/*
+**	A row, outside its checkbox: shows that pack on the right.
+*/
+void __fastcall AddOns_Row_Click(char* screen_plus_row, void*, void*)
+{
+    int pack = Clicked_Pack(screen_plus_row);
+    AddOnsSelected = pack >= 0 ? pack : AddOnsSelected;
+    Refresh_AddOns();
+}
+
+/*
+**	A row's checkbox: ticks its pack and what it needs, or unticks it and what needs it.
+*/
+void __fastcall AddOns_Check_Click(char* screen_plus_row, void*, void*)
+{
+    int pack = Clicked_Pack(screen_plus_row);
+    if (pack >= 0 && AddOnsWanted == 0) {
+        Tick_Pack(pack, !AddOnsTicked[pack], false);
+        AddOnsSelected = pack;
+    }
+    Refresh_AddOns();
+}
+
+/*
+**	A tab: shows its kind of add-on and selects its first.
+*/
+void __fastcall AddOns_Tab_Click(char* screen_plus_tab, void*, void*)
+{
+    void* screen = AddOns_Screen();
+    int tab = screen != NULL ? (int)(screen_plus_tab - (char*)screen) : -1;
+    if (tab >= 0 && tab < KIND_COUNT) {
+        AddOnsTab = tab;
+        AddOnsSelected = Tab_Pack(0) >= 0 ? Tab_Pack(0) : AddOnsSelected;
+    }
+    Refresh_AddOns();
+}
+
+/*
+**	UNDO CHANGES: every checkbox back to whether its pack is on in this load or the next.
+*/
+void __stdcall AddOns_Undo_Click(void*)
+{
+    for (int pack = 0; pack < PACK_COUNT && AddOnsWanted == 0; pack++) {
+        AddOnsTicked[pack] = Pack_On(Pack_State(pack));
+        AddOnsKnockOn[pack] = false;
+    }
+    Refresh_AddOns();
+}
+
+/*
+**	APPLY AND RESTART: switches off the unticked packs that are on, keeps re-ticked loaded packs on, subscribes to
+**	the ticked missing ones, then the poll switches each on once it has arrived and restarts. With nothing to fetch,
+**	restarts at once if anything changed.
+*/
+void __stdcall AddOns_Apply_Click(void*)
+{
+    if (AddOnsWanted != 0) {
+        return;
+    }
+    unsigned wanted = 0, off = 0, kept = 0;
+    bool restart = false;
+    for (int pack = 0; pack < PACK_COUNT; pack++) {
+        PackState state = Pack_State(pack);
+        bool back_on = AddOnsTicked[pack] && state == PACK_OFF_NEXT_START;
+        restart |= state == PACK_ON_NEXT_START || (state == PACK_OFF_NEXT_START && !back_on);
+        if (back_on) {
+            kept |= 1u << pack;
+            continue;
+        }
+        if (!AddOnsTicked[pack]) {
+            off |= Pack_On(state) ? 1u << pack : 0;
+            continue;
+        }
+        if (Pack_On(state)) {
+            continue;
+        }
+        if (state == PACK_MISSING && !Subscribe_Pack(pack)) {
+            Open_Pack_Page(pack);
+            continue;
+        }
+        wanted |= 1u << pack;
+    }
+    if (kept != 0) {
+        Enable_Packs(kept);
+    }
+    if (off != 0) {
+        Disable_Packs(off);
+        restart = true;
+    }
+    if (wanted == 0) {
+        if (restart) {
+            Restart_Game();
+        }
+        Refresh_AddOns();
+        return;
+    }
+    AddOnsWanted = wanted;
+    AddOnsAsked = GetTickCount();
+    AddOns_Poll(NULL, 0, 0, 0);
+}
+
+/*
+**	Binds `handler` to a screen button's click with `data`, ClientG's offset from the screen object to the
+**	handler's first argument; an absent button is skipped.
+*/
+void Bind_Click(void* screen, void* button, void* handler, int data)
+{
+    if (button != NULL) {
+        ((BindEventFn)BIND_EVENT)(screen, CLICK_EVENT, button, handler, data);
+    }
+}
+
+/*
+**	Opens the ADD-ONS screen over the main menu, or brings `pack` up, ticked, on its tab if open; -1 opens the
+**	tab of the first required pack that is off. Packs that are on, and packs a faction needs, start ticked.
+*/
+void Open_AddOns(int pack)
+{
+    if (AddOnsScene == NULL) {
+        MsvcString name = {};
+        memcpy(name.buf, "RA/TF_AddOns", sizeof("RA/TF_AddOns"));
+        name.size = sizeof("RA/TF_AddOns") - 1;
+        name.capacity = 15;
+        ((CreateSceneFn)CREATE_SCENE)(((GuiManagerFn)GUI_MANAGER)(), &AddOnsScene, &name, -1);
+        if (AddOnsScene == NULL) {
+            return;
+        }
+        ((SceneFn)SCENE_FOCUS)(AddOnsScene);
+        void* screen = AddOns_Screen();
+        if (screen == NULL) {
+            Close_AddOns();
+            return;
+        }
+        Bind_Click(screen, Find_Button(screen, "Back_Button"), (void*)&AddOns_Back_Click, 0);
+        Bind_Click(screen, Find_Button(screen, "Start_Button"), (void*)&AddOns_Apply_Click, 0);
+        Bind_Click(screen, Find_Button(screen, "TF_AO_Undo"), (void*)&AddOns_Undo_Click, 0);
+        for (int tab = 0; tab < KIND_COUNT; tab++) {
+            char name[16];
+            snprintf(name, sizeof(name), "TF_AO_Tab%d", tab);
+            Bind_Click(screen, Find_Button(screen, name), (void*)&AddOns_Tab_Click, tab);
+        }
+        for (int row = 0; row < ADDON_ROWS; row++) {
+            char name[16];
+            snprintf(name, sizeof(name), "TF_AO_Row%d", row);
+            Bind_Click(screen, Indexed_Widget(screen, "TF_AO_Check", row, AS_BUTTON), (void*)&AddOns_Check_Click, row);
+            Bind_Click(screen, Find_Button(screen, name), (void*)&AddOns_Row_Click, row);
+        }
+        AddOnsWanted = 0;
+        AddOnsSelected = 0;
+        for (int other = PACK_COUNT - 1; other >= 0; other--) {
+            bool on = Pack_On(Pack_State(other));
+            AddOnsTicked[other] = on || PACKS[other].NeededFor != NULL;
+            AddOnsKnockOn[other] = false;
+            AddOnsSelected = AddOnsTicked[other] && !on ? other : AddOnsSelected;
+        }
+        AddOnsTab = PACKS[AddOnsSelected].Kind;
+    }
+    if (pack >= 0 && pack < PACK_COUNT) {
+        AddOnsSelected = pack;
+        AddOnsTab = PACKS[pack].Kind;
+        if (AddOnsWanted == 0 && !AddOnsTicked[pack]) {
+            Tick_Pack(pack, true, false);
+        }
+    }
+    Refresh_AddOns();
+    if (AddOnsTimer == 0) {
+        AddOnsTimer = SetTimer(NULL, 0, ADDONS_POLL_MS, AddOns_Poll);
+    }
+}
+
+void __stdcall AddOns_Menu_Click(void*)
+{
+    Open_AddOns(-1);
+}
+
+void __stdcall Pack_Open_Click(void*)
+{
+    Open_AddOns(PanelPack);
+}
+
+/*
+**	The encyclopedia (scripts/bui_encyclopedia_build.py, docs/encyclopedia.md): the CAMPAIGNS page's frame run by
+**	SplashScreen, a tab per faction, the faction's entries in the stock list, and the selected entry's details.
+*/
+const SIZE_T AS_LISTBOX = 0x5F48A0;
+const SIZE_T AS_EXAMPLE = 0x5EF5C0;
+const SIZE_T LIST_CLEAR = 0xF6AF60;
+const SIZE_T LIST_ADD_ROW = 0xF6A620;
+const SIZE_T ROW_SET_ITEM = 0xF73CB0;
+const SIZE_T LIST_SELECT_INDEX = 0xF74EA0;
+const SIZE_T QUAD_SET_TEXTURE = 0xF604C0;
+const SIZE_T FIND_TEXTURE = 0xF301F0;   // GUIManager's texture for a name, as Quad_Set_Texture resolves it
+const int ENGINE_TEXTURE = 0x84;        // the ID3D11Texture2D in the engine texture the handle points at
+const char* const LIVE_PICTURE = "TF_ENC_LIVE"; // the blank canvas each selected entry's sprite is drawn into
+const int LIVE_WIDTH = 256;
+const int LIVE_HEIGHT = 192;
+const char* const LIST_COLUMN = "MissionColumn"; // the CAMPAIGNS list's only column
+const int ROW_EVENT_CLICKED = 4;
+const int ROW_CELL_SCENE = 0x1F4;
+const int ROW_FLAG = 0x71;      // cleared on every row the stock lists add
+const int CELL_LAYOUT = 0x6C;   // the cell's virtual the stock lists call with 1 once it is shown
+const int ENC_MAX_ENTRIES = 160;
+const int ENC_MAX_ROWS = ENC_MAX_ENTRIES + TF_ENC_GROUP_COUNT + 1;
+const int DESC_RIGHT = 7;  // description lines beside the picture: DESC_RIGHT in scripts/bui_encyclopedia_build.py
+const int DESC_BELOW = 3;  // and under it: DESC_BELOW
+const int DESC_RIGHT_CHARS = 33;
+const int DESC_BELOW_CHARS = 59;
+const int STAT_SLOTS = 12; // two columns of STAT_ROWS
+const int ENC_TABS = 5;
+
+typedef void(__thiscall* ListClearFn)(void* list);
+typedef void*(__thiscall* ListAddRowFn)(void* list);
+typedef void*(__thiscall* RowSetItemFn)(void* row, const MsvcString* column, void* example, bool show);
+typedef void(__thiscall* ListSelectIndexFn)(void* list, int index, bool notify);
+typedef bool(__thiscall* QuadSetTextureFn)(void* quad, const MsvcString* name, bool refresh);
+typedef void*(__thiscall* FindTextureFn)(void* gm, const MsvcString* name);
+
+struct EncTabInfo
+{
+    const char* Button;   // the CAMPAIGNS tab it borrows
+    int Faction;          // a TF_FACTION_ bit
+    const wchar_t* Name;
+    const char* Suffix;   // of its overview's text key and its logo (TF_ENC_ABOUT_<Suffix>)
+    const char* Crest;    // the tab's crest in the UI atlas
+};
+
+const EncTabInfo ENC_TABS_INFO[ENC_TABS] = {
+    {"CampaignSelect_Ally_Button", TF_FACTION_ALLIES, L"ALLIES", "ALLIES",
+     "UI_MissionSelect_TabIcon_CovertOps_On"},
+    {"CampaignSelect_USSR_Button", TF_FACTION_SOVIET, L"SOVIETS", "SOVIETS",
+     "UI_MissionSelect_TabIcon_Controller_On"},
+    {"CampaignSelect_Aftermath_Allied_Button", TF_FACTION_GDI, L"GDI", "GDI",
+     "UI_MissionSelect_TabIcon_GDI_On"},
+    {"CampaignSelect_Aftermath_USSR_Button", TF_FACTION_NOD, L"NOD", "NOD",
+     "UI_MissionSelect_TabIcon_NOD_On"},
+    {"CampaignSelect_Ant_Button", TF_FACTION_TSGDI, L"TIBERIAN SUN GDI", "TSGDI",
+     "UI_MissionSelect_TabIcon_Dino_On"},
+};
+
+const wchar_t* const GROUP_NAMES[TF_ENC_GROUP_COUNT] = {L"INFANTRY", L"UNITS", L"AIRCRAFT", L"NAVAL", L"STRUCTURES"};
+
+enum EncRowKind
+{
+    ENC_ROW_ABOUT,
+    ENC_ROW_HEADING,
+    ENC_ROW_ENTRY
+};
+
+struct EncRow
+{
+    EncRowKind Kind;
+    int Index; // the group for a heading, the entry otherwise
+};
+
+void* EncScene = NULL;
+int EncTab = 0;
+TFEncEntry EncEntries[ENC_MAX_ENTRIES];
+int EncEntryCount = 0;
+EncRow EncRows[ENC_MAX_ROWS];
+void* EncButtons[ENC_MAX_ROWS]; // each row's background button, toggled on for the selected row
+int EncRowCount = 0;
+int EncSelected = -1;
+
+/*
+**	The encyclopedia's behaviour object; NULL while it is closed.
+*/
+void* Enc_Screen(void)
+{
+    return EncScene != NULL ? *(void**)((char*)EncScene + SCENE_IMPL) : NULL;
+}
+
+/*
+**	An MSVC std::string over `text`, inline when short, lent in place when long: ClientG's callers here only read it.
+*/
+MsvcString Lent_String(const char* text)
+{
+    MsvcString s = {};
+    size_t length = strlen(text);
+    if (length > 15) {
+        *(const char**)s.buf = text;
+        s.capacity = (unsigned)length;
+    } else {
+        memcpy(s.buf, text, length + 1);
+        s.capacity = 15;
+    }
+    s.size = (unsigned)length;
+    return s;
+}
+
+/*
+**	Points an image widget at a texture by name (a loose file, an atlas region or a stock texture); false when
+**	the launcher fell back to its default.
+*/
+bool Set_Picture(void* quad, const char* texture)
+{
+    if (quad == NULL) {
+        return false;
+    }
+    MsvcString name = Lent_String(texture);
+    return ((QuadSetTextureFn)QUAD_SET_TEXTURE)(quad, &name, false);
+}
+
+/*
+**	Draws `ini`'s sprite for `faction` into the live canvas texture and points `picture` at it; false when its art
+**	can't be read or the canvas isn't the size and format it is drawn for.
+*/
+bool Show_Live_Sprite(void* picture, const char* ini, int faction)
+{
+    static const GUID TEXTURE_2D = {0x6f15aaf2, 0xd208, 0x4e89, {0x9a, 0xb4, 0x48, 0x95, 0x35, 0xd3, 0x4f, 0x9c}};
+    static unsigned char rgba[LIVE_WIDTH * LIVE_HEIGHT * 4];
+    if (!TF_Encyclopedia_Render(ini, faction, rgba, LIVE_WIDTH, LIVE_HEIGHT) || !Set_Picture(picture, LIVE_PICTURE)) {
+        return false;
+    }
+    MsvcString name = Lent_String(LIVE_PICTURE);
+    void* handle = ((FindTextureFn)FIND_TEXTURE)(((GuiManagerFn)GUI_MANAGER)(), &name);
+    const unsigned char* engine = handle != NULL ? *(const unsigned char* const*)handle : NULL;
+    if (engine == NULL || IsBadReadPtr(engine + ENGINE_TEXTURE, 4)
+        || *(void* const*)(engine + ENGINE_TEXTURE) == NULL) {
+        return false;
+    }
+    ID3D11Texture2D* texture = NULL;
+    IUnknown* unknown = *(IUnknown* const*)(engine + ENGINE_TEXTURE);
+    if (FAILED(unknown->QueryInterface(TEXTURE_2D, (void**)&texture)) || texture == NULL) {
+        return false;
+    }
+    D3D11_TEXTURE2D_DESC desc;
+    texture->GetDesc(&desc);
+    bool fits = desc.Width == LIVE_WIDTH && desc.Height == LIVE_HEIGHT
+                && (desc.Format == DXGI_FORMAT_R8G8B8A8_UNORM || desc.Format == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
+    ID3D11Device* device = NULL;
+    ID3D11DeviceContext* context = NULL;
+    if (fits) {
+        texture->GetDevice(&device);
+    }
+    if (device != NULL) {
+        device->GetImmediateContext(&context);
+        device->Release();
+    }
+    if (context != NULL) {
+        context->UpdateSubresource(texture, 0, NULL, rgba, LIVE_WIDTH * 4, 0);
+        context->Release();
+    }
+    texture->Release();
+    return context != NULL;
+}
+
+/*
+**	A text key's string from the launcher's table into `out`; false, and `out` empty, when the table has no such key.
+*/
+bool Lookup_Text(const char* key, wchar_t* out, size_t size)
+{
+    out[0] = 0;
+    if (key == NULL || key[0] == 0) {
+        return false;
+    }
+    MsvcWString text = {};
+    text.Capacity = 7;
+    ((TextLookupFn)TEXT_LOOKUP)((void*)TEXT_MANAGER, &text, key);
+    const wchar_t* chars = text.Capacity >= 8 ? text.Pointer : text.Buffer;
+    swprintf(out, size, L"%ls", chars);
+    Free_WString(&text);
+    wchar_t wide_key[96];
+    swprintf(wide_key, 96, L"%hs", key);
+    if (wcscmp(out, wide_key) == 0) {
+        out[0] = 0;
+    }
+    return out[0] != 0;
+}
+
+/*
+**	Splits `text` at spaces into lines of up to `widths[i]` characters; returns how many lines it filled.
+*/
+int Wrap_Text(const wchar_t* text, const int* widths, int lines, wchar_t (*out)[128])
+{
+    int line = 0;
+    while (*text != 0 && line < lines) {
+        while (*text == L' ') {
+            text++;
+        }
+        int width = widths[line] < 127 ? widths[line] : 127;
+        int take = (int)wcslen(text);
+        if (take > width) {
+            take = width;
+            while (take > 0 && text[take] != L' ') {
+                take--;
+            }
+            take = take > 0 ? take : width;
+        }
+        wcsncpy(out[line], text, take);
+        out[line][take] = 0;
+        text += take;
+        line++;
+    }
+    return line;
+}
+
+/*
+**	A widget inside one list row's own scene.
+*/
+void* Row_Widget(void* row_scene, const char* name, SIZE_T cast)
+{
+    void* owner[2] = {NULL, row_scene};
+    return Find_Widget(owner, name, cast);
+}
+
+/*
+**	The open tab's faction logo picture (scripts/encyclopedia_logos.py).
+*/
+const char* About_Picture(void)
+{
+    static char name[40];
+    snprintf(name, sizeof(name), "TF_ENC_ABOUT_%s", ENC_TABS_INFO[EncTab].Suffix);
+    return name;
+}
+
+/*
+**	True when the open tab is TS GDI's and the TS-HD add-on isn't loaded, so its art is missing.
+*/
+bool Enc_Tab_Needs_Pack(void)
+{
+    return ENC_TABS_INFO[EncTab].Faction == TF_FACTION_TSGDI && !Pack_Loaded(Pack_State(TS_HD_PACK));
+}
+
+/*
+**	The details side: the faction's overview for the About row, an entry's picture, description and stats
+**	otherwise; empty for a heading.
+*/
+void Enc_Show_Row(int row)
+{
+    void* screen = Enc_Screen();
+    if (screen == NULL) {
+        return;
+    }
+    for (int i = 0; i < EncRowCount; i++) {
+        if (EncButtons[i] != NULL) {
+            ((SetToggledFn)SET_TOGGLED)(EncButtons[i], i == row, 0, 1);
+        }
+    }
+    EncSelected = row;
+    const EncRow* r = row >= 0 && row < EncRowCount ? &EncRows[row] : NULL;
+    bool entry = r != NULL && r->Kind == ENC_ROW_ENTRY;
+    bool about = r != NULL && r->Kind == ENC_ROW_ABOUT;
+    const TFEncEntry* e = entry ? &EncEntries[r->Index] : NULL;
+    wchar_t name[96] = L"";
+    if (entry && !Lookup_Text(e->NameKey, name, 96)) {
+        swprintf(name, 96, L"%hs", e->Ini);
+    } else if (about) {
+        swprintf(name, 96, L"%ls", ENC_TABS_INFO[EncTab].Name);
+    }
+    Show_Text(screen, "TF_EN_Name", entry || about ? name : NULL);
+    void* picture = Find_Widget(screen, "TF_EN_Pic", AS_QUAD);
+    bool shown = false;
+    if (entry) {
+        shown = Show_Live_Sprite(picture, e->Ini, ENC_TABS_INFO[EncTab].Faction) || Set_Picture(picture, e->Cameo);
+    } else if (about) {
+        shown = Set_Picture(picture, About_Picture()) || Set_Picture(picture, ENC_TABS_INFO[EncTab].Crest);
+    }
+    Set_Hidden(picture, !shown);
+    wchar_t text[2048] = L"";
+    if (entry) {
+        char key[64];
+        snprintf(key, sizeof(key), "TEXT_TF_ENC_%s", e->Ini);
+        if (!Lookup_Text(key, text, 2048)) {
+            Lookup_Text(e->DescKey, text, 2048);
+        }
+    } else if (about) {
+        char key[64];
+        snprintf(key, sizeof(key), "TEXT_TF_ENC_ABOUT_%s", ENC_TABS_INFO[EncTab].Suffix);
+        Lookup_Text(key, text, 2048);
+    }
+    int widths[DESC_RIGHT + DESC_BELOW];
+    for (int i = 0; i < DESC_RIGHT + DESC_BELOW; i++) {
+        widths[i] = i < DESC_RIGHT ? DESC_RIGHT_CHARS : DESC_BELOW_CHARS;
+    }
+    wchar_t lines[DESC_RIGHT + DESC_BELOW][128];
+    int filled = Wrap_Text(text, widths, DESC_RIGHT + DESC_BELOW, lines);
+    for (int i = 0; i < DESC_RIGHT + DESC_BELOW; i++) {
+        char widget[16];
+        snprintf(widget, sizeof(widget), "TF_EN_Desc%d", i);
+        Show_Text(screen, widget, i < filled ? lines[i] : NULL);
+    }
+    TFEncStats stats = {};
+    wchar_t list[160] = L"";
+    if (entry) {
+        TF_Encyclopedia_Stats(e->Ini, &stats);
+        char needs[PREREQUISITE_MAX][64];
+        int count = TF_Encyclopedia_Needs(e->Ini, needs, PREREQUISITE_MAX);
+        for (int i = 0; i < count; i++) {
+            wchar_t building[48];
+            Lookup_Text(needs[i], building, 48);
+            size_t used = wcslen(list);
+            swprintf(list + used, 160 - used, L"%ls%ls", i > 0 ? L", " : L"", building);
+        }
+    }
+    Show_Text(screen, "TF_EN_NeedsL", list[0] != 0 ? L"NEEDS" : NULL);
+    Show_Text(screen, "TF_EN_Needs", list[0] != 0 ? list : NULL);
+    for (int i = 0; i < STAT_SLOTS; i++) {
+        char label[16], value[16];
+        snprintf(label, sizeof(label), "TF_EN_SL%d", i);
+        snprintf(value, sizeof(value), "TF_EN_SV%d", i);
+        wchar_t shown[96] = L"";
+        if (i < stats.Count) {
+            wchar_t named[64];
+            const wchar_t* value = Lookup_Text(stats.Key[i], named, 64) ? named : stats.Value[i];
+            swprintf(shown, 96, L"%ls%ls", value, stats.Suffix[i]);
+        }
+        Show_Text(screen, label, i < stats.Count ? stats.Label[i] : NULL);
+        Show_Text(screen, value, i < stats.Count ? shown : NULL);
+    }
+}
+
+/*
+**	A row clicked; the event's data is the row, so ClientG calls with the screen object plus the row. A heading
+**	keeps the current selection.
+*/
+void __fastcall Enc_Row_Click(char* screen_plus_row, void*, void*)
+{
+    void* screen = Enc_Screen();
+    int row = screen != NULL ? (int)(screen_plus_row - (char*)screen) : -1;
+    if (row >= 0 && row < EncRowCount && EncRows[row].Kind != ENC_ROW_HEADING) {
+        Enc_Show_Row(row);
+    }
+}
+
+/*
+**	Fills the list for the open tab: the About row, then each group's heading and its entries, with their
+**	cameos; or, for TS GDI without its add-on, the gate to the ADD-ONS screen.
+*/
+void Enc_Fill_List(void)
+{
+    void* screen = Enc_Screen();
+    if (screen == NULL) {
+        return;
+    }
+    for (int tab = 0; tab < ENC_TABS; tab++) {
+        void* button = Find_Button(screen, ENC_TABS_INFO[tab].Button);
+        if (button != NULL) {
+            ((SetToggledFn)SET_TOGGLED)(button, tab == EncTab, 0, 1);
+        }
+    }
+    Show_Text(screen, "UI_CampaignSelect_Header_Text", ENC_TABS_INFO[EncTab].Name);
+    bool gate = Enc_Tab_Needs_Pack();
+    void* list = Find_Widget(screen, "MissionList_Box", AS_LISTBOX);
+    Set_Hidden(list, gate);
+    Show_Text(screen,
+              "TF_EN_GateNote",
+              gate ? L"Tiberian Sun GDI's units need the Tiberian Sun HD Assets add-on." : NULL);
+    Set_Hidden(Find_Button(screen, "TF_EN_Gate"), !gate);
+    Set_Hidden(Find_Widget(screen, "TF_EN_GateText", AS_TEXT), !gate);
+    EncRowCount = 0;
+    if (list == NULL || gate) {
+        Enc_Show_Row(-1);
+        return;
+    }
+    ((ListClearFn)LIST_CLEAR)(list);
+    EncEntryCount = TF_Encyclopedia_Entries(ENC_TABS_INFO[EncTab].Faction, EncEntries, ENC_MAX_ENTRIES);
+    EncRows[EncRowCount++] = {ENC_ROW_ABOUT, 0};
+    for (int i = 0; i < EncEntryCount && EncRowCount < ENC_MAX_ROWS - 1; i++) {
+        if (i == 0 || EncEntries[i].Group != EncEntries[i - 1].Group) {
+            EncRows[EncRowCount++] = {ENC_ROW_HEADING, EncEntries[i].Group};
+        }
+        EncRows[EncRowCount++] = {ENC_ROW_ENTRY, i};
+    }
+    memset(EncButtons, 0, sizeof(EncButtons));
+    void* example = Find_Widget(screen, "MissionList_SampleEntry", AS_EXAMPLE);
+    MsvcString column = Lent_String(LIST_COLUMN);
+    for (int i = 0; i < EncRowCount && example != NULL; i++) {
+        char* row = (char*)((ListAddRowFn)LIST_ADD_ROW)(list);
+        if (row == NULL) {
+            continue;
+        }
+        row[ROW_FLAG] = 0;
+        void* cell = ((RowSetItemFn)ROW_SET_ITEM)(row, &column, example, true);
+        if (cell == NULL) {
+            continue;
+        }
+        Set_Hidden(cell, false);
+        ((SetFlagFn)(*(SIZE_T**)cell)[CELL_LAYOUT / 4])(cell, true);
+        void* row_scene = *(void**)((char*)cell + ROW_CELL_SCENE);
+        const EncRow& r = EncRows[i];
+        void* button = Row_Widget(row_scene, "MissionElementButton_GDI", AS_ICON_BUTTON);
+        if (button != NULL) {
+            ((SetFlagFn)SET_NO_INPUT)(button, false);
+        }
+        EncButtons[i] = r.Kind == ENC_ROW_HEADING ? NULL : button;
+        ((BindEventFn)BIND_EVENT)(screen, ROW_EVENT_CLICKED, cell, (void*)&Enc_Row_Click, i);
+        Set_Hidden(Row_Widget(row_scene, "MissionFrameBG_GDI_Group", AS_GROUP), r.Kind == ENC_ROW_HEADING);
+        wchar_t name[96] = L"";
+        if (r.Kind == ENC_ROW_ENTRY && !Lookup_Text(EncEntries[r.Index].NameKey, name, 96)) {
+            swprintf(name, 96, L"%hs", EncEntries[r.Index].Ini);
+        } else if (r.Kind == ENC_ROW_ABOUT) {
+            swprintf(name, 96, L"ABOUT THE %ls", ENC_TABS_INFO[EncTab].Name);
+        }
+        void* title = Row_Widget(row_scene, "MissionTitle_Text", AS_TEXT);
+        Set_Text(title, name);
+        Set_Hidden(title, r.Kind == ENC_ROW_HEADING);
+        void* heading = Row_Widget(row_scene, "TF_Enc_Heading", AS_TEXT);
+        Set_Text(heading, r.Kind == ENC_ROW_HEADING ? GROUP_NAMES[r.Index] : L"");
+        Set_Hidden(heading, r.Kind != ENC_ROW_HEADING);
+        void* cameo = Row_Widget(row_scene, "TF_Enc_Cameo", AS_QUAD);
+        bool pictured = r.Kind == ENC_ROW_ENTRY ? Set_Picture(cameo, EncEntries[r.Index].Cameo)
+                        : r.Kind == ENC_ROW_ABOUT ? Set_Picture(cameo, About_Picture())
+                                                  : false;
+        Set_Hidden(cameo, !pictured);
+    }
+    ((ListSelectIndexFn)LIST_SELECT_INDEX)(list, 0, false);
+    Enc_Show_Row(0);
+}
+
+/*
+**	Closes and releases the encyclopedia's scene; the main menu under it carries on.
+*/
+void Close_Encyclopedia(void)
+{
+    void* scene = EncScene;
+    EncScene = NULL;
+    if (scene != NULL) {
+        ((SceneFn)(*(SIZE_T**)scene)[SCENE_CLOSE / 4])(scene);
+        ((SceneFn)SCENE_RELEASE)(scene);
+    }
+}
+
+void __stdcall Enc_Back_Click(void*)
+{
+    Close_Encyclopedia();
+}
+
+/*
+**	The TS GDI tab's gate: on to the ADD-ONS screen with the Tiberian Sun pack ticked.
+*/
+void __stdcall Enc_Gate_Click(void*)
+{
+    Close_Encyclopedia();
+    Open_AddOns(TS_HD_PACK);
+}
+
+/*
+**	A faction tab; the event's data is the tab, so ClientG calls with the screen object plus the tab.
+*/
+void __fastcall Enc_Tab_Click(char* screen_plus_tab, void*, void*)
+{
+    void* screen = Enc_Screen();
+    int tab = screen != NULL ? (int)(screen_plus_tab - (char*)screen) : -1;
+    if (tab >= 0 && tab < ENC_TABS && tab != EncTab) {
+        EncTab = tab;
+        Enc_Fill_List();
+    }
+}
+
+/*
+**	Opens the encyclopedia over the main menu on the Allies tab, loading the rules the first time.
+*/
+void Open_Encyclopedia(void)
+{
+    if (EncScene != NULL) {
+        return;
+    }
+    const MsvcStringVector* roots = (const MsvcStringVector*)MOD_ROOTS;
+    if (!IsBadReadPtr(roots, sizeof(*roots)) && roots->First != NULL && roots->Last - roots->First < 64) {
+        for (const MsvcString* root = roots->First; root < roots->Last; root++) {
+            TF_Encyclopedia_Add_Root(String_Chars(root));
+        }
+    }
+    if (!TF_Encyclopedia_Load()) {
+        Show_Message(L"The encyclopedia couldn't read the mod's rules.");
+        return;
+    }
+    MsvcString name = Lent_String("RA/TF_Ency");
+    ((CreateSceneFn)CREATE_SCENE)(((GuiManagerFn)GUI_MANAGER)(), &EncScene, &name, -1);
+    if (EncScene == NULL) {
+        return;
+    }
+    ((SceneFn)SCENE_FOCUS)(EncScene);
+    void* screen = Enc_Screen();
+    if (screen == NULL) {
+        Close_Encyclopedia();
+        return;
+    }
+    Bind_Click(screen, Find_Button(screen, "Back_Button"), (void*)&Enc_Back_Click, 0);
+    Bind_Click(screen, Find_Button(screen, "TF_EN_Gate"), (void*)&Enc_Gate_Click, 0);
+    for (int tab = 0; tab < ENC_TABS; tab++) {
+        Bind_Click(screen, Find_Button(screen, ENC_TABS_INFO[tab].Button), (void*)&Enc_Tab_Click, tab);
+    }
+    Set_Hidden(Find_Widget(screen, "MissionList_SampleEntry", AS_EXAMPLE), true);
+    EncTab = 0;
+    Enc_Fill_List();
+}
+
+void __stdcall Encyclopedia_Menu_Click(void*)
+{
+    Open_Encyclopedia();
+}
+
+/*
+**	The main menu built: binds ADD-ONS, ENCYCLOPEDIA and the panel's button, shows the mod's version, fills the
+**	panel and starts its poll.
 */
 void __stdcall Menu_Bound(const DWORD* regs)
 {
     void* menu = (void*)regs[1];
-    void* get = Find_Widget(menu, "TF_Pack_Get", AS_TEXT_BUTTON);
-    void* enable = Find_Widget(menu, "TF_Pack_Enable", AS_TEXT_BUTTON);
-    if (get != NULL) {
-        ((BindEventFn)BIND_EVENT)(menu, CLICK_EVENT, get, (void*)&Pack_Get_Click, 0);
+    void* addons = Find_Widget(menu, "TF_AddOns", AS_TEXT_BUTTON);
+    void* open = Find_Widget(menu, "TF_Pack_Open", AS_TEXT_BUTTON);
+    void* encyclopedia = Find_Widget(menu, "TF_Encyclopedia", AS_TEXT_BUTTON);
+    if (encyclopedia != NULL) {
+        ((BindEventFn)BIND_EVENT)(menu, CLICK_EVENT, encyclopedia, (void*)&Encyclopedia_Menu_Click, 0);
     }
-    if (enable != NULL) {
-        ((BindEventFn)BIND_EVENT)(menu, CLICK_EVENT, enable, (void*)&Pack_Enable_Click, 0);
+    if (addons != NULL) {
+        ((BindEventFn)BIND_EVENT)(menu, CLICK_EVENT, addons, (void*)&AddOns_Menu_Click, 0);
+    }
+    if (open != NULL) {
+        ((BindEventFn)BIND_EVENT)(menu, CLICK_EVENT, open, (void*)&Pack_Open_Click, 0);
     }
     wchar_t version[64];
     Mod_Version(version, 64);
@@ -1255,7 +2523,7 @@ SaveCheck Save_Loadable(const unsigned char* d, size_t n)
         if (memcmp(out + i, TF_SAVE_MARKER, 4) == 0) {
             if (*(const DWORD*)(out + i + 4) == TF_Save_Version()) {
                 bool needs_pack = (*(const DWORD*)(out + i + 8) & TF_SAVE_TS_PACK) != 0;
-                check = (needs_pack && Pack_State(TS_HD_PACK) != PACK_ENABLED) ? SAVE_NEEDS_PACK : SAVE_LOADABLE;
+                check = (needs_pack && !Pack_Loaded(Pack_State(TS_HD_PACK))) ? SAVE_NEEDS_PACK : SAVE_LOADABLE;
             }
             break;
         }
@@ -1344,6 +2612,20 @@ bool Panel_Calls_Match(void)
         {CLIENT_FREE, {0xE9, 0x4B, 0x09, 0x00, 0x00, 0xCC}},
         {BIND_EVENT, {0x55, 0x8B, 0xEC, 0x51, 0x53, 0x8B}},
         {AS_TEXT_BUTTON, {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x64}},
+        {GUI_MANAGER, {0xA1, 0xB8, 0x3F, 0xFA, 0x01, 0x85}},
+        {CREATE_SCENE, {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x1C}},
+        {SCENE_FOCUS, {0x53, 0x56, 0x57, 0x8B, 0xF9, 0xE8}},
+        {SCENE_RELEASE, {0x53, 0x8B, 0xD9, 0x83, 0x7B, 0x04}},
+        {AS_BUTTON, {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x4C}},
+        {SET_TOGGLED, {0x55, 0x8B, 0xEC, 0x0F, 0xB6, 0x45}},
+        {AS_LISTBOX, {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x64}},
+        {AS_EXAMPLE, {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x64}},
+        {LIST_CLEAR, {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x0C}},
+        {LIST_ADD_ROW, {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x3C}},
+        {ROW_SET_ITEM, {0x55, 0x8B, 0xEC, 0x83, 0x3D, 0x98}},
+        {LIST_SELECT_INDEX, {0x55, 0x8B, 0xEC, 0x56, 0x8B, 0xF1}},
+        {QUAD_SET_TEXTURE, {0x55, 0x8B, 0xEC, 0x80, 0x3D, 0x68}},
+        {FIND_TEXTURE, {0x55, 0x8B, 0xEC, 0x53, 0x8B, 0x5D}},
     };
     for (size_t i = 0; i < sizeof(calls) / sizeof(calls[0]); i++) {
         if (memcmp((const void*)calls[i].Address, calls[i].Bytes, sizeof(calls[i].Bytes)) != 0) {
@@ -1354,7 +2636,8 @@ bool Panel_Calls_Match(void)
 }
 
 /*
-**	Installs the pack panel, the lobby popup and the save check; leaves them all out on another launcher build.
+**	Installs the pack panel, the lobby popup, the save check and the menu's ADD-ONS and FACTION ENCYCLOPEDIA
+**	buttons; leaves them all out on another launcher build.
 */
 const char* Pack_Notice_Install(void)
 {

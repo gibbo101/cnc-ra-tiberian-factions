@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Paint the main menu's asset-pack panel: its frame and one logo per required pack.
+"""Paint the main menu's asset-pack panel and the ADD-ONS screen's art: the frame, a logo per pack, the bar tile.
 
 The panel sits top right, mirroring the Westwood plate, and shows a required pack that is missing or switched
 off (scripts/bui_mainmenu_pack_notice.py lays it out, redalert/tf_launcher.cpp fills it). Writes, loose in the
@@ -7,7 +7,8 @@ mod's Data/ART/TEXTURES/SRGB/:
   * TF_UI_PACK_PANEL.DDS: the main menu box's steel (UI_RA_MAINMENU_BUTTON_BG in the mod's UI atlas), nine-sliced
     to the panel's size so its bevel keeps its width;
   * TF_UI_PACK_LOGO_<ID>.DDS for each pack in PACK_LOGOS: the game's box-art logo with the pack's tag under it in
-    the title's font (Archivo Black, title_work/), in gold.
+    the title's font (Archivo Black, title_work/), in gold;
+  * TF_UI_ADDONS_BAR.DDS: the ADD-ONS screen's progress segment (scripts/bui_addons_build.py), plain TD green.
 PANEL and the LAYOUT rects are 1080p core pixels; the layout script converts them.
 
 usage: pack_panel_art.py <mod Data/ART/TEXTURES/SRGB dir>
@@ -37,10 +38,11 @@ SCALE = 2                              # logo texture pixels per core pixel, for
 # The frame stays at the menu box's own scale: shrunk much further (a 2x texture on a 1280x800 screen) its fine
 # horizontal grain bands, as the launcher draws menu images without mipmaps.
 FRAME_SCALE = 1
-# Workshop pack id -> (logo source, tag under it)
+# Pack id -> (logo source, tag under it), in the order of PACKS in redalert/tf_launcher.cpp
 PACK_LOGOS = {
     'TSHD': (SCRIPT_DIR / 'title_work/key-art/tiberiansun-logo_2x.png', 'HD ASSETS'),
 }
+BAR_GREEN = (54, 191, 0, 255)
 GOLD_TOP, GOLD_BOTTOM = (255, 232, 150), (196, 132, 34)
 
 
@@ -100,7 +102,8 @@ def main(srgb_dir):
     for pack, (source, tag) in PACK_LOGOS.items():
         art = title_logo_build.bleed(logo(source, tag))
         (srgb / f'TF_UI_PACK_LOGO_{pack}.DDS').write_bytes(title_logo_build.dds_bytes(art))
-    print('wrote the pack panel and', len(PACK_LOGOS), 'logo(s) in', srgb)
+    (srgb / 'TF_UI_ADDONS_BAR.DDS').write_bytes(title_logo_build.dds_bytes(Image.new('RGBA', (16, 16), BAR_GREEN)))
+    print('wrote the pack panel, the ADD-ONS bar and', len(PACK_LOGOS), 'logo(s) in', srgb)
 
 
 if __name__ == '__main__':

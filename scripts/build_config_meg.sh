@@ -5,6 +5,8 @@
 #  - our custom main-menu layout (RA_MAIN_MENU.BUI: START NEW GAME removed,
 #    MISSION SELECT promoted), rebuilt from the pristine base BUI by
 #    scripts/bui_mainmenu_build.py (docs/bui-front-end-modding.md)
+#  - loose beside it: the main menu with the ADD-ONS row and the pack panel (bui_mainmenu_pack_notice.py), the
+#    panel's and the ADD-ONS screen's art (pack_panel_art.py) and the ADD-ONS screen (bui_addons_build.py)
 #  - the menu's confirmation box (RA_DIALOGBOX_SOVIET.BUI) in TD's green frame with the
 #    menu's steel buttons, rebuilt from its base by scripts/bui_dialogbox_build.py
 #  - the loading screen's spinner as the faction emblem row with a glint
@@ -90,6 +92,9 @@ if ! (cd "$SRGB_DIR" && grep " MT_COMMANDBAR_COMMON.TGA$" "$OLDPWD/scripts/campa
 fi
 python3 scripts/bui_mainmenu_pack_notice.py "$EDIT_BUI" "$DATA_DIR/ART/GUI/RA_MAIN_MENU.BUI"
 python3 scripts/pack_panel_art.py "$SRGB_DIR"
+echo "==> Writing the loose ADD-ONS screen from the CAMPAIGNS page's frame"
+python3 scripts/bui_addons_build.py "$DATA_DIR/ART/GUI/RA/RA_MISSIONSELECT.BUI" scripts/bui_work/UI_BONUSCONTENT.base.BUI \
+    "$EDIT_BUI" "$DATA_DIR/ART/GUI/RA/TF_ADDONS.BUI"
 
 echo "==> Rebuilding edited RA_DIALOGBOX_SOVIET.BUI from base (the menu's confirmation box)"
 python3 scripts/bui_dialogbox_build.py "$BASE_DLG" "$EDIT_DLG"

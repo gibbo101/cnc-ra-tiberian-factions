@@ -39,11 +39,6 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   `mastertext.edits.txt` names and `picker_emblems_paint.py` plates move with it.
 - **Nod's cargo plane circles the airstrip** (`known-issues.md`): find why the TDC17 sometimes
   misses its landing on `TDAFLD` and fix it, with a play test of several deliveries.
-- **TIBERIAN FACTIONS ADD-ONS screen** (after 5.5.0): a main-menu button (TIBERIAN FACTIONS ADD-ONS, or ADD-ONS)
-  opening one page that lists every add-on, one row each: logo, name, what it adds, its state (loaded, switched off,
-  downloading, missing) and GET IT or ENABLE AND RESTART. Required packs (TS-HD-Assets) show as the top-right
-  panel does; optional ones (a desert theatre, the TD maps) are offered without a nag. Built on the pack panel's
-  states and actions (`pack-panel.md`) and a borrowed stock screen, as the CAMPAIGNS page borrowed Mission Select.
 - **H (jump to the home base) does nothing** (`known-issues.md`): find which side owns the key and fix it, with a
   play test on each faction.
 - **C&C3 pack README's turret seat offsets** (reported by a modder using the pack): with the README's C3PRED seat

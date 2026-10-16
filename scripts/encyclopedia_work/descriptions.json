@@ -1,0 +1,1127 @@
+{
+  "about": {
+    "ALLIES": "The Allies, consisting of a handful of remaining free European countries that oppose Stalin. Ideology: To resist Soviet aggression against any first and second world powers. Uphold ideals defined in World Association of Nations charter. Current titular leader: General Gunter von Esling, Supreme Commander of Allied Forces. Affiliations: United Nations.",
+    "SOVIETS": "The Soviet Empire, the mighty war juggernaut bent on continental domination. Ideology: It came to Stalin in a series of dreams. The birthright of the Soviet Empire is nothing less than conquering and dominating the entire globe. And the birthright of Josef Stalin is nothing less than conquering the spirit and dominating the actions of every Soviet citizen.",
+    "GDI": "GDI, the United Nations' Global Defence Initiative peacekeeping force. Before 1990, known as Special Operations Group Echo, Black Ops 9. Founded: 12 October 1995, in accordance with the United Nations Global Defence Act (UNGDA). Ideology: To enforce the United Nations Global Defence Act and uphold the ideals as outlined in the United Nations Charter.",
+    "NOD": "The Brotherhood of Nod, a secretive terrorist organisation that has remained hidden for centuries... until now. Ideology: To unite third-world nations under a pseudo-religious political platform with imperialist tendencies. In actuality it is an aggressive and popular neo-fascist, anti-West movement vying for total domination of the world's peoples and resources.",
+    "TSGDI": "GDI has watched over the planet for decades from their orbital command centre, the Philadelphia. GDI troops are ambitious and hard working, co-operative and loyal. These twenty-first century marines want both peace and honour. More than that, they want to win, to destroy all traces of the Brotherhood of Nod."
+  },
+  "entries": {
+    "1TNK": {
+      "text": "The standard Allied Tank. Fast, with decent armor, the Light Tank works well in mixed groups, and also in large divisions. What it lacks in firepower, it makes up for in speed and rapid fire.",
+      "source": "ra",
+      "manual_heading": "LIGHT TANK"
+    },
+    "2TNK": {
+      "text": "The higher-grade Allied Tank, this unit is just as well armored, faster, and less costly than the Soviet Heavy Tank, though armed with only a single barrel. Used in groups with Light Tanks, the Medium Tank can draw fire while the Lighter Tanks destroy the threat.",
+      "source": "ra",
+      "manual_heading": "MEDIUM TANK"
+    },
+    "3TNK": {
+      "text": "The basic tank of the Soviet Empire, this beast is equipped with twin 105mm cannons, giving it twice the punch of the nearest Allied equivalent, the Medium Tank. It sacrifices speed for this bonus, but the net result still makes it a formidable opponent on the battlefield.",
+      "source": "ra",
+      "manual_heading": "HEAVY TANK"
+    },
+    "4TNK": {
+      "text": "Tanks don't come any bigger. The largest land-based weapons platform, the Mammoth Tank can take and dish out a lot of punishment. Its twin cannons are unmatched in power on land, and its missiles make it effective against infantry and air units as well.",
+      "source": "ra",
+      "manual_heading": "MAMMOTH TANK"
+    },
+    "AFACT": {
+      "text": "The Construction Yard is the foundation of a base and allows the construction of other buildings.",
+      "source": "ra",
+      "manual_heading": "CONSTRUCTION YARD"
+    },
+    "AFLD": {
+      "text": "The Airfield allows construction of MIG and Yak planes, and allows access to Paratroopers, Parachute bombs, and Spy Planes. Only one plane is allowed per Airfield that has been constructed. If an in-use Airfield is destroyed while its associated plane is still in the air, the plane will crash.",
+      "source": "ra",
+      "manual_heading": "AIRFIELD"
+    },
+    "AGUN": {
+      "text": "Although its range is not great, any enemy aircraft flying over these are guaranteed to be heavily damaged, if not destroyed. They are accurate and deadly.",
+      "source": "ra",
+      "manual_heading": "AA GUN"
+    },
+    "AHPAD": {
+      "text": "The Helipad allows construction of all helicopters and will reload any that are in need. Each new Helipad comes with an Apache.",
+      "source": "ra",
+      "manual_heading": "HELIPAD"
+    },
+    "ALGATEH": {
+      "text": "A reinforced gate set into an Allied wall line. It opens for friendly forces and seals shut against the enemy, so a walled base keeps its defences without cutting off its own traffic.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "ALGATEV": {
+      "text": "A reinforced gate set into an Allied wall line. It opens for friendly forces and seals shut against the enemy, so a walled base keeps its defences without cutting off its own traffic.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "AMCV": {
+      "text": "The Mobile Construction Vehicle allows creation or expansion of a base. Although expensive, the MCV is useful to have around if the original Construction Yard (a favorite target of the enemy) is destroyed or captured. As with any other construction facility, the more of them you have, the faster construction will proceed.",
+      "source": "ra",
+      "manual_heading": "MCV"
+    },
+    "APC": {
+      "text": "With the Armored Personnel Carrier, the Allies can transport up to 5 infantry units quickly across land. A tracked vehicle, the APC is the lightest unit with the ability to crush Sandbag and Barbed Wire Barriers. The Turret-Mounted M-60 helps keep infantry at bay while it goes about its mission.",
+      "source": "ra",
+      "manual_heading": "APC"
+    },
+    "APWR": {
+      "text": "This large, high-yield structure handles the energy strains of some later, more power-intensive structures and defenses.",
+      "source": "ra",
+      "manual_heading": "ADVANCED POWER PLANT"
+    },
+    "ARTY": {
+      "text": "Very effective, if somewhat inaccurate, Artillery can devastate infantry and structures from afar. Its slow speed and light armor require that it be protected.",
+      "source": "ra",
+      "manual_heading": "ARTILLERY"
+    },
+    "ATEK": {
+      "text": "In addition to allowing the construction of high-tech units like the Cruiser and Gap Generator, building a Tech Center also starts construction of the GPS Satellite. When finished, the satellite will automatically launch.",
+      "source": "ra",
+      "manual_heading": "TECHNOLOGY CENTER"
+    },
+    "AWEAP": {
+      "text": "This structure is responsible for the building of all ground-based Allied vehicles. Building multiple War Factories decreases the amount of time required to create a vehicle.",
+      "source": "ra",
+      "manual_heading": "WAR FACTORY"
+    },
+    "BARR": {
+      "text": "The Barracks is where all Soviet infantry are trained. Some infantry units may not be available until other structures are built.",
+      "source": "ra",
+      "manual_heading": "BARRACKS"
+    },
+    "BRIK": {
+      "text": "More effective than the Sandbag Barrier, Concrete Walls are not crushable and block tank ordnance.",
+      "source": "ra",
+      "manual_heading": "CONCRETE BARRIER"
+    },
+    "CA": {
+      "text": "Slow moving death. What the Cruiser lacks in speed, it makes up for in firepower and range. Able to lob destruction onto targets incredible distances away, this ship can decimate an enemy base in minutes. A favorite target of Submarines, these ships have no sea-based defenses, relying on the faster moving Destroyer and Gunboat to protect them.",
+      "source": "ra",
+      "manual_heading": "CRUISER"
+    },
+    "CTNK": {
+      "text": "The ChronoTank is the latest advancement in Allied technology. When fully charged, the unit has the unique ability to Chronoshift itself, allowing it to appear anywhere on the battlefield. Its missile launchers are accurate and fast, adding punch to any assault.",
+      "source": "aftermath",
+      "manual_heading": "CHRONOTANK"
+    },
+    "CYCL": {
+      "text": "Chain Link functions in the same way that the sandbags do, but they provide more defence. Only explosive weapons such as grenades, missiles, and shells can damage a Chain Link Barrier.",
+      "source": "td",
+      "manual_heading": "CHAIN LINK BARRIER"
+    },
+    "DD": {
+      "text": "The mid-level naval vessel, the Destroyer is effective against land, air, and sea-based threats. Its fast-firing stinger missiles can hit air targets easily, and can also decimate nearby ground targets. If it detects a Submarine, its dual depth-charge launcher ensures that the Sub will be rapidly taken out of commission.",
+      "source": "ra",
+      "manual_heading": "DESTROYER"
+    },
+    "DOG": {
+      "text": "Attack Dogs are the only unit that can detect Spies that are trying to infiltrate the base. Although unarmored and easy to kill, Dogs make the perfect in-base guard unit against sneak attacks by Engineers, Spies, and Thieves. They also make fine pets.",
+      "source": "ra",
+      "manual_heading": "ATTACK DOG"
+    },
+    "DOME": {
+      "text": "The Radar Dome gives you an overhead view of the battlefield when fully powered.",
+      "source": "ra",
+      "manual_heading": "RADAR DOME"
+    },
+    "DTRK": {
+      "text": "These drone units carry an atomic bomb triggered to detonate on impact or destruction. Care in their use is advised. Many a foolish commander has lost his base when an air strike destroyed the Demolition Truck before it could leave the confines of the base.",
+      "source": "aftermath",
+      "manual_heading": "DEMOLITION TRUCK"
+    },
+    "E1": {
+      "text": "Armed with an M-16, this Infantry unit is at its best against other Infantry and Tanks (when in groups).",
+      "source": "ra",
+      "manual_heading": "RIFLE INFANTRY"
+    },
+    "E2": {
+      "text": "The Grenadier has a longer range and more destructive power than regular infantry. In groups, Grenadiers are effective against heavily armored units and structures.",
+      "source": "ra",
+      "manual_heading": "GRENADIER"
+    },
+    "E3": {
+      "text": "Capable of rapidly damaging armored units, these infantry make up for their lack of speed with a powerful punch. In addition to dealing with ground targets, their missiles are also effective against airborne attackers.",
+      "source": "ra",
+      "manual_heading": "ROCKET SOLDIER"
+    },
+    "E4": {
+      "text": "These soldiers are slower and more susceptible to damage than other infantry (due to the large tanks of flammable chemicals they carry). The Flame Soldier can decimate structures and infantry in seconds with his flamethrower.",
+      "source": "ra",
+      "manual_heading": "FLAME INFANTRY"
+    },
+    "E6": {
+      "text": "An Engineer can fully repair any of your damaged buildings instantly. When sent to enemy buildings, an Engineer can damage or capture it.",
+      "source": "ra",
+      "manual_heading": "ENGINEER"
+    },
+    "E7": {
+      "text": "Armed with two .45s, Tanya can mow through infantry like they weren't there. Her C-4 Explosives can destroy buildings... if you can get her to them. Unlike other units, Tanya can never be put in guard mode. You must manually target all enemies that you wish attacked.",
+      "source": "ra",
+      "manual_heading": "TANYA"
+    },
+    "FACT": {
+      "text": "The Construction Yard is the foundation of a base and allows the construction of other buildings.",
+      "source": "ra",
+      "manual_heading": "CONSTRUCTION YARD"
+    },
+    "FENC": {
+      "text": "Barbed-Wire Barrier stops non-tracked vehicles and infantry. Tracked vehicles can destroy the barrier by shooting it and/or running over it.",
+      "source": "ra",
+      "manual_heading": "BARBED-WIRE BARRIER"
+    },
+    "FIX": {
+      "text": "The Service Depot repairs any damaged vehicle that you move onto it. Mine Layer units can be re-loaded by driving them onto the pad. (Repairing a vehicle is much faster than building one, and costs a fraction of the original price. This is a worthy investment.)",
+      "source": "ra",
+      "manual_heading": "SERVICE DEPOT"
+    },
+    "FTUR": {
+      "text": "The Flame Tower targets and destroys approaching enemy ground units by shooting balls of fire. It is best used against large groups of infantry; it is effective against armored units as well. Since there are volatile fuels used in the Flame Tower, it damages nearby units and structures if destroyed.",
+      "source": "ra",
+      "manual_heading": "FLAME TOWER"
+    },
+    "GAP": {
+      "text": "The Gap Generator allows the Allies to hide associated base from enemy sight. Any enemies scouting the area will only reveal around themselves. The Shroud will immediately close up once the invading unit is destroyed or leaves the area.",
+      "source": "ra",
+      "manual_heading": "GAP GENERATOR"
+    },
+    "GUN": {
+      "text": "A Turret-mounted 105mm cannon. Heavily armored with good range, this Turret is effective against armored threats.",
+      "source": "ra",
+      "manual_heading": "TURRET"
+    },
+    "HARV": {
+      "text": "The Ore Truck collects raw, unprocessed ore. Although slow, it is heavily armored, able to withstand a hammering and still escape intact.",
+      "source": "ra",
+      "manual_heading": "ORE TRUCK"
+    },
+    "HBOX": {
+      "text": "Identically equipped as the Pillbox, this defensive structure has the advantages of better armor and near-perfect camouflage. It blends with the surrounding terrain, making it virtually invisible.",
+      "source": "ra",
+      "manual_heading": "CAMOUFLAGED PILLBOX"
+    },
+    "HELI": {
+      "text": "The Allies attack helicopter is loaded with hellfire missiles, allowing it to destroy armored targets with ease. Used in conjunction with naval or ground attacks, the Longbow is an ideal support aircraft, able to rapidly inflict additional damage to a target, usually with little or no return fire.",
+      "source": "ra",
+      "manual_heading": "APACHE LONGBOW"
+    },
+    "HIND": {
+      "text": "Large and armored, the Hind uses its high-velocity Vulcan chain-gun to tear apart enemy units and structure. Equipped with a large ammo supply, the Hind will follow its target for quite some time, all the while wearing away at its defenses.",
+      "source": "ra",
+      "manual_heading": "HIND"
+    },
+    "HPAD": {
+      "text": "The Helipad allows construction of all helicopters and will reload any that are in need.",
+      "source": "ra",
+      "manual_heading": "HELIPAD"
+    },
+    "IRON": {
+      "text": "The Iron Curtain renders a vehicle or building invulnerable for a short period of time.",
+      "source": "ra",
+      "manual_heading": "IRON CURTAIN"
+    },
+    "JEEP": {
+      "text": "Fast and lightly armored, this unit is ideal for scouting an area quickly. Used as a support unit for an infantry squad, the Ranger can soften up the enemy before a direct confrontation occurs.",
+      "source": "ra",
+      "manual_heading": "RANGER"
+    },
+    "KENN": {
+      "text": "The Kennel trains Attack Dogs.",
+      "source": "ra",
+      "manual_heading": "KENNEL"
+    },
+    "LST": {
+      "text": "The Landing Ship Transport allows transportation of up to 5 ground-based units across the water. Transports can only be loaded / unloaded on shore terrain, and they are at their most vulnerable while unloading.",
+      "source": "ra",
+      "manual_heading": "TRANSPORT"
+    },
+    "MCV": {
+      "text": "The Mobile Construction Vehicle allows creation or expansion of a base. Although expensive, the MCV is useful to have around if the original Construction Yard (a favorite target of the enemy) is destroyed or captured. As with any other construction facility, the more of them you have, the faster construction will proceed.",
+      "source": "ra",
+      "manual_heading": "MCV"
+    },
+    "MECH": {
+      "text": "A new trooper for the Allies, the mechanic can repair vehicles in the field. Slow and unarmored, he is an easy target for Soviet infantry and tanks. However, his ability to repair any nearby friendly units more than makes up for his lack of defense. Like the medic, the mechanic takes time to repair a unit to full strength.",
+      "source": "aftermath",
+      "manual_heading": "FIELD MECHANIC"
+    },
+    "MEDI": {
+      "text": "Any friendly infantry near the Medic will automatically be healed to full health. Although a Medic cannot heal himself, Medics working in teams make excellent additions to any infantry force.",
+      "source": "ra",
+      "manual_heading": "MEDIC"
+    },
+    "MGG": {
+      "text": "The mobile version of the Gap Generator functions in much the same way the stationary one does. Although it projects a smaller gap field, you can hide several units under its cover, blocking the enemy from seeing what you're sending against them.",
+      "source": "ra",
+      "manual_heading": "MOBILE GAP GENERATOR"
+    },
+    "MIG": {
+      "text": "This fast-attack craft carries a limited number of powerful and accurate missiles. Used in hit-and-run tactics, the MIG can remove armored craft before they can become a threat.",
+      "source": "ra",
+      "manual_heading": "MIG"
+    },
+    "MNLY": {
+      "text": "The Anti-Tank Mine Layer is one of the most effective units on the Allied side. Able to destroy most units with just one mine, a savvy commander can neutralize an enemy force before they get near a base. The Mine Layer carries 5 mines, and can be reloaded at the Service Depot.",
+      "source": "ra",
+      "manual_heading": "AT MINE LAYER"
+    },
+    "MRJ": {
+      "text": "The Mobile Radar Jammer (MRJ) disrupts enemy radar functions, shutting down transmissions and display. The range of this unit allows it to hide a good distance away from the enemy base while other forces use the radar blackout to attack.",
+      "source": "ra",
+      "manual_heading": "MRJ"
+    },
+    "MSLO": {
+      "text": "Once built, the Silo readies an Atomic Bomb that can be launched onto the battlefield, causing massive destruction to structures and infantry. The more heavily armored units will fare better, but not by much.",
+      "source": "ra",
+      "manual_heading": "MISSILE SILO"
+    },
+    "MSUB": {
+      "text": "Realizing their navy lacked first-strike capability, the Soviet Empire has developed a new class of submarine capable of launching attacks on inland targets. The Missile Sub's weapons are nearly as powerful as those of the dreaded Allied Cruiser, with the added advantage that they can submerge and surface before the enemy knows what hit them.",
+      "source": "aftermath",
+      "manual_heading": "MISSILE SUB"
+    },
+    "PBOX": {
+      "text": "Armed with a rapid fire vulcan cannon, the Pillbox is ideal for defending your base from enemy infantry attacks.",
+      "source": "ra",
+      "manual_heading": "PILLBOX"
+    },
+    "PDOX": {
+      "text": "The evolution of the Philadelphia Experiment, the Chronosphere allows the Allied player to move a unit from one location to another without having to cross the space in between. However, the unit will only exist in its new location for a brief time before returning to its point of origin. This technology is still a bit unstable.",
+      "source": "ra",
+      "manual_heading": "CHRONOSPHERE"
+    },
+    "POWR": {
+      "text": "The standard Power Plant. Power output is directly related to the Power Plant's condition, so protect them during battles.",
+      "source": "ra",
+      "manual_heading": "POWER PLANT"
+    },
+    "PROC": {
+      "text": "The Refinery smelts ore into its component elements. Building the Refinery immediately deploys an Ore Truck. The Refinery can store up to 2,000 credits of smelted ore.",
+      "source": "ra",
+      "manual_heading": "ORE REFINERY"
+    },
+    "PT": {
+      "text": "The fastest and lightest of the Allied naval vessels, the Gunboat is good at scouting naval routes, and detecting Submarines before they can cause any mischief. Its depth charge launcher will automatically fire at any Submarine that is detected nearby.",
+      "source": "ra",
+      "manual_heading": "GUNBOAT"
+    },
+    "QTNK": {
+      "text": "The M.A.D. Tank, or Mutually Assured Destruction Tank, is a final-solution weapon. Once activated, it builds up a powerful harmonic shock wave. When fully charged, it detonates, destroying itself and damaging every unit and structure within a large radius around it. However, infantry are unaffected by its detonation.",
+      "source": "aftermath",
+      "manual_heading": "M.A.D. TANK"
+    },
+    "SAM": {
+      "text": "SAM Site automatically launches long-ranging missiles at enemy aircraft. Slower moving or hovering aircraft will fare the worst against this defensive structure.",
+      "source": "ra",
+      "manual_heading": "SAM SITE"
+    },
+    "SBAG": {
+      "text": "The Sandbag Barrier is good for stopping non tracked vehicles and infantry. All tracked vehicles can run right over this barrier.",
+      "source": "ra",
+      "manual_heading": "SANDBAG BARRIER"
+    },
+    "SFACT": {
+      "text": "The Construction Yard is the foundation of a base and allows the construction of other buildings.",
+      "source": "ra",
+      "manual_heading": "CONSTRUCTION YARD"
+    },
+    "SHOK": {
+      "text": "Another use of Tesla's inventions, Shock Troopers are sturdy (if somewhat slow) infantry units that carry a portable Tesla generator, capable of delivering large jolts of electricity to any unit or structure. Well worth the price, Shock Troopers can not be run over by enemy vehicles.",
+      "source": "aftermath",
+      "manual_heading": "SHOCK TROOPER"
+    },
+    "SHPAD": {
+      "text": "The Helipad allows construction of helicopters, and will reload any that are in need. Each new Helipad comes with a Hind.",
+      "source": "ra",
+      "manual_heading": "HELIPAD"
+    },
+    "SILO": {
+      "text": "This Silo can hold up to 1,500 credits of smelted ore. Guard it carefully. If destroyed or stolen, the amount stored is deducted from your account.",
+      "source": "ra",
+      "manual_heading": "ORE SILO"
+    },
+    "SMCV": {
+      "text": "The Mobile Construction Vehicle allows creation or expansion of a base. Although expensive, the MCV is useful to have around if the original Construction Yard (a favorite target of the enemy) is destroyed or captured. As with any other construction facility, the more of them you have, the faster construction will proceed.",
+      "source": "ra",
+      "manual_heading": "MCV"
+    },
+    "SPEN": {
+      "text": "The Sub pen builds and launches Submarines and Transports. Damaged Submarines and Transports docked in the Sub Pen are repaired.",
+      "source": "ra",
+      "manual_heading": "SUB PEN"
+    },
+    "SPY": {
+      "text": "Master of disguise, the Spy can slip by enemy forces undetected. A versatile unit, the Spy can gather many kinds of information on an enemy player: what they're building, how much money they have, how many units they have, etc. Beware, Attack Dogs are not fooled by the Spy's appearance.",
+      "source": "ra",
+      "manual_heading": "SPY"
+    },
+    "SS": {
+      "text": "Silent and stealthy, Submarines can attack ships from afar. Subs must surface to fire, giving away their position, and opening themselves up to any nearby units that can hit them.",
+      "source": "ra",
+      "manual_heading": "SUBMARINE"
+    },
+    "STEK": {
+      "text": "The Soviet Tech Center allows the construction of high-tech units like the Mammoth Tank and Tesla Coil.",
+      "source": "ra",
+      "manual_heading": "TECHNOLOGY CENTER"
+    },
+    "SVGATEH": {
+      "text": "A heavy Soviet gate for the base wall line. It opens for friendly units and stays shut against the enemy, keeping a walled base sealed without trapping its own forces.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "SVGATEV": {
+      "text": "A heavy Soviet gate for the base wall line. It opens for friendly units and stays shut against the enemy, keeping a walled base sealed without trapping its own forces.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "SWEAP": {
+      "text": "This structure is responsible for the building of all Soviet ground based vehicles. Building multiple War Factories decreases the amount of time required to build a vehicle.",
+      "source": "ra",
+      "manual_heading": "WAR FACTORY"
+    },
+    "SYRD": {
+      "text": "The Naval Yard builds and launches all Allied naval vessels. Damaged sea craft docked at the Naval Yard can be repaired. Building multiple Naval Yards decreases the amount of time required to create a naval vessel.",
+      "source": "ra",
+      "manual_heading": "NAVAL YARD"
+    },
+    "TDA10": {
+      "text": "These units are highly manoeuvrable, ground-hugging craft that level enemy units with napalm. When playing as GDI in the solo play missions, destroying all Nod SAM sites will give you access to the A-10 airstrikes. Since the A-10 bombs in a line, it is a good idea to pick a target that is part of a group. You can do damage to more enemies this way.",
+      "source": "td",
+      "manual_heading": "A-10 GROUND SUPPORT AIRCRAFT"
+    },
+    "TDAFLD": {
+      "text": "Nod buys all its units. The Airfield allows cargo planes to land and deliver equipment. It is functionally equivalent to the GDI Weapons Factory. However, you do not instantly get the unit when it is complete. It must be flown in, so plan accordingly.",
+      "source": "td",
+      "manual_heading": "AIRFIELD"
+    },
+    "TDAPC": {
+      "text": "The Armoured Personnel Carrier (APC) transports and protects up to five troops heading to and from battle locations. Its heavy armour, fast speed, and long sight range make it an ideal scouting unit. It is also useful for crushing infantry.",
+      "source": "td",
+      "manual_heading": "APC"
+    },
+    "TDARTY": {
+      "text": "This massive cannon has great range and ballistic power. This unit is very slow. Any attacks using this unit have to be orchestrated carefully, just getting the unit to its target can be difficult. However, once it gets within range, little stands in the way of its firepower. By nature, artillery is somewhat inaccurate.",
+      "source": "td",
+      "manual_heading": "MOBILE ARTILLERY"
+    },
+    "TDATWR": {
+      "text": "Provides strong fortification against ground and air units. The Advanced Guard Tower (AGT) fires Tomahawk missiles at considerable range, but it requires power. Because of the AGT's long range, it cannot hit units that are directly adjacent to it. It is always wise to back up the AGT with another defence like the Guard Tower.",
+      "source": "td",
+      "manual_heading": "ADVANCED GUARD TOWER"
+    },
+    "TDBGGY": {
+      "text": "These all-terrain vehicles are armed with an M60 machine-gun in a turret. Faster than GDI's Hum-vee, the Buggy has sacrificed some armour for this advantage. Used in hit and run tactics on infantry and other lightly armoured targets, the Buggy shines. Against armour, it dies.",
+      "source": "td",
+      "manual_heading": "NOD BUGGY"
+    },
+    "TDBIKE": {
+      "text": "Mounting twin rocket launchers, the cycles have great flexibility, serving multiple roles in Nod's forces. Learn to use these units in packs, hunting down lone units or harvesters. When in guard mode, they will shoot at enemy aircraft, making them ideal at destroying incoming aerial assaults. Their speed makes them an ideal scouting unit as well.",
+      "source": "td",
+      "manual_heading": "RECON BIKE"
+    },
+    "TDCA": {
+      "text": "Slow moving death. What the Cruiser lacks in speed, it makes up for in firepower and range. Able to lob destruction onto targets incredible distances away, this ship can decimate an enemy base in minutes. A favorite target of Submarines, these ships have no sea-based defenses, relying on the faster moving Destroyer and Gunboat to protect them.",
+      "source": "ra",
+      "manual_heading": "CRUISER"
+    },
+    "TDDD": {
+      "text": "The mid-level naval vessel, the Destroyer is effective against land, air, and sea-based threats. Its fast-firing stinger missiles can hit air targets easily, and can also decimate nearby ground targets. If it detects a Submarine, its dual depth-charge launcher ensures that the Sub will be rapidly taken out of commission.",
+      "source": "ra",
+      "manual_heading": "DESTROYER"
+    },
+    "TDE1": {
+      "text": "Equipped with the GAU-3 'Eliminator' 5.56mm chaingun, this troop is the key player in the GDI forces. En masse, this unit is very useful against slow-moving armoured units like tanks. Just remember that large tanks can easily crush your infantry and flame-based weapons can quickly reduce entire squads to ash.",
+      "source": "td",
+      "manual_heading": "MINIGUN INFANTRY"
+    },
+    "TDE2": {
+      "text": "The Grenadier is a very useful all-purpose infantry unit. This troop is faster, can see further, and hit harder than normal infantry. The grenade this unit throws can not only go over walls, but can destroy them as well. They 'splode good, too!!",
+      "source": "td",
+      "manual_heading": "GRENADIER"
+    },
+    "TDE3": {
+      "text": "These infantry units are slower and easier to kill than other infantry, but can tear through armour faster than any other infantry unit. Their major advantage is the ability to attack airborne units. Most effective as a support unit in diverse groups.",
+      "source": "td",
+      "manual_heading": "ROCKET SOLDIER"
+    },
+    "TDE4": {
+      "text": "Effective for maximum close-range destruction. Produces fire which burns more slowly than normal, allowing more effective elimination of humans and armament. Be careful when using these troops in groups. If one unit gets in front of another, chances are that the unit in front will catch some of the damage from the back unit. Spread them out.",
+      "source": "td",
+      "manual_heading": "FLAMETHROWER INFANTRY"
+    },
+    "TDE5": {
+      "text": "The Chem-Warrior is an advanced infantry unit immune to the effects of Tiberium. The chem-blast they carry produces a short-lived toxic cloud of Tiberium gas that will kill any infantry caught within its effects.",
+      "source": "td",
+      "manual_heading": "CHEM-WARRIOR"
+    },
+    "TDE6": {
+      "text": "Engineers are used to capture enemy buildings. Since they carry no weapons, they are extremely vulnerable on the battlefield and must be directed very carefully.",
+      "source": "td",
+      "manual_heading": "ENGINEER"
+    },
+    "TDEYE": {
+      "text": "An upgrade to the Communications Centre, this structure not only provides radar, but is the uplink centre for the Ion Cannon, GDI's most devastating weapon. Once charged, it can unleash a blast on an unsuspecting target. The Ion Cannon requires power to charge: If your base is under powered, it will stop.",
+      "source": "td",
+      "manual_heading": "ADVANCED COMMUNICATIONS CENTRE/ION CANNON"
+    },
+    "TDFACT": {
+      "text": "The Construction Yard is the foundation of a base and allows the construction of other buildings. You must protect this structure! Without it, you cannot build any new structures. The Construction Yard is fairly strong, but as with almost all structures, it is vulnerable to Engineers. Try surrounding your Construction Yard with walls to keep out unwanted guests.",
+      "source": "td",
+      "manual_heading": "CONSTRUCTION YARD"
+    },
+    "TDFBNK": {
+      "text": "A squat, hardened bunker fitted with a flamethrower. It is an early defence against infantry assault, leaving the Turret to deal with enemy armour.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "TDFIX": {
+      "text": "The repair facility allows you to repair damaged units. Moving a vehicle onto the repair pad will begin the repair process. All repairs are deducted from your credits. If you run out of credits while repairs are in progress, repairs will stop. Damage to the facility significantly slows repair work.",
+      "source": "td",
+      "manual_heading": "REPAIR FACILITY"
+    },
+    "TDFTNK": {
+      "text": "Especially useful against infantry and structures, the Devil's Tongue Flame Tank can mow through swarms of infantry with little or no damage to itself. To top off its destructive capabilities, the flame tank is fast, able to avoid some of the slower firing weapons and get close to its target quickly.",
+      "source": "td",
+      "manual_heading": "FLAME TANK"
+    },
+    "TDGAFLD": {
+      "text": "GDI's airstrip, where the A-10 Warthog is built, launched and rearmed. Without it, GDI's fixed-wing aircraft have nowhere to land and reload.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "TDGFACT": {
+      "text": "The Construction Yard is the foundation of a base and allows the construction of other buildings. You must protect this structure! Without it, you cannot build any new structures. The Construction Yard is fairly strong, but as with almost all structures, it is vulnerable to Engineers. Try surrounding your Construction Yard with walls to keep out unwanted guests.",
+      "source": "td",
+      "manual_heading": "CONSTRUCTION YARD"
+    },
+    "TDGGATEH": {
+      "text": "A GDI gate built into the base wall line. It opens for friendly units and stays closed to the enemy, so a fortified base can keep its walls without blocking its own forces.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "TDGGATEV": {
+      "text": "A GDI gate built into the base wall line. It opens for friendly units and stays closed to the enemy, so a fortified base can keep its walls without blocking its own forces.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "TDGHPAD": {
+      "text": "Building the Helipad allows the use of the ORCA attack aircraft. The Helipad is also the rearming station for the ORCA. If the Helipad is lost, the ORCA will not be able to reload. Any ORCA can use any Helipad on your side.",
+      "source": "td",
+      "manual_heading": "HELIPAD"
+    },
+    "TDGMCV": {
+      "text": "The mobile construction vehicle lets you search for suitable base sites. Once one is found, convert the MCV into a full-service Construction Yard and use it to build other structures. Since this vehicle is slow, unarmed, and expensive, you will want to keep it well guarded with other units.",
+      "source": "td",
+      "manual_heading": "MCV"
+    },
+    "TDGTWR": {
+      "text": "Armed with a high-velocity machine gun, this structure provides manned defence against Nod ground attack. The Guard Tower is exceptionally useful against infantry and other light units, and since it doesn't require any power, it will remain functional when your base loses power. It can also detect Nod Stealth Tanks when they are near.",
+      "source": "td",
+      "manual_heading": "GUARD TOWER"
+    },
+    "TDGUN": {
+      "text": "For broad sweep, short-range protection against heavy assault vehicles. This is the staple of Nod's base defence, so be sure to have several of these around your base entrances. Fire-power wise, they are the equivalent of a medium tank's cannon, without the mobility.",
+      "source": "td",
+      "manual_heading": "TURRET"
+    },
+    "TDGYARD": {
+      "text": "The GDI Naval Yard builds and launches GDI's warships and transports. Damaged vessels docked at the yard are repaired. Building more than one shortens the time needed to launch a new vessel.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "TDHAND": {
+      "text": "This creates elite infantry units for the Brotherhood of Nod. Building multiple barracks will decrease the time necessary to train a soldier.",
+      "source": "td",
+      "manual_heading": "HAND OF NOD"
+    },
+    "TDHARV": {
+      "text": "This armour-plated vehicle seeks out and scoops up raw Tiberium, then transports it to refineries for processing. It is slow and unwieldy and will need to be protected. Its good points are that it can take a beating before being destroyed and it is proficient at crushing enemy infantry.",
+      "source": "td",
+      "manual_heading": "HARVESTER"
+    },
+    "TDHELI": {
+      "text": "Nod's Apache Helicopter is fast, mobile, and carries a large quantity of ammunition. Used primarily against infantry and structures, the Apache can take down armoured units when en-masse. Use them to soften up bases before a nuclear weapon is dropped, or gun through a horde of engineers coming towards your base.",
+      "source": "td",
+      "manual_heading": "APACHE ATTACK HELICOPTER"
+    },
+    "TDHPAD": {
+      "text": "Building the Helipad allows the use of the ORCA attack aircraft. The Helipad is also the rearming station for the ORCA. If the Helipad is lost, the ORCA will not be able to reload. Any ORCA can use any Helipad on your side.",
+      "source": "td",
+      "manual_heading": "HELIPAD"
+    },
+    "TDHQ": {
+      "text": "Allows the use of the radar screen as long as there is sufficient power. The radar screen allows for long range views of the battlefield and for commanding units over great distances. When playing as Nod against GDI in the solo play missions, destroying the GDI's Radar Facility will keep GDI from launching A-10 airstrikes against you.",
+      "source": "td",
+      "manual_heading": "COMMUNICATIONS CENTRE"
+    },
+    "TDHTNK": {
+      "text": "Armed with dual 120mm cannons and Mammoth Tusk Missiles, this giant is a very versatile attack unit. These weapons help compensate for its lack of speed and mobility. When this unit takes a lot of damage, it can slowly regenerate its health back up to 50%. When the Mammoth tank is placed in guard mode, it can fire at aerial units.",
+      "source": "td",
+      "manual_heading": "MAMMOTH TANK"
+    },
+    "TDJEEP": {
+      "text": "These all-terrain attack vehicles are fast and very useful against infantry and can wipe out large numbers of Attack Cycles when used en masse. Its light armour makes it vulnerable to any explosive weapon.",
+      "source": "td",
+      "manual_heading": "HUMM-VEE"
+    },
+    "TDLTNK": {
+      "text": "This highly-mobile tread vehicle, delivers maximum weaponry and personnel destruction with minimum weight, maintenance and weaponry. Faster than any other tank on the battlefield, these units can reach a target quickly. Used in conjunction with aerial assaults, these units are very effective.",
+      "source": "td",
+      "manual_heading": "LIGHT TANK"
+    },
+    "TDMCV": {
+      "text": "The mobile construction vehicle lets you search for suitable base sites. Once one is found, convert the MCV into a full-service Construction Yard and use it to build other structures. Since this vehicle is slow, unarmed, and expensive, you will want to keep it well guarded with other units.",
+      "source": "td",
+      "manual_heading": "MCV"
+    },
+    "TDMLRS": {
+      "text": "Mobile devastation. GDI's longest-range attacker fires 227mm rockets and is effective against just about everything, including aerial threats. With no short-range fighting ability, this unit needs close-quarter backup. This is an attack only vehicle. Keep it in the background and don't let enemies in close to it.",
+      "source": "td",
+      "manual_heading": "MOBILE ROCKET LAUNCH SYSTEM (MRLS)"
+    },
+    "TDMSAM": {
+      "text": "The SSM is Nod's longest-ranged unit, able to fire on the enemy from a great distance. Its napalm rounds are useful at cracking through tough base defenses without any worry of retaliation. Infantry in a large group will also suffer from its high area of effect. The reload rate on this unit is extremely long, requiring other units to protect it during its lag-time.",
+      "source": "td",
+      "manual_heading": "SURFACE-TO-SURFACE MISSILE LAUNCHER (SSM)"
+    },
+    "TDMSUB": {
+      "text": "Nod's answer to GDI's surface fleet, the Missile Sub can launch a missile salvo at targets far inland. It surfaces to fire and slips back beneath the waves before the enemy can respond.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "TDMTNK": {
+      "text": "From its single barrel, the Medium Tank fires armour-piercing shells. It is heavier and more destructive than Nod's Light Tank. This is one of the best all around vehicles in the game. It is effective against both vehicles and structures, but can be taken down by groups of infantry or aerial units.",
+      "source": "td",
+      "manual_heading": "MEDIUM TANK"
+    },
+    "TDNFACT": {
+      "text": "The Construction Yard is the foundation of a base and allows the construction of other buildings. You must protect this structure! Without it, you cannot build any new structures. The Construction Yard is fairly strong, but as with almost all structures, it is vulnerable to Engineers. Try surrounding your Construction Yard with walls to keep out unwanted guests.",
+      "source": "td",
+      "manual_heading": "CONSTRUCTION YARD"
+    },
+    "TDNGATEH": {
+      "text": "A Nod gate for the base wall line. It opens for the Brotherhood's own forces and bars the way to the enemy, letting a walled base stay sealed without trapping its own units.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "TDNGATEV": {
+      "text": "A Nod gate for the base wall line. It opens for the Brotherhood's own forces and bars the way to the enemy, letting a walled base stay sealed without trapping its own units.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "TDNHPAD": {
+      "text": "Building the Helipad allows the use of the Apache attack aircraft. The Helipad is also the rearming station for the Apache. If the Helipad is lost, the Apache will not be able to reload. Any Apache can use any Helipad on your side.",
+      "source": "td",
+      "manual_heading": "HELIPAD"
+    },
+    "TDNMCV": {
+      "text": "The mobile construction vehicle lets you search for suitable base sites. Once one is found, convert the MCV into a full-service Construction Yard and use it to build other structures. Since this vehicle is slow, unarmed, and expensive, you will want to keep it well guarded with other units.",
+      "source": "td",
+      "manual_heading": "MCV"
+    },
+    "TDNPEN": {
+      "text": "The Sub pen builds and launches Submarines and Transports. Damaged Submarines and Transports docked in the Sub Pen are repaired.",
+      "source": "ra",
+      "manual_heading": "SUB PEN"
+    },
+    "TDNSUB": {
+      "text": "Silent and stealthy, Submarines can attack ships from afar. Subs must surface to fire, giving away their position, and opening themselves up to any nearby units that can hit them.",
+      "source": "ra",
+      "manual_heading": "SUBMARINE"
+    },
+    "TDNUK2": {
+      "text": "This high-yield structure handles the energy strains of some later, more power-intensive structures. It may cost a bit more than the original Power Plant, but it generates double the amount of power (200 units).",
+      "source": "td",
+      "manual_heading": "ADVANCED POWER PLANT"
+    },
+    "TDNUKE": {
+      "text": "This unit provides power to the structures in your base. Power output is directly related to the Power Plant's condition, so protect them during battles. If they get damaged, you must repair them quickly or else some of your base defenses may cease to function. The Power Plant outputs 100 units of power.",
+      "source": "td",
+      "manual_heading": "POWER PLANT"
+    },
+    "TDOBLI": {
+      "text": "This high-power laser effectively destroys troops and armament at long range. It is the most powerful on-board weapon in the game. Its slow recharge time means that it cannot be the only weapon defending your base, however. Make sure you have excess power before building these, because damage to your power plants will keep the obelisks off-line.",
+      "source": "td",
+      "manual_heading": "OBELISK OF LIGHT"
+    },
+    "TDORCA": {
+      "text": "This vertical takeoff and landing (VTOL) craft carries five salvos of TOW rockets. ORCAs are exceptionally useful for taking out enemy armour like Harvesters. When used in conjunction with Ion Cannon strikes, they can easily destroy enemy structures. When an ORCA runs out of rockets, it must return to base for reloading.",
+      "source": "td",
+      "manual_heading": "ORCA VTOL ASSAULT CRAFT"
+    },
+    "TDPROC": {
+      "text": "This unit processes Tiberium into its component elements. Building the refinery immediately deploys a Tiberium harvester and each Refinery can handle an infinite number of Harvesters. The refinery stores 1,000 credits of processed Tiberium.",
+      "source": "td",
+      "manual_heading": "REFINERY"
+    },
+    "TDPT": {
+      "text": "The fastest and lightest of GDI's warships. Armed with a deck gun and a depth-charge launcher, the Gunboat scouts the sea lanes and hunts down submarines before they can strike.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "TDPYLE": {
+      "text": "This structure is a field training centre for all available infantry units. Building multiple Barracks will increase the rate at which infantry are produced.",
+      "source": "td",
+      "manual_heading": "INFANTRY BARRACKS"
+    },
+    "TDRMBO": {
+      "text": "The Commando uses a Raptor 50cal. assault rifle with suppressor that is able to take out infantry units from extreme range. In addition, the Commando also carries C-4 explosives. When placed in enemy structures, these explosives will level the target structure in seconds.",
+      "source": "td",
+      "manual_heading": "COMMANDO"
+    },
+    "TDSAM": {
+      "text": "Fires surface-to-air missiles at airborne GDI units. When it is recessed in the ground, it is difficult to harm. However, when the launcher is exposed, it will damage more easily. Position these around your base in a triangular layout. This gives you the best chances of destroying aerial threats before they can cause serious damage to your base.",
+      "source": "td",
+      "manual_heading": "SAM SITE"
+    },
+    "TDSILO": {
+      "text": "This unit stores up to 1,500 credits of processed Tiberium. When the Refinery fills to its maximum capacity of Tiberium, you will want to build Silos to handle the excess storage load. Guard it carefully. If destroyed or captured, the amount stored is deducted from your account.",
+      "source": "td",
+      "manual_heading": "SILO"
+    },
+    "TDSTEAL": {
+      "text": "The Stealth Generator can cloak all units and structures in a large area. The base will remain cloaked until the stealth generator is turned off, the base becomes underpowered or the stealth generator is destroyed. Base defences and units under the effect will uncloak only when firing or leaving the area of effect.",
+      "source": "ts",
+      "manual_heading": "STEALTH GENERATOR"
+    },
+    "TDSTNK": {
+      "text": "This lightly-armoured tank is equipped with the Lazarus shield, cloaking it from enemy sight. This shield is neutralised during firing, giving the tanks the ability to 'appear' out of thin air. Although vehicles and most structures are not able to see the tank while cloaked, infantry and Guard Towers will reveal the tank if it gets too close to them.",
+      "source": "td",
+      "manual_heading": "STEALTH TANK"
+    },
+    "TDTMPL": {
+      "text": "Houses the central computer core that is the hub of all Nod communications and centre of Nod command. It is heavily armoured. This structure also gives Nod players the ability to fire nuclear missiles.",
+      "source": "td",
+      "manual_heading": "TEMPLE OF NOD"
+    },
+    "TDWEAP": {
+      "text": "This structure builds GDI's vehicles. It is well armoured, but is also a favourite target for enemy Engineers. If your Weapons Factory is captured, not only do you lose the ability to build vehicles, but the enemy is able to build your vehicles in addition to his own. Building multiple Weapons Factories will decrease the amount of time it takes to create a vehicle.",
+      "source": "td",
+      "manual_heading": "WEAPONS FACTORY"
+    },
+    "TENT": {
+      "text": "The Tent Barracks is where all Allied infantry are trained. Some advanced / special infantry units may not be available until other structures are built.",
+      "source": "ra",
+      "manual_heading": "TENT BARRACKS"
+    },
+    "THF": {
+      "text": "Any Thief that enters an enemy Ore Silo or Refinery will steal half the credits in that structure.",
+      "source": "ra",
+      "manual_heading": "THIEF"
+    },
+    "TRAN": {
+      "text": "Able to transport 5 infantry-type units through the air, the Transport Helicopter is ideal for landing engineers and other assault squads in an enemy base.",
+      "source": "ra",
+      "manual_heading": "TRANSPORT HELICOPTER"
+    },
+    "TSAPC": {
+      "text": "The Amphibious APC is a heavily armoured unit that can carry up to five infantry units. Capable of ferrying units over land and sea, the amphibious APC is a valuable asset to GDI's forces. Note that an APC cannot be unloaded while in water.",
+      "source": "ts",
+      "manual_heading": "AMPHIBIOUS APC"
+    },
+    "TSCARRY": {
+      "text": "The largest of all the Orcas, this transport aircraft has the critical job of rescuing or delivering units to any destination on the battlefield. Using a large grappling device, the Carry-All is capable of picking up any vehicle found on the battlefield.",
+      "source": "ts",
+      "manual_heading": "ORCA CARRY-ALL"
+    },
+    "TSCSAM": {
+      "text": "Surface to air missiles or SAMs, are GDI's anti-aircraft defence. SAMs can only be used against flying units.",
+      "source": "ts",
+      "manual_heading": "SURFACE TO AIR MISSILE COMPONENT"
+    },
+    "TSCTWR": {
+      "text": "Based on a modular construction principle, the Component Tower serves as the basis for all GDI base defences. Component Towers can be built as individual structures or as part of a wall. One of three weapons can be mounted on a Component Tower: a Vulcan cannon, RPG launcher, or SAM launcher.",
+      "source": "ts",
+      "manual_heading": "COMPONENT TOWER"
+    },
+    "TSDEPT": {
+      "text": "Used to repair vehicles and aircraft. A vehicle or aircraft can land on this structure and if enough credits are available, the unit will be fully repaired.",
+      "source": "ts",
+      "manual_heading": "SERVICE DEPOT"
+    },
+    "TSDROP": {
+      "text": "The Dropship Bay calls down heavy reinforcements from orbit. The Mammoth Mk. II and whole mech divisions arrive by dropship and roll off its deck ready for battle. Only one bay can stand in a base.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "TSE1": {
+      "text": "The Light Infantry are the mainstay of the GDI and Brotherhood troops. Armed with an M16 Mk. II pulse rifle, they deliver light damage to most targets. Although slow, infantry are capable of movement over varied terrain types with little loss in speed. They are also able to pass through certain terrain or hazards that are inaccessible or damaging to vehicles.",
+      "source": "ts",
+      "manual_heading": "LIGHT INFANTRY"
+    },
+    "TSE2": {
+      "text": "The Disk Thrower is a light infantry unit that carries a long-range grenade delivery system. Instead of traditionally shaped grenades, the Disk Thrower uses an aerodynamic grenade that is designed with longer flight in mind. Because of the dynamics of the discus-like projectile, the grenade can bounce along terrain if it does not impact its intended target.",
+      "source": "ts",
+      "manual_heading": "DISK THROWER"
+    },
+    "TSENGINEER": {
+      "text": "Slow and unarmed, the Engineer is, nonetheless, deadly in his own right. The only unit able to capture enemy structures; tactical use of engineers is considered an art among many commanders.",
+      "source": "ts",
+      "manual_heading": "ENGINEER"
+    },
+    "TSFACT": {
+      "text": "The Construction Yard is where all life begins. It allows the player to build other structures, so defending it should be a top priority of any successful commander. In some missions, the player starts with an MCV, which can be deployed into a Construction Yard. In other missions, the Construction Yard has already been placed.",
+      "source": "ts",
+      "manual_heading": "CONSTRUCTION YARD"
+    },
+    "TSFGEN": {
+      "text": "The Firestorm Defence Generator creates an infinitely high force field. Once the generator is constructed, special Firestorm Defence Emitters must be placed on the perimeter of an area to be defended, just like a wall. When activated, the force field that results from these emitters is impenetrable. The Firestorm Defence Generator consumes massive amounts of power.",
+      "source": "ts",
+      "manual_heading": "FIRESTORM DEFENCE GENERATOR"
+    },
+    "TSFSDF": {
+      "text": "Used in conjunction with the Firestorm Defence Generator, these emitters are placed like a wall and control the placement of the Firestorm Defence shield. These emitters can be used to completely encircle a base or can be used at key defensive positions.",
+      "source": "ts",
+      "manual_heading": "FIRESTORM WALL SECTIONS"
+    },
+    "TSGATEH": {
+      "text": "This structure prevents enemy units and Tiberium growth from entering a base. The gate automatically opens to allow friendly units to pass but will not open for enemy units.",
+      "source": "ts",
+      "manual_heading": "GDI AUTOMATIC GATE"
+    },
+    "TSGATEV": {
+      "text": "This structure prevents enemy units and Tiberium growth from entering a base. The gate automatically opens to allow friendly units to pass but will not open for enemy units.",
+      "source": "ts",
+      "manual_heading": "GDI AUTOMATIC GATE"
+    },
+    "TSGHOST": {
+      "text": "Part of Forgotten, Ghostalker carries a small rail gun and is armed with C4 charges. His railgun has the ability to shoot through multiple targets at once, eliminating rows of enemies in a single hit. Like all mutant units, Ghostalker can heal in tiberium.",
+      "source": "ts",
+      "manual_heading": "GHOSTALKER"
+    },
+    "TSHARV": {
+      "text": "Critical to the financial success of both sides, the Harvester is the only unit capable of collecting Tiberium for refinement. Harvesters will automatically begin to collect Tiberium if a patch is nearby. The Harvester will automatically avoid threat areas and will inform you when it cannot enter an area because of nearby threats.",
+      "source": "ts",
+      "manual_heading": "HARVESTER"
+    },
+    "TSHMEC": {
+      "text": "This prototype behemoth is GDI's most powerful weapon. Towering over the battlefield, the Mammoth II carries dual rail guns and a back mounted anti-aircraft missile launcher. The rail guns are capable of reducing most units to slag in a matter of seconds, while its AA launcher ensures air protection for the unit.",
+      "source": "ts",
+      "manual_heading": "MAMMOTH MARK. II"
+    },
+    "TSHPAD": {
+      "text": "The Helipad allows for the construction and rearming of Orca Fighters, Bombers and Carry-Alls. Without the Helipad, aircraft cannot be constructed and cannot be rearmed when returning from an attack.",
+      "source": "ts",
+      "manual_heading": "HELIPAD"
+    },
+    "TSHVR": {
+      "text": "The Hover MLRS is a medium to long range missile delivery system mounted on a hover chassis. Like the Amphibious APC, the hover MLRS is capable of crossing both land and sea. Because of its hover capability, the unit is unaffected by most terrain types, making it an ideal (although somewhat expensive) unit for scouting enemy territory.",
+      "source": "ts",
+      "manual_heading": "HOVER MULTI-LAUNCH ROCKET SYSTEM (MLRS)"
+    },
+    "TSJUGG": {
+      "text": "A heavy artillery walker. The Juggernaut must deploy before it can fire, then hurls shells from its triple cannon over great distances to break up enemy positions.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "TSJUMPJET": {
+      "text": "The airborne divisions of GDI's infantry, Jump Jet soldiers are able to perform surgical hits on targets normally inaccessible to standard infantry. Armed with a Vulcan cannon, these flying soldiers can provide an anti-air defence as well as quick air-to-ground attacks on poorly defended targets.",
+      "source": "ts",
+      "manual_heading": "JUMP JET INFANTRY"
+    },
+    "TSLA": {
+      "text": "The Tesla Coil automatically directs bolts of lightning at enemy ground units, reducing men to ash and tanks to molten steel in seconds.",
+      "source": "ra",
+      "manual_heading": "TESLA COIL"
+    },
+    "TSLIMP": {
+      "text": "A small, unarmed hover drone. Deployed, it buries itself as a mine and waits for an enemy vehicle, then leaps aboard and lets its commander see everything around that vehicle until a repair bay strips it off.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "TSLPST": {
+      "text": "The Mobile Sensor Array (MSA) is a vehicle equipped with a state-of-the-art sensor package that can detect the presence of enemy units even if they are cloaked or burrowing underground. Detected units will not be 'uncloaked' but will be displayed on radar and the tactical view, allowing a commander to take the necessary measures to destroy the hidden unit(s).",
+      "source": "ts",
+      "manual_heading": "MOBILE SENSOR ARRAY"
+    },
+    "TSMCV": {
+      "text": "The foundation of any base starts with the Mobile Construction Vehicle (MCV). Able to deploy itself into a fully functioning Construction Yard, the MCV is a highly prized piece of equipment for both GDI and Nod.",
+      "source": "ts",
+      "manual_heading": "MOBILE CONSTRUCTION VEHICLE"
+    },
+    "TSMEDIC": {
+      "text": "Among the chaos of battle, the Medic is solely responsible for treating the injured and getting downed soldiers back in the fight. Left on his own, the medic will automatically heal any nearby friendly soldiers. Medics can also be targeted to treat a specific soldier.",
+      "source": "ts",
+      "manual_heading": "MEDIC"
+    },
+    "TSMEMP": {
+      "text": "A heavily armoured vehicle carrying an electromagnetic pulse generator. Once charged, it deploys to release a pulse that disables vehicles and structures around it for a short time.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "TSMWAR": {
+      "text": "A war factory on tracks. The Mobile War Factory drives to the front and deploys into a working War Factory, building vehicles far from the main base.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "TSORCA": {
+      "text": "The mainstay of GDI's air force, the Orca Fighter is a versatile and lightweight attack aircraft. Fast, lightly armoured and armed with dual missile launchers, the Orca Fighter can deliver a missile barrage to any location on the battlefield within moments of receiving orders.",
+      "source": "ts",
+      "manual_heading": "ORCA FIGHTER"
+    },
+    "TSORCAB": {
+      "text": "Heavier and better armoured than its fighter cousin, the Orca Bomber trades speed for firepower. Delivering a stream of high-explosive bombs in strafing runs, the Orca Bomber is ideal for softening up ground defences during the beginning of a base assault.",
+      "source": "ts",
+      "manual_heading": "ORCA BOMBER"
+    },
+    "TSORCATRAN": {
+      "text": "Available only in certain solo-play missions, the Orca Transport can carry up to 5 infantry units to any location on a battle map.",
+      "source": "ts",
+      "manual_heading": "ORCA TRANSPORT"
+    },
+    "TSPILE": {
+      "text": "The Barracks allow infantry units to be trained. It is also a prerequisite for base defensive structures.",
+      "source": "ts",
+      "manual_heading": "GDI BARRACKS"
+    },
+    "TSPION": {
+      "text": "The Ion Cannon control is an upgrade to an Upgrade Centre that allows targeting control of GDI's orbital Ion Cannon weapon. Without this control, the Ion Cannon cannot be used.",
+      "source": "ts",
+      "manual_heading": "ION CANNON CONTROL"
+    },
+    "TSPLUG": {
+      "text": "The Upgrade Centre is used to communicate with various units and structures on the battlefield. Upgrade Centres have two available upgrade pads and can accept the following upgrades: Ion Cannon control or Hunter-Seeker control.",
+      "source": "ts",
+      "manual_heading": "GDI UPGRADE CENTRE"
+    },
+    "TSPODS": {
+      "text": "An upgrade to the GDI Upgrade Centre that links the base to orbital drop pods. With it installed, GDI can drop infantry from orbit onto any point of the battlefield.",
+      "source": "tf",
+      "manual_heading": null
+    },
+    "TSPOWR": {
+      "text": "Power plants provide power for base structures and are critical to keeping base defences online. GDI power plants are upgradable via add-on Power Turbines. There are two empty upgrade pads for add-on Power Turbines per power plant. Each will increase the power output of the structure by 50% over a non-upgraded power plant.",
+      "source": "ts",
+      "manual_heading": "GDI POWER PLANT"
+    },
+    "TSPROC": {
+      "text": "The refinery converts the Harvester loads of Tiberium into credits for the player. It also stores a certain amount of Tiberium. Once a refinery is full, silos must be created in order to store excess Tiberium. If there is no available storage capacity at a refinery or silos, excess Tiberium will be lost.",
+      "source": "ts",
+      "manual_heading": "TIBERIUM REFINERY"
+    },
+    "TSPULS": {
+      "text": "The EMP Cannon can fire a high powered blast of Electromagnetic energy that renders any mechanised vehicles inoperative for a short period. Any vehicle or structure caught in the blast is disabled until the effect wears off.",
+      "source": "ts",
+      "manual_heading": "ELECTROMAGNETIC PULSE (EMP) CANNON"
+    },
+    "TSRADR": {
+      "text": "A Radar Installation allows commanders to view the battlefield and the relative locations of friendly and enemy units. In order for the radar view to remain active, the Radar Installation must be constantly powered.",
+      "source": "ts",
+      "manual_heading": "RADAR INSTALLATION"
+    },
+    "TSROCK": {
+      "text": "The rocket propelled grenade, or RPG, upgrade launches grenades at enemy units. The RPG is designed for use against vehicles but can be used against infantry as well. Its explosive charge ensures splash damage to any other units caught around its target.",
+      "source": "ts",
+      "manual_heading": "ROCKET PROPELLED GRENADE COMPONENT"
+    },
+    "TSSEEK": {
+      "text": "This upgrade to a GDI Upgrade Centre allows two-way communications with a Hunter-Seeker Droid, allowing it to acquire enemy targets. This upgrade is required in order to build Hunter-Seeker Droids.",
+      "source": "ts",
+      "manual_heading": "HUNTER-SEEKER CONTROL"
+    },
+    "TSSILO": {
+      "text": "Tiberium Silos store excess Tiberium once the Tiberium refineries are at maximum capacity. If a Tiberium refinery is filled to capacity and there are no empty silos available, excess Tiberium from a Harvester will be lost.",
+      "source": "ts",
+      "manual_heading": "TIBERIUM SILO"
+    },
+    "TSSMEC": {
+      "text": "The Powered Assault Armour or 'Wolverine' is a small, eight to nine foot bipedal unit that is piloted by a single soldier. Fast and agile, these lightly armoured suits excel at suppression fire and in light skirmishes. Handling large groups of enemy infantry is no problem for a squad of these troopers.",
+      "source": "ts",
+      "manual_heading": "WOLVERINE"
+    },
+    "TSSONIC": {
+      "text": "Recent developments aboard the Philadelphia have lead to breakthroughs in harmonic resonance. The Disruptor is the first to use this new technology. Firing a harmonic resonance wave, the Disruptor is capable of shattering any unit or structure caught in the wave, enemy or ally alike.",
+      "source": "ts",
+      "manual_heading": "DISRUPTOR"
+    },
+    "TSTECH": {
+      "text": "The Tech Centre is where GDI conducts its high tech weapons research. This structure is required prior to the construction of certain high-tech units and structures.",
+      "source": "ts",
+      "manual_heading": "GDI TECH CENTRE"
+    },
+    "TSTITN": {
+      "text": "The Medium Battle Mechanised Walker, or 'Titan', is GDI's all-purpose assault and defence unit. Standing 25 feet tall and packing a 120mm cannon, the Titan is a force to be reckoned with. Its long range makes it an ideal unit for use in base assaults, as it can pummel defences without fear of retaliation.",
+      "source": "ts",
+      "manual_heading": "TITAN"
+    },
+    "TSTURB": {
+      "text": "Up to two of these Power Turbines can be added to a power plant to increase power output. The output of each add-on generator is less than that of a new power plant, but the cost is much lower.",
+      "source": "ts",
+      "manual_heading": "POWER TURBINES"
+    },
+    "TSVULC": {
+      "text": "The Vulcan Cannon Component consists of two mini-guns firing 50mm projectiles at high speed. The cannon is primarily intended for use against infantry but it can be used less effectively against vehicles.",
+      "source": "ts",
+      "manual_heading": "VULCAN CANNON COMPONENT"
+    },
+    "TSWALL": {
+      "text": "A robust defensive structure. Concrete Walls are effective at stopping both infantry and vehicles. Only certain units can shoot over these defensive walls.",
+      "source": "ts",
+      "manual_heading": "CONCRETE WALLS"
+    },
+    "TSWEAP": {
+      "text": "This structure allows for the construction of vehicles. Certain advanced vehicles require additional structures before they can be built by a War Factory.",
+      "source": "ts",
+      "manual_heading": "GDI WAR FACTORY"
+    },
+    "TTNK": {
+      "text": "Taking the Tesla Coil's destruction into the field, the Tesla Tank is a valuable addition to the Soviet arsenal. With its long range and powerful electrical discharges, the Tesla Tank is effective in both offensive and defensive roles. As an added bonus, the electrical discharge from the Tesla Tank also jams enemy radar.",
+      "source": "aftermath",
+      "manual_heading": "TESLA TANK"
+    },
+    "V2RL": {
+      "text": "The V2 Launcher can destroy most buildings with just two rockets. Factor in its incredible range, and it is easy to see why the Allies fear this weapons platform. Its drawbacks are its light armor, long reload time, and inability to hit fast-moving targets.",
+      "source": "ra",
+      "manual_heading": "V2 ROCKET LAUNCHER"
+    },
+    "WEAP": {
+      "text": "This structure is responsible for the building of all ground-based Allied vehicles. Building multiple War Factories decreases the amount of time required to create a vehicle.",
+      "source": "ra",
+      "manual_heading": "WAR FACTORY"
+    },
+    "YAK": {
+      "text": "Sometimes called the 'Infantry Eraser,' the Yak fires in strafing runs, swooping down on groups of marching infantry, potentially destroying them all in a single run. The Yak is not that fast, making it an easy target for Allied Rocket Soldiers, those that actually survive the first strafing run.",
+      "source": "ra",
+      "manual_heading": "YAK"
+    },
+    "TS4TNK": {
+      "text": "The Mammoth Mk. I, GDI's heavy tank from the First Tiberium War, kept in reserve depots long after the Titan replaced it. Twin cannons and missile pods still make it a slow, heavily armoured spearhead, and GDI's dropships deliver it in pairs.",
+      "source": "tf",
+      "manual_heading": ""
+    }
+  },
+  "flags": [
+    {
+      "ini": "WEAP",
+      "reason": "Listed for Allies and Soviets; the shared text says 'all ground-based Allied vehicles' (AWEAP/SWEAP carry their own faction text)."
+    },
+    {
+      "ini": "E1",
+      "reason": "Listed for Allies and Soviets; uses the Allied entry (M-16). The Soviet entry says AK-47."
+    },
+    {
+      "ini": "MNLY",
+      "reason": "Listed for Allies and Soviets; uses the Allied AT Mine Layer entry. The Soviet entry is the AP Mine Layer."
+    },
+    {
+      "ini": "TDE1",
+      "reason": "Listed for GDI and Nod; uses GDI's entry ('key player in the GDI forces', GAU-3 chaingun). Nod's entry names Nod's forces and an M-16."
+    },
+    {
+      "ini": "TDHPAD",
+      "reason": "Listed for GDI and Nod; the text names the ORCA. TDNHPAD carries Nod's Apache text."
+    },
+    {
+      "ini": "TDA10",
+      "reason": "Manual: A-10 strikes unlocked by destroying Nod SAM sites in solo missions. In TF the A-10 is built at the GDI Airfield."
+    },
+    {
+      "ini": "TDHQ",
+      "reason": "Last sentence: destroying GDI's radar stops A-10 airstrikes in solo missions; TF's A-10 is a buildable aircraft."
+    },
+    {
+      "ini": "TDPROC",
+      "reason": "Manual: refinery stores 1,000 credits; TF [TDPROC] Storage=2000."
+    },
+    {
+      "ini": "TSORCATRAN",
+      "reason": "Manual: 'available only in certain solo-play missions'; TF builds it at the TS Helipad (TechLevel 5)."
+    },
+    {
+      "ini": "TSPLUG",
+      "reason": "Manual lists two upgrades (Ion Cannon, Hunter-Seeker); TF adds a third plug, the Drop Pod Node (TSPODS)."
+    },
+    {
+      "ini": "TDSTEAL",
+      "reason": "Manual: the base stays cloaked 'until the stealth generator is turned off'; check TF has an on/off toggle (TF also reveals on taking damage)."
+    },
+    {
+      "ini": "TDWEAP",
+      "reason": "Manual: a captured Weapons Factory lets the enemy build your vehicles; in TF the construction yard grants the tree, so check this still holds."
+    }
+  ],
+  "weapons": {
+    "105mm": "105mm Cannon",
+    "120mm": "120mm Cannon",
+    "155mm": "155mm Howitzer",
+    "2Inch": "2-Inch Gun",
+    "75mm": "75mm Cannon",
+    "8Inch": "8-Inch Guns",
+    "90mm": "90mm Cannon",
+    "APTusk": "AP Missiles",
+    "AssaultCannon": "Assault Cannon",
+    "ChainGun": "Chain Gun",
+    "Colt45": "Colt .45 Pistol",
+    "Democharge": "Demolition Charge",
+    "DepthCharge": "Depth Charges",
+    "DogJaw": "Jaws",
+    "Dragon": "Dragon Rockets",
+    "FireballLauncher": "Fireball Launcher",
+    "Flamer": "Flamethrower",
+    "GoodWrench": "Repair Wrench",
+    "Grenade": "Grenades",
+    "Heal": "Medical Kit",
+    "Hellfire": "Hellfire Missiles",
+    "M1Carbine": "M1 Carbine",
+    "M60mg": "M60 Machine Gun",
+    "MammothTusk": "Mammoth Tusks",
+    "Maverick": "Maverick Missiles",
+    "MechRailgun": "Railguns",
+    "Nike": "Nike Missiles",
+    "PortaTesla": "Portable Tesla",
+    "RedEye": "Redeye Missiles",
+    "SCUD": "SCUD Missile",
+    "SonicZap": "Sonic Wave",
+    "Stinger": "Stinger Missiles",
+    "SubSCUD": "SCUD Missiles",
+    "TD105mm": "105mm Cannon",
+    "TD120mm": "120mm Cannons",
+    "TD155mm": "155mm Howitzer",
+    "TD75mm": "75mm Cannon",
+    "TDA10Napalm": "Napalm Bombs",
+    "TDApacheGun": "Chain Gun",
+    "TDChainGun": "Chain Gun",
+    "TDChemspray": "Chemical Spray",
+    "TDDragon": "Dragon Rockets",
+    "TDFlameBunker": "Flamethrower",
+    "TDFlameTongue": "Flamethrower",
+    "TDFlamethrower": "Flamethrower",
+    "TDGrenade": "Grenades",
+    "TDHonestJohn": "Honest John Rocket",
+    "TDM16": "M16 Rifle",
+    "TDM60mg": "M60 Machine Gun",
+    "TDMlrsRocket": "MLRS Rockets",
+    "TDNike": "Nike Missiles",
+    "TDOblsLaser": "Laser",
+    "TDRifle": "Sniper Rifle",
+    "TDStnkDragon": "Dragon Rockets",
+    "TDTowTwo": "TOW Missiles",
+    "TDTurretGun": "Turret Cannon",
+    "TDTusk": "Mammoth Tusks",
+    "TS120mm": "120mm Cannon",
+    "TS120mmx": "120mm Cannons",
+    "TS4TNKTusk": "Mammoth Tusks",
+    "TSBomb": "Bombs",
+    "TSGrenade": "Grenades",
+    "TSHeal": "Medical Kit",
+    "TSHellfire": "Hellfire Missiles",
+    "TSHoverMissile": "Hover Missiles",
+    "TSJugg90mm": "90mm Artillery",
+    "TSJumpCannon": "Jump Jet Cannon",
+    "TSLtRail": "Railgun Rifle",
+    "TSMammothTusk": "Mammoth Tusks",
+    "TSMinigun": "Minigun",
+    "TSRPGTower": "RPG Launcher",
+    "TSRedEye2": "SAM Missiles",
+    "TSVulcanTower": "Vulcan Cannon",
+    "TTankZap": "Tesla Coil",
+    "TeslaZap": "Tesla Coil",
+    "TorpTube": "Torpedoes",
+    "TurretGun": "Turret Cannon",
+    "Vulcan": "Vulcan Machine Gun",
+    "ZSU-23": "ZSU-23 Flak"
+  }
+}

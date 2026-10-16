@@ -66,7 +66,8 @@ sections, and `package-for-workshop.sh` runs it.
 - `cnc3-to-remastered-sprites.md` — C&C3 units as HD sprites.
 - `cnc3-railgun-beam.md` — C&C3's railgun shot on the railguns (the Mammoth Mk. II, the Ghost Stalker).
 - `asset-packs.md` — the TS, RA2 and C&C3 asset packs.
-- `pack-panel.md` — the main menu's pack panel, the lobby popup and the Load Game check for required packs.
+- `pack-panel.md` — the ADD-ONS screen, the main menu's pack panel, the lobby popup and the Load Game check.
+- `encyclopedia.md` — the FACTION ENCYCLOPEDIA: faction tabs, live stats, manual descriptions, in-game pictures.
 
 ### Art and rendering
 - `launcher-render-contracts.md` — how the launcher draws art; house rules for TS art.

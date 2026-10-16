@@ -201,6 +201,8 @@ if(BUILD_REMASTERRA)
         dllinterface.cpp
         dllinterfaceeditor.cpp
         tf_launcher.cpp
+        tf_encyclopedia.cpp
+        tf_encyclopedia_art.cpp
         tf_asset_pack.cpp
         puff.c
         tf_railgun.cpp
