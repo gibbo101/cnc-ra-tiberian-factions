@@ -150,6 +150,13 @@ extern bool TF_Dev_Cheats(void); // TF dev-cheats runtime gate (see defines.h TF
 extern bool TF_Dev_Reveal(void); // full-map reveal on its own (tf_dev_reveal.flag) even when the other cheats are off
 extern long TF_Building_Scan_Bit(int btype); // building Type -> its BScan/ActiveBScan/OldBScan bit
 extern bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type); // Prerequisite= names a TS-tree building (house.cpp)
+// Faction bits; a sidebar cameo's AssetName suffix names the factions that make it (cameo_variants_build.py).
+#define TF_FACTION_ALLIES 0x1
+#define TF_FACTION_SOVIET 0x2
+#define TF_FACTION_GDI    0x4
+#define TF_FACTION_NOD    0x8
+#define TF_FACTION_TSGDI  0x10 /* the TS tree; badge digit 'G' */
+extern int TF_Plug_Layer_Frame(StructType type, int socket, bool damaged); // an Upgrade Centre plug's TSPLUGP frame (building.cpp)
 extern unsigned TF_Save_Version(void); // the save version this build writes and loads (saveload.cpp)
 #define TF_SAVE_MARKER "TFS2"          // leads the DLL's save data: then TF_Save_Version and TF_SAVE_* flags
 #define TF_SAVE_TS_PACK 1u             // flag: the TS-HD-Assets pack was enabled when the game was saved

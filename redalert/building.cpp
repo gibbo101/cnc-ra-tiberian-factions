@@ -700,7 +700,7 @@ void BuildingClass::Debug_Dump(MonoClass* mono) const
  *   06/27/1994 JLB : Takes a clipping window parameter.                                       *
  *   07/06/1995 JLB : Handles damaged silos correctly.                                         *
  *=============================================================================================*/
-static int TF_Plug_Layer_Frame(StructType type, int socket, bool damaged);
+int TF_Plug_Layer_Frame(StructType type, int socket, bool damaged);
 
 void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
 {
@@ -1131,7 +1131,7 @@ static int TF_Plug_Type_Index(StructType type)
 
 // The TSPLUGP frame for a plug in an Upgrade Centre socket (0 right, 1 left), -1 for no plug: TS's 15-frame loop at
 // 4 ticks a frame (Rate=220), the Ion Cannon Uplink's played back and forth (ART.INI [GAPLUG_F]); 15 when damaged.
-static int TF_Plug_Layer_Frame(StructType type, int socket, bool damaged)
+int TF_Plug_Layer_Frame(StructType type, int socket, bool damaged)
 {
     int plug = TF_Plug_Type_Index(type);
     if (plug < 0) {
