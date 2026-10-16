@@ -3,6 +3,9 @@
 **Status:** Design. Nothing ships; the engine route and the value limits come from reading the source, unproven in play.
 **Open:** the one-value `tf_rules.ini` skirmish check; the number-entry widget probe; the decisions at the end.
 
+The research behind it is in `game-rules-data/`: every key each type reads, the shared-weapon and
+shared-warhead tables, the leaking keys, and ClientG's slider, text-box and event details.
+
 Players change each faction's unit values and a short list of match rules from inside the game,
 with no INI editing. No other Remastered mod reaches the front end for this: the mods that offer
 options ship hand-edited INIs in `CCDATA`, which a Workshop update overwrites.
@@ -127,3 +130,4 @@ Read from ClientG 1.153.745903, none of it run yet:
 - Save games: store the player block in the save (proposed), or load with the current file.
 - Leaking keys: write only keys `rules.ini` sets (proposed), or snapshot and restore the type tables.
 - Which match rules ship first.
+- Which starting-credit tiers join the lobby list above 10,000.
