@@ -7,6 +7,7 @@
 #include "tf_launcher.h"
 #include "tf_encyclopedia.h"
 #include "tf_asset_pack.h"
+#include "tf_music.h"
 
 extern "C" {
 #include "puff.h"
@@ -2864,11 +2865,12 @@ const char* TF_Launcher_Install(void)
     }
     const char* page = Campaign_Page_Install();
     const char* notice = Pack_Notice_Install();
-    static char result[192];
+    const char* music = TF_Music_Install();
+    static char result[224];
 #if TF_DEV_BUILD
-    snprintf(result, sizeof(result), "%s; %s; %s", page, notice, Carrier_Install());
+    snprintf(result, sizeof(result), "%s; %s; %s; %s", page, notice, music, Carrier_Install());
 #else
-    snprintf(result, sizeof(result), "%s; %s", page, notice);
+    snprintf(result, sizeof(result), "%s; %s; %s", page, notice, music);
 #endif
     return result;
 }
