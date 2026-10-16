@@ -9,7 +9,7 @@ import re
 import sys
 
 GAME = "Red_Alert"
-TRACK_TYPE = "Bonus"
+TRACK_TYPE = "Remaster"
 SOURCE_TITLES = {"TS": "Tiberian Sun", "FS": "Firestorm"}
 ENTRY = """\t\t\t<entry Name="{name}">
 \t\t\t\t<FileName> {file}.WAV </FileName>
