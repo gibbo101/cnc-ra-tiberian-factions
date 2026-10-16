@@ -43,7 +43,9 @@ in `ecx`, so one handler serves every row or tab.
 2. **Switched on for the next start** or **switched off:** a record in the mod manager's list (getter `0x5E8CB0`,
    records of `0xBC` bytes: folder `+0x78`, ID `+0xA8`, on `+0xB9`) holds the marker.
 3. **Downloaded:** the pack's Workshop item folder, beside the game's install, holds the marker and a
-   `ccmod.json`, but the mod list hasn't seen it (the list only rescans on Mods > Refresh or a restart).
+   `ccmod.json`, but the mod list hasn't seen it (the list only rescans on Mods > Refresh or a restart). Only when
+   the signed-in account subscribes (`GetItemState`): every account on a machine shares the Workshop folder, but
+   the launcher lists only its own account's subscriptions, so another account's download reads as missing.
 4. **Downloading:** Steam reports the item subscribed and downloading (`SteamAPI_ISteamUGC_GetItemState`); the
    panel shows `GetItemDownloadInfo`'s percentage.
 5. **Missing.**

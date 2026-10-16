@@ -469,7 +469,7 @@ enum PackState
     PACK_OFF_NEXT_START, // loaded, but switched off for the next start
     PACK_ON_NEXT_START,
     PACK_INSTALLED_OFF,
-    PACK_DOWNLOADED,  // in its Workshop folder, but not yet in the launcher's mod list
+    PACK_DOWNLOADED,  // in its Workshop folder and this account subscribes, but not yet in the launcher's mod list
     PACK_DOWNLOADING, // subscribed, and Steam is still downloading it
     PACK_MISSING
 };
@@ -592,6 +592,20 @@ int Pack_Download_Percent(int pack)
 }
 
 /*
+**	True when the signed-in Steam account subscribes to the pack, or Steam can't say: the launcher lists only its
+**	account's subscriptions, though every account on the machine shares the Workshop folder.
+*/
+bool Pack_Subscribed(int pack)
+{
+    ItemStateFn state = (ItemStateFn)Steam_Export("SteamAPI_ISteamUGC_GetItemState");
+    void* ugc = Steam_Ugc();
+    if (ugc == NULL || state == NULL) {
+        return true;
+    }
+    return (state(ugc, strtoull(PACKS[pack].WorkshopId, NULL, 10)) & ITEM_SUBSCRIBED) != 0;
+}
+
+/*
 **	Subscribes the player to a pack's Workshop item; Steam then downloads it. False without Steam.
 */
 typedef unsigned long long(__cdecl* SubscribeItemFn)(void* ugc, unsigned long long item);
@@ -655,7 +669,7 @@ PackState Pack_State(int pack)
     }
     PackState state = Listed_State(marker);
     char folder[MAX_PATH];
-    if (state == PACK_MISSING && Downloaded_Pack_Folder(pack, folder, sizeof(folder))) {
+    if (state == PACK_MISSING && Pack_Subscribed(pack) && Downloaded_Pack_Folder(pack, folder, sizeof(folder))) {
         state = PackQueued[pack] ? PACK_ON_NEXT_START : PACK_DOWNLOADED;
     }
     if (state == PACK_MISSING && Pack_Download_Percent(pack) >= 0) {
