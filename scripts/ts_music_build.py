@@ -66,6 +66,10 @@ def member(blob, name):
     return None
 
 
+# THEME.INI titles that TS left in lower case, as the jukebox shows them.
+TITLES = {"Slave to the system": "Slave to the System", "Rain in the night (Part 2)": "Rain in the Night (Part 2)"}
+
+
 def stem(title):
     """TS_MUS_<TITLE> in upper case, words joined by underscores."""
     return "TS_MUS_" + re.sub(r"[^A-Z0-9]+", "_", title.upper()).strip("_")
@@ -85,7 +89,8 @@ def themes(ts):
             data = parser[section]
             if data.get("Normal", "yes").strip().lower() == "no":
                 continue
-            out.append((game, section, data["Name"].strip(), data.get("Side", "").strip(), scores))
+            title = data["Name"].strip()
+            out.append((game, section, TITLES.get(title, title), data.get("Side", "").strip(), scores))
     return out
 
 
