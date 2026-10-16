@@ -117,6 +117,11 @@ python3 scripts/bui_work/hud_label_hide_build.py "$BASE_HUD" "$EDIT_HUD"
 
 echo "==> Rebuilding edited MUSICEVENTS.XML from base (skirmish playlist)"
 python3 scripts/musicevents_build.py "$BASE_MUS" "$MUS_LIST" "$EDIT_MUS"
+echo "==> Writing the loose music files: the TF playlists and the TS-Music jukebox entries"
+TS_TRACKS="asset-packs/TS-Music/tracks.json"
+python3 scripts/musicevents_build.py loose "$EDIT_MUS" "$TS_TRACKS" "$DATA_DIR/XML/AUDIO/MUSICEVENTS.XML"
+python3 scripts/music_jukebox_build.py scripts/music_work/AUDIO_SYSTEM_CONSTANTS.base.XML "$TS_TRACKS" \
+    "$DATA_DIR/XML/AUDIO/AUDIO_SYSTEM_CONSTANTS.XML" "$DATA_DIR/ModText.csv"
 
 echo "==> Rebuilding edited MASTERTEXTFILE_EN-US.LOC from base (Unholy Alliance checkbox)"
 python3 scripts/loc_relabel.py "$BASE_LOC" "$EDIT_LOC" @scripts/loc_work/mastertext.edits.txt "${LOC_OVERRIDES[@]}"

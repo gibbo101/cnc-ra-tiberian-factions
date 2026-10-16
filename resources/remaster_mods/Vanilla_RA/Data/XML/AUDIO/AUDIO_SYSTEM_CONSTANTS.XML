@@ -1,0 +1,2312 @@
+<?xml version="1.0" ?>
+
+<AudioSystem>
+      
+	<AudioSystemConstants>
+				
+		<!--	Optional naming convention tagging for event names and/or sample names (can be blank and won't apply)
+				For C&C TIBERIAN DAWN Remaster:
+					TDR - Tiberian Dawn Remastered (Default)
+					TDC - Tiberian Dawn Classic
+					TDB - Tiberian Dawn Bonus (Got a Present For Ya!)
+				For C&C RED ALERT Remaster:
+					RAR - Red Alert Remastered (Default)
+					RAC - Red Alert Classic
+					RAB - Red Alert Bonus
+		-->
+		<AudioAssetSetTagDefaultNames>
+			<entry> TDR </entry>
+			<entry> RAR </entry>
+		</AudioAssetSetTagDefaultNames>
+		<AudioAssetSetTagAlt1Names>
+			<entry> TDC </entry>
+			<entry> RAC </entry>
+		</AudioAssetSetTagAlt1Names> 		
+		<AudioAssetSetTagAlt2Names>
+			<entry> TDB </entry>
+			<entry> RAB </entry>
+		</AudioAssetSetTagAlt2Names> 		
+				
+		<!-- Audio system spec (SFX channels): Text IDs for GUI selection of SFX channels spec -->
+		<GUITextIDsPerSpec>
+			 <!-- Low, totalling to 32 SFX channels -->
+			 <entry> TEXT_AUDIO_SETTINGS_SPEC_LOW </entry>
+			 <!-- Medium, totalling to 48 SFX channels -->
+			 <entry> TEXT_AUDIO_SETTINGS_SPEC_MEDIUM </entry>
+			 <!-- High, totalling to 64 SFX channels -->
+			 <entry> TEXT_AUDIO_SETTINGS_SPEC_HIGH </entry>
+		</GUITextIDsPerSpec>
+
+
+
+		<!-- Audio system spec (SFX channels): How many 2D SFX, stereo (2 channel) or mono (1 channel) can play simultaneously -->
+		<!-- Low, totalling to 32 SFX channels -->
+		<!-- Medium, totalling to 48 SFX channels -->
+		<!-- High, totalling to 64 SFX channels -->
+		<!--
+		<Max2DDigitalSFXSamplesPerSpec>
+			<entry> 4 </entry>
+			<entry> 6 </entry>
+			<entry> 8 </entry>
+		</Max2DDigitalSFXSamplesPerSpec>
+		-->
+		<Max2DDigitalSFXSamplesPerSpec>
+			<entry> 64 </entry>
+			<entry> 64 </entry>
+			<entry> 64 </entry>
+		</Max2DDigitalSFXSamplesPerSpec>
+
+		<!-- Audio system spec (SFX channels): How many 3D mono (1 channel) loop SFX can play simultaneously -->
+		<!-- Low, totalling to 32 SFX channels -->
+		<!-- Medium, totalling to 48 SFX channels -->
+		<!-- High, totalling to 64 SFX channels -->
+		<!--
+		<Max3DLoopDigitalSFXSamplesPerSpec>
+			<entry> 8 </entry>
+			<entry> 12 </entry>
+			<entry> 16 </entry>
+		</Max3DLoopDigitalSFXSamplesPerSpec>	
+		-->
+		<Max3DLoopDigitalSFXSamplesPerSpec>
+			<entry> 1 </entry>
+			<entry> 1 </entry>
+			<entry> 1 </entry>
+		</Max3DLoopDigitalSFXSamplesPerSpec>
+
+		<!-- Audio system spec (SFX channels): How many 3D mono (1 channel) non-loop SFX can play simultaneously -->
+		<!-- Low, totalling to 32 SFX channels -->
+		<!-- Medium, totalling to 48 SFX channels -->
+		<!-- High, totalling to 64 SFX channels -->
+		<!--
+		<Max3DNonLoopDigitalSFXSamplesPerSpec>
+			<entry> 16 </entry>
+			<entry> 24 </entry>
+			<entry> 32 </entry>
+		</Max3DNonLoopDigitalSFXSamplesPerSpec>
+		-->
+		<Max3DNonLoopDigitalSFXSamplesPerSpec>
+			<entry> 1 </entry>
+			<entry> 1 </entry>
+			<entry> 1 </entry>
+		</Max3DNonLoopDigitalSFXSamplesPerSpec>
+		  	  
+			  
+						  		  	  
+		<!-- Max size (in MB) of the 2D SFX RAM file cache -->
+		<Max2DCacheSizeMegs> 16 </Max2DCacheSizeMegs>
+		<!-- Max size (in MB) of the 3D Loops SFX RAM file cache -->
+		<Max3DLoopCacheSizeMegs> 1 </Max3DLoopCacheSizeMegs>
+		<!-- Max size (in MB) of the 3D Non-Loops SFX RAM file cache -->
+		<Max3DNonLoopCacheSizeMegs> 1 </Max3DNonLoopCacheSizeMegs>
+		  	  
+
+
+	  <!-- How much of a positional distance change an object needs to have before it's sample audible 3D position is acutally reapplied - for performance considerations -->
+	  <UpdateSample3DPositionDeltaDistance> 1.0 </UpdateSample3DPositionDeltaDistance>
+		  
+																																					  																																		 
+	  <!-- Max SFX volumes when other audio could be playing -->
+	  <MaxSFXVolumeDuringSpeech> 0.05 </MaxSFXVolumeDuringSpeech>
+	  <MaxSFXVolumeDuringIngameVideos> 0.05 </MaxSFXVolumeDuringIngameVideos>
+	  <MaxSFXVolumeDuringVoiceChat> 0.05 </MaxSFXVolumeDuringVoiceChat>
+	  
+	  <!-- Max music volumes when other audio could be playing -->
+	  <MaxMusicVolumeDuringSpeech> 0.05 </MaxMusicVolumeDuringSpeech>
+	  <MaxMusicVolumeDuringIngameVideos> 0.05 </MaxMusicVolumeDuringIngameVideos>
+	  <MaxMusicVolumeDuringVoiceChat> 0.05 </MaxMusicVolumeDuringVoiceChat>
+	  
+	  <!-- Max speech volumes when other audio could be playing -->
+	  <MaxSpeechVolumeDuringVoiceChat> 0.05 </MaxSpeechVolumeDuringVoiceChat>
+
+	  
+     <!-- The volume multiplier for 3D SFX when the camera is zoomed all the way in. Set to 1.0 for no volume reduction. Set to 0.0 for silence. Must be >= SFX3DVolumePercentAtMaxCameraZoomOut. -->     	  
+     <SFX3DVolumePercentAtMaxCameraZoomIn> 1.0 </SFX3DVolumePercentAtMaxCameraZoomIn>
+     	  
+     <!-- The volume multiplier for 3D SFX when the camera is zoomed all the way out. Set to 1.0 for no volume reduction. Set to 0.0 for silence. Must be <= SFX3DVolumePercentAtMaxCameraZoomIn. -->
+     <SFX3DVolumePercentAtMaxCameraZoomOut> 0.4 </SFX3DVolumePercentAtMaxCameraZoomOut>
+		
+
+		<!-- When sending 2D (stereo) voice from the front left and front right speakers through the center speaker, how much should we scale it? 0.0 is silence; 1.0 is full response. -->
+		<!-- This applies to in SFX2DManager for events/samples that are localized and/or voice overs. -->
+		<!-- This ONLY applies to modes that are using the center channel, like 5.1; These will not be applied to Stereo. -->
+		<VoiceThroughCenterSpeakerScaleFactor> 1.0 </VoiceThroughCenterSpeakerScaleFactor>
+ 
+								                 		
+		<!-- Allow use of reverb in the sound system -->
+		<!-- Note that MSS 8.0C has a repeatable crash in AIL_set_sample_reverb_levels(), which was fixed -->
+		<AllowSystemReverb> False </AllowSystemReverb>
+		  
+				  
+		<!--- ".WAV", ".MP3", ".BINKA", etc. -->
+		<MusicAudioFileFormat> .WAV </MusicAudioFileFormat>
+		<SpeechAudioFileFormat> .WAV </SpeechAudioFileFormat>
+		<SFXAudioFileFormat> .WAV </SFXAudioFileFormat>
+
+
+		<!-- Total number of HUD SFX voice packs supported, including the original master voice pack -->
+		<HUDSFXVoicePackTotal> 1 </HUDSFXVoicePackTotal>
+
+		<!-- List of voice pack Text IDs for UI selection; These must match Text IDs in XLS data; Total entries must match HUDSFXVoicePackTotal and HUDSFXVoicePackAssetTags list -->			 
+		<HUDSFXVoicePackTextIDs> 
+			<!-- HDA Master always at top of list -->
+			<entry> TEXT_ID_HDA_MASTER_VOICE_PACK </entry>
+			<!-- Add more here -->
+		</HUDSFXVoicePackTextIDs>
+
+		<!-- List of voice pack text tags for asset name replacement; Total entries must match HUDSFXVoicePackTotal and HUDSFXVoicePackTextIDs list -->			 
+		<HUDSFXVoicePackAssetTags> 
+			<!-- HDA Master always at top of list -->
+			<entry> HDA </entry>
+			<!-- Add more here -->
+		</HUDSFXVoicePackAssetTags>
+										  			
+		<!-- Queued SFXEvents lifetime before expiration, for possible queued SFXEvents -->
+		<!-- Normally 5.0, but C&C EVA HUD voices may need more time -->
+		<SFXEventsLifetimeInQueueSeconds> 15.0 </SFXEventsLifetimeInQueueSeconds>
+
+		<!-- A list of upper-case filenames for the MusicManager to skip, for cases of limited versions of games -->
+		<FreeGameSkipMusicFiles>
+			<!-- Upper-case filenames, example FACTION_01_TRACK_01.WAV -->
+		</FreeGameSkipMusicFiles>
+
+      <!-- Voice chat system parameters -->                                      										  			
+      <VoiceChatSampleBufferSizeSeconds> 5.0 </VoiceChatSampleBufferSizeSeconds>                        										  			
+      <VoiceChatBufferQueueBeforePlaybackSeconds> 0.1 </VoiceChatBufferQueueBeforePlaybackSeconds> <!-- 1/10th of a second is 100 milliseconds -->
+      <VoiceChatSilenceTailDataSeconds> 2.0 </VoiceChatSilenceTailDataSeconds>
+      <VoiceChatVolumeDuckingCooldownSeconds> 1.5 </VoiceChatVolumeDuckingCooldownSeconds>
+																			  	
+		<!-- Supported localized voice languages: See Languages.h for exact language naming:
+			English
+			UK
+			German
+			French
+			Spanish
+			Italian
+			Japanese
+			Korean
+			Chinese
+			Russian
+			Polish
+			Thai
+			Czech
+			Turkish
+			Portuguese
+			Hungarian
+			Dutch_NL
+			Arabic
+			Romanian
+			Chinese_Taiwan
+		-->
+		<LocalizedVoiceLanguages>
+			<entry> English </entry>
+			<entry> French </entry>
+			<entry> German </entry>
+		</LocalizedVoiceLanguages>
+			 
+  																																																							  	
+		<!-- This should closely match <VolumePercent> values in MusicEvents.xml tactical music events --> 																																																								
+		<MusicJukeboxVolumePercent> 0.25 </MusicJukeboxVolumePercent>
+  																																																							  	
+		<!-- Command & Conquer Music Jukebox! -->
+		<MusicJukeboxTracksList>
+			
+			<!-- In the Jukebox Manager GUI, all playlist entries are sorted Alphabetically for entry Name -->			
+			
+			<!-- TIBERIAN DAWN REMASTERED -->			
+
+			<entry Name="Act_On_Instinct">
+				<FileName> TDR_MUS_Act_On_Instinct.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_ACT_ON_INSTINCT </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 166 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Act_On_Instinct_OST_Version">
+				<FileName> TDR_MUS_Act_On_Instinct_OST_Version.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_ACT_ON_INSTINCT_OST_VERSION </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 172 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Airstrike">
+				<FileName> TDR_MUS_Airstrike.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_AIRSTRIKE </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 197 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Canyon_Chase">
+				<FileName> TDR_MUS_Canyon_Chase.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_CANYON_CHASE </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 162 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="CC_80s_Mix">
+				<FileName> TDR_MUS_CC_80s_Mix.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_CC_80S_MIX </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 243 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="CC_Thang">
+				<FileName> TDR_MUS_CC_Thang.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_CC_THANG </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 192 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Creeping_Upon">
+				<FileName> TDR_MUS_Creeping_Upon.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_CREEPING_UPON </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 217 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Demolition">
+				<FileName> TDR_MUS_Demolition.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_DEMOLITION </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 182 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Depth_Charge">
+				<FileName> TDR_MUS_Depth_Charge.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_DEPTH_CHARGE </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 255 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Die">
+				<FileName> TDR_MUS_Die.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_DIE </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 161 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Drill">
+				<FileName> TDR_MUS_Drill.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_DRILL </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 267 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Drone">
+				<FileName> TDR_MUS_Drone.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_DRONE </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 272 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Fight_Win_Prevail">
+				<FileName> TDR_MUS_Fight_Win_Prevail.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_FIGHT_WIN_PREVAIL </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 52 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="GDI_Map_Theme">
+				<FileName> TDR_MUS_GDI_Map_Theme.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_GDI_MAP_THEME </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 61 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Great_Shot">
+				<FileName> TDR_MUS_Great_Shot.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_GREAT_SHOT </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 40 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Great_Shot_Extended">
+				<FileName> TDR_MUS_Great_Shot_Extended.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_GREAT_SHOT_EXTENDED </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 56 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Heartbreak">
+				<FileName> TDR_MUS_Heartbreak.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_HEARTBREAK </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 202 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Industrial">
+				<FileName> TDR_MUS_Industrial.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_INDUSTRIAL </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 173 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="In_The_Line_Of_Fire">
+				<FileName> TDR_MUS_In_The_Line_Of_Fire.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_IN_THE_LINE_OF_FIRE </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 124 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="In_Trouble">
+				<FileName> TDR_MUS_In_Trouble.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_IN_TROUBLE </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 191 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="In_Trouble_OST_Version">
+				<FileName> TDR_MUS_In_Trouble_OST_Version.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_IN_TROUBLE_OST_VERSION </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 212 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Iron_Fist">
+				<FileName> TDR_MUS_Iron_Fist.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_IRON_FIST </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 210 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Just_Do_It_Up">
+				<FileName> TDR_MUS_Just_Do_It_Up.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_JUST_DO_IT_UP </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 141 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Just_Do_It_Up_OST_Version">
+				<FileName> TDR_MUS_Just_Do_It_Up_OST_Version.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_JUST_DO_IT_UP_OST_VERSION </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 142 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="March_To_Doom">
+				<FileName> TDR_MUS_March_To_Doom.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_MARCH_TO_DOOM </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 157 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Nod_Map_Theme">
+				<FileName> TDR_MUS_Nod_Map_Theme.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_NOD_MAP_THEME </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 41 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Nod_Score">
+				<FileName> TDR_MUS_Nod_Score.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_NOD_SCORE </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 33 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="No_Mercy">
+				<FileName> TDR_MUS_No_Mercy.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_NO_MERCY </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 207 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="No_Mercy_OST_Version">
+				<FileName> TDR_MUS_No_Mercy_OST_Version.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_NO_MERCY_OST_VERSION </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 201 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="On_The_Prowl">
+				<FileName> TDR_MUS_On_The_Prowl.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_ON_THE_PROWL </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 182 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Prepare_For_Battle">
+				<FileName> TDR_MUS_Prepare_For_Battle.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_PREPARE_FOR_BATTLE </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 209 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Radio">
+				<FileName> TDR_MUS_Radio.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_RADIO </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 181 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Rain_In_The_Night">
+				<FileName> TDR_MUS_Rain_In_The_Night.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_RAIN_IN_THE_NIGHT </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 154 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Reaching_Out">
+				<FileName> TDR_MUS_Reaching_Out.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_REACHING_OUT </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 119 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="ReCon">
+				<FileName> TDR_MUS_ReCon.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_RECON </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 262 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Ride_Of_The_Valkyries">
+				<FileName> TDR_MUS_Ride_Of_The_Valkyries.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_RIDE_OF_THE_VALKYRIES </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 301 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Take_Em_Out">
+				<FileName> TDR_MUS_Take_Em_Out.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_TAKE_EM_OUT </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 182 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Target_Mechanical_Man">
+				<FileName> TDR_MUS_Target_Mechanical_Man.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_TARGET_MECHANICAL_MAN </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 172 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="To_Be_Feared">
+				<FileName> TDR_MUS_To_Be_Feared.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_TO_BE_FEARED </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 165 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Untamed_Land">
+				<FileName> TDR_MUS_Untamed_Land.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_UNTAMED_LAND </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 185 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Voice_Rhythm">
+				<FileName> TDR_MUS_Voice_Rhythm.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_VOICE_RHYTHM </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 307 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Warfare_Full_Stop">
+				<FileName> TDR_MUS_Warfare_Full_Stop.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_WARFARE_FULL_STOP </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 181 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="We_Will_Stop_Them_Deception">
+				<FileName> TDR_MUS_We_Will_Stop_Them_Deception.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_WE_WILL_STOP_THEM_DECEPTION </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 189 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="We_Will_Stop_Them_Deception_OST_Version">
+				<FileName> TDR_MUS_We_Will_Stop_Them_Deception_OST_Version.wav </FileName>
+				<TextID> TEXT_MUSIC_TDR_MUS_WE_WILL_STOP_THEM_DECEPTION_OST_VERSION </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 189 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<!-- RED ALERT REMASTERED -->			
+			
+			<entry Name="Arazoid">
+				<FileName> RAR_MUS_Arazoid.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_ARAZOID </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 266 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Awaiting">
+				<FileName> RAR_MUS_Awaiting.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_AWAITING </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 265 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="BackStab">
+				<FileName> RAR_MUS_BackStab.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_BACKSTAB </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 287 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Big_Foot">
+				<FileName> RAR_MUS_Big_Foot.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_BIG_FOOT </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 315 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Bog">
+				<FileName> RAR_MUS_Bog.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_BOG </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 216 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Chaos">
+				<FileName> RAR_MUS_Chaos.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_CHAOS </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 257 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Crush">
+				<FileName> RAR_MUS_Crush.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_CRUSH </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 229 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Crush_Retaliation_Remix">
+				<FileName> RAR_MUS_Crush_Retaliation_Remix.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_CRUSH_RETALIATION_REMIX </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 222 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Dense">
+				<FileName> RAR_MUS_Dense.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_DENSE </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 302 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Face_The_Enemy_1">
+				<FileName> RAR_MUS_Face_The_Enemy_1.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_FACE_THE_ENEMY_1 </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 277 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Face_The_Enemy_2">
+				<FileName> RAR_MUS_Face_The_Enemy_2.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_FACE_THE_ENEMY_2 </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 336 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Floating">
+				<FileName> RAR_MUS_Floating.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_FLOATING </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 281 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Fogger">
+				<FileName> RAR_MUS_Fogger.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_FOGGER </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 308 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Gloom">
+				<FileName> RAR_MUS_Gloom.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_GLOOM </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 241 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Groundwire">
+				<FileName> RAR_MUS_Groundwire.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_GROUNDWIRE </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 234 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Hell_March">
+				<FileName> RAR_MUS_Hell_March.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_HELL_MARCH </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 384 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Hell_March_Retaliation_Remix">
+				<FileName> RAR_MUS_Hell_March_Retaliation_Remix.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_HELL_MARCH_RETALIATION_REMIX </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 211 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Intro_Menu">
+				<FileName> RAR_MUS_Intro_Menu.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_INTRO_MENU </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 210 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Map_Theme">
+				<FileName> RAR_MUS_Map_Theme.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_MAP_THEME </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 65 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Militant_Force">
+				<FileName> RAR_MUS_Militant_Force.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_MILITANT_FORCE </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 110 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Mud">
+				<FileName> RAR_MUS_Mud.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_MUD </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 288 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Mud_Retaliation_Remix">
+				<FileName> RAR_MUS_Mud_Retaliation_Remix.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_MUD_RETALIATION_REMIX </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 287 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="No_Mercy_Retaliation_Remix">
+				<FileName> RAR_MUS_No_Mercy_Retaliation_Remix.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_NO_MERCY_RETALIATION_REMIX </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 212 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Radio_2">
+				<FileName> RAR_MUS_Radio_2.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_RADIO_2 </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 245 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Radio_2_Retaliation_Remix">
+				<FileName> RAR_MUS_Radio_2_Retaliation_Remix.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_RADIO_2_RETALIATION_REMIX </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 215 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Reload_Fire">
+				<FileName> RAR_MUS_Reload_Fire.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_RELOAD_FIRE </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 292 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Roll_Out">
+				<FileName> RAR_MUS_Roll_Out.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_ROLL_OUT </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 234 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Run">
+				<FileName> RAR_MUS_Run.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_RUN </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 313 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Running_Through_Pipes">
+				<FileName> RAR_MUS_Running_Through_Pipes.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_RUNNING_THROUGH_PIPES </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 281 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Shut_It">
+				<FileName> RAR_MUS_Shut_It.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_SHUT_IT </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 267 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Smash">
+				<FileName> RAR_MUS_Smash.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_SMASH </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 281 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Snake">
+				<FileName> RAR_MUS_Snake.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_SNAKE </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 283 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Terminate">
+				<FileName> RAR_MUS_Terminate.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_TERMINATE </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 320 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="The_Search">
+				<FileName> RAR_MUS_The_Search.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_THE_SEARCH </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 281 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="The_Second_Hand">
+				<FileName> RAR_MUS_The_Second_Hand.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_THE_SECOND_HAND </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 275 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Traction">
+				<FileName> RAR_MUS_Traction.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_TRACTION </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 241 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Trenches">
+				<FileName> RAR_MUS_Trenches.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_TRENCHES </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 320 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Twin_Cannon">
+				<FileName> RAR_MUS_Twin_Cannon.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_TWIN_CANNON </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 235 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Twin_Cannon_Retaliation_Remix">
+				<FileName> RAR_MUS_Twin_Cannon_Retaliation_Remix.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_TWIN_CANNON_RETALIATION_REMIX </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 227 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Underlying_Thoughts">
+				<FileName> RAR_MUS_Underlying_Thoughts.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_UNDERLYING_THOUGHTS </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 253 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Vector">
+				<FileName> RAR_MUS_Vector.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_VECTOR </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 258 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Voice_Rhythm_2">
+				<FileName> RAR_MUS_Voice_Rhythm_2.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_VOICE_RHYTHM_2 </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 259 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Wasteland">
+				<FileName> RAR_MUS_Wasteland.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_WASTELAND </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 246 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Workmen">
+				<FileName> RAR_MUS_Workmen.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_WORKMEN </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 284 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Workmen_Retaliation_Remix">
+				<FileName> RAR_MUS_Workmen_Retaliation_Remix.wav </FileName>
+				<TextID> TEXT_MUSIC_RAR_MUS_WORKMEN_RETALIATION_REMIX </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 205 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<!-- TIBERIAN DAWN CLASSIC -->			
+
+			<entry Name="Act_On_Instinct">
+				<FileName> TDC_MUS_Act_On_Instinct.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_ACT_ON_INSTINCT </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 165 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Airstrike">
+				<FileName> TDC_MUS_Airstrike.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_AIRSTRIKE </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 197 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Canyon_Chase">
+				<FileName> TDC_MUS_Canyon_Chase.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_CANYON_CHASE </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 38 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="CC_80s_Mix">
+				<FileName> TDC_MUS_CC_80s_Mix.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_CC_80S_MIX </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 245 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="CC_Thang">
+				<FileName> TDC_MUS_CC_Thang.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_CC_THANG </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 190 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Creeping_Upon">
+				<FileName> TDC_MUS_Creeping_Upon.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_CREEPING_UPON </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 219 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Demolition">
+				<FileName> TDC_MUS_Demolition.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_DEMOLITION </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 177 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Depth_Charge">
+				<FileName> TDC_MUS_Depth_Charge.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_DEPTH_CHARGE </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 253 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Die">
+				<FileName> TDC_MUS_Die.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_DIE </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 159 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Drill">
+				<FileName> TDC_MUS_Drill.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_DRILL </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 268 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Drone">
+				<FileName> TDC_MUS_Drone.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_DRONE </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 271 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Fight_Win_Prevail">
+				<FileName> TDC_MUS_Fight_Win_Prevail.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_FIGHT_WIN_PREVAIL </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 52 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="GDI_Map_Theme">
+				<FileName> TDC_MUS_GDI_Map_Theme.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_GDI_MAP_THEME </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 60 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Great_Shot">
+				<FileName> TDC_MUS_Great_Shot.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_GREAT_SHOT </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 40 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Great_Shot_Extended">
+				<FileName> TDC_MUS_Great_Shot_Extended.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_GREAT_SHOT_EXTENDED </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 56 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Heartbreak">
+				<FileName> TDC_MUS_Heartbreak.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_HEARTBREAK </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 202 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Industrial">
+				<FileName> TDC_MUS_Industrial.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_INDUSTRIAL </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 172 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="In_The_Line_Of_Fire">
+				<FileName> TDC_MUS_In_The_Line_Of_Fire.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_IN_THE_LINE_OF_FIRE </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 122 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="In_Trouble">
+				<FileName> TDC_MUS_In_Trouble.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_IN_TROUBLE </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 187 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Iron_Fist">
+				<FileName> TDC_MUS_Iron_Fist.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_IRON_FIST </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 209 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Just_Do_It_Up">
+				<FileName> TDC_MUS_Just_Do_It_Up.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_JUST_DO_IT_UP </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 140 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="March_To_Doom">
+				<FileName> TDC_MUS_March_To_Doom.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_MARCH_TO_DOOM </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 154 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Nod_Map_Theme">
+				<FileName> TDC_MUS_Nod_Map_Theme.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_NOD_MAP_THEME </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 36 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Nod_Score">
+				<FileName> TDC_MUS_Nod_Score.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_NOD_SCORE </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 33 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="No_Mercy">
+				<FileName> TDC_MUS_No_Mercy.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_NO_MERCY </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 200 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="On_The_Prowl">
+				<FileName> TDC_MUS_On_The_Prowl.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_ON_THE_PROWL </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 179 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Prepare_For_Battle">
+				<FileName> TDC_MUS_Prepare_For_Battle.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_PREPARE_FOR_BATTLE </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 207 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Radio">
+				<FileName> TDC_MUS_Radio.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_RADIO </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 179 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Rain_In_The_Night">
+				<FileName> TDC_MUS_Rain_In_The_Night.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_RAIN_IN_THE_NIGHT </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 154 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Reaching_Out">
+				<FileName> TDC_MUS_Reaching_Out.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_REACHING_OUT </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 119 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Recon">
+				<FileName> TDC_MUS_Recon.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_RECON </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 258 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Ride_Of_The_Valkyries">
+				<FileName> TDC_MUS_Ride_Of_The_Valkyries.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_RIDE_OF_THE_VALKYRIES </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 301 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Take_Em_Out">
+				<FileName> TDC_MUS_Take_Em_Out.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_TAKE_EM_OUT </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 179 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Target_Mechanical_Man">
+				<FileName> TDC_MUS_Target_Mechanical_Man.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_TARGET_MECHANICAL_MAN </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 170 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="To_Be_Feared">
+				<FileName> TDC_MUS_To_Be_Feared.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_TO_BE_FEARED </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 161 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Untamed_Land">
+				<FileName> TDC_MUS_Untamed_Land.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_UNTAMED_LAND </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 183 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Voice_Rhythm">
+				<FileName> TDC_MUS_Voice_Rhythm.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_VOICE_RHYTHM </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 302 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Warfare_Full_Stop">
+				<FileName> TDC_MUS_Warfare_Full_Stop.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_WARFARE_FULL_STOP </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 179 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="We_Will_Stop_Them_Deception">
+				<FileName> TDC_MUS_We_Will_Stop_Them_Deception.wav </FileName>
+				<TextID> TEXT_MUSIC_TDC_MUS_WE_WILL_STOP_THEM_DECEPTION </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 187 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<!-- RED ALERT CLASSIC -->			
+
+			<entry Name="Arazoid">
+				<FileName> RAC_MUS_Arazoid.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_ARAZOID </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 262 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Awaiting">
+				<FileName> RAC_MUS_Awaiting.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_AWAITING </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 265 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Backstab">
+				<FileName> RAC_MUS_Backstab.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_BACKSTAB </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 283 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Big_Foot">
+				<FileName> RAC_MUS_Big_Foot.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_BIG_FOOT </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 313 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Bog">
+				<FileName> RAC_MUS_Bog.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_BOG </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 213 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Chaos">
+				<FileName> RAC_MUS_Chaos.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_CHAOS </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 255 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Crush">
+				<FileName> RAC_MUS_Crush.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_CRUSH </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 227 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Crush_Retaliation_Remix">
+				<FileName> RAC_MUS_Crush_Retaliation_Remix.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_CRUSH_RETALIATION_REMIX </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 222 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Dense">
+				<FileName> RAC_MUS_Dense.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_DENSE </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 301 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Face_The_Enemy_1">
+				<FileName> RAC_MUS_Face_The_Enemy_1.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_FACE_THE_ENEMY_1 </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 277 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Face_The_Enemy_2">
+				<FileName> RAC_MUS_Face_The_Enemy_2.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_FACE_THE_ENEMY_2 </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 335 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Floating">
+				<FileName> RAC_MUS_Floating.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_FLOATING </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 275 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Fogger">
+				<FileName> RAC_MUS_Fogger.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_FOGGER </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 304 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Gloom">
+				<FileName> RAC_MUS_Gloom.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_GLOOM </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 237 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Groundwire">
+				<FileName> RAC_MUS_Groundwire.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_GROUNDWIRE </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 229 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Hell_March">
+				<FileName> RAC_MUS_Hell_March.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_HELL_MARCH </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 381 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Hell_March_Retaliation_Remix">
+				<FileName> RAC_MUS_Hell_March_Retaliation_Remix.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_HELL_MARCH_RETALIATION_REMIX </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 211 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Intro_Menu">
+				<FileName> RAC_MUS_Intro_Menu.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_INTRO_MENU </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 209 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Map_Theme">
+				<FileName> RAC_MUS_Map_Theme.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_MAP_THEME </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 65 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Militant_Force">
+				<FileName> RAC_MUS_Militant_Force.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_MILITANT_FORCE </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 108 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Mud">
+				<FileName> RAC_MUS_Mud.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_MUD </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 286 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Mud_Retaliation_Remix">
+				<FileName> RAC_MUS_Mud_Retaliation_Remix.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_MUD_RETALIATION_REMIX </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 287 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="No_Mercy_Retaliation_Remix">
+				<FileName> RAC_MUS_No_Mercy_Retaliation_Remix.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_NO_MERCY_RETALIATION_REMIX </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 212 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Radio_2">
+				<FileName> RAC_MUS_Radio_2.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_RADIO_2 </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 242 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Radio_2_Retaliation_Remix">
+				<FileName> RAC_MUS_Radio_2_Retaliation_Remix.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_RADIO_2_RETALIATION_REMIX </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 215 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Reload_Fire">
+				<FileName> RAC_MUS_Reload_Fire.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_RELOAD_FIRE </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 163 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Roll_Out">
+				<FileName> RAC_MUS_Roll_Out.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_ROLL_OUT </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 232 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Run">
+				<FileName> RAC_MUS_Run.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_RUN </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 318 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Running_Through_Pipes">
+				<FileName> RAC_MUS_Running_Through_Pipes.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_RUNNING_THROUGH_PIPES </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 276 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Shut_It">
+				<FileName> RAC_MUS_Shut_It.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_SHUT_IT </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 267 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Smash">
+				<FileName> RAC_MUS_Smash.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_SMASH </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 277 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Snake">
+				<FileName> RAC_MUS_Snake.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_SNAKE </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 283 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Terminate">
+				<FileName> RAC_MUS_Terminate.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_TERMINATE </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 317 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="The_Search">
+				<FileName> RAC_MUS_The_Search.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_THE_SEARCH </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 277 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="The_Second_Hand">
+				<FileName> RAC_MUS_The_Second_Hand.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_THE_SECOND_HAND </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 274 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Traction">
+				<FileName> RAC_MUS_Traction.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_TRACTION </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 238 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Trenches">
+				<FileName> RAC_MUS_Trenches.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_TRENCHES </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 319 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Twin_Cannon">
+				<FileName> RAC_MUS_Twin_Cannon.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_TWIN_CANNON </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 234 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Twin_Cannon_Retaliation_Remix">
+				<FileName> RAC_MUS_Twin_Cannon_Retaliation_Remix.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_TWIN_CANNON_RETALIATION_REMIX </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 226 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Underlying_Thoughts">
+				<FileName> RAC_MUS_Underlying_Thoughts.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_UNDERLYING_THOUGHTS </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 251 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Vector">
+				<FileName> RAC_MUS_Vector.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_VECTOR </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 257 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Voice_Rhythm_2">
+				<FileName> RAC_MUS_Voice_Rhythm_2.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_VOICE_RHYTHM_2 </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 260 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Wasteland">
+				<FileName> RAC_MUS_Wasteland.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_WASTELAND </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 243 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Workmen">
+				<FileName> RAC_MUS_Workmen.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_WORKMEN </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 283 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Workmen_Retaliation_Remix">
+				<FileName> RAC_MUS_Workmen_Retaliation_Remix.wav </FileName>
+				<TextID> TEXT_MUSIC_RAC_MUS_WORKMEN_RETALIATION_REMIX </TextID>
+				<TrackType> Classic </TrackType>
+				<TrackLengthSeconds> 205 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			
+			<!-- BONUS CONTENT -->
+
+			<entry Name="Act_On_Instinct_Tiberian_Sons">
+				<FileName> TDB_MUS_ACT_ON_INSTINCT_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_TDB_MUS_ACT_ON_INSTINCT_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 168 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Industrial_Tiberian_Sons">
+				<FileName> TDB_MUS_INDUSTRIAL_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_TDB_MUS_INDUSTRIAL_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 174 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Just_Do_It_Up_Tiberian_Sons">
+				<FileName> TDB_MUS_JUST_DO_IT_UP_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_TDB_MUS_JUST_DO_IT_UP_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 147 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="No_Mercy_Tiberian_Sons">
+				<FileName> TDB_MUS_NO_MERCY_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_TDB_MUS_NO_MERCY_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 199 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Prepare_For_Battle_Tiberian_Sons">
+				<FileName> TDB_MUS_PREPARE_FOR_BATTLE_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_TDB_MUS_PREPARE_FOR_BATTLE_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 203 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Rain_In_The_Night_Tiberian_Sons">
+				<FileName> TDB_MUS_RAIN_IN_THE_NIGHT_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_TDB_MUS_RAIN_IN_THE_NIGHT_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 224 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Target_Mechanical_Man_Tiberian_Sons">
+				<FileName> TDB_MUS_TARGET_MECHANICAL_MAN_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_TDB_MUS_TARGET_MECHANICAL_MAN_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 182 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Warfare_Full_Stop_Tiberian_Sons">
+				<FileName> TDB_MUS_WARFARE_FULL_STOP_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_TDB_MUS_WARFARE_FULL_STOP_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 192 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Command_And_Conquer_Tiberian_Sons">
+				<FileName> TDB_MUS_COMMAND_AND_CONQUER_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_TDB_MUS_COMMAND_AND_CONQUER_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 183 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Dusk_Hour_Tiberian_Sons">
+				<FileName> TDB_MUS_DUSK_HOUR_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_TDB_MUS_DUSK_HOUR_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 234 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Got_A_Present_For_Ya_Tiberian_Sons">
+				<FileName> TDB_MUS_GOT_A_PRESENT_FOR_YA_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_TDB_MUS_GOT_A_PRESENT_FOR_YA_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 142 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Mad_Rap_Tiberian_Sons">
+				<FileName> TDB_MUS_MAD_RAP_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_TDB_MUS_MAD_RAP_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 218 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Slave_To_The_System_Tiberian_Sons">
+				<FileName> TDB_MUS_SLAVE_TO_THE_SYSTEM_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_TDB_MUS_SLAVE_TO_THE_SYSTEM_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 164 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+
+			<entry Name="Big_Foot_Tiberian_Sons">
+				<FileName> RAB_MUS_BIG_FOOT_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_RAB_MUS_BIG_FOOT_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 336 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Crush_Tiberian_Sons">
+				<FileName> RAB_MUS_CRUSH_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_RAB_MUS_CRUSH_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 178 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Hell_March_Tiberian_Sons">
+				<FileName> RAB_MUS_HELL_MARCH_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_RAB_MUS_HELL_MARCH_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 214 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Militant_Force_Tiberian_Sons">
+				<FileName> RAB_MUS_MILITANT_FORCE_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_RAB_MUS_MILITANT_FORCE_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 134 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Workmen_Tiberian_Sons">
+				<FileName> RAB_MUS_WORKMEN_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_RAB_MUS_WORKMEN_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 264 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Blow_It_Up_Tiberian_Sons">
+				<FileName> RAB_MUS_BLOW_IT_UP_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_RAB_MUS_BLOW_IT_UP_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 191 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Breeze_Freeze_Tiberian_Sons">
+				<FileName> RAB_MUS_BRAIN_FREEZE_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_RAB_MUS_BRAIN_FREEZE_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 257 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Grinder_1_2_Medley_Tiberian_Sons">
+				<FileName> RAB_MUS_GRINDER_1_2_MEDLEY_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_RAB_MUS_GRINDER_1_2_MEDLEY_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 173 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Hell_March_2_3_Medley_Tiberian_Sons">
+				<FileName> RAB_MUS_HM_2_3_MEDLEY_FKTS.wav </FileName>
+				<TextID> TEXT_MUSIC_RAB_MUS_HM_2_3_MEDLEY_FKTS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 252 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+
+
+
+
+			<!-- BONUS CONTENT UNLOCKABLES -->
+
+			<entry Name="Tank_Battle">
+				<FileName> TDB_MUS_Tank_Battle_CO.wav </FileName>
+				<TextID> TEXT_MUSIC_TDB_MUS_TANK_BATTLE_CO </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 191 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> True </BonusContentUnlock>
+			</entry>
+
+			<entry Name="CC_Credits_Outtakes">
+				<FileName> TDB_MUS_CC_Credits_Outtakes.wav </FileName>
+				<TextID> TEXT_MUSIC_TDB_MUS_CC_CREDITS_OUTTAKES </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 185 </TrackLengthSeconds>
+				<Game> Tiberian_Dawn </Game>
+				<BonusContentUnlock> True </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Surf_No_Mercy">
+				<FileName> RAB_MUS_SURF_NO_MERCY.wav </FileName>
+				<TextID> TEXT_MUSIC_RAB_MUS_SURF_NO_MERCY </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 192 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> True </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="The_Truth_Is_A_Lie">
+				<FileName> RAB_MUS_THE_TRUTH_IS_A_LIE.wav </FileName>
+				<TextID> TEXT_MUSIC_RAB_MUS_THE_TRUTH_IS_A_LIE </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 212 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> True </BonusContentUnlock>
+			</entry>
+
+			<entry Name="Journey">
+				<FileName> RAB_MUS_Journey_CS.wav </FileName>
+				<TextID> TEXT_MUSIC_RAB_MUS_JOURNEY_CS </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 270 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> True </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Concrete">
+				<FileName> RAB_MUS_CONCRETE_AM.wav </FileName>
+				<TextID> TEXT_MUSIC_RAB_MUS_CONCRETE_AM </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 238 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> True </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="The_Plan">
+				<FileName> RAB_MUS_THE_PLAN_AM.wav </FileName>
+				<TextID> TEXT_MUSIC_RAB_MUS_THE_PLAN_AM </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 196 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> True </BonusContentUnlock>
+			</entry>
+			
+			<entry Name="Hell_March_Original_Demo">
+				<FileName> RAB_MUS_HELL_MARCH_ORIGINAL_DEMO.wav </FileName>
+				<TextID> TEXT_MUSIC_RAB_MUS_HELL_MARCH_ORIGINAL_DEMO </TextID>
+				<TrackType> Bonus </TrackType>
+				<TrackLengthSeconds> 218 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> True </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Valves">
+				<FileName> TS_MUS_VALVES.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_VALVES </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 265 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Dusk_Hour">
+				<FileName> TS_MUS_DUSK_HOUR.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_DUSK_HOUR </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 252 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Flurry">
+				<FileName> TS_MUS_FLURRY.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_FLURRY </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 251 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Mutants">
+				<FileName> TS_MUS_MUTANTS.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_MUTANTS </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 251 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Approach">
+				<FileName> TS_MUS_APPROACH.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_APPROACH </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 282 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Gloom">
+				<FileName> TS_MUS_GLOOM.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_GLOOM </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 240 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Infrared">
+				<FileName> TS_MUS_INFRARED.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_INFRARED </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 267 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Mad_Rap">
+				<FileName> TS_MUS_MAD_RAP.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_MAD_RAP </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 269 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Red_Sky">
+				<FileName> TS_MUS_RED_SKY.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_RED_SKY </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 143 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Ion_Storm">
+				<FileName> TS_MUS_ION_STORM.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_ION_STORM </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 254 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Time_Bomb">
+				<FileName> TS_MUS_TIME_BOMB.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_TIME_BOMB </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 125 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_What_Lurks">
+				<FileName> TS_MUS_WHAT_LURKS.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_WHAT_LURKS </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 314 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Defense">
+				<FileName> TS_MUS_DEFENSE.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_DEFENSE </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 243 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Heroism">
+				<FileName> TS_MUS_HEROISM.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_HEROISM </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 246 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Lone_Troop">
+				<FileName> TS_MUS_LONE_TROOP.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_LONE_TROOP </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 280 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Nod_Crush">
+				<FileName> TS_MUS_NOD_CRUSH.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_NOD_CRUSH </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 226 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Pharotek">
+				<FileName> TS_MUS_PHAROTEK.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_PHAROTEK </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 278 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Scout">
+				<FileName> TS_MUS_SCOUT.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_SCOUT </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 255 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Elusive">
+				<FileName> TS_MUS_ELUSIVE.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_ELUSIVE </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 267 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Hacker">
+				<FileName> TS_MUS_HACKER.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_HACKER </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 243 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Infiltration">
+				<FileName> TS_MUS_INFILTRATION.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_INFILTRATION </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 260 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Link_Up">
+				<FileName> TS_MUS_LINK_UP.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_LINK_UP </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 197 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Killing_Machine">
+				<FileName> TS_MUS_KILLING_MACHINE.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_KILLING_MACHINE </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 207 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Rain_in_the_Night_Part_2">
+				<FileName> TS_MUS_RAIN_IN_THE_NIGHT_PART_2.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_RAIN_IN_THE_NIGHT_PART_2 </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 239 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Slave_to_the_System">
+				<FileName> TS_MUS_SLAVE_TO_THE_SYSTEM.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_SLAVE_TO_THE_SYSTEM </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 156 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+			<entry Name="TS_Deploy_Machines">
+				<FileName> TS_MUS_DEPLOY_MACHINES.WAV </FileName>
+				<TextID> TEXT_MUSIC_TS_MUS_DEPLOY_MACHINES </TextID>
+				<TrackType> Remaster </TrackType>
+				<TrackLengthSeconds> 223 </TrackLengthSeconds>
+				<Game> Red_Alert </Game>
+				<BonusContentUnlock> False </BonusContentUnlock>
+			</entry>
+
+		</MusicJukeboxTracksList>
+  																																																							  	
+  																																																							  	
+  																																																							  	
+      <!-- Test sample files for extreme performance testing on min specs -->
+      <Test2DSFXManagerFiles>
+      </Test2DSFXManagerFiles>
+
+      <!-- Test sample files for extreme performance testing on min specs -->
+      <Test3DLoopsSFXManagerFiles>
+      </Test3DLoopsSFXManagerFiles>
+
+      <!-- Test sample files for extreme performance testing on min specs -->
+      <Test3DNonLoopsSFXManagerFiles>
+      </Test3DNonLoopsSFXManagerFiles>
+												
+	</AudioSystemConstants>
+
+</AudioSystem>
