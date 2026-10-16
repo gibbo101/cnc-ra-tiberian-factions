@@ -58,7 +58,7 @@ WORKSHOP = {
     "TS-HD-Assets": {
         "packs": ("TS-HD-Graphics-Pack", "TS-SFX-Pack", "TS-EVA-eng", "TS-Voices-eng"),
         "required": True, "marker": "TSHDPACK.INI", "xml_id": "TSHDAssets", "version": (1, 0), "game": "TS",
-        "prefix": "TS", "hosts": ("RA",), "workshop_ids": {"RA": "3819642604", "TD": "3819642832"},
+        "prefix": "TS", "hosts": ("RA", "TD"), "workshop_ids": {"RA": "3819642604", "TD": "3819642832"},
         "name": "Tiberian Sun HD Assets",
         "description": "Tiberian Sun units, buildings, effects, sounds and EVA for {host}, in HD.",
         "contents": ["**GDI infantry:** Light Infantry (TSE1), Disc Thrower (TSE2), Engineer (TSENGINEER), Medic "

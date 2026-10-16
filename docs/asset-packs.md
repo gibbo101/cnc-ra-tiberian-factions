@@ -26,6 +26,8 @@ asset-packs/TS-HD-Graphics-Pack/
                                               scripts/glb_to_stl.py makes print-ready STL files from them)
 ```
 
+A Tiberian Dawn item's terrain ships as loose files, one folder per ZIP: TD's terrain never reads a mod's ZIP.
+
 | Pack | Holds |
 |---|---|
 | TS-HD-Graphics-Pack | HD rebuilds of TS GDI's objects (buildings, units, infantry, walls, gates, component towers), their HD cameos and 3D models, and TS's effects |
