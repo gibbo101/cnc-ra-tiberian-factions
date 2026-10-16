@@ -1,0 +1,184 @@
+[
+ {
+  "name": "TS_MUS_VALVES",
+  "title": "Valves",
+  "game": "TS",
+  "side": "",
+  "seconds": 265
+ },
+ {
+  "name": "TS_MUS_DUSK_HOUR",
+  "title": "Dusk Hour",
+  "game": "TS",
+  "side": "GDI",
+  "seconds": 252
+ },
+ {
+  "name": "TS_MUS_FLURRY",
+  "title": "Flurry",
+  "game": "TS",
+  "side": "",
+  "seconds": 251
+ },
+ {
+  "name": "TS_MUS_MUTANTS",
+  "title": "Mutants",
+  "game": "TS",
+  "side": "GDI",
+  "seconds": 251
+ },
+ {
+  "name": "TS_MUS_APPROACH",
+  "title": "Approach",
+  "game": "TS",
+  "side": "",
+  "seconds": 282
+ },
+ {
+  "name": "TS_MUS_GLOOM",
+  "title": "Gloom",
+  "game": "TS",
+  "side": "",
+  "seconds": 240
+ },
+ {
+  "name": "TS_MUS_INFRARED",
+  "title": "Infrared",
+  "game": "TS",
+  "side": "",
+  "seconds": 267
+ },
+ {
+  "name": "TS_MUS_MAD_RAP",
+  "title": "Mad Rap",
+  "game": "TS",
+  "side": "",
+  "seconds": 269
+ },
+ {
+  "name": "TS_MUS_RED_SKY",
+  "title": "Red Sky",
+  "game": "TS",
+  "side": "",
+  "seconds": 143
+ },
+ {
+  "name": "TS_MUS_ION_STORM",
+  "title": "Ion Storm",
+  "game": "TS",
+  "side": "",
+  "seconds": 254
+ },
+ {
+  "name": "TS_MUS_TIME_BOMB",
+  "title": "Time Bomb",
+  "game": "TS",
+  "side": "",
+  "seconds": 125
+ },
+ {
+  "name": "TS_MUS_WHAT_LURKS",
+  "title": "What Lurks",
+  "game": "TS",
+  "side": "",
+  "seconds": 314
+ },
+ {
+  "name": "TS_MUS_DEFENSE",
+  "title": "Defense",
+  "game": "TS",
+  "side": "Nod",
+  "seconds": 243
+ },
+ {
+  "name": "TS_MUS_HEROISM",
+  "title": "Heroism",
+  "game": "TS",
+  "side": "",
+  "seconds": 246
+ },
+ {
+  "name": "TS_MUS_LONE_TROOP",
+  "title": "Lone Troop",
+  "game": "TS",
+  "side": "GDI",
+  "seconds": 280
+ },
+ {
+  "name": "TS_MUS_NOD_CRUSH",
+  "title": "Nod Crush",
+  "game": "TS",
+  "side": "Nod",
+  "seconds": 226
+ },
+ {
+  "name": "TS_MUS_PHAROTEK",
+  "title": "Pharotek",
+  "game": "TS",
+  "side": "Nod",
+  "seconds": 278
+ },
+ {
+  "name": "TS_MUS_SCOUT",
+  "title": "Scout",
+  "game": "TS",
+  "side": "",
+  "seconds": 255
+ },
+ {
+  "name": "TS_MUS_ELUSIVE",
+  "title": "Elusive",
+  "game": "FS",
+  "side": "",
+  "seconds": 267
+ },
+ {
+  "name": "TS_MUS_HACKER",
+  "title": "Hacker",
+  "game": "FS",
+  "side": "",
+  "seconds": 243
+ },
+ {
+  "name": "TS_MUS_INFILTRATION",
+  "title": "Infiltration",
+  "game": "FS",
+  "side": "",
+  "seconds": 260
+ },
+ {
+  "name": "TS_MUS_LINK_UP",
+  "title": "Link Up",
+  "game": "FS",
+  "side": "",
+  "seconds": 197
+ },
+ {
+  "name": "TS_MUS_KILLING_MACHINE",
+  "title": "Killing Machine",
+  "game": "FS",
+  "side": "",
+  "seconds": 207
+ },
+ {
+  "name": "TS_MUS_RAIN_IN_THE_NIGHT_PART_2",
+  "title": "Rain in the night (Part 2)",
+  "game": "FS",
+  "side": "",
+  "seconds": 239
+ },
+ {
+  "name": "TS_MUS_SLAVE_TO_THE_SYSTEM",
+  "title": "Slave to the system",
+  "game": "FS",
+  "side": "",
+  "seconds": 156
+ },
+ {
+  "name": "TS_MUS_DEPLOY_MACHINES",
+  "title": "Deploy Machines",
+  "game": "FS",
+  "side": "",
+  "seconds": 223
+ }
+]
