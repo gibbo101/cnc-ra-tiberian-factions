@@ -528,14 +528,29 @@ const unsigned ITEM_INSTALLED = 4;
 const unsigned ITEM_DOWNLOADING = 16;
 const unsigned ITEM_DOWNLOAD_PENDING = 32;
 
-int Pack_Download_Percent(int pack)
+/*
+**	A function steam_api.dll exports; NULL without Steam.
+*/
+FARPROC Steam_Export(const char* name)
 {
     HMODULE steam = GetModuleHandleA("steam_api.dll");
-    SteamUgcFn get = steam ? (SteamUgcFn)GetProcAddress(steam, "SteamAPI_SteamUGC_v018") : NULL;
-    ItemStateFn state = steam ? (ItemStateFn)GetProcAddress(steam, "SteamAPI_ISteamUGC_GetItemState") : NULL;
-    ItemDownloadInfoFn info =
-        steam ? (ItemDownloadInfoFn)GetProcAddress(steam, "SteamAPI_ISteamUGC_GetItemDownloadInfo") : NULL;
-    void* ugc = get ? get() : NULL;
+    return steam != NULL ? GetProcAddress(steam, name) : NULL;
+}
+
+/*
+**	Steam's Workshop interface; NULL without Steam.
+*/
+void* Steam_Ugc(void)
+{
+    SteamUgcFn get = (SteamUgcFn)Steam_Export("SteamAPI_SteamUGC_v018");
+    return get != NULL ? get() : NULL;
+}
+
+int Pack_Download_Percent(int pack)
+{
+    ItemStateFn state = (ItemStateFn)Steam_Export("SteamAPI_ISteamUGC_GetItemState");
+    ItemDownloadInfoFn info = (ItemDownloadInfoFn)Steam_Export("SteamAPI_ISteamUGC_GetItemDownloadInfo");
+    void* ugc = Steam_Ugc();
     if (ugc == NULL || state == NULL || info == NULL) {
         return -1;
     }
@@ -814,10 +829,8 @@ void Open_Pack_Page(int pack)
 {
     char url[96];
     snprintf(url, sizeof(url), "https://steamcommunity.com/sharedfiles/filedetails/?id=%s", PACKS[pack].WorkshopId);
-    HMODULE steam = GetModuleHandleA("steam_api.dll");
-    SteamFriendsFn get = steam ? (SteamFriendsFn)GetProcAddress(steam, "SteamAPI_SteamFriends_v017") : NULL;
-    OverlayToWebPageFn open =
-        steam ? (OverlayToWebPageFn)GetProcAddress(steam, "SteamAPI_ISteamFriends_ActivateGameOverlayToWebPage") : NULL;
+    SteamFriendsFn get = (SteamFriendsFn)Steam_Export("SteamAPI_SteamFriends_v017");
+    OverlayToWebPageFn open = (OverlayToWebPageFn)Steam_Export("SteamAPI_ISteamFriends_ActivateGameOverlayToWebPage");
     void* friends = get ? get() : NULL;
     if (friends != NULL && open != NULL) {
         open(friends, url, 0);
@@ -1181,11 +1194,9 @@ typedef int(__cdecl* StorageReadFn)(void* storage, const char* name, void* data,
 */
 unsigned char* Read_Save(const char* name, size_t* size)
 {
-    HMODULE steam = GetModuleHandleA("steam_api.dll");
-    SteamStorageFn get = steam ? (SteamStorageFn)GetProcAddress(steam, "SteamAPI_SteamRemoteStorage_v016") : NULL;
-    StorageSizeFn file_size =
-        steam ? (StorageSizeFn)GetProcAddress(steam, "SteamAPI_ISteamRemoteStorage_GetFileSize") : NULL;
-    StorageReadFn read = steam ? (StorageReadFn)GetProcAddress(steam, "SteamAPI_ISteamRemoteStorage_FileRead") : NULL;
+    SteamStorageFn get = (SteamStorageFn)Steam_Export("SteamAPI_SteamRemoteStorage_v016");
+    StorageSizeFn file_size = (StorageSizeFn)Steam_Export("SteamAPI_ISteamRemoteStorage_GetFileSize");
+    StorageReadFn read = (StorageReadFn)Steam_Export("SteamAPI_ISteamRemoteStorage_FileRead");
     void* storage = get ? get() : NULL;
     if (storage == NULL || file_size == NULL || read == NULL) {
         return NULL;
