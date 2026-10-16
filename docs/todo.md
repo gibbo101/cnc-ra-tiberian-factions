@@ -46,10 +46,6 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   states and actions (`pack-panel.md`) and a borrowed stock screen, as the CAMPAIGNS page borrowed Mission Select.
 - **H (jump to the home base) does nothing** (`known-issues.md`): find which side owns the key and fix it, with a
   play test on each faction.
-- **C&C3 pack README's turret seat offsets** (reported by a modder using the pack): with the README's C3PRED seat
-  offsets applied the turret looks wrong, without them it looks right; C3MK3 not tried yet. Check the README's
-  "Frame layout" table (`workshop_packs.layout`, from `c3tanks.h`) against how a stock-DLL mod draws the turret:
-  whether the art already carries the seat, the axes or sign, or the units; then fix the README or drop the table.
 - **TD asset-pack items don't draw in Tiberian Dawn** (`known-issues.md`): find why, then publish TS-HD-Assets-TD
   (item 3819642832, Private; `asset_packs.WORKSHOP` hosts it RA-only until then) and recheck the public RA2 and C&C3
   TD items.
