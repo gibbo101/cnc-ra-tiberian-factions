@@ -2,6 +2,11 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [Unreleased]
+
+### Changed
+- Concrete Wall costs 100 in skirmish and LAN, as in the campaigns (was 50).
+
 ## [5.5.0] — 2026-10-14
 
 A Tiberian Sun rises in high definition! GDI's arsenal from the future came
