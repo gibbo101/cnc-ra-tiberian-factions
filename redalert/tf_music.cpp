@@ -1,8 +1,6 @@
 /*
-**	Skirmish music by faction, inside ClientG.exe 1.153.745903. The launcher names a skirmish's
-**	music `<prefix>_MUS_RA_MULTIPLAYER_MODE` (prefix RAR, RAC or RAB by audio setting); this asks
-**	for `<prefix>_TF_MUS_<LIST>` first, by the player's soundtrack setting and lobby faction, and
-**	keeps the stock event when that one is missing.
+**	The skirmish music and jukebox hooks inside ClientG.exe 1.153.745903, described in
+**	docs/skirmish-music.md.
 */
 #include "function.h"
 #include "tf_music.h"
@@ -84,8 +82,8 @@ bool TS_Music_Present(void)
 }
 
 /*
-**	A key of the [Music] section of Documents/CnCRemastered/tf_music.ini, which the Settings page
-**	writes, or `fallback` when it is unset.
+**	A key of the [Music] section of Documents/CnCRemastered/tf_music.ini, without an inline
+**	comment, or `fallback` when it is unset.
 */
 void Music_Setting(const char* key, const char* fallback, char* value, DWORD size)
 {
@@ -205,9 +203,8 @@ void* __fastcall Ambient_Find(void* manager, void*, const MsvcString* name)
 }
 
 /*
-**	The jukebox manager's setup, after dropping the TS-Music tracks from the parsed jukebox list
-**	when no enabled mod supplies them. It must run before setup: the jukebox screen needs the
-**	parsed list and the manager's records to stay the same length.
+**	The jukebox manager's setup, after dropping the TS-Music tracks from the parsed list when no
+**	enabled mod supplies them; never after setup, which must see the same length (docs/skirmish-music.md).
 */
 bool __fastcall Jukebox_Init(void* manager, void*, bool start)
 {
