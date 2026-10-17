@@ -73,6 +73,9 @@ ABOUT = {
     "TS-Music": "Tiberian Sun and Firestorm's in-game music",
 }
 
+# The source packs of the music Workshop packs, whose README explains playing music rather than placing art.
+MUSIC_PACKS = {p for w in A.WORKSHOP.values() if w.get("kind") == "music" for p in w["packs"]}
+
 CREDIT = {
     "TS-HD-Graphics-Pack": "Built from Tiberian Sun's designs by gibbo101 for Tiberian Factions.",
 }
@@ -143,13 +146,21 @@ def readme(pack):
         lines.append(f"**3D models** ({len(models)}): " + ", ".join(models) + ". The HD rebuilds as glTF models, "
                      "in `3d/`; `3d/README.md` lists their parts and conventions. The game does not use them.")
         lines.append("")
-    lines += ["## Using it", "",
-              "1. Copy the files under this pack's `Data/` folder into your mod's `Data/` folder, keeping the paths.",
-              "2. Copy the entries you need from this pack's XML files into your mod's own XML files:", ""]
-    lines += [f"   - `{src}` into `{dst}`" for src, dst in xml_targets(pack)]
-    lines += ["",
-              "   The launcher only reads the mod files on the right. This pack's own XML files are there to copy from, "
-              "so enabling the pack by itself changes nothing in game.", ""]
+    if pack in MUSIC_PACKS:
+        lines += ["## Using it", "",
+                  "1. Copy the files under this pack's `Data/AUDIO/MUSIC` folder into your mod's, or enable the "
+                  "Workshop pack beside your mod: the game finds music in any enabled mod.",
+                  "2. Name the tracks in your mod's `Data/XML/AUDIO/MUSICEVENTS.XML` playlists.",
+                  "3. For the jukebox, add an entry per track to `<MusicJukeboxTracksList>` in "
+                  "`AUDIO_SYSTEM_CONSTANTS.XML`, with its title in your `ModText.csv`.", ""]
+    else:
+        lines += ["## Using it", "",
+                  "1. Copy the files under this pack's `Data/` folder into your mod's `Data/` folder, keeping the paths.",
+                  "2. Copy the entries you need from this pack's XML files into your mod's own XML files:", ""]
+        lines += [f"   - `{src}` into `{dst}`" for src, dst in xml_targets(pack)]
+        lines += ["",
+                  "   The launcher only reads the mod files on the right. This pack's own XML files are there to copy "
+                  "from, so enabling the pack by itself changes nothing in game.", ""]
     if "Graphics" in pack:
         lines += ["3. The game also needs a classic-mode SHP for every sprite, with the same frame count. A transparent stub "
                   f"is enough: Tiberian Factions makes its stubs with `scripts/gen_stub_shp.py` ([repo]({REPO_URL})).",

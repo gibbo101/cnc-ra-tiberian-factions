@@ -8,20 +8,9 @@ Tiberian Sun and Firestorm's in-game music, for Command & Conquer Remastered Col
 
 ## Using it
 
-1. Copy the files under this pack's `Data/` folder into your mod's `Data/` folder, keeping the paths.
-2. Copy the entries you need from this pack's XML files into your mod's own XML files:
-
-   - `Data/XML/TILESETS/TS_UNITS.XML` into `Data/XML/TILESETS/RA_UNITS.XML`
-   - `Data/XML/TILESETS/TS_STRUCTURES.XML` into `Data/XML/TILESETS/RA_STRUCTURES.XML`
-   - `Data/XML/TILESETS/TS_VFX.XML` into `Data/XML/TILESETS/RA_VFX.XML`
-   - `Data/XML/TILESETS/TS_TERRAIN_TEMPERATE.XML` into `Data/XML/TILESETS/RA_TERRAIN_TEMPERATE.XML`
-   - `Data/XML/TILESETS/TS_TERRAIN_SNOW.XML` into `Data/XML/TILESETS/RA_TERRAIN_SNOW.XML`
-   - `Data/XML/TILESETS/TS_TERRAIN_INTERIOR.XML` into `Data/XML/TILESETS/RA_TERRAIN_INTERIOR.XML`
-   - `Data/XML/OBJECTS/UNITS/TSBUILDABLES.XML` into `Data/XML/OBJECTS/UNITS/RABUILDABLES.XML`
-   - `Data/XML/AUDIO/SFXEVENTSNONLOCALIZED_TS.XML` into `Data/XML/AUDIO/SFXEVENTSNONLOCALIZED.XML`
-   - `Data/XML/AUDIO/SFXEVENTSLOCALIZED_TS.XML` into `Data/XML/AUDIO/SFXEVENTSLOCALIZED.XML`
-
-   The launcher only reads the mod files on the right. This pack's own XML files are there to copy from, so enabling the pack by itself changes nothing in game.
+1. Copy the files under this pack's `Data/AUDIO/MUSIC` folder into your mod's, or enable the Workshop pack beside your mod: the game finds music in any enabled mod.
+2. Name the tracks in your mod's `Data/XML/AUDIO/MUSICEVENTS.XML` playlists.
+3. For the jukebox, add an entry per track to `<MusicJukeboxTracksList>` in `AUDIO_SYSTEM_CONSTANTS.XML`, with its title in your `ModText.csv`.
 
 ## Credits
 
