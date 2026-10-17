@@ -209,6 +209,8 @@ def loose(edited_path, tracks_json, out_path):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) < 4:
+        sys.exit("usage: musicevents_build.py <base> <MUSIC.MEG listing> <out> | loose <edited> <tracks.json> <out>")
     if sys.argv[1] == "loose":
         loose(*sys.argv[2:5])
     else:

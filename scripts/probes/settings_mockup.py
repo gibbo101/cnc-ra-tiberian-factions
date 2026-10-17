@@ -51,8 +51,7 @@ def centred(draw, cx, y, text, size, colour, path=BOLD):
     draw.text((cx - w / 2, y), text, font=f, fill=colour)
 
 
-def row(draw, box, selected, dim=False):
-    x0, y0, x1, y1 = box
+def row(draw, box, selected):
     draw.rounded_rectangle(box, radius=6, fill=(21, 58, 10) if selected else (14, 40, 9),
                            outline=HEAD if selected else (6, 22, 4), width=3 if selected else 2)
 

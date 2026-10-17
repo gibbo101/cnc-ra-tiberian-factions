@@ -112,9 +112,9 @@ def main():
             name = stem(title)
             wav = os.path.join(MUSIC, name + ".WAV")
             subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", source, "-ar", "44100", "-ac", "2",
-                            "-c:a", "adpcm_ms", wav], stderr=subprocess.DEVNULL)
+                            "-c:a", "adpcm_ms", wav], stderr=subprocess.DEVNULL, check=True)
             seconds = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration",
-                                            "-of", "csv=p=0", wav], capture_output=True, text=True).stdout)
+                                            "-of", "csv=p=0", wav], capture_output=True, text=True, check=True).stdout)
             tracks.append({"name": name, "title": title, "game": game, "side": side, "seconds": round(seconds)})
             sums.append(f"{hashlib.md5(open(wav, 'rb').read()).hexdigest()}  {name}.WAV")
             print(f"{name:40s} {game} {side or '-':4s} {round(seconds):4d}s")

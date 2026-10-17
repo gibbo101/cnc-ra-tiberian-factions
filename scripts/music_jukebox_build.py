@@ -33,21 +33,20 @@ def entries(tracks, eol):
 
 
 def text_rows(csv_path, tracks):
-    """Adds the TEXT_MUSIC_<file> rows for the pack's titles to ModText.csv, unless they are there."""
+    """Rewrites ModText.csv's TEXT_MUSIC_TS_MUS_* rows from the pack's titles, so a retitled or removed track
+    follows; returns the number of rows written."""
     text = open(csv_path, "rb").read().decode("utf-16")
     eol = "\r\n" if "\r\n" in text else "\n"
     columns = text.splitlines()[0].count(",")
-    new = ""
-    for t in tracks:
-        key = f"TEXT_MUSIC_{t['name']}"
-        if f'"{key}"' not in text:
-            title = f"({SOURCE_TITLES[t['game']]}) {t['title']}"
-            new += f'"{key}",,,"{title}"' + "," * (columns - 3) + eol
-    if new:
-        if not text.endswith(eol):
-            text += eol
-        open(csv_path, "wb").write((text + new).encode("utf-16"))
-    return new.count(eol)
+    kept = [line for line in text.split(eol) if not line.startswith('"TEXT_MUSIC_TS_MUS_')]
+    while kept and kept[-1] == "":
+        kept.pop()
+    rows = [f'"TEXT_MUSIC_{t["name"]}",,,"({SOURCE_TITLES[t["game"]]}) {t["title"]}"' + "," * (columns - 3)
+            for t in tracks]
+    out = eol.join(kept + rows) + eol
+    if out != text:
+        open(csv_path, "wb").write(out.encode("utf-16"))
+    return len(rows)
 
 
 def main(base_path, tracks_json, out_path, csv_path):
@@ -58,7 +57,7 @@ def main(base_path, tracks_json, out_path, csv_path):
     out = raw[:close] + entries(tracks, eol) + raw[close:]
     open(out_path, "wb").write(out.encode("utf-8"))
     rows = text_rows(csv_path, tracks)
-    print(f"OK: {len(tracks)} jukebox entries -> {out_path}; {rows} new ModText rows")
+    print(f"OK: {len(tracks)} jukebox entries -> {out_path}; {rows} ModText rows")
 
 
 if __name__ == "__main__":
