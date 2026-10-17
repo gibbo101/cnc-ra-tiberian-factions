@@ -14,18 +14,6 @@
 
 namespace {
 
-struct MsvcString
-{
-    char buf[16];
-    unsigned size;
-    unsigned capacity;
-};
-
-const char* String_Chars(const MsvcString* s)
-{
-    return s->capacity >= 16 ? *(char* const*)s->buf : s->buf;
-}
-
 const SIZE_T AMBIENT_FIND_CALL = 0x169D018;
 const SIZE_T MUSIC_FIND = 0xE92A90;
 const SIZE_T LOBBY_FACTION = 0x20E0CF8;
@@ -77,7 +65,7 @@ bool TS_Music_Present(void)
     const MsvcString* const* roots = (const MsvcString* const*)MOD_ROOTS;
     for (const MsvcString* root = roots[0]; root != NULL && root < roots[1]; root++) {
         char path[MAX_PATH];
-        const char* chars = String_Chars(root);
+        const char* chars = TF_String_Chars(root);
         size_t length = root->size;
         while (length > 0 && (chars[length - 1] == '\\' || chars[length - 1] == '/')) {
             length--;
@@ -181,8 +169,9 @@ void Music_Log(const char* stock, const char* asked, bool found)
 */
 void* __fastcall Ambient_Find(void* manager, void*, const MsvcString* name)
 {
-    const char* chars = String_Chars(name);
-    if (name->size == PREFIX_LENGTH + sizeof(SKIRMISH_EVENT) - 1 && _stricmp(chars + PREFIX_LENGTH, SKIRMISH_EVENT) == 0) {
+    const char* chars = TF_String_Chars(name);
+    if (name->size == PREFIX_LENGTH + sizeof(SKIRMISH_EVENT) - 1
+        && _stricmp(chars + PREFIX_LENGTH, SKIRMISH_EVENT) == 0) {
         const char* playlist = Wanted_Playlist();
         static char text[64];
         snprintf(text, sizeof(text), "%.3s_TF_MUS_%s", chars, playlist != NULL ? playlist : "(stock)");
@@ -216,7 +205,9 @@ bool __fastcall Jukebox_Init(void* manager, void*, bool start)
         char* end = *(char**)JUKEBOX_TRACKS_END;
         char* kept = begin;
         for (char* track = begin; track != NULL && track < end; track += JUKEBOX_TRACK_SIZE) {
-            if (_strnicmp(String_Chars((const MsvcString*)(track + JUKEBOX_TRACK_FILE)), TS_TRACK_PREFIX, sizeof(TS_TRACK_PREFIX) - 1)
+            if (_strnicmp(TF_String_Chars((const MsvcString*)(track + JUKEBOX_TRACK_FILE)),
+                          TS_TRACK_PREFIX,
+                          sizeof(TS_TRACK_PREFIX) - 1)
                 == 0) {
                 for (size_t i = 0; i < ARRAY_SIZE(JUKEBOX_TRACK_STRINGS); i++) {
                     MsvcString* text = (MsvcString*)(track + JUKEBOX_TRACK_STRINGS[i]);
@@ -238,34 +229,15 @@ bool __fastcall Jukebox_Init(void* manager, void*, bool start)
     return ((JukeboxInitFn)JUKEBOX_INIT)(manager, start);
 }
 
-/*
-**	True when the `call` at `site` targets `stock_target`.
-*/
-bool Call_Ready(SIZE_T site, SIZE_T stock_target)
-{
-    unsigned char call[5] = {0xE8, 0, 0, 0, 0};
-    TF_Put_Rel32(call + 1, site + 5, stock_target);
-    return memcmp((const void*)site, call, sizeof(call)) == 0;
-}
-
-/*
-**	Points the `call` at `site` at `hook`. Call_Ready must hold.
-*/
-bool Redirect_Call(SIZE_T site, SIZE_T hook)
-{
-    unsigned char call[5] = {0xE8, 0, 0, 0, 0};
-    TF_Put_Rel32(call + 1, site + 5, hook);
-    return TF_Write_Own_Code(site, call, sizeof(call));
-}
-
 } // namespace
 
 const char* TF_Music_Install(void)
 {
-    if (!Call_Ready(AMBIENT_FIND_CALL, MUSIC_FIND) || !Call_Ready(JUKEBOX_INIT_CALL, JUKEBOX_INIT)) {
+    if (!TF_Call_Ready(AMBIENT_FIND_CALL, MUSIC_FIND) || !TF_Call_Ready(JUKEBOX_INIT_CALL, JUKEBOX_INIT)) {
         return "music: launcher calls not as expected, left alone";
     }
-    return Redirect_Call(AMBIENT_FIND_CALL, (SIZE_T)&Ambient_Find) && Redirect_Call(JUKEBOX_INIT_CALL, (SIZE_T)&Jukebox_Init)
+    return TF_Redirect_Call(AMBIENT_FIND_CALL, (SIZE_T)&Ambient_Find)
+                   && TF_Redirect_Call(JUKEBOX_INIT_CALL, (SIZE_T)&Jukebox_Init)
                ? "music installed"
                : "music: write failed";
 }

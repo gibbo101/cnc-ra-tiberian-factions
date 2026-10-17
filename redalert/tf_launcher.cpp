@@ -19,17 +19,29 @@ extern "C" {
 #include <cstring>
 #include <d3d11.h>
 
+const char* TF_String_Chars(const MsvcString* s)
+{
+    return s->capacity >= 16 ? *(char* const*)s->buf : s->buf;
+}
+
+bool TF_Call_Ready(SIZE_T site, SIZE_T stock_target)
+{
+    unsigned char call[5] = {0xE8, 0, 0, 0, 0};
+    TF_Put_Rel32(call + 1, site + 5, stock_target);
+    return memcmp((const void*)site, call, sizeof(call)) == 0;
+}
+
+bool TF_Redirect_Call(SIZE_T site, SIZE_T hook)
+{
+    unsigned char call[5] = {0xE8, 0, 0, 0, 0};
+    TF_Put_Rel32(call + 1, site + 5, hook);
+    return TF_Write_Own_Code(site, call, sizeof(call));
+}
+
 namespace {
 
 const SIZE_T WIDGET_FIND = 0xF0D980;
 const int WIDGET_SET_HIDDEN = 0x78;
-
-struct MsvcString
-{
-    char buf[16];
-    unsigned size;
-    unsigned capacity;
-};
 
 struct MsvcWString
 {
@@ -41,14 +53,6 @@ struct MsvcWString
     unsigned Size;
     unsigned Capacity;
 };
-
-/*
-**	The characters of an MSVC std::string, inline or on the heap.
-*/
-const char* String_Chars(const MsvcString* s)
-{
-    return s->capacity >= 16 ? *(char* const*)s->buf : s->buf;
-}
 
 typedef void*(__thiscall* WidgetFindFn)(void* scene, const MsvcString* name);
 typedef void*(__thiscall* AsWidgetFn)(void* owner, int zero, void* widget);
@@ -122,26 +126,6 @@ bool Detour(SIZE_T function, const unsigned char* stock, size_t length, SIZE_T c
     jump[0] = 0xE9;
     TF_Put_Rel32(jump + 1, function + 5, hook);
     return TF_Write_Own_Code(cave, trampoline, length + 5) && TF_Write_Own_Code(function, jump, length);
-}
-
-/*
-**	True when the `call` at `site` targets `stock_target`.
-*/
-bool Call_Ready(SIZE_T site, SIZE_T stock_target)
-{
-    unsigned char call[5] = {0xE8, 0, 0, 0, 0};
-    TF_Put_Rel32(call + 1, site + 5, stock_target);
-    return memcmp((const void*)site, call, sizeof(call)) == 0;
-}
-
-/*
-**	Points the `call` at `site` at `hook`. Call_Ready must hold.
-*/
-bool Redirect_Call(SIZE_T site, SIZE_T hook)
-{
-    unsigned char call[5] = {0xE8, 0, 0, 0, 0};
-    TF_Put_Rel32(call + 1, site + 5, hook);
-    return TF_Write_Own_Code(site, call, sizeof(call));
 }
 
 /*
@@ -395,7 +379,7 @@ const char* Campaign_Page_Install(void)
     static const unsigned char select_stock[6] = {0x55, 0x8B, 0xEC, 0x56, 0x8B, 0xF1};
     static const unsigned char tab_stock[7] = {0x55, 0x8B, 0xEC, 0x51, 0x8B, 0x45, 0x08};
     static const unsigned char label_stock[9] = {0x55, 0x8B, 0xEC, 0x81, 0xEC, 0x84, 0x01, 0x00, 0x00};
-    if (!Call_Ready(EXPANSION_ALLIED_CALL, IS_ALLIED_SIDE) || !Call_Ready(EXPANSION_SOVIET_CALL, IS_SOVIET_SIDE)
+    if (!TF_Call_Ready(EXPANSION_ALLIED_CALL, IS_ALLIED_SIDE) || !TF_Call_Ready(EXPANSION_SOVIET_CALL, IS_SOVIET_SIDE)
         || memcmp((const void*)ROW_STYLE_BRANCH, style_stock, sizeof(style_stock)) != 0
         || !Detour_Ready(ROW_SELECT, select_stock, sizeof(select_stock), SELECT_CAVE)
         || !Detour_Ready(TAB_SWITCH, tab_stock, sizeof(tab_stock), TAB_CAVE)
@@ -405,8 +389,8 @@ const char* Campaign_Page_Install(void)
     unsigned char style[14] = {0x8B, 0xD3, 0x8B, 0xCF, 0xE8, 0, 0, 0, 0, 0xE9, 0, 0, 0, 0};
     TF_Put_Rel32(style + 5, ROW_STYLE_BRANCH + 9, (SIZE_T)&Row_Style);
     TF_Put_Rel32(style + 10, ROW_STYLE_BRANCH + 14, ROW_STYLE_DONE);
-    if (!Redirect_Call(EXPANSION_ALLIED_CALL, (SIZE_T)&Expansion_Allied_Side)
-        || !Redirect_Call(EXPANSION_SOVIET_CALL, (SIZE_T)&Expansion_Soviet_Side)
+    if (!TF_Redirect_Call(EXPANSION_ALLIED_CALL, (SIZE_T)&Expansion_Allied_Side)
+        || !TF_Redirect_Call(EXPANSION_SOVIET_CALL, (SIZE_T)&Expansion_Soviet_Side)
         || !TF_Write_Own_Code(ROW_STYLE_BRANCH, style, sizeof(style))
         || !Detour(ROW_SELECT, select_stock, sizeof(select_stock), SELECT_CAVE, (SIZE_T)&Row_Select)
         || !Detour(TAB_SWITCH, tab_stock, sizeof(tab_stock), TAB_CAVE, (SIZE_T)&Tab_Switch)
@@ -636,7 +620,7 @@ PackState Listed_State(const char* marker)
     if (mm != NULL) {
         char* last = *(char**)(mm + 0x1C);
         for (char* r = *(char**)(mm + 0x18); r != NULL && r < last; r += MOD_RECORD_SIZE) {
-            if (Has_Pack_Marker(String_Chars((const MsvcString*)(r + MOD_FOLDER)), marker)) {
+            if (Has_Pack_Marker(TF_String_Chars((const MsvcString*)(r + MOD_FOLDER)), marker)) {
                 PackState found = *(const unsigned char*)(r + MOD_ENABLED) ? PACK_ON_NEXT_START : PACK_INSTALLED_OFF;
                 state = found < state ? found : state;
             }
@@ -655,9 +639,9 @@ PackState Pack_State(int pack)
     if (!IsBadReadPtr(roots, sizeof(*roots)) && roots->First != NULL && roots->Last >= roots->First
         && roots->Last - roots->First < 64) {
         for (const MsvcString* root = roots->First; root < roots->Last; root++) {
-            if (Has_Pack_Marker(String_Chars(root), marker)) {
+            if (Has_Pack_Marker(TF_String_Chars(root), marker)) {
                 char path[MAX_PATH];
-                snprintf(path, sizeof(path), "%s\\%s", String_Chars(root), marker);
+                snprintf(path, sizeof(path), "%s\\%s", TF_String_Chars(root), marker);
                 int high = -1, low = -1;
                 bool current = PACKS[pack].NeededFor == NULL
                                || (TF_Read_Pack_Marker(path, &high, &low) && TF_Pack_Version_Current(high, low));
@@ -1049,7 +1033,7 @@ void Enable_Packs(unsigned packs)
         }
         char* last = *(char**)(mm + 0x1C);
         for (char* r = *(char**)(mm + 0x18); r != NULL && r < last; r += MOD_RECORD_SIZE) {
-            if (Has_Pack_Marker(String_Chars((const MsvcString*)(r + MOD_FOLDER)), PACKS[pack].Marker)) {
+            if (Has_Pack_Marker(TF_String_Chars((const MsvcString*)(r + MOD_FOLDER)), PACKS[pack].Marker)) {
                 ((SetModEnabledFn)SET_MOD_ENABLED)(mm, *(const DWORD*)(r + MOD_ID), 1);
                 break;
             }
@@ -1091,7 +1075,7 @@ void Disable_Packs(unsigned packs)
         PackQueued[pack] = false;
         char* last = *(char**)(mm + 0x1C);
         for (char* r = *(char**)(mm + 0x18); r != NULL && r < last; r += MOD_RECORD_SIZE) {
-            if (Has_Pack_Marker(String_Chars((const MsvcString*)(r + MOD_FOLDER)), PACKS[pack].Marker)) {
+            if (Has_Pack_Marker(TF_String_Chars((const MsvcString*)(r + MOD_FOLDER)), PACKS[pack].Marker)) {
                 ((SetModEnabledFn)SET_MOD_ENABLED)(mm, *(const DWORD*)(r + MOD_ID), 0);
             }
         }
@@ -2381,7 +2365,7 @@ void Open_Encyclopedia(void)
     const MsvcStringVector* roots = (const MsvcStringVector*)MOD_ROOTS;
     if (!IsBadReadPtr(roots, sizeof(*roots)) && roots->First != NULL && roots->Last - roots->First < 64) {
         for (const MsvcString* root = roots->First; root < roots->Last; root++) {
-            TF_Encyclopedia_Add_Root(String_Chars(root));
+            TF_Encyclopedia_Add_Root(TF_String_Chars(root));
         }
     }
     if (!TF_Encyclopedia_Load()) {
@@ -2571,7 +2555,7 @@ SaveCheck Listed_Save_Check(const char* name)
 void __stdcall Load_Map_Checked(DWORD* regs)
 {
     const MsvcString* file = (const MsvcString*)(regs[1] + ENTRY_FILE);
-    SaveCheck check = Listed_Save_Check(String_Chars(file));
+    SaveCheck check = Listed_Save_Check(TF_String_Chars(file));
     SaveRefused = check != SAVE_LOADABLE ? 1 : 0;
     SaveRefusedText = check == SAVE_NEEDS_PACK ? SaveNeedsPackText : SaveOtherVersionText;
     SaveRefusedLength = (DWORD)strlen(SaveRefusedText);
@@ -2756,7 +2740,7 @@ bool Handoff_Path(char* out, size_t size)
 */
 char __fastcall Launch_Send(void* ipc, void*, const MsvcString* name, void* settings, int mode, int a, int b)
 {
-    bool swap = !IsBadReadPtr(name, sizeof(*name)) && name->size < 128 && strncmp(String_Chars(name), "TF_", 3) == 0;
+    bool swap = !IsBadReadPtr(name, sizeof(*name)) && name->size < 128 && strncmp(TF_String_Chars(name), "TF_", 3) == 0;
     CarrierSession = false;
     if (!swap) {
         return ((LaunchSendFn)LAUNCH_SEND)(ipc, name, settings, mode, a, b);
@@ -2782,7 +2766,7 @@ char __fastcall Launch_Send(void* ipc, void*, const MsvcString* name, void* sett
     if (!sent && Handoff_Path(handoff, sizeof(handoff))) {
         DeleteFileA(handoff);
     }
-    CarrierLaunchedKey = Name_Key(String_Chars(name));
+    CarrierLaunchedKey = Name_Key(TF_String_Chars(name));
     return sent;
 }
 
@@ -2836,12 +2820,13 @@ const char* Carrier_Install(void)
 {
     static const unsigned char lookup_stock[6] = {0x55, 0x8B, 0xEC, 0x56, 0x8B, 0xF1};
     static const unsigned char stage_stock[7] = {0x8B, 0x47, 0x78, 0x80, 0x78, 0x70, 0x00};
-    if (!Call_Ready(LAUNCH_SEND_CALL, LAUNCH_SEND) || !Call_Ready(CAMPAIGN_OVER_CALL, MENU_RETURN)
+    if (!TF_Call_Ready(LAUNCH_SEND_CALL, LAUNCH_SEND) || !TF_Call_Ready(CAMPAIGN_OVER_CALL, MENU_RETURN)
         || !Snapshot_Ready(KEY_LOOKUP, lookup_stock, sizeof(lookup_stock), KEY_LOOKUP_CAVE)
         || !Snapshot_Ready(STAGE_CHECK, stage_stock, sizeof(stage_stock), STAGE_CHECK_CAVE)) {
         return "carrier: unknown launcher build, left alone";
     }
-    if (!Redirect_Call(LAUNCH_SEND_CALL, (SIZE_T)&Launch_Send) || !Redirect_Call(CAMPAIGN_OVER_CALL, (SIZE_T)&Campaign_Over)
+    if (!TF_Redirect_Call(LAUNCH_SEND_CALL, (SIZE_T)&Launch_Send)
+        || !TF_Redirect_Call(CAMPAIGN_OVER_CALL, (SIZE_T)&Campaign_Over)
         || !Snapshot_Hook(KEY_LOOKUP, lookup_stock, sizeof(lookup_stock), KEY_LOOKUP_CAVE, (SIZE_T)&Key_Lookup_Hit)
         || !Snapshot_Hook(STAGE_CHECK, stage_stock, sizeof(stage_stock), STAGE_CHECK_CAVE, (SIZE_T)&Stage_Check_Hit)) {
         return "carrier: write failed";
