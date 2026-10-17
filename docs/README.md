@@ -80,7 +80,7 @@ sections, and `package-for-workshop.sh` runs it.
 - `td-audio-routing-recipe.md` — routing a sound from the DLL to the launcher; sample formats.
 - `building-sound-routing.md` — TD building, credit and UI sounds for GDI and Nod.
 - `eva-ram-patch-spike.md` — EVA lines that follow the faction.
-- `faction-music-feasibility.md` — skirmish and menu music; why per-faction music is dead.
+- `skirmish-music.md` — skirmish, jukebox and menu music: the playlists, music by faction, the TS-Music pack.
 
 ### Launcher and front end
 - `launcher-vs-dll-ownership.md` — the launcher/DLL boundary map.

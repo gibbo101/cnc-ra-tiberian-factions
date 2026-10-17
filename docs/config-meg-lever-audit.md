@@ -184,11 +184,11 @@ player-facing surface nobody has used.
 
 ## Tier 3 — confirmed dead, do not re-chase
 
-- **`AUDIO_FACTIONS.XML` independently confirms the per-faction music finding.** It defines
+- **`AUDIO_FACTIONS.XML`'s `<MusicMap>` is not a route to music by faction.** It defines
   `<SFXMap>`, `<MusicMap>`, `<SpeechMap>` per faction and carries EA's own comment: *"We are not
   using these for C&C TD / RA, since we need to account for each game and SFX asset mode (Classic
-  or Remastered)"*. Only `Faction1` exists and it is empty. `faction-music-feasibility.md`'s
-  tested-dead conclusion now has a documentary reason behind it.
+  or Remastered)"*. Only `Faction1` exists and it is empty. Music by faction ships through a launcher
+  hook instead (`skirmish-music.md`).
 - **`CNCTDSupportMegamaps` = false** looks like it unlocks big maps; it does not. TD-scoped, and
   it enables TD's 128×128 megamaps — the cap RA already runs at. It explains why TD's 64×64 build
   carries the same `MAX_EXPORT_CELLS (128*128)`, which is the evidence `megamaps-feasibility.md`
