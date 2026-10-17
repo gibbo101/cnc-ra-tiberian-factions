@@ -40,6 +40,8 @@ the workspace `../CLAUDE.md`.
   on our free functions and globals. Python follows PEP 8.
 - DRY within our code: use an existing helper before writing one, and two TF blocks doing
   the same job share a helper. EA and VC duplication stays as it is.
+- The repo's own `min`/`max` (`jshell.h`) take ints: floats passed through them are
+  truncated without a warning. Float code uses `std::min`/`std::max` or its own templates.
 
 ## Dead code
 - No commented-out code and no `#if 0` blocks in our code. Delete it; git keeps it.
