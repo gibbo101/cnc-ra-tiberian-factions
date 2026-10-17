@@ -8,6 +8,7 @@
 #include "tf_music.h"
 #include "tf_launcher.h"
 
+#include <cctype>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -63,7 +64,11 @@ const FactionMusic FACTION_MUSIC[] = {{NULL, NULL},
 bool TS_Music_Present(void)
 {
     const MsvcString* const* roots = (const MsvcString* const*)MOD_ROOTS;
-    for (const MsvcString* root = roots[0]; root != NULL && root < roots[1]; root++) {
+    if (IsBadReadPtr(roots, 2 * sizeof(*roots)) || roots[0] == NULL || roots[1] < roots[0]
+        || roots[1] - roots[0] >= 64) {
+        return false;
+    }
+    for (const MsvcString* root = roots[0]; root < roots[1]; root++) {
         char path[MAX_PATH];
         const char* chars = TF_String_Chars(root);
         size_t length = root->size;
@@ -92,6 +97,12 @@ void Music_Setting(const char* key, const char* fallback, char* value, DWORD siz
     char path[MAX_PATH];
     snprintf(path, sizeof(path), "%s\\Documents\\CnCRemastered\\tf_music.ini", up);
     GetPrivateProfileStringA("Music", key, fallback, value, size, path);
+    char* end = strchr(value, ';');
+    end = (end != NULL) ? end : value + strlen(value);
+    while (end > value && isspace((unsigned char)end[-1])) {
+        end--;
+    }
+    *end = '\0';
 }
 
 /*
