@@ -7,8 +7,9 @@ optional TS-Music pack (Tiberian Sun and Firestorm's in-game themes).
 ## What ships
 
 - **Menu:** the Hell March Retaliation remix, fading in after the startup intro.
-- **Skirmish, Mix (the default):** every remastered RA track, the remastered TD tracks minus excluded cues,
-  and the RA and TD bonus tracks, randomised; with TS-Music enabled, its 26 tracks join.
+- **Skirmish, Mix (the default):** the mod's RA and TD rotation for the player's audio setting, randomised. On
+  Remastered that is every remastered RA track and the remastered TD tracks minus menu cues and score stingers;
+  Classic and Bonus keep their own rotations. With TS-Music enabled, its 26 tracks join.
 - **Skirmish, by setting:** Red Alert only, Tiberian Dawn only, Tiberian Sun only, or Faction, where each
   faction plays its own choice (by default RA for Allies and Soviets, TD for GDI and Nod, TS for TS GDI).
 - **Jukebox:** TS-Music's tracks listed as "(Tiberian Sun) <title>" and "(Firestorm) <title>", under the
@@ -29,7 +30,7 @@ Any choice that needs TS-Music while it is off plays the Mix rotation without it
 `scripts/build_config_meg.sh` writes both loose XML files beside CONFIG.MEG. `ts_music_build.py` extracts the
 themes from an installed Tiberian Sun (`SCORES.MIX`, `SCORES01.MIX`, titles from `THEME.INI` and
 `THEME01.INI`), skips the menu and score themes (`Normal=no`), and converts each to the format Remastered's
-music uses: 44.1 kHz stereo MS-ADPCM, at the stock tracks' level.
+music uses: 44.1 kHz stereo MS-ADPCM. The tracks already sit at the stock tracks' level, so none is adjusted.
 
 ## Settings
 
@@ -37,7 +38,8 @@ music uses: 44.1 kHz stereo MS-ADPCM, at the stock tracks' level.
 
 ```ini
 [Music]
-Soundtrack=MIX        ; MIX, FACTION, RA, TD or TS
+; Soundtrack is MIX, FACTION, RA, TD or TS; each faction's key is RA, TD, TS or MIX
+Soundtrack=MIX
 Allies=RA
 Soviets=RA
 GDI=TD
@@ -45,7 +47,7 @@ Nod=TD
 TSGDI=TS
 ```
 
-An unset key keeps its default.
+An unset key keeps its default, and an inline `;` comment after a value is ignored.
 
 ## How the launcher picks the music
 
@@ -86,8 +88,7 @@ its `<Game>` and `<TrackType>` match the player's filter checkboxes, not their a
 - **The data route doesn't exist.** `AUDIO_FACTIONS.XML`'s `<MusicMap>` is never consulted for TD or RA, and the
   DLL's `ThemeClass` is inert in the remaster build (`soundio_null.cpp`). Music by faction needs the launcher
   hook.
-- **When testing a music change**, check the deployed files' md5: a parallel deploy once overwrote a probe and
-  gave a false reading.
+- **When testing a music change**, check the deployed files' md5s: another session's deploy can replace them.
 
 ## Cross-references
 - `asset-packs.md`: the TS-Music pack among the others.
