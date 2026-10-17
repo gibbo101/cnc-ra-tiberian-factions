@@ -14,6 +14,7 @@ scripts/stage_asset_packs.py builds the required packs beside the staged mod the
 
 License: GPL v3.
 """
+import hashlib
 import json
 import os
 import re
@@ -207,9 +208,36 @@ def host_section(title, host):
     return f"Terrain ({theatre.lower()})" if theatre else None
 
 
+def music_readme(mod, host):
+    """A music pack's README.md: what it is, how Tiberian Factions and other mods play it, and credits."""
+    w = A.WORKSHOP[mod]
+    h = A.HOSTS[host]
+    lines = [f"# {w['name']}", "", w["description"].format(host=h["name"]) +
+             " Built for Command & Conquer Remastered Collection.", "",
+             "This is an asset pack: on its own it adds nothing to the game. A mod has to use it.", "",
+             "## Playing Tiberian Factions", "",
+             f"With this pack enabled beside [Tiberian Factions]({TF_URL}), its tracks join the skirmish music and "
+             "the jukebox. Without it, Tiberian Factions plays its usual music.", "",
+             "## Using the music in your own mod", "",
+             "Enable this pack beside your mod: the game finds its WAVs in any enabled mod. Name them in your mod's "
+             "`Data/XML/AUDIO/MUSICEVENTS.XML` playlists, and for the jukebox add an entry per track to "
+             "`<MusicJukeboxTracksList>` in `AUDIO_SYSTEM_CONSTANTS.XML`, with its title in your `ModText.csv`.", ""]
+    if w.get("contents"):
+        lines += ["## Contents", ""] + [f"- {line}" for line in w["contents"]] + [""]
+    lines += ["## Files", ""]
+    for title, names in contents(mod).items():
+        lines += [f"**{title}** ({len(names)}): " + ", ".join(names), ""]
+    lines += ["## Credits", "", f"Original {GAME[w['game']]} and Firestorm music: Westwood Studios and Electronic Arts.",
+              "Converted for Remastered by gibbo101. The scripts that build this pack were written with AI assistance.",
+              "", "## My other C&C projects", ""] + [f"- {m}" for m in D.more_mods(mod)] + [""]
+    return "\n".join(lines)
+
+
 def readme(mod, listed, host):
     """The pack's README.md: what it is, how players and modders use it, contents and credits."""
     w = A.WORKSHOP[mod]
+    if w.get("kind") == "music":
+        return music_readme(mod, host)
     h = A.HOSTS[host]
     game = GAME[w["game"]]
     lines = [f"# {w['name']}", "", w["description"].format(host=h["name"]) +
@@ -365,10 +393,29 @@ def prune(folder, sub, keep):
             os.rmdir(d)
 
 
+def check_md5(mod, folder):
+    """Stop unless every file the mod's md5 list names is in the built folder with that checksum; a pack whose
+    files are gitignored would otherwise ship empty."""
+    listing = A.WORKSHOP[mod].get("md5")
+    if not listing:
+        return
+    music = os.path.join(folder, "Data", "AUDIO", "MUSIC")
+    bad = []
+    for line in open(os.path.join(A.REPO, listing)):
+        digest, name = line.split()
+        path = os.path.join(music, name)
+        if not os.path.exists(path) or hashlib.md5(open(path, "rb").read()).hexdigest() != digest:
+            bad.append(name)
+    if bad:
+        raise SystemExit(f"{folder}: {len(bad)} file(s) missing or not as {listing} lists them, e.g. {bad[0]}. "
+                         "Build them first (scripts/ts_music_build.py).")
+
+
 def build(mod, folder, host="RA"):
     """The whole Workshop folder for one asset-pack mod, for one game, and nothing an earlier build left."""
     marker = write_manifest(mod, folder, host)
     copy_binaries(mod, folder, host)
+    check_md5(mod, folder)
     listed, written = write_xml(mod, folder, host)
     prune(folder, os.path.join("Data", "XML"), written)
     prune(folder, "CCDATA", [marker] if marker else [])
