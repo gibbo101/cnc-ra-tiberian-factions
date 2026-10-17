@@ -49,10 +49,25 @@ typedef bool(__thiscall* JukeboxInitFn)(void* manager, bool start);
 typedef void(__cdecl* ClientFreeFn)(void* block);
 
 /*
-**	The playlist each lobby faction value plays under the Faction setting: the lobby value is the
-**	country row plus two (GDI, Nod, Soviet, Allies, then the duplicate rows, TS GDI on Germany's).
+**	Each lobby faction value's key in tf_music.ini and its soundtrack by default: the lobby value is
+**	the country row plus two (GDI, Nod, Soviets, Allies, then the duplicate rows, TS GDI on Germany's).
 */
-const char* const FACTION_LISTS[] = {NULL, NULL, "TD", "TD", "RA", "RA", "RA", "TS", "RA", "RA"};
+struct FactionMusic
+{
+    const char* Key;
+    const char* Default;
+};
+
+const FactionMusic FACTION_MUSIC[] = {{NULL, NULL},
+                                      {NULL, NULL},
+                                      {"GDI", "TD"},
+                                      {"Nod", "TD"},
+                                      {"Soviets", "RA"},
+                                      {"Allies", "RA"},
+                                      {"Soviets", "RA"},
+                                      {"TSGDI", "TS"},
+                                      {"Allies", "RA"},
+                                      {"Allies", "RA"}};
 
 /*
 **	True when an enabled mod supplies the TS-Music pack's tracks, so the launcher can play them.
@@ -76,56 +91,61 @@ bool TS_Music_Present(void)
 }
 
 /*
-**	The player's soundtrack setting (FACTION, MIX, RA, TD or TS) from Documents/CnCRemastered/
-**	tf_music.ini, MIX when unset.
+**	A key of the [Music] section of Documents/CnCRemastered/tf_music.ini, which the Settings page
+**	writes, or `fallback` when it is unset.
 */
-void Read_Soundtrack(char* setting, size_t size)
+void Music_Setting(const char* key, const char* fallback, char* value, DWORD size)
 {
-    snprintf(setting, size, "MIX");
+    snprintf(value, size, "%s", fallback);
     const char* up = getenv("USERPROFILE");
     if (up == NULL) {
         return;
     }
-    char path[512];
-    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_music.ini", up);
-    FILE* file = fopen(path, "r");
-    if (file == NULL) {
-        return;
-    }
-    char line[64];
-    char value[16];
-    while (fgets(line, sizeof(line), file) != NULL) {
-        if (sscanf(line, "Soundtrack=%15s", value) == 1) {
-            snprintf(setting, size, "%s", value);
-        }
-    }
-    fclose(file);
+    char path[MAX_PATH];
+    snprintf(path, sizeof(path), "%s\\Documents\\CnCRemastered\\tf_music.ini", up);
+    GetPrivateProfileStringA("Music", key, fallback, value, size, path);
 }
 
 /*
-**	The TF playlist to ask for (RA, TD, TS or MIX), or NULL to keep the stock rotation, which is
-**	also what MIX falls back to without the TS music.
+**	The TF playlist a soundtrack choice (RA, TD, TS or MIX) asks for, or NULL to keep the stock
+**	rotation, which is also what a choice needing the missing TS music gets.
+*/
+const char* Playlist_For(const char* choice, bool ts)
+{
+    if (_stricmp(choice, "RA") == 0) {
+        return "RA";
+    }
+    if (_stricmp(choice, "TD") == 0) {
+        return "TD";
+    }
+    if (_stricmp(choice, "TS") == 0) {
+        return ts ? "TS" : NULL;
+    }
+    if (_stricmp(choice, "MIX") == 0) {
+        return ts ? "MIX" : NULL;
+    }
+    return NULL;
+}
+
+/*
+**	The TF playlist for this skirmish: the Soundtrack setting (MIX by default), or under FACTION
+**	the lobby faction's own choice.
 */
 const char* Wanted_Playlist(void)
 {
     char setting[16];
-    Read_Soundtrack(setting, sizeof(setting));
+    Music_Setting("Soundtrack", "MIX", setting, sizeof(setting));
     bool ts = TS_Music_Present();
+    if (_stricmp(setting, "FACTION") != 0) {
+        return Playlist_For(setting, ts);
+    }
     int faction = *(const int*)LOBBY_FACTION;
-    const char* by_faction = (faction >= 0 && faction < (int)ARRAY_SIZE(FACTION_LISTS)) ? FACTION_LISTS[faction] : NULL;
-    if (_stricmp(setting, "RA") == 0) {
-        return "RA";
+    if (faction < 0 || faction >= (int)ARRAY_SIZE(FACTION_MUSIC) || FACTION_MUSIC[faction].Key == NULL) {
+        return NULL;
     }
-    if (_stricmp(setting, "TD") == 0) {
-        return "TD";
-    }
-    if (_stricmp(setting, "MIX") == 0) {
-        return ts ? "MIX" : NULL;
-    }
-    if (_stricmp(setting, "TS") == 0 && ts) {
-        return "TS";
-    }
-    return (by_faction != NULL && (strcmp(by_faction, "TS") != 0 || ts)) ? by_faction : NULL;
+    char choice[16];
+    Music_Setting(FACTION_MUSIC[faction].Key, FACTION_MUSIC[faction].Default, choice, sizeof(choice));
+    return Playlist_For(choice, ts);
 }
 
 #if TF_DEV_BUILD
