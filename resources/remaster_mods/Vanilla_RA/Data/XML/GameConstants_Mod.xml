@@ -43,5 +43,15 @@
             <ZoomFactor>1.975</ZoomFactor>
         </CNCZoomFactors>
 
+        <!-- The terrain tileset of each theatre the DLL reports: RA's three, then TD's (docs/td-base-art.md). -->
+        <CNCRATheaterTilesets network="client" overwrite="true">
+            <Tileset></Tileset>
+            <Tileset>RA_Terrain_Snow</Tileset>
+            <Tileset>RA_Terrain_Interior</Tileset>
+            <Tileset>TD_Terrain_Desert</Tileset>
+            <Tileset>TD_Terrain_Temperate</Tileset>
+            <Tileset>TD_Terrain_Winter</Tileset>
+        </CNCRATheaterTilesets>
+
     </GameConstantsClass>
 </GameConstants>
