@@ -87,6 +87,9 @@ Picking TS GDI for any slot, or a slot taking it from the lobby's settings, rais
 pack isn't loaded. **GO TO ADD-ONS** leaves the lobby through its own Back handler (`0x71C790`, on the next UI
 tick) and opens the ADD-ONS screen with the pack selected. The box reports its first button as 2 and OK as 3.
 
+The launcher's own join check needs every player on the same enabled mods, add-ons included: a joiner with an
+add-on the host lacks gets MODS REQUIRED, "Must Disable", for it. An optional add-on is per player only alone.
+
 ## Load Game check
 
 The DLL writes `TFS2`, its save version and a flags word (bit 1: the TS-HD pack was on) first in its save data,

@@ -3,7 +3,7 @@
 **Status:** Reference. The mod's skirmish, jukebox and menu music: TF's playlists, music by faction, and the
 optional TS-Music pack (Tiberian Sun and Firestorm's in-game themes).
 **Open:** TS-Music is a Friends Only Workshop item (3822605221) until it goes public; a Random lobby pick plays
-Mix whatever the faction's choice; LAN is untested (each player's own faction at `0x20E0CF8`).
+Mix whatever the faction's choice.
 
 ## What ships
 
@@ -12,11 +12,13 @@ Mix whatever the faction's choice; LAN is untested (each player's own faction at
   Remastered that is every remastered RA track and the remastered TD tracks minus menu cues and score stingers;
   Classic and Bonus keep their own rotations. With TS-Music enabled, its 26 tracks join.
 - **Skirmish, by faction:** each faction plays its own choice of Mix, Red Alert only, Tiberian Dawn only or
-  Tiberian Sun only, so Allies can play Red Alert's tracks while GDI plays Tiberian Dawn's.
+  Tiberian Sun only, so Allies can play Red Alert's tracks while GDI plays Tiberian Dawn's. In a LAN game each
+  player hears their own faction's choice, from their own settings (each machine's pick at `0x20E0CF8`).
 - **Jukebox:** TS-Music's tracks listed as "(Tiberian Sun) <title>" and "(Firestorm) <title>", under the
   Red Alert game and Remastered track filters. They are listed only while TS-Music is enabled.
 
-Any choice that needs TS-Music while it is off plays the Mix rotation without it.
+Any choice that needs TS-Music while it is off plays the Mix rotation without it. A match needs every player on
+the same enabled mods, so in multiplayer TS-Music is on for everyone or no one (`pack-panel.md`).
 
 ## Files
 
