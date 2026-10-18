@@ -292,7 +292,6 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   spread (Easy Firepower 1.2 / Armor 1.2 / ROF .8 / Cost .8), and difficulty is meant to be
   behavioural only. Check whether `Scen.CDifficulty` feeds `Rule.Diff[]` in skirmish.
 - **Co-op missions** (`coop-missions-design.md`).
-- **The TD maps as their own Workshop item** (`parked/td-maps/README.md`).
 
 ## Decided: not doing
 

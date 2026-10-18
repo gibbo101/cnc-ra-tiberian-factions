@@ -113,7 +113,6 @@ sections, and `package-for-workshop.sh` runs it.
 ### Maps, campaign and co-op
 - `official-map-hybrids.md` — official maps as Tiberium/Ore hybrids.
 - `official-map-hybrids-list.md` — the generated list of every map.
-- `td-skirmish-map-import.md` — the converted TD maps (parked).
 - `campaigns-page.md` — the CAMPAIGNS page: tabs, crests, COMING SOON, adding missions to a tab.
 - `campaign-tabs-research.md` — the Mission Select pipeline and hijacked slots.
 - `gdi-nod-campaign-story.md` — the GDI and Nod campaign story.

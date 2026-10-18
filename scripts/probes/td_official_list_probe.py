@@ -8,14 +8,17 @@ dev builds) sends entry 9NN to the server as Hastings' D6 entry, whose client en
 import json
 import os
 import re
+import subprocess
 import sys
+import tempfile
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+import td_map_to_ra  # noqa: E402
 from meg_extract import read_member  # noqa: E402
 
 REPO = os.path.join(os.path.dirname(__file__), "..", "..")
 GAME = os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered/Data")
-SAND_TRAP = os.path.join(REPO, "parked/td-maps/CustomMaps/UGC_F1BE000000000013_0000000000000013_MAPDATA")
+TD_GENERAL = os.path.join(GAME, "CNCDATA/TIBERIAN_DAWN/CD1/GENERAL.MIX")
 CARRIER = "Mobius_Red_Alert_Multiplayer_D6_Map"
 
 
@@ -28,7 +31,17 @@ def preview(text, name):
     return re.search(r'(\s*<INIData Name="%s">.*?</INIData>)' % re.escape(name.upper()), text, re.S).group(1)
 
 
+def sand_trap(work):
+    """Sand Trap (TD's scm02ea) converted from TD's own files: the .mpr path, without its extension."""
+    for ext in (".ini", ".bin"):
+        subprocess.run([sys.executable, os.path.join(REPO, "scripts/mix_tools.py"), "extract", TD_GENERAL,
+                        "scm02ea" + ext, work], check=True, stdout=subprocess.DEVNULL)
+    td_map_to_ra.convert(os.path.join(work, "scm02ea.ini"), os.path.join(work, "sand_trap.mpr"), "Sand Trap")
+    return os.path.join(work, "sand_trap")
+
+
 def main(mod):
+    sand_map = sand_trap(tempfile.mkdtemp())
     data = os.path.join(mod, "Data")
     inst = open(os.path.join(REPO, "resources/remaster_mods/Vanilla_RA/Data/XML/INSTANCES.XML"),
                 encoding="utf-8", newline="").read()
@@ -46,7 +59,7 @@ def main(mod):
     open(os.path.join(data, "XML/INSTANCES.XML"), "w", encoding="utf-8", newline="").write(inst)
 
     pv = read_member(os.path.join(GAME, "CONFIG.MEG"), "DATA\\XML\\CNCMAPPREVIEWDATA.XML").decode("latin-1")
-    sj = json.load(open(SAND_TRAP + ".JSON"))
+    sj = json.load(open(sand_map + ".json"))
     starts = "".join("\n\t\t\t\t\t<Entry>%d</Entry>" % w for w in sj["Waypoints"][:4])
     sand_pv = ('\n\t\t\t<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_902_MAP">\n\t\t\t\t<MapTileX>%d</MapTileX>\n'
                "\t\t\t\t<MapTileY>%d</MapTileY>\n\t\t\t\t<MapTileWidth>%d</MapTileWidth>\n"
@@ -63,8 +76,7 @@ def main(mod):
     open(os.path.join(srgb, "MOBIUS_RED_ALERT_MULTIPLAYER_990_MAP.DDS"), "wb").write(
         open(os.path.join(srgb, CARRIER.upper() + ".DDS"), "rb").read())
 
-    ini = open(SAND_TRAP + ".MPR", encoding="latin-1", newline="").read()
-    ini = re.sub(r"^Theater=Interior", "Theater=Desert", ini, count=1, flags=re.M)
+    ini = open(sand_map + ".mpr", encoding="latin-1", newline="").read()
     open(os.path.join(mod, "CCDATA/TFTD902.INI"), "w", encoding="latin-1", newline="").write(ini)
     print("entries 902 (Sand Trap) and 990 (Hastings); carrier client entry hidden")
 
