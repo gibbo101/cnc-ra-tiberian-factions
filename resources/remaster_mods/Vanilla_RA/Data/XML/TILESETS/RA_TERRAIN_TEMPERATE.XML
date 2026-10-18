@@ -31518,10 +31518,6 @@
 					</Frames>
 				</Value>
 			</Tile>
-<!-- TF_TD_TILES xml BEGIN -->
-<!-- TF_TD_TILES xml END -->
-<!-- TF_WINTER_TREES xml BEGIN -->
-<!-- TF_WINTER_TREES xml END -->
 			<!-- asset-pack: TS-HD-Graphics-Pack -->
 </Tiles>
 	</TilesetTypeClass>

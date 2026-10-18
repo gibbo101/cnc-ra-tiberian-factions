@@ -81,14 +81,6 @@ THEATRES = [
 # Last field = which RA theatre dirs the asset ships in (None = all).
 ASSETS = [
     ("TIB01", "tib01", "TI1", 12, "zip", None),
-    # Desert building bibs: interior ships NO native bib art (the engine skips
-    # the bib smudge entirely when classic data is NULL), so the bib assets
-    # are ADDED to the interior slot under the native BIB* names -- classic
-    # .INT iconsets staged by build_tfassets.sh make the engine emit the
-    # smudge entries, and these HD tiles let the launcher resolve them.
-    ("BIB1", "bib1", "BIB1", 8, "zip", {"INTERIOR"}),
-    ("BIB2", "bib2", "BIB2", 6, "zip", {"INTERIOR"}),
-    ("BIB3", "bib3", "BIB3", 4, "zip", {"INTERIOR"}),
     # Blossom tree (TERRAIN_TDBLOSSOM, IniName SPLIT2) -- 55-frame bloom lifecycle.
     # DISABLED: HD custom *terrain* art isn't deliverable on our stack; the
     # blossom ships as a BUILDING instead (STRUCT_TDBLOSSOM).
