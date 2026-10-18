@@ -113,14 +113,15 @@ def shortened(readme, titles=""):
 def description_of(item, readme):
     """The Workshop description: the README without its per-object sections (shape data, frame layouts, file lists),
     which grow with the pack and stay in the README in the item's folder."""
-    page, _ = section(readme, "Shape data")
+    page, shapes = section(readme, "Shape data")
     page, _ = section(page, "Frame layout")
     if "\n## Contents\n" in page:
         page, _ = section(page, "Files")
-    note = ("## Shape data\n\nThe classic sizes and frame counts of every object, the frame layouts and every file "
-            "in the pack are in the README in the pack's folder.\n\n")
-    head, _, tail = page.partition("## AI disclosure")
-    page = head + note + "## AI disclosure" + tail
+    if shapes:
+        note = ("## Shape data\n\nThe classic sizes and frame counts of every object, the frame layouts and every "
+                "file in the pack are in the README in the pack's folder.\n\n")
+        head, _, tail = page.partition("## AI disclosure")
+        page = head + note + "## AI disclosure" + tail
     for candidate in (page, shortened(page, "Sounds"), shortened(page)):
         text = bbcode(candidate)
         if len(text) <= DESCRIPTION_LIMIT:

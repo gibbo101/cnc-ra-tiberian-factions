@@ -227,9 +227,10 @@ def music_readme(mod, host):
     lines += ["## Files", ""]
     for title, names in contents(mod).items():
         lines += [f"**{title}** ({len(names)}): " + ", ".join(names), ""]
-    lines += ["## Credits", "", f"Original {GAME[w['game']]} and Firestorm music: Westwood Studios and Electronic Arts.",
-              "Converted for Remastered by gibbo101. The scripts that build this pack were written with AI assistance.",
-              "", "## My other C&C projects", ""] + [f"- {m}" for m in D.more_mods(mod)] + [""]
+    lines += ["## AI disclosure", "", "No AI made or changed the music: these are the original tracks, converted. "
+              "The scripts that build this pack were written with AI assistance.", "",
+              "## Credits", "", f"Original {GAME[w['game']]} and Firestorm music: Westwood Studios and Electronic Arts.",
+              "Converted for Remastered by gibbo101.", "", "## My other C&C projects", ""] + [f"- {m}" for m in D.more_mods(mod)] + [""]
     return "\n".join(lines)
 
 

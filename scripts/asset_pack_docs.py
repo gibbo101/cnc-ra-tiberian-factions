@@ -148,8 +148,8 @@ def readme(pack):
         lines.append("")
     if pack in MUSIC_PACKS:
         lines += ["## Using it", "",
-                  "1. Copy the files under this pack's `Data/AUDIO/MUSIC` folder into your mod's, or enable the "
-                  "Workshop pack beside your mod: the game finds music in any enabled mod.",
+                  "1. Enable the Workshop pack beside your mod: the game finds music in any enabled mod. The tracks "
+                  "are not in git; `scripts/ts_music_build.py` builds them from your own Tiberian Sun.",
                   "2. Name the tracks in your mod's `Data/XML/AUDIO/MUSICEVENTS.XML` playlists.",
                   "3. For the jukebox, add an entry per track to `<MusicJukeboxTracksList>` in "
                   "`AUDIO_SYSTEM_CONSTANTS.XML`, with its title in your `ModText.csv`.", ""]
