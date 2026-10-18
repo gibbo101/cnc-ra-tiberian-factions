@@ -86,7 +86,6 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
-#include "lcwstraw.h" // TF: [TFTDTiles] side-channel decode in Read_INI
 #include "vortex.h"
 #include "xpipe.h"
 #include "common/fading.h"
@@ -4920,36 +4919,6 @@ void DisplayClass::Read_INI(CCINIClass& ini)
     len = ini.Get_UUBlock(MAPPACK, _staging_buffer, sizeof(_staging_buffer));
     BufferStraw bstraw(_staging_buffer, len);
     Map.Read_Binary(bstraw);
-
-    // TF: converted TD maps carry their TD tiles in [TFTDTiles] (MapPack's encoding, TType 0xFFFF = no override),
-    // laid over the vanilla-safe [MapPack]; scripts/td_map_to_ra.py writes it.
-    static char const* const TFTDTILES = "TFTDTiles";
-    TF_TDWinterMap = false;
-    len = TF_TD_MAPS ? ini.Get_UUBlock(TFTDTILES, _staging_buffer, sizeof(_staging_buffer)) : 0;
-    if (len > 0) {
-        BufferStraw tdstraw(_staging_buffer, len);
-        LCWStraw decomp(LCWStraw::DECOMPRESS);
-        decomp.Get_From(&tdstraw);
-        static unsigned short _td_ttype[MAP_CELL_TOTAL];
-        for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
-            decomp.Get(&_td_ttype[cell], sizeof(_td_ttype[cell]));
-            _td_ttype[cell] = le16toh(_td_ttype[cell]);
-        }
-        for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
-            unsigned char icon;
-            decomp.Get(&icon, sizeof(icon));
-            if (_td_ttype[cell] != 0xFFFF && _td_ttype[cell] < TEMPLATE_COUNT) {
-                CellClass& cellref = (*this)[cell];
-                cellref.TType = (TemplateType)_td_ttype[cell];
-                cellref.TIcon = icon;
-                cellref.Recalc_Attributes();
-                if (!TF_TDWinterMap
-                    && strncmp(TemplateTypeClass::As_Reference(cellref.TType).IniName, "TDW", 3) == 0) {
-                    TF_TDWinterMap = true;
-                }
-            }
-        }
-    }
 
     LastTheater = Scen.Theater;
 }

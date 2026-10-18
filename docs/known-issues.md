@@ -150,7 +150,7 @@ to a full entry above or delete. One line each: where, what, severity.
 - **Give-way (minor):** `HOLD_TIMEOUT` (60) expires claim waits early against a 75-frame claim, and the
   patient queue drops claims at 40 frames; `Find_Give_Way_Cell` checks only each ray's end cell.
 - **Sidebar (cosmetic):** the Mech Division isn't marked busy through the bay cooldown.
-- **Small ones (cosmetic or latent):** the [TFTDTiles] reader is unchecked; the dormant TDLST indexes 16 facings on 4 frames; EA's own
+- **Small ones (cosmetic or latent):** the dormant TDLST indexes 16 facings on 4 frames; EA's own
   `Make_Enemy` uses `!` for `~` and CNC_Read_INI's `memset` has its arguments swapped (both also
   upstream).
 

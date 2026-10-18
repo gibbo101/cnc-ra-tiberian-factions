@@ -72,6 +72,16 @@ static short const _List1101[] = {0, 1, MAP_CELL_W + 1, REFRESH_EOL};
 static short const _List1111[] = {0, 1, MAP_CELL_W, MAP_CELL_W + 1, REFRESH_EOL};
 static short const _List111000010110[] = {0, 1, 2, MAP_CELL_W + 3, MAP_CELL_W * 2 + 1, MAP_CELL_W * 2 + 2, REFRESH_EOL};
 
+// TF: occupy and overlap lists of TD's desert trees and rocks.
+static short const _List1[] = {0, REFRESH_EOL};
+static short const _List000010[] = {MAP_CELL_W + 1, REFRESH_EOL};
+static short const _List111101[] = {0, 1, 2, MAP_CELL_W, MAP_CELL_W + 2, REFRESH_EOL};
+static short const _List111001[] = {0, 1, 2, MAP_CELL_W + 2, REFRESH_EOL};
+static short const _List000111[] = {MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W + 2, REFRESH_EOL};
+static short const _List110000[] = {0, 1, REFRESH_EOL};
+static short const _List11110[] = {0, 1, 2, 3, REFRESH_EOL};
+static short const _List00001[] = {4, REFRESH_EOL};
+
 static TerrainTypeClass const Mine(TERRAIN_MINE,
                                    THEATERF_TEMPERATE | THEATERF_SNOW,
                                    XYP_COORD(12, 12), // Center base coordinate offset.
@@ -409,6 +419,108 @@ static TerrainTypeClass const Clump5Class(TERRAIN_CLUMP5,
                                           (short const*)_List001011100110,
                                           (short const*)_List110000011001);
 
+
+// TF: TD's desert trees and rocks (TD tdata.cpp), drawn from TD's desert tileset.
+static TerrainTypeClass const Tree4Class(TERRAIN_TREE4,
+                                         THEATERF_DESERT,
+                                         XYP_COORD(8, 9), // Center base coordinate offset.
+                                         false,           // Is it immune to normal combat damage?
+                                         false,           // Is based on the water?
+                                         "T04",
+                                         TXT_TREE,
+                                         (short const*)_List1,
+                                         NULL);
+
+static TerrainTypeClass const Tree9Class(TERRAIN_TREE9,
+                                         THEATERF_DESERT,
+                                         XYP_COORD(11, 22), // Center base coordinate offset.
+                                         false,             // Is it immune to normal combat damage?
+                                         false,             // Is based on the water?
+                                         "T09",
+                                         TXT_TREE,
+                                         (short const*)_List10,
+                                         (short const*)_List01);
+
+static TerrainTypeClass const Tree18Class(TERRAIN_TREE18,
+                                          THEATERF_DESERT,
+                                          XYP_COORD(33, 40), // Center base coordinate offset.
+                                          false,             // Is it immune to normal combat damage?
+                                          false,             // Is based on the water?
+                                          "T18",
+                                          TXT_TREE,
+                                          (short const*)_List000010,
+                                          (short const*)_List111101);
+
+static TerrainTypeClass const Rock1Class(TERRAIN_ROCK1,
+                                         THEATERF_DESERT,
+                                         XYP_COORD(33, 41), // Center base coordinate offset.
+                                         true,              // Is it immune to normal combat damage?
+                                         false,             // Is based on the water?
+                                         "ROCK1",
+                                         TXT_ROCK,
+                                         (short const*)_List0011,
+                                         (short const*)_List111001);
+
+static TerrainTypeClass const Rock2Class(TERRAIN_ROCK2,
+                                         THEATERF_DESERT,
+                                         XYP_COORD(24, 23), // Center base coordinate offset.
+                                         true,              // Is it immune to normal combat damage?
+                                         false,             // Is based on the water?
+                                         "ROCK2",
+                                         TXT_ROCK,
+                                         (short const*)_List1100,
+                                         (short const*)_List001);
+
+static TerrainTypeClass const Rock3Class(TERRAIN_ROCK3,
+                                         THEATERF_DESERT,
+                                         XYP_COORD(20, 39), // Center base coordinate offset.
+                                         true,              // Is it immune to normal combat damage?
+                                         false,             // Is based on the water?
+                                         "ROCK3",
+                                         TXT_ROCK,
+                                         (short const*)_List000110,
+                                         (short const*)_List110001);
+
+static TerrainTypeClass const Rock4Class(TERRAIN_ROCK4,
+                                         THEATERF_DESERT,
+                                         XYP_COORD(12, 20), // Center base coordinate offset.
+                                         true,              // Is it immune to normal combat damage?
+                                         false,             // Is based on the water?
+                                         "ROCK4",
+                                         TXT_ROCK,
+                                         (short const*)_List10,
+                                         (short const*)_List01);
+
+static TerrainTypeClass const Rock5Class(TERRAIN_ROCK5,
+                                         THEATERF_DESERT,
+                                         XYP_COORD(17, 19), // Center base coordinate offset.
+                                         true,              // Is it immune to normal combat damage?
+                                         false,             // Is based on the water?
+                                         "ROCK5",
+                                         TXT_ROCK,
+                                         (short const*)_List10,
+                                         (short const*)_List01);
+
+static TerrainTypeClass const Rock6Class(TERRAIN_ROCK6,
+                                         THEATERF_DESERT,
+                                         XYP_COORD(28, 40), // Center base coordinate offset.
+                                         true,              // Is it immune to normal combat damage?
+                                         false,             // Is based on the water?
+                                         "ROCK6",
+                                         TXT_ROCK,
+                                         (short const*)_List000111,
+                                         (short const*)_List110000);
+
+static TerrainTypeClass const Rock7Class(TERRAIN_ROCK7,
+                                         THEATERF_DESERT,
+                                         XYP_COORD(57, 22), // Center base coordinate offset.
+                                         true,              // Is it immune to normal combat damage?
+                                         false,             // Is based on the water?
+                                         "ROCK7",
+                                         TXT_ROCK,
+                                         (short const*)_List11110,
+                                         (short const*)_List00001);
+
 /***********************************************************************************************
  * TerrainTypeClass::TerrainTypeClass -- The general constructor for the terrain type objects. *
  *                                                                                             *
@@ -554,6 +666,16 @@ void TerrainTypeClass::Init_Heap(void)
     new TerrainTypeClass(Boxes08);     //	TERRAIN_BOXES08
     new TerrainTypeClass(Boxes09);     //	TERRAIN_BOXES09
     new TerrainTypeClass(Mine);        // TERRAIN_MINE
+    new TerrainTypeClass(Tree4Class); // TF: TERRAIN_TREE4
+    new TerrainTypeClass(Tree9Class); // TF: TERRAIN_TREE9
+    new TerrainTypeClass(Tree18Class); // TF: TERRAIN_TREE18
+    new TerrainTypeClass(Rock1Class); // TF: TERRAIN_ROCK1
+    new TerrainTypeClass(Rock2Class); // TF: TERRAIN_ROCK2
+    new TerrainTypeClass(Rock3Class); // TF: TERRAIN_ROCK3
+    new TerrainTypeClass(Rock4Class); // TF: TERRAIN_ROCK4
+    new TerrainTypeClass(Rock5Class); // TF: TERRAIN_ROCK5
+    new TerrainTypeClass(Rock6Class); // TF: TERRAIN_ROCK6
+    new TerrainTypeClass(Rock7Class); // TF: TERRAIN_ROCK7
 }
 
 /***********************************************************************************************
@@ -605,12 +727,14 @@ void TerrainTypeClass::Init(TheaterType theater)
             */
             ((void const*&)terrain.ImageData) = NULL;
 
-            if (terrain.Theater & (1 << TF_Base_Theater(theater))) { // TF: TD theatres take temperate's trees
+            // TF: TD theatres take temperate's trees; TD's desert terrain loads on desert, from TD's shapes.
+            bool td = index >= TERRAIN_TREE4;
+            if (terrain.Theater & (1 << (td ? theater : TF_Base_Theater(theater)))) {
 
                 /*
                 **	Load in the appropriate object shape data.
                 */
-                _makepath(fullname, NULL, NULL, terrain.IniName, Theaters[theater].Suffix);
+                _makepath(fullname, NULL, NULL, terrain.IniName, td ? TF_TD_Suffix(theater) : Theaters[theater].Suffix);
                 ((void const*&)terrain.ImageData) = MFCD::Retrieve(fullname);
 
                 IsTheaterShape = true; // Let Build_Frame know that this is a theater specific shape

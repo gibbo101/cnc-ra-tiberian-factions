@@ -119,7 +119,7 @@ The codebase is unusually disciplined — **zero** hardcoded `128`/`127`/`0x7F`/
 
 1. `defines.h:474-539` — `MAP_CELL_W/H` to 256, `CELL` to `int`, bitfields to `X:8, Y:8`, and **delete the big-endian `sluff:2`** or the fields shift. Easy to miss.
 2. `cell.h:63` — `short ID` → `int ID`. Set from `Map.ID(this)` (an `int`) at `cell.cpp:105`. At 65536 cells every index >= 32768 goes **negative**, propagating into `Cell_Number()`, `As_Target()` and `xTargetClass::As_Cell()` (`target.cpp:96`) → out-of-bounds read across the bottom half of the map.
-3. `globals.cpp:139` — `_staging_buffer[32000]` must grow to ~256 KB and gain an overflow guard. It is the only buffer for MapPack/OverlayPack/`[TFTDTiles]` encode (`display.cpp:4884,4996`, `map.cpp:1217`, `overlay.cpp:261,353`).
+3. `globals.cpp:139` — `_staging_buffer[32000]` must grow to ~256 KB and gain an overflow guard. It is the only buffer for MapPack/OverlayPack encode (`display.cpp:4884,4996`, `map.cpp:1217`, `overlay.cpp:261,353`).
 4. `map.cpp:1910` — `Zone_Span` is a **recursive** scanline flood fill; depth scales with map area and runs once per `MZONE_*` (5x). Stack overflow risk at 65K cells. Convert to an explicit stack.
 5. `cell.h:124` — `unsigned char Zones[MZONE_COUNT]`: zone **IDs** cap at 255. `Zone_Reset` (`map.cpp:1801`) increments per flood fill with no overflow guard; a fragmented 256x256 map (islands, many small water bodies) can alias zone IDs and make unrelated landmasses look connected, so units accept impossible move orders.
 6. `dllinterface.cpp:6092` **and** `6832` — two duplicated `static const int _map_width_shift_bits = 7;`. De-duplicate.

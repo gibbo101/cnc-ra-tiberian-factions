@@ -4836,8 +4836,8 @@ static void TF_Tell_Launchers_Tick(void)
     }
 }
 
-// Copies <mod>/CustomMaps/ into Local_Custom_Maps/Red_Alert/ once the mod's CCDATA path registers (a Workshop mod
-// cannot ship into Documents); with TF_TD_MAPS at 0 it deletes those copies.
+// Records the mod's root once its CCDATA path registers, and deletes the TD map copies earlier versions installed
+// into Local_Custom_Maps/Red_Alert/.
 static void TF_Install_Bundled_Maps(const char* mod_path)
 {
     static bool _installed = false;
@@ -4871,7 +4871,6 @@ static void TF_Install_Bundled_Maps(const char* mod_path)
     strncat(dst_dir, "\\Red_Alert", sizeof(dst_dir) - strlen(dst_dir) - 1);
     CreateDirectoryA(dst_dir, NULL);
 
-#if !TF_TD_MAPS
     static char const* const exts[] = {"MPR", "TGA", "JSON"};
     for (int map = 1; map <= 0x1F; map++) {
         for (int e = 0; e < (int)(sizeof(exts) / sizeof(exts[0])); e++) {
@@ -4886,27 +4885,6 @@ static void TF_Install_Bundled_Maps(const char* mod_path)
             DeleteFileA(dst);
         }
     }
-    return;
-#endif
-
-    char pattern[MAX_PATH];
-    snprintf(pattern, sizeof(pattern), "%sCustomMaps\\*", root);
-    WIN32_FIND_DATAA fd;
-    HANDLE find = FindFirstFileA(pattern, &fd);
-    if (find == INVALID_HANDLE_VALUE) {
-        return;
-    }
-    do {
-        if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-            continue;
-        }
-        char src[MAX_PATH];
-        char dst[MAX_PATH];
-        snprintf(src, sizeof(src), "%sCustomMaps\\%s", root, fd.cFileName);
-        snprintf(dst, sizeof(dst), "%s\\%s", dst_dir, fd.cFileName);
-        CopyFileA(src, dst, FALSE);
-    } while (FindNextFileA(find, &fd));
-    FindClose(find);
 }
 
 void DLLExportClass::Add_Mod_Path(const char* mod_path)
@@ -6657,17 +6635,6 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         case RTTI_TERRAINTYPE: {
             if (strncmp(new_object.AssetName, "MINE", CNC_OBJECT_ASSET_NAME_LENGTH) == 0) {
                 strncpy(new_object.AssetName, "OREMINE", CNC_OBJECT_ASSET_NAME_LENGTH);
-            }
-            // TF: on a converted TD winter map (temperate theatre) trees export as their TDW* snow entries, as MINE
-            // does above (scripts/build_winter_trees.py).
-            if (TF_TDWinterMap && Scen.Theater < THEATER_DESERT
-                && new_object.AssetName[0] == 'T'
-                && (isdigit((unsigned char)new_object.AssetName[1])
-                    || (new_object.AssetName[1] == 'C'
-                        && isdigit((unsigned char)new_object.AssetName[2])))) {
-                char swapped[CNC_OBJECT_ASSET_NAME_LENGTH];
-                snprintf(swapped, sizeof(swapped), "TDW%s", new_object.AssetName);
-                strncpy(new_object.AssetName, swapped, CNC_OBJECT_ASSET_NAME_LENGTH);
             }
         } break;
         }
@@ -10257,42 +10224,6 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
     */
 
     CELL cell = cell_ptr->Cell_Number();
-
-    // TF: a TD template cell goes to the launcher as CLEAR and its tile is drawn here as a dynamic entry: an
-    // unknown template name crashes the launcher's renderer (docs/td-tile-hd-loose-art-investigation.md).
-    if (cell_ptr->TType >= TEMPLATE_TDSH1 && cell_ptr->TType < TEMPLATE_COUNT
-        && cell_ptr->Overlay == OVERLAY_NONE && cell_ptr->Smudge == SMUDGE_NONE
-        && Scen.Theater < THEATER_DESERT) { // TF: TD theatres draw TD tiles as terrain
-        const TemplateTypeClass& td_type = TemplateTypeClass::As_Reference(cell_ptr->TType);
-
-        CNCDynamicMapEntryStruct& td_entry = dynamic_map->Entries[entry_index++];
-
-        strncpy(td_entry.AssetName, td_type.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
-        td_entry.AssetName[CNC_OBJECT_ASSET_NAME_LENGTH - 1] = 0;
-        td_entry.Type = (short)OVERLAY_V12;
-        td_entry.Owner = (char)cell_ptr->Owner;
-        td_entry.DrawFlags = SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST;
-        td_entry.PositionX = xpixel + (CELL_PIXEL_W >> 1);
-        td_entry.PositionY = ypixel + (CELL_PIXEL_H >> 1);
-        td_entry.Width = CELL_PIXEL_W;
-        td_entry.Height = CELL_PIXEL_H;
-        td_entry.CellX = Cell_X(cell);
-        td_entry.CellY = Cell_Y(cell);
-        enum
-        {
-            TD_TILE_ANIM_RATE = 2 // game frames per animation frame
-        };
-        extern unsigned char const TF_TdTileAnimShapes[];
-        const int td_anim_shapes = TF_TdTileAnimShapes[cell_ptr->TType - TEMPLATE_TDSH1];
-        td_entry.ShapeIndex = (unsigned char)(cell_ptr->TIcon * td_anim_shapes
-                                              + (Frame / TD_TILE_ANIM_RATE) % td_anim_shapes);
-        td_entry.IsSmudge = false;
-        td_entry.IsOverlay = true;
-        td_entry.IsResource = false;
-        td_entry.IsSellable = false;
-        td_entry.IsTheaterShape = true;
-        td_entry.IsFlag = false;
-    }
 
     // TF: TS aprons are drawn from their standing building, not map state, ahead of the smudge and overlay
     // entries so bibs and ore draw over them; a hidden building hides its apron (docs/ts-gdi-tree-plan.md).

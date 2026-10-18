@@ -77,9 +77,6 @@ typedef MixFileClass<CCFileClass> MFCD;
 extern bool IsVQ640;
 extern unsigned int GameVersion;
 
-// TF: true while the loaded map is a converted TD winter map (TDW* templates in [TFTDTiles]). It plays in the
-// temperate theatre with its trees swapped to snowy art.
-extern bool TF_TDWinterMap;
 
 // TF: Unholy Alliance: every house, AI too, starts with the Allied, Soviet, GDI and Nod MCVs and may build all
 // four trees. It rides the lobby's Capture the Flag game type, whose flag game is switched off.

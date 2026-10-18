@@ -170,56 +170,23 @@ else
     echo "warning: $TEMPERAT_MIX not found; classic TIB01/SPLIT2 art skipped" >&2
 fi
 
-# Tiberian Factions -- ported TD terrain TEMPLATES (build_td_tiles.py). The engine
-# reads each template's dimensions + land-type from its classic iconset via
-# MFCD::Retrieve("TD<NAME>.<theatre suffix>") -- .TEM temperate, .SNO snow (TD
-# winter art); HD render is the loose tileset art. The staged iconsets
-# (already RA-format-converted by build_td_tiles.py) are packed AS-IS -- no
-# palette remap (it would corrupt the header's dimensions/land-type;
-# classic-mode colour fidelity is a later refinement).
+# TD's terrain templates for the TD theatres (scripts/td_templates.py): TD<NAME>.DES, .TEM and .WIN, TD's own
+# classic iconsets converted to RA's format with TD's land types. Packed as-is: a palette remap would corrupt
+# the header's dimensions and land types.
 TEM_STAGE="scripts/_td_tems"
 if [[ -d "$TEM_STAGE" ]]; then
-    for tem in "$TEM_STAGE"/*.TEM "$TEM_STAGE"/*.SNO "$TEM_STAGE"/*.INT; do
+    for tem in "$TEM_STAGE"/TD*.DES "$TEM_STAGE"/TD*.TEM "$TEM_STAGE"/TD*.WIN; do
         [[ -e "$tem" ]] || continue
         PACK_ARGS+=("$tem:$(basename "$tem")")
     done
 fi
 
-# Tiberian Factions -- snowy trees for converted TD WINTER maps. Winter maps
-# run in RA's TEMPERATE theatre, so trees would draw with the green temperate
-# shapes in classic mode. TerrainClass::Get_Image_Data (terrain.cpp) swaps to
-# "TDW<NAME>.TEM" from this mix when TF_TDWinterMap is set; HD gets the snow
-# look via the exported AssetName + the loose tileset entries
-# (scripts/build_winter_trees.py). Source = TD's own winter tree art
-# (WINTER.MIX *.win), remapped from TD's winter palette to RA's temperate
-# palette (the palette classic mode renders these maps with).
-WINTER_MIX="${CNCDATA}/TIBERIAN_DAWN/CD1/WINTER.MIX"
-if [[ -f "$WINTER_MIX" ]]; then
-    python3 scripts/mix_tools.py extract "$WINTER_MIX" "winter.pal" "$TMPDIR" >/dev/null
-    TDW_PAL="$TMPDIR/winter.pal"
-    for t in t01 t02 t03 t05 t06 t07 t08 t10 t11 t12 t13 t14 t15 t16 t17 \
-             tc01 tc02 tc03 tc04 tc05; do
-        python3 scripts/mix_tools.py extract "$WINTER_MIX" "$t.win" "$TMPDIR" >/dev/null
-        python3 scripts/shptools.py remap "$TMPDIR/$t.win" "$TMPDIR/remap_tdw_$t" "$TDW_PAL" "$RA_PAL"
-        PACK_ARGS+=("$TMPDIR/remap_tdw_$t:TDW$(echo $t | tr a-z A-Z).TEM")
-    done
-else
-    echo "warning: $WINTER_MIX not found; classic snowy winter trees skipped" >&2
-fi
-
-# Tiberian Factions -- desert building bibs (interior slot). The base game
-# ships NO interior bib art, so the engine skips bib smudges on desert maps
-# (NULL classic data). Stage TD desert bibs under the native names as .INT:
-# the engine then emits the smudge entries, and the launcher resolves their
-# HD art from the interior tileset XML (build_tiberium_hd.py BIB* tiles).
-# Packed RAW -- classic-mode desert colour fidelity is globally deferred.
-DESERT_MIX="$CNCDATA/TIBERIAN_DAWN/CD1/DESERT.MIX"
-if [[ -f "$DESERT_MIX" ]]; then
-    for b in bib1 bib2 bib3; do
-        python3 scripts/mix_tools.py extract "$DESERT_MIX" "$b.des" "$TMPDIR" >/dev/null
-        PACK_ARGS+=("$TMPDIR/$b.des:$(echo $b | tr a-z A-Z).INT")
-    done
-fi
+# TD's desert trees and rocks (tdata.cpp TERRAIN_TREE4 to TERRAIN_ROCK7): TD's own shapes, packed raw.
+DESERT_MIX="${CNCDATA}/TIBERIAN_DAWN/CD1/DESERT.MIX"
+for t in t04 t09 t18 rock1 rock2 rock3 rock4 rock5 rock6 rock7; do
+    python3 scripts/mix_tools.py extract "$DESERT_MIX" "$t.des" "$TMPDIR" >/dev/null
+    PACK_ARGS+=("$TMPDIR/$t.des:$(echo $t | tr a-z A-Z).DES")
+done
 
 # TSHVR (Hover MLRS) stub, 96 frames of HD art: hull 0-31, rack 32-63, shadow 64-95.
 # ⚠ 48x48 matches ShapeSize=48,48: Hover_Rack_Seat (udata.cpp) is classic px at this size, so resizing moves every seat.

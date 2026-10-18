@@ -89,10 +89,6 @@ public:
         return *Class;
     };
 
-    // TF: on converted TD winter maps a tree draws TD's snowy shape (TDW<name>.TEM) for its green one. An override,
-    // as type init is guarded by LastTheater and winter and summer maps share the TEMPERATE theatre.
-    virtual void const* Get_Image_Data(void) const;
-
     /*
     **	Coordinate inquiry functions. These are used for both display and
     **	combat purposes.

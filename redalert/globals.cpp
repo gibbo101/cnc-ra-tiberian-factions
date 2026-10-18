@@ -37,7 +37,6 @@ bool IsVQ640 = false;
 unsigned int GameVersion = 0;
 
 // TF: scenario and game-mode flags, described in externs.h.
-bool TF_TDWinterMap = false;
 bool TF_UnholyAlliance = false;
 bool Debug_MotionCapture = false;
 bool Debug_Quiet = false;

@@ -271,32 +271,6 @@ bool TerrainClass::Mark(MarkType mark)
     return (false);
 }
 
-// The shape for this tree: on a TD winter map (TF_TDWinterMap), TD's snowy TDW<name>.TEM from TFASSETS.MIX,
-// else the type's own. HD gets the same swap through the exported AssetName (dllinterface.cpp).
-void const* TerrainClass::Get_Image_Data(void) const
-{
-    if (TF_TDWinterMap) {
-        // The cached pointers stay valid only because TFASSETS.MIX stays cached for the whole process (init.cpp).
-        static void const* _winter_image[TERRAIN_COUNT];
-        static bool _winter_tried[TERRAIN_COUNT];
-        TerrainType type = Class->Type;
-        if ((unsigned)type < TERRAIN_COUNT) {
-            if (!_winter_tried[type]) {
-                _winter_tried[type] = true;
-                char winame[_MAX_FNAME];
-                char fullname[_MAX_FNAME + _MAX_EXT];
-                snprintf(winame, sizeof(winame), "TDW%s", Class->IniName);
-                _makepath(fullname, NULL, NULL, winame, ".TEM");
-                _winter_image[type] = MFCD::Retrieve(fullname);
-            }
-            if (_winter_image[type] != NULL) {
-                return _winter_image[type];
-            }
-        }
-    }
-    return ObjectClass::Get_Image_Data();
-}
-
 /***********************************************************************************************
  * TerrainClass::Draw_It -- Renders the terrain object at the location specified.              *
  *                                                                                             *

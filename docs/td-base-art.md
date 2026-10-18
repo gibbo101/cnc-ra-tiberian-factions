@@ -86,15 +86,20 @@ from the base game.
   loaded in RA too.
 - **The DLL's theatres.** `TheaterType` carries `THEATER_DESERT`, `THEATER_TDTEMPERATE` and
   `THEATER_WINTER` (3 to 5, the slot numbers), and a map names them `Theater=Desert`, `TDTemperate`
-  or `Winter`. A TD template loads only in its own TD theatre (`TemplateTypeClass::Init`). On a TD
-  theatre `Get_Template_Info` sends TD's own name (`TDSH17` as `SH17`, `TDWSH1` as `SH1`), trees keep
-  TD's names (`T01`), and no dynamic tile entries are drawn.
+  or `Winter`. TD's 210 drawn templates are DLL templates `TD<name>` (ids 401 to 610, written by
+  `scripts/td_templates.py`), each flagged for the TD theatres whose tileset draws it, and load
+  only there (`TemplateTypeClass::Init`). On a TD theatre `Get_Template_Info` sends TD's own name
+  (`TDSH17` as `SH17`), and trees keep TD's names (`T01`).
 - **What it gives.** Terrain, trees, bibs, smudges and the radar all come from TD's own tileset, as
   in TD. Smudges need the DLL's theatre to have the classic shape (`Get_Image_Data`), which
   `TF_Base_Theater` gives every TD theatre.
-- **Classic data.** The TD theatres borrow RA temperate's classic mix and palette for the DLL's game
-  data (passability, which objects exist, footprints). Desert templates load their `.INT` classic
-  shapes from `TFASSETS.MIX`.
+- **Classic data.** A TD template's game data (size, land type per icon) is TD's own iconset from
+  `DESERT.MIX`, `TEMPERAT.MIX` or `WINTER.MIX`, converted to RA's format with TD's land types and
+  packed in `TFASSETS.MIX` as `TD<name>.DES`, `.TEM` or `.WIN`; a river template's water is
+  `LAND_RIVER`. RA's objects on a TD theatre (trees, bibs, smudges) use RA temperate's classic
+  data and palette (`TF_Base_Theater`).
+- **Desert terrain.** TD's desert trees and rocks (`T04`, `T09`, `T18`, `ROCK1` to `ROCK7`) are
+  RA terrain types with TD's footprints, loaded on desert from TD's shapes (`<name>.DES`).
 - **Memory.** Video memory on the desktop, one match each: Docklands 4796 MiB with the stock
   interior tileset and 4812 MiB with 163 desert tiles in it. A theatre's tiles cost memory only on a
   map that draws them.
@@ -129,10 +134,10 @@ unchanged; a TD map in the match costs what any TD-terrain map does.
 
 ## Build plan
 
-1. **TD's own classic data and the map pipeline.** The TD theatres read TD's `DESERT.MIX`,
-   `TEMPERAT.MIX` and `WINTER.MIX` from the TD install instead of RA temperate's, so TD's own trees
-   and cacti exist; the transcoder, `editor_manifest.py` and the map editor take the new theatres;
-   the TD tiles in RA's tilesets, their stand-in radar classes and the dynamic tile entries go.
+1. **TD's own classic data and the map pipeline.** Done: TD's templates and desert terrain on the
+   TD theatres; `scripts/td_map_to_ra.py` writes a TD map in its own theatre, every template as the
+   DLL's TD template; `editor_manifest.py` lists the templates. The native map editor doesn't know
+   the TD theatres or the new terrain types yet.
 2. **Ore on TD slots.** Ore (`GOLD01-04`, `GEM01-04`) is only in RA's terrain tilesets, so the
    mod ships TD's three terrain tileset XMLs with an empty root and RA's ore tiles added (data
    only). Ore mines are in `RA_VFX` and should draw on any slot.

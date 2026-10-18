@@ -25,6 +25,11 @@ THEATRES = {"temperate": ("RA_TERRAIN_TEMPERATE", "Temperate", "TEMPERATE"),
             "desert": ("TD_TERRAIN_DESERT", "desert", "DESERT"),
             "tdtemperate": ("TD_TERRAIN_TEMPERATE", "temperate", "TEMPERATE"),
             "winter": ("TD_TERRAIN_WINTER", "winter", "WINTER")}
+# terrain objects placed in a row above the starts, each TD theatre's own
+OBJECTS = {"desert": ["T04", "T08", "T09", "T18", "ROCK1", "ROCK2", "ROCK3", "ROCK4", "ROCK5", "ROCK6", "ROCK7"],
+           "tdtemperate": ["T01", "T02", "T03", "T05", "T06", "T07", "T08", "T10", "T11", "T12", "T13", "T14", "T15",
+                           "T16", "T17", "TC01", "TC02", "TC03", "TC04", "TC05"]}
+OBJECTS["winter"] = OBJECTS["tdtemperate"]
 INTERIOR_FLOOR = 268  # FLOR0001: interior's clear cells are impassable rock
 MAP_X, MAP_Y, MAP_W, MAP_H = 16, 16, 96, 96
 LEFT, TOP, RIGHT, START_ROW = MAP_X + 1, MAP_Y + 1, MAP_X + MAP_W - 1, MAP_Y + 62
@@ -75,15 +80,14 @@ def build(key, out_dir):
             for cx in range(MAP_X, MAP_X + MAP_W):
                 if ttype[ra_cell(cx, cy)] == RA_TEMPLATE_NONE:
                     ttype[ra_cell(cx, cy)] = INTERIOR_FLOOR
-    td = key in ("desert", "tdtemperate", "winter")
     packed = b"".join(struct.pack("<H", t) for t in ttype) + bytes(ticon)
-    empty = struct.pack("<H", RA_TEMPLATE_NONE) * RA_CELLS + bytes(RA_CELLS)
     starts = [ra_cell(MAP_X + 12 + (i % 4) * 22, START_ROW + 8 + (i // 4) * 14) for i in range(8)]
     base = os.path.join(out_dir, "tf-catalogue-%s" % key)
     theatre = {"tdtemperate": "TDTemperate"}.get(key, key.capitalize())
+    objects = [(ra_cell(LEFT + 4 * i, START_ROW - 6), "%s,None" % o) for i, o in enumerate(OBJECTS.get(key, []))]
+    legend += ["%-10s object at (%d,%d)" % (o, LEFT + 4 * i, START_ROW - 6) for i, o in enumerate(OBJECTS.get(key, []))]
     write_triplet(base + ".mpr", "TF Catalogue %s" % theatre, theatre, MAP_X, MAP_Y, MAP_W, MAP_H,
-                  empty if td else packed, bytes([OVERLAY_NONE]) * RA_CELLS, starts, [], [],
-                  [RA_TEMPLATE_NONE] * RA_CELLS, tdtiles_raw=packed if td else None)
+                  packed, bytes([OVERLAY_NONE]) * RA_CELLS, starts, objects, [], [RA_TEMPLATE_NONE] * RA_CELLS)
     manifest = json.load(open(base + ".json"))
     manifest["Theater"] = label
     json.dump(manifest, open(base + ".json", "w"), separators=(",", ":"))

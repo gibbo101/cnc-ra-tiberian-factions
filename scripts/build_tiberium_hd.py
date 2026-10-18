@@ -52,7 +52,6 @@ TD_TEX_MEG = GAME_DATA / "TEXTURES_TD_SRGB.MEG"
 CONFIG_MEG = GAME_DATA / "CONFIG.MEG"
 
 TD_TERRAIN = r"DATA\ART\TEXTURES\SRGB\TIBERIAN_DAWN\TERRAIN"
-TD_TERRAIN_TEMP = TD_TERRAIN + r"\TEMPERATE"   # imported by build_td_tiles.py
 
 # RA theatre -> TD source theatre wiring. The TD MEG's per-tile subdir carries
 # the theatre suffix for WINTER ("TI1.WIN\TI1.WIN-NNNN.DDS") but NOT for

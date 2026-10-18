@@ -3,9 +3,9 @@
 TD -> RA skirmish-map transcoder (Tiberian Factions mod).
 
 Converts a classic Tiberian Dawn map (.INI + .BIN) into a Red Alert .mpr that
-our modded DLL can load, remapping terrain templates by NAME (the editor source
-proved ~90% of TD temperate templates have a same-named RA template) and
-converting TD tiberium (TI1-TI12) into our harvestable TIB01 overlay.
+our modded DLL loads in the TD theatre of the same name (td-base-art.md): every
+template as the DLL's TD template (td_ra_tile_map.json), trees and rocks by
+name, TD tiberium (TI1-TI12) as our harvestable TIB01 overlay.
 
 Formats (all reverse-engineered from our own DLL + the shipped Mobius editor C#):
 - TD .BIN  : 64x64 cells, 2 bytes/cell = (template-id u8, icon u8). 0xFF = clear.
@@ -17,15 +17,14 @@ Formats (all reverse-engineered from our own DLL + the shipped Mobius editor C#)
              LCW block frame = [CompCount u16 LE][UncompCount u16 LE][comp bytes],
              blocks of <=8192 uncompressed bytes (LCWPipe default).
 
-Template tables are parsed live from the editor source so we never hand-maintain
-600 entries:
-  <install>/SOURCECODE/CnCTDRAMapEditor/{TiberianDawn,RedAlert}/TemplateTypes.cs
+TD's template ids are parsed from the editor source:
+  <install>/SOURCECODE/CnCTDRAMapEditor/TiberianDawn/TemplateTypes.cs
 
 Usage:
   td_map_to_ra.py inspect-ra  <ra.ini|ra.mpr>      # decode+stats (codec self-check)
   td_map_to_ra.py convert <td.ini> <out.mpr> [--name "Display Name"]
 """
-import sys, os, re, struct, base64, argparse
+import sys, os, re, struct, base64, argparse, json
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from shptools import lcw_compress, lcw_decompress
@@ -52,6 +51,15 @@ OVERLAY_TIB01 = 25                # must match redalert/defines.h OVERLAY_TIB01
 # ROAD overlay are dropped too.
 OVERLAY_CARRY = {"V12": 13, "V13": 14, "V14": 15, "V15": 16, "V16": 17,
                  "V17": 18, "V18": 19}
+
+# TD theatre -> the DLL's theatre of the same name (Theaters[] in const.cpp); the lobby's climate label is
+# TD's own, so TD temperate shows as TEMPERATE.
+RA_THEATER = {"temperate": "TDTemperate", "winter": "Winter", "desert": "Desert"}
+CLIMATE = {"TDTemperate": "TEMPERATE"}
+# RA's terrain types (tdata.cpp), TD's desert trees and rocks among them.
+RA_TERRAIN = {"T01", "T02", "T03", "T04", "T05", "T06", "T07", "T08", "T09", "T10", "T11", "T12", "T13", "T14",
+              "T15", "T16", "T17", "T18", "TC01", "TC02", "TC03", "TC04", "TC05",
+              "ROCK1", "ROCK2", "ROCK3", "ROCK4", "ROCK5", "ROCK6", "ROCK7"}
 
 EDITOR_SRC = str(steam_library.path("common/CnCRemastered/SOURCECODE/CnCTDRAMapEditor"))
 
@@ -138,34 +146,6 @@ def parse_templates(cs_path):
                     m.group(5)))
     return out
 
-def build_template_map(ra_theater_token):
-    """TD template id -> RA template id (by name, with the shore/pavement renames),
-    only accepting RA templates available in the TARGET theatre (a winter map
-    name-matched onto a temperate-only RA template would render missing art).
-    ra_theater_token = "Temperate" | "Snow" (the editor source's TheaterTypes name).
-    Returns (tmap, missing, td_by_id, ra_by_id) where *_by_id = {id:(name,w,h)}."""
-    td = parse_templates(os.path.join(EDITOR_SRC, "TiberianDawn", "TemplateTypes.cs"))
-    ra = parse_templates(os.path.join(EDITOR_SRC, "RedAlert", "TemplateTypes.cs"))
-    ra_by_name = {name: tid for tid, name, w, h, th in ra if ra_theater_token in th}
-    td_by_id = {tid: (name, w, h) for tid, name, w, h, th in td}
-    ra_by_id = {tid: (name, w, h) for tid, name, w, h, th in ra}
-    # Known renames TD -> RA (shores sh1..sh9 -> sh01..sh09).
-    def ra_lookup(name):
-        if name in ra_by_name:
-            return ra_by_name[name]
-        m = re.fullmatch(r"sh([1-9])", name)
-        if m and ("sh0" + m.group(1)) in ra_by_name:
-            return ra_by_name["sh0" + m.group(1)]
-        return None
-    tmap, missing = {}, []
-    for tid, name, w, h, th in td:
-        rid = ra_lookup(name)
-        if rid is None:
-            missing.append(name)
-        else:
-            tmap[tid] = rid
-    return tmap, sorted(set(missing)), td_by_id, ra_by_id
-
 # ===================================================================== convert
 def td_cell(x, y):
     return y * TD_W + x
@@ -184,129 +164,43 @@ def convert(td_ini_path, out_path, display_name):
 
     mp = {k.lower(): v for k, v in secs.get("MAP", secs.get("Map", []))}
     theater = mp.get("theater", "temperate").lower()
-    # TD theatre -> RA theatre. Winter maps land in RA's TEMPERATE slot (TD
-    # winter is icy-temperate; the TDW* template family carries TD winter art
-    # there, the rest name-map onto RA temperate tiles -- so RA's native
-    # bibs/radar/vanilla-fallback all match the look); desert maps land in the
-    # INTERIOR slot (everything rides the ported TD tiles -- interior has no
-    # outdoor templates to name-map onto).
-    RA_THEATER = {"temperate": ("temperate", "Temperate"),
-                  "winter": ("temperate", "Temperate"),
-                  "desert": ("interior", "Interior")}
     if theater not in RA_THEATER:
-        print(f"WARNING: source theater '{theater}' unsupported; "
-              f"converting as temperate.")
-    ra_theater, ra_token = RA_THEATER.get(theater, RA_THEATER["temperate"])
+        raise SystemExit(f"unsupported TD theater '{theater}'")
+    ra_theater = RA_THEATER[theater]
     tdX, tdY = int(mp.get("x", 0)), int(mp.get("y", 0))
     tdWi, tdHe = int(mp.get("width", TD_W)), int(mp.get("height", TD_W))
 
-    # Centre the TD map inside the 128x128 RA map.
+    # Centre the TD map inside the 128x128 RA map. The offsets are multiples of 4, so clear ground
+    # keeps TD's 4x4 icon pattern (CellClass::Clear_Icon).
     offx = (RA_W - TD_W) // 2
     offy = (RA_W - TD_W) // 2
 
-    tmap, missing, td_by_id, ra_by_id = build_template_map(ra_token)
+    td_by_id = {tid: (name, w, h) for tid, name, w, h, th in
+                parse_templates(os.path.join(EDITOR_SRC, "TiberianDawn", "TemplateTypes.cs"))}
+    tile_map = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "td_ra_tile_map.json")))
+    ported = {name: info[theater]["ra_id"] for name, info in tile_map.items() if theater in info}
 
-    # Ported TD tiles (build_td_tiles.py): TD template NAME -> new RA template id.
-    # These map 1:1 with TD's exact size+art, so icons align perfectly -- they take
-    # priority over the name+size auto-match and skip the size-gate entirely.
-    # Keyed by the SOURCE TD theatre: a winter map's "sh1" maps to TDWSH1 (TD
-    # winter art hosted in RA's temperate slot), a temperate/desert map's to
-    # TDSH1. Mapping a template onto a map whose RA theatre it isn't
-    # registered for would hit art the engine never loads (Land_Type
-    # div-by-zero crash), so only the matching source-theatre entry is used.
-    ported = {}
-    mapper_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "td_ra_tile_map.json")
-    if os.path.exists(mapper_path):
-        import json as _json
-        for tdname, info in _json.load(open(mapper_path)).items():
-            if theater in info:
-                ported[tdname] = info[theater]["ra_id"]
-
-    # ---- terrain: two independent layers per cell ----
-    # [MapPack] (safe_*) = the VANILLA-SAFE fallback: the name+size auto-match
-    #   onto RA's own templates, gated on identical size + in-range icon (RA
-    #   reuses some TD names for differently-sized tiles; a blind copy renders
-    #   white "missing" tiles or random coast tiles). Unmatched -> clear.
-    #   TD-ported ids (401+) NEVER enter MapPack: they would index past a
-    #   vanilla DLL's template heap and crash, and self-installed
-    #   Local_Custom_Maps outlive the mod being enabled.
-    # [TFTDTiles] (td_*) = the authentic layer only our DLL reads: every cell
-    #   with a ported TD template (for WINTER maps that is the ENTIRE tileset
-    #   incl. CLEAR ground -- TD winter art is icy-temperate green, RA snow is
-    #   all-white, so every cell must come from TD art; for temperate only the
-    #   shores/bridges differ). Applied over MapPack at load (display.cpp).
-    safe_tt, safe_ic = [RA_TEMPLATE_NONE] * RA_CELLS, [0] * RA_CELLS
-    td_tt, td_ic = [RA_TEMPLATE_NONE] * RA_CELLS, [0] * RA_CELLS
-    placed = td_cells = 0
-    diag = {}  # tid -> [count, maxicon]
+    # Every TD template goes in as the DLL's TD template for this theatre (td_templates.py), icon for icon.
+    ttype, ticon = [RA_TEMPLATE_NONE] * RA_CELLS, [0] * RA_CELLS
+    placed, dropped = 0, {}
     for y in range(TD_W):
         for x in range(TD_W):
             t = bindata[td_cell(x, y) * 2]
             ic = bindata[td_cell(x, y) * 2 + 1]
-            rc = ra_cell(x + offx, y + offy)
-            if t == 0xFF:
-                # CLEAR ground. TD renders the theatre's clear1 with a
-                # positional 4x4 icon pattern (cell x/y mod 4 -- offx/offy are
-                # multiples of 4 so RA coords keep TD's pattern). When clear1
-                # is ported (winter), modded clients get TD's green ground via
-                # the side-channel; MapPack stays clear = RA theatre ground.
-                if "clear1" in ported:
-                    td_tt[rc] = ported["clear1"]
-                    td_ic[rc] = ((x + offx) & 3) + ((y + offy) & 3) * 4
-                    td_cells += 1
+            if t == 0xFF or td_by_id[t][0] == "clear1":
                 continue
-            d = diag.setdefault(t, [0, 0]); d[0] += 1; d[1] = max(d[1], ic)
-            tdname = td_by_id[t][0]
-            # authentic layer: ported TD tile (exact size+art, icons align)
-            if tdname in ported:
-                td_tt[rc] = ported[tdname]
-                td_ic[rc] = ic
-                td_cells += 1
-                placed += 1
-            # vanilla fallback layer: the gated name+size auto-match
-            rid = tmap.get(t)
-            if rid is not None:
-                tw, th = td_by_id[t][1], td_by_id[t][2]
-                rw, rh = ra_by_id[rid][1], ra_by_id[rid][2]
-                if (tw, th) == (rw, rh) and ic < rw * rh:
-                    safe_tt[rc] = rid
-                    safe_ic[rc] = ic
-                    if tdname not in ported:
-                        placed += 1
-
-    # ---- per-template diagnostic log ----
-    print("  template report (TD->RA), problem rows flagged:")
-    dropped_cells = 0
-    for t, (cnt, mx) in sorted(diag.items(), key=lambda kv: -kv[1][0]):
-        nm, tw, th = td_by_id.get(t, ("?", 0, 0))
-        if nm in ported:
-            continue
-        rid = tmap.get(t)
-        if rid is None:
-            print(f"    {nm:<9} {tw}x{th} x{cnt:<4} -> NO RA MATCH (clear)")
-            dropped_cells += cnt
-            continue
-        rn, rw, rh = ra_by_id[rid]
-        bad = (tw, th) != (rw, rh) or mx >= rw * rh
-        if bad:
-            why = "ICON-OOR" if mx >= rw * rh else "SIZE-DIFF"
-            print(f"    {nm:<9} {tw}x{th} -> {rn}({rw}x{rh}) x{cnt:<4} maxicon={mx}  DROPPED [{why}]")
-            dropped_cells += cnt
-    unmapped = dropped_cells
-    n_ported = sum(1 for t in diag if td_by_id[t][0] in ported)
-    print(f"    ({n_ported} templates via ported TD tiles)")
-
-    mappack_raw = b"".join(struct.pack("<H", t) for t in safe_tt) + bytes(safe_ic)
+            name = td_by_id[t][0]
+            if name not in ported:
+                dropped[name] = dropped.get(name, 0) + 1
+                continue
+            rc = ra_cell(x + offx, y + offy)
+            ttype[rc], ticon[rc] = ported[name], ic
+            placed += 1
+    for name, n in sorted(dropped.items()):
+        print(f"  {name}: {n} cells have no TD template for {theater}, left clear")
+    unmapped = sum(dropped.values())
+    mappack_raw = b"".join(struct.pack("<H", t) for t in ttype) + bytes(ticon)
     assert len(mappack_raw) == MAPPACK_RAW
-    tdtiles_raw = None
-    if td_cells:
-        tdtiles_raw = b"".join(struct.pack("<H", t) for t in td_tt) + bytes(td_ic)
-        print(f"  side-channel [TFTDTiles]: {td_cells} TD-tile cells "
-              f"(MapPack carries the vanilla fallback)")
-
-    # combined view for the block-map preview fallback (TD layer wins)
-    ttype = [td_tt[c] if td_tt[c] != RA_TEMPLATE_NONE else safe_tt[c]
-             for c in range(RA_CELLS)]
 
     # ---- overlay (OverlayPack): tiberium TI1..TI12 -> TIB01 (density 0..11),
     # walls + farm fields carried through by name (OVERLAY_CARRY) ----
@@ -345,12 +239,11 @@ def convert(td_ini_path, out_path, display_name):
         x, y = cell % TD_W, cell // TD_W
         waypts.append((n, ra_cell(x + offx, y + offy)))
 
-    # ---- terrain objects (trees); TD blossom trees (split2/split3) become our
-    # neutral STRUCT_TDBLOSSOM building (terrain objects can't take custom HD
-    # art on our stack; the building can, and carries the spore-shed/seeding AI)
+    # ---- terrain objects: trees and rocks under their own names, when RA has the type; TD blossom
+    # trees (split2/split3) become the neutral building STRUCT_TDBLOSSOM ----
     terrain = []
     structures = []
-    dropped_terrain = 0
+    dropped_terrain = {}
     for k, v in get_sec(secs, "Terrain"):
         try:
             cell = int(k)
@@ -361,15 +254,12 @@ def convert(td_ini_path, out_path, display_name):
         name = v.strip().split(",")[0].upper()
         if name in ("SPLIT2", "SPLIT3"):
             structures.append(f"Neutral,TDBLOSSOM,256,{rc},0,None")
-        elif ra_theater == "interior":
-            # RA interior has NO terrain-object art (trees/rocks all
-            # temperate+snow only) -- a placed object with NULL art is a
-            # render risk. Desert cacti/rocks are dropped for now; rocks are
-            # impassable decor in TD so some chokepoints open up. TODO:
-            # neutral-building port like the blossom if it plays poorly.
-            dropped_terrain += 1
-        else:
+        elif name in RA_TERRAIN:
             terrain.append((rc, f"{name},None"))
+        else:
+            dropped_terrain[name] = dropped_terrain.get(name, 0) + 1
+    if dropped_terrain:
+        print(f"  terrain objects with no RA type, dropped: {dropped_terrain}")
 
     mapx, mapy = offx + tdX, offy + tdY
     # Waypoints 0-7 are MP start positions only on real multiplayer sources
@@ -418,12 +308,10 @@ def convert(td_ini_path, out_path, display_name):
         except Exception as e:
             print(f"  preview: classic render unavailable ({e}); block map")
     write_triplet(out_path, display_name, ra_theater, mapx, mapy, tdWi, tdHe,
-                  mappack_raw, bytes(overlay), starts, terrain, structures, ttype,
-                  tdtiles_raw, preview_png)
-    print(f"  placed {placed} terrain cells ({unmapped} unmapped), {tib} tiberium cells, "
-          f"{len(starts)} start positions ({src}), {len(terrain)} terrain objects"
-          + (f" ({dropped_terrain} dropped, no interior art)" if dropped_terrain else "")
-          + f", {len(structures)} blossom trees")
+                  mappack_raw, bytes(overlay), starts, terrain, structures, ttype, preview_png)
+    print(f"  placed {placed} template cells ({unmapped} unmapped), {tib} tiberium cells, "
+          f"{len(starts)} start positions ({src}), {len(terrain)} terrain objects, "
+          f"{len(structures)} blossom trees")
     print(f"  -> {out_path} (+ .json + .tga)")
 
 HOUSES = ["Spain", "Greece", "USSR", "England", "Ukraine", "Germany", "France", "Turkey",
@@ -450,8 +338,7 @@ def synth_starts(mapx, mapy, w, h):
     return pts
 
 def write_triplet(path, name, theater, mapx, mapy, mapw, maph,
-                  mappack_raw, overlay_raw, starts, terrain, structures, ttype,
-                  tdtiles_raw=None, preview_png=None):
+                  mappack_raw, overlay_raw, starts, terrain, structures, ttype, preview_png=None):
     L = []
     def sec(title, kvs):
         L.append(f"[{title}]")
@@ -462,7 +349,7 @@ def write_triplet(path, name, theater, mapx, mapy, mapw, maph,
                   ("CarryOverCap", "-1"), ("CarryOverMoney", "0"), ("Percent", "100"),
                   ("Intro", "<none>"), ("Win", "<none>"), ("Lose", "<none>"),
                   ("Brief", "<none>"), ("Action", "<none>"), ("Author", "TF transcoder")])
-    sec("Map", [("Theater", theater.capitalize()), ("X", mapx), ("Y", mapy),
+    sec("Map", [("Theater", theater), ("X", mapx), ("Y", mapy),
                 ("Width", mapw), ("Height", maph)])
     for sct in ("SMUDGE", "CellTriggers", "TeamTypes", "INFANTRY",
                 "Base", "UNITS", "AIRCRAFT", "SHIPS", "Trigs"):
@@ -474,16 +361,13 @@ def write_triplet(path, name, theater, mapx, mapy, mapw, maph,
     sec("Waypoints", [(str(i), c) for i, c in enumerate(starts)])
     sec("MapPack", uublock_encode(lcw_block_compress(mappack_raw)))
     sec("OverlayPack", uublock_encode(lcw_block_compress(overlay_raw)))
-    if tdtiles_raw is not None:
-        sec("TFTDTiles", uublock_encode(lcw_block_compress(tdtiles_raw)))
     with open(path, "w", newline="\r\n", encoding="latin-1") as f:
         f.write("\r\n".join(L) + "\r\n")
 
     # ---- .json discovery manifest ----
-    import json
     base = os.path.splitext(path)[0]
     manifest = {"MapTileX": mapx, "MapTileY": mapy, "MapTileWidth": mapw,
-                "MapTileHeight": maph, "Theater": theater.upper(), "Waypoints": starts}
+                "MapTileHeight": maph, "Theater": CLIMATE.get(theater, theater.upper()), "Waypoints": starts}
     with open(base + ".json", "w") as f:
         json.dump(manifest, f, separators=(",", ":"))
 

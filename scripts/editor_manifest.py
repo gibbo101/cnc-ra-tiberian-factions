@@ -11,9 +11,8 @@ BUILDINGS / UNITS / INFANTRY are embedded tables in mapeditor.json entry form (s
 from the editor's previously compiled-in tables, which were verified in-game).
 Review against redalert/defines.h ids and CCDATA/rules.ini
 when editing. TEMPLATES are derived, not embedded: ids/names/sizes come from
-scripts/td_ra_tile_map.json (the same file build_td_tiles.py generates the DLL enum and
-tileset data from), and per-icon land strings + usage masks from the Mobius editor
-fork's TD template table -- the native editor is a port of that fork, so the fork's
+scripts/td_ra_tile_map.json (written by td_templates.py with the DLL enum), and per-icon land
+strings + usage masks from the Mobius editor fork's TD template table -- the native editor is a port of that fork, so the fork's
 strings are the editor-semantics ground truth ('X' = filler icon, parsed as Clear).
 
 Usage: editor_manifest.py [--verify <dump.json>]
@@ -27,7 +26,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from build_td_tiles import MAPPER_JSON, REPO
+from td_templates import MAPPER_JSON, REPO
 
 OUT = REPO / "resources/remaster_mods/Vanilla_RA/mapeditor.json"
 FORK_TD_TEMPLATES = REPO.parent / "mobius-editor/CnCTDRAMapEditor/TiberianDawn/TemplateTypes.cs"

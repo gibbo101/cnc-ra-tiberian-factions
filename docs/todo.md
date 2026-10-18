@@ -77,10 +77,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ## Loose ends on shipped features
 
-- **TD rivers read as open water.** TD's own data types every river template `LAND_WATER`, banks
-  included (TD has no river land type), so on a TD river RA spawns floating water crates and its
-  ships may path upriver. Port TD's river templates as `LAND_RIVER`: ground units are blocked as
-  in TD. Seen on Sand Trap (`td-base-art.md`, build plan step 1).
+- **The map editor on TD theatres.** `cnc-map-editor` knows RA's three theatres only: it needs
+  `Desert`, `TDTemperate` and `Winter` with TD's tilesets, and the desert terrain types (`T04`,
+  `T09`, `T18`, `ROCK1` to `ROCK7`) in `mapeditor.json` (`td-base-art.md`).
 - **Craters from cannon fire.** TD's tank guns explode as `VEH-HIT3`, which forms no crater, so
   only rockets, missiles and artillery leave them (MLRS craters on a TD slot, `td-base-art.md`).
   Decide whether TD cannons crater, and check every TS weapon's impact animation the same way.

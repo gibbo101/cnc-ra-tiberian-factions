@@ -983,98 +983,24 @@ bool CellClass::Get_Template_Info(char* template_name, int& icon, void*& image_d
 {
     TemplateTypeClass const* ttype = NULL;
 
-    // TF: on a TD theatre a template goes out under TD's own name, which TD's terrain tileset draws.
+    // TF: on a TD theatre a TD template loaded for it goes out under TD's own name, which TD's terrain tileset
+    // draws; anything else goes out as clear ground, as the launcher crashes on a name its tileset lacks.
     if (Scen.Theater >= THEATER_DESERT) {
-        bool td = TType >= TEMPLATE_TDSH1 && TType < TEMPLATE_COUNT;
-        bool clear = TType == TEMPLATE_NONE || TType == TEMPLATE_CLEAR1 || TType == 255;
-        ttype = &TemplateTypeClass::As_Reference(clear ? TEMPLATE_CLEAR1 : TType);
-        icon = clear ? Clear_Icon() : TIcon;
+        bool td = TType >= TEMPLATE_TDSH1 && TType < TEMPLATE_COUNT
+                  && TemplateTypeClass::As_Reference(TType).ImageData != NULL;
+        ttype = &TemplateTypeClass::As_Reference(td ? TType : TEMPLATE_CLEAR1);
+        icon = td ? TIcon : Clear_Icon();
         char const* name = ttype->IniName;
         if (td) {
-            name += (Scen.Theater == THEATER_WINTER && strncmp(name, "TDW", 3) == 0) ? 3 : 2;
+            name += 2;
         }
         strcpy(template_name, name);
         image_data = (void*)ttype->ImageData;
         return true;
     }
 
-    // TF: a TD-ported template reaches the launcher's static map and radar as a vanilla stand-in, picked by its
-    // icon's art class (TF_TdTileRadarClass); its own art draws through the dynamic map.
-    if (TType >= TEMPLATE_TDSH1 && TType < TEMPLATE_COUNT) {
-        // A template name the launcher's atlas lacks NULL-crashes it, and the interior atlas lacks the stand-ins
-        // below, so interior (TD desert) maps report the desert radar palette's interior templates instead.
-        if (Scen.Theater == THEATER_INTERIOR) {
-            extern char const* const TF_TdTileRadarClass[];
-            char const* irow = TF_TdTileRadarClass[TType - TEMPLATE_TDSH1];
-            char icls = (TIcon < (int)strlen(irow)) ? irow[TIcon] : 'C';
-            TemplateTypeClass const* stand;
-            icon = 0;
-            switch (icls) {
-            case 'W':
-                stand = &TemplateTypeClass::As_Reference(TEMPLATE_ARRO0001);
-                break;
-            case 'B':
-                stand = &TemplateTypeClass::As_Reference(TEMPLATE_ARRO0002);
-                break;
-            case 'R':
-                stand = &TemplateTypeClass::As_Reference(TEMPLATE_ARRO0003);
-                break;
-            case 'K': // rock/cliff (slopes + boulders, name-classified)
-                stand = &TemplateTypeClass::As_Reference(TEMPLATE_ARRO0004);
-                break;
-            default:
-                stand = &TemplateTypeClass::As_Reference(TEMPLATE_CLEAR1);
-                icon = Clear_Icon();
-                break;
-            }
-            strcpy(template_name, stand->IniName);
-            image_data = (void*)stand->ImageData;
-            return true;
-        }
-        extern short const TF_TdTileVanillaTwin[];
-        short twin = TF_TdTileVanillaTwin[TType - TEMPLATE_TDSH1];
-        if (twin >= 0) {
-            TemplateTypeClass const* tw = &TemplateTypeClass::As_Reference((TemplateType)twin);
-            strcpy(template_name, tw->IniName);
-            icon = TIcon;
-            image_data = (void*)tw->ImageData;
-            return true;
-        }
-        extern char const* const TF_TdTileRadarClass[];
-        char const* row = TF_TdTileRadarClass[TType - TEMPLATE_TDSH1];
-        char cls = (TIcon < (int)strlen(row)) ? row[TIcon] : 'C';
-        if (cls == 'W') {
-            ttype = &TemplateTypeClass::As_Reference(TEMPLATE_WATER);
-            icon = 0;
-            for (int face = FACING_N; face < FACING_COUNT; face++) {
-                CellClass const* adj = Adjacent_Cell((FacingType)face);
-                if (adj != NULL
-                    && ((adj->TType >= TEMPLATE_RIVER01 && adj->TType <= TEMPLATE_RIVER13)
-                        || adj->TType == TEMPLATE_TDBRIDGE1 || adj->TType == TEMPLATE_TDBRIDGE2)) {
-                    ttype = &TemplateTypeClass::As_Reference(TEMPLATE_RIVER13);
-                    icon = 6;
-                    break;
-                }
-            }
-        } else if (cls == 'R') {
-            ttype = &TemplateTypeClass::As_Reference(TEMPLATE_RIVER13);
-            icon = 6;
-        } else if (cls == 'K') {
-            ttype = &TemplateTypeClass::As_Reference(TEMPLATE_SLOPE01);
-            icon = 0;
-        } else if (cls == 'B') {
-            ttype = &TemplateTypeClass::As_Reference(TEMPLATE_SHORE02);
-            icon = 9;
-        } else {
-            ttype = &TemplateTypeClass::As_Reference(TEMPLATE_CLEAR1);
-            icon = Clear_Icon();
-        }
-        strcpy(template_name, ttype->IniName);
-        image_data = (void*)ttype->ImageData;
-        return true;
-    }
-
-    if (TType != TEMPLATE_NONE && TType != TEMPLATE_CLEAR1
+    // TF: a TD template is drawn only on the TD theatres; elsewhere the launcher would crash on its name.
+    if (TType != TEMPLATE_NONE && TType != TEMPLATE_CLEAR1 && TType < TEMPLATE_TDSH1
         && TType != 255) { // Not sure why it's checking for 255 here since that's a valid tile type. ST - 6/4/2019
         ttype = &TemplateTypeClass::As_Reference(TType);
         icon = TIcon;
