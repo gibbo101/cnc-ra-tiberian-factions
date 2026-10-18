@@ -11,7 +11,7 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 ## Next version: first jobs
 
 - **TS-Music and the Settings page** (`skirmish-music.md`): a TIBERIAN FACTIONS SETTINGS page in place of the main
-  menu's HELP, tabbed like ADD-ONS; its AUDIO tab writes `tf_music.ini` (Soundtrack, a row per faction with two
+  menu's HELP, tabbed like ADD-ONS; its AUDIO tab writes `tf_music.ini` (a row per faction, Mix by default, with two
   spare slots, GET ADD-ON where TS-Music is missing). Upload TS-Music (Private first) and give it an ADD-ONS row.
   A Random lobby pick plays the stock rotation: its faction is known only after the host's `@@TFL` message.
   The dev log `tf_music.log` stays until this ships.

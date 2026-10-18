@@ -7,11 +7,11 @@ optional TS-Music pack (Tiberian Sun and Firestorm's in-game themes).
 ## What ships
 
 - **Menu:** the Hell March Retaliation remix, fading in after the startup intro.
-- **Skirmish, Mix (the default):** the mod's RA and TD rotation for the player's audio setting, randomised. On
+- **Skirmish, Mix (every faction's default):** the mod's RA and TD rotation for the player's audio setting, randomised. On
   Remastered that is every remastered RA track and the remastered TD tracks minus menu cues and score stingers;
   Classic and Bonus keep their own rotations. With TS-Music enabled, its 26 tracks join.
-- **Skirmish, by setting:** Red Alert only, Tiberian Dawn only, Tiberian Sun only, or Faction, where each
-  faction plays its own choice (by default RA for Allies and Soviets, TD for GDI and Nod, TS for TS GDI).
+- **Skirmish, by faction:** each faction plays its own choice of Mix, Red Alert only, Tiberian Dawn only or
+  Tiberian Sun only, so Allies can play Red Alert's tracks while GDI plays Tiberian Dawn's.
 - **Jukebox:** TS-Music's tracks listed as "(Tiberian Sun) <title>" and "(Firestorm) <title>", under the
   Red Alert game and Remastered track filters. They are listed only while TS-Music is enabled.
 
@@ -38,8 +38,7 @@ music uses: 44.1 kHz stereo MS-ADPCM. The tracks already sit at the stock tracks
 
 ```ini
 [Music]
-; Soundtrack is MIX, FACTION, RA, TD or TS; each faction's key is RA, TD, TS or MIX
-Soundtrack=MIX
+; each faction plays MIX, RA, TD or TS
 Allies=RA
 Soviets=RA
 GDI=TD
@@ -47,7 +46,7 @@ Nod=TD
 TSGDI=TS
 ```
 
-An unset key keeps its default, and an inline `;` comment after a value is ignored.
+An unset faction plays MIX, and an inline `;` comment after a value is ignored.
 
 ## How the launcher picks the music
 

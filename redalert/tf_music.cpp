@@ -36,25 +36,11 @@ typedef bool(__thiscall* JukeboxInitFn)(void* manager, bool start);
 typedef void(__cdecl* ClientFreeFn)(void* block);
 
 /*
-**	Each lobby faction value's key in tf_music.ini and its soundtrack by default: the lobby value is
-**	the country row plus two (GDI, Nod, Soviets, Allies, then the duplicate rows, TS GDI on Germany's).
+**	Each lobby faction value's key in tf_music.ini: the lobby value is the country row plus two (GDI,
+**	Nod, Soviets, Allies, then the duplicate rows, TS GDI on Germany's).
 */
-struct FactionMusic
-{
-    const char* Key;
-    const char* Default;
-};
-
-const FactionMusic FACTION_MUSIC[] = {{NULL, NULL},
-                                      {NULL, NULL},
-                                      {"GDI", "TD"},
-                                      {"Nod", "TD"},
-                                      {"Soviets", "RA"},
-                                      {"Allies", "RA"},
-                                      {"Soviets", "RA"},
-                                      {"TSGDI", "TS"},
-                                      {"Allies", "RA"},
-                                      {"Allies", "RA"}};
+const char* const FACTION_KEYS[] =
+    {NULL, NULL, "GDI", "Nod", "Soviets", "Allies", "Soviets", "TSGDI", "Allies", "Allies"};
 
 /*
 **	True when an enabled mod supplies the TS-Music pack's tracks, so the launcher can play them.
@@ -125,24 +111,17 @@ const char* Playlist_For(const char* choice, bool ts)
 }
 
 /*
-**	The TF playlist for this skirmish: the Soundtrack setting (MIX by default), or under FACTION
-**	the lobby faction's own choice.
+**	The TF playlist for this skirmish: the lobby faction's own choice, MIX when unset.
 */
 const char* Wanted_Playlist(void)
 {
-    char setting[16];
-    Music_Setting("Soundtrack", "MIX", setting, sizeof(setting));
-    bool ts = TS_Music_Present();
-    if (_stricmp(setting, "FACTION") != 0) {
-        return Playlist_For(setting, ts);
-    }
     int faction = *(const int*)LOBBY_FACTION;
-    if (faction < 0 || faction >= (int)ARRAY_SIZE(FACTION_MUSIC) || FACTION_MUSIC[faction].Key == NULL) {
-        return NULL;
+    const char* key = (faction >= 0 && faction < (int)ARRAY_SIZE(FACTION_KEYS)) ? FACTION_KEYS[faction] : NULL;
+    char choice[16] = "MIX";
+    if (key != NULL) {
+        Music_Setting(key, "MIX", choice, sizeof(choice));
     }
-    char choice[16];
-    Music_Setting(FACTION_MUSIC[faction].Key, FACTION_MUSIC[faction].Default, choice, sizeof(choice));
-    return Playlist_For(choice, ts);
+    return Playlist_For(choice, TS_Music_Present());
 }
 
 #if TF_DEV_BUILD
