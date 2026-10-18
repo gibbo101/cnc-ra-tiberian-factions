@@ -191,6 +191,32 @@ bool TF_Dev_Rich_Start(void)
 #endif
 }
 
+// Dev: skirmish computer houses do nothing while Documents/CnCRemastered/tf_ai_off.flag exists (read once).
+bool TF_Dev_AI_Off(void)
+{
+#if TF_DEV_BUILD
+    static int cached = -1;
+    if (cached < 0) {
+        cached = 0;
+        const char* h = getenv("USERPROFILE");
+        if (h == NULL)
+            h = getenv("HOME");
+        if (h != NULL) {
+            char p[512];
+            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_ai_off.flag", h);
+            FILE* f = fopen(p, "r");
+            if (f != NULL) {
+                cached = 1;
+                fclose(f);
+            }
+        }
+    }
+    return cached != 0;
+#else
+    return false;
+#endif
+}
+
 extern int PreserveVQAScreen;
 
 
@@ -704,6 +730,15 @@ bool Read_Scenario(char* name)
 
     if (TF_Dev_Cheats() && Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
         PlayerPtr->Refund_Money(100000);
+    }
+
+    if (TF_Dev_AI_Off() && Session.Type != GAME_NORMAL) {
+        for (int i = 0; i < Logic.Count(); i++) {
+            TechnoClass* techno = (TechnoClass*)Logic[i];
+            if (techno != NULL && techno->Is_Techno() && !techno->House->IsHuman) {
+                techno->Assign_Mission(MISSION_SLEEP);
+            }
+        }
     }
 
 #endif

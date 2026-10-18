@@ -104,6 +104,7 @@ extern int Frame;
 CELL Coord_Cell(COORDINATE coord);
 bool Is_Refinery_Dock_Cell(CELL cell); // harvester-only refinery dock pad
 bool TF_Dev_Rich_Start(void);          // dev: 1,000,000 credits at skirmish start, armed by tf_cheap.flag
+bool TF_Dev_AI_Off(void);              // dev: skirmish computer houses do nothing, armed by tf_ai_off.flag
 bool Is_TS_Weap_Exit_Cell(CELL cell);  // TS war factory doorstep: kept clear for the leaving vehicle
 bool Is_TS_Apron_Cell(CELL cell);      // TS building apron: walkable, never buildable
 #if TF_DEV_BUILD
