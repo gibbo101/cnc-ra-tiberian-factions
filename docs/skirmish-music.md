@@ -43,7 +43,7 @@ TIBERIAN FACTIONS SETTINGS, in HELP's row on the main menu, sets the music. `TF_
 - **AUDIO** has a tab per faction under the game banners, the faction's crest, and four rows: MIX, RED ALERT, TIBERIAN
   DAWN and TIBERIAN SUN, the saved one ticked. A click saves it at once; it plays from the next track. While the
   TS-Music add-on is off, TIBERIAN SUN reads "Needs its add-on" and GET ADD-ON opens the ADD-ONS screen with
-  TS-Music ticked. DEFAULTS puts every faction back on MIX.
+  TS-Music selected. DEFAULTS puts every faction back on MIX.
 - **GAME RULES** shows COMING SOON.
 
 The page writes `Documents/CnCRemastered/tf_music.ini`, which the hook reads at every skirmish track:

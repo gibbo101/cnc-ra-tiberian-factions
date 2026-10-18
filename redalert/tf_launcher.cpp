@@ -1846,8 +1846,8 @@ void Bind_Click(void* screen, void* button, void* handler, int data)
 }
 
 /*
-**	Opens the ADD-ONS screen over the main menu, or brings `pack` up, ticked, on its tab if open; -1 opens the
-**	tab of the first required pack that is off. Packs that are on, and packs a faction needs, start ticked.
+**	Opens the ADD-ONS screen over the main menu with `pack` selected on its tab; -1 selects the first add-on that is
+**	off. Only the add-ons that are on start ticked: the player ticks the rest.
 */
 void Open_AddOns(int pack)
 {
@@ -1874,18 +1874,15 @@ void Open_AddOns(int pack)
         AddOnsSelected = 0;
         for (int other = PACK_COUNT - 1; other >= 0; other--) {
             bool on = Pack_On(Pack_State(other));
-            AddOnsTicked[other] = on || PACKS[other].NeededFor != NULL;
+            AddOnsTicked[other] = on;
             AddOnsKnockOn[other] = false;
-            AddOnsSelected = AddOnsTicked[other] && !on ? other : AddOnsSelected;
+            AddOnsSelected = on ? AddOnsSelected : other;
         }
         AddOnsTab = PACKS[AddOnsSelected].Kind;
     }
     if (pack >= 0 && pack < PACK_COUNT) {
         AddOnsSelected = pack;
         AddOnsTab = PACKS[pack].Kind;
-        if (AddOnsWanted == 0 && !AddOnsTicked[pack]) {
-            Tick_Pack(pack, true, false);
-        }
     }
     Refresh_AddOns();
     if (AddOnsTimer == 0) {
@@ -2346,7 +2343,7 @@ void __stdcall Enc_Back_Click(void*)
 }
 
 /*
-**	The TS GDI tab's gate: on to the ADD-ONS screen with the Tiberian Sun pack ticked.
+**	The TS GDI tab's gate: on to the ADD-ONS screen with the Tiberian Sun pack selected.
 */
 void __stdcall Enc_Gate_Click(void*)
 {

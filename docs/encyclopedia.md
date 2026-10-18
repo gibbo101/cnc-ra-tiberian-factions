@@ -19,7 +19,7 @@ live from the mod's rules. Addresses are ClientG.exe 1.153.745903.
   range in cells, reload, a second weapon and seats (passengers). A weapon shows its readable name
   (`TEXT_TF_ENC_WEAPON_<INI>`, from the `weapons` table in `descriptions.json`), else its INI name.
 - TS GDI without the Tiberian Sun HD Assets add-on loaded: GET TIBERIAN SUN HD ASSETS in place of the list, which
-  opens the ADD-ONS screen with the pack ticked (`pack-panel.md`).
+  opens the ADD-ONS screen with the pack selected (`pack-panel.md`).
 - The README credits EA's original manuals for the descriptions.
 
 ## Live stats

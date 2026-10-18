@@ -23,6 +23,7 @@ in `ecx`, so one handler serves every row or tab.
 
 - **Tabs** ASSETS, THEATRES and CAMPAIGNS (`PackInfo.Kind`), each a clone of BACK with a glow when open and a badge
   counting its changes. An empty tab shows COMING SOON.
+- **Ticks** start as what is on; every other screen that sends the player here selects its add-on, never ticks it.
 - **Rows**, four a tab: a checkbox (TD's, from Bonus Gallery), the pack's logo, name and state. A click on a row
   outside its checkbox selects it; the checkbox means "on".
 - **The selected pack**, on the right: name, logo, description, what it needs or what needs it, its status and a
@@ -70,7 +71,7 @@ It shows while any add-on is not on (`Pack_On`): never subscribed, downloading, 
 is fixed: YOU HAVE TIBERIAN FACTIONS ADD-ONS / AVAILABLE THAT ARE NOT ENABLED. The main menu is one object for the
 whole session, so a 2-second `SetTimer` on its UI thread refreshes it while it shows.
 
-**ENABLE ADD-ONS** opens the ADD-ONS screen with the first such add-on selected and ticked.
+**ENABLE ADD-ONS** opens the ADD-ONS screen with the first such add-on selected.
 
 Switching on uses the Mods screen's own toggle (`0x7BB7A0`) for an installed pack and adds a downloaded pack's ID
 to the profile's enabled list (`0x20E0D88`; the ID is zlib's CRC-32 of `ccmod.json`'s name followed by
@@ -84,7 +85,7 @@ startup, so an update switches the pack off once; the notice then shows.
 
 Picking TS GDI for any slot, or a slot taking it from the lobby's settings, raises ClientG's message box when the
 pack isn't loaded. **GO TO ADD-ONS** leaves the lobby through its own Back handler (`0x71C790`, on the next UI
-tick) and opens the ADD-ONS screen with the pack ticked. The box reports its first button as 2 and OK as 3.
+tick) and opens the ADD-ONS screen with the pack selected. The box reports its first button as 2 and OK as 3.
 
 ## Load Game check
 
