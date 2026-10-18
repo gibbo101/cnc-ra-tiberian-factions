@@ -106,6 +106,26 @@ frame outside the shore's shape.
 Terrain tilesets open no ZIP through an opener tile, so the mod's own terrain art (`TIB01`) stays a
 ZIP under its RA root.
 
+## TD maps in the Official list
+
+The skirmish lobby's Official list shows `INSTANCES.XML` entries named like RA's own
+(`Mobius_Red_Alert_Multiplayer_<n>_Map`): a TD entry set to Red Alert is not listed. A new entry
+needs its text, a `Mission` number, a `CNCMAPPREVIEWDATA.XML` entry on RA's 128-cell grid with one
+waypoint per player, and a thumbnail named after the entry
+(`MOBIUS_RED_ALERT_MULTIPLAYER_<n>_MAP.DDS`). Loose copies of both XMLs override CONFIG.MEG's.
+
+InstanceServerG builds its instance list from the base `Instances.xml` before the DLL loads, so a
+new entry launches through the carrier (`tf_launcher.cpp`, dev builds): ClientG sends it under
+Hastings' `D6` entry, whose client entry is hidden, and hands its map file over in
+`tf_carrier_mission.txt`; the DLL takes the handoff ahead of the carrier's `OverrideMapName`, and
+the carrier's key reads as the launched entry's, so the loading screen names it. Hastings itself is
+listed through its own entry, keeping `SCMD6EA.INI`. A placeholder instance can't carry: the server
+never starts it.
+
+`scripts/probes/td_official_list_probe.py` sets this up on a deployed build for TD's Sand Trap
+(entry 902, played on the desert theatre) and Hastings (990). Video memory at the menu is
+unchanged; a TD map in the match costs what any TD-terrain map does.
+
 ## Build plan
 
 1. **TD's own classic data and the map pipeline.** The TD theatres read TD's `DESERT.MIX`,
