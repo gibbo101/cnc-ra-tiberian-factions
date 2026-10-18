@@ -136,33 +136,6 @@ const char* Wanted_Playlist(void)
     return Playlist_For(choice, TF_TS_Music_Present());
 }
 
-#if TF_DEV_BUILD
-/*
-**	One line per skirmish music lookup the hook answers, capped at 200 a session so the log stays small.
-*/
-void Music_Log(const char* stock, const char* asked, bool found)
-{
-    static int lines = 0;
-    const char* up = getenv("USERPROFILE");
-    if (up == NULL || ++lines > 200) {
-        return;
-    }
-    char path[512];
-    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_music.log", up);
-    FILE* log = fopen(path, "a");
-    if (log != NULL) {
-        fprintf(log,
-                "faction=%d ts_music=%d stock=%s asked=%s %s\n",
-                *(const int*)LOBBY_FACTION,
-                TF_TS_Music_Present() ? 1 : 0,
-                stock,
-                asked,
-                found ? "FOUND" : "missing");
-        fclose(log);
-    }
-}
-#endif
-
 /*
 **	Stands in for the music manager's find-by-name at the ambient-music call: a skirmish event
 **	is swapped for the wanted TF playlist under the same prefix when that playlist exists.
@@ -173,21 +146,17 @@ void* __fastcall Ambient_Find(void* manager, void*, const MsvcString* name)
     if (name->size == PREFIX_LENGTH + sizeof(SKIRMISH_EVENT) - 1
         && _stricmp(chars + PREFIX_LENGTH, SKIRMISH_EVENT) == 0) {
         const char* playlist = Wanted_Playlist();
-        static char text[64];
-        snprintf(text, sizeof(text), "%.3s_TF_MUS_%s", chars, playlist != NULL ? playlist : "(stock)");
-        void* event = NULL;
         if (playlist != NULL) {
+            static char text[64];
+            snprintf(text, sizeof(text), "%.3s_TF_MUS_%s", chars, playlist);
             MsvcString ours = {};
             *(char**)ours.buf = text;
             ours.size = (unsigned)strlen(text);
             ours.capacity = sizeof(text) - 1;
-            event = ((MusicFindFn)MUSIC_FIND)(manager, &ours);
-        }
-#if TF_DEV_BUILD
-        Music_Log(chars, text, event != NULL);
-#endif
-        if (event != NULL) {
-            return event;
+            void* event = ((MusicFindFn)MUSIC_FIND)(manager, &ours);
+            if (event != NULL) {
+                return event;
+            }
         }
     }
     return ((MusicFindFn)MUSIC_FIND)(manager, name);
