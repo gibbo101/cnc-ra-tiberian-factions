@@ -983,6 +983,21 @@ bool CellClass::Get_Template_Info(char* template_name, int& icon, void*& image_d
 {
     TemplateTypeClass const* ttype = NULL;
 
+    // TF: on a TD theatre a template goes out under TD's own name, which TD's terrain tileset draws.
+    if (Scen.Theater >= THEATER_DESERT) {
+        bool td = TType >= TEMPLATE_TDSH1 && TType < TEMPLATE_COUNT;
+        bool clear = TType == TEMPLATE_NONE || TType == TEMPLATE_CLEAR1 || TType == 255;
+        ttype = &TemplateTypeClass::As_Reference(clear ? TEMPLATE_CLEAR1 : TType);
+        icon = clear ? Clear_Icon() : TIcon;
+        char const* name = ttype->IniName;
+        if (td) {
+            name += (Scen.Theater == THEATER_WINTER && strncmp(name, "TDW", 3) == 0) ? 3 : 2;
+        }
+        strcpy(template_name, name);
+        image_data = (void*)ttype->ImageData;
+        return true;
+    }
+
     // TF: a TD-ported template reaches the launcher's static map and radar as a vanilla stand-in, picked by its
     // icon's art class (TF_TdTileRadarClass); its own art draws through the dynamic map.
     if (TType >= TEMPLATE_TDSH1 && TType < TEMPLATE_COUNT) {

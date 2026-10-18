@@ -605,7 +605,7 @@ void TerrainTypeClass::Init(TheaterType theater)
             */
             ((void const*&)terrain.ImageData) = NULL;
 
-            if (terrain.Theater & (1 << theater)) {
+            if (terrain.Theater & (1 << TF_Base_Theater(theater))) { // TF: TD theatres take temperate's trees
 
                 /*
                 **	Load in the appropriate object shape data.

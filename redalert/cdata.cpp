@@ -2797,8 +2797,17 @@ void TemplateTypeClass::Init(TheaterType theater)
         TemplateTypeClass const& tplate = As_Reference(index);
 
         ((void const*&)tplate.ImageData) = NULL;
-        if (tplate.Theater & (1 << theater)) {
-            _makepath(fullname, NULL, NULL, tplate.IniName, Theaters[theater].Suffix);
+        // TF: a TD template loads only in its own TD theatre, a desert one from its .INT classic shapes.
+        bool allowed = (tplate.Theater & (1 << TF_Base_Theater(theater))) != 0;
+        char const* suffix = Theaters[theater].Suffix;
+        if (theater >= THEATER_DESERT && index >= TEMPLATE_TDSH1) {
+            allowed = (tplate.Theater & (theater == THEATER_DESERT ? THEATERF_INTERIOR : THEATERF_TEMPERATE)) != 0;
+            if (theater == THEATER_DESERT) {
+                suffix = Theaters[THEATER_INTERIOR].Suffix;
+            }
+        }
+        if (allowed) {
+            _makepath(fullname, NULL, NULL, tplate.IniName, suffix);
             ptr = MFCD::Retrieve(fullname);
             ((void const*&)tplate.ImageData) = ptr;
             ((unsigned char&)tplate.Width) = Get_IconSet_MapWidth(ptr);

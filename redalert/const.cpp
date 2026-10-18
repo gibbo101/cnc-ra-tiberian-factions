@@ -531,6 +531,10 @@ TheaterDataType const Theaters[THEATER_COUNT] = {
     {"TEMPERATE", "TEMPERAT", "TEM"},
     {"SNOW", "SNOW", "SNO"},
     {"INTERIOR", "INTERIOR", "INT"},
+    // TF: TD's theatres borrow RA temperate's classic mix and palette; the launcher draws TD's art.
+    {"DESERT", "TEMPERAT", "TEM"},
+    {"TDTEMPERATE", "TEMPERAT", "TEM"},
+    {"WINTER", "TEMPERAT", "TEM"},
 };
 
 unsigned char const RemapCiv2[256] = {
