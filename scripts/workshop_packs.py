@@ -394,11 +394,11 @@ def prune(folder, sub, keep):
 
 
 def check_md5(mod, folder):
-    """Stop unless every file the mod's md5 list names is in the built folder with that checksum; a pack whose
-    files are gitignored would otherwise ship empty."""
+    """What is wrong when a file the mod's md5 list names is missing from the built folder or differs, else "";
+    a pack whose files are gitignored would otherwise ship empty."""
     listing = A.WORKSHOP[mod].get("md5")
     if not listing:
-        return
+        return ""
     music = os.path.join(folder, "Data", "AUDIO", "MUSIC")
     bad = []
     for line in open(os.path.join(A.REPO, listing)):
@@ -406,16 +406,23 @@ def check_md5(mod, folder):
         path = os.path.join(music, name)
         if not os.path.exists(path) or hashlib.md5(open(path, "rb").read()).hexdigest() != digest:
             bad.append(name)
-    if bad:
-        raise SystemExit(f"{folder}: {len(bad)} file(s) missing or not as {listing} lists them, e.g. {bad[0]}. "
-                         "Build them first (scripts/ts_music_build.py).")
+    if not bad:
+        return ""
+    return (f"{folder}: {len(bad)} file(s) missing or not as {listing} lists them, e.g. {bad[0]}. "
+            "Build them first (scripts/ts_music_build.py).")
 
 
-def build(mod, folder, host="RA"):
-    """The whole Workshop folder for one asset-pack mod, for one game, and nothing an earlier build left."""
+def build(mod, folder, host="RA", strict=True):
+    """The whole Workshop folder for one asset-pack mod, for one game, and nothing an earlier build left. A file
+    missing from the md5 list stops it, or with strict off skips the mod with a warning."""
     marker = write_manifest(mod, folder, host)
     copy_binaries(mod, folder, host)
-    check_md5(mod, folder)
+    problem = check_md5(mod, folder)
+    if problem and strict:
+        raise SystemExit(problem)
+    if problem:
+        print("WARNING: skipped", mod, "--", problem, file=sys.stderr)
+        return
     listed, written = write_xml(mod, folder, host)
     prune(folder, os.path.join("Data", "XML"), written)
     prune(folder, "CCDATA", [marker] if marker else [])

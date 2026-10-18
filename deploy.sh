@@ -88,7 +88,7 @@ if [[ "$NO_BUILD" -eq 0 ]]; then
     for mod in "${USED_MODS[@]}"; do
         scripts/clear_dir.sh "${LOCAL_ROOT:?}${mod:?}/"
     done
-    python3 scripts/stage_asset_packs.py "$LOCAL_OUTPUT" --full
+    python3 scripts/stage_asset_packs.py "$LOCAL_OUTPUT" --full --strict
     cp build/remaster/RelWithDebInfo/RedAlert.dll "${LOCAL_OUTPUT}Data/"
 fi
 

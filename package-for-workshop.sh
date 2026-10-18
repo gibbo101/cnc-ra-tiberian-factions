@@ -75,7 +75,7 @@ if [[ ! -f "$BUILT_DLL" ]]; then
     exit 1
 fi
 scripts/clear_dir.sh "$BUILD_DIR"
-python3 scripts/stage_asset_packs.py --full "$BUILD_DIR"
+python3 scripts/stage_asset_packs.py --full --strict "$BUILD_DIR"
 cp "$BUILT_DLL" "$BUILD_DIR/Data/RedAlert.dll"
 
 mkdir -p "$STAGE_DIR/$SUBFOLDER_NAME"

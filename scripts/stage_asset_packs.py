@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Stage the asset packs into a built mod folder.
 
-Usage:  stage_asset_packs.py <mod dir> [--full]
+Usage:  stage_asset_packs.py <mod dir> [--full] [--strict]
 
 Copies every pack's Data/ART and Data/AUDIO into <mod dir>/Data, except the PACK_ONLY objects and the packs a
 Workshop mod in asset_packs.USED carries: that mod is built whole in the folder beside it (scripts/workshop_packs.py). Then
@@ -15,6 +15,8 @@ The XML always starts from the source tree, so staging twice gives the same resu
 --full first copies the mod's own tree (resources/remaster_mods/Vanilla_RA) over <mod dir>: a
 data-only change is restaged without relinking the DLL. The CMake build runs this script after
 its own copy of that tree.
+--strict stops when a Workshop mod in asset_packs.USED lacks a gitignored file; without it that mod is skipped
+with a warning, so a checkout without the files still builds. deploy.sh and the packager pass it.
 
 License: GPL v3.
 """
@@ -65,7 +67,7 @@ def merged(rel, pack_file, root):
     return text
 
 
-def stage(mod_dir, full=False):
+def stage(mod_dir, full=False, strict=False):
     stray = A.split(dry_run=True)
     if stray:
         raise SystemExit("asset-pack files or XML entries are in resources/remaster_mods/Vanilla_RA: "
@@ -95,7 +97,7 @@ def stage(mod_dir, full=False):
             skip |= {os.path.relpath(A.art_zip(name, "UNITS"), src).upper() for name in A.PACK_ONLY}
             copy_tree(src, os.path.join(data, sub), skip)
     for mod in A.USED:
-        workshop_packs.build(mod, os.path.join(os.path.dirname(os.path.normpath(mod_dir)), mod))
+        workshop_packs.build(mod, os.path.join(os.path.dirname(os.path.normpath(mod_dir)), mod), strict=strict)
     for rel, text in texts.items():
         dst = os.path.join(data, rel)
         os.makedirs(os.path.dirname(dst), exist_ok=True)
@@ -107,4 +109,4 @@ if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     if len(args) != 1:
         raise SystemExit(__doc__)
-    stage(os.path.abspath(args[0]), full="--full" in sys.argv)
+    stage(os.path.abspath(args[0]), full="--full" in sys.argv, strict="--strict" in sys.argv)
