@@ -3746,6 +3746,10 @@ typedef enum TheaterType : char
     THEATER_TEMPERATE,
     THEATER_SNOW,
     THEATER_INTERIOR,
+    // TF: TD's desert, temperate and winter, drawn from TD's own terrain tilesets (launcher slots 3-5).
+    THEATER_DESERT,
+    THEATER_TDTEMPERATE,
+    THEATER_WINTER,
 
     THEATER_COUNT,
     THEATER_FIRST = 0
@@ -3761,6 +3765,12 @@ inline TheaterType operator++(TheaterType& n)
 #define THEATERF_TEMPERATE (1 << THEATER_TEMPERATE)
 #define THEATERF_SNOW      (1 << THEATER_SNOW)
 #define THEATERF_INTERIOR  (1 << THEATER_INTERIOR)
+
+// The RA theatre whose classic data and object rules a TD theatre borrows (docs/td-base-art.md).
+inline TheaterType TF_Base_Theater(TheaterType theater)
+{
+    return (theater >= THEATER_DESERT) ? THEATER_TEMPERATE : theater;
+}
 
 typedef struct
 {
