@@ -3,7 +3,7 @@
 **Status:** Reference. The mod's skirmish, jukebox and menu music: TF's playlists, music by faction, and the
 optional TS-Music pack (Tiberian Sun and Firestorm's in-game themes).
 **Open:** TS-Music is a Friends Only Workshop item (3822605221) until it goes public; a Random lobby pick plays
-the stock rotation; LAN is untested (each player's own faction at `0x20E0CF8`).
+Mix whatever the faction's choice; LAN is untested (each player's own faction at `0x20E0CF8`).
 
 ## What ships
 
