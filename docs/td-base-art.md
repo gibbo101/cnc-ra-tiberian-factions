@@ -66,8 +66,9 @@ shipped saving is the base-identical part of the 169 MB of `TD*` ZIPs in the bui
 
 ## Open
 
-- **Build step.** Generate the empty-rooted tileset and its openers from the frame-to-base map
-  (the md5 matching in `scripts/probes/td_compare.py`), and stop staging the replaced ZIPs.
+- **Build step.** For TD's units, buildings and effects alike: generate the empty-rooted tilesets
+  and their openers from the frame-to-base map (the md5 matching in `scripts/probes/td_compare.py`),
+  and stop staging the replaced ZIPs.
 - **RA_VFX effects.** The probe re-rooted `RA_VFX` but no combat ran, so RA's own effects are
   unchecked. A tileset with fewer of its own tiles is the lower-risk host.
 - **Performance.** The same ZIPs open from a MEG instead of a loose file. Load time and memory on

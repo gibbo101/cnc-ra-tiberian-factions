@@ -147,9 +147,8 @@ from the shadows… We estimated the Brotherhood would tire of the USSR by the e
   shadows them by name (`campaign-tabs-research.md`), so all story text above fits in
   `[Briefing]` with no size constraint. Note the *select-screen* briefing
   panel is a separate, master-text path and still obeys the same-size rule.
-- **Theatres:** temperate and snow. HD desert works through the interior slot, but its TD terrain
-  art is parked (`theatre-desert-feasibility.md`), hence no Africa missions despite Nod's canon
-  strongholds there.
+- **Theatres:** all six, RA's three and TD's desert, temperate and winter (`td-base-art.md`), so
+  Nod's canon strongholds in Africa can be desert missions.
 - **Win/lose/briefing gates:** the four DLL gates in `coop-missions-design.md` §5.
 - Authoring: the native `cnc-map-editor` or the Mobius fork, RA-format `.mpr`/INI scenarios.
 
