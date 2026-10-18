@@ -71,6 +71,8 @@ sections, and `package-for-workshop.sh` runs it.
 
 ### Art and rendering
 - `launcher-render-contracts.md` — how the launcher draws art; house rules for TS art.
+- `td-base-art.md` — reading TD art from the base game's MEG instead of shipping copies.
+- `cameo-dds.md` — sidebar cameos as DXT1 DDS, and why the badges stay baked.
 - `td-tile-hd-loose-art-investigation.md` — TD terrain tiles in HD.
 - `theatre-desert-feasibility.md` — HD desert in the interior theatre slot.
 - `classic-mode-palette-remap.md` — classic graphics mode, locked out.

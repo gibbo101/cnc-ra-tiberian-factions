@@ -25,8 +25,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   (`docs/asset-packs.md`). Where the rest goes: 182 MB of sidebar cameos, the 177 MB UI atlas (same size as EA's),
   67 MB of movies, 51 MB of lobby thumbnails (same-size swaps for EA's), 43 MB CONFIG.MEG. Leads:
   `TSWEAP2.ZIP` (2.5 MB), the pre-rebuild war factory overlay, which the game never draws, can go
-  once the map editor's factory overlay (`editor_manifest.py`) reads the current layers; whether the
-  launcher takes a DXT DDS for a loose cameo (an in-game check of every faction's sidebar).
+  once the map editor's factory overlay (`editor_manifest.py`) reads the current layers; cameos as
+  DXT1 DDS (`cameo-dds.md`: proven in the sidebar, 176 MB to about 32 MB); TD art read from the base
+  game (`td-base-art.md`).
   It grows from here: TS Nod (21 buildings and 19 units in the HD hand-offs) and the TS HD
   rebuilds. Restage a build folder clean (`stage_asset_packs.py --full`, as
   `package-for-workshop.sh` does) before measuring it.
@@ -76,6 +77,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ## Loose ends on shipped features
 
+- **Craters from cannon fire.** TD's tank guns explode as `VEH-HIT3`, which forms no crater, so
+  only rockets, missiles and artillery leave them (MLRS craters on a TD slot, `td-base-art.md`).
+  Decide whether TD cannons crater, and check every TS weapon's impact animation the same way.
 - **TS Service Depot seat:** the drive-on to the pad's centre catches only some approaches. When
   the HD depot's pad ring is centred on the middle cell, `TS_DEPOT_SEAT_EAST_PX`/`SOUTH_PX` go to
   0 and the drive-on rail comes out (`firestorm-design.md`).
