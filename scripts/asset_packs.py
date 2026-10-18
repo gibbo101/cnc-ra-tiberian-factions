@@ -325,10 +325,21 @@ def is_rle_cameo(path):
 
 def copy_newer(src, dst):
     """Copy unless dst already has src's size and is no older, keeping rsync-friendly mtimes. A sidebar cameo is
-    written run-length encoded (the launcher reads RLE TGA) with src's mtime, and is current only at that mtime."""
+    written as DXT1 DDS beside dst (scripts/cameo_dds.py), or run-length encoded TGA when it overrides the launcher's
+    atlas, with src's mtime, and is current only at that mtime."""
     import shutil
     from PIL import Image
     cameo = os.path.basename(src).upper().startswith("BUILDICON_") and src.upper().endswith(".TGA")
+    if cameo:
+        import cameo_dds
+        if not cameo_dds.is_atlas_name(os.path.basename(src)[:-4]):
+            dds = dst[:-4] + ".DDS"
+            if os.path.exists(dst):
+                os.remove(dst)
+            if not (os.path.exists(dds) and os.stat(dds).st_mtime_ns == os.stat(src).st_mtime_ns):
+                cameo_dds.write(src, dds)
+                shutil.copystat(src, dds)
+            return dds
     if os.path.exists(dst):
         a, b = os.stat(src), os.stat(dst)
         if cameo:
