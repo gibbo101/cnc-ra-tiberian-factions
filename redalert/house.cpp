@@ -1962,7 +1962,9 @@ void HouseClass::AI(void)
     // TF: skirmish base-builds from rules.ini's lowered IQProduction so Easy AIs build; campaigns keep vanilla's
     // MaxIQ threshold so the scripted enemies EA meant to sit still wait for their trigger.
     int iq_production = (Session.Type == GAME_NORMAL) ? Rule.MaxIQ : Rule.IQProduction;
-    if (!IsHuman && (IsBaseBuilding || IQ >= iq_production)) {
+    // TF: dev: tf_ai_off.flag stops a skirmish computer house building, producing and sending teams.
+    bool const tf_ai_off = !IsHuman && Session.Type != GAME_NORMAL && TF_Dev_AI_Off();
+    if (!tf_ai_off && !IsHuman && (IsBaseBuilding || IQ >= iq_production)) {
         IsBaseBuilding = true;
         IsStarted = true;
         IsAlerted = true;
@@ -2373,7 +2375,7 @@ void HouseClass::AI(void)
     /*
     **	Perform any expert system AI processing.
     */
-    if (IsBaseBuilding && AITimer == 0) {
+    if (!tf_ai_off && IsBaseBuilding && AITimer == 0) {
         AITimer = Expert_AI();
     }
 
@@ -2382,11 +2384,13 @@ void HouseClass::AI(void)
         Do_All_To_Hunt();
     }
 
-    AI_Building();
-    AI_Unit();
-    AI_Vessel();
-    AI_Infantry();
-    AI_Aircraft();
+    if (!tf_ai_off) {
+        AI_Building();
+        AI_Unit();
+        AI_Vessel();
+        AI_Infantry();
+        AI_Aircraft();
+    }
 
     /*
     **	If the production possibilities need to be recalculated, then do so now. This must
