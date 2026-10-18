@@ -41,6 +41,7 @@ FRAME_SCALE = 1
 # Pack id -> (logo source, tag under it), in the order of PACKS in redalert/tf_launcher.cpp
 PACK_LOGOS = {
     'TSHD': (SCRIPT_DIR / 'title_work/key-art/tiberiansun-logo_2x.png', 'HD ASSETS'),
+    'TSMUSIC': (SCRIPT_DIR / 'title_work/key-art/tiberiansun-logo_2x.png', 'MUSIC'),
 }
 BAR_GREEN = (54, 191, 0, 255)
 GOLD_TOP, GOLD_BOTTOM = (255, 232, 150), (196, 132, 34)

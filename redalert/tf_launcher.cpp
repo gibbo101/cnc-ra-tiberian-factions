@@ -443,6 +443,14 @@ const PackInfo PACKS[] = {
      {L"Units, buildings, effects, voices and EVA", L"from Tiberian Sun, rebuilt in HD."},
      KIND_ASSETS,
      {NULL, NULL}},
+    {"CCDATA\\TSMUSIC.INI",
+     "TSMUSIC",
+     "3822605221",
+     NULL,
+     L"TIBERIAN SUN MUSIC",
+     {L"Tiberian Sun and Firestorm's 26 in-game themes,", L"for the skirmish music and the jukebox."},
+     KIND_ASSETS,
+     {NULL, NULL}},
 };
 const int PACK_COUNT = sizeof(PACKS) / sizeof(PACKS[0]);
 const int TS_HD_PACK = 0;
