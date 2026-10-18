@@ -77,9 +77,6 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ## Loose ends on shipped features
 
-- **The lobby doesn't scroll to a carrier-launched map.** After a match on an entry launched through
-  the carrier (`td-base-art.md`), the skirmish lobby reopens with that map selected but the list
-  left at the top; for a stock map it scrolls to it.
 - **TD rivers read as open water.** TD's own data types every river template `LAND_WATER`, banks
   included (TD has no river land type), so on a TD river RA spawns floating water crates and its
   ships may path upriver. Port TD's river templates as `LAND_RIVER`: ground units are blocked as
