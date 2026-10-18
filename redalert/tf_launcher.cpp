@@ -599,18 +599,25 @@ bool Pack_Subscribed(int pack)
 }
 
 /*
-**	Subscribes the player to a pack's Workshop item; Steam then downloads it. False without Steam.
+**	Subscribes the player to a pack's Workshop item and asks Steam for it at high priority, which downloads it
+**	while the game runs (Steam otherwise holds downloads until the game quits). False without Steam.
 */
 typedef unsigned long long(__cdecl* SubscribeItemFn)(void* ugc, unsigned long long item);
+typedef bool(__cdecl* DownloadItemFn)(void* ugc, unsigned long long item, bool high_priority);
 
 bool Subscribe_Pack(int pack)
 {
     SubscribeItemFn subscribe = (SubscribeItemFn)Steam_Export("SteamAPI_ISteamUGC_SubscribeItem");
+    DownloadItemFn download = (DownloadItemFn)Steam_Export("SteamAPI_ISteamUGC_DownloadItem");
     void* ugc = Steam_Ugc();
     if (subscribe == NULL || ugc == NULL) {
         return false;
     }
-    subscribe(ugc, strtoull(PACKS[pack].WorkshopId, NULL, 10));
+    unsigned long long item = strtoull(PACKS[pack].WorkshopId, NULL, 10);
+    subscribe(ugc, item);
+    if (download != NULL) {
+        download(ugc, item, true);
+    }
     return true;
 }
 
