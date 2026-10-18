@@ -138,7 +138,7 @@ const char* Wanted_Playlist(void)
 
 #if TF_DEV_BUILD
 /*
-**	One line per skirmish music lookup the hook answers, capped so a long match stays small.
+**	One line per skirmish music lookup the hook answers, capped at 200 a session so the log stays small.
 */
 void Music_Log(const char* stock, const char* asked, bool found)
 {

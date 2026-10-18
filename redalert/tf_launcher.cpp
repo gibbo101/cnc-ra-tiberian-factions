@@ -1324,7 +1324,7 @@ void* Find_Button(void* owner, const char* name)
 }
 
 /*
-**	A widget of the ADD-ONS screen named `name` followed by `index`.
+**	A widget of a screen named `name` followed by `index`.
 */
 void* Indexed_Widget(void* screen, const char* name, int index, SIZE_T cast)
 {
