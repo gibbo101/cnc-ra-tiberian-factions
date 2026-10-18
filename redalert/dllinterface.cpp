@@ -1621,6 +1621,22 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
                                                                            int sabotaged_structure,
                                                                            const char* override_map_name)
 {
+#if TF_DEV_BUILD
+    // TF: probe: every instance start's arguments, to tf_scenario.log.
+    {
+        const char* prof = getenv("USERPROFILE");
+        char path[512];
+        snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_scenario.log", prof ? prof : ".");
+        FILE* lf = fopen(path, "a");
+        if (lf != NULL) {
+            fprintf(lf, "start index=%d var=%d dir=%d build=%d faction=%s type=%s content=%s override=%s\n",
+                    scenario_index, scenario_variation, scenario_direction, build_level, faction ? faction : "-",
+                    game_type ? game_type : "-", content_directory ? content_directory : "-",
+                    override_map_name ? override_map_name : "-");
+            fclose(lf);
+        }
+    }
+#endif
     // TF: a match starts from the default difficulty; a skirmish's lobby value arrives after this call.
     TF_Lobby_Difficulty_Reset();
 
@@ -1681,11 +1697,11 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
 
     // TF: a carrier campaign launch's own map, taken below
     char carrier_map[_MAX_FNAME + _MAX_EXT];
-    if (override_map_name && strlen(override_map_name)) {
-        strcpy(Scen.ScenarioName, override_map_name);
-    } else if (GAME_TO_PLAY == GAME_NORMAL && TF_Launcher_Take_Carrier_Map(carrier_map, sizeof(carrier_map))) {
-        // TF: a carrier campaign launch names the mod mission's own map
+    if (TF_Launcher_Take_Carrier_Map(carrier_map, sizeof(carrier_map))) {
+        // TF: a carrier launch names the mod map, ahead of the carrier instance's own map file
         strcpy(Scen.ScenarioName, carrier_map);
+    } else if (override_map_name && strlen(override_map_name)) {
+        strcpy(Scen.ScenarioName, override_map_name);
     } else {
         Scen.Set_Scenario_Name(Scen.Scenario, scen_player, scen_dir, (ScenarioVarType)scenario_variation);
     }
