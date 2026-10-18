@@ -2,6 +2,7 @@
 """Mockups of the TIBERIAN FACTIONS SETTINGS page's AUDIO tab, painted over an in-game ADD-ONS screenshot.
 
 Usage: settings_mockup.py <ADD-ONS screenshot 1920x1080> <encyclopedia screenshot> <out dir>
+       settings_mockup.py s4 <out dir>   (S4, painted over the S2 mockups)
 Writes S1 (soundtrack list + a row per faction) and S2 (encyclopedia-style faction tabs), each with TS-Music
 loaded and missing.
 """
@@ -147,6 +148,80 @@ def s2(addons, enc, ts_loaded):
     return im
 
 
+def wide_box(im):
+    """The two panels joined into one: the left list box stretched by its middle across both, under one plate."""
+    box = im.crop((326, 478, 934, 936))
+    left, mid, right = box.crop((0, 0, 40, box.height)), box.crop((200, 0, 240, box.height)), box.crop(
+        (box.width - 40, 0, box.width, box.height))
+    fill(im, (318, 404, 1612, 950), (1500, 300, 1560, 370))
+    x = 326
+    im.paste(left, (x, 478))
+    for x in range(366, 1556, 40):
+        im.paste(mid, (x, 478))
+    im.paste(right, (1556, 478))
+
+
+def s3(addons, ts_loaded):
+    im, d = frame(addons)
+    fill(im, (330, 300, 1600, 370), (1500, 300, 1560, 370))
+    d.text((344, 306), "Choose the music each faction plays in skirmish and LAN games. MIX plays every soundtrack.",
+           font=font(19), fill=TEXT)
+    wide_box(im)
+    centred(d, 960, 428, "FACTION MUSIC", 28, HEAD)
+    choices = ["MIX", "RED ALERT", "TIBERIAN DAWN", "TIBERIAN SUN"]
+    for i, (label, key, _) in enumerate(FACTIONS):
+        y = 500 + i * 84
+        row(d, (340, y, 1580, y + 74), False)
+        im.paste(crest(key, 58), (352, y + 8), crest(key, 58))
+        d.text((424, y + 22), label, font=font(25), fill=HEAD)
+        for j, name in enumerate(choices):
+            x = 640 + j * 232
+            on = j == 0
+            if name == "TIBERIAN SUN" and not ts_loaded:
+                button(d, (x, y + 14, x + 218, y + 60), "GET ADD-ON", 19, AMBER, (40, 30, 10), AMBER)
+                continue
+            button(d, (x, y + 14, x + 218, y + 60), name, 19, HEAD if on else TEXT,
+                   (30, 70, 20) if on else (12, 30, 8), HEAD if on else (20, 60, 12))
+    d.text((352, 916), "More factions join this list as they arrive.", font=font(16, COND), fill=DIM)
+    button(d, (1185, 960, 1600, 1010), "DEFAULTS", 24)
+    return im
+
+
+def scanlines(draw, box):
+    """A list box's empty interior: the game's alternating green scanlines."""
+    x0, y0, x1, y1 = box
+    for y in range(y0, y1):
+        draw.line((x0, y, x1, y), fill=(18, 46, 12) if y % 2 else (21, 65, 8))
+
+
+def s4(s2_image, faction, label, ts_loaded):
+    """S2's faction tabs over the picked faction's crest (left) and its four music choices (right)."""
+    im = s2_image.copy()
+    d = ImageDraw.Draw(im)
+    fill(im, (330, 420, 930, 470), (870, 420, 920, 470))
+    fill(im, (990, 420, 1605, 470), (1540, 420, 1590, 470))
+    scanlines(d, (336, 488, 924, 926))
+    scanlines(d, (994, 486, 1594, 928))
+    centred(d, 627, 428, label, 28, HEAD)
+    big = crest(faction, 300)
+    im.paste(big, (477, 560), big)
+    centred(d, 1290, 428, "MUSIC", 28, HEAD)
+    rows = [("MIX", "Every soundtrack, shuffled (the default)"), ("RED ALERT", "Red Alert's tracks only"),
+            ("TIBERIAN DAWN", "Tiberian Dawn's tracks only"),
+            ("TIBERIAN SUN", "Tiberian Sun and Firestorm's tracks only")]
+    for i, (name, about) in enumerate(rows):
+        y = 500 + i * 96
+        row(d, (1000, y, 1580, y + 84), i == 0)
+        radio(d, 1032, y + 42, i == 0)
+        d.text((1060, y + 14), name, font=font(25), fill=HEAD if i == 0 else TEXT)
+        needs = name == "TIBERIAN SUN" and not ts_loaded
+        d.text((1060, y + 50), "Needs its add-on" if needs else about, font=font(17, COND),
+               fill=AMBER if needs else TEXT if i == 0 else DIM)
+        if needs:
+            button(d, (1370, y + 20, 1566, y + 64), "GET ADD-ON", 20, AMBER, (40, 30, 10), AMBER)
+    return im
+
+
 def main(addons_path, enc_path, out):
     os.makedirs(out, exist_ok=True)
     addons = Image.open(addons_path).convert("RGB")
@@ -154,8 +229,16 @@ def main(addons_path, enc_path, out):
     for ts, tag in ((True, "ts-loaded"), (False, "ts-missing")):
         s1(addons, ts).save(os.path.join(out, f"mockup-S1-faction-rows-{tag}.jpg"), quality=92)
         s2(addons, enc, ts).save(os.path.join(out, f"mockup-S2-faction-tabs-{tag}.jpg"), quality=92)
-    print("wrote 4 mockups to", out)
+        s3(addons, ts).save(os.path.join(out, f"mockup-S3-one-list-{tag}.jpg"), quality=92)
+    print("wrote 6 mockups to", out)
 
 
 if __name__ == "__main__":
-    main(*sys.argv[1:4])
+    if sys.argv[1] == "s4":
+        out = sys.argv[2]
+        for ts, tag in ((True, "ts-loaded"), (False, "ts-missing")):
+            base = Image.open(os.path.join(out, f"mockup-S2-faction-tabs-{tag}.jpg")).convert("RGB")
+            s4(base, "GDI", "GDI", ts).save(os.path.join(out, f"mockup-S4-crest-and-choices-{tag}.jpg"), quality=92)
+        print("wrote S4 to", out)
+    else:
+        main(*sys.argv[1:4])
