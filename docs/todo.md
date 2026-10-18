@@ -14,6 +14,8 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   menu's HELP, tabbed like ADD-ONS; its AUDIO tab writes `tf_music.ini` (a row per faction, Mix by default, with two
   spare slots, GET ADD-ON where TS-Music is missing). Upload TS-Music (Private first) and give it an ADD-ONS row.
   A Random lobby pick plays the stock rotation: its faction is known only after the host's `@@TFL` message.
+  Check in a LAN game (host and joiner on different factions and settings) that each player's music follows their
+  own faction: the hook reads the lobby's pick at `0x20E0CF8`, proven in skirmish only.
   The dev log `tf_music.log` stays until this ships.
 - **Tech Center wedge shadow** (the `ts-to-ra-hd-art` canvas rule): whether it may be cut so the canvas fits
   the box. Every other TS HD building is on whole cells; Helipad, Silo, Firestorm Generator and section, Limpet
