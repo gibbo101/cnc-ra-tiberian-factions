@@ -61,4 +61,6 @@ def main(base_path, tracks_json, out_path, csv_path):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) != 5:
+        sys.exit(__doc__)
     main(*sys.argv[1:5])
