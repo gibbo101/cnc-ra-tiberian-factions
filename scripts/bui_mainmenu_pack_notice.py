@@ -7,7 +7,8 @@ Adds TIBERIAN FACTIONS ADD-ONS (TF_AddOns, a clone of EXIT GAME) between LAN MOD
 under it lower; it opens the ADD-ONS screen (scripts/bui_addons_build.py). FACTION ENCYCLOPEDIA (TF_Encyclopedia)
 goes under it, opening the encyclopedia (scripts/bui_encyclopedia_build.py), and REPLAY / OBSERVER takes BONUS
 GALLERY's row; the gallery's button and its new-content badge move off screen, as the launcher shows them again
-(shrunk, the badge stretched into view).
+(shrunk, the badge stretched into view). TIBERIAN FACTIONS SETTINGS (TF_Settings) takes HELP's row, opening the
+Settings page (scripts/bui_settings_build.py); HELP moves off screen the same way.
 Adds the pack panel top right (the Westwood plate's mirror), every piece hidden and placed straight in
 ScreenFitter_Group: the frame (TF_Pack_Frame) and one logo per pack (TF_Logo_<id>), images cloned from the menu
 box's Button_BG; a centred status line (TF_Pack_Status); and GO TO ADD-ONS (TF_Pack_Open). The launcher layer
@@ -129,8 +130,8 @@ def rect_of(element, name):
 
 
 def addons_row(roots):
-    """TIBERIAN FACTIONS ADD-ONS and FACTION ENCYCLOPEDIA under LAN MODE, REPLAY / OBSERVER in BONUS GALLERY's row
-    and the rows below it moved down one."""
+    """TIBERIAN FACTIONS ADD-ONS and FACTION ENCYCLOPEDIA under LAN MODE, REPLAY / OBSERVER in BONUS GALLERY's row,
+    the rows below it moved down one, and TIBERIAN FACTIONS SETTINGS in HELP's row."""
     exit_root = next(r for r in roots if chain_to(r, b'Button_Exit'))
     exit_button = element_of(exit_root, b'Button_Exit')
     column = next(n for n in chain_to(exit_root, b'Button_Exit') if isinstance(n[1], list) and exit_button in n[1])
@@ -148,11 +149,15 @@ def addons_row(roots):
     encyclopedia = copy.deepcopy(exit_button)
     set_header(encyclopedia, b'Button_Exit', b'TF_Encyclopedia', (x, ADDONS_ROW_Y + ROW_STEP, w, h), hidden=False)
     set_label(encyclopedia, b'FACTION ENCYCLOPEDIA')
-    for name in (b'Button_Bonus_Content', b'BonusNotification_Group'):
+    help_button = element_in(roots, b'Button_Help')
+    settings = copy.deepcopy(exit_button)
+    set_header(settings, b'Button_Exit', b'TF_Settings', rect_of(help_button, b'Button_Help'), hidden=False)
+    set_label(settings, b'TIBERIAN FACTIONS SETTINGS')
+    for name in (b'Button_Bonus_Content', b'BonusNotification_Group', b'Button_Help'):
         element = element_in(roots, name)
         _, y, w, h = rect_of(element, name)
         set_header(element, name, name, (OFF_SCREEN_X, y, w, h), hidden=True)
-    return column, [button, encyclopedia]
+    return column, [button, encyclopedia, settings]
 
 
 def panel(roots):

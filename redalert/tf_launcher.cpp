@@ -2420,8 +2420,222 @@ void __stdcall Encyclopedia_Menu_Click(void*)
 }
 
 /*
-**	The main menu built: binds ADD-ONS, ENCYCLOPEDIA and the panel's button, shows the mod's version, fills the
-**	panel and starts its poll.
+**	The Settings page (scripts/bui_settings_build.py, docs/skirmish-music.md): the CAMPAIGNS page's frame run by
+**	SplashScreen, page tabs, and on AUDIO a faction tab per faction with that faction's skirmish music.
+*/
+const int SETTINGS_PAGES = 2;   // PAGES in scripts/bui_settings_build.py
+const int SETTINGS_AUDIO = 0;
+const int MUSIC_ROWS = 4;       // MUSIC_ROWS in scripts/bui_settings_build.py
+const int MUSIC_TS_ROW = 3;
+const char* const BANNERS[] = {"TF_Banner_RA", "TF_Banner_TD", "TF_Banner_TS"};
+
+struct MusicChoiceInfo
+{
+    const char* Value; // as tf_music.ini stores it (tf_music.h)
+    const wchar_t* About;
+};
+
+const MusicChoiceInfo MUSIC_CHOICES[MUSIC_ROWS] = {{"MIX", L"Every soundtrack, shuffled (the default)"},
+                                                   {"RA", L"Red Alert's tracks only"},
+                                                   {"TD", L"Tiberian Dawn's tracks only"},
+                                                   {"TS", L"Tiberian Sun and Firestorm's tracks only"}};
+
+void* SettingsScene = NULL;
+int SettingsPage = SETTINGS_AUDIO;
+int SettingsTab = 0;
+
+void* Settings_Screen(void)
+{
+    return Scene_Impl(SettingsScene);
+}
+
+/*
+**	The open faction tab's music row: its saved choice, MIX for anything unknown.
+*/
+int Music_Row(void)
+{
+    char choice[16];
+    TF_Music_Choice(ENC_TABS_INFO[SettingsTab].Suffix, choice, sizeof(choice));
+    for (int row = 0; row < MUSIC_ROWS; row++) {
+        if (_stricmp(choice, MUSIC_CHOICES[row].Value) == 0) {
+            return row;
+        }
+    }
+    return 0;
+}
+
+/*
+**	Shows the open page: on AUDIO the faction tabs, the faction's crest and its music rows with the saved choice
+**	ticked; GET ADD-ON in place of Tiberian Sun while the TS-Music add-on is off; COMING SOON on an empty page.
+*/
+void Refresh_Settings(void)
+{
+    void* screen = Settings_Screen();
+    if (screen == NULL) {
+        return;
+    }
+    bool audio = SettingsPage == SETTINGS_AUDIO;
+    for (int page = 0; page < SETTINGS_PAGES; page++) {
+        Set_Hidden(Indexed_Widget(screen, "TF_ST_PageGlow", page, AS_QUAD), page != SettingsPage);
+        Set_Hidden(Indexed_Widget(screen, "TF_ST_PageOn", page, AS_TEXT), page != SettingsPage);
+        Set_Hidden(Indexed_Widget(screen, "TF_ST_PageText", page, AS_TEXT), page == SettingsPage);
+    }
+    for (int tab = 0; tab < ENC_TABS; tab++) {
+        void* button = Find_Button(screen, ENC_TABS_INFO[tab].Button);
+        if (button != NULL) {
+            ((SetToggledFn)SET_TOGGLED)(button, tab == SettingsTab, 0, 1);
+        }
+        Set_Hidden(button, !audio);
+    }
+    for (size_t i = 0; i < ARRAY_SIZE(BANNERS); i++) {
+        Set_Hidden(Find_Widget(screen, BANNERS[i], AS_TEXT), !audio);
+    }
+    Show_Text(screen, "TF_ST_Faction", audio ? ENC_TABS_INFO[SettingsTab].Name : NULL);
+    void* crest = Find_Widget(screen, "TF_ST_Crest", AS_QUAD);
+    char picture[40];
+    snprintf(picture, sizeof(picture), "TF_ENC_ABOUT_%s", ENC_TABS_INFO[SettingsTab].Suffix);
+    Set_Hidden(crest, !audio || !Set_Picture(crest, picture));
+    Set_Hidden(Find_Widget(screen, "TF_ST_Soon", AS_TEXT), audio);
+    Set_Hidden(Find_Widget(screen, "TF_ST_Music", AS_TEXT), !audio);
+    Set_Hidden(Find_Widget(screen, "TF_ST_Plate", AS_QUAD), !audio);
+    bool ts = TF_TS_Music_Present();
+    int chosen = Music_Row();
+    for (int row = 0; row < MUSIC_ROWS; row++) {
+        bool missing = row == MUSIC_TS_ROW && !ts;
+        Set_Hidden(Indexed_Widget(screen, "TF_ST_Glow", row, AS_QUAD), !audio || row != chosen);
+        Set_Hidden(Indexed_Widget(screen, "TF_ST_Row", row, AS_ICON_BUTTON), !audio || missing);
+        void* check = Indexed_Widget(screen, "TF_ST_Check", row, AS_BUTTON);
+        if (check != NULL) {
+            ((SetToggledFn)SET_TOGGLED)(check, row == chosen, 0, 1);
+        }
+        Set_Hidden(check, !audio || missing);
+        Set_Hidden(Indexed_Widget(screen, "TF_ST_Name", row, AS_TEXT), !audio);
+        char green[16], amber[16];
+        snprintf(green, sizeof(green), "TF_ST_Desc%d", row);
+        snprintf(amber, sizeof(amber), "TF_ST_Warn%d", row);
+        Set_Twin_Text(screen,
+                      green,
+                      amber,
+                      !audio      ? NULL
+                      : missing   ? L"Needs its add-on"
+                                  : MUSIC_CHOICES[row].About,
+                      missing);
+    }
+    Set_Hidden(Find_Button(screen, "TF_ST_Get"), !audio || ts);
+    Set_Hidden(Find_Widget(screen, "TF_ST_GetText", AS_TEXT), !audio || ts);
+    Set_Hidden(Find_Button(screen, "Start_Button"), !audio);
+    Set_Hidden(Find_Widget(screen, "StartButton_Text", AS_TEXT), !audio);
+}
+
+void Close_Settings(void)
+{
+    Scene_Close(&SettingsScene);
+}
+
+void __stdcall Settings_Back_Click(void*)
+{
+    Close_Settings();
+}
+
+/*
+**	A page tab; the event's data is the page, so ClientG calls with the screen object plus the page.
+*/
+void __fastcall Settings_Page_Click(char* screen_plus_page, void*, void*)
+{
+    void* screen = Settings_Screen();
+    int page = screen != NULL ? (int)(screen_plus_page - (char*)screen) : -1;
+    if (page >= 0 && page < SETTINGS_PAGES) {
+        SettingsPage = page;
+        Refresh_Settings();
+    }
+}
+
+/*
+**	A faction tab, called as a page tab is.
+*/
+void __fastcall Settings_Tab_Click(char* screen_plus_tab, void*, void*)
+{
+    void* screen = Settings_Screen();
+    int tab = screen != NULL ? (int)(screen_plus_tab - (char*)screen) : -1;
+    if (tab >= 0 && tab < ENC_TABS) {
+        SettingsTab = tab;
+        Refresh_Settings();
+    }
+}
+
+/*
+**	A music row or its checkbox: saves that choice for the open faction, from the next track it plays.
+*/
+void __fastcall Settings_Row_Click(char* screen_plus_row, void*, void*)
+{
+    void* screen = Settings_Screen();
+    int row = screen != NULL ? (int)(screen_plus_row - (char*)screen) : -1;
+    if (row >= 0 && row < MUSIC_ROWS && (row != MUSIC_TS_ROW || TF_TS_Music_Present())) {
+        TF_Music_Set_Choice(ENC_TABS_INFO[SettingsTab].Suffix, MUSIC_CHOICES[row].Value);
+    }
+    Refresh_Settings();
+}
+
+/*
+**	DEFAULTS: every faction back to MIX.
+*/
+void __stdcall Settings_Defaults_Click(void*)
+{
+    for (int tab = 0; tab < ENC_TABS; tab++) {
+        TF_Music_Set_Choice(ENC_TABS_INFO[tab].Suffix, MUSIC_CHOICES[0].Value);
+    }
+    Refresh_Settings();
+}
+
+/*
+**	GET ADD-ON: on to the ADD-ONS screen with the TS-Music pack ticked.
+*/
+void __stdcall Settings_Get_Click(void*)
+{
+    Close_Settings();
+    Open_AddOns(Pack_Index("TSMUSIC"));
+}
+
+/*
+**	Opens the Settings page over the main menu on AUDIO's first faction tab.
+*/
+void Open_Settings(void)
+{
+    if (SettingsScene != NULL) {
+        return;
+    }
+    void* screen = Scene_Open(&SettingsScene, "RA/TF_Settings");
+    if (screen == NULL) {
+        return;
+    }
+    Bind_Click(screen, Find_Button(screen, "Back_Button"), (void*)&Settings_Back_Click, 0);
+    Bind_Click(screen, Find_Button(screen, "Start_Button"), (void*)&Settings_Defaults_Click, 0);
+    Bind_Click(screen, Find_Button(screen, "TF_ST_Get"), (void*)&Settings_Get_Click, 0);
+    for (int page = 0; page < SETTINGS_PAGES; page++) {
+        char name[16];
+        snprintf(name, sizeof(name), "TF_ST_Page%d", page);
+        Bind_Click(screen, Find_Button(screen, name), (void*)&Settings_Page_Click, page);
+    }
+    for (int tab = 0; tab < ENC_TABS; tab++) {
+        Bind_Click(screen, Find_Button(screen, ENC_TABS_INFO[tab].Button), (void*)&Settings_Tab_Click, tab);
+    }
+    for (int row = 0; row < MUSIC_ROWS; row++) {
+        Bind_Click(screen, Indexed_Widget(screen, "TF_ST_Row", row, AS_ICON_BUTTON), (void*)&Settings_Row_Click, row);
+        Bind_Click(screen, Indexed_Widget(screen, "TF_ST_Check", row, AS_BUTTON), (void*)&Settings_Row_Click, row);
+    }
+    SettingsPage = SETTINGS_AUDIO;
+    SettingsTab = 0;
+    Refresh_Settings();
+}
+
+void __stdcall Settings_Menu_Click(void*)
+{
+    Open_Settings();
+}
+
+/*
+**	The main menu built: binds ADD-ONS, ENCYCLOPEDIA, SETTINGS and the panel's button, shows the mod's version,
+**	fills the panel and starts its poll.
 */
 void __stdcall Menu_Bound(const DWORD* regs)
 {
@@ -2429,8 +2643,12 @@ void __stdcall Menu_Bound(const DWORD* regs)
     void* addons = Find_Widget(menu, "TF_AddOns", AS_TEXT_BUTTON);
     void* open = Find_Widget(menu, "TF_Pack_Open", AS_TEXT_BUTTON);
     void* encyclopedia = Find_Widget(menu, "TF_Encyclopedia", AS_TEXT_BUTTON);
+    void* settings = Find_Widget(menu, "TF_Settings", AS_TEXT_BUTTON);
     if (encyclopedia != NULL) {
         ((BindEventFn)BIND_EVENT)(menu, CLICK_EVENT, encyclopedia, (void*)&Encyclopedia_Menu_Click, 0);
+    }
+    if (settings != NULL) {
+        ((BindEventFn)BIND_EVENT)(menu, CLICK_EVENT, settings, (void*)&Settings_Menu_Click, 0);
     }
     if (addons != NULL) {
         ((BindEventFn)BIND_EVENT)(menu, CLICK_EVENT, addons, (void*)&AddOns_Menu_Click, 0);
