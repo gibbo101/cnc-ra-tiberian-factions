@@ -96,11 +96,15 @@ every house uncapped, and joiners see it in the lobby. Unproven: that the slider
 New DLL features, each its own job: bounty (credits for kills), friendly fire off, AI personality
 per match (balanced, tank rush, air, naval, turtle).
 
-## The screen
+## The screens
 
-The editor lives in the Faction Encyclopedia: the same faction tabs, grouped list and live stats,
-which the encyclopedia already reads from the mod's rules inside ClientG. The custom layer applies
-there too, so the shown values are the ones the next match uses.
+- **Match rules:** a tab on the TIBERIAN FACTIONS SETTINGS page, which takes the main menu's HELP
+  button and is tabbed like the ADD-ONS screen. Its first tab is AUDIO; the rules tab comes later.
+- **Unit values:** home undecided. Proposed: the Faction Encyclopedia, which already has the
+  faction tabs, the grouped list and live stats read from the mod's rules inside ClientG. The
+  custom layer applies there too, so the shown values are the ones the next match uses.
+
+On both:
 
 - A DEFAULT / CUSTOM switch and a reset-to-defaults button on every page; a reset per object.
 - Edited values in their own colour.
@@ -129,5 +133,6 @@ Read from ClientG 1.153.745903, none of it run yet:
 - TD buildings: move the doubling to the base pass, or halve in the editor.
 - Save games: store the player block in the save (proposed), or load with the current file.
 - Leaking keys: write only keys `rules.ini` sets (proposed), or snapshot and restore the type tables.
+- Where the unit-value editor lives: the Faction Encyclopedia (proposed) or a Settings tab.
 - Which match rules ship first.
 - Which starting-credit tiers join the lobby list above 10,000.
