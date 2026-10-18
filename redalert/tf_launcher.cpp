@@ -1258,6 +1258,54 @@ typedef void*(__cdecl* GuiManagerFn)(void);
 typedef void**(__thiscall* CreateSceneFn)(void* manager, void** out, const MsvcString* name, int layer);
 typedef void(__thiscall* SceneFn)(void* scene);
 
+/*
+**	A scene's behaviour object, which owns its widgets and events; NULL while it is closed.
+*/
+void* Scene_Impl(void* scene)
+{
+    return scene != NULL ? *(void**)((char*)scene + SCENE_IMPL) : NULL;
+}
+
+/*
+**	Closes and releases a scene of ours and clears its holder; the main menu under it carries on.
+*/
+void Scene_Close(void** scene)
+{
+    void* open = *scene;
+    *scene = NULL;
+    if (open != NULL) {
+        ((SceneFn)(*(SIZE_T**)open)[SCENE_CLOSE / 4])(open);
+        ((SceneFn)SCENE_RELEASE)(open);
+    }
+}
+
+/*
+**	Opens the scene `name` (its .BUI, as "RA/<name>", 15 characters at most) over the main menu and focuses it;
+**	returns its behaviour object, or NULL with the holder cleared when the launcher can't build it.
+*/
+void* Scene_Open(void** scene, const char* name)
+{
+    *scene = NULL;
+    MsvcString text = {};
+    size_t length = strlen(name);
+    if (length > 15) {
+        return NULL;
+    }
+    memcpy(text.buf, name, length + 1);
+    text.size = (unsigned)length;
+    text.capacity = 15;
+    ((CreateSceneFn)CREATE_SCENE)(((GuiManagerFn)GUI_MANAGER)(), scene, &text, -1);
+    if (*scene == NULL) {
+        return NULL;
+    }
+    ((SceneFn)SCENE_FOCUS)(*scene);
+    void* impl = Scene_Impl(*scene);
+    if (impl == NULL) {
+        Scene_Close(scene);
+    }
+    return impl;
+}
+
 void* AddOnsScene = NULL;
 bool AddOnsTicked[PACK_COUNT];
 bool AddOnsKnockOn[PACK_COUNT]; // ticked or unticked by another pack's checkbox, not its own
@@ -1272,7 +1320,7 @@ UINT_PTR AddOnsTimer = 0;
 */
 void* AddOns_Screen(void)
 {
-    return AddOnsScene != NULL ? *(void**)((char*)AddOnsScene + SCENE_IMPL) : NULL;
+    return Scene_Impl(AddOnsScene);
 }
 
 /*
@@ -1635,12 +1683,7 @@ void Refresh_AddOns(void)
 */
 void Close_AddOns(void)
 {
-    void* scene = AddOnsScene;
-    AddOnsScene = NULL;
-    if (scene != NULL) {
-        ((SceneFn)(*(SIZE_T**)scene)[SCENE_CLOSE / 4])(scene);
-        ((SceneFn)SCENE_RELEASE)(scene);
-    }
+    Scene_Close(&AddOnsScene);
     if (AddOnsTimer != 0) {
         KillTimer(NULL, AddOnsTimer);
         AddOnsTimer = 0;
@@ -1824,18 +1867,8 @@ void Bind_Click(void* screen, void* button, void* handler, int data)
 void Open_AddOns(int pack)
 {
     if (AddOnsScene == NULL) {
-        MsvcString name = {};
-        memcpy(name.buf, "RA/TF_AddOns", sizeof("RA/TF_AddOns"));
-        name.size = sizeof("RA/TF_AddOns") - 1;
-        name.capacity = 15;
-        ((CreateSceneFn)CREATE_SCENE)(((GuiManagerFn)GUI_MANAGER)(), &AddOnsScene, &name, -1);
-        if (AddOnsScene == NULL) {
-            return;
-        }
-        ((SceneFn)SCENE_FOCUS)(AddOnsScene);
-        void* screen = AddOns_Screen();
+        void* screen = Scene_Open(&AddOnsScene, "RA/TF_AddOns");
         if (screen == NULL) {
-            Close_AddOns();
             return;
         }
         Bind_Click(screen, Find_Button(screen, "Back_Button"), (void*)&AddOns_Back_Click, 0);
@@ -1973,7 +2006,7 @@ int EncSelected = -1;
 */
 void* Enc_Screen(void)
 {
-    return EncScene != NULL ? *(void**)((char*)EncScene + SCENE_IMPL) : NULL;
+    return Scene_Impl(EncScene);
 }
 
 /*
@@ -2319,12 +2352,7 @@ void Enc_Fill_List(void)
 */
 void Close_Encyclopedia(void)
 {
-    void* scene = EncScene;
-    EncScene = NULL;
-    if (scene != NULL) {
-        ((SceneFn)(*(SIZE_T**)scene)[SCENE_CLOSE / 4])(scene);
-        ((SceneFn)SCENE_RELEASE)(scene);
-    }
+    Scene_Close(&EncScene);
 }
 
 void __stdcall Enc_Back_Click(void*)
@@ -2372,15 +2400,8 @@ void Open_Encyclopedia(void)
         Show_Message(L"The encyclopedia couldn't read the mod's rules.");
         return;
     }
-    MsvcString name = Lent_String("RA/TF_Ency");
-    ((CreateSceneFn)CREATE_SCENE)(((GuiManagerFn)GUI_MANAGER)(), &EncScene, &name, -1);
-    if (EncScene == NULL) {
-        return;
-    }
-    ((SceneFn)SCENE_FOCUS)(EncScene);
-    void* screen = Enc_Screen();
+    void* screen = Scene_Open(&EncScene, "RA/TF_Ency");
     if (screen == NULL) {
-        Close_Encyclopedia();
         return;
     }
     Bind_Click(screen, Find_Button(screen, "Back_Button"), (void*)&Enc_Back_Click, 0);
