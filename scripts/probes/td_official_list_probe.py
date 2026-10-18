@@ -50,9 +50,9 @@ def main(mod):
     d6 = instance(inst, CARRIER).group(1)
     sand = td.replace("<Mission>2</Mission>", "<Mission>902</Mission>").replace("MUS_TD_", "MUS_RA_")
     hastings = re.sub(r"\s*<OverrideMapName>[^<]*</OverrideMapName>", "", d6).replace("<Mission>0</Mission>",
-                                                                                     "<Mission>990</Mission>")
+                                                                                     "<Mission>999</Mission>")
     entries = "".join('\t<Instance Name="Mobius_Red_Alert_Multiplayer_%d_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">'
-                      "%s</Instance>\n" % (n, body) for n, body in ((902, sand), (990, hastings)))
+                      "%s</Instance>\n" % (n, body) for n, body in ((902, sand), (999, hastings)))
     inst = inst.replace('<Instance Name="%s"' % CARRIER, '<Instance Name="TF_Skirmish_Carrier_D6"', 1)
     at = inst.index('\t<Instance Name="Mobius_Red_Alert_Multiplayer_2_Map"')
     inst = inst[:at] + entries + inst[at:]
@@ -66,19 +66,19 @@ def main(mod):
                "\t\t\t\t<MapTileHeight>%d</MapTileHeight>\n\t\t\t\t<Theater>DESERT</Theater>\n"
                "\t\t\t\t<Waypoints>%s\n\t\t\t\t</Waypoints>\n\t\t\t</INIData>"
                % (sj["MapTileX"], sj["MapTileY"], sj["MapTileWidth"], sj["MapTileHeight"], starts))
-    hastings_pv = preview(pv, CARRIER).replace(CARRIER.upper(), "MOBIUS_RED_ALERT_MULTIPLAYER_990_MAP")
+    hastings_pv = preview(pv, CARRIER).replace(CARRIER.upper(), "MOBIUS_RED_ALERT_MULTIPLAYER_999_MAP")
     pv = pv.replace("</CNCMapPreviewData>", sand_pv + hastings_pv + "\n\t\t</CNCMapPreviewData>", 1)
     open(os.path.join(data, "XML/CNCMAPPREVIEWDATA.XML"), "w", encoding="latin-1", newline="").write(pv)
 
     srgb = os.path.join(data, "ART/TEXTURES/SRGB")
     open(os.path.join(srgb, "MOBIUS_RED_ALERT_MULTIPLAYER_902_MAP.DDS"), "wb").write(read_member(
         os.path.join(GAME, "TEXTURES_SRGB.MEG"), "DATA\\ART\\TEXTURES\\SRGB\\MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_2_MAP.DDS"))
-    open(os.path.join(srgb, "MOBIUS_RED_ALERT_MULTIPLAYER_990_MAP.DDS"), "wb").write(
+    open(os.path.join(srgb, "MOBIUS_RED_ALERT_MULTIPLAYER_999_MAP.DDS"), "wb").write(
         open(os.path.join(srgb, CARRIER.upper() + ".DDS"), "rb").read())
 
     ini = open(sand_map + ".mpr", encoding="latin-1", newline="").read()
     open(os.path.join(mod, "CCDATA/TFTD902.INI"), "w", encoding="latin-1", newline="").write(ini)
-    print("entries 902 (Sand Trap) and 990 (Hastings); carrier client entry hidden")
+    print("entries 902 (Sand Trap) and 999 (Hastings); carrier client entry hidden")
 
 
 if __name__ == "__main__":

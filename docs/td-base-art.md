@@ -126,10 +126,11 @@ Hastings' `D6` entry, whose client entry is hidden, and hands its map file over 
 `tf_carrier_mission.txt`; the DLL takes the handoff ahead of the carrier's `OverrideMapName`, and
 the carrier's key reads as the launched entry's, so the loading screen names it. Hastings itself is
 listed through its own entry, keeping `SCMD6EA.INI`. A placeholder instance can't carry: the server
-never starts it.
+never starts it. Entry numbers: TD multiplayer map *n* is 9*nn* (Sand Trap, TD's 2, is 902), TD's
+community maps 1 to 7 are 980 to 986, and Hastings is 999; a TD map's file is `TFTD<number>.INI`.
 
 `scripts/probes/td_official_list_probe.py` sets this up on a deployed build for TD's Sand Trap
-(entry 902, played on the desert theatre) and Hastings (990). Video memory at the menu is
+(entry 902, played on the desert theatre) and Hastings (999). Video memory at the menu is
 unchanged; a TD map in the match costs what any TD-terrain map does.
 
 ## Build plan

@@ -2999,7 +2999,7 @@ char __fastcall Launch_Send(void* ipc, void*, const MsvcString* name, void* sett
                 {
                     int number;
                     const char* map;
-                } own_files[] = {{990, "SCMD6EA.INI"}};
+                } own_files[] = {{999, "SCMD6EA.INI"}};
                 const char* map = NULL;
                 for (size_t i = 0; i < sizeof(own_files) / sizeof(own_files[0]); i++) {
                     if (own_files[i].number == number) {
