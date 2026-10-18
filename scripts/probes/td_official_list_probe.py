@@ -1,9 +1,10 @@
 """Probe: TD's Sand Trap and Hastings in RA's Official skirmish list, launched through the carrier.
 
-usage: td_official_list_probe.py <deployed Vanilla_RA folder>
+usage: td_official_list_probe.py <deployed Vanilla_RA folder> [--thumb-field]
+--thumb-field: entry 902 names TD's own thumbnail in PreviewLoadingTextureName instead of a copied one.
 Writes the deployed build's INSTANCES.XML (from the repo's) and CNCMAPPREVIEWDATA.XML (from the
 base game's), the two list thumbnails and CCDATA/TFTD902.INI. The DLL's carrier (tf_launcher.cpp,
-dev builds) sends entry 9NN to the server as Hastings' D6 entry, whose client entry is hidden here.
+dev builds) sends entry 9NN to the server as Hastings' D6 entry, whose client entry is removed here.
 """
 import json
 import os
@@ -40,7 +41,7 @@ def sand_trap(work):
     return os.path.join(work, "sand_trap")
 
 
-def main(mod):
+def main(mod, thumb_field=False):
     sand_map = sand_trap(tempfile.mkdtemp())
     data = os.path.join(mod, "Data")
     inst = open(os.path.join(REPO, "resources/remaster_mods/Vanilla_RA/Data/XML/INSTANCES.XML"),
@@ -49,11 +50,14 @@ def main(mod):
                   "Mobius_Tiberian_Dawn_Multiplayer_2_Map").group(1)
     d6 = instance(inst, CARRIER).group(1)
     sand = td.replace("<Mission>2</Mission>", "<Mission>902</Mission>").replace("MUS_TD_", "MUS_RA_")
+    if thumb_field:
+        sand += "\t<PreviewLoadingTextureName>MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_2_MAP.DDS</PreviewLoadingTextureName>\n\t"
     hastings = re.sub(r"\s*<OverrideMapName>[^<]*</OverrideMapName>", "", d6).replace("<Mission>0</Mission>",
                                                                                      "<Mission>999</Mission>")
     entries = "".join('\t<Instance Name="Mobius_Red_Alert_Multiplayer_%d_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">'
                       "%s</Instance>\n" % (n, body) for n, body in ((902, sand), (999, hastings)))
-    inst = inst.replace('<Instance Name="%s"' % CARRIER, '<Instance Name="TF_Skirmish_Carrier_D6"', 1)
+    carrier = instance(inst, CARRIER)
+    inst = inst[:carrier.start()] + inst[carrier.end():].lstrip("\r\n")
     at = inst.index('\t<Instance Name="Mobius_Red_Alert_Multiplayer_2_Map"')
     inst = inst[:at] + entries + inst[at:]
     open(os.path.join(data, "XML/INSTANCES.XML"), "w", encoding="utf-8", newline="").write(inst)
@@ -71,15 +75,20 @@ def main(mod):
     open(os.path.join(data, "XML/CNCMAPPREVIEWDATA.XML"), "w", encoding="latin-1", newline="").write(pv)
 
     srgb = os.path.join(data, "ART/TEXTURES/SRGB")
-    open(os.path.join(srgb, "MOBIUS_RED_ALERT_MULTIPLAYER_902_MAP.DDS"), "wb").write(read_member(
-        os.path.join(GAME, "TEXTURES_SRGB.MEG"), "DATA\\ART\\TEXTURES\\SRGB\\MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_2_MAP.DDS"))
+    thumb = os.path.join(srgb, "MOBIUS_RED_ALERT_MULTIPLAYER_902_MAP.DDS")
+    if thumb_field:
+        if os.path.exists(thumb):
+            os.remove(thumb)
+    else:
+        open(thumb, "wb").write(read_member(os.path.join(GAME, "TEXTURES_SRGB.MEG"),
+                                            "DATA\\ART\\TEXTURES\\SRGB\\MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_2_MAP.DDS"))
     open(os.path.join(srgb, "MOBIUS_RED_ALERT_MULTIPLAYER_999_MAP.DDS"), "wb").write(
         open(os.path.join(srgb, CARRIER.upper() + ".DDS"), "rb").read())
 
     ini = open(sand_map + ".mpr", encoding="latin-1", newline="").read()
     open(os.path.join(mod, "CCDATA/TFTD902.INI"), "w", encoding="latin-1", newline="").write(ini)
-    print("entries 902 (Sand Trap) and 999 (Hastings); carrier client entry hidden")
+    print("entries 902 (Sand Trap) and 999 (Hastings); carrier client entry removed")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(sys.argv[1], "--thumb-field" in sys.argv)

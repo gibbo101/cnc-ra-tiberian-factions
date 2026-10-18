@@ -114,15 +114,17 @@ ZIP under its RA root.
 
 ## TD maps in the Official list
 
-The skirmish lobby's Official list shows `INSTANCES.XML` entries named like RA's own
-(`Mobius_Red_Alert_Multiplayer_<n>_Map`): a TD entry set to Red Alert is not listed. A new entry
-needs its text, a `Mission` number, a `CNCMAPPREVIEWDATA.XML` entry on RA's 128-cell grid with one
-waypoint per player, and a thumbnail named after the entry
-(`MOBIUS_RED_ALERT_MULTIPLAYER_<n>_MAP.DDS`). Loose copies of both XMLs override CONFIG.MEG's.
+The skirmish lobby's Official list shows every `INSTANCES.XML` entry on RA's multiplayer base
+variant, whatever its name; a TD entry set to Red Alert is not listed. New entries are named like
+RA's own (`Mobius_Red_Alert_Multiplayer_<n>_Map`). One needs its text, a `Mission` number, a
+`CNCMAPPREVIEWDATA.XML` entry on RA's 128-cell grid with one waypoint per player, and a thumbnail
+named after the entry (`MOBIUS_RED_ALERT_MULTIPLAYER_<n>_MAP.DDS`); `PreviewLoadingTextureName` on
+the entry sets neither the lobby's thumbnail nor the loading screen's. Loose copies of both XMLs
+override CONFIG.MEG's.
 
 InstanceServerG builds its instance list from the base `Instances.xml` before the DLL loads, so a
 new entry launches through the carrier (`tf_launcher.cpp`, dev builds): ClientG sends it under
-Hastings' `D6` entry, whose client entry is hidden, and hands its map file over in
+Hastings' `D6` entry, whose client entry is removed so it isn't listed, and hands its map file over in
 `tf_carrier_mission.txt`; the DLL takes the handoff ahead of the carrier's `OverrideMapName`, and
 the carrier's key reads as the launched entry's, so the loading screen names it. Hastings itself is
 listed through its own entry, keeping `SCMD6EA.INI`. A placeholder instance can't carry: the server
