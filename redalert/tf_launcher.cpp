@@ -432,8 +432,8 @@ struct PackInfo
     const char* Needs[2];            // the Ids of the packs it can't work without
 };
 
-// One row per pack on the ADD-ONS screen, in PACK_LOGOS order (asset_packs.WORKSHOP); the menu's panel shows the
-// first required pack that needs the player.
+// One row per pack on the ADD-ONS screen, in PACK_LOGOS order (asset_packs.WORKSHOP); the menu's notice shows while
+// any of them is not on.
 const PackInfo PACKS[] = {
     {"CCDATA\\TSHDPACK.INI",
      "TSHD",
@@ -1111,8 +1111,8 @@ void Restart_Game(void)
 }
 
 /*
-**	The main menu's pack panel (scripts/bui_mainmenu_pack_notice.py), top right: shown for the first required
-**	pack that is not loaded, with its logo, a status line and GO TO ADD-ONS.
+**	The main menu's add-ons notice (scripts/bui_mainmenu_pack_notice.py), top right: the title over ADD-ONS, a
+**	fixed two-line notice and ENABLE ADD-ONS.
 */
 const SIZE_T MENU_BIND_HOOK = 0x6B185B;
 const SIZE_T MENU_BIND_CAVE = 0x1BE95E0;
@@ -1142,59 +1142,36 @@ void Set_Text(void* widget, const wchar_t* text)
     Free_WString(&s);
 }
 
+bool Pack_On(PackState state);
+
 /*
-**	Fills the panel from the packs' states: hidden when every pack is loaded.
+**	Shows the notice while any add-on is not on, whether never subscribed to or switched off; its button opens
+**	ADD-ONS at the first such add-on.
 */
 void Refresh_Panel(void* menu)
 {
-    PackState states[PACK_COUNT];
-    int waiting = 0;
     PanelPack = -1;
-    for (int pack = 0; pack < PACK_COUNT; pack++) {
-        states[pack] = PACKS[pack].NeededFor != NULL ? Pack_State(pack) : PACK_ENABLED;
-        if (states[pack] != PACK_ENABLED) {
-            waiting++;
-            PanelPack = PanelPack < 0 ? pack : PanelPack;
-        }
+    for (int pack = 0; pack < PACK_COUNT && PanelPack < 0; pack++) {
+        PanelPack = Pack_On(Pack_State(pack)) ? -1 : pack;
     }
-    Set_Hidden(Find_Widget(menu, "TF_Pack_Frame", AS_QUAD), PanelPack < 0);
-    Set_Hidden(Find_Widget(menu, "TF_Pack_Status", AS_TEXT), PanelPack < 0);
-    Set_Hidden(Find_Widget(menu, "TF_Pack_Open", AS_TEXT_BUTTON), PanelPack < 0);
-    for (int pack = 0; pack < PACK_COUNT; pack++) {
-        char logo[32];
-        snprintf(logo, sizeof(logo), "TF_Logo_%s", PACKS[pack].Id);
-        Set_Hidden(Find_Widget(menu, logo, AS_QUAD), pack != PanelPack);
+    const struct
+    {
+        const char* Name;
+        SIZE_T Cast;
+    } pieces[] = {{"TF_Pack_Frame", AS_QUAD},
+                  {"TF_Pack_Sheen", AS_QUAD},
+                  {"TF_Pack_Logo", AS_QUAD},
+                  {"TF_Pack_Status", AS_TEXT},
+                  {"TF_Pack_Status2", AS_TEXT},
+                  {"TF_Pack_Open", AS_TEXT_BUTTON}};
+    for (const auto& piece : pieces) {
+        Set_Hidden(Find_Widget(menu, piece.Name, piece.Cast), PanelPack < 0);
     }
-    PackState state = PanelPack < 0 ? PACK_ENABLED : states[PanelPack];
-    if (PanelPack < 0) {
-        return;
-    }
-    wchar_t line[160];
-    if (state == PACK_MISSING) {
-        swprintf(line, 160, L"NEEDED FOR %ls", PACKS[PanelPack].NeededFor);
-    } else if (state == PACK_OUTDATED) {
-        swprintf(line, 160, L"OUT OF DATE: LET STEAM UPDATE IT, THEN RESTART");
-    } else if (state == PACK_DOWNLOADING) {
-        int percent = Pack_Download_Percent(PanelPack);
-        swprintf(line, 160, percent > 0 ? L"DOWNLOADING... %d%%" : L"DOWNLOADING...", percent);
-    } else {
-        swprintf(line,
-                 160,
-                 L"%ls",
-                 state == PACK_ON_NEXT_START ? L"SWITCHED ON: RESTART TO LOAD IT"
-                 : state == PACK_DOWNLOADED  ? L"DOWNLOADED: SWITCH IT ON IN ADD-ONS"
-                                             : L"INSTALLED BUT SWITCHED OFF");
-    }
-    if (waiting > 1) {
-        size_t used = wcslen(line);
-        swprintf(line + used, 160 - used, L" (+%d MORE)", waiting - 1);
-    }
-    Set_Text(Find_Widget(menu, "TF_Pack_Status", AS_TEXT), line);
 }
 
 /*
-**	The main menu lives for the whole session, so a 2-second timer on its UI thread refreshes the panel while
-**	a pack still needs the player: a pack subscribed or switched on meanwhile shows up without a restart.
+**	The main menu lives for the whole session, so a 2-second timer on its UI thread refreshes the notice while
+**	it shows: an add-on switched on meanwhile hides it without a restart.
 */
 const UINT PANEL_POLL_MS = 2000;
 void* PanelMenu = NULL;

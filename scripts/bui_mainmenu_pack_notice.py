@@ -9,10 +9,11 @@ goes under it, opening the encyclopedia (scripts/bui_encyclopedia_build.py), and
 GALLERY's row; the gallery's button and its new-content badge move off screen, as the launcher shows them again
 (shrunk, the badge stretched into view). TIBERIAN FACTIONS SETTINGS (TF_Settings) takes HELP's row, opening the
 Settings page (scripts/bui_settings_build.py); HELP moves off screen the same way.
-Adds the pack panel top right (the Westwood plate's mirror), every piece hidden and placed straight in
-ScreenFitter_Group: the frame (TF_Pack_Frame) and one logo per pack (TF_Logo_<id>), images cloned from the menu
-box's Button_BG; a centred status line (TF_Pack_Status); and GO TO ADD-ONS (TF_Pack_Open). The launcher layer
-(redalert/tf_launcher.cpp) shows the pieces for a required pack that is missing or switched off. TF_Version,
+Adds the add-ons notice top right (the Westwood plate's mirror), every piece hidden and placed straight in
+ScreenFitter_Group: the frame (TF_Pack_Frame) and the title-over-ADD-ONS logo (TF_Pack_Logo), images cloned from
+the menu box's Button_BG; the menu box's moving scanline sheen over the frame (TF_Pack_Sheen); two centred lines
+(TF_Pack_Status, TF_Pack_Status2); and ENABLE ADD-ONS (TF_Pack_Open). The launcher layer
+(redalert/tf_launcher.cpp) shows them while an add-on is not enabled. TF_Version,
 centred between BUILD and VERSION in the menu box, shows the mod's version, which the launcher layer reads from
 ccmod.json. Sizes and textures come
 from scripts/pack_panel_art.py. The credits hot spot that covered the top right moves onto the Westwood plate.
@@ -24,7 +25,7 @@ import struct
 import sys
 
 from bui_tree import chain_to, last_id, load, micro, rename_widget, renumber, string_body, string_value, write_loose
-from pack_panel_art import LAYOUT, PACK_LOGOS, PANEL
+from pack_panel_art import LAYOUT, PANEL
 
 SCREEN_GROUP = b'ScreenFitter_Group'
 QUAD_SOURCE = b'Button_BG'
@@ -36,9 +37,10 @@ FIT_ORIGIN = (0.03281, -0.02315)   # ScreenFitter_Group on screen: screen = orig
 FIT_SPAN = (0.90417, 1.04167)
 PLATE = (53, 24, 453, 118)         # the Westwood plate, core pixels
 ALIGN_CENTRE = 1
-STATUS = b'NEEDED FOR THE TIBERIAN SUN GDI FACTION'
+STATUS = (b'YOU HAVE TIBERIAN FACTIONS ADD-ONS', b'AVAILABLE THAT ARE NOT ENABLED')
+SHEEN_SOURCE = b'Button_Scanlines'   # the menu box's moving scanline sheen
 VERSION_RECT = (0.426, 0.822, 0.18, 0.017)   # centred on the menu box, on BUILD and VERSION's row
-BUTTONS = ((b'TF_Pack_Open', b'GO TO ADD-ONS'),)
+BUTTONS = ((b'TF_Pack_Open', b'ENABLE ADD-ONS'),)
 ADDONS_ROW_Y = 0.3978              # LAN MODE's row + one row, in the button column's units
 ROW_STEP = 0.0995
 OFF_SCREEN_X = -20.0               # far left of the button column, outside any screen
@@ -161,22 +163,23 @@ def addons_row(roots):
 
 
 def panel(roots):
-    """The pack panel's widgets, frame first so the rest draws over it; ids not yet renumbered."""
+    """The add-ons notice's widgets, frame and sheen first so the rest draws over them; ids not yet renumbered."""
     quad = element_in(roots, QUAD_SOURCE)
     frame = copy.deepcopy(quad)
     set_header(frame, QUAD_SOURCE, b'TF_Pack_Frame', fitted(*PANEL), hidden=True)
     set_texture(frame, b'tf_ui_pack_panel')
-    widgets = [frame]
-    for pack in PACK_LOGOS:
-        logo = copy.deepcopy(quad)
-        set_header(logo, QUAD_SOURCE, b'TF_Logo_' + pack.encode(), in_panel(*LAYOUT['logo']), hidden=True)
-        set_texture(logo, b'tf_ui_pack_logo_' + pack.lower().encode())
-        widgets.append(logo)
-    status = copy.deepcopy(element_in(roots, TEXT_SOURCE))
-    set_header(status, TEXT_SOURCE, b'TF_Pack_Status', in_panel(*LAYOUT['status']), hidden=True)
-    set_label(status, STATUS)
-    assert centre_text(status) == 1
-    widgets.append(status)
+    sheen = copy.deepcopy(element_in(roots, SHEEN_SOURCE))
+    set_header(sheen, SHEEN_SOURCE, b'TF_Pack_Sheen', fitted(*PANEL), hidden=True)
+    logo = copy.deepcopy(quad)
+    set_header(logo, QUAD_SOURCE, b'TF_Pack_Logo', in_panel(*LAYOUT['notice_logo']), hidden=True)
+    set_texture(logo, b'tf_ui_pack_logo_addons')
+    widgets = [frame, sheen, logo]
+    for name, rect, label in ((b'TF_Pack_Status', 'status', STATUS[0]), (b'TF_Pack_Status2', 'status2', STATUS[1])):
+        status = copy.deepcopy(element_in(roots, TEXT_SOURCE))
+        set_header(status, TEXT_SOURCE, name, in_panel(*LAYOUT[rect]), hidden=True)
+        set_label(status, label)
+        assert centre_text(status) == 1
+        widgets.append(status)
     for name, label in BUTTONS:
         button = copy.deepcopy(element_in(roots, BUTTON_SOURCE))
         set_header(button, BUTTON_SOURCE, name, in_panel(*LAYOUT['button']), hidden=True)

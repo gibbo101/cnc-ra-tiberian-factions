@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Paint the main menu's asset-pack panel and the ADD-ONS screen's art: the frame, a logo per pack, the bar tile.
+"""Paint the main menu's add-ons notice and the ADD-ONS screen's art: the frame, the logos, the bar tile.
 
-The panel sits top right, mirroring the Westwood plate, and shows a required pack that is missing or switched
-off (scripts/bui_mainmenu_pack_notice.py lays it out, redalert/tf_launcher.cpp fills it). Writes, loose in the
+The notice sits top right, mirroring the Westwood plate, and shows while an add-on is not enabled
+(scripts/bui_mainmenu_pack_notice.py lays it out, redalert/tf_launcher.cpp shows it). Writes, loose in the
 mod's Data/ART/TEXTURES/SRGB/:
   * TF_UI_PACK_PANEL.DDS: the main menu box's steel (UI_RA_MAINMENU_BUTTON_BG in the mod's UI atlas), nine-sliced
     to the panel's size so its bevel keeps its width;
   * TF_UI_PACK_LOGO_<ID>.DDS for each pack in PACK_LOGOS: the game's box-art logo with the pack's tag under it in
     the title's font (Archivo Black, title_work/), in gold;
+  * TF_UI_PACK_LOGO_ADDONS.DDS, the notice's own: the mod's title (UI_RA_MAINLOGO.DDS) over ADD-ONS;
   * TF_UI_ADDONS_BAR.DDS: the ADD-ONS screen's progress segment (scripts/bui_addons_build.py), plain TD green.
 PANEL and the LAYOUT rects are 1080p core pixels; the layout script converts them.
 
@@ -30,10 +31,13 @@ CORNER = 30                            # the box's bevel, kept unscaled by the n
 
 PANEL = (1414, 24, 453, 290)           # core x, y, w, h: the Westwood plate's mirror, grown down for the button
 LAYOUT = {                             # inside the panel, panel pixels
-    'logo': (30, 12, 393, 158),
-    'status': (12, 176, 429, 26),
+    'logo': (30, 12, 393, 158),        # a pack's logo, as the ADD-ONS screen draws it
+    'notice_logo': (40, 6, 373, 146),  # the panel's own: the title over ADD-ONS
+    'status': (12, 156, 429, 24),
+    'status2': (12, 182, 429, 24),
     'button': (12, 220, 429, 50),
 }
+NOTICE_SOURCE, NOTICE_TAG = 'UI_RA_MAINLOGO.DDS', 'ADD-ONS'   # the mod's title, in the SRGB dir
 SCALE = 2                              # logo texture pixels per core pixel, for a sharp logo at 4K
 # The frame stays at the menu box's own scale: shrunk much further (a 2x texture on a 1280x800 screen) its fine
 # horizontal grain bands, as the launcher draws menu images without mipmaps.
@@ -83,13 +87,14 @@ def gold_text(text, height):
     return out
 
 
-def logo(source, tag):
-    """The game's logo above the pack's tag, filling the logo rect at SCALE."""
-    W, H = LAYOUT['logo'][2] * SCALE, LAYOUT['logo'][3] * SCALE
+def logo(source, tag, rect='logo', tag_share=5, gap=0):
+    """A logo above its tag, filling the LAYOUT rect at SCALE; the tag is 1/tag_share of the height, `gap`
+    pixels below the logo."""
+    W, H = LAYOUT[rect][2] * SCALE, LAYOUT[rect][3] * SCALE
     art = Image.open(source).convert('RGBA')
     art = art.crop(art.getbbox())
-    label = gold_text(tag, H // 5)
-    art.thumbnail((W, H - label.height), Image.LANCZOS)
+    label = gold_text(tag, H // tag_share)
+    art.thumbnail((W, H - label.height - gap), Image.LANCZOS)
     out = Image.new('RGBA', (W, H))
     out.alpha_composite(art, ((W - art.width) // 2, 0))
     out.alpha_composite(label, ((W - label.width) // 2, H - label.height))
@@ -103,8 +108,10 @@ def main(srgb_dir):
     for pack, (source, tag) in PACK_LOGOS.items():
         art = title_logo_build.bleed(logo(source, tag))
         (srgb / f'TF_UI_PACK_LOGO_{pack}.DDS').write_bytes(title_logo_build.dds_bytes(art))
+    notice = title_logo_build.bleed(logo(srgb / NOTICE_SOURCE, NOTICE_TAG, 'notice_logo', 4, 8))
+    (srgb / 'TF_UI_PACK_LOGO_ADDONS.DDS').write_bytes(title_logo_build.dds_bytes(notice))
     (srgb / 'TF_UI_ADDONS_BAR.DDS').write_bytes(title_logo_build.dds_bytes(Image.new('RGBA', (16, 16), BAR_GREEN)))
-    print('wrote the pack panel, the ADD-ONS bar and', len(PACK_LOGOS), 'logo(s) in', srgb)
+    print('wrote the notice, the ADD-ONS bar and', len(PACK_LOGOS) + 1, 'logo(s) in', srgb)
 
 
 if __name__ == '__main__':

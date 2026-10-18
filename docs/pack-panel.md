@@ -1,11 +1,12 @@
-# Add-ons: the ADD-ONS screen, pack panel, lobby popup and save check
+# Add-ons: the ADD-ONS screen, menu notice, lobby popup and save check
 
 **Status:** Reference. What the launcher layer (`redalert/tf_launcher.cpp`) does for the asset packs, against
-ClientG 1.153.745903: the panel, popup and save check ship in 5.5.0; the ADD-ONS screen ships in the next release.
+ClientG 1.153.745903: the popup and save check ship in 5.5.0; the ADD-ONS screen and the menu notice ship in the
+next release.
 
 An add-on is found by a marker file in the launcher's own mod list: a required pack's CCDATA marker
 (`asset-packs.md`, Required packs), any file unique to it otherwise. The ADD-ONS screen gets, switches on and
-switches off add-ons; the main menu's panel and the lobby's popup send the player there; Load Game checks saves.
+switches off add-ons; the main menu's notice and the lobby's popup send the player there; Load Game checks saves.
 Every launcher function they call is checked by its opening bytes at install (`Panel_Calls_Match`); on another
 launcher build none of it installs.
 
@@ -30,7 +31,8 @@ in `ecx`, so one handler serves every row or tab.
   cause), or how to use the screen.
 - **Dependencies** (`PackInfo.Needs`): ticking a pack ticks what it needs, unticking one unticks what needs it.
 - **APPLY AND RESTART** switches unticked packs off (`0x7BB7A0` with 0), subscribes to ticked packs that are missing
-  (`SteamAPI_ISteamUGC_SubscribeItem`), and once every ticked pack has arrived switches them on and restarts.
+  (`SteamAPI_ISteamUGC_SubscribeItem`, then `DownloadItem` at high priority, as Steam holds a plain subscription's
+  download while the game runs), and once every ticked pack has arrived switches them on and restarts.
   While packs download it reads WORKING... and BACK reads CANCEL, which stops the wait without switching anything
   on; the screen covers the menu, so no game starts meanwhile. A pack Steam never starts on within 20 seconds
   opens its Workshop page. UNDO CHANGES puts every tick back to what is on. Unsubscribing is the Workshop's.
@@ -47,7 +49,7 @@ in `ecx`, so one handler serves every row or tab.
    the signed-in account subscribes (`GetItemState`): every account on a machine shares the Workshop folder, but
    the launcher lists only its own account's subscriptions, so another account's download reads as missing.
 4. **Downloading:** Steam reports the item subscribed and downloading (`SteamAPI_ISteamUGC_GetItemState`); the
-   panel shows `GetItemDownloadInfo`'s percentage.
+   ADD-ONS screen shows `GetItemDownloadInfo`'s percentage.
 5. **Missing.**
 
 A pack downloaded and switched on in this session, not yet in the mod list, reads as switched on for the next
@@ -56,17 +58,19 @@ start; one switched off but still loaded reads as switched off for the next star
 `PACKS` in `tf_launcher.cpp` has one row per add-on, in `scripts/pack_panel_art.py` `PACK_LOGOS` order: its marker,
 logo id, Workshop item, the faction that needs it (none for an optional pack), name, description, kind and needs.
 
-## Main menu panel
+## Main menu notice
 
-`scripts/bui_mainmenu_pack_notice.py` lays the panel out top right, every piece hidden, straight in
+`scripts/bui_mainmenu_pack_notice.py` lays the notice out top right, every piece hidden, straight in
 `ScreenFitter_Group` (a cloned group carries the source group's tint and places its children differently).
 `scripts/pack_panel_art.py` paints the frame from the menu box's steel at the box's own scale (the launcher draws
-menu images without mipmaps, so a larger frame bands on the Deck) and a logo per pack.
+menu images without mipmaps, so a larger frame bands on the Deck) and the logo: the mod's title over ADD-ONS. A
+clone of the menu box's `Button_Scanlines` runs its moving sheen over the frame.
 
-The main menu is one object for the whole session, so a 2-second `SetTimer` on its UI thread refreshes the panel
-while a pack needs the player. It shows the first such pack, with `+N MORE` when others wait:
+It shows while any add-on is not on (`Pack_On`): never subscribed, downloading, downloaded or switched off. The text
+is fixed: YOU HAVE TIBERIAN FACTIONS ADD-ONS / AVAILABLE THAT ARE NOT ENABLED. The main menu is one object for the
+whole session, so a 2-second `SetTimer` on its UI thread refreshes it while it shows.
 
-**GO TO ADD-ONS** opens the ADD-ONS screen with that pack selected and ticked.
+**ENABLE ADD-ONS** opens the ADD-ONS screen with the first such add-on selected and ticked.
 
 Switching on uses the Mods screen's own toggle (`0x7BB7A0`) for an installed pack and adds a downloaded pack's ID
 to the profile's enabled list (`0x20E0D88`; the ID is zlib's CRC-32 of `ccmod.json`'s name followed by
@@ -74,7 +78,7 @@ to the profile's enabled list (`0x20E0D88`; the ID is zlib's CRC-32 of `ccmod.js
 `CL_CLIENT_RESTART` message, as the Mods screen's RESTART NOW does.
 
 A `ccmod.json` version bump changes the ID, and the launcher drops enabled IDs that match no installed mod at
-startup, so an update switches the pack off once; the panel then offers GO TO ADD-ONS.
+startup, so an update switches the pack off once; the notice then shows.
 
 ## Lobby popup
 

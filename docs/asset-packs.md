@@ -99,7 +99,7 @@ The mod keeps only their XML entries; their art and audio ship in the item.
   alone, for testing the item subscribed from the Workshop.
 - **Detection:** the item carries `CCDATA/TSHDPACK.INI` with its version. The DLL reads it from each enabled mod's
   CCDATA path (`tf_asset_pack.cpp`): without it, a TS GDI pick plays another side and crates skip TS units. The
-  launcher finds the marker in its mod list to show the main menu's pack panel and the lobby popup
+  launcher finds the marker in its mod list for the main menu's add-ons notice and the lobby popup
   (`pack-panel.md`), and saves record whether the pack was on.
 - **TS Nod:** TS-Nod-Graphics-Pack holds TS Nod's HD art (`asset_packs.TS_NOD`). It is in no Workshop item yet:
   staging copies it into the mod for the crate units, until TS Nod ships and joins TS-HD-Assets.
