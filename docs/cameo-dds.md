@@ -1,7 +1,7 @@
 # Sidebar cameos as DDS
 
-**Status:** Design. Proven on the desktop with a probe; nothing ships yet.
-**Open:** the build step, a Deck check, the asset packs' cameos.
+**Status:** Design. Staging writes DDS cameos; next release.
+**Open:** an in-game check of every faction's sidebar, a Deck check.
 
 The mod ships 550 cameos (`BuildIcon_*.tga`, 176 MB): 341x256 RLE TGAs, every one fully
 opaque. Written as DXT1 DDS with mips they take 59 KB each, about 32 MB in all.
@@ -28,13 +28,13 @@ can carry a per-entry badge.
 ## Quality
 
 DXT1 keeps the badges and art intact at sidebar size; at 4x zoom flat colour panels show slight
-banding. `_compare.png` sheets from `scripts/probes/cameo_dds_probe.py` set the original beside
-the decoded DDS at full and sidebar size.
+banding. `scripts/cameo_dds.py <tga>` writes a DDS beside a cameo for a check by eye.
 
-## Open
+## Staging
 
-- **Build step.** Write cameos as DDS where the cameo builders save TGAs
-  (`cameo_badge_build.py`, `cameo_variants_build.py`, `apply_custom_cameos.py`, `gate_cameos.py`),
-  keep atlas-name overrides as TGA, and make the packager refuse a stray TGA beside a DDS.
-- **Deck.** The probe ran on the desktop only.
-- **Asset packs.** TS-HD carries 51 cameos of its own, which compress the same way.
+The cameo sources stay TGA, so every script that draws them is unchanged. Staging
+(`asset_packs.copy_newer`, which `stage_asset_packs.py` and `workshop_packs.py` both use) writes each
+`BuildIcon_*.tga` as `BuildIcon_*.DDS` (`scripts/cameo_dds.py`) and removes a staged TGA of the same
+name, except a name in the launcher's atlas (`MT_COMMANDBAR_COMMON.MTD`, today only
+`BuildIcon_TD_A10`), which stays RLE TGA. An encoded DDS carries its source's time and is rewritten
+only when the source changes. The mod's 552 cameos stage as about 33 MB.
