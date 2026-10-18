@@ -1711,8 +1711,8 @@ void CALLBACK AddOns_Poll(HWND, UINT, UINT_PTR, DWORD)
                 continue;
             }
             PackState state = Pack_State(pack);
-            bool waiting = state == PACK_MISSING && GetTickCount() - AddOnsAsked < SUBSCRIBE_WAIT_MS;
-            if (state == PACK_DOWNLOADING || waiting) {
+            bool asked = state == PACK_MISSING && GetTickCount() - AddOnsAsked < SUBSCRIBE_WAIT_MS;
+            if (state == PACK_DOWNLOADING || asked) {
                 waiting = true;
             } else if (state == PACK_MISSING) {
                 AddOnsWanted &= ~(1u << pack);
