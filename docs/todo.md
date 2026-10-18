@@ -205,6 +205,12 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 - **Game rules editor** (`game-rules.md`): every faction's unit values and a short list of match
   rules (a Settings page tab), DEFAULT / CUSTOM and reset always shown. First: a
   hand-written `tf_rules.ini` changing one value in a skirmish, then the slider probe.
+- **RA and TD campaign maps in the skirmish list.** After TD's multiplayer maps (`td-base-art.md`,
+  build plan step 4), read from the players' own files: keep terrain, resources, trees, smudges and
+  civilian buildings as neutral; strip triggers, teams, scripted units and the mission's bases; the
+  player starts where the mission put them and the AI where the enemy base stood (single player, so
+  no fairness pass). Each needs a rendered thumbnail; leave out maps that can't play, such as
+  interior missions without ore. Listed as "Campaign: <mission name>".
 - **TS chrono arrival at skirmish start.** A TS player's opening units are held back while a
   chrono vortex opens on their start, then come through one by one and fan out. The vortex is
   launcher-drawn and the DLL can place it (`launcher-render-contracts.md` 10: `VortexActive/X/Y`
