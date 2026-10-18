@@ -2,7 +2,8 @@
 
 **Status:** Reference. The mod's skirmish, jukebox and menu music: TF's playlists, music by faction, and the
 optional TS-Music pack (Tiberian Sun and Firestorm's in-game themes).
-**Open:** the Settings page that writes `tf_music.ini`; a Random lobby pick plays the stock rotation.
+**Open:** TS-Music is a Private Workshop item (3822605221) until it goes public; a Random lobby pick plays the
+stock rotation.
 
 ## What ships
 
@@ -27,22 +28,33 @@ Any choice that needs TS-Music while it is off plays the Mix rotation without it
 | `asset-packs/TS-Music/tracks.json` | `ts_music_build.py` | each track's file, title, game, side and length |
 | `asset-packs/TS-Music/Data/AUDIO/MUSIC/*.WAV` (gitignored) | `ts_music_build.py` | the tracks, checked by `scripts/ts_music_work/music.md5` |
 
-`scripts/build_config_meg.sh` writes both loose XML files beside CONFIG.MEG. `ts_music_build.py` extracts the
+`scripts/build_config_meg.sh` writes both loose XML files beside CONFIG.MEG. `scripts/ts_music_preview.py` draws the
+Workshop item's preview. `ts_music_build.py` extracts the
 themes from an installed Tiberian Sun (`SCORES.MIX`, `SCORES01.MIX`, titles from `THEME.INI` and
 `THEME01.INI`), skips the menu and score themes (`Normal=no`), and converts each to the format Remastered's
 music uses: 44.1 kHz stereo MS-ADPCM. The tracks already sit at the stock tracks' level, so none is adjusted.
 
 ## Settings
 
-`Documents/CnCRemastered/tf_music.ini`, read at every skirmish track:
+TIBERIAN FACTIONS SETTINGS, in HELP's row on the main menu, sets the music. `TF_SETTINGS.BUI`
+(`scripts/bui_settings_build.py`) is the CAMPAIGNS page run by `SplashScreen`, opened and bound by
+`redalert/tf_launcher.cpp` as the ADD-ONS screen is (`pack-panel.md`):
+
+- **AUDIO** has a tab per faction under the game banners, the faction's crest, and four rows: MIX, RED ALERT, TIBERIAN
+  DAWN and TIBERIAN SUN, the saved one ticked. A click saves it at once; it plays from the next track. While the
+  TS-Music add-on is off, TIBERIAN SUN reads "Needs its add-on" and GET ADD-ON opens the ADD-ONS screen with
+  TS-Music ticked. DEFAULTS puts every faction back on MIX.
+- **GAME RULES** shows COMING SOON.
+
+The page writes `Documents/CnCRemastered/tf_music.ini`, which the hook reads at every skirmish track:
 
 ```ini
 [Music]
 ; each faction plays MIX, RA, TD or TS
-Allies=RA
-Soviets=RA
+ALLIES=RA
+SOVIETS=RA
 GDI=TD
-Nod=TD
+NOD=TD
 TSGDI=TS
 ```
 
