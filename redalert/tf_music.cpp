@@ -40,12 +40,24 @@ typedef void(__cdecl* ClientFreeFn)(void* block);
 **	Nod, Soviets, Allies, then the duplicate rows, TS GDI on Germany's).
 */
 const char* const FACTION_KEYS[] =
-    {NULL, NULL, "GDI", "Nod", "Soviets", "Allies", "Soviets", "TSGDI", "Allies", "Allies"};
+    {NULL, NULL, "GDI", "NOD", "SOVIETS", "ALLIES", "SOVIETS", "TSGDI", "ALLIES", "ALLIES"};
 
 /*
-**	True when an enabled mod supplies the TS-Music pack's tracks, so the launcher can play them.
+**	The full path of Documents/CnCRemastered/tf_music.ini; false without a user profile.
 */
-bool TS_Music_Present(void)
+bool Settings_Path(char* path, size_t size)
+{
+    const char* up = getenv("USERPROFILE");
+    if (up == NULL) {
+        return false;
+    }
+    snprintf(path, size, "%s\\Documents\\CnCRemastered\\tf_music.ini", up);
+    return true;
+}
+
+} // namespace
+
+bool TF_TS_Music_Present(void)
 {
     const MsvcString* const* roots = (const MsvcString* const*)MOD_ROOTS;
     if (IsBadReadPtr(roots, 2 * sizeof(*roots)) || roots[0] == NULL || roots[1] < roots[0]
@@ -67,20 +79,14 @@ bool TS_Music_Present(void)
     return false;
 }
 
-/*
-**	A key of the [Music] section of Documents/CnCRemastered/tf_music.ini, without an inline
-**	comment, or `fallback` when it is unset.
-*/
-void Music_Setting(const char* key, const char* fallback, char* value, DWORD size)
+void TF_Music_Choice(const char* faction, char* value, DWORD size)
 {
-    snprintf(value, size, "%s", fallback);
-    const char* up = getenv("USERPROFILE");
-    if (up == NULL) {
+    snprintf(value, size, "MIX");
+    char path[MAX_PATH];
+    if (!Settings_Path(path, sizeof(path))) {
         return;
     }
-    char path[MAX_PATH];
-    snprintf(path, sizeof(path), "%s\\Documents\\CnCRemastered\\tf_music.ini", up);
-    GetPrivateProfileStringA("Music", key, fallback, value, size, path);
+    GetPrivateProfileStringA("Music", faction, "MIX", value, size, path);
     char* end = strchr(value, ';');
     end = (end != NULL) ? end : value + strlen(value);
     while (end > value && isspace((unsigned char)end[-1])) {
@@ -88,6 +94,16 @@ void Music_Setting(const char* key, const char* fallback, char* value, DWORD siz
     }
     *end = '\0';
 }
+
+void TF_Music_Set_Choice(const char* faction, const char* choice)
+{
+    char path[MAX_PATH];
+    if (Settings_Path(path, sizeof(path))) {
+        WritePrivateProfileStringA("Music", faction, _stricmp(choice, "MIX") == 0 ? NULL : choice, path);
+    }
+}
+
+namespace {
 
 /*
 **	The TF playlist a soundtrack choice (RA, TD, TS or MIX) asks for, or NULL to keep the stock
@@ -119,9 +135,9 @@ const char* Wanted_Playlist(void)
     const char* key = (faction >= 0 && faction < (int)ARRAY_SIZE(FACTION_KEYS)) ? FACTION_KEYS[faction] : NULL;
     char choice[16] = "MIX";
     if (key != NULL) {
-        Music_Setting(key, "MIX", choice, sizeof(choice));
+        TF_Music_Choice(key, choice, sizeof(choice));
     }
-    return Playlist_For(choice, TS_Music_Present());
+    return Playlist_For(choice, TF_TS_Music_Present());
 }
 
 #if TF_DEV_BUILD
@@ -142,7 +158,7 @@ void Music_Log(const char* stock, const char* asked, bool found)
         fprintf(log,
                 "faction=%d ts_music=%d stock=%s asked=%s %s\n",
                 *(const int*)LOBBY_FACTION,
-                TS_Music_Present() ? 1 : 0,
+                TF_TS_Music_Present() ? 1 : 0,
                 stock,
                 asked,
                 found ? "FOUND" : "missing");
@@ -187,7 +203,7 @@ void* __fastcall Ambient_Find(void* manager, void*, const MsvcString* name)
 */
 bool __fastcall Jukebox_Init(void* manager, void*, bool start)
 {
-    if (!TS_Music_Present()) {
+    if (!TF_TS_Music_Present()) {
         char* begin = *(char**)JUKEBOX_TRACKS_BEGIN;
         char* end = *(char**)JUKEBOX_TRACKS_END;
         char* kept = begin;
