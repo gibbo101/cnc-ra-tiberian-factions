@@ -2410,6 +2410,7 @@ void __stdcall Encyclopedia_Menu_Click(void*)
 const int SETTINGS_PAGES = 2;   // PAGES in scripts/bui_settings_build.py
 const int SETTINGS_AUDIO = 0;
 const int MUSIC_ROWS = 4;       // MUSIC_ROWS in scripts/bui_settings_build.py
+const int MUSIC_MIX_ROW = 0;
 const int MUSIC_TS_ROW = 3;
 const char* const BANNERS[] = {"TF_Banner_RA", "TF_Banner_TD", "TF_Banner_TS"};
 
@@ -2484,6 +2485,7 @@ void Refresh_Settings(void)
     Set_Hidden(Find_Widget(screen, "TF_ST_Plate", AS_QUAD), !audio);
     bool ts = TF_TS_Music_Present();
     int chosen = Music_Row();
+    chosen = chosen == MUSIC_TS_ROW && !ts ? MUSIC_MIX_ROW : chosen;
     for (int row = 0; row < MUSIC_ROWS; row++) {
         bool missing = row == MUSIC_TS_ROW && !ts;
         Set_Hidden(Indexed_Widget(screen, "TF_ST_Glow", row, AS_QUAD), !audio || row != chosen);
