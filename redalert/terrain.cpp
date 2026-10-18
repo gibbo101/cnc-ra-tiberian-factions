@@ -583,7 +583,7 @@ bool TerrainClass::Unlimbo(COORDINATE coord, DirType dir)
     assert(Terrains.ID(this) == ID);
     assert(IsActive);
 
-    if (Class->Theater & (1 << TF_Base_Theater(Scen.Theater))) { // TF: TD theatres take temperate's trees
+    if (Class->Theater & TF_Terrain_Theater_Flag(Class->Type, Scen.Theater)) { // TF: TD theatres' terrain
         return (ObjectClass::Unlimbo(coord, dir));
     }
     return (false);

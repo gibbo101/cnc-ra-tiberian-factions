@@ -729,7 +729,7 @@ void TerrainTypeClass::Init(TheaterType theater)
 
             // TF: TD theatres take temperate's trees; TD's desert terrain loads on desert, from TD's shapes.
             bool td = index >= TERRAIN_TREE4;
-            if (terrain.Theater & (1 << (td ? theater : TF_Base_Theater(theater)))) {
+            if (terrain.Theater & TF_Terrain_Theater_Flag(index, theater)) {
 
                 /*
                 **	Load in the appropriate object shape data.

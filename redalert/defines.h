@@ -3669,6 +3669,13 @@ inline TheaterType TF_Base_Theater(TheaterType theater)
     return (theater >= THEATER_DESERT) ? THEATER_TEMPERATE : theater;
 }
 
+// The theatre flag a terrain type needs on this theatre: TD's own terrain its TD theatre's, RA's the temperate one
+// a TD theatre borrows.
+inline int TF_Terrain_Theater_Flag(TerrainType type, TheaterType theater)
+{
+    return 1 << (type >= TERRAIN_TREE4 ? theater : TF_Base_Theater(theater));
+}
+
 // Suffix of TD's classic shapes for a TD theatre in TFASSETS.MIX (DES, TEM, WIN), else "".
 inline char const* TF_TD_Suffix(TheaterType theater)
 {
