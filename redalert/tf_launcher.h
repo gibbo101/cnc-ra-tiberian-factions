@@ -27,6 +27,11 @@ struct MsvcString
 const char* TF_String_Chars(const MsvcString* s);
 
 /*
+**	This session's mod roots as ClientG lists them: their count, with the first in `first`; 0 when unreadable.
+*/
+int TF_Mod_Roots(const MsvcString** first);
+
+/*
 **	True when the `call` at `site` in ClientG targets `stock_target`; TF_Redirect_Call then points it
 **	at `hook`.
 */

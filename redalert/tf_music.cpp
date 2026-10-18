@@ -16,7 +16,6 @@ namespace {
 const SIZE_T AMBIENT_FIND_CALL = 0x169D018;
 const SIZE_T MUSIC_FIND = 0xE92A90;
 const SIZE_T LOBBY_FACTION = 0x20E0CF8;
-const SIZE_T MOD_ROOTS = 0x1FE4C28;
 const char SKIRMISH_EVENT[] = "_MUS_RA_MULTIPLAYER_MODE";
 const size_t PREFIX_LENGTH = 3;
 const char TS_MUSIC_PROBE[] = "\\Data\\AUDIO\\MUSIC\\TS_MUS_VALVES.WAV";
@@ -59,12 +58,9 @@ bool Settings_Path(char* path, size_t size)
 
 bool TF_TS_Music_Present(void)
 {
-    const MsvcString* const* roots = (const MsvcString* const*)MOD_ROOTS;
-    if (IsBadReadPtr(roots, 2 * sizeof(*roots)) || roots[0] == NULL || roots[1] < roots[0]
-        || roots[1] - roots[0] >= 64) {
-        return false;
-    }
-    for (const MsvcString* root = roots[0]; root < roots[1]; root++) {
+    const MsvcString* roots = NULL;
+    int count = TF_Mod_Roots(&roots);
+    for (const MsvcString* root = roots; root < roots + count; root++) {
         char path[MAX_PATH];
         const char* chars = TF_String_Chars(root);
         size_t length = root->size;

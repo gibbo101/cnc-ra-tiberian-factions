@@ -650,21 +650,19 @@ PackState Listed_State(const char* marker)
 PackState Pack_State(int pack)
 {
     const char* marker = PACKS[pack].Marker;
-    const MsvcStringVector* roots = (const MsvcStringVector*)MOD_ROOTS;
-    if (!IsBadReadPtr(roots, sizeof(*roots)) && roots->First != NULL && roots->Last >= roots->First
-        && roots->Last - roots->First < 64) {
-        for (const MsvcString* root = roots->First; root < roots->Last; root++) {
-            if (Has_Pack_Marker(TF_String_Chars(root), marker)) {
-                char path[MAX_PATH];
-                snprintf(path, sizeof(path), "%s\\%s", TF_String_Chars(root), marker);
-                int high = -1, low = -1;
-                bool current = PACKS[pack].NeededFor == NULL
-                               || (TF_Read_Pack_Marker(path, &high, &low) && TF_Pack_Version_Current(high, low));
-                if (!current) {
-                    return PACK_OUTDATED;
-                }
-                return Listed_State(marker) == PACK_INSTALLED_OFF ? PACK_OFF_NEXT_START : PACK_ENABLED;
+    const MsvcString* roots = NULL;
+    int count = TF_Mod_Roots(&roots);
+    for (const MsvcString* root = roots; root < roots + count; root++) {
+        if (Has_Pack_Marker(TF_String_Chars(root), marker)) {
+            char path[MAX_PATH];
+            snprintf(path, sizeof(path), "%s\\%s", TF_String_Chars(root), marker);
+            int high = -1, low = -1;
+            bool current = PACKS[pack].NeededFor == NULL
+                           || (TF_Read_Pack_Marker(path, &high, &low) && TF_Pack_Version_Current(high, low));
+            if (!current) {
+                return PACK_OUTDATED;
             }
+            return Listed_State(marker) == PACK_INSTALLED_OFF ? PACK_OFF_NEXT_START : PACK_ENABLED;
         }
     }
     PackState state = Listed_State(marker);
@@ -1271,21 +1269,16 @@ void Scene_Close(void** scene)
     }
 }
 
+MsvcString Lent_String(const char* text);
+
 /*
-**	Opens the scene `name` (its .BUI, as "RA/<name>", 15 characters at most) over the main menu and focuses it;
-**	returns its behaviour object, or NULL with the holder cleared when the launcher can't build it.
+**	Opens the scene `name` (its .BUI, as "RA/<name>") over the main menu and focuses it; returns its behaviour
+**	object, or NULL with the holder cleared when the launcher can't build it.
 */
 void* Scene_Open(void** scene, const char* name)
 {
     *scene = NULL;
-    MsvcString text = {};
-    size_t length = strlen(name);
-    if (length > 15) {
-        return NULL;
-    }
-    memcpy(text.buf, name, length + 1);
-    text.size = (unsigned)length;
-    text.capacity = 15;
+    MsvcString text = Lent_String(name);
     ((CreateSceneFn)CREATE_SCENE)(((GuiManagerFn)GUI_MANAGER)(), scene, &text, -1);
     if (*scene == NULL) {
         return NULL;
@@ -2382,11 +2375,10 @@ void Open_Encyclopedia(void)
     if (EncScene != NULL) {
         return;
     }
-    const MsvcStringVector* roots = (const MsvcStringVector*)MOD_ROOTS;
-    if (!IsBadReadPtr(roots, sizeof(*roots)) && roots->First != NULL && roots->Last - roots->First < 64) {
-        for (const MsvcString* root = roots->First; root < roots->Last; root++) {
-            TF_Encyclopedia_Add_Root(TF_String_Chars(root));
-        }
+    const MsvcString* roots = NULL;
+    int count = TF_Mod_Roots(&roots);
+    for (const MsvcString* root = roots; root < roots + count; root++) {
+        TF_Encyclopedia_Add_Root(TF_String_Chars(root));
     }
     if (!TF_Encyclopedia_Load()) {
         Show_Message(L"The encyclopedia couldn't read the mod's rules.");
@@ -3067,6 +3059,17 @@ const char* Carrier_Install(void)
 #endif
 
 } // namespace
+
+int TF_Mod_Roots(const MsvcString** first)
+{
+    const MsvcStringVector* roots = (const MsvcStringVector*)MOD_ROOTS;
+    if (IsBadReadPtr(roots, sizeof(*roots)) || roots->First == NULL || roots->Last < roots->First
+        || roots->Last - roots->First >= 64) {
+        return 0;
+    }
+    *first = roots->First;
+    return (int)(roots->Last - roots->First);
+}
 
 const char* TF_Launcher_Install(void)
 {
