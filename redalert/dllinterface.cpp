@@ -6644,7 +6644,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             }
             // TF: on a converted TD winter map (temperate theatre) trees export as their TDW* snow entries, as MINE
             // does above (scripts/build_winter_trees.py).
-            if (TF_TDWinterMap
+            if (TF_TDWinterMap && Scen.Theater < THEATER_DESERT
                 && new_object.AssetName[0] == 'T'
                 && (isdigit((unsigned char)new_object.AssetName[1])
                     || (new_object.AssetName[1] == 'C'
@@ -10245,7 +10245,8 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
     // TF: a TD template cell goes to the launcher as CLEAR and its tile is drawn here as a dynamic entry: an
     // unknown template name crashes the launcher's renderer (docs/td-tile-hd-loose-art-investigation.md).
     if (cell_ptr->TType >= TEMPLATE_TDSH1 && cell_ptr->TType < TEMPLATE_COUNT
-        && cell_ptr->Overlay == OVERLAY_NONE && cell_ptr->Smudge == SMUDGE_NONE) {
+        && cell_ptr->Overlay == OVERLAY_NONE && cell_ptr->Smudge == SMUDGE_NONE
+        && Scen.Theater < THEATER_DESERT) { // TF: TD theatres draw TD tiles as terrain
         const TemplateTypeClass& td_type = TemplateTypeClass::As_Reference(cell_ptr->TType);
 
         CNCDynamicMapEntryStruct& td_entry = dynamic_map->Entries[entry_index++];
