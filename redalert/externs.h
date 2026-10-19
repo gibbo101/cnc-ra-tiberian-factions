@@ -77,7 +77,6 @@ typedef MixFileClass<CCFileClass> MFCD;
 extern bool IsVQ640;
 extern unsigned int GameVersion;
 
-
 // TF: Unholy Alliance: every house, AI too, starts with the Allied, Soviet, GDI and Nod MCVs and may build all
 // four trees. It rides the lobby's Capture the Flag game type, whose flag game is switched off.
 extern bool TF_UnholyAlliance;

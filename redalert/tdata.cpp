@@ -419,7 +419,6 @@ static TerrainTypeClass const Clump5Class(TERRAIN_CLUMP5,
                                           (short const*)_List001011100110,
                                           (short const*)_List110000011001);
 
-
 // TF: TD's desert trees and rocks (TD tdata.cpp), drawn from TD's desert tileset.
 static TerrainTypeClass const Tree4Class(TERRAIN_TREE4,
                                          THEATERF_DESERT,

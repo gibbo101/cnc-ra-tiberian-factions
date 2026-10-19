@@ -3685,7 +3685,6 @@ inline char const* TF_TD_Suffix(TheaterType theater)
                                             : "";
 }
 
-
 typedef struct
 {
     char Name[16];
