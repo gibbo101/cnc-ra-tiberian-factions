@@ -1107,7 +1107,8 @@ void ChronalVortexClass::Setup_Remap_Tables(TheaterType theater)
 
         Theater = theater;
 
-        CCFileClass file(_remaps[(int)Theater]);
+        // TF: a TD theatre uses its base RA theatre's remap file; the table has RA's three.
+        CCFileClass file(_remaps[(int)TF_Base_Theater(Theater)]);
 
         if (file.Is_Available()) {
             file.Read(VortexRemapTables, MAX_REMAP_SHADES * 256);
