@@ -1037,6 +1037,10 @@ void FootClass::Approach_Target(void)
             } else if (found) {
                 Assign_Destination(::As_Target(trycell));
             } else {
+                // TF: a unit too close to fire backs off along its bearing rather than closing on the target.
+                if (minrange > 0 && Distance(TarCom) < minrange) {
+                    trycell = Coord_Cell(Coord_Move(tcoord, dir, minrange + CELL_LEPTON_W));
+                }
 
                 trycell = Map.Nearby_Location(trycell,
                                               Techno_Type_Class()->Speed,
@@ -1571,6 +1575,13 @@ void FootClass::Per_Cell_Process(PCPType why)
                 MPHType speed = ((TechnoTypeClass const&)techno->Class_Of()).MaxSpeed;
                 COORDINATE rangecoord = (speed > MPH_SLOW) ? foot->Likely_Coord() : foot->Target_Coord();
                 inrange = In_Range(rangecoord, primary);
+            }
+
+            // TF: a unit still inside its weapon's standoff keeps walking out of it.
+            WeaponTypeClass const* weapon = (primary == 1) ? Techno_Type_Class()->SecondaryWeapon
+                                                           : Techno_Type_Class()->PrimaryWeapon;
+            if (weapon != NULL && Distance(TarCom) < weapon->TF_Standoff()) {
+                inrange = false;
             }
 
             if ((Mission == MISSION_RESCUE || Mission == MISSION_GUARD_AREA || Mission == MISSION_ATTACK

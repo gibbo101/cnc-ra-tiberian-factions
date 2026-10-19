@@ -6590,6 +6590,19 @@ void UnitClass::Approach_Target(void)
 {
     assert(IsActive);
 
+    // TF: a player's set-down deploy-to-fire unit never packs up to chase: it drops a target out of its reach or
+    // inside its minimum range, as TS's deployed Juggernaut does.
+    if (Class->IsDeployToFire && DeployState != DEPLOY_MOBILE && House->IsHuman) {
+        if (Target_Legal(TarCom)) {
+            int which = What_Weapon_Should_I_Use(TarCom);
+            WeaponTypeClass const* weapon = (which == 1) ? Class->SecondaryWeapon : Class->PrimaryWeapon;
+            if (!In_Range(TarCom, which) || (weapon != NULL && Distance(TarCom) < weapon->MinRange)) {
+                Assign_Target(TARGET_NONE);
+            }
+        }
+        return;
+    }
+
     /*
     **	Only if there is a legal target should the approach check occur.
     */

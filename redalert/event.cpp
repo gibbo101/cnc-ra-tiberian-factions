@@ -772,6 +772,10 @@ void EventClass::Execute(void)
                     if (techno->Is_Foot()) {
                         ((FootClass*)techno)->Clear_Navigation_List();
                     }
+                    // TF: a new order replaces a move a deploy-to-fire unit held while setting down or packing up.
+                    if (techno->What_Am_I() == RTTI_UNIT) {
+                        ((UnitClass*)techno)->DeployNav = TARGET_NONE;
+                    }
                     techno->Assign_Target(Data.MegaMission.Target.As_TARGET());
                     techno->Assign_Destination(Data.MegaMission.Destination.As_TARGET());
                 }
