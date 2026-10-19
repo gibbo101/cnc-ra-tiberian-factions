@@ -45,9 +45,7 @@ A world tileset with an empty `RootTexturePath` reaches both trees:
   and each ZIP folder it names gets an opener (`Red_Alert\VFX\120MM`).
 - House colours, shading and turrets draw as they do from our copies (GDI Medium Tank, GDI MCV).
 
-`scripts/probes/td_empty_root_probe.py` applies this to a deployed build. `td_base_ref_probe.py`,
-`td_common_root_probe.py` and `td_gateway_probe.py` are the probes that ruled out `..\` paths and
-the non-world tilesets.
+Staging applies this to the build (`scripts/td_base_art.py`).
 
 ## What it can replace
 
@@ -109,7 +107,7 @@ from the base game.
   interior tileset and 4812 MiB with 163 desert tiles in it. A theatre's tiles cost memory only on a
   map that draws them.
 
-`scripts/probes/td_catalogue_maps.py` writes one map per theatre with every template the DLL has
+`scripts/td_catalogue_maps.py` writes one map per theatre with every template the DLL has
 for it placed once; all six draw every template, and units spawn. Two dark cells are EA's data: RA
 interior's `ARRO0003` is a dark tile, and RA temperate's `SH42` icon 3 points at a near-black stray
 frame outside the shore's shape.
