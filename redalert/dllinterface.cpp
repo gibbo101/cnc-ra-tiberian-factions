@@ -4821,12 +4821,12 @@ static void TF_Tell_Launchers_Tick(void)
     }
 }
 
-// Records the mod's root once its CCDATA path registers, and deletes the TD map copies earlier versions installed
-// into Local_Custom_Maps/Red_Alert/.
-static void TF_Install_Bundled_Maps(const char* mod_path)
+// Records the mod's root once its CCDATA path registers, and deletes any TD map copies an older install of the
+// mod left in Local_Custom_Maps/Red_Alert/.
+static void TF_Note_Mod_Root(const char* mod_path)
 {
-    static bool _installed = false;
-    if (_installed || mod_path == NULL) {
+    static bool _noted = false;
+    if (_noted || mod_path == NULL) {
         return;
     }
     char root[MAX_PATH];
@@ -4842,7 +4842,7 @@ static void TF_Install_Bundled_Maps(const char* mod_path)
         return;
     }
     root[len - 6] = 0; // now "<mod>\" (keeps the trailing separator)
-    _installed = true;
+    _noted = true;
     strncpy(TF_ModRootPath, root, sizeof(TF_ModRootPath));
     TF_ModRootPath[sizeof(TF_ModRootPath) - 1] = 0;
 
@@ -4877,7 +4877,8 @@ void DLLExportClass::Add_Mod_Path(const char* mod_path)
     char* copy_path = strdup(mod_path);
     ModSearchPaths.Add(copy_path);
 
-    TF_Install_Bundled_Maps(mod_path);
+    // TF: the mod's own CCDATA registration records the mod's root.
+    TF_Note_Mod_Root(mod_path);
     // TF: an enabled TS-HD-Assets pack registers its CCDATA here, with its marker.
     TF_Note_Mod_Path(mod_path);
 }
