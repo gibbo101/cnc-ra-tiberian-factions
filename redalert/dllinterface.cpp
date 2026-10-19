@@ -2281,6 +2281,30 @@ static void TF_Deploy_Key_Tick(void)
     }
 }
 
+// Per frame: on a fresh press of H, centres the camera on the player's next construction yard. The launcher's own
+// command looks for a building named FACT, which no faction yard is.
+static void TF_Home_Key_Tick(void)
+{
+    static bool _was_down = false;
+    static int _last = -1;
+    bool down = (GetAsyncKeyState('H') & 0x8000) != 0;
+    if (down && !_was_down && PlayerPtr != NULL) {
+        int count = Buildings.Count();
+        for (int step = 1; step <= count; step++) {
+            int index = (_last + step) % count;
+            BuildingClass const* building = Buildings.Ptr(index);
+            if (building != NULL && building->IsActive && !building->IsInLimbo
+                && building->Owner() == PlayerPtr->Class->House && building->Class->Is_Construction_Yard()) {
+                _last = index;
+                COORDINATE center = building->Center_Coord();
+                DLLExportClass::On_Center_Camera(PlayerPtr, Coord_X(center), Coord_Y(center));
+                break;
+            }
+        }
+    }
+    _was_down = down;
+}
+
 // For a moment after a house's select-all order (its launcher's mod command 2, or the host's 'A' key), drops
 // the harvesters and MCVs its launcher hands over; the launcher itself leaves out only the stock pair.
 static bool TF_Select_All_Excludes(ObjectClass* object)
@@ -2381,6 +2405,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
     TF_Tell_Launchers_Tick();
 
     TF_Deploy_Key_Tick();
+
+    TF_Home_Key_Tick();
 
     TF_Sensor_Tick();
 
