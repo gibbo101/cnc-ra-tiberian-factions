@@ -3663,7 +3663,7 @@ inline TheaterType operator++(TheaterType& n)
 #define THEATERF_TDTEMPERATE (1 << THEATER_TDTEMPERATE)
 #define THEATERF_WINTER      (1 << THEATER_WINTER)
 
-// The RA theatre whose classic data and object rules a TD theatre borrows (docs/td-base-art.md).
+// TF: the RA theatre whose classic data and object rules a TD theatre borrows (docs/td-base-art.md).
 inline TheaterType TF_Base_Theater(TheaterType theater)
 {
     return (theater >= THEATER_DESERT) ? THEATER_TEMPERATE : theater;
@@ -3682,7 +3682,7 @@ inline int TF_Terrain_Theater_Flag(TerrainType type, TheaterType theater)
     return 1 << TF_Base_Theater(theater);
 }
 
-// Suffix of TD's classic shapes for a TD theatre in TFASSETS.MIX (DES, TEM, WIN), else "".
+// TF: suffix of TD's classic shapes for a TD theatre in TFASSETS.MIX (DES, TEM, WIN), else "".
 inline char const* TF_TD_Suffix(TheaterType theater)
 {
     return theater == THEATER_DESERT        ? "DES"
