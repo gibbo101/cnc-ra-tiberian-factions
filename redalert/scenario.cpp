@@ -66,6 +66,27 @@
 #include "carry.h"
 #include "common/framelimit.h"
 
+#if TF_DEV_BUILD
+// True when the file Documents/CnCRemastered/<name> exists.
+static bool TF_Dev_Flag_Exists(const char* name)
+{
+    const char* h = getenv("USERPROFILE");
+    if (h == NULL)
+        h = getenv("HOME");
+    if (h == NULL) {
+        return false;
+    }
+    char p[512];
+    snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/%s", h, name);
+    FILE* f = fopen(p, "r");
+    if (f == NULL) {
+        return false;
+    }
+    fclose(f);
+    return true;
+}
+#endif
+
 // True when the dev cheats are on or Documents/CnCRemastered/tf_dev_reveal.flag exists (read once),
 // so the map can be revealed for an AI test with every other cheat off.
 bool TF_Dev_Reveal(void)
@@ -76,19 +97,7 @@ bool TF_Dev_Reveal(void)
     }
     static int cached = -1;
     if (cached < 0) {
-        cached = 0;
-        const char* h = getenv("USERPROFILE");
-        if (h == NULL)
-            h = getenv("HOME");
-        if (h != NULL) {
-            char p[512];
-            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_dev_reveal.flag", h);
-            FILE* f = fopen(p, "r");
-            if (f != NULL) {
-                cached = 1;
-                fclose(f);
-            }
-        }
+        cached = TF_Dev_Flag_Exists("tf_dev_reveal.flag") ? 1 : 0;
     }
     return cached != 0;
 #else
@@ -144,19 +153,7 @@ bool TF_Dev_Cheats(void)
 #if TF_DEV_BUILD
     static int cached = -1;
     if (cached < 0) {
-        cached = 1;
-        const char* h = getenv("USERPROFILE");
-        if (h == NULL)
-            h = getenv("HOME");
-        if (h != NULL) {
-            char p[512];
-            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_dev_off.flag", h);
-            FILE* f = fopen(p, "r");
-            if (f != NULL) {
-                cached = 0;
-                fclose(f);
-            }
-        }
+        cached = TF_Dev_Flag_Exists("tf_dev_off.flag") ? 0 : 1;
     }
     return cached != 0;
 #else
@@ -171,19 +168,7 @@ bool TF_Dev_Rich_Start(void)
 #if TF_DEV_BUILD
     static int cached = -1;
     if (cached < 0) {
-        cached = 0;
-        const char* h = getenv("USERPROFILE");
-        if (h == NULL)
-            h = getenv("HOME");
-        if (h != NULL) {
-            char p[512];
-            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_cheap.flag", h);
-            FILE* f = fopen(p, "r");
-            if (f != NULL) {
-                cached = 1;
-                fclose(f);
-            }
-        }
+        cached = TF_Dev_Flag_Exists("tf_cheap.flag") ? 1 : 0;
     }
     return cached != 0;
 #else
@@ -197,19 +182,7 @@ bool TF_Dev_AI_Off(void)
 #if TF_DEV_BUILD
     static int cached = -1;
     if (cached < 0) {
-        cached = 0;
-        const char* h = getenv("USERPROFILE");
-        if (h == NULL)
-            h = getenv("HOME");
-        if (h != NULL) {
-            char p[512];
-            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_ai_off.flag", h);
-            FILE* f = fopen(p, "r");
-            if (f != NULL) {
-                cached = 1;
-                fclose(f);
-            }
-        }
+        cached = TF_Dev_Flag_Exists("tf_ai_off.flag") ? 1 : 0;
     }
     return cached != 0;
 #else
