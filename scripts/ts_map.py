@@ -66,16 +66,35 @@ def split_cell(number):
     return number % 1000, number // 1000
 
 
+# Archives TS loads ahead of TIBSUN.MIX: Firestorm's replaces TEMPERAT.INI and ISOTEMP.MIX with
+# larger ones, and its maps use the tiles they add.
+EXPANSIONS = ("expand01.mix",)
+
+
 class TsInstall:
     """The archives of an installed Tiberian Sun, opened as needed."""
 
     def __init__(self, folder=TS_DIR):
         self.folder = folder
         self.tibsun = open(os.path.join(folder, "TIBSUN.MIX"), "rb").read()
+        self.expansions = [open(os.path.join(folder, n), "rb").read() for n in EXPANSIONS
+                           if os.path.exists(os.path.join(folder, n))]
         self._members = {}
 
     def member(self, container, name):
-        """A file inside TIBSUN.MIX's `container` archive (LOCAL.MIX, CACHE.MIX, ISOTEMP.MIX ...)."""
+        """A file as TS finds it: an expansion's own copy first, then TIBSUN.MIX's `container`
+        archive (LOCAL.MIX, CACHE.MIX, ISOTEMP.MIX ...)."""
+        for i, expansion in enumerate(self.expansions):
+            data = ts_mix.member(expansion, name)
+            if data is not None:
+                return data
+            key = (i, container)
+            if key not in self._members:
+                self._members[key] = ts_mix.member(expansion, container)
+            if self._members[key] is not None:
+                data = ts_mix.member(self._members[key], name)
+                if data is not None:
+                    return data
         if container not in self._members:
             self._members[container] = ts_mix.member(self.tibsun, container)
         return ts_mix.member(self._members[container], name)
