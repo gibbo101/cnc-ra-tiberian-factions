@@ -134,7 +134,7 @@ The `CONFIG.MEG` members are small, and `meg_extract.py` can take them directly.
 matches anywhere in the stored path, case-insensitively.
 
 ```bash
-GAME="$HOME/.steam/steam/steamapps/common/CnCRemastered/Data"   # your install's Data folder
+GAME="$(python3 scripts/steam_library.py path common/CnCRemastered/Data)"   # your install's Data folder
 python3 scripts/meg_extract.py list "$GAME/CONFIG.MEG" MAIN_MENU
 python3 scripts/meg_extract.py extract "$GAME/CONFIG.MEG" RA_MAIN_MENU.BUI work/
 python3 scripts/meg_extract.py extract "$GAME/CONFIG.MEG" GUITEXTURESETS.XML work/

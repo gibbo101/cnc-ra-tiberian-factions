@@ -15,7 +15,7 @@
 # Run: bash scripts/build_tfassets.sh
 set -euo pipefail
 
-CNCDATA="${HOME}/.steam/steam/steamapps/common/CnCRemastered/Data/CNCDATA"
+CNCDATA="$(python3 "$(dirname "$0")/steam_library.py" path common/CnCRemastered/Data/CNCDATA)"
 CONQUER="${CNCDATA}/TIBERIAN_DAWN/CD1/CONQUER.MIX"
 TD_PAL="${CNCDATA}/TIBERIAN_DAWN/CD1/TEMPERAT.PAL"
 REDALERT="${CNCDATA}/RED_ALERT/CD1/REDALERT.MIX"
@@ -213,7 +213,7 @@ fi
 # the engine then emits the smudge entries, and the launcher resolves their
 # HD art from the interior tileset XML (build_tiberium_hd.py BIB* tiles).
 # Packed RAW -- classic-mode desert colour fidelity is globally deferred.
-DESERT_MIX="$HOME/.steam/steam/steamapps/common/CnCRemastered/Data/CNCDATA/TIBERIAN_DAWN/CD1/DESERT.MIX"
+DESERT_MIX="$CNCDATA/TIBERIAN_DAWN/CD1/DESERT.MIX"
 if [[ -f "$DESERT_MIX" ]]; then
     for b in bib1 bib2 bib3; do
         python3 scripts/mix_tools.py extract "$DESERT_MIX" "$b.des" "$TMPDIR" >/dev/null

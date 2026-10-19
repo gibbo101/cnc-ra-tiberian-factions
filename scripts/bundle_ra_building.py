@@ -19,8 +19,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from bundle_assets import extract_named_zip, patch_rabuildables_xml  # noqa: E402
 import asset_packs  # noqa: E402
+import steam_library  # noqa: E402
 
-RA_MEG = Path.home() / ".steam/steam/steamapps/common/CnCRemastered/Data/TEXTURES_RA_SRGB.MEG"
+RA_MEG = steam_library.path("common/CnCRemastered/Data/TEXTURES_RA_SRGB.MEG")
 
 
 def repack_prefix(src_zip, dst_zip, old, new):

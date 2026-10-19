@@ -63,7 +63,7 @@ LOCAL_OUTPUT="${LOCAL_ROOT}Vanilla_RA/"
 USED_LIST="$(python3 scripts/asset_packs.py used)"
 mapfile -t USED_MODS <<< "$USED_LIST"
 if [[ "$DESKTOP" -eq 1 ]]; then
-    TARGET_ROOT="$HOME/.steam/steam/$MODS_SUFFIX"
+    TARGET_ROOT="$(python3 scripts/steam_library.py library compatdata/1213210)/$MODS_SUFFIX"
     TARGET_HOST=""
     SURFACE="desktop"
 else

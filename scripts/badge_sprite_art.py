@@ -28,9 +28,10 @@ from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from bundle_assets import extract_named_zip, MOD_ROOT  # noqa: E402
+import steam_library  # noqa: E402
 
-RA_MEG = Path.home() / ".steam/steam/steamapps/common/CnCRemastered/Data/TEXTURES_RA_SRGB.MEG"
-TD_MEG = Path.home() / ".steam/steam/steamapps/common/CnCRemastered/Data/TEXTURES_TD_SRGB.MEG"
+RA_MEG = steam_library.path("common/CnCRemastered/Data/TEXTURES_RA_SRGB.MEG")
+TD_MEG = steam_library.path("common/CnCRemastered/Data/TEXTURES_TD_SRGB.MEG")
 ART = MOD_ROOT / "Data/ART/TEXTURES/SRGB/RED_ALERT"
 EMBLEMS = Path(__file__).resolve().parent / "tab_emblems"
 

@@ -51,6 +51,7 @@ SCRIPTS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPTS)
 import asset_packs
 import ts_pack_walls as W
+import steam_library
 
 ART = os.path.join(SCRIPTS, "..", "resources", "custom-art")
 SRC = os.path.join(ART, "cnc-gates-hd")
@@ -232,7 +233,7 @@ def pack(gate):
 
 def sounds():
     # The Tesla gate winding down: RA's Tesla Coil charge-up played backwards.
-    sfx = os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered/Data/SFX3D.MEG")
+    sfx = str(steam_library.path("common/CnCRemastered/Data/SFX3D.MEG"))
     tmp = os.path.join(os.environ.get("TMPDIR", "/tmp"), "tf_gate_sfx")
     subprocess.run([sys.executable, os.path.join(SCRIPTS, "meg_extract.py"), "extract", sfx,
                     "RAR_SFX_TSLACHG2.WAV", tmp], check=True, stdout=subprocess.DEVNULL)

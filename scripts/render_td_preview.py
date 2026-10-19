@@ -25,8 +25,9 @@ import io, os, struct, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from mix_tools import read_mix, ww_crc
 from shptools import decode_shp
+import steam_library
 
-GAME = os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered")
+GAME = str(steam_library.path("common/CnCRemastered"))
 TD_CD1 = os.path.join(GAME, "Data/CNCDATA/TIBERIAN_DAWN/CD1")
 
 CELL = 24      # classic icon size

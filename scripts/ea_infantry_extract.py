@@ -20,8 +20,9 @@ from PIL import Image, ImageDraw
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from meg_extract import read_member  # noqa: E402
+import steam_library  # noqa: E402
 
-GAME_DATA = os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered/Data")
+GAME_DATA = str(steam_library.path("common/CnCRemastered/Data"))
 EA_SOURCE = os.path.expanduser("~/Documents/development/CnC_Remastered_Collection")
 DEFAULT_OUT = os.path.expanduser("~/Desktop/Tiberian Factions/ea-infantry-hd")
 ZIP_LIMIT = 30 * 1024 * 1024

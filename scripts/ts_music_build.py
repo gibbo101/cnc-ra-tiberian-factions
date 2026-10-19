@@ -20,12 +20,13 @@ import zlib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ra_mix_extract as ra  # noqa: E402
+import steam_library  # noqa: E402
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PACK = os.path.join(REPO, "asset-packs", "TS-Music")
 MUSIC = os.path.join(PACK, "Data", "AUDIO", "MUSIC")
 MD5 = os.path.join(REPO, "scripts", "ts_music_work", "music.md5")
-DEFAULT_TS = os.path.expanduser("~/.local/share/Steam/steamapps/common/Command & Conquer Tiberian Sun")
+DEFAULT_TS = str(steam_library.path("common/Command & Conquer Tiberian Sun"))
 
 # (game, archive holding THEME.INI, the archive inside it or None, its INI, the archive of its scores)
 SOURCES = [("TS", "TIBSUN.MIX", "LOCAL.MIX", "THEME.INI", "SCORES.MIX"),

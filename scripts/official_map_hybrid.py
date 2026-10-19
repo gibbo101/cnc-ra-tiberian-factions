@@ -33,13 +33,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import dds_dxt5  # noqa: E402
 import td_map_to_ra as codec  # noqa: E402
 from mix_tools import ww_crc  # noqa: E402
+import steam_library  # noqa: E402
 
 MAIN_MIX = "Data/CNCDATA/RED_ALERT/AFTERMATH/MAIN.MIX"
 CONFIG_MEG = "Data/CONFIG.MEG"
 TEXTURES_MEG = "Data/TEXTURES_SRGB.MEG"
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_MOD = os.path.join(REPO, "resources/remaster_mods/Vanilla_RA")
-DEFAULT_GAME = os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered")
+DEFAULT_GAME = str(steam_library.path("common/CnCRemastered"))
 
 OVERLAY_NONE = 0xFF
 ORE = range(5, 13)  # OVERLAY_GOLD1..OVERLAY_GEMS4 (redalert/defines.h): what makes up a field

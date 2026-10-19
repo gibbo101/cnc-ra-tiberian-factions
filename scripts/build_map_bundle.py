@@ -28,9 +28,10 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import td_map_to_ra
+import steam_library
 
 REPO = Path(__file__).resolve().parent.parent
-GAME = Path.home() / ".steam/steam/steamapps/common/CnCRemastered"
+GAME = steam_library.path("common/CnCRemastered")
 TD_COMMUNITY = GAME / "Data/CNCDATA/TIBERIAN_DAWN/COMMUNITY"
 TD_GENERAL = GAME / "Data/CNCDATA/TIBERIAN_DAWN/CD1/GENERAL.MIX"
 TD_COVERTOPS = GAME / "Data/CNCDATA/TIBERIAN_DAWN/CD1/SC-001.MIX"

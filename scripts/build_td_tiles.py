@@ -41,9 +41,10 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_tiberium_hd import extract_from_meg, crop_to_opaque, TD_TEX_MEG, TD_TERRAIN
+import steam_library
 
 REPO = Path(__file__).resolve().parent.parent
-GAME = Path.home() / ".steam/steam/steamapps/common/CnCRemastered"
+GAME = steam_library.path("common/CnCRemastered")
 TD_TEMPLATES_CS = GAME / "SOURCECODE/CnCTDRAMapEditor/TiberianDawn/TemplateTypes.cs"
 TD_CD1 = GAME / "Data/CNCDATA/TIBERIAN_DAWN/CD1"
 TEX_ROOT = REPO / "resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB/RED_ALERT/TERRAIN"

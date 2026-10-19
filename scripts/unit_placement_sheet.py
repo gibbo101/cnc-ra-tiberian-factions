@@ -28,9 +28,10 @@ from PIL import Image, ImageDraw
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import asset_packs
 import unit_centring as uc
+import steam_library
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GAME_DATA = os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered/Data")
+GAME_DATA = str(steam_library.path("common/CnCRemastered/Data"))
 EA_DENSITY = 128 / 24
 K = 4.0  # sheet px per classic px
 # label, bundle, path inside it, first turret frame

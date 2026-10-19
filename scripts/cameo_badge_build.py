@@ -38,6 +38,7 @@ from PIL import Image
 
 import asset_packs
 import stage_asset_packs
+import steam_library
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -181,7 +182,7 @@ def main(argv):
             sys.exit(
                 f"ERROR: missing {path.name}. Extract the atlas first:\n"
                 f"  python3 scripts/meg_extract.py extract "
-                f"~/.steam/steam/steamapps/common/CnCRemastered/Data/TEXTURES_SRGB.MEG "
+                f"{steam_library.path('common/CnCRemastered/Data/TEXTURES_SRGB.MEG')} "
                 f'"MT_COMMANDBAR_COMMON" {WORK}'
             )
 

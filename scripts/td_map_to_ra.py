@@ -29,6 +29,7 @@ import sys, os, re, struct, base64, argparse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from shptools import lcw_compress, lcw_decompress
+import steam_library
 
 # ----- map geometry -----
 TD_W = 64
@@ -52,8 +53,7 @@ OVERLAY_TIB01 = 25                # must match redalert/defines.h OVERLAY_TIB01
 OVERLAY_CARRY = {"V12": 13, "V13": 14, "V14": 15, "V15": 16, "V16": 17,
                  "V17": 18, "V18": 19}
 
-EDITOR_SRC = os.path.expanduser(
-    "~/.steam/steam/steamapps/common/CnCRemastered/SOURCECODE/CnCTDRAMapEditor")
+EDITOR_SRC = str(steam_library.path("common/CnCRemastered/SOURCECODE/CnCTDRAMapEditor"))
 
 # ===================================================================== codec
 def lcw_block_decompress(data):

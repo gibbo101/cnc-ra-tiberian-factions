@@ -18,6 +18,7 @@ import io, json, math, os, sys, zipfile
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 import hqx
 import asset_packs
+import steam_library
 
 ART = os.environ.get("TS_ART_DIR")
 if not ART:
@@ -359,7 +360,7 @@ TERRAIN_THEATRES = [("TEMPERATE", "RA_TERRAIN_TEMPERATE.XML"),
                     ("INTERIOR", "RA_TERRAIN_INTERIOR.XML")]
 
 GAME_DATA = os.environ.get("CNC_REMASTER_DATA",
-                           os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered/Data"))
+                           str(steam_library.path("common/CnCRemastered/Data")))
 
 
 def ensure_tileset(xml_name):

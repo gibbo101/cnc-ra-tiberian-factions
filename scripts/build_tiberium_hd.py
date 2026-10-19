@@ -39,13 +39,15 @@ from pathlib import Path
 
 from PIL import Image
 
+import steam_library
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 MOD_ROOT = REPO_ROOT / "resources/remaster_mods/Vanilla_RA"
 
 GAME_DATA = Path(os.environ.get(
     "CNC_REMASTER_DATA",
-    Path.home() / ".steam/steam/steamapps/common/CnCRemastered/Data"))
+    steam_library.path("common/CnCRemastered/Data")))
 TD_TEX_MEG = GAME_DATA / "TEXTURES_TD_SRGB.MEG"
 CONFIG_MEG = GAME_DATA / "CONFIG.MEG"
 

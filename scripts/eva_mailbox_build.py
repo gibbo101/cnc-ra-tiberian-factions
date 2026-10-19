@@ -38,6 +38,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import asset_packs  # noqa: E402
 import msadpcm  # noqa: E402
+import steam_library  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 # The workspace holding tools/: the repo's parent, or further up from a worktree.
@@ -49,7 +50,7 @@ SRC = ROOT / "scripts/eva_work/src"
 HEADER = ROOT / "redalert/tf_eva_mailbox.h"
 TS_EXTRACT = WORKSPACE / "tools/ts_extract.py"
 AUD_DECODE = ROOT / "scripts/ts_aud_decode.py"
-DEFAULT_TS = Path.home() / ".steam/steam/steamapps/common/Command & Conquer Tiberian Sun"
+DEFAULT_TS = steam_library.path("common/Command & Conquer Tiberian Sun")
 
 # The eras, in the order the generated table indexes them. Adding one (TS Nod's
 # CABAL, RA2's announcers) means adding it here with its sources and re-running.

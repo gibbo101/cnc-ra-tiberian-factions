@@ -8,7 +8,7 @@ cd "$(dirname "$0")/.."
 
 DATA=resources/remaster_mods/Vanilla_RA/Data
 SRGB="$DATA/ART/TEXTURES/SRGB"
-TEXTURES_MEG="$HOME/.steam/steam/steamapps/common/CnCRemastered/Data/TEXTURES_SRGB.MEG"
+TEXTURES_MEG="$(python3 scripts/steam_library.py path common/CnCRemastered/Data/TEXTURES_SRGB.MEG)"
 
 STOCK="$(mktemp -d)"
 trap 'scripts/clear_dir.sh "$STOCK"' EXIT

@@ -24,10 +24,11 @@ sys.path.insert(0, str(HERE / 'fmv_tools'))
 sys.path.insert(0, str(HERE.parent))
 import meg  # noqa: E402
 import tsmix  # noqa: E402
+import steam_library  # noqa: E402
 
 LIB = Path(os.environ.get('TF_FMV_LIB', Path.home() / 'Desktop/Tiberian Factions/tf-intro-lib'))
-REMASTERED = Path.home() / '.steam/steam/steamapps/common/CnCRemastered'
-TS_INSTALL = Path.home() / '.local/share/Steam/steamapps/common/Command & Conquer Tiberian Sun'
+REMASTERED = steam_library.path('common/CnCRemastered')
+TS_INSTALL = steam_library.path('common/Command & Conquer Tiberian Sun')
 MOVIE_MEGS = {'RA': 'MOVIES_RA.MEG', 'TD': 'MOVIES_TD.MEG'}
 TS_MIXES = ('MOVIES01.MIX', 'MOVIES02.MIX', 'movies03.mix')
 MUSIC = {'RAR_MUS_HELL_MARCH.WAV': 'RAR_MUS_HELL_MARCH_pcm16.wav'}

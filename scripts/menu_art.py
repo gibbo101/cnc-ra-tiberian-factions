@@ -37,9 +37,10 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 import meg_extract  # noqa: E402
 import title_logo_build  # noqa: E402
+import steam_library  # noqa: E402
 
 KEY_ART = SCRIPT_DIR / 'title_work/key-art'
-TEXTURES_MEG = Path.home() / '.steam/steam/steamapps/common/CnCRemastered/Data/TEXTURES_SRGB.MEG'
+TEXTURES_MEG = steam_library.path('common/CnCRemastered/Data/TEXTURES_SRGB.MEG')
 BG_SIZE = (2878, 1200)
 CORE = (479, 60)
 BOX = (602, 322, 1314, 944)            # the menu box on the core, from the live layout

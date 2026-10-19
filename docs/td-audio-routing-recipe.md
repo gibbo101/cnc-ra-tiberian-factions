@@ -59,7 +59,7 @@ VOC_TD_LASER, // Obelisk humming laser beam
 
 ```bash
 python3 scripts/meg_extract.py extract \
-  ~/.steam/steam/steamapps/common/CnCRemastered/Data/SFX3D.MEG \
+  "$(python3 scripts/steam_library.py path common/CnCRemastered)/Data/SFX3D.MEG" \
   OBELRAY1 \
   /tmp/extract/
 ```
@@ -84,7 +84,7 @@ Extract the base XML from `CONFIG.MEG`:
 
 ```bash
 python3 scripts/meg_extract.py extract \
-  ~/.steam/steam/steamapps/common/CnCRemastered/Data/CONFIG.MEG \
+  "$(python3 scripts/steam_library.py path common/CnCRemastered)/Data/CONFIG.MEG" \
   SFXEVENTSNONLOCALIZED \
   /tmp/sfx_extract/
 ```
@@ -194,7 +194,7 @@ event pair and a route in the DLL.
 
 The Remastered Workshop mod **Reilsss's CnCinRA** (workshop ID `2853520457`) was the breakthrough source for this recipe. Their `DATA/XML/AUDIO/SFXEVENTSNONLOCALIZED.XML` already had `RAC_SFX_OBELRAY1` / `RAR_SFX_OBELRAY1` SFXEvents routing to `TDC_/TDR_SFX_OBELRAY1.WAV` — proving the pattern works in production. They ship 88 `.WAV` files this way, mostly TD assets re-aliased into RA mode.
 
-Their mod folder structure (at `~/.steam/steam/steamapps/workshop/content/1213210/2853520457/ReilsssCnCinRA/`):
+Their mod folder structure (at `<Steam library>/steamapps/workshop/content/1213210/2853520457/ReilsssCnCinRA/`; `scripts/steam_library.py` finds the library):
 
 ```
 ReilsssCnCinRA/

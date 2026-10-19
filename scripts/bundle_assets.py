@@ -39,6 +39,7 @@ sys.path.insert(0, str(SCRIPT_DIR))
 import asset_packs                  # noqa: E402
 import buildings_manifest          # noqa: E402
 import meg_extract                  # noqa: E402  -- reused for MEG reads
+import steam_library  # noqa: E402
 
 REPO_ROOT          = SCRIPT_DIR.parent
 MOD_ROOT           = REPO_ROOT / "resources/remaster_mods/Vanilla_RA"
@@ -47,7 +48,7 @@ RA_STRUCTURES_XML  = MOD_ROOT / "Data/XML/TILESETS/RA_STRUCTURES.XML"
 
 # Source MEG file. Default path is the standard Steam install; override with
 # CNC_REMASTER_DATA env var when running from a different machine.
-DEFAULT_GAME_DATA  = Path.home() / ".steam/steam/steamapps/common/CnCRemastered/Data"
+DEFAULT_GAME_DATA  = steam_library.path("common/CnCRemastered/Data")
 SOURCE_MEG_NAME    = "TEXTURES_TD_SRGB.MEG"
 
 

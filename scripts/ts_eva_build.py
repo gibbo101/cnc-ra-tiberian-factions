@@ -32,12 +32,13 @@ import tempfile
 from pathlib import Path
 
 import asset_packs
+import steam_library
 
 ROOT = Path(__file__).resolve().parent.parent
 WORKSPACE = ROOT.parent
 TS_EXTRACT = WORKSPACE / "tools/ts_extract.py"
 AUD_DECODE = ROOT / "scripts/ts_aud_decode.py"
-DEFAULT_TS = Path.home() / ".steam/steam/steamapps/common/Command & Conquer Tiberian Sun"
+DEFAULT_TS = steam_library.path("common/Command & Conquer Tiberian Sun")
 
 BEGIN = "   <!-- BEGIN generated TS GDI EVA events (scripts/ts_eva_build.py) -->"
 END = "   <!-- END generated TS GDI EVA events -->"

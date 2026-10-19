@@ -26,8 +26,9 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 import meg_extract  # noqa: E402
+import steam_library  # noqa: E402
 
-TEXTURES_MEG = Path.home() / '.steam/steam/steamapps/common/CnCRemastered/Data/TEXTURES_SRGB.MEG'
+TEXTURES_MEG = steam_library.path('common/CnCRemastered/Data/TEXTURES_SRGB.MEG')
 STOCK_LOGO = 'DATA\\ART\\TEXTURES\\SRGB\\UI_RA_MAINLOGO.DDS'
 FONT = SCRIPT_DIR / 'title_work/ArchivoBlack-Regular.ttf'
 LINES = (('TIBERIAN', (488, 22, 1442, 102)), ('FACTIONS', (470, 180, 1460, 286)))

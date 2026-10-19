@@ -266,4 +266,4 @@ Visit the item URL in a browser (logged in), accept the Workshop Contributor Agr
 
 ## Historical context
 
-- 2026-05-20: First Workshop publish for this mod (v0.3.0). EA's `Uploader.exe` ruled out as bitrotted across Windows / Wine / Proton. Built our own C# uploader using `Steamworks.NET`, mirroring the SteamUGC sequence in `~/.steam/steam/steamapps/common/CnCRemastered/SOURCECODE/CnCTDRAMapEditor/Utility/SteamworksUGC.cs` (EA's MapEditor — the only working official Workshop publisher for this app). The uploader hung on the same "preparing config" symptom EA's tool produces until a Steam restart cleared it, hence Step 0.
+- 2026-05-20: First Workshop publish for this mod (v0.3.0). EA's `Uploader.exe` ruled out as bitrotted across Windows / Wine / Proton. Built our own C# uploader using `Steamworks.NET`, mirroring the SteamUGC sequence in `<Steam library>/steamapps/common/CnCRemastered/SOURCECODE/CnCTDRAMapEditor/Utility/SteamworksUGC.cs` (EA's MapEditor — the only working official Workshop publisher for this app). The uploader hung on the same "preparing config" symptom EA's tool produces until a Steam restart cleared it, hence Step 0.

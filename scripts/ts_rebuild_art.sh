@@ -14,7 +14,7 @@
 set -euo pipefail
 
 : "${TS_ART_DIR:?set TS_ART_DIR to the directory to (re)build}"
-TIBSUN="${TIBSUN_MIX:-$HOME/.local/share/Steam/steamapps/common/Command & Conquer Tiberian Sun/TIBSUN.MIX}"
+TIBSUN="${TIBSUN_MIX:-$(python3 "$(dirname "${BASH_SOURCE[0]}")/steam_library.py" path "common/Command & Conquer Tiberian Sun/TIBSUN.MIX")}"
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(dirname "$HERE")"

@@ -149,7 +149,7 @@ Handles ZIP extraction, TD-prefix internal rename, RA_STRUCTURES.XML patch, RABU
 ```bash
 # 1. Extract from vanilla MEG
 python3 scripts/meg_extract.py extract \
-  ~/.steam/steam/steamapps/common/CnCRemastered/Data/TEXTURES_TD_SRGB.MEG \
+  "$(python3 scripts/steam_library.py path common/CnCRemastered)/Data/TEXTURES_TD_SRGB.MEG" \
   "<NAME>" /tmp/td-extract/
 
 # 2. Repack with TD-prefixed internal TGAs

@@ -130,10 +130,10 @@ Extract the TD building's SHPs from `CNCDATA/TIBERIAN_DAWN/CD1/CONQUER.MIX`:
 
 ```bash
 python3 scripts/mix_tools.py extract \
-  ~/.steam/steam/steamapps/common/CnCRemastered/Data/CNCDATA/TIBERIAN_DAWN/CD1/CONQUER.MIX \
+  "$(python3 scripts/steam_library.py path common/CnCRemastered)/Data/CNCDATA/TIBERIAN_DAWN/CD1/CONQUER.MIX" \
   OBLI.SHP /tmp/td_extract
 python3 scripts/mix_tools.py extract \
-  ~/.steam/steam/steamapps/common/CnCRemastered/Data/CNCDATA/TIBERIAN_DAWN/CD1/CONQUER.MIX \
+  "$(python3 scripts/steam_library.py path common/CnCRemastered)/Data/CNCDATA/TIBERIAN_DAWN/CD1/CONQUER.MIX" \
   OBLIMAKE.SHP /tmp/td_extract
 ```
 
