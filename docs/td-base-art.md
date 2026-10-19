@@ -1,7 +1,6 @@
 # TD art read from the base game
 
-**Status:** Design. Six theatres, TD art and TD maps from the base game built and tested on the desktop; next release.
-**Open:** a Deck performance pass and a LAN match on a TD map.
+**Status:** Design. Six theatres, TD art and TD maps from the base game built and tested on the desktop and the Deck, LAN included; next release.
 
 The mod copies TD's unit, building and effect ZIPs out of `TEXTURES_TD_SRGB.MEG` into
 `Data/ART/TEXTURES/SRGB/RED_ALERT/`, renamed with a `TD` prefix. Every player already has those
@@ -130,7 +129,16 @@ InstanceServerG builds its instance list from the base `Instances.xml` before th
 new entry launches through the carrier (`tf_launcher.cpp`): ClientG sends any entry from 900 up under
 Hastings' `D6` entry, whose client entry is removed so it isn't listed, and hands its map file over in
 `tf_carrier_mission.txt`; the DLL takes it ahead of `OverrideMapName` on a launch of D6 only, and
-the carrier's key reads as the launched entry's, so the loading screen names it. Hastings itself is
+the carrier's key reads as the launched entry's, so the loading screen names it.
+
+A skirmish launches through `SkirmishGameManagerClass::Host_Game`, which the carrier hooks by its
+callers. A LAN or Steam matchmaking lobby builds its own launch message (`IPCLaunchInstanceMessage`,
+its instance name the string at `+0x30`) and sends it straight to the server, so the carrier also
+hooks those two sends and renames a 9*nn* entry to D6 in place. The server then tells every client
+to load D6; a joiner launched nothing, so D6 reads on every client as the entry its lobby last showed
+(the thumbnail hook records it) or it last launched, whichever came later.
+
+Hastings itself is
 listed through its own entry, keeping `SCMD6EA.INI`. A placeholder instance can't carry: the server
 never starts it. Entry numbers: TD multiplayer map *n* is 9*nn* (Sand Trap, TD's 2, is 902), TD's
 community maps 1 to 7 are 980 to 986, and Hastings is 999; a TD map's file is `TFTD<number>.INI`.
