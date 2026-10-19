@@ -4934,6 +4934,575 @@ Red Alert Afterrmath
 	</Instance>
 	
 	
+	<!-- TF_TD_MAPS BEGIN -->
+	<Instance Name="Mobius_Red_Alert_Multiplayer_999_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<LocationNameTextID> TEXT_NAME_MP_D6_HASTINGS</LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_D6_HASTINGS_DESC</LocationDescriptionTextID>
+		<Mission>999</Mission>
+		<MaxPlayers>4</MaxPlayers>
+
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_TEMPERATE", 
+			"cnc_size_value" : 4096,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_64X64"
+		} </JSONDataText>		
+		
+		<AmbientSFXEnvironmentName> Ambient_Temperate_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_901_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>6</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_1_GREEN_ACRES </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_1_GREEN_ACRES </LocationDescriptionTextID>
+		<Mission>901</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_TEMPERATE", 
+			"cnc_size_value" : 2842,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_58X49"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Temperate_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_902_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>4</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_2_SAND_TRAP </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_2_SAND_TRAP </LocationDescriptionTextID>
+		<Mission>902</Mission>
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_DESERT",
+			"cnc_size_value" : 3306, 
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_57X58"
+		} </JSONDataText>		
+		<AmbientSFXEnvironmentName> Ambient_Desert_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_903_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>6</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_3_LOST_ARENA </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_3_LOST_ARENA </LocationDescriptionTextID>
+		<Mission>903</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_TEMPERATE", 
+			"cnc_size_value" : 3599,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_59X61"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Temperate_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_904_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>6</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_4_RIVER_RAID </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_4_RIVER_RAID </LocationDescriptionTextID>
+		<Mission>904</Mission>
+		<ExternalGameID>TiberianDawn</ExternalGameID>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_TEMPERATE", 
+			"cnc_size_value" : 3304,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_56X59"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Temperate_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_905_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>4</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_5_EYE_OF_THE_STORM </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_5_EYE_OF_THE_STORM </LocationDescriptionTextID>
+		<Mission>905</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_DESERT", 
+			"cnc_size_value" : 3477,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_57X61"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Desert_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_906_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>6</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_6_LAKEFRONT_CLASH </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_6_LAKEFRONT_CLASH </LocationDescriptionTextID>
+		<Mission>906</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_DESERT", 
+			"cnc_size_value" : 3782,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_62X61"
+		} </JSONDataText>	
+		<AmbientSFXEnvironmentName> Ambient_Desert_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_907_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>6</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_7_DESERT_MADNESS </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_7_DESERT_MADNESS </LocationDescriptionTextID>
+		<Mission>907</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_DESERT", 
+			"cnc_size_value" : 3534,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_62X57"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Desert_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+	
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_908_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>4</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_8_PITFALL </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_8_PITFALL </LocationDescriptionTextID>
+		<Mission>908</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_TEMPERATE", 
+			"cnc_size_value" : 3844,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_62X62"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Temperate_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+	
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_909_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>6</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_9_MOOSEHEAD_BARRENS </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_9_MOOSEHEAD_BARRENS </LocationDescriptionTextID>
+		<Mission>909</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_DESERT", 
+			"cnc_size_value" : 3844,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_62X62"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Desert_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_910_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>4</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_10_RED_SANDS </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_10_RED_SANDS_DESC </LocationDescriptionTextID>
+		<Mission>910</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_DESERT",
+			"cnc_size_value" : 3782, 
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_62X61"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Desert_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_950_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>6</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_50_EMERALD_HIGHLANDS </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_50_EMERALD_HIGHLANDS_DESC </LocationDescriptionTextID>
+		<Mission>950</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_TEMPERATE", 
+			"cnc_size_value" : 2552,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_44X58"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Temperate_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_951_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>4</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_51_FOUR_CORNERS </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_51_FOUR_CORNERS_DESC </LocationDescriptionTextID>
+		<Mission>951</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_DESERT", 
+			"cnc_size_value" : 2915,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_53X55"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Desert_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_952_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>6</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_52_CACTUS_VALLEY </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_52_CACTUS_VALLEY_DESC </LocationDescriptionTextID>
+		<Mission>952</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_DESERT", 
+			"cnc_size_value" : 3248,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_56X58"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Desert_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_960_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>4</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_60_MONKEY_IN_THE_MIDDLE </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_60_MONKEY_IN_THE_MIDDLE_DESC </LocationDescriptionTextID>
+		<Mission>960</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_DESERT", 
+			"cnc_size_value" : 3600,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_60X60"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Desert_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_961_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>4</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_61_KING_OF_THE_MOUNTAIN </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_61_KING_OF_THE_MOUNTAIN </LocationDescriptionTextID>
+		<Mission>961</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_TEMPERATE", 
+			"cnc_size_value" : 3600,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_60X60"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Temperate_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_962_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>6</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_62_SURGICAL_INCISION </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_62_SURGICAL_INCISION_DESC </LocationDescriptionTextID>
+		<Mission>962</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_TEMPERATE", 
+			"cnc_size_value" : 3600,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_60X60"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Temperate_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_970_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>4</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_70_WINTER_WONDERLAND </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_70_WINTER_WONDERLAND </LocationDescriptionTextID>
+		<Mission>970</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_WINTER",
+			"cnc_size_value" : 3844, 
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_62X62"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Arctic_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+	
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_971_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>4</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_71_ONE_PASS_FITS_ALL </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_71_ONE_PASS_FITS_ALL </LocationDescriptionTextID>
+		<Mission>971</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_TEMPERATE", 
+			"cnc_size_value" : 1824,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_38X48"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Temperate_Day </AmbientSFXEnvironmentName>		
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+	
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_972_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>4</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_72_STRAIGHT_AND_NARROW </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_72_STRAIGHT_AND_NARROW </LocationDescriptionTextID>
+		<Mission>972</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_DESERT", 
+			"cnc_size_value" : 2356,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_38X62"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Desert_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+	
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_973_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>6</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_73_KING_TAKES_PAWN </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_73_KING_TAKES_PAWN </LocationDescriptionTextID>
+		<Mission>973</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_TEMPERATE", 
+			"cnc_size_value" : 3136,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_56X56"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Temperate_Day </AmbientSFXEnvironmentName>		
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+	
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_974_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>6</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_74_NOWHERE_TO_HIDE </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_74_NOWHERE_TO_HIDE </LocationDescriptionTextID>
+		<Mission>974</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_WINTER", 
+			"cnc_size_value" : 3844,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_62X62"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Arctic_Day </AmbientSFXEnvironmentName>	
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+	
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_975_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>6</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_75_VILLAGE_OF_THE_UNFORTUNATE </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_75_VILLAGE_OF_THE_UNFORTUNATE_DESC </LocationDescriptionTextID>
+		<Mission>975</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_TEMPERATE", 
+			"cnc_size_value" : 3844,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_62X62"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Arctic_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+	
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_977_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>4</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_77_MAROONED </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_77_MAROONED </LocationDescriptionTextID>
+		<Mission>977</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_DESERT", 
+			"cnc_size_value" : 3844,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_62X62"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Desert_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+	
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_980_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<LocationNameTextID> TEXT_NAME_MP_C0_CANYON_PURSUIT</LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_C0_CANYON_PURSUIT_DESC</LocationDescriptionTextID>
+		<CNCCommunityAuthor>AchromicWhite</CNCCommunityAuthor>
+		<Mission>980</Mission>
+		<MaxPlayers>2</MaxPlayers>		
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_DESERT", 
+			"cnc_size_value" : 2808,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_52X54"
+		} </JSONDataText>		
+		
+		<AmbientSFXEnvironmentName> Ambient_Desert_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_981_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<LocationNameTextID> TEXT_NAME_MP_C1_ELECTRIC_AVENUE</LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_C1_ELECTRIC_AVENUE_DESC</LocationDescriptionTextID>
+		<CNCCommunityAuthor>FeRReT666 / Lovehandles</CNCCommunityAuthor>
+		<Mission>981</Mission>
+		<MaxPlayers>4</MaxPlayers>		
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_DESERT", 
+			"cnc_size_value" : 3844,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_62X62"
+		} </JSONDataText>		
+		
+		<AmbientSFXEnvironmentName> Ambient_Desert_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_982_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<LocationNameTextID> TEXT_NAME_MP_C2_ELEVATION</LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_C2_ELEVATION_DESC</LocationDescriptionTextID>
+		<CNCCommunityAuthor>AchromicWhite / Lovehandles</CNCCommunityAuthor>
+		<Mission>982</Mission>
+		<MaxPlayers>2</MaxPlayers>		
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_TEMPERATE", 
+			"cnc_size_value" : 3782,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_62X61"
+		} </JSONDataText>		
+		
+		<AmbientSFXEnvironmentName> Ambient_Temperate_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_983_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<LocationNameTextID> TEXT_NAME_MP_C3_HEAVY_METAL</LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_C3_HEAVY_METAL_DESC</LocationDescriptionTextID>
+		<CNCCommunityAuthor>FeRReT666 / Lovehandles</CNCCommunityAuthor>
+		<Mission>983</Mission>
+		<MaxPlayers>4</MaxPlayers>		
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_TEMPERATE", 
+			"cnc_size_value" : 3844,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_62X62"
+		} </JSONDataText>		
+		
+		<AmbientSFXEnvironmentName> Ambient_Temperate_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_984_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<LocationNameTextID> TEXT_NAME_MP_C4_QUARRY</LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_C4_QUARRY_DESC</LocationDescriptionTextID>
+		<CNCCommunityAuthor>AchromicWhite / Lovehandles</CNCCommunityAuthor>
+		<Mission>984</Mission>
+		<MaxPlayers>2</MaxPlayers>		
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_DESERT", 
+			"cnc_size_value" : 3844,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_62X62"
+		} </JSONDataText>		
+		
+		<AmbientSFXEnvironmentName> Ambient_Desert_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_985_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<LocationNameTextID> TEXT_NAME_MP_C5_TOURNAMENT_MIDDLE_CAMP</LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_C5_TOURNAMENT_MIDDLE_CAMP_DESC</LocationDescriptionTextID>
+		<CNCCommunityAuthor>Nicz2</CNCCommunityAuthor>
+		<Mission>985</Mission>
+		<MaxPlayers>2</MaxPlayers>		
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_WINTER", 
+			"cnc_size_value" : 3721,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_61X61"
+		} </JSONDataText>		
+		
+		<AmbientSFXEnvironmentName> Ambient_Arctic_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_986_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<LocationNameTextID> TEXT_NAME_MP_C6_TOURNAMENT_DESERT</LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_C6_TOURNAMENT_DESERT</LocationDescriptionTextID>
+		<CNCCommunityAuthor>Nicz2 / ^^ZxGanon^^</CNCCommunityAuthor>
+		<Mission>986</Mission>
+		<MaxPlayers>2</MaxPlayers>		
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_DESERT", 
+			"cnc_size_value" : 3844,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_62X62"
+		} </JSONDataText>		
+		
+		<AmbientSFXEnvironmentName> Ambient_Desert_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_990_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>4</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_90_A_LONG_WAY_FROM_HOME </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_90_A_LONG_WAY_FROM_HOME </LocationDescriptionTextID>
+		<Mission>990</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_TEMPERATE", 
+			"cnc_size_value" : 3844,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_62X62"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Temperate_Day </AmbientSFXEnvironmentName>
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_996_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>4</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_96_TIBERIUM_GARDEN </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_96_TIBERIUM_GARDEN </LocationDescriptionTextID>
+		<Mission>996</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_TEMPERATE", 
+			"cnc_size_value" : 3844,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_62X62"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Temperate_Day </AmbientSFXEnvironmentName>		
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_997_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>6</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_97_NORTHERN_EXPLOSION </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_97_NORTHERN_EXPLOSION </LocationDescriptionTextID>
+		<Mission>997</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_WINTER", 
+			"cnc_size_value" : 3844,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_62X62"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Arctic_Day </AmbientSFXEnvironmentName>		
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+
+	</Instance>
+	<Instance Name="Mobius_Red_Alert_Multiplayer_998_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
+
+		<MaxPlayers>6</MaxPlayers>
+		<LocationNameTextID> TEXT_NAME_MP_98_DIVERSE_REGION </LocationNameTextID>
+		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_98_DIVERSE_REGION_DESC </LocationDescriptionTextID>
+		<Mission>998</Mission>
+		
+		<JSONDataText> { 
+			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_DESERT", 
+			"cnc_size_value" : 3844,
+			"cnc_size_text_id" : "TEXT_CNC_SIZE_62X62"
+		} </JSONDataText>
+		<AmbientSFXEnvironmentName> Ambient_Desert_Day </AmbientSFXEnvironmentName>		
+		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
+
+	</Instance>
+	<!-- TF_TD_MAPS END -->
 	<Instance Name="Mobius_Red_Alert_Multiplayer_1_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
 
 		<LocationNameTextID> TEXT_NAME_MP_1_COASTAL_INFLUENCE </LocationNameTextID>
@@ -7167,23 +7736,6 @@ Red Alert Afterrmath
 		} </JSONDataText>		
 		
 		<AmbientSFXEnvironmentName> Ambient_Arctic_Day </AmbientSFXEnvironmentName>
-		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
-	</Instance>
-	<Instance Name="Mobius_Red_Alert_Multiplayer_D6_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">
-
-		<LocationNameTextID> TEXT_NAME_MP_D6_HASTINGS</LocationNameTextID>
-		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_D6_HASTINGS_DESC</LocationDescriptionTextID>
-		<Mission>0</Mission>
-		<OverrideMapName>SCMD6EA.INI</OverrideMapName>
-		<MaxPlayers>4</MaxPlayers>
-
-		<JSONDataText> { 
-			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_TEMPERATE", 
-			"cnc_size_value" : 4096,
-			"cnc_size_text_id" : "TEXT_CNC_SIZE_64X64"
-		} </JSONDataText>		
-		
-		<AmbientSFXEnvironmentName> Ambient_Temperate_Day </AmbientSFXEnvironmentName>
 		<AmbientMusicEventName> MUS_RA_MULTIPLAYER_MODE </AmbientMusicEventName> <!-- TDC_, TDR_, TDB_, RAC_, RAR_, RAB_ prefixes added in code -->
 	</Instance>
 	<Instance Name="Mobius_Red_Alert_Multiplayer_D7_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">

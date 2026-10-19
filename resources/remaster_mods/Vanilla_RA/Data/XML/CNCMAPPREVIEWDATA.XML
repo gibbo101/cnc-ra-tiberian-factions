@@ -1,0 +1,5275 @@
+<?xml version="1.0"?>
+
+<OuterTag>
+
+	<CNCMapPreviewDataManager>
+
+		<CNCMapPreviewData>
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_3_MAP">
+				<MapTileX>2</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>59</MapTileWidth>
+				<MapTileHeight>61</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>305</Entry>
+					<Entry>3833</Entry>
+					<Entry>2523</Entry>
+					<Entry>3781</Entry>
+					<Entry>1991</Entry>
+					<Entry>266</Entry>
+					<Entry>1632</Entry>
+					<Entry>2040</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_72_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>111</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4135</Entry>
+					<Entry>15447</Entry>
+					<Entry>3411</Entry>
+					<Entry>15012</Entry>
+					<Entry>8778</Entry>
+					<Entry>9646</Entry>
+					<Entry>5827</Entry>
+					<Entry>11955</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_F5_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4874</Entry>
+					<Entry>11382</Entry>
+					<Entry>5238</Entry>
+					<Entry>11526</Entry>
+					<Entry>9167</Entry>
+					<Entry>6193</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_8_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>165</Entry>
+					<Entry>902</Entry>
+					<Entry>3206</Entry>
+					<Entry>3822</Entry>
+					<Entry>1779</Entry>
+					<Entry>3834</Entry>
+					<Entry>3864</Entry>
+					<Entry>2902</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_98_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>3719</Entry>
+					<Entry>2087</Entry>
+					<Entry>3063</Entry>
+					<Entry>247</Entry>
+					<Entry>802</Entry>
+					<Entry>2787</Entry>
+					<Entry>967</Entry>
+					<Entry>2436</Entry>
+					<Entry>2335</Entry>
+					<Entry>1315</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_90_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>376</Entry>
+					<Entry>1688</Entry>
+					<Entry>2090</Entry>
+					<Entry>2235</Entry>
+					<Entry>647</Entry>
+					<Entry>2637</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_53_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4690</Entry>
+					<Entry>6313</Entry>
+					<Entry>9046</Entry>
+					<Entry>10670</Entry>
+					<Entry>10573</Entry>
+					<Entry>7846</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_97_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>12649</Entry>
+					<Entry>12868</Entry>
+					<Entry>12835</Entry>
+					<Entry>8481</Entry>
+					<Entry>3872</Entry>
+					<Entry>4293</Entry>
+					<Entry>5095</Entry>
+					<Entry>8937</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_41_MAP">
+				<MapTileX>21</MapTileX>
+				<MapTileY>11</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>10331</Entry>
+					<Entry>5090</Entry>
+					<Entry>3781</Entry>
+					<Entry>6949</Entry>
+					<Entry>9040</Entry>
+					<Entry>6846</Entry>
+					<Entry>4536</Entry>
+					<Entry>7273</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_2_MAP">
+				<MapTileX>3</MapTileX>
+				<MapTileY>3</MapTileY>
+				<MapTileWidth>57</MapTileWidth>
+				<MapTileHeight>58</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>1030</Entry>
+					<Entry>1057</Entry>
+					<Entry>3760</Entry>
+					<Entry>3737</Entry>
+					<Entry>3334</Entry>
+					<Entry>2292</Entry>
+					<Entry>376</Entry>
+					<Entry>340</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_I4_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>13613</Entry>
+					<Entry>2892</Entry>
+					<Entry>12772</Entry>
+					<Entry>2837</Entry>
+					<Entry>10281</Entry>
+					<Entry>5851</Entry>
+					<Entry>5162</Entry>
+					<Entry>9036</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_J7_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>13527</Entry>
+					<Entry>3356</Entry>
+					<Entry>3559</Entry>
+					<Entry>13207</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_M6_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>14099</Entry>
+					<Entry>1328</Entry>
+					<Entry>15213</Entry>
+					<Entry>3319</Entry>
+					<Entry>9714</Entry>
+					<Entry>2649</Entry>
+					<Entry>4233</Entry>
+					<Entry>14787</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_H0_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>12751</Entry>
+					<Entry>3886</Entry>
+					<Entry>10015</Entry>
+					<Entry>6753</Entry>
+					<Entry>3918</Entry>
+					<Entry>12464</Entry>
+					<Entry>6432</Entry>
+					<Entry>9951</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_1_MAP">
+				<MapTileX>3</MapTileX>
+				<MapTileY>11</MapTileY>
+				<MapTileWidth>58</MapTileWidth>
+				<MapTileHeight>49</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>1221</Entry>
+					<Entry>786</Entry>
+					<Entry>953</Entry>
+					<Entry>2216</Entry>
+					<Entry>3745</Entry>
+					<Entry>2298</Entry>
+					<Entry>3573</Entry>
+					<Entry>3464</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_40_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>15407</Entry>
+					<Entry>1963</Entry>
+					<Entry>3283</Entry>
+					<Entry>11097</Entry>
+					<Entry>6947</Entry>
+					<Entry>6078</Entry>
+					<Entry>12965</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_14_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>1061</Entry>
+					<Entry>15708</Entry>
+					<Entry>11172</Entry>
+					<Entry>5725</Entry>
+					<Entry>6435</Entry>
+					<Entry>11740</Entry>
+					<Entry>475</Entry>
+					<Entry>15907</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_5_MAP">
+				<MapTileX>4</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>57</MapTileWidth>
+				<MapTileHeight>61</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>1678</Entry>
+					<Entry>1207</Entry>
+					<Entry>3833</Entry>
+					<Entry>3335</Entry>
+					<Entry>303</Entry>
+					<Entry>2553</Entry>
+					<Entry>647</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_62_MAP">
+				<MapTileX>2</MapTileX>
+				<MapTileY>2</MapTileY>
+				<MapTileWidth>60</MapTileWidth>
+				<MapTileHeight>60</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>780</Entry>
+					<Entry>735</Entry>
+					<Entry>1138</Entry>
+					<Entry>2437</Entry>
+					<Entry>2354</Entry>
+					<Entry>3603</Entry>
+					<Entry>3310</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_105_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>3880</Entry>
+					<Entry>13473</Entry>
+					<Entry>8530</Entry>
+					<Entry>3043</Entry>
+					<Entry>13286</Entry>
+					<Entry>9494</Entry>
+					<Entry>4807</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_20_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>11482</Entry>
+					<Entry>4659</Entry>
+					<Entry>11430</Entry>
+					<Entry>4565</Entry>
+					<Entry>7333</Entry>
+					<Entry>8025</Entry>
+					<Entry>8894</Entry>
+					<Entry>11584</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_L9_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>918</Entry>
+					<Entry>2678</Entry>
+					<Entry>14920</Entry>
+					<Entry>15130</Entry>
+					<Entry>8180</Entry>
+					<Entry>8086</Entry>
+					<Entry>10942</Entry>
+					<Entry>5451</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_18_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>4513</Entry>
+					<Entry>11128</Entry>
+					<Entry>10514</Entry>
+					<Entry>6359</Entry>
+					<Entry>6917</Entry>
+					<Entry>10691</Entry>
+					<Entry>6267</Entry>
+					<Entry>7220</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_L0_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4387</Entry>
+					<Entry>12126</Entry>
+					<Entry>12067</Entry>
+					<Entry>4446</Entry>
+					<Entry>4416</Entry>
+					<Entry>11840</Entry>
+					<Entry>8100</Entry>
+					<Entry>8412</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_H4_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>13204</Entry>
+					<Entry>4844</Entry>
+					<Entry>12104</Entry>
+					<Entry>7062</Entry>
+					<Entry>2638</Entry>
+					<Entry>4399</Entry>
+					<Entry>9194</Entry>
+					<Entry>9135</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_97_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>WINTER</Theater>
+				<Waypoints>
+					<Entry>226</Entry>
+					<Entry>502</Entry>
+					<Entry>3499</Entry>
+					<Entry>3655</Entry>
+					<Entry>1607</Entry>
+					<Entry>1977</Entry>
+					<Entry>2335</Entry>
+					<Entry>1315</Entry>
+					<Entry>2827</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_42_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2334</Entry>
+					<Entry>13036</Entry>
+					<Entry>2535</Entry>
+					<Entry>13718</Entry>
+					<Entry>9788</Entry>
+					<Entry>5176</Entry>
+					<Entry>13888</Entry>
+					<Entry>8423</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_4_MAP">
+				<MapTileX>4</MapTileX>
+				<MapTileY>2</MapTileY>
+				<MapTileWidth>56</MapTileWidth>
+				<MapTileHeight>59</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>263</Entry>
+					<Entry>312</Entry>
+					<Entry>3768</Entry>
+					<Entry>3719</Entry>
+					<Entry>1873</Entry>
+					<Entry>1970</Entry>
+					<Entry>1196</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_6_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>61</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>261</Entry>
+					<Entry>313</Entry>
+					<Entry>3705</Entry>
+					<Entry>3718</Entry>
+					<Entry>1764</Entry>
+					<Entry>2489</Entry>
+					<Entry>2373</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_7_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>4</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>57</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>2135</Entry>
+					<Entry>571</Entry>
+					<Entry>3385</Entry>
+					<Entry>3717</Entry>
+					<Entry>400</Entry>
+					<Entry>387</Entry>
+					<Entry>927</Entry>
+					<Entry>1786</Entry>
+					<Entry>3681</Entry>
+					<Entry>1861</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_9_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>2004</Entry>
+					<Entry>3846</Entry>
+					<Entry>3806</Entry>
+					<Entry>3899</Entry>
+					<Entry>1444</Entry>
+					<Entry>328</Entry>
+					<Entry>314</Entry>
+					<Entry>1722</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_120_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2710</Entry>
+					<Entry>12520</Entry>
+					<Entry>6122</Entry>
+					<Entry>12698</Entry>
+					<Entry>9398</Entry>
+					<Entry>4424</Entry>
+					<Entry>6563</Entry>
+					<Entry>13768</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_10_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>2</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>61</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>370</Entry>
+					<Entry>1723</Entry>
+					<Entry>3720</Entry>
+					<Entry>2052</Entry>
+					<Entry>418</Entry>
+					<Entry>1956</Entry>
+					<Entry>2669</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_58_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>7087</Entry>
+					<Entry>15554</Entry>
+					<Entry>11195</Entry>
+					<Entry>566</Entry>
+					<Entry>3641</Entry>
+					<Entry>1625</Entry>
+					<Entry>4696</Entry>
+					<Entry>10714</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_50_MAP">
+				<MapTileX>12</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>44</MapTileWidth>
+				<MapTileHeight>58</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>3556</Entry>
+					<Entry>1384</Entry>
+					<Entry>3155</Entry>
+					<Entry>1490</Entry>
+					<Entry>306</Entry>
+					<Entry>2290</Entry>
+					<Entry>2011</Entry>
+					<Entry>415</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_93_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2630</Entry>
+					<Entry>2967</Entry>
+					<Entry>7708</Entry>
+					<Entry>13853</Entry>
+					<Entry>8805</Entry>
+					<Entry>13790</Entry>
+					<Entry>2665</Entry>
+					<Entry>6461</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_G9_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4745</Entry>
+					<Entry>11512</Entry>
+					<Entry>4979</Entry>
+					<Entry>9992</Entry>
+					<Entry>7639</Entry>
+					<Entry>8502</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_51_MAP">
+				<MapTileX>5</MapTileX>
+				<MapTileY>4</MapTileY>
+				<MapTileWidth>53</MapTileWidth>
+				<MapTileHeight>55</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>1743</Entry>
+					<Entry>2410</Entry>
+					<Entry>3219</Entry>
+					<Entry>3301</Entry>
+					<Entry>479</Entry>
+					<Entry>1521</Entry>
+					<Entry>2485</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_52_MAP">
+				<MapTileX>5</MapTileX>
+				<MapTileY>3</MapTileY>
+				<MapTileWidth>56</MapTileWidth>
+				<MapTileHeight>58</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>3063</Entry>
+					<Entry>1974</Entry>
+					<Entry>886</Entry>
+					<Entry>412</Entry>
+					<Entry>1033</Entry>
+					<Entry>2696</Entry>
+					<Entry>2011</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_60_MAP">
+				<MapTileX>2</MapTileX>
+				<MapTileY>2</MapTileY>
+				<MapTileWidth>60</MapTileWidth>
+				<MapTileHeight>60</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>714</Entry>
+					<Entry>628</Entry>
+					<Entry>3507</Entry>
+					<Entry>3274</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_D1_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>7204</Entry>
+					<Entry>8921</Entry>
+					<Entry>6604</Entry>
+					<Entry>11720</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_61_MAP">
+				<MapTileX>2</MapTileX>
+				<MapTileY>2</MapTileY>
+				<MapTileWidth>60</MapTileWidth>
+				<MapTileHeight>60</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>715</Entry>
+					<Entry>467</Entry>
+					<Entry>3531</Entry>
+					<Entry>3540</Entry>
+					<Entry>3568</Entry>
+					<Entry>3448</Entry>
+					<Entry>879</Entry>
+					<Entry>564</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_70_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>WINTER</Theater>
+				<Waypoints>
+					<Entry>3463</Entry>
+					<Entry>1565</Entry>
+					<Entry>200</Entry>
+					<Entry>3831</Entry>
+					<Entry>312</Entry>
+					<Entry>1542</Entry>
+					<Entry>794</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_H7_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>3120</Entry>
+					<Entry>12008</Entry>
+					<Entry>12070</Entry>
+					<Entry>4202</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_71_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>15</MapTileY>
+				<MapTileWidth>38</MapTileWidth>
+				<MapTileHeight>48</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>1159</Entry>
+					<Entry>3808</Entry>
+					<Entry>2310</Entry>
+					<Entry>1184</Entry>
+					<Entry>3783</Entry>
+					<Entry>2400</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_72_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>38</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>224</Entry>
+					<Entry>3809</Entry>
+					<Entry>928</Entry>
+					<Entry>1696</Entry>
+					<Entry>3295</Entry>
+					<Entry>2530</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_G6_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>10390</Entry>
+					<Entry>10093</Entry>
+					<Entry>6505</Entry>
+					<Entry>6558</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_73_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>56</MapTileWidth>
+				<MapTileHeight>56</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>650</Entry>
+					<Entry>2186</Entry>
+					<Entry>2227</Entry>
+					<Entry>690</Entry>
+					<Entry>1442</Entry>
+					<Entry>2978</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_M0_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2319</Entry>
+					<Entry>14496</Entry>
+					<Entry>14556</Entry>
+					<Entry>2545</Entry>
+					<Entry>4287</Entry>
+					<Entry>10856</Entry>
+					<Entry>8335</Entry>
+					<Entry>10161</Entry>
+					<Entry>3544</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_74_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>WINTER</Theater>
+				<Waypoints>
+					<Entry>593</Entry>
+					<Entry>370</Entry>
+					<Entry>1642</Entry>
+					<Entry>2905</Entry>
+					<Entry>1798</Entry>
+					<Entry>2425</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_75_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>376</Entry>
+					<Entry>1542</Entry>
+					<Entry>278</Entry>
+					<Entry>3243</Entry>
+					<Entry>3146</Entry>
+					<Entry>1440</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_F1_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>6616</Entry>
+					<Entry>1755</Entry>
+					<Entry>11558</Entry>
+					<Entry>15448</Entry>
+					<Entry>677</Entry>
+					<Entry>5414</Entry>
+					<Entry>11099</Entry>
+					<Entry>15656</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_77_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>666</Entry>
+					<Entry>2487</Entry>
+					<Entry>3399</Entry>
+					<Entry>693</Entry>
+					<Entry>2774</Entry>
+					<Entry>3738</Entry>
+					<Entry>455</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_L3_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>2570</Entry>
+					<Entry>4449</Entry>
+					<Entry>15331</Entry>
+					<Entry>8378</Entry>
+					<Entry>10255</Entry>
+					<Entry>15145</Entry>
+					<Entry>10329</Entry>
+					<Entry>464</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_L5_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>14242</Entry>
+					<Entry>3430</Entry>
+					<Entry>13673</Entry>
+					<Entry>3731</Entry>
+					<Entry>9750</Entry>
+					<Entry>8123</Entry>
+					<Entry>3518</Entry>
+					<Entry>8289</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_96_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>1528</Entry>
+					<Entry>1990</Entry>
+					<Entry>3694</Entry>
+					<Entry>283</Entry>
+					<Entry>3719</Entry>
+					<Entry>1501</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_122_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>6935</Entry>
+					<Entry>2654</Entry>
+					<Entry>7262</Entry>
+					<Entry>12774</Entry>
+					<Entry>7870</Entry>
+					<Entry>2739</Entry>
+					<Entry>12307</Entry>
+					<Entry>13502</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_29_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4254</Entry>
+					<Entry>6192</Entry>
+					<Entry>3427</Entry>
+					<Entry>6988</Entry>
+					<Entry>9554</Entry>
+					<Entry>12900</Entry>
+					<Entry>12336</Entry>
+					<Entry>10283</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_5_MAP">
+				<MapTileX>39</MapTileX>
+				<MapTileY>35</MapTileY>
+				<MapTileWidth>48</MapTileWidth>
+				<MapTileHeight>48</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>5295</Entry>
+					<Entry>9678</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_121_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>13544</Entry>
+					<Entry>2738</Entry>
+					<Entry>11411</Entry>
+					<Entry>3413</Entry>
+					<Entry>7529</Entry>
+					<Entry>8498</Entry>
+					<Entry>13766</Entry>
+					<Entry>5655</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_J3_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>3549</Entry>
+					<Entry>13601</Entry>
+					<Entry>2584</Entry>
+					<Entry>13660</Entry>
+					<Entry>6879</Entry>
+					<Entry>10403</Entry>
+					<Entry>7206</Entry>
+					<Entry>10077</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_D0_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4903</Entry>
+					<Entry>11728</Entry>
+					<Entry>5084</Entry>
+					<Entry>9767</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_M5_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>10265</Entry>
+					<Entry>12885</Entry>
+					<Entry>3253</Entry>
+					<Entry>6248</Entry>
+					<Entry>3281</Entry>
+					<Entry>9958</Entry>
+					<Entry>5917</Entry>
+					<Entry>12976</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_D6_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4950</Entry>
+					<Entry>11435</Entry>
+					<Entry>4904</Entry>
+					<Entry>9685</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_D9_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>5559</Entry>
+					<Entry>10968</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_H1_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4258</Entry>
+					<Entry>12383</Entry>
+					<Entry>4197</Entry>
+					<Entry>13217</Entry>
+					<Entry>6857</Entry>
+					<Entry>8474</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_H2_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2964</Entry>
+					<Entry>13675</Entry>
+					<Entry>5354</Entry>
+					<Entry>7957</Entry>
+					<Entry>11816</Entry>
+					<Entry>2875</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_96_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>11692</Entry>
+					<Entry>3525</Entry>
+					<Entry>10333</Entry>
+					<Entry>6761</Entry>
+					<Entry>7236</Entry>
+					<Entry>12768</Entry>
+					<Entry>6049</Entry>
+					<Entry>12822</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_F4_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2130</Entry>
+					<Entry>5810</Entry>
+					<Entry>14777</Entry>
+					<Entry>10959</Entry>
+					<Entry>8753</Entry>
+					<Entry>11956</Entry>
+					<Entry>2609</Entry>
+					<Entry>6737</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_11_MAP">
+				<MapTileX>11</MapTileX>
+				<MapTileY>19</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>6825</Entry>
+					<Entry>10831</Entry>
+					<Entry>6481</Entry>
+					<Entry>10792</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_K2_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2464</Entry>
+					<Entry>3552</Entry>
+					<Entry>14224</Entry>
+					<Entry>14835</Entry>
+					<Entry>13235</Entry>
+					<Entry>6133</Entry>
+					<Entry>10067</Entry>
+					<Entry>5385</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_E4_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>11558</Entry>
+					<Entry>4697</Entry>
+					<Entry>11610</Entry>
+					<Entry>4775</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_62_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>11767</Entry>
+					<Entry>5253</Entry>
+					<Entry>4586</Entry>
+					<Entry>10415</Entry>
+					<Entry>9158</Entry>
+					<Entry>5182</Entry>
+					<Entry>7246</Entry>
+					<Entry>4646</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_M9_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>1879</Entry>
+					<Entry>13212</Entry>
+					<Entry>5770</Entry>
+					<Entry>12649</Entry>
+					<Entry>5576</Entry>
+					<Entry>2073</Entry>
+					<Entry>15435</Entry>
+					<Entry>9552</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_E6_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>5527</Entry>
+					<Entry>11384</Entry>
+					<Entry>9105</Entry>
+					<Entry>7026</Entry>
+					<Entry>11331</Entry>
+					<Entry>4937</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_G3_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>9318</Entry>
+					<Entry>4999</Entry>
+					<Entry>9253</Entry>
+					<Entry>10948</Entry>
+					<Entry>4398</Entry>
+					<Entry>8072</Entry>
+					<Entry>6588</Entry>
+					<Entry>4966</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_D8_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>10203</Entry>
+					<Entry>5287</Entry>
+					<Entry>11302</Entry>
+					<Entry>4824</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_127_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>19</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>14229</Entry>
+					<Entry>2796</Entry>
+					<Entry>2965</Entry>
+					<Entry>14058</Entry>
+					<Entry>10459</Entry>
+					<Entry>9893</Entry>
+					<Entry>8508</Entry>
+					<Entry>10568</Entry>
+					<Entry>7115</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_117_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4413</Entry>
+					<Entry>13882</Entry>
+					<Entry>11620</Entry>
+					<Entry>2515</Entry>
+					<Entry>6035</Entry>
+					<Entry>5736</Entry>
+					<Entry>8895</Entry>
+					<Entry>10927</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_50_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>5588</Entry>
+					<Entry>10674</Entry>
+					<Entry>6195</Entry>
+					<Entry>9157</Entry>
+					<Entry>5568</Entry>
+					<Entry>8790</Entry>
+					<Entry>7117</Entry>
+					<Entry>10830</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_74_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>11852</Entry>
+					<Entry>4522</Entry>
+					<Entry>11686</Entry>
+					<Entry>5721</Entry>
+					<Entry>8764</Entry>
+					<Entry>5826</Entry>
+					<Entry>9004</Entry>
+					<Entry>9163</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_M1_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>1638</Entry>
+					<Entry>4784</Entry>
+					<Entry>13304</Entry>
+					<Entry>12955</Entry>
+					<Entry>15565</Entry>
+					<Entry>11847</Entry>
+					<Entry>8614</Entry>
+					<Entry>7155</Entry>
+					<Entry>13176</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_46_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>12897</Entry>
+					<Entry>3870</Entry>
+					<Entry>3167</Entry>
+					<Entry>11415</Entry>
+					<Entry>7074</Entry>
+					<Entry>6997</Entry>
+					<Entry>4286</Entry>
+					<Entry>12348</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_43_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>14012</Entry>
+					<Entry>12000</Entry>
+					<Entry>7400</Entry>
+					<Entry>4452</Entry>
+					<Entry>3002</Entry>
+					<Entry>3619</Entry>
+					<Entry>8085</Entry>
+					<Entry>11158</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_22_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4129</Entry>
+					<Entry>12513</Entry>
+					<Entry>11939</Entry>
+					<Entry>3678</Entry>
+					<Entry>12226</Entry>
+					<Entry>8097</Entry>
+					<Entry>4034</Entry>
+					<Entry>7771</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_M3_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>3488</Entry>
+					<Entry>11694</Entry>
+					<Entry>15450</Entry>
+					<Entry>2527</Entry>
+					<Entry>15651</Entry>
+					<Entry>8712</Entry>
+					<Entry>7991</Entry>
+					<Entry>7145</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_L4_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2057</Entry>
+					<Entry>13810</Entry>
+					<Entry>2934</Entry>
+					<Entry>11784</Entry>
+					<Entry>7687</Entry>
+					<Entry>4163</Entry>
+					<Entry>11586</Entry>
+					<Entry>9191</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_34_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>12970</Entry>
+					<Entry>11115</Entry>
+					<Entry>4328</Entry>
+					<Entry>5269</Entry>
+					<Entry>10391</Entry>
+					<Entry>8038</Entry>
+					<Entry>3915</Entry>
+					<Entry>9923</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_19_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>6691</Entry>
+					<Entry>11857</Entry>
+					<Entry>6749</Entry>
+					<Entry>10530</Entry>
+					<Entry>5839</Entry>
+					<Entry>10679</Entry>
+					<Entry>5814</Entry>
+					<Entry>8396</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_E0_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>11305</Entry>
+					<Entry>4697</Entry>
+					<Entry>11481</Entry>
+					<Entry>5541</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_J5_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>13018</Entry>
+					<Entry>4771</Entry>
+					<Entry>13469</Entry>
+					<Entry>5586</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_21_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4644</Entry>
+					<Entry>11484</Entry>
+					<Entry>6107</Entry>
+					<Entry>10277</Entry>
+					<Entry>4546</Entry>
+					<Entry>7468</Entry>
+					<Entry>11838</Entry>
+					<Entry>8388</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_124_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2973</Entry>
+					<Entry>13279</Entry>
+					<Entry>3041</Entry>
+					<Entry>13214</Entry>
+					<Entry>8212</Entry>
+					<Entry>8684</Entry>
+					<Entry>2496</Entry>
+					<Entry>13888</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_94_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>10905</Entry>
+					<Entry>4389</Entry>
+					<Entry>3429</Entry>
+					<Entry>9958</Entry>
+					<Entry>2618</Entry>
+					<Entry>12231</Entry>
+					<Entry>6478</Entry>
+					<Entry>6679</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_130_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>2589</Entry>
+					<Entry>2657</Entry>
+					<Entry>13280</Entry>
+					<Entry>13076</Entry>
+					<Entry>9120</Entry>
+					<Entry>6885</Entry>
+					<Entry>6973</Entry>
+					<Entry>12869</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_49_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4120</Entry>
+					<Entry>10980</Entry>
+					<Entry>12323</Entry>
+					<Entry>4842</Entry>
+					<Entry>3387</Entry>
+					<Entry>13494</Entry>
+					<Entry>9509</Entry>
+					<Entry>9937</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_45_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>11330</Entry>
+					<Entry>4634</Entry>
+					<Entry>4822</Entry>
+					<Entry>6978</Entry>
+					<Entry>6380</Entry>
+					<Entry>4415</Entry>
+					<Entry>8035</Entry>
+					<Entry>6672</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_91_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>6553</Entry>
+					<Entry>2626</Entry>
+					<Entry>8931</Entry>
+					<Entry>12753</Entry>
+					<Entry>10172</Entry>
+					<Entry>13082</Entry>
+					<Entry>5215</Entry>
+					<Entry>2653</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_F2_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>590</Entry>
+					<Entry>12634</Entry>
+					<Entry>8364</Entry>
+					<Entry>12591</Entry>
+					<Entry>15796</Entry>
+					<Entry>3764</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_K0_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>781</Entry>
+					<Entry>1138</Entry>
+					<Entry>15092</Entry>
+					<Entry>15241</Entry>
+					<Entry>7406</Entry>
+					<Entry>7438</Entry>
+					<Entry>962</Entry>
+					<Entry>15293</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_2_MAP">
+				<MapTileX>27</MapTileX>
+				<MapTileY>26</MapTileY>
+				<MapTileWidth>75</MapTileWidth>
+				<MapTileHeight>65</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>10786</Entry>
+					<Entry>4387</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_J6_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>12833</Entry>
+					<Entry>2778</Entry>
+					<Entry>12520</Entry>
+					<Entry>3363</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_1_MAP">
+				<MapTileX>13</MapTileX>
+				<MapTileY>18</MapTileY>
+				<MapTileWidth>94</MapTileWidth>
+				<MapTileHeight>94</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>3352</Entry>
+					<Entry>4581</Entry>
+					<Entry>11876</Entry>
+					<Entry>13081</Entry>
+					<Entry>10685</Entry>
+					<Entry>5695</Entry>
+					<Entry>6675</Entry>
+					<Entry>8415</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_3_MAP">
+				<MapTileX>28</MapTileX>
+				<MapTileY>26</MapTileY>
+				<MapTileWidth>71</MapTileWidth>
+				<MapTileHeight>71</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>5550</Entry>
+					<Entry>10320</Entry>
+					<Entry>5069</Entry>
+					<Entry>10415</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_69_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>13531</Entry>
+					<Entry>2599</Entry>
+					<Entry>13742</Entry>
+					<Entry>1238</Entry>
+					<Entry>8665</Entry>
+					<Entry>4676</Entry>
+					<Entry>1721</Entry>
+					<Entry>6969</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_4_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>6110</Entry>
+					<Entry>12113</Entry>
+					<Entry>5412</Entry>
+					<Entry>11811</Entry>
+					<Entry>3520</Entry>
+					<Entry>9296</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_6_MAP">
+				<MapTileX>14</MapTileX>
+				<MapTileY>17</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>12887</Entry>
+					<Entry>9636</Entry>
+					<Entry>3804</Entry>
+					<Entry>3871</Entry>
+					<Entry>6973</Entry>
+					<Entry>8155</Entry>
+					<Entry>12450</Entry>
+					<Entry>10687</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_7_MAP">
+				<MapTileX>30</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>70</MapTileWidth>
+				<MapTileHeight>70</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>11090</Entry>
+					<Entry>5806</Entry>
+					<Entry>5715</Entry>
+					<Entry>10798</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_8_MAP">
+				<MapTileX>39</MapTileX>
+				<MapTileY>37</MapTileY>
+				<MapTileWidth>48</MapTileWidth>
+				<MapTileHeight>48</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>5292</Entry>
+					<Entry>10449</Entry>
+					<Entry>7377</Entry>
+					<Entry>9003</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_I6_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>6373</Entry>
+					<Entry>13102</Entry>
+					<Entry>3893</Entry>
+					<Entry>13013</Entry>
+					<Entry>3665</Entry>
+					<Entry>9885</Entry>
+					<Entry>5660</Entry>
+					<Entry>10469</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_15_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>3733</Entry>
+					<Entry>13673</Entry>
+					<Entry>9619</Entry>
+					<Entry>3429</Entry>
+					<Entry>13855</Entry>
+					<Entry>8289</Entry>
+					<Entry>3518</Entry>
+					<Entry>8123</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_9_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>15</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>2991</Entry>
+					<Entry>13136</Entry>
+					<Entry>5991</Entry>
+					<Entry>10136</Entry>
+					<Entry>5912</Entry>
+					<Entry>10215</Entry>
+					<Entry>3023</Entry>
+					<Entry>13103</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_J1_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>8980</Entry>
+					<Entry>12648</Entry>
+					<Entry>2632</Entry>
+					<Entry>13742</Entry>
+					<Entry>6838</Entry>
+					<Entry>5609</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_10_MAP">
+				<MapTileX>22</MapTileX>
+				<MapTileY>22</MapTileY>
+				<MapTileWidth>84</MapTileWidth>
+				<MapTileHeight>84</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>8616</Entry>
+					<Entry>7897</Entry>
+					<Entry>5046</Entry>
+					<Entry>11462</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_12_MAP">
+				<MapTileX>15</MapTileX>
+				<MapTileY>15</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>13082</Entry>
+					<Entry>3160</Entry>
+					<Entry>12506</Entry>
+					<Entry>2970</Entry>
+					<Entry>11327</Entry>
+					<Entry>6843</Entry>
+					<Entry>7837</Entry>
+					<Entry>6632</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_13_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4628</Entry>
+					<Entry>11884</Entry>
+					<Entry>13346</Entry>
+					<Entry>2665</Entry>
+					<Entry>2489</Entry>
+					<Entry>13899</Entry>
+					<Entry>9107</Entry>
+					<Entry>7784</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_16_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>3864</Entry>
+					<Entry>4070</Entry>
+					<Entry>13267</Entry>
+					<Entry>9240</Entry>
+					<Entry>8166</Entry>
+					<Entry>6199</Entry>
+					<Entry>2882</Entry>
+					<Entry>12456</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_17_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>1835</Entry>
+					<Entry>14675</Entry>
+					<Entry>10666</Entry>
+					<Entry>5076</Entry>
+					<Entry>15150</Entry>
+					<Entry>1618</Entry>
+					<Entry>5676</Entry>
+					<Entry>10962</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_I0_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>3357</Entry>
+					<Entry>12892</Entry>
+					<Entry>13094</Entry>
+					<Entry>3165</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_M7_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>1425</Entry>
+					<Entry>14989</Entry>
+					<Entry>14704</Entry>
+					<Entry>1651</Entry>
+					<Entry>6154</Entry>
+					<Entry>5872</Entry>
+					<Entry>3639</Entry>
+					<Entry>14775</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_23_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>2739</Entry>
+					<Entry>14033</Entry>
+					<Entry>10675</Entry>
+					<Entry>6991</Entry>
+					<Entry>14000</Entry>
+					<Entry>2510</Entry>
+					<Entry>6959</Entry>
+					<Entry>10831</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_24_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>5513</Entry>
+					<Entry>11256</Entry>
+					<Entry>11685</Entry>
+					<Entry>4699</Entry>
+					<Entry>10632</Entry>
+					<Entry>6136</Entry>
+					<Entry>11722</Entry>
+					<Entry>4785</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_25_MAP">
+				<MapTileX>35</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>14665</Entry>
+					<Entry>695</Entry>
+					<Entry>10682</Entry>
+					<Entry>3644</Entry>
+					<Entry>2653</Entry>
+					<Entry>7496</Entry>
+					<Entry>14000</Entry>
+					<Entry>10322</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_26_MAP">
+				<MapTileX>30</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>4642</Entry>
+					<Entry>10702</Entry>
+					<Entry>5840</Entry>
+					<Entry>11556</Entry>
+					<Entry>8489</Entry>
+					<Entry>10425</Entry>
+					<Entry>7873</Entry>
+					<Entry>6201</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_27_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>21</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>3180</Entry>
+					<Entry>14367</Entry>
+					<Entry>3102</Entry>
+					<Entry>14186</Entry>
+					<Entry>8598</Entry>
+					<Entry>10325</Entry>
+					<Entry>5816</Entry>
+					<Entry>9138</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_M4_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>14179</Entry>
+					<Entry>14752</Entry>
+					<Entry>10273</Entry>
+					<Entry>4959</Entry>
+					<Entry>1033</Entry>
+					<Entry>1523</Entry>
+					<Entry>5408</Entry>
+					<Entry>10206</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_37_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>5396</Entry>
+					<Entry>11898</Entry>
+					<Entry>4729</Entry>
+					<Entry>11674</Entry>
+					<Entry>11448</Entry>
+					<Entry>5076</Entry>
+					<Entry>4916</Entry>
+					<Entry>11730</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_112_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>8931</Entry>
+					<Entry>7368</Entry>
+					<Entry>12064</Entry>
+					<Entry>8096</Entry>
+					<Entry>12756</Entry>
+					<Entry>2981</Entry>
+					<Entry>3807</Entry>
+					<Entry>5434</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_28_MAP">
+				<MapTileX>29</MapTileX>
+				<MapTileY>36</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>5025</Entry>
+					<Entry>12246</Entry>
+					<Entry>5207</Entry>
+					<Entry>11938</Entry>
+					<Entry>8483</Entry>
+					<Entry>9038</Entry>
+					<Entry>6974</Entry>
+					<Entry>11068</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_51_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>38</MapTileY>
+				<MapTileWidth>119</MapTileWidth>
+				<MapTileHeight>58</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>11016</Entry>
+					<Entry>11614</Entry>
+					<Entry>7361</Entry>
+					<Entry>11714</Entry>
+					<Entry>8888</Entry>
+					<Entry>8913</Entry>
+					<Entry>6946</Entry>
+					<Entry>9446</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_30_MAP">
+				<MapTileX>6</MapTileX>
+				<MapTileY>22</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>11919</Entry>
+					<Entry>12885</Entry>
+					<Entry>3296</Entry>
+					<Entry>3468</Entry>
+					<Entry>10287</Entry>
+					<Entry>7232</Entry>
+					<Entry>6173</Entry>
+					<Entry>6625</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_31_MAP">
+				<MapTileX>13</MapTileX>
+				<MapTileY>17</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>12372</Entry>
+					<Entry>4128</Entry>
+					<Entry>12067</Entry>
+					<Entry>4828</Entry>
+					<Entry>10044</Entry>
+					<Entry>6199</Entry>
+					<Entry>8616</Entry>
+					<Entry>7896</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_E1_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>11176</Entry>
+					<Entry>4695</Entry>
+					<Entry>4518</Entry>
+					<Entry>11481</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_32_MAP">
+				<MapTileX>19</MapTileX>
+				<MapTileY>17</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>13165</Entry>
+					<Entry>4760</Entry>
+					<Entry>2925</Entry>
+					<Entry>13724</Entry>
+					<Entry>8739</Entry>
+					<Entry>6757</Entry>
+					<Entry>4295</Entry>
+					<Entry>11451</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_33_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>19</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>14061</Entry>
+					<Entry>14102</Entry>
+					<Entry>2964</Entry>
+					<Entry>3556</Entry>
+					<Entry>12871</Entry>
+					<Entry>3011</Entry>
+					<Entry>8211</Entry>
+					<Entry>6479</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_35_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>13801</Entry>
+					<Entry>3094</Entry>
+					<Entry>13333</Entry>
+					<Entry>3817</Entry>
+					<Entry>6468</Entry>
+					<Entry>13878</Entry>
+					<Entry>6808</Entry>
+					<Entry>2895</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_36_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>5278</Entry>
+					<Entry>5730</Entry>
+					<Entry>6191</Entry>
+					<Entry>6388</Entry>
+					<Entry>6540</Entry>
+					<Entry>7767</Entry>
+					<Entry>10030</Entry>
+					<Entry>10099</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_38_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2666</Entry>
+					<Entry>13722</Entry>
+					<Entry>13801</Entry>
+					<Entry>2461</Entry>
+					<Entry>11031</Entry>
+					<Entry>4887</Entry>
+					<Entry>10967</Entry>
+					<Entry>5738</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_44_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>9</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>118</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4031</Entry>
+					<Entry>14666</Entry>
+					<Entry>11852</Entry>
+					<Entry>7745</Entry>
+					<Entry>11444</Entry>
+					<Entry>4684</Entry>
+					<Entry>13740</Entry>
+					<Entry>9797</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_39_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>13159</Entry>
+					<Entry>2536</Entry>
+					<Entry>3092</Entry>
+					<Entry>12180</Entry>
+					<Entry>9128</Entry>
+					<Entry>4041</Entry>
+					<Entry>3247</Entry>
+					<Entry>12334</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_47_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>108</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>6560</Entry>
+					<Entry>9684</Entry>
+					<Entry>9112</Entry>
+					<Entry>6482</Entry>
+					<Entry>5553</Entry>
+					<Entry>9402</Entry>
+					<Entry>6334</Entry>
+					<Entry>8110</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_48_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>9721</Entry>
+					<Entry>6299</Entry>
+					<Entry>9944</Entry>
+					<Entry>5252</Entry>
+					<Entry>5344</Entry>
+					<Entry>8350</Entry>
+					<Entry>5626</Entry>
+					<Entry>7815</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_73_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>6415</Entry>
+					<Entry>10220</Entry>
+					<Entry>10643</Entry>
+					<Entry>4965</Entry>
+					<Entry>5707</Entry>
+					<Entry>11693</Entry>
+					<Entry>7131</Entry>
+					<Entry>6564</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_52_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>2906</Entry>
+					<Entry>2739</Entry>
+					<Entry>9179</Entry>
+					<Entry>10170</Entry>
+					<Entry>7209</Entry>
+					<Entry>5838</Entry>
+					<Entry>12641</Entry>
+					<Entry>12471</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_95_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>14550</Entry>
+					<Entry>2087</Entry>
+					<Entry>2128</Entry>
+					<Entry>14123</Entry>
+					<Entry>4825</Entry>
+					<Entry>10660</Entry>
+					<Entry>5182</Entry>
+					<Entry>12251</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_54_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>5095</Entry>
+					<Entry>13468</Entry>
+					<Entry>7571</Entry>
+					<Entry>8167</Entry>
+					<Entry>13384</Entry>
+					<Entry>2982</Entry>
+					<Entry>3267</Entry>
+					<Entry>12255</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_K7_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>1554</Entry>
+					<Entry>15094</Entry>
+					<Entry>12808</Entry>
+					<Entry>1646</Entry>
+					<Entry>4439</Entry>
+					<Entry>10581</Entry>
+					<Entry>10915</Entry>
+					<Entry>4395</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_55_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>9510</Entry>
+					<Entry>5720</Entry>
+					<Entry>4775</Entry>
+					<Entry>11611</Entry>
+					<Entry>6459</Entry>
+					<Entry>9564</Entry>
+					<Entry>9790</Entry>
+					<Entry>4803</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_104_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>3228</Entry>
+					<Entry>4169</Entry>
+					<Entry>3302</Entry>
+					<Entry>9817</Entry>
+					<Entry>8342</Entry>
+					<Entry>8385</Entry>
+					<Entry>12775</Entry>
+					<Entry>13597</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_56_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>15141</Entry>
+					<Entry>603</Entry>
+					<Entry>933</Entry>
+					<Entry>15439</Entry>
+					<Entry>4913</Entry>
+					<Entry>8748</Entry>
+					<Entry>8785</Entry>
+					<Entry>4698</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_83_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>13078</Entry>
+					<Entry>3674</Entry>
+					<Entry>11235</Entry>
+					<Entry>6321</Entry>
+					<Entry>6725</Entry>
+					<Entry>11191</Entry>
+					<Entry>9892</Entry>
+					<Entry>6362</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_81_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>7703</Entry>
+					<Entry>8538</Entry>
+					<Entry>2584</Entry>
+					<Entry>13799</Entry>
+					<Entry>13336</Entry>
+					<Entry>2793</Entry>
+					<Entry>5454</Entry>
+					<Entry>13497</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_57_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>15707</Entry>
+					<Entry>550</Entry>
+					<Entry>14887</Entry>
+					<Entry>4432</Entry>
+					<Entry>8356</Entry>
+					<Entry>12325</Entry>
+					<Entry>13242</Entry>
+					<Entry>3124</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_59_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>3097</Entry>
+					<Entry>4330</Entry>
+					<Entry>11458</Entry>
+					<Entry>3388</Entry>
+					<Entry>6837</Entry>
+					<Entry>7249</Entry>
+					<Entry>4525</Entry>
+					<Entry>9402</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_60_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2921</Entry>
+					<Entry>2709</Entry>
+					<Entry>10986</Entry>
+					<Entry>9799</Entry>
+					<Entry>6877</Entry>
+					<Entry>3660</Entry>
+					<Entry>6447</Entry>
+					<Entry>3006</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_111_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>11761</Entry>
+					<Entry>4355</Entry>
+					<Entry>4517</Entry>
+					<Entry>7641</Entry>
+					<Entry>4857</Entry>
+					<Entry>7536</Entry>
+					<Entry>10041</Entry>
+					<Entry>9881</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_61_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>7304</Entry>
+					<Entry>7662</Entry>
+					<Entry>4662</Entry>
+					<Entry>9783</Entry>
+					<Entry>9753</Entry>
+					<Entry>10973</Entry>
+					<Entry>4722</Entry>
+					<Entry>7241</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_E5_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>5424</Entry>
+					<Entry>10701</Entry>
+					<Entry>14891</Entry>
+					<Entry>983</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_G4_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>13094</Entry>
+					<Entry>5336</Entry>
+					<Entry>2982</Entry>
+					<Entry>9405</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_63_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2714</Entry>
+					<Entry>2521</Entry>
+					<Entry>12005</Entry>
+					<Entry>11542</Entry>
+					<Entry>7096</Entry>
+					<Entry>8224</Entry>
+					<Entry>4027</Entry>
+					<Entry>10542</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_64_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4498</Entry>
+					<Entry>11513</Entry>
+					<Entry>4728</Entry>
+					<Entry>11783</Entry>
+					<Entry>11559</Entry>
+					<Entry>4932</Entry>
+					<Entry>7607</Entry>
+					<Entry>8032</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_65_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4981</Entry>
+					<Entry>11275</Entry>
+					<Entry>11622</Entry>
+					<Entry>5131</Entry>
+					<Entry>4800</Entry>
+					<Entry>11825</Entry>
+					<Entry>6180</Entry>
+					<Entry>6987</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_66_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>13093</Entry>
+					<Entry>15449</Entry>
+					<Entry>4266</Entry>
+					<Entry>1094</Entry>
+					<Entry>4186</Entry>
+					<Entry>8906</Entry>
+					<Entry>11715</Entry>
+					<Entry>7717</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_67_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>13673</Entry>
+					<Entry>6053</Entry>
+					<Entry>12576</Entry>
+					<Entry>9313</Entry>
+					<Entry>9376</Entry>
+					<Entry>8394</Entry>
+					<Entry>13628</Entry>
+					<Entry>12616</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_68_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>9663</Entry>
+					<Entry>4545</Entry>
+					<Entry>6717</Entry>
+					<Entry>11485</Entry>
+					<Entry>5747</Entry>
+					<Entry>11673</Entry>
+					<Entry>5769</Entry>
+					<Entry>8084</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_70_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>13800</Entry>
+					<Entry>2587</Entry>
+					<Entry>13204</Entry>
+					<Entry>4840</Entry>
+					<Entry>10044</Entry>
+					<Entry>3773</Entry>
+					<Entry>8346</Entry>
+					<Entry>9308</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_71_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>12642</Entry>
+					<Entry>12566</Entry>
+					<Entry>3431</Entry>
+					<Entry>2975</Entry>
+					<Entry>8883</Entry>
+					<Entry>4937</Entry>
+					<Entry>6442</Entry>
+					<Entry>11196</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_75_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4652</Entry>
+					<Entry>11605</Entry>
+					<Entry>6108</Entry>
+					<Entry>9381</Entry>
+					<Entry>4806</Entry>
+					<Entry>10690</Entry>
+					<Entry>7770</Entry>
+					<Entry>6436</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_76_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>3812</Entry>
+					<Entry>12575</Entry>
+					<Entry>12769</Entry>
+					<Entry>4635</Entry>
+					<Entry>7375</Entry>
+					<Entry>8731</Entry>
+					<Entry>9573</Entry>
+					<Entry>2857</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_77_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>12256</Entry>
+					<Entry>3611</Entry>
+					<Entry>13345</Entry>
+					<Entry>2913</Entry>
+					<Entry>9262</Entry>
+					<Entry>7100</Entry>
+					<Entry>7644</Entry>
+					<Entry>3264</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_109_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>13465</Entry>
+					<Entry>7446</Entry>
+					<Entry>8939</Entry>
+					<Entry>2610</Entry>
+					<Entry>2540</Entry>
+					<Entry>2710</Entry>
+					<Entry>4054</Entry>
+					<Entry>13802</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_78_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>84</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>5079</Entry>
+					<Entry>12594</Entry>
+					<Entry>3366</Entry>
+					<Entry>7475</Entry>
+					<Entry>3894</Entry>
+					<Entry>5784</Entry>
+					<Entry>9538</Entry>
+					<Entry>5293</Entry>
+					<Entry>5549</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_79_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>10415</Entry>
+					<Entry>6738</Entry>
+					<Entry>6316</Entry>
+					<Entry>10319</Entry>
+					<Entry>10858</Entry>
+					<Entry>6292</Entry>
+					<Entry>7532</Entry>
+					<Entry>9363</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_80_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>5075</Entry>
+					<Entry>11732</Entry>
+					<Entry>11437</Entry>
+					<Entry>6565</Entry>
+					<Entry>8644</Entry>
+					<Entry>6593</Entry>
+					<Entry>10304</Entry>
+					<Entry>4412</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_82_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>11143</Entry>
+					<Entry>4707</Entry>
+					<Entry>9594</Entry>
+					<Entry>5920</Entry>
+					<Entry>8407</Entry>
+					<Entry>7870</Entry>
+					<Entry>11830</Entry>
+					<Entry>4619</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_84_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>11506</Entry>
+					<Entry>4742</Entry>
+					<Entry>4851</Entry>
+					<Entry>11783</Entry>
+					<Entry>4933</Entry>
+					<Entry>10050</Entry>
+					<Entry>9646</Entry>
+					<Entry>7639</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_85_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>11689</Entry>
+					<Entry>5976</Entry>
+					<Entry>11351</Entry>
+					<Entry>5293</Entry>
+					<Entry>8756</Entry>
+					<Entry>6086</Entry>
+					<Entry>8528</Entry>
+					<Entry>4550</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_86_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4776</Entry>
+					<Entry>10964</Entry>
+					<Entry>5593</Entry>
+					<Entry>9895</Entry>
+					<Entry>11580</Entry>
+					<Entry>4808</Entry>
+					<Entry>8408</Entry>
+					<Entry>7204</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_87_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>5015</Entry>
+					<Entry>4201</Entry>
+					<Entry>12520</Entry>
+					<Entry>13473</Entry>
+					<Entry>9370</Entry>
+					<Entry>6958</Entry>
+					<Entry>6231</Entry>
+					<Entry>3518</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_88_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>13671</Entry>
+					<Entry>3304</Entry>
+					<Entry>4925</Entry>
+					<Entry>3227</Entry>
+					<Entry>8488</Entry>
+					<Entry>13592</Entry>
+					<Entry>9195</Entry>
+					<Entry>6986</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_89_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4295</Entry>
+					<Entry>12988</Entry>
+					<Entry>6634</Entry>
+					<Entry>13669</Entry>
+					<Entry>11605</Entry>
+					<Entry>7063</Entry>
+					<Entry>11039</Entry>
+					<Entry>3223</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_H3_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>7395</Entry>
+					<Entry>7597</Entry>
+					<Entry>13415</Entry>
+					<Entry>2582</Entry>
+					<Entry>12197</Entry>
+					<Entry>3798</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_90_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2791</Entry>
+					<Entry>5978</Entry>
+					<Entry>6082</Entry>
+					<Entry>6944</Entry>
+					<Entry>9790</Entry>
+					<Entry>8664</Entry>
+					<Entry>12746</Entry>
+					<Entry>3487</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_92_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>8599</Entry>
+					<Entry>11834</Entry>
+					<Entry>8554</Entry>
+					<Entry>2909</Entry>
+					<Entry>2727</Entry>
+					<Entry>12634</Entry>
+					<Entry>12186</Entry>
+					<Entry>8129</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_J4_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>4505</Entry>
+					<Entry>12225</Entry>
+					<Entry>9821</Entry>
+					<Entry>7320</Entry>
+					<Entry>6855</Entry>
+					<Entry>11543</Entry>
+					<Entry>6856</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_98_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>12187</Entry>
+					<Entry>2580</Entry>
+					<Entry>3816</Entry>
+					<Entry>12139</Entry>
+					<Entry>7576</Entry>
+					<Entry>8041</Entry>
+					<Entry>10444</Entry>
+					<Entry>9649</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_D2_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4773</Entry>
+					<Entry>11846</Entry>
+					<Entry>6234</Entry>
+					<Entry>11558</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_99_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>14678</Entry>
+					<Entry>1060</Entry>
+					<Entry>3749</Entry>
+					<Entry>11610</Entry>
+					<Entry>9915</Entry>
+					<Entry>15273</Entry>
+					<Entry>7120</Entry>
+					<Entry>1103</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_100_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>3359</Entry>
+					<Entry>2919</Entry>
+					<Entry>13471</Entry>
+					<Entry>13281</Entry>
+					<Entry>7704</Entry>
+					<Entry>7509</Entry>
+					<Entry>10438</Entry>
+					<Entry>2494</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_101_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>9518</Entry>
+					<Entry>4646</Entry>
+					<Entry>4817</Entry>
+					<Entry>8142</Entry>
+					<Entry>9791</Entry>
+					<Entry>6087</Entry>
+					<Entry>4664</Entry>
+					<Entry>10709</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_102_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>5172</Entry>
+					<Entry>7847</Entry>
+					<Entry>11304</Entry>
+					<Entry>11715</Entry>
+					<Entry>9819</Entry>
+					<Entry>9543</Entry>
+					<Entry>5077</Entry>
+					<Entry>7243</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_L7_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>1416</Entry>
+					<Entry>760</Entry>
+					<Entry>15608</Entry>
+					<Entry>14086</Entry>
+					<Entry>14654</Entry>
+					<Entry>2616</Entry>
+					<Entry>6330</Entry>
+					<Entry>11336</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_103_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>7975</Entry>
+					<Entry>11602</Entry>
+					<Entry>9536</Entry>
+					<Entry>11050</Entry>
+					<Entry>5179</Entry>
+					<Entry>5031</Entry>
+					<Entry>5208</Entry>
+					<Entry>7500</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_106_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>11726</Entry>
+					<Entry>4678</Entry>
+					<Entry>8539</Entry>
+					<Entry>9141</Entry>
+					<Entry>11693</Entry>
+					<Entry>4529</Entry>
+					<Entry>6460</Entry>
+					<Entry>8870</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_107_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>11343</Entry>
+					<Entry>13628</Entry>
+					<Entry>10282</Entry>
+					<Entry>4631</Entry>
+					<Entry>3255</Entry>
+					<Entry>4457</Entry>
+					<Entry>7087</Entry>
+					<Entry>8288</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_108_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>15322</Entry>
+					<Entry>14384</Entry>
+					<Entry>1061</Entry>
+					<Entry>709</Entry>
+					<Entry>2905</Entry>
+					<Entry>6479</Entry>
+					<Entry>10202</Entry>
+					<Entry>10300</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_110_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>15446</Entry>
+					<Entry>15401</Entry>
+					<Entry>547</Entry>
+					<Entry>988</Entry>
+					<Entry>10036</Entry>
+					<Entry>6999</Entry>
+					<Entry>3900</Entry>
+					<Entry>10838</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_113_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>2596</Entry>
+					<Entry>7830</Entry>
+					<Entry>3294</Entry>
+					<Entry>13718</Entry>
+					<Entry>13378</Entry>
+					<Entry>13416</Entry>
+					<Entry>9545</Entry>
+					<Entry>6458</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_114_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>4329</Entry>
+					<Entry>12306</Entry>
+					<Entry>2592</Entry>
+					<Entry>6680</Entry>
+					<Entry>13921</Entry>
+					<Entry>2643</Entry>
+					<Entry>9578</Entry>
+					<Entry>13361</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_115_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>9136</Entry>
+					<Entry>7466</Entry>
+					<Entry>6079</Entry>
+					<Entry>9559</Entry>
+					<Entry>10573</Entry>
+					<Entry>7126</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_123_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>3621</Entry>
+					<Entry>12201</Entry>
+					<Entry>12000</Entry>
+					<Entry>4065</Entry>
+					<Entry>6094</Entry>
+					<Entry>6324</Entry>
+					<Entry>9780</Entry>
+					<Entry>9935</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_116_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>11867</Entry>
+					<Entry>10418</Entry>
+					<Entry>5429</Entry>
+					<Entry>4699</Entry>
+					<Entry>7588</Entry>
+					<Entry>8538</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_118_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4578</Entry>
+					<Entry>5834</Entry>
+					<Entry>6643</Entry>
+					<Entry>11513</Entry>
+					<Entry>8002</Entry>
+					<Entry>9886</Entry>
+					<Entry>5523</Entry>
+					<Entry>10316</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_D3_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>6700</Entry>
+					<Entry>10575</Entry>
+					<Entry>11048</Entry>
+					<Entry>4949</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_119_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2709</Entry>
+					<Entry>2666</Entry>
+					<Entry>13675</Entry>
+					<Entry>13462</Entry>
+					<Entry>8613</Entry>
+					<Entry>5440</Entry>
+					<Entry>11715</Entry>
+					<Entry>8541</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_125_MAP">
+				<MapTileX>13</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>12953</Entry>
+					<Entry>3425</Entry>
+					<Entry>3352</Entry>
+					<Entry>12767</Entry>
+					<Entry>6743</Entry>
+					<Entry>5069</Entry>
+					<Entry>4657</Entry>
+					<Entry>7447</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_126_MAP">
+				<MapTileX>13</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>13587</Entry>
+					<Entry>2663</Entry>
+					<Entry>2450</Entry>
+					<Entry>13669</Entry>
+					<Entry>8352</Entry>
+					<Entry>2870</Entry>
+					<Entry>8030</Entry>
+					<Entry>11315</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_128_MAP">
+				<MapTileX>19</MapTileX>
+				<MapTileY>18</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>12442</Entry>
+					<Entry>4078</Entry>
+					<Entry>3744</Entry>
+					<Entry>13803</Entry>
+					<Entry>8140</Entry>
+					<Entry>14017</Entry>
+					<Entry>6382</Entry>
+					<Entry>3135</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_129_MAP">
+				<MapTileX>14</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>12564</Entry>
+					<Entry>2535</Entry>
+					<Entry>13016</Entry>
+					<Entry>3604</Entry>
+					<Entry>8727</Entry>
+					<Entry>8394</Entry>
+					<Entry>10930</Entry>
+					<Entry>6697</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_D4_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>4790</Entry>
+					<Entry>11718</Entry>
+					<Entry>5466</Entry>
+					<Entry>9782</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_D5_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>4562</Entry>
+					<Entry>9770</Entry>
+					<Entry>4645</Entry>
+					<Entry>9933</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_D7_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>11600</Entry>
+					<Entry>6569</Entry>
+					<Entry>6486</Entry>
+					<Entry>10026</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_E2_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>5041</Entry>
+					<Entry>10965</Entry>
+					<Entry>11430</Entry>
+					<Entry>4568</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_E3_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>11561</Entry>
+					<Entry>5849</Entry>
+					<Entry>11219</Entry>
+					<Entry>4659</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_E7_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>6039</Entry>
+					<Entry>10141</Entry>
+					<Entry>11118</Entry>
+					<Entry>5217</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_E8_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>5006</Entry>
+					<Entry>7599</Entry>
+					<Entry>4602</Entry>
+					<Entry>11718</Entry>
+					<Entry>11764</Entry>
+					<Entry>7141</Entry>
+					<Entry>4539</Entry>
+					<Entry>10884</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_E9_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>4699</Entry>
+					<Entry>7814</Entry>
+					<Entry>7372</Entry>
+					<Entry>8617</Entry>
+					<Entry>7287</Entry>
+					<Entry>4635</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_F0_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>7259</Entry>
+					<Entry>932</Entry>
+					<Entry>6952</Entry>
+					<Entry>12713</Entry>
+					<Entry>12890</Entry>
+					<Entry>986</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_F3_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2212</Entry>
+					<Entry>8258</Entry>
+					<Entry>14807</Entry>
+					<Entry>12329</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_F6_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>11235</Entry>
+					<Entry>5594</Entry>
+					<Entry>6175</Entry>
+					<Entry>11027</Entry>
+					<Entry>11181</Entry>
+					<Entry>5565</Entry>
+					<Entry>10569</Entry>
+					<Entry>4976</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_F7_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>603</Entry>
+					<Entry>15195</Entry>
+					<Entry>11174</Entry>
+					<Entry>806</Entry>
+					<Entry>4902</Entry>
+					<Entry>15397</Entry>
+					<Entry>4825</Entry>
+					<Entry>9305</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_F8_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>13611</Entry>
+					<Entry>4166</Entry>
+					<Entry>8523</Entry>
+					<Entry>14171</Entry>
+					<Entry>4773</Entry>
+					<Entry>1746</Entry>
+					<Entry>7349</Entry>
+					<Entry>12614</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_F9_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>11631</Entry>
+					<Entry>10890</Entry>
+					<Entry>4840</Entry>
+					<Entry>4878</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_G0_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4970</Entry>
+					<Entry>11630</Entry>
+					<Entry>11030</Entry>
+					<Entry>5906</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_G1_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>14298</Entry>
+					<Entry>6324</Entry>
+					<Entry>15671</Entry>
+					<Entry>985</Entry>
+					<Entry>2476</Entry>
+					<Entry>9021</Entry>
+					<Entry>4046</Entry>
+					<Entry>11049</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_G2_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>7149</Entry>
+					<Entry>6294</Entry>
+					<Entry>10662</Entry>
+					<Entry>10837</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_G5_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>14808</Entry>
+					<Entry>12337</Entry>
+					<Entry>1191</Entry>
+					<Entry>1365</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_I8_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>3736</Entry>
+					<Entry>10326</Entry>
+					<Entry>13871</Entry>
+					<Entry>4291</Entry>
+					<Entry>5344</Entry>
+					<Entry>10007</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_G7_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>15528</Entry>
+					<Entry>15446</Entry>
+					<Entry>2136</Entry>
+					<Entry>811</Entry>
+					<Entry>7219</Entry>
+					<Entry>8664</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_G8_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>1065</Entry>
+					<Entry>15683</Entry>
+					<Entry>7386</Entry>
+					<Entry>10279</Entry>
+					<Entry>13275</Entry>
+					<Entry>729</Entry>
+					<Entry>15396</Entry>
+					<Entry>6576</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_H5_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2921</Entry>
+					<Entry>13335</Entry>
+					<Entry>2714</Entry>
+					<Entry>13544</Entry>
+					<Entry>7144</Entry>
+					<Entry>8854</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_H6_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>3733</Entry>
+					<Entry>13672</Entry>
+					<Entry>2788</Entry>
+					<Entry>13463</Entry>
+					<Entry>5306</Entry>
+					<Entry>9783</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_H8_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>9887</Entry>
+					<Entry>3805</Entry>
+					<Entry>13025</Entry>
+					<Entry>3745</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_H9_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>11672</Entry>
+					<Entry>2915</Entry>
+					<Entry>2880</Entry>
+					<Entry>13638</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_I1_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>11934</Entry>
+					<Entry>11497</Entry>
+					<Entry>5152</Entry>
+					<Entry>12742</Entry>
+					<Entry>3670</Entry>
+					<Entry>8135</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_I2_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>6476</Entry>
+					<Entry>12075</Entry>
+					<Entry>4153</Entry>
+					<Entry>12000</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_I3_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>3411</Entry>
+					<Entry>11987</Entry>
+					<Entry>12191</Entry>
+					<Entry>5983</Entry>
+					<Entry>12088</Entry>
+					<Entry>7462</Entry>
+					<Entry>9541</Entry>
+					<Entry>3894</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_I5_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>13415</Entry>
+					<Entry>4121</Entry>
+					<Entry>13334</Entry>
+					<Entry>3690</Entry>
+					<Entry>8343</Entry>
+					<Entry>13378</Entry>
+					<Entry>4164</Entry>
+					<Entry>8295</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_I7_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>4892</Entry>
+					<Entry>11600</Entry>
+					<Entry>5484</Entry>
+					<Entry>11556</Entry>
+					<Entry>9241</Entry>
+					<Entry>8279</Entry>
+					<Entry>5698</Entry>
+					<Entry>7597</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_I9_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>3228</Entry>
+					<Entry>10192</Entry>
+					<Entry>5206</Entry>
+					<Entry>13209</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_J0_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4711</Entry>
+					<Entry>13333</Entry>
+					<Entry>2740</Entry>
+					<Entry>10974</Entry>
+					<Entry>7868</Entry>
+					<Entry>7575</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_J2_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2710</Entry>
+					<Entry>13540</Entry>
+					<Entry>2788</Entry>
+					<Entry>13336</Entry>
+					<Entry>13503</Entry>
+					<Entry>2748</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_J8_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2839</Entry>
+					<Entry>10601</Entry>
+					<Entry>12466</Entry>
+					<Entry>3433</Entry>
+					<Entry>3789</Entry>
+					<Entry>11089</Entry>
+					<Entry>8491</Entry>
+					<Entry>6422</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_J9_MAP">
+				<MapTileX>16</MapTileX>
+				<MapTileY>16</MapTileY>
+				<MapTileWidth>96</MapTileWidth>
+				<MapTileHeight>96</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2845</Entry>
+					<Entry>12509</Entry>
+					<Entry>12954</Entry>
+					<Entry>2776</Entry>
+					<Entry>8088</Entry>
+					<Entry>6888</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_K1_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>6800</Entry>
+					<Entry>7776</Entry>
+					<Entry>14352</Entry>
+					<Entry>13923</Entry>
+					<Entry>2143</Entry>
+					<Entry>6326</Entry>
+					<Entry>12606</Entry>
+					<Entry>1190</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_K3_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>1848</Entry>
+					<Entry>11637</Entry>
+					<Entry>9742</Entry>
+					<Entry>14372</Entry>
+					<Entry>13899</Entry>
+					<Entry>4628</Entry>
+					<Entry>7784</Entry>
+					<Entry>2543</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_K4_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>3331</Entry>
+					<Entry>12795</Entry>
+					<Entry>5279</Entry>
+					<Entry>10979</Entry>
+					<Entry>489</Entry>
+					<Entry>15766</Entry>
+					<Entry>12331</Entry>
+					<Entry>3802</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_K5_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2950</Entry>
+					<Entry>620</Entry>
+					<Entry>13818</Entry>
+					<Entry>14214</Entry>
+					<Entry>8536</Entry>
+					<Entry>15696</Entry>
+					<Entry>9517</Entry>
+					<Entry>1202</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_K6_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>2056</Entry>
+					<Entry>14438</Entry>
+					<Entry>13457</Entry>
+					<Entry>2136</Entry>
+					<Entry>9098</Entry>
+					<Entry>6774</Entry>
+					<Entry>5308</Entry>
+					<Entry>11591</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_K8_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2091</Entry>
+					<Entry>13985</Entry>
+					<Entry>8175</Entry>
+					<Entry>7350</Entry>
+					<Entry>11478</Entry>
+					<Entry>8461</Entry>
+					<Entry>14442</Entry>
+					<Entry>2284</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_K9_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>15340</Entry>
+					<Entry>15503</Entry>
+					<Entry>4088</Entry>
+					<Entry>1580</Entry>
+					<Entry>10910</Entry>
+					<Entry>14909</Entry>
+					<Entry>6963</Entry>
+					<Entry>9951</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_L1_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>9328</Entry>
+					<Entry>8582</Entry>
+					<Entry>1711</Entry>
+					<Entry>15064</Entry>
+					<Entry>1754</Entry>
+					<Entry>15388</Entry>
+					<Entry>11828</Entry>
+					<Entry>7350</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_L2_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>13714</Entry>
+					<Entry>2199</Entry>
+					<Entry>13811</Entry>
+					<Entry>5685</Entry>
+					<Entry>9427</Entry>
+					<Entry>4983</Entry>
+					<Entry>7432</Entry>
+					<Entry>14669</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_L6_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>6810</Entry>
+					<Entry>2517</Entry>
+					<Entry>7391</Entry>
+					<Entry>12139</Entry>
+					<Entry>7485</Entry>
+					<Entry>2097</Entry>
+					<Entry>11537</Entry>
+					<Entry>12479</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_L8_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>920</Entry>
+					<Entry>8934</Entry>
+					<Entry>7181</Entry>
+					<Entry>15212</Entry>
+					<Entry>15291</Entry>
+					<Entry>9914</Entry>
+					<Entry>1134</Entry>
+					<Entry>2246</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_M2_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>5777</Entry>
+					<Entry>2615</Entry>
+					<Entry>12321</Entry>
+					<Entry>15304</Entry>
+					<Entry>4825</Entry>
+					<Entry>8620</Entry>
+					<Entry>3193</Entry>
+					<Entry>9429</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_M8_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>126</MapTileWidth>
+				<MapTileHeight>126</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>15475</Entry>
+					<Entry>14471</Entry>
+					<Entry>7705</Entry>
+					<Entry>10730</Entry>
+					<Entry>13500</Entry>
+					<Entry>2030</Entry>
+					<Entry>1803</Entry>
+					<Entry>2747</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_COMMUNITY_1_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>52</MapTileWidth>
+				<MapTileHeight>54</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>1059</Entry>
+					<Entry>2450</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_COMMUNITY_2_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>1105</Entry>
+					<Entry>2990</Entry>
+					<Entry>742</Entry>
+					<Entry>3353</Entry>
+					<Entry>2379</Entry>
+					<Entry>1716</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_COMMUNITY_3_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>61</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2098</Entry>
+					<Entry>2061</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_COMMUNITY_4_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>3341</Entry>
+					<Entry>754</Entry>
+					<Entry>3185</Entry>
+					<Entry>910</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_COMMUNITY_5_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>905</Entry>
+					<Entry>3190</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_COMMUNITY_6_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>61</MapTileWidth>
+				<MapTileHeight>61</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>3732</Entry>
+					<Entry>297</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_COMMUNITY_7_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>3615</Entry>
+					<Entry>481</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_COMMUNITY_1_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>1</MapTileY>
+				<MapTileWidth>52</MapTileWidth>
+				<MapTileHeight>54</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>2083</Entry>
+					<Entry>4755</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_COMMUNITY_2_MAP">
+				<MapTileX>1</MapTileX>
+				<MapTileY>50</MapTileY>
+				<MapTileWidth>76</MapTileWidth>
+				<MapTileHeight>58</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>8594</Entry>
+					<Entry>11579</Entry>
+				</Waypoints>
+			</INIData>
+
+
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_COMMUNITY_3_MAP">
+				<MapTileX>3</MapTileX>
+				<MapTileY>47</MapTileY>
+				<MapTileWidth>122</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>SNOW</Theater>
+				<Waypoints>
+					<Entry>7440</Entry>
+					<Entry>12527</Entry>
+				</Waypoints>
+			</INIData>
+
+			<!-- TF_TD_MAPS BEGIN -->
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_999_MAP">
+				<MapTileX>32</MapTileX>
+				<MapTileY>32</MapTileY>
+				<MapTileWidth>64</MapTileWidth>
+				<MapTileHeight>64</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4950</Entry>
+					<Entry>11435</Entry>
+					<Entry>4904</Entry>
+					<Entry>9685</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_901_MAP">
+				<MapTileX>35</MapTileX>
+				<MapTileY>43</MapTileY>
+				<MapTileWidth>58</MapTileWidth>
+				<MapTileHeight>49</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>6565</Entry>
+					<Entry>5682</Entry>
+					<Entry>5977</Entry>
+					<Entry>8520</Entry>
+					<Entry>11585</Entry>
+					<Entry>8666</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_902_MAP">
+				<MapTileX>35</MapTileX>
+				<MapTileY>35</MapTileY>
+				<MapTileWidth>57</MapTileWidth>
+				<MapTileHeight>58</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>6182</Entry>
+					<Entry>6209</Entry>
+					<Entry>11600</Entry>
+					<Entry>11577</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_903_MAP">
+				<MapTileX>34</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>59</MapTileWidth>
+				<MapTileHeight>61</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4689</Entry>
+					<Entry>11737</Entry>
+					<Entry>9147</Entry>
+					<Entry>11685</Entry>
+					<Entry>8103</Entry>
+					<Entry>4650</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_904_MAP">
+				<MapTileX>36</MapTileX>
+				<MapTileY>34</MapTileY>
+				<MapTileWidth>56</MapTileWidth>
+				<MapTileHeight>59</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4647</Entry>
+					<Entry>4696</Entry>
+					<Entry>11608</Entry>
+					<Entry>11559</Entry>
+					<Entry>7857</Entry>
+					<Entry>8018</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_905_MAP">
+				<MapTileX>36</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>57</MapTileWidth>
+				<MapTileHeight>61</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>7470</Entry>
+					<Entry>6487</Entry>
+					<Entry>11737</Entry>
+					<Entry>10791</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_906_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>61</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>4645</Entry>
+					<Entry>4697</Entry>
+					<Entry>11481</Entry>
+					<Entry>11558</Entry>
+					<Entry>7620</Entry>
+					<Entry>9049</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_907_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>36</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>57</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>8375</Entry>
+					<Entry>5211</Entry>
+					<Entry>10841</Entry>
+					<Entry>11557</Entry>
+					<Entry>4912</Entry>
+					<Entry>4899</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_908_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4421</Entry>
+					<Entry>5926</Entry>
+					<Entry>10534</Entry>
+					<Entry>11726</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_909_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>8116</Entry>
+					<Entry>11814</Entry>
+					<Entry>11710</Entry>
+					<Entry>11867</Entry>
+					<Entry>6980</Entry>
+					<Entry>4776</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_910_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>34</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>61</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>4818</Entry>
+					<Entry>7515</Entry>
+					<Entry>11560</Entry>
+					<Entry>8228</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_950_MAP">
+				<MapTileX>44</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>44</MapTileWidth>
+				<MapTileHeight>58</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>11204</Entry>
+					<Entry>6856</Entry>
+					<Entry>10419</Entry>
+					<Entry>7090</Entry>
+					<Entry>4690</Entry>
+					<Entry>8658</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_951_MAP">
+				<MapTileX>37</MapTileX>
+				<MapTileY>36</MapTileY>
+				<MapTileWidth>53</MapTileWidth>
+				<MapTileHeight>55</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>7599</Entry>
+					<Entry>8906</Entry>
+					<Entry>10547</Entry>
+					<Entry>10693</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_952_MAP">
+				<MapTileX>37</MapTileX>
+				<MapTileY>35</MapTileY>
+				<MapTileWidth>56</MapTileWidth>
+				<MapTileHeight>58</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>10199</Entry>
+					<Entry>8022</Entry>
+					<Entry>5846</Entry>
+					<Entry>4924</Entry>
+					<Entry>6185</Entry>
+					<Entry>9512</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_960_MAP">
+				<MapTileX>34</MapTileX>
+				<MapTileY>34</MapTileY>
+				<MapTileWidth>60</MapTileWidth>
+				<MapTileHeight>60</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>5546</Entry>
+					<Entry>5332</Entry>
+					<Entry>11091</Entry>
+					<Entry>10666</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_961_MAP">
+				<MapTileX>34</MapTileX>
+				<MapTileY>34</MapTileY>
+				<MapTileWidth>60</MapTileWidth>
+				<MapTileHeight>60</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>5547</Entry>
+					<Entry>5043</Entry>
+					<Entry>11179</Entry>
+					<Entry>11188</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_962_MAP">
+				<MapTileX>34</MapTileX>
+				<MapTileY>34</MapTileY>
+				<MapTileWidth>60</MapTileWidth>
+				<MapTileHeight>60</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>5676</Entry>
+					<Entry>5567</Entry>
+					<Entry>6354</Entry>
+					<Entry>8997</Entry>
+					<Entry>8786</Entry>
+					<Entry>11315</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_970_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>WINTER</Theater>
+				<Waypoints>
+					<Entry>11047</Entry>
+					<Entry>7229</Entry>
+					<Entry>4520</Entry>
+					<Entry>11735</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_971_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>47</MapTileY>
+				<MapTileWidth>38</MapTileWidth>
+				<MapTileHeight>48</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>6439</Entry>
+					<Entry>11712</Entry>
+					<Entry>8742</Entry>
+					<Entry>6464</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_972_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>38</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>4544</Entry>
+					<Entry>11713</Entry>
+					<Entry>5952</Entry>
+					<Entry>7488</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_973_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>56</MapTileWidth>
+				<MapTileHeight>56</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>5418</Entry>
+					<Entry>8490</Entry>
+					<Entry>8531</Entry>
+					<Entry>5458</Entry>
+					<Entry>6978</Entry>
+					<Entry>10050</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_974_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>WINTER</Theater>
+				<Waypoints>
+					<Entry>5297</Entry>
+					<Entry>4818</Entry>
+					<Entry>7370</Entry>
+					<Entry>9913</Entry>
+					<Entry>7718</Entry>
+					<Entry>8921</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_975_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4824</Entry>
+					<Entry>7206</Entry>
+					<Entry>4662</Entry>
+					<Entry>10571</Entry>
+					<Entry>10410</Entry>
+					<Entry>6976</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_977_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>5434</Entry>
+					<Entry>9047</Entry>
+					<Entry>10919</Entry>
+					<Entry>5461</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_980_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>52</MapTileWidth>
+				<MapTileHeight>54</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>6211</Entry>
+					<Entry>9010</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_981_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>6321</Entry>
+					<Entry>10062</Entry>
+					<Entry>5574</Entry>
+					<Entry>10809</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_982_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>61</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>8274</Entry>
+					<Entry>8237</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_983_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>10797</Entry>
+					<Entry>5586</Entry>
+					<Entry>10449</Entry>
+					<Entry>5934</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_984_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>5929</Entry>
+					<Entry>10454</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_985_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>61</MapTileWidth>
+				<MapTileHeight>61</MapTileHeight>
+				<Theater>WINTER</Theater>
+				<Waypoints>
+					<Entry>11572</Entry>
+					<Entry>4681</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_986_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>11327</Entry>
+					<Entry>5057</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_990_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>4824</Entry>
+					<Entry>7480</Entry>
+					<Entry>8266</Entry>
+					<Entry>8539</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_996_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>TEMPERATE</Theater>
+				<Waypoints>
+					<Entry>7128</Entry>
+					<Entry>8102</Entry>
+					<Entry>11470</Entry>
+					<Entry>4667</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_997_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>WINTER</Theater>
+				<Waypoints>
+					<Entry>4546</Entry>
+					<Entry>5078</Entry>
+					<Entry>11083</Entry>
+					<Entry>11431</Entry>
+					<Entry>7335</Entry>
+					<Entry>8025</Entry>
+				</Waypoints>
+			</INIData>
+			<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_998_MAP">
+				<MapTileX>33</MapTileX>
+				<MapTileY>33</MapTileY>
+				<MapTileWidth>62</MapTileWidth>
+				<MapTileHeight>62</MapTileHeight>
+				<Theater>DESERT</Theater>
+				<Waypoints>
+					<Entry>11559</Entry>
+					<Entry>8263</Entry>
+					<Entry>10199</Entry>
+					<Entry>4567</Entry>
+					<Entry>5698</Entry>
+					<Entry>9667</Entry>
+				</Waypoints>
+			</INIData>
+			<!-- TF_TD_MAPS END -->
+		</CNCMapPreviewData>
+
+	</CNCMapPreviewDataManager>
+
+</OuterTag>

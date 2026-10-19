@@ -131,9 +131,10 @@ listed through its own entry, keeping `SCMD6EA.INI`. A placeholder instance can'
 never starts it. Entry numbers: TD multiplayer map *n* is 9*nn* (Sand Trap, TD's 2, is 902), TD's
 community maps 1 to 7 are 980 to 986, and Hastings is 999; a TD map's file is `TFTD<number>.INI`.
 
-`scripts/probes/td_official_list_probe.py` sets this up on a deployed build for TD's Sand Trap
-(entry 902, played on the desert theatre) and Hastings (999). Video memory at the menu is
-unchanged; a TD map in the match costs what any TD-terrain map does.
+`scripts/td_official_maps.py` writes all 34 of TD's skirmish maps into the mod from TD's own
+instances, preview data and map files: the entries in `INSTANCES.XML`, the preview data in a loose
+`CNCMAPPREVIEWDATA.XML`, and each map converted as `CCDATA/TFTD<number>.INI` (384 KB in all). Video
+memory at the menu is unchanged; a TD map in the match costs what any TD-terrain map does.
 
 ## Build plan
 
@@ -150,6 +151,7 @@ unchanged; a TD map in the match costs what any TD-terrain map does.
    (`official-map-hybrids.md`), the transcoder and the parked maps move their blossom trees from
    `[STRUCTURES]` to `[TERRAIN]`; their Tiberium stays `TIB01`. Its own commit: it touches
    `bdata.cpp`.
-4. **The map list.** TD's own skirmish maps in RA's official list, read from TD's files, and the
-   mod's maps beside them.
+4. **The map list.** TD's 34 skirmish maps are in RA's official list (`td_official_maps.py`);
+   their thumbnails are TD's, which the lobby looks up under the RA entry's name, and the mod's
+   own maps go beside them.
 
