@@ -1,7 +1,7 @@
 # TD art read from the base game
 
 **Status:** Design. Six theatres, TD art and TD maps from the base game built and tested on the desktop; next release.
-**Open:** a Deck performance pass.
+**Open:** a Deck performance pass and a LAN match on a TD map.
 
 The mod copies TD's unit, building and effect ZIPs out of `TEXTURES_TD_SRGB.MEG` into
 `Data/ART/TEXTURES/SRGB/RED_ALERT/`, renamed with a `TD` prefix. Every player already has those
@@ -18,7 +18,7 @@ files. This doc is how a Red Alert tileset reads them from the base game instead
   `RA_Structures` draw normally.
 - A tile opens `<RootTexturePath>\<tile name>.zip`. A tile name may hold a path (`SUB\TDAPC` opens
   `UNITS\SUB\TDAPC.ZIP`), and a frame `<folder>\<file>.tga` reads from the ZIP opened as `<folder>`.
-- Paths are never normalised: a frame or tile name containing `..\` finds nothing (frog card).
+- Paths are never normalised: a frame or tile name containing `..\` finds nothing.
 - `Common_UI` and `RA_RadarMap` are not world tilesets: a unit tile placed in them draws as a white
   square, whatever ZIP it reads.
 
@@ -95,17 +95,16 @@ from the base game.
   (`TDSH17` as `SH17`), and trees keep TD's names (`T01`).
 - **What it gives.** Terrain, trees, bibs, smudges and the radar all come from TD's own tileset, as
   in TD. Smudges need the DLL's theatre to have the classic shape (`Get_Image_Data`), which
-  `TF_Base_Theater` gives every TD theatre.
+  each TD theatre's row in `Theaters[]` (`const.cpp`) gives it from RA temperate's mix.
 - **Classic data.** A TD template's game data (size, land type per icon) is TD's own iconset from
   `DESERT.MIX`, `TEMPERAT.MIX` or `WINTER.MIX`, converted to RA's format with TD's land types and
   packed in `TFASSETS.MIX` as `TD<name>.DES`, `.TEM` or `.WIN`; a river template's water is
   `LAND_RIVER`. RA's objects on a TD theatre (trees, bibs, smudges) use RA temperate's classic
-  data and palette (`TF_Base_Theater`).
+  data and palette (`TF_Base_Theater` and the TD rows of `Theaters[]`).
 - **Desert terrain.** TD's desert trees and rocks (`T04`, `T09`, `T18`, `ROCK1` to `ROCK7`) are
   RA terrain types with TD's footprints, loaded on desert from TD's shapes (`<name>.DES`).
-- **Memory.** Video memory on the desktop, one match each: Docklands 4796 MiB with the stock
-  interior tileset and 4812 MiB with 163 desert tiles in it. A theatre's tiles cost memory only on a
-  map that draws them.
+- **Memory.** A theatre's tiles cost video memory only on a map that draws them. A TD map in a
+  match uses 5,052 MiB on the desktop whether TD's unit art comes from the base game or the mod.
 
 `scripts/td_catalogue_maps.py` writes one map per theatre with every template the DLL has
 for it placed once; all six draw every template, and units spawn. Two dark cells are EA's data: RA
@@ -130,7 +129,7 @@ thumbnail ships. Loose copies of both XMLs override CONFIG.MEG's.
 InstanceServerG builds its instance list from the base `Instances.xml` before the DLL loads, so a
 new entry launches through the carrier (`tf_launcher.cpp`): ClientG sends any entry from 900 up under
 Hastings' `D6` entry, whose client entry is removed so it isn't listed, and hands its map file over in
-`tf_carrier_mission.txt`; the DLL takes the handoff ahead of the carrier's `OverrideMapName`, and
+`tf_carrier_mission.txt`; the DLL takes it ahead of `OverrideMapName` on a launch of D6 only, and
 the carrier's key reads as the launched entry's, so the loading screen names it. Hastings itself is
 listed through its own entry, keeping `SCMD6EA.INI`. A placeholder instance can't carry: the server
 never starts it. Entry numbers: TD multiplayer map *n* is 9*nn* (Sand Trap, TD's 2, is 902), TD's
@@ -150,12 +149,11 @@ memory at the menu is unchanged; a TD map in the match costs what any TD-terrain
 2. **Ore on TD slots.** Ore (`GOLD01-04`, `GEM01-04`) is only in RA's terrain tilesets, so the
    mod ships TD's three terrain tileset XMLs with an empty root and RA's ore tiles added (data
    only). Ore mines are in `RA_VFX` and should draw on any slot.
-3. **Blossom trees as terrain.** TD's terrain tilesets carry `SPLIT2` and `SPLIT3`; RA's get those
-   tiles pointing at TD's frames, as the winter trees proved. `STRUCT_TDBLOSSOM` becomes a terrain
-   type seeding Tiberium as the ore mine seeds ore. The 151 official-map hybrids
-   (`official-map-hybrids.md`), the transcoder and the parked maps move their blossom trees from
-   `[STRUCTURES]` to `[TERRAIN]`; their Tiberium stays `TIB01`. Its own commit: it touches
-   `bdata.cpp`.
+3. **Blossom trees as terrain.** TD's terrain tilesets carry `SPLIT2` and `SPLIT3`; RA's would get
+   those tiles pointing at TD's frames. `STRUCT_TDBLOSSOM` becomes a terrain type seeding Tiberium
+   as the ore mine seeds ore. The 151 official-map hybrids (`official-map-hybrids.md`) and
+   `td_map_to_ra.py` move their blossom trees from `[STRUCTURES]` to `[TERRAIN]`; their Tiberium
+   stays `TIB01`. Its own commit: it touches `bdata.cpp`.
 4. **The map list.** Done for TD's 34 skirmish maps (`td_official_maps.py`), thumbnails
    included. The mod's own maps go beside them through the same carrier, on numbers from 900 that
    TD leaves free (911 to 949, for one), each with a thumbnail of its own that the set-texture hook

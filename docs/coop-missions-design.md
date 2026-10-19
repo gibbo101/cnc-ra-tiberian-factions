@@ -115,11 +115,10 @@ via `CCFileClass`, and **already parses the file as an INI** (`ini.Load`, reads 
 Name` + `[Digest]`). The directory choice is launcher-owned (closed `ClientG.exe`), but the
 on-disk evidence pins it to `Local_Custom_Maps/Red_Alert/`.
 
-**Distribution:** co-op maps can ship inside the mod. The DLL copies the mod's `CustomMaps/`
-triplets into `Local_Custom_Maps/Red_Alert/` itself (the TD map pack shipped this way before it was parked;
-the `CustomMaps\\*` scan in `dllinterface.cpp`), and an official map can be replaced by name
-from the mod's `CCDATA/` (`official-map-hybrids.md`). Workshop publishing from the editor stays
-an option.
+**Distribution:** a co-op map that ships inside the mod goes in the Official list as an entry
+launched through the carrier (`td-base-art.md`), and an official map can be replaced by name from
+the mod's `CCDATA/` (`official-map-hybrids.md`). Workshop publishing from the editor stays an
+option.
 
 **Faction-forcing caveat:** factions are lobby-picked, not map-forced. The `.mpr` sets
 positions, alliances, and the scripted enemy house, but it can't cleanly force a human to be
