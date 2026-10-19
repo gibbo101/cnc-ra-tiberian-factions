@@ -1621,22 +1621,6 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
                                                                            int sabotaged_structure,
                                                                            const char* override_map_name)
 {
-#if TF_DEV_BUILD
-    // TF: probe: every instance start's arguments, to tf_scenario.log.
-    {
-        const char* prof = getenv("USERPROFILE");
-        char path[512];
-        snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_scenario.log", prof ? prof : ".");
-        FILE* lf = fopen(path, "a");
-        if (lf != NULL) {
-            fprintf(lf, "start index=%d var=%d dir=%d build=%d faction=%s type=%s content=%s override=%s\n",
-                    scenario_index, scenario_variation, scenario_direction, build_level, faction ? faction : "-",
-                    game_type ? game_type : "-", content_directory ? content_directory : "-",
-                    override_map_name ? override_map_name : "-");
-            fclose(lf);
-        }
-    }
-#endif
     // TF: a match starts from the default difficulty; a skirmish's lobby value arrives after this call.
     TF_Lobby_Difficulty_Reset();
 
@@ -1695,7 +1679,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
     */
     Force_CD_Available(ALWAYS_RELOAD_CD);
 
-    // TF: a carrier campaign launch's own map, taken below
+    // TF: a carrier launch's own map, taken below
     char carrier_map[_MAX_FNAME + _MAX_EXT];
     if (TF_Launcher_Take_Carrier_Map(carrier_map, sizeof(carrier_map))) {
         // TF: a carrier launch names the mod map, ahead of the carrier instance's own map file

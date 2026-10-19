@@ -123,7 +123,7 @@ the entry sets neither the lobby's thumbnail nor the loading screen's. Loose cop
 override CONFIG.MEG's.
 
 InstanceServerG builds its instance list from the base `Instances.xml` before the DLL loads, so a
-new entry launches through the carrier (`tf_launcher.cpp`, dev builds): ClientG sends it under
+new entry launches through the carrier (`tf_launcher.cpp`): ClientG sends any entry from 900 up under
 Hastings' `D6` entry, whose client entry is removed so it isn't listed, and hands its map file over in
 `tf_carrier_mission.txt`; the DLL takes the handoff ahead of the carrier's `OverrideMapName`, and
 the carrier's key reads as the launched entry's, so the loading screen names it. Hastings itself is

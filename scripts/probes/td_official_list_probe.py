@@ -3,8 +3,8 @@
 usage: td_official_list_probe.py <deployed Vanilla_RA folder> [--thumb-field]
 --thumb-field: entry 902 names TD's own thumbnail in PreviewLoadingTextureName instead of a copied one.
 Writes the deployed build's INSTANCES.XML (from the repo's) and CNCMAPPREVIEWDATA.XML (from the
-base game's), the two list thumbnails and CCDATA/TFTD902.INI. The DLL's carrier (tf_launcher.cpp,
-dev builds) sends entry 9NN to the server as Hastings' D6 entry, whose client entry is removed here.
+base game's), the two list thumbnails and CCDATA/TFTD902.INI. The DLL's carrier (tf_launcher.cpp)
+sends entry 9NN to the server as Hastings' D6 entry, whose client entry is removed here.
 """
 import json
 import os

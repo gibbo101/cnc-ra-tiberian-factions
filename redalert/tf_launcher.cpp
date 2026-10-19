@@ -2884,30 +2884,18 @@ const char* Pack_Notice_Install(void)
     return "pack notice installed";
 }
 
-#if TF_DEV_BUILD
 /*
-**	The mission carrier, unfinished (docs/campaigns-page.md): a mod mission launches under a
-**	stock instance's name, so the instance server accepts it, and plays the mod's own map.
+**	The skirmish carrier (docs/td-base-art.md): an official-list entry numbered 900 and up, which
+**	the instance server doesn't know, launches under Hastings' D6 entry with its map handed over.
 */
 const SIZE_T LAUNCH_SEND_CALL = 0x6284B0;
 // Every other call of the launch send: skirmish, lobby, load, resume and restart starts.
 const SIZE_T OTHER_LAUNCH_CALLS[] = {0x633A5E, 0x715E8D, 0x72003B, 0x723C16, 0x72D9B8, 0x72DED9, 0x7E8A8D};
 const SIZE_T LAUNCH_SEND = 0x7F1C40;
-const SIZE_T CAMPAIGN_OVER_CALL = 0x627BA0;
-const SIZE_T MENU_RETURN = 0x6ABCD0;
-const SIZE_T SHOW_CREDITS = 0x6E4890;
 const SIZE_T KEY_LOOKUP = 0x14FE820;
 const SIZE_T KEY_LOOKUP_CAVE = 0x1BE9380;
-const SIZE_T STAGE_CHECK = 0x627BF1;
-const SIZE_T STAGE_CHECK_CAVE = 0x1BE93A0;
-const DWORD CARRIER_KEY = 0x96C5CC5F;
-const DWORD MISSION_LIST_ROW_CALLER = 0x64A02A;
-const DWORD MISSION_LIST_OPEN_CALLER = 0x63358C;
-const DWORD MISSION_LIST_SELECT_CALLER = 0x632A99;
 const DWORD HANDOFF_MAX_AGE_MS = 60000;
 
-bool CarrierSession = false;
-DWORD CarrierLaunchedKey = 0;
 DWORD SkirmishCarrierKey = 0;
 DWORD SkirmishLaunchedKey = 0;
 
@@ -2921,8 +2909,6 @@ struct InstanceNameView
 };
 
 typedef char(__thiscall* LaunchSendFn)(void* ipc, const void* name, void* settings, int mode, int a, int b);
-typedef void(__thiscall* MenuReturnFn)(void* menu);
-typedef void(__stdcall* ShowCreditsFn)(void* unused);
 
 /*
 **	An instance's key as ClientG computes it: the CRC32 of the upper-case name.
@@ -2940,14 +2926,6 @@ DWORD Name_Key(const char* name)
 }
 
 /*
-**	A dword of ClientG memory, or 0 when it can't be read.
-*/
-DWORD Read_Dword(DWORD at)
-{
-    return IsBadReadPtr((const void*)at, 4) ? 0 : *(const DWORD*)at;
-}
-
-/*
 **	The file a carrier launch hands its map to the DLL's scenario load through.
 */
 bool Handoff_Path(char* out, size_t size)
@@ -2961,87 +2939,117 @@ bool Handoff_Path(char* out, size_t size)
 }
 
 /*
-**	Sends the launch message; a TF_ instance goes to the server under the carrier's name and
-**	key with its map handed over, while ClientG keeps the instance it launched.
+**	Hands the map file the next scenario load plays to the DLL.
 */
-char __fastcall Launch_Send(void* ipc, void*, const MsvcString* name, void* settings, int mode, int a, int b)
+void Write_Handoff(const char* map)
 {
-    // An official-list TD map (Mobius_Red_Alert_Multiplayer_9NN_Map) launches as a stock RA map with
-    // TFTD9NN.INI handed over: the server knows only the base game's instances.
-    static const char td_prefix[] = "MOBIUS_RED_ALERT_MULTIPLAYER_9";
-    {
-        // TF: probe: every launch name, to tf_scenario.log.
-        const char* up = getenv("USERPROFILE");
-        char path[MAX_PATH];
-        snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_scenario.log", up ? up : ".");
-        FILE* lf = fopen(path, "a");
-        if (lf != NULL) {
-            bool ok = !IsBadReadPtr(name, sizeof(*name)) && name->size < 128;
-            fprintf(lf, "launch name=%s size=%d\n", ok ? TF_String_Chars(name) : "?", ok ? (int)name->size : -1);
-            fclose(lf);
-        }
-    }
-    if (!IsBadReadPtr(name, sizeof(*name)) && name->size < 128
-        && _strnicmp(TF_String_Chars(name), td_prefix, sizeof(td_prefix) - 1) == 0) {
-        int number = atoi(TF_String_Chars(name) + sizeof(td_prefix) - 2);
-        static char skirmish_text[] = "MOBIUS_RED_ALERT_MULTIPLAYER_D6_MAP";
-        InstanceNameView skirmish = {};
-        *(char**)skirmish.name.buf = skirmish_text;
-        skirmish.name.size = sizeof(skirmish_text) - 1;
-        skirmish.name.capacity = sizeof(skirmish_text) - 1;
-        skirmish.key = Name_Key(skirmish_text);
-        char handoff[MAX_PATH];
-        if (Handoff_Path(handoff, sizeof(handoff))) {
-            FILE* f = fopen(handoff, "w");
-            if (f != NULL) {
-                // A stock map listed through its own entry keeps its map file; a TD map is TFTD9NN.INI.
-                static const struct
-                {
-                    int number;
-                    const char* map;
-                } own_files[] = {{999, "SCMD6EA.INI"}};
-                const char* map = NULL;
-                for (size_t i = 0; i < sizeof(own_files) / sizeof(own_files[0]); i++) {
-                    if (own_files[i].number == number) {
-                        map = own_files[i].map;
-                    }
-                }
-                if (map != NULL) {
-                    fputs(map, f);
-                } else {
-                    fprintf(f, "TFTD%03d.INI", number);
-                }
-                fclose(f);
-            }
-        }
-        CarrierSession = false;
-        SkirmishCarrierKey = skirmish.key;
-        SkirmishLaunchedKey = Name_Key(TF_String_Chars(name));
-        return ((LaunchSendFn)LAUNCH_SEND)(ipc, &skirmish, settings, mode, a, b);
-    }
-    bool swap = !IsBadReadPtr(name, sizeof(*name)) && name->size < 128 && strncmp(TF_String_Chars(name), "TF_", 3) == 0;
-    CarrierSession = false;
-    if (!swap) {
-        return ((LaunchSendFn)LAUNCH_SEND)(ipc, name, settings, mode, a, b);
-    }
-
-    static char carrier_text[] = "MOBIUS_ALLIED_CAMPAIGN_1_MAP";
-    InstanceNameView carrier = {};
-    *(char**)carrier.name.buf = carrier_text;
-    carrier.name.size = sizeof(carrier_text) - 1;
-    carrier.name.capacity = sizeof(carrier_text) - 1;
-    carrier.key = CARRIER_KEY;
-
     char handoff[MAX_PATH];
     if (Handoff_Path(handoff, sizeof(handoff))) {
         FILE* f = fopen(handoff, "w");
         if (f != NULL) {
-            fputs("SCG01EA.INI", f);
+            fputs(map, f);
             fclose(f);
         }
     }
+}
+
+/*
+**	Points a launch name at a stock instance, by name and key.
+*/
+void Carrier_Name(InstanceNameView& view, char* text, size_t length, DWORD key)
+{
+    *(char**)view.name.buf = text;
+    view.name.size = length;
+    view.name.capacity = length;
+    view.key = key;
+}
+
+/*
+**	The number of an official-list entry the mod adds (MOBIUS_RED_ALERT_MULTIPLAYER_<n>_MAP, n from
+**	900 to 999), or 0 for any other name, RA's own maps included.
+*/
+int Mod_Map_Number(const MsvcString* name)
+{
+    static const char prefix[] = "MOBIUS_RED_ALERT_MULTIPLAYER_";
+    if (IsBadReadPtr(name, sizeof(*name)) || name->size >= 128) {
+        return 0;
+    }
+    const char* text = TF_String_Chars(name);
+    if (_strnicmp(text, prefix, sizeof(prefix) - 1) != 0) {
+        return 0;
+    }
+    const char* digits = text + sizeof(prefix) - 1;
+    if (!isdigit((unsigned char)digits[0]) || !isdigit((unsigned char)digits[1])
+        || !isdigit((unsigned char)digits[2]) || _stricmp(digits + 3, "_MAP") != 0) {
+        return 0;
+    }
+    int number = atoi(digits);
+    return number >= 900 ? number : 0;
+}
+
+/*
+**	Launches a mod official-list entry as Hastings' D6, handing over its map: TFTD<n>.INI, or
+**	SCMD6EA.INI for Hastings' own entry (999).
+*/
+char Skirmish_Carrier_Send(void* ipc, const MsvcString* name, int number, void* settings, int mode, int a, int b)
+{
+    static char skirmish_text[] = "MOBIUS_RED_ALERT_MULTIPLAYER_D6_MAP";
+    InstanceNameView skirmish = {};
+    Carrier_Name(skirmish, skirmish_text, sizeof(skirmish_text) - 1, Name_Key(skirmish_text));
+    char map[16];
+    if (number == 999) {
+        strcpy(map, "SCMD6EA.INI");
+    } else {
+        snprintf(map, sizeof(map), "TFTD%03d.INI", number);
+    }
+    Write_Handoff(map);
+    SkirmishCarrierKey = skirmish.key;
+    SkirmishLaunchedKey = Name_Key(TF_String_Chars(name));
+    return ((LaunchSendFn)LAUNCH_SEND)(ipc, &skirmish, settings, mode, a, b);
+}
+
+#if TF_DEV_BUILD
+/*
+**	The mission carrier, unfinished (docs/campaigns-page.md): a mod mission launches under a
+**	stock instance's name, so the instance server accepts it, and plays the mod's own map.
+*/
+const SIZE_T CAMPAIGN_OVER_CALL = 0x627BA0;
+const SIZE_T MENU_RETURN = 0x6ABCD0;
+const SIZE_T SHOW_CREDITS = 0x6E4890;
+const SIZE_T STAGE_CHECK = 0x627BF1;
+const SIZE_T STAGE_CHECK_CAVE = 0x1BE93A0;
+const DWORD CARRIER_KEY = 0x96C5CC5F;
+const DWORD MISSION_LIST_ROW_CALLER = 0x64A02A;
+const DWORD MISSION_LIST_OPEN_CALLER = 0x63358C;
+const DWORD MISSION_LIST_SELECT_CALLER = 0x632A99;
+
+bool CarrierSession = false;
+DWORD CarrierLaunchedKey = 0;
+
+typedef void(__thiscall* MenuReturnFn)(void* menu);
+typedef void(__stdcall* ShowCreditsFn)(void* unused);
+
+/*
+**	A dword of ClientG memory, or 0 when it can't be read.
+*/
+DWORD Read_Dword(DWORD at)
+{
+    return IsBadReadPtr((const void*)at, 4) ? 0 : *(const DWORD*)at;
+}
+
+/*
+**	Launches a TF_ mission under the carrier's name and key with its map handed over, while ClientG
+**	keeps the instance it launched.
+*/
+char Mission_Carrier_Send(void* ipc, const MsvcString* name, void* settings, int mode, int a, int b)
+{
+    static char carrier_text[] = "MOBIUS_ALLIED_CAMPAIGN_1_MAP";
+    InstanceNameView carrier = {};
+    Carrier_Name(carrier, carrier_text, sizeof(carrier_text) - 1, CARRIER_KEY);
+    Write_Handoff("SCG01EA.INI");
     char sent = ((LaunchSendFn)LAUNCH_SEND)(ipc, &carrier, settings, mode, a, b);
     CarrierSession = sent != 0;
+    char handoff[MAX_PATH];
     if (!sent && Handoff_Path(handoff, sizeof(handoff))) {
         DeleteFileA(handoff);
     }
@@ -3063,25 +3071,6 @@ void __fastcall Campaign_Over(void* menu, void*)
 }
 
 /*
-**	At the instance lookup by key: during a carrier session the carrier's key reads as the mod
-**	mission's, so its progress and medal land on it; the mission list keeps the real lookup.
-*/
-void __stdcall Key_Lookup_Hit(const DWORD* regs)
-{
-    DWORD stack = regs[3] + 4;
-    DWORD ret = *(const DWORD*)stack;
-    // The carrier's own entry is hidden from the map list, so its key always reads as the last TD map launched.
-    if (SkirmishCarrierKey != 0 && *(const DWORD*)(stack + 4) == SkirmishCarrierKey) {
-        *(DWORD*)(stack + 4) = SkirmishLaunchedKey;
-        return;
-    }
-    if (CarrierSession && *(const DWORD*)(stack + 4) == CARRIER_KEY && ret != MISSION_LIST_ROW_CALLER
-        && ret != MISSION_LIST_OPEN_CALLER && ret != MISSION_LIST_SELECT_CALLER) {
-        *(DWORD*)(stack + 4) = CarrierLaunchedKey;
-    }
-}
-
-/*
 **	At the campaign map's stage check: a carrier campaign stage holding one mission skips the
 **	map the way the stock single-mission stages do.
 */
@@ -3096,47 +3085,81 @@ void __stdcall Stage_Check_Hit(const DWORD* regs)
         *(unsigned char*)(stage + 0x70) = 1;
     }
 }
+#endif
 
 /*
-**	Installs the carrier's hooks, every site checked before any is written.
+**	Sends the launch message: a mod official-list entry goes through the skirmish carrier, a TF_
+**	mission (dev builds) through the mission carrier, anything else as it is.
+*/
+char __fastcall Launch_Send(void* ipc, void*, const MsvcString* name, void* settings, int mode, int a, int b)
+{
+    int number = Mod_Map_Number(name);
+    if (number != 0) {
+        return Skirmish_Carrier_Send(ipc, name, number, settings, mode, a, b);
+    }
+#if TF_DEV_BUILD
+    CarrierSession = false;
+    if (!IsBadReadPtr(name, sizeof(*name)) && name->size < 128 && strncmp(TF_String_Chars(name), "TF_", 3) == 0) {
+        return Mission_Carrier_Send(ipc, name, settings, mode, a, b);
+    }
+#endif
+    return ((LaunchSendFn)LAUNCH_SEND)(ipc, name, settings, mode, a, b);
+}
+
+/*
+**	At the instance lookup by key: the skirmish carrier's key reads as the entry launched through
+**	it, so the loading screen names that map; during a mission carrier session (dev builds) the
+**	carrier's key reads as the mod mission's, and the mission list keeps the real lookup.
+*/
+void __stdcall Key_Lookup_Hit(const DWORD* regs)
+{
+    DWORD stack = regs[3] + 4;
+    if (SkirmishCarrierKey != 0 && *(const DWORD*)(stack + 4) == SkirmishCarrierKey) {
+        *(DWORD*)(stack + 4) = SkirmishLaunchedKey;
+        return;
+    }
+#if TF_DEV_BUILD
+    DWORD ret = *(const DWORD*)stack;
+    if (CarrierSession && *(const DWORD*)(stack + 4) == CARRIER_KEY && ret != MISSION_LIST_ROW_CALLER
+        && ret != MISSION_LIST_OPEN_CALLER && ret != MISSION_LIST_SELECT_CALLER) {
+        *(DWORD*)(stack + 4) = CarrierLaunchedKey;
+    }
+#endif
+}
+
+/*
+**	Installs the carrier's hooks, every site checked before any is written; a launch call that
+**	doesn't match is left alone.
 */
 const char* Carrier_Install(void)
 {
     static const unsigned char lookup_stock[6] = {0x55, 0x8B, 0xEC, 0x56, 0x8B, 0xF1};
+    if (!TF_Call_Ready(LAUNCH_SEND_CALL, LAUNCH_SEND)
+        || !Snapshot_Ready(KEY_LOOKUP, lookup_stock, sizeof(lookup_stock), KEY_LOOKUP_CAVE)) {
+        return "carrier: unknown launcher build, left alone";
+    }
+#if TF_DEV_BUILD
     static const unsigned char stage_stock[7] = {0x8B, 0x47, 0x78, 0x80, 0x78, 0x70, 0x00};
-    if (!TF_Call_Ready(LAUNCH_SEND_CALL, LAUNCH_SEND) || !TF_Call_Ready(CAMPAIGN_OVER_CALL, MENU_RETURN)
-        || !Snapshot_Ready(KEY_LOOKUP, lookup_stock, sizeof(lookup_stock), KEY_LOOKUP_CAVE)
+    if (!TF_Call_Ready(CAMPAIGN_OVER_CALL, MENU_RETURN)
         || !Snapshot_Ready(STAGE_CHECK, stage_stock, sizeof(stage_stock), STAGE_CHECK_CAVE)) {
         return "carrier: unknown launcher build, left alone";
     }
-    if (!TF_Redirect_Call(LAUNCH_SEND_CALL, (SIZE_T)&Launch_Send)
-        || !TF_Redirect_Call(CAMPAIGN_OVER_CALL, (SIZE_T)&Campaign_Over)
-        || !Snapshot_Hook(KEY_LOOKUP, lookup_stock, sizeof(lookup_stock), KEY_LOOKUP_CAVE, (SIZE_T)&Key_Lookup_Hit)
+    if (!TF_Redirect_Call(CAMPAIGN_OVER_CALL, (SIZE_T)&Campaign_Over)
         || !Snapshot_Hook(STAGE_CHECK, stage_stock, sizeof(stage_stock), STAGE_CHECK_CAVE, (SIZE_T)&Stage_Check_Hit)) {
         return "carrier: write failed";
     }
-    int others = 0;
-    for (size_t i = 0; i < sizeof(OTHER_LAUNCH_CALLS) / sizeof(OTHER_LAUNCH_CALLS[0]); i++) {
-        if (TF_Call_Ready(OTHER_LAUNCH_CALLS[i], LAUNCH_SEND)
-            && TF_Redirect_Call(OTHER_LAUNCH_CALLS[i], (SIZE_T)&Launch_Send)) {
-            others++;
-        }
+#endif
+    if (!TF_Redirect_Call(LAUNCH_SEND_CALL, (SIZE_T)&Launch_Send)
+        || !Snapshot_Hook(KEY_LOOKUP, lookup_stock, sizeof(lookup_stock), KEY_LOOKUP_CAVE, (SIZE_T)&Key_Lookup_Hit)) {
+        return "carrier: write failed";
     }
-    {
-        // TF: probe: the install result, to tf_scenario.log.
-        const char* up = getenv("USERPROFILE");
-        char path[MAX_PATH];
-        snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_scenario.log", up ? up : ".");
-        FILE* lf = fopen(path, "a");
-        if (lf != NULL) {
-            fprintf(lf, "carrier installed, %d of %d other launch calls hooked\n", others,
-                    (int)(sizeof(OTHER_LAUNCH_CALLS) / sizeof(OTHER_LAUNCH_CALLS[0])));
-            fclose(lf);
+    for (size_t i = 0; i < sizeof(OTHER_LAUNCH_CALLS) / sizeof(OTHER_LAUNCH_CALLS[0]); i++) {
+        if (TF_Call_Ready(OTHER_LAUNCH_CALLS[i], LAUNCH_SEND)) {
+            TF_Redirect_Call(OTHER_LAUNCH_CALLS[i], (SIZE_T)&Launch_Send);
         }
     }
     return "carrier installed";
 }
-#endif
 
 } // namespace
 
@@ -3166,19 +3189,12 @@ const char* TF_Launcher_Install(void)
     const char* notice = Pack_Notice_Install();
     const char* music = TF_Music_Install();
     static char result[224];
-#if TF_DEV_BUILD
     snprintf(result, sizeof(result), "%s; %s; %s; %s", page, notice, music, Carrier_Install());
-#else
-    snprintf(result, sizeof(result), "%s; %s; %s", page, notice, music);
-#endif
     return result;
 }
 
 bool TF_Launcher_Take_Carrier_Map(char* map, size_t size)
 {
-#if !TF_DEV_BUILD
-    return false;
-#else
     char handoff[MAX_PATH];
     if (!Handoff_Path(handoff, sizeof(handoff))) {
         return false;
@@ -3207,5 +3223,4 @@ bool TF_Launcher_Take_Carrier_Map(char* map, size_t size)
         map[strcspn(map, "\r\n")] = 0;
     }
     return got && map[0] != 0;
-#endif
 }

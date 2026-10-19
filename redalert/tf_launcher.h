@@ -45,8 +45,8 @@ bool TF_Redirect_Call(SIZE_T site, SIZE_T hook);
 const char* TF_Launcher_Install(void);
 
 /*
-**	Takes the map a carrier campaign launch asked for (written by the launcher side, under a
-**	minute old); false when there is none, and always in a Workshop build. Consumes the request.
+**	Takes the map a carrier launch asked for (written by the launcher side, under a minute old);
+**	false when there is none. Consumes the request.
 */
 bool TF_Launcher_Take_Carrier_Map(char* map, size_t size);
 
