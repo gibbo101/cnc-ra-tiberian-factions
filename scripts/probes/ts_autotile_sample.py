@@ -39,9 +39,9 @@ def art_class(set_name, land):
         return "~"
     if "sand" in name or land == "beach":
         return "s"
-    if "green" in name:
+    if "green" in name or "swamp" in name or "mold" in name:
         return "g"
-    if "rough" in name:
+    if "rough" in name or "crystal" in name:
         return "r"
     if "pave" in name or land == "road":
         return "="
@@ -145,15 +145,18 @@ def corner_mask(corners, width=0.10, wobble=0.22):
     return t * t * (3 - 2 * t)
 
 
-def piece(classes, heights, ramps, textures, rocks, variant=0):
+def piece(classes, heights, ramps, textures, rocks, variant=0, cliffs=True):
     """One RA cell's HD art from its corners' ground classes, heights (levels) and ramp flags
-    (each listed top-left, top-right, bottom-left, bottom-right)."""
+    (each listed top-left, top-right, bottom-left, bottom-right); without `cliffs`, heights only light it."""
     colour = textures["."][variant % len(textures["."])].copy()
     for k in LAYER_ORDER:
         corners = [1.0 if c == k else 0.0 for c in classes]
         if any(corners):
             m = corner_mask(corners)[..., None]
             colour = colour * (1 - m) + textures[k] * m
+    if not cliffs:
+        lit = 0.85 + 0.05 * corner_field(*[float(h) for h in heights])
+        return np.clip(colour * lit[..., None], 0, 1)
     lo, hi = min(heights), max(heights)
     height = np.full((HD, HD), float(lo), np.float32)
     gentle = corner_field(*[1.0 if r else 0.0 for r in ramps])
