@@ -29,6 +29,7 @@ import mix_tools  # noqa: E402
 
 STUBS = os.path.join(A.MOD, "CCDATA", "TFASSETS.MIX")
 C3_SEATS = os.path.join(A.REPO, "redalert", "c3tanks.h")
+TS_SEATS = os.path.join(A.REPO, "redalert", "udata.cpp")
 # Objects drawn at another object's classic size: the rail tanks are their tanks with other turrets
 SHAPE_LIKE = {"C3MK3RAIL": "C3MK3", "C3PREDRAIL": "C3PRED"}
 # Units with no classic stub that take a stock image's (idata.cpp, udata.cpp), and those images' classic sizes as
@@ -271,7 +272,7 @@ def readme(mod, listed, host):
               f"`<AnimationData>`, or you'll see the {host} frames constantly switch with yours.", ""]
     if w["game"] == "TS":
         lines += ["Most units use the stock layout: one frame per facing, then a turret block where they have one. "
-                  "Walkers, units with rolling treads or offset turrets, and buildings with doors, docks or add-ons "
+                  "Walkers, units with rolling treads, and buildings with doors, docks or add-ons "
                   "use Tiberian Factions' own layouts and need the matching DLL code, which is in its "
                   f"[source]({D.REPO_URL}).", ""]
     lines += layout(mod)
@@ -314,12 +315,23 @@ def readme(mod, listed, host):
 
 
 def layout(mod):
-    """README notes on the order of a pack's unit frames, and where a C&C3 tank seats its turret."""
+    """README notes on the order of a pack's unit frames, and where a C&C3 or off-centre TS turret seats."""
     game = A.WORKSHOP[mod]["game"]
     if game == "RA2":
         return ["## Frame layout", "",
                 "R2APOC and R2PRIS use the stock tank layout: frames 0-31 are the hull and 32-63 the turret, "
                 "32 facings each, counter-clockwise from north.", ""]
+    if game == "TS":
+        lines = ["## Turret seats", "",
+                 "TSHVR's rack and TSSONIC's turret sit off the hull's centre: draw them over the hull moved by their "
+                 "seat for the hull's facing, in classic pixels (x east, y south), for hull facings 0-31 "
+                 "counter-clockwise from north:", ""]
+        text = open(TS_SEATS, encoding="utf-8").read()
+        for unit, method in (("TSHVR", "Hover_Rack_Seat"), ("TSSONIC", "Sonic_Turret_Seat")):
+            seats = re.search(r"::%s\(.*?_seat\[32\]\[2\] = \{(.*?)\};" % method, text, re.S).group(1)
+            pairs = " ".join(f"{x},{y}" for x, y in re.findall(r"\{(-?\d+), *(-?\d+)\}", seats))
+            lines += [f"{unit}: `{pairs}`", ""]
+        return lines
     if game != "CNC3":
         return []
     lines = ["## Frame layout", "",
