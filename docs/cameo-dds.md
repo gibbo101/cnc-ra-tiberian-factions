@@ -1,7 +1,8 @@
 # Sidebar cameos as DDS
 
-**Status:** Design. Staging writes DDS cameos; next release.
-**Open:** an in-game check of every faction's sidebar, a Deck check.
+**Status:** Design. Staging writes DDS cameos; next release. Every faction's cameos draw in the
+encyclopedia on the desktop, and Nod's sidebar.
+**Open:** a Deck check.
 
 The mod ships 550 cameos (`BuildIcon_*.tga`, 176 MB): 341x256 RLE TGAs, every one fully
 opaque. Written as DXT1 DDS with mips they take 59 KB each, about 32 MB in all.
