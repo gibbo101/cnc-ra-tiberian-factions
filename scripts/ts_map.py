@@ -10,6 +10,7 @@ import re
 import struct
 import sys
 
+import numpy as np
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -23,6 +24,13 @@ TS_DIR = str(steam_library.path("common/Command & Conquer Tiberian Sun"))
 # A tile's control colour (0-15) to its land type, as TS's IsometricTileTypeClass::Land_Type maps it.
 CONTROL_LAND = ["clear", "ice", "ice", "ice", "ice", "tunnel", "railroad", "rock",
                 "rock", "water", "beach", "road", "road", "clear", "rough", "rock"]
+
+# Height levels of a ramp's top, right, bottom and left corners, by ramp type (OpenTS smartdeform.cpp).
+RAMP_CORNERS = [(0, 0, 0, 0), (0, 1, 1, 0), (0, 0, 1, 1), (1, 0, 0, 1), (1, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1),
+                (1, 0, 0, 0), (0, 1, 0, 0), (0, 1, 1, 1), (1, 0, 1, 1), (1, 1, 0, 1), (1, 1, 1, 0), (0, 1, 2, 1),
+                (1, 0, 1, 2), (2, 1, 0, 1), (1, 2, 1, 0), (0, 1, 0, 1), (1, 0, 1, 0), (0, 1, 0, 1), (1, 0, 1, 0)]
+# Screen pixels a ramp's art raises a corner per level: measured, the warp that leaves the fewest gaps.
+RAMP_LIFT_PX = 13
 
 # (tileset INI, tile MIX, tile file extension, palette) per theatre.
 THEATRES = {"TEMPERATE": ("TEMPERAT.INI", "ISOTEMP.MIX", "tem", "ISOTEM.PAL"),
@@ -131,15 +139,30 @@ class Tileset:
         self.palette = install.palette(pal)
         ini = parse_ini(install.member("LOCAL.MIX", ini_name).decode("latin-1"))
         self.tiles = []
+        self.inserts = []
+        old_count = 0
         for name in sorted((s for s in ini if re.fullmatch(r"TileSet\d{4}", s)), key=lambda s: int(s[7:])):
             entry = ini[name]
-            for i in range(int(entry.get("TilesInSet", 0))):
+            count = int(entry.get("TilesInSet", 0))
+            for i in range(count):
                 self.tiles.append((entry.get("SetName", ""), f"{entry.get('FileName', '')}{i + 1:02d}.{self.ext}"))
+            last = int(entry.get("LastTilesInSet", -1))
+            if last in (-1, count):
+                old_count += count
+            else:
+                self.inserts.append((old_count + last, count - last))
+                old_count += last
         self._records = {}
 
     def fixup(self, tile):
-        """The tile index TS draws for a stored one: anything out of range is clear ground."""
-        return tile if 0 <= tile < len(self.tiles) else 0
+        """The tile index TS draws for a stored one (IsometricTileTypeClass::Fixup_Tile_Type): shifted
+        past the tiles later tilesets inserted; anything out of range is clear ground."""
+        shifted = tile
+        for first, offset in self.inserts:
+            if first > tile:
+                break
+            shifted += offset
+        return shifted if 0 <= shifted < len(self.tiles) else 0
 
     def records(self, tile):
         """The sub-tile records of a tile, None for an empty sub-tile."""
@@ -187,6 +210,51 @@ class Tileset:
                     put[x0 + col, row] = (min(255, int(r * light[0])), min(255, int(g * light[1])),
                                           min(255, int(b * light[2])), 255)
         return img
+
+
+    def flat_diamond(self, rec, light=(1.0, 1.0, 1.0)):
+        """A sub-tile's diamond as if its ground were level: a ramp's art, face included, warped back
+        from its raised corners; any other sub-tile's own diamond."""
+        if not rec["ramp"] or rec["ramp"] >= len(RAMP_CORNERS):
+            return self.diamond(rec, light)
+        w, h, top = self.block_w, self.block_h, 4 * self.block_h
+        art = Image.new("RGBA", (w, h + top), (0, 0, 0, 0))
+        base = self.diamond(rec, light)
+        art.paste(base, (0, top), base)
+        if rec["extra"]:
+            ex, ey, ew, eh, data = rec["extra"]
+            face = Image.new("RGBA", (ew, eh), (0, 0, 0, 0))
+            put = face.load()
+            for i, p in enumerate(data):
+                if p:
+                    r, g, b = self.palette[p]
+                    put[i % ew, i // ew] = (min(255, int(r * light[0])), min(255, int(g * light[1])),
+                                            min(255, int(b * light[2])), 255)
+            art.paste(face, (ex - rec["x"], top + ey - rec["y"]), face)
+        src = np.asarray(art)
+        ys, xs = np.mgrid[0:h, 0:w] + 0.5
+        half_w, half_h = w / 2, h / 2
+        s = ((xs - half_w) / half_w + ys / half_h) / 2
+        t = (ys / half_h - (xs - half_w) / half_w) / 2
+        corners = np.array([(half_w, 0), (w, half_h), (half_w, h), (0, half_h)], float)
+        corners[:, 1] += top - np.array(RAMP_CORNERS[rec["ramp"]]) * RAMP_LIFT_PX
+        weights = [(1 - s) * (1 - t), s * (1 - t), s * t, (1 - s) * t]
+        sx = sum(wt * corners[i, 0] for i, wt in enumerate(weights)).astype(int).clip(0, w - 1)
+        sy = sum(wt * corners[i, 1] for i, wt in enumerate(weights)).astype(int).clip(0, src.shape[0] - 1)
+        out = src[sy, sx].copy()
+        shape = np.zeros((h, w), bool)
+        for row, (x0, width) in enumerate(diamond_rows(w, h)):
+            shape[row, x0:x0 + width] = True
+        for _ in range(8):
+            holes = shape & (out[..., 3] == 0)
+            if not holes.any():
+                break
+            for dy, dx in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+                near = np.roll(out, (dy, dx), (0, 1))
+                fill = holes & (near[..., 3] > 0) & (out[..., 3] == 0)
+                out[fill] = near[fill]
+        out[~shape] = 0
+        return Image.fromarray(out)
 
 
 class TsMap:
