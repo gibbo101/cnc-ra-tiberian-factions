@@ -197,18 +197,12 @@ def fork_land_strings():
     return out
 
 
-# TD's clear terrain is a special 1x1 template backed by a 4x4 grid of variants
-# (TemplateTypeFlag.Clear in the fork). The RA-hosted port ships it as an ordinary
-# 4x4 16-icon template so every variant is a placeable icon.
-TEMPLATE_OVERRIDES = {"clear1": (4, 4, "CCCC CCCC CCCC CCCC", None)}
-
-
 def templates():
     fork = fork_land_strings()
     mapper = json.loads(MAPPER_JSON.read_text())
     entries = {}
     for td_name, theatres in mapper.items():
-        w, h, lands, mask = TEMPLATE_OVERRIDES.get(td_name) or fork[td_name]
+        w, h, lands, mask = fork[td_name]
         # A mask that does not parse to exactly w*h 0/1 cells is source damage (rv13's
         # stray comma); ship no mask rather than a broken one.
         if mask is not None and (len(mask.replace(" ", "")) != w * h
@@ -218,7 +212,7 @@ def templates():
             ra_id, ra_name = info["ra_id"], info["ra_name"].lower()
             if ra_id in entries:  # theatres sharing one template (temperate + desert)
                 continue
-            if td_name not in TEMPLATE_OVERRIDES and [w, h] != info["size"]:
+            if [w, h] != info["size"]:
                 raise SystemExit(f"{td_name}: fork size {w}x{h} != mapper size {info['size']}")
             entries[ra_id] = {"id": ra_id, "name": ra_name, "width": w, "height": h,
                               "lands": lands, "mask": mask}
