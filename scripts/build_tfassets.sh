@@ -194,6 +194,10 @@ fi
 
 # TD's desert trees and rocks (tdata.cpp TERRAIN_TREE4 to TERRAIN_ROCK7): TD's own shapes, packed raw.
 DESERT_MIX="${CNCDATA}/TIBERIAN_DAWN/CD1/DESERT.MIX"
+if [[ ! -f "$DESERT_MIX" ]]; then
+    echo "error: required game file not found: $DESERT_MIX" >&2
+    exit 1
+fi
 for t in t04 t09 t18 rock1 rock2 rock3 rock4 rock5 rock6 rock7; do
     python3 scripts/mix_tools.py extract "$DESERT_MIX" "$t.des" "$TMPDIR" >/dev/null
     PACK_ARGS+=("$TMPDIR/$t.des:$(echo $t | tr a-z A-Z).DES")

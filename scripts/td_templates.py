@@ -88,6 +88,8 @@ def td_tem_to_ra(data, map_w, map_h, land, altland, alt_icons, cells=None):
     n = map_w * map_h
     typed = [altland if i in alt_icons else land for i in range(n)]
     if cells:
+        if len(cells) != n:
+            raise SystemExit("td_shore_land.json: %d cells for a %dx%d template" % (len(cells), map_w, map_h))
         typed = [SHORE_LETTER.get(c, t) for c, t in zip(cells, typed)]
     cmap = bytes(LAND_NIBBLE[t] for t in typed)
     hdr = struct.pack("<6H7i", icon_w, icon_h, count, 0, map_w, map_h,
