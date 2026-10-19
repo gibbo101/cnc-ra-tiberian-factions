@@ -4851,10 +4851,7 @@ static void TF_Note_Mod_Root(const char* mod_path)
         return;
     }
     char dst_dir[MAX_PATH];
-    snprintf(dst_dir, sizeof(dst_dir), "%s\\Documents\\CnCRemastered\\Local_Custom_Maps", profile);
-    CreateDirectoryA(dst_dir, NULL);
-    strncat(dst_dir, "\\Red_Alert", sizeof(dst_dir) - strlen(dst_dir) - 1);
-    CreateDirectoryA(dst_dir, NULL);
+    snprintf(dst_dir, sizeof(dst_dir), "%s\\Documents\\CnCRemastered\\Local_Custom_Maps\\Red_Alert", profile);
 
     static char const* const exts[] = {"MPR", "TGA", "JSON"};
     for (int map = 1; map <= 0x1F; map++) {
