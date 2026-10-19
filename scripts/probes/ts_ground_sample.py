@@ -41,7 +41,7 @@ def draw_ground(tsmap, tileset, layout, u0, v0, w, h, lifted):
         light = tsmap.light(level)
         px = (dx - sx) * 24 - 24
         py = (dy - sy) * 12 - 12 + top - (LEVEL_PX * level if lifted else 0)
-        img = tileset.diamond(rec, light)
+        img = tileset.diamond(rec, light) if lifted else tileset.flat_diamond(rec, light)
         canvas.paste(img, (px, py), img)
         if lifted and rec["extra"]:
             ex, ey, ew, eh, data = rec["extra"]

@@ -15,6 +15,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ts_map  # noqa: E402
 import ts_map_to_ra as conv  # noqa: E402
 import ts_autotile_sample as auto  # noqa: E402
+import ts_ground_sample  # noqa: E402
 
 HD = auto.HD
 TS_PX = HD / 48  # HD pixels per TS screen pixel across
@@ -121,6 +122,14 @@ def main():
         zoom = img.crop(box)
         zoom.save(os.path.join(args.out, f"{slug}_zoom_{tag}.png"))
         zooms.append((f"TS cliff art, faces at {'TS height' if face_scale == 1 else 'half TS height'}", zoom))
+    exact = ts_ground_sample.flat_hd(tsmap, tileset, layout, 0, 0, layout.width, layout.height)
+    exact.alpha_composite(cliff_layer(tsmap, tileset, layout, 1.0))
+    exact = exact.convert("RGB")
+    exact.resize((layout.width * 32, layout.height * 32), Image.LANCZOS).save(
+        os.path.join(args.out, f"{slug}_whole_ts_exact.png"))
+    exact_zoom = exact.crop(box)
+    exact_zoom.save(os.path.join(args.out, f"{slug}_zoom_ts_exact.png"))
+    zooms.append(("TS's own ground tiles + TS cliffs (exact)", exact_zoom))
     procedural = os.path.join(os.path.dirname(args.out), "autotile-sample", f"{slug}_cliff_zoom_ra.png")
     if os.path.exists(procedural):
         zooms.insert(0, ("procedural cliffs (previous sample)", Image.open(procedural).convert("RGB")))
