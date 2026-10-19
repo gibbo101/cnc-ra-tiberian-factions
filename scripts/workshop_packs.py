@@ -357,12 +357,14 @@ def layout(mod):
     if game == "TS":
         lines = ["## Turret seats", "",
                  "TSHVR's rack and TSSONIC's turret sit off the hull's centre: draw them over the hull moved by their "
-                 "seat for the hull's facing, in classic pixels (x east, y south), for hull facings 0-31 "
-                 "counter-clockwise from north:", ""]
+                 "seat for the hull's facing, in classic pixels (x east, y south), clockwise from north as EA's "
+                 "turret tables run, so index it with `Dir_To_32(PrimaryFacing)`:", ""]
         text = open(TS_SEATS, encoding="utf-8").read()
         for unit, method in (("TSHVR", "Hover_Rack_Seat"), ("TSSONIC", "Sonic_Turret_Seat")):
             seats = re.search(r"::%s\(.*?_seat\[32\]\[2\] = \{(.*?)\};" % method, text, re.S).group(1)
-            pairs = " ".join(f"{x},{y}" for x, y in re.findall(r"\{(-?\d+), *(-?\d+)\}", seats))
+            by_frame = re.findall(r"\{(-?\d+), *(-?\d+)\}", seats)
+            # udata.cpp indexes these by hull frame (BodyShape), which runs counter-clockwise.
+            pairs = " ".join("%s,%s" % by_frame[-d % 32] for d in range(32))
             lines += [f"{unit}: `{pairs}`", ""]
         return lines
     if game != "CNC3":
