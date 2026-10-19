@@ -192,10 +192,12 @@ def main():
     parser.add_argument("--map", default="Tiers of Sorrow")
     parser.add_argument("--at", default="8,29")
     parser.add_argument("--size", default="14,10")
+    parser.add_argument("--whole", action="store_true", help="the whole map, both ways, start points marked")
     parser.add_argument("--out", default=os.path.expanduser("~/Desktop/Tiberian Factions/ts-theatres/autotile-sample"))
     args = parser.parse_args()
     u0, v0 = (int(v) for v in args.at.split(","))
     w, h = (int(v) for v in args.size.split(","))
+    whole = args.whole
     os.makedirs(args.out, exist_ok=True)
     install = ts_map.TsInstall()
     maps = install.maps()
@@ -230,6 +232,8 @@ def main():
 
     # Sheet 2: a converted map region built from pieces, beside TS's own view of it.
     layout = conv.Layout(tsmap)
+    if whole:
+        u0, v0, w, h = 0, 0, layout.width, layout.height
     region = Image.new("RGB", (w * HD, h * HD))
     cache = {}
     for v in range(v0, v0 + h):
@@ -260,6 +264,31 @@ def main():
         d.text((i * (width + 20), 6), title, fill=(255, 255, 255))
     sheet.save(os.path.join(args.out, f"{slug}_compare.png"))
     print(f"wrote {args.out}: region of {w}x{h} cells uses {len(cache)} distinct pieces")
+    if whole:
+        whole_maps(tsmap, layout, region, ts_view, args.out, slug)
+
+
+def whole_maps(tsmap, layout, region, ts_view, out, slug):
+    """The whole map as TS draws it and as the pieces draw it, start points numbered on both."""
+    px = 32
+    ra = region.resize((layout.width * px, layout.height * px), Image.LANCZOS)
+    scale = px / HD
+    ts = ts_view.convert("RGB").resize((int(ts_view.width * scale), int(ts_view.height * scale)), Image.LANCZOS)
+    for img, where in ((ra, "ra"), (ts, "ts")):
+        d = ImageDraw.Draw(img)
+        for n, (x, y) in tsmap.waypoints().items():
+            if n >= 8:
+                continue
+            if where == "ra":
+                u, v = layout.ra_cell(x, y)
+                cx, cy = u * px + px // 2, v * px + px // 2
+            else:
+                level = tsmap.cells.get((x, y), (0, 0, 0))[2]
+                cx = ((x - y) - layout.x0) * 24 * (HD // 48) * scale
+                cy = (((x + y) - layout.y0) * 12 + 240 - ts_ground_sample.LEVEL_PX * level) * (HD / 48) * scale
+            d.ellipse([cx - 14, cy - 14, cx + 14, cy + 14], fill=(255, 255, 255), outline=(0, 0, 0), width=3)
+            d.text((cx - 4, cy - 7), str(n + 1), fill=(0, 0, 0))
+        img.save(os.path.join(out, f"{slug}_whole_{where}.png"))
 
 
 if __name__ == "__main__":
