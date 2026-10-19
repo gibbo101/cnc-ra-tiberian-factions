@@ -16,7 +16,6 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
 - A deployed Juggernaut ordered onto a target it can't hit stays put instead of wandering off.
 - H takes you to your Construction Yard again.
 - Another enabled mod's rules.ini no longer breaks Tiberian Factions.
-- Smoother play on large maps.
 
 ## [5.5.0] — 2026-10-14
 
