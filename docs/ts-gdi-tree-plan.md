@@ -153,7 +153,7 @@ Resource plugs stack by design (`Can_Upgrade`): the power plant takes two turbin
 - **Component towers are standalone defences:** a wall run stops at one rather than binding into
   it, a tower can't be placed on a wall segment, and wall arms end flush on the cell boundary.
 - **The plug is the armed tower type.** Placing TSVULC, TSCSAM or TSROCK replaces the bare TSCTWR
-  in place, keeps its health ratio and installs rather than builds; selling an armed tower refunds
+  in place, restores full health as in TS and installs rather than builds; selling an armed tower refunds
 both the tower and the plug (`Refund_Amount`). Weapons
   are TS verbatim (`[TSVulcanTower]`/`[TSSA]`, `[TSRPGTower]`/`[TSRPG]`, `[TSRedEye2]`/`[TSSAMWH]`).
   The AI builds them as a two-step (`TF_AI_Tower_Step`: a bare tower, then the plug, counting plugs

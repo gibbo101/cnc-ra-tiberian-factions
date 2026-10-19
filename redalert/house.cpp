@@ -1187,6 +1187,17 @@ bool TF_Plug_At_Cap(HouseClass const* house)
     return (false);
 }
 
+// True while the house has a building a plug for the host type can count as: any component tower, armed or
+// bare, stands for TSCTWR.
+static bool TF_Has_Plug_Host(HouseClass const* house, StructType host)
+{
+    if (host == STRUCT_TSCTWR) {
+        return (house->Has_Building_Active(STRUCT_TSCTWR) || house->Has_Building_Active(STRUCT_TSVULC)
+                || house->Has_Building_Active(STRUCT_TSROCK) || house->Has_Building_Active(STRUCT_TSCSAM));
+    }
+    return (house->Has_Building_Active(host));
+}
+
 // Line fill (the TS and RA2 wall rule): a section placed within this many cells in line of one of the house's
 // own sections of its type fills the cells between, if all are clear to build and the house can pay for all.
 static const int TF_WALL_FILL_RANGE = 5;
@@ -1492,7 +1503,7 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     // this: the era rule lets another era's building satisfy a token, and a plug needs its real host.
     if (type->What_Am_I() == RTTI_BUILDINGTYPE) {
         BuildingTypeClass const* btype = (BuildingTypeClass const*)type;
-        if (btype->PowersUpBuilding != STRUCT_NONE && !Has_Building_Active(btype->PowersUpBuilding)) {
+        if (btype->PowersUpBuilding != STRUCT_NONE && !TF_Has_Plug_Host(this, btype->PowersUpBuilding)) {
             return (false);
         }
     }
@@ -1651,6 +1662,9 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             continue;
         // TF: a deployed Mobile War Factory counts as a war factory, as in TS Firestorm.
         if (t == STRUCT_TSWEAP && Has_Building_Active(STRUCT_TSDWEAP))
+            continue;
+        // TF: an armed component tower is still a component tower, as in TS.
+        if (t == STRUCT_TSCTWR && TF_Has_Plug_Host(this, STRUCT_TSCTWR))
             continue;
         // TF: any faction yard satisfies the vanilla 'fact' token. Houses own faction yards, never
         // STRUCT_CONST, so without this the whole tree stops at the power plant.

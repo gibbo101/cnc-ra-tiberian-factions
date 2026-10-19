@@ -2148,7 +2148,7 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
     }
 
     // TF: an addon plug installs into the building under it (power, full strength) and deletes itself. A tower
-    // plug instead replaces the bare tower, keeping its health ratio, and unlimbos as a normal building.
+    // plug instead replaces the bare tower and unlimbos as a normal building at full strength, as in TS.
     bool tf_plug_swap = false;
 
     if (Class->PowersUpBuilding != STRUCT_NONE) {
@@ -2156,15 +2156,11 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
         bool swapped = false;
         if (host != NULL && *host == STRUCT_TSCTWR && host->Can_Upgrade(Class, House)) {
             coord = host->Coord;
-            fixed ratio = host->Health_Ratio();
             host->Transmit_Message(RADIO_OVER_OUT);
             host->Limbo();
             delete host;
             host = NULL;
-            Strength = (int)Class->MaxStrength * ratio;
-            if (Strength < 1) {
-                Strength = 1;
-            }
+            Strength = Class->MaxStrength;
             swapped = true;
             tf_plug_swap = true;
             TFPlugInstallInProgress = true;
