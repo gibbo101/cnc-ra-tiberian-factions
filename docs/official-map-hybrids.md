@@ -101,7 +101,7 @@ there, a field of Gems alone keeps its Gems (the all-gem box in the west).
 Every other line is carried over byte for byte. The script reads the pristine map straight from
 `MAIN.MIX`, re-decodes its own `[OverlayPack]` output as a check, and writes the result to
 `resources/remaster_mods/Vanilla_RA/CCDATA/<map>.ini`. The OverlayPack codec is the
-`td_map_to_ra.py` one that the shipped TD map pack already uses.
+`td_map_to_ra.py` one that converts TD's own maps for the Official list.
 
 **The thumbnail.** The script then:
 

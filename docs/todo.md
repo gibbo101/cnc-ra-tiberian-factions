@@ -10,6 +10,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ## Next version: first jobs
 
+- **The map editor on TD theatres.** `cnc-map-editor` knows RA's three theatres only: it needs
+  `Desert`, `TDTemperate` and `Winter` with TD's tilesets, and the desert terrain types (`T04`,
+  `T09`, `T18`, `ROCK1` to `ROCK7`) in `mapeditor.json` (`td-base-art.md`).
 - **TS-Music, what's left** (`skirmish-music.md`): make the Workshop item Public with the next TF release, after
   the maintainer's OK on its page; then regenerate the pack READMEs (`asset_pack_docs.py`) for its link and
   republish its description. A Random lobby pick plays Mix whatever the faction's choice: its faction is known
@@ -72,9 +75,6 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ## Loose ends on shipped features
 
-- **The map editor on TD theatres.** `cnc-map-editor` knows RA's three theatres only: it needs
-  `Desert`, `TDTemperate` and `Winter` with TD's tilesets, and the desert terrain types (`T04`,
-  `T09`, `T18`, `ROCK1` to `ROCK7`) in `mapeditor.json` (`td-base-art.md`).
 - **Craters from cannon fire.** TD's tank guns explode as `VEH-HIT3`, which forms no crater, so
   only rockets, missiles and artillery leave them (MLRS craters on a TD slot, `td-base-art.md`).
   Decide whether TD cannons crater, and check every TS weapon's impact animation the same way.
