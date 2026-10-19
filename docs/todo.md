@@ -42,8 +42,6 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   `mastertext.edits.txt` names and `picker_emblems_paint.py` plates move with it.
 - **Nod's cargo plane circles the airstrip** (`known-issues.md`): find why the TDC17 sometimes
   misses its landing on `TDAFLD` and fix it, with a play test of several deliveries.
-- **H (jump to the home base) does nothing** (`known-issues.md`): find which side owns the key and fix it, with a
-  play test on each faction.
 - **C&C3 pack README's C3PRED turret seats:** a modder drawing the turret from the README's table finds the
   Predator close but not exact (the Hover MLRS seats are right). Compare its draw with ours in play and refine
   `_c3pred_seat_px` (`c3tanks.h`); C3MK3 not yet tried by them.

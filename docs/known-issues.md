@@ -11,13 +11,6 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 
 ---
 
-## Controls
-
-### H (jump to the home base) does nothing
-- **Severity:** minor (seen in play on 5.5.0's build).
-- Pressing H to centre the view on the base does nothing. Not looked into yet: first check whether the
-  launcher or the DLL owns the key (`launcher-vs-dll-ownership.md`; Deploy and select-all are the DLL's).
-
 ## Units and buildings
 
 ### Nod's cargo plane sometimes circles the airstrip
