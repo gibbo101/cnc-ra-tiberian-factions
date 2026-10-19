@@ -172,13 +172,24 @@ fi
 
 # TD's terrain templates for the TD theatres (scripts/td_templates.py): TD<NAME>.DES, .TEM and .WIN, TD's own
 # classic iconsets converted to RA's format with TD's land types. Packed as-is: a palette remap would corrupt
-# the header's dimensions and land types.
+# the header's dimensions and land types. Every iconset td_ra_tile_map.json lists must be staged.
 TEM_STAGE="scripts/_td_tems"
-if [[ -d "$TEM_STAGE" ]]; then
-    for tem in "$TEM_STAGE"/TD*.DES "$TEM_STAGE"/TD*.TEM "$TEM_STAGE"/TD*.WIN; do
-        [[ -e "$tem" ]] || continue
-        PACK_ARGS+=("$tem:$(basename "$tem")")
-    done
+mapfile -t TD_TEMS < <(python3 -c '
+import json
+suffix = {"desert": "DES", "temperate": "TEM", "winter": "WIN"}
+tiles = json.load(open("scripts/td_ra_tile_map.json"))
+print("\n".join(sorted({"%s.%s" % (t["ra_name"], suffix[th]) for e in tiles.values() for th, t in e.items()})))')
+missing=0
+for tem in "${TD_TEMS[@]}"; do
+    if [[ -f "$TEM_STAGE/$tem" ]]; then
+        PACK_ARGS+=("$TEM_STAGE/$tem:$tem")
+    else
+        missing=$((missing + 1))
+    fi
+done
+if (( missing )); then
+    echo "error: $missing of ${#TD_TEMS[@]} TD iconsets missing from $TEM_STAGE; run scripts/td_templates.py" >&2
+    exit 1
 fi
 
 # TD's desert trees and rocks (tdata.cpp TERRAIN_TREE4 to TERRAIN_ROCK7): TD's own shapes, packed raw.
@@ -661,4 +672,4 @@ PACK_ARGS+=("$TMPDIR/tsdiscus_stub.shp:TSDISCUS.SHP")
 
 # Repack into TFASSETS.MIX with TD-prefix renames.
 python3 scripts/mix_tools.py pack "$OUTMIX" "${PACK_ARGS[@]}"
-echo "TFASSETS.MIX rebuilt with ${#ENTRIES[@]} entries -> $OUTMIX"
+echo "TFASSETS.MIX rebuilt with ${#PACK_ARGS[@]} entries -> $OUTMIX"
