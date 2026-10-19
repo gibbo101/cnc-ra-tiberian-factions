@@ -21,7 +21,9 @@ import ts_ground_sample  # noqa: E402
 HD = 128
 # One TS height level in RA cell widths: 104 of TS's 256 leptons, a TS cell being 1/sqrt(2) RA cells.
 LEVEL_CELLS = 104 / 256 / math.sqrt(2)
-LIGHT = np.array([-0.55, -0.55, 0.63])  # from the north-west, as TS lights its tiles
+# Cliffs are drawn steeper than TS's true level height so their faces read at RA's top-down view.
+CLIFF_EXAGGERATION = 3.0
+LIGHT = np.array([-0.40, -0.40, 0.82])  # from the north-west, as TS lights its tiles
 LIGHT = LIGHT / np.linalg.norm(LIGHT)
 
 # Ground classes drawn in layers over clear ground: (class letter, TS tileset name, tile in set).
@@ -126,6 +128,9 @@ def periodic_noise(seed):
 
 
 NOISE = periodic_noise(7)
+# Zero on every edge of the cell: anything scaled by it (squared, for slopes too) varies a tile's inside only.
+INSIDE = np.sin(math.pi * _X) * np.sin(math.pi * _Y)
+NOISES = [NOISE + 0.9 * INSIDE ** 2 * periodic_noise(100 + i) for i in range(4)]
 
 
 def corner_field(c00, c10, c01, c11):
@@ -140,7 +145,7 @@ def corner_mask(corners, width=0.10, wobble=0.22):
     return t * t * (3 - 2 * t)
 
 
-def piece(classes, heights, ramps, textures, rock, variant=0):
+def piece(classes, heights, ramps, textures, rocks, variant=0):
     """One RA cell's HD art from its corners' ground classes, heights (levels) and ramp flags
     (each listed top-left, top-right, bottom-left, bottom-right)."""
     colour = textures["."][variant % len(textures["."])].copy()
@@ -152,20 +157,33 @@ def piece(classes, heights, ramps, textures, rock, variant=0):
     lo, hi = min(heights), max(heights)
     height = np.full((HD, HD), float(lo), np.float32)
     gentle = corner_field(*[1.0 if r else 0.0 for r in ramps])
+    foot = np.zeros((HD, HD), np.float32)
+    rim = np.zeros((HD, HD), np.float32)
+    relief = np.zeros((HD, HD), np.float32)
     for level in range(lo + 1, hi + 1):
         corners = [1.0 if h >= level else 0.0 for h in heights]
-        width = 0.40 + 0.30 * gentle
-        f = corner_field(*corners) + 0.08 * NOISE
+        width = 0.70 + 0.15 * gentle
+        plain = corner_field(*corners)
+        f = plain + 0.12 * NOISES[(variant + level) % len(NOISES)]
         t = np.clip((f - 0.5) / width + 0.5, 0, 1)
-        height += t * t * (3 - 2 * t)
-    z = height * LEVEL_CELLS
+        step = t * t * (3 - 2 * t)
+        height += step
+        relief += step * (1 + (CLIFF_EXAGGERATION - 1) * (1 - gentle))
+        below = (0.5 - width / 2) - f
+        foot = np.maximum(foot, np.where(below > 0, np.exp(-below / 0.10), 0) * np.clip(plain / 0.25, 0, 1))
+        above = f - (0.5 + width / 2)
+        rim = np.maximum(rim, np.where(above > 0, np.exp(-above / 0.04), 0) * np.clip((1 - plain) / 0.25, 0, 1))
+    z = relief * LEVEL_CELLS
     gy, gx = np.gradient(z, 1.0 / HD)
     normal = np.stack([-gx, -gy, np.ones_like(z)], -1)
     normal /= np.linalg.norm(normal, axis=-1, keepdims=True)
     slope = 1 - normal[..., 2]
-    rocky = np.clip((slope - 0.12) / 0.15, 0, 1)[..., None] * (1 - gentle[..., None])
-    colour = colour * (1 - rocky) + rock * rocky
-    shade = 0.55 + 0.6 * np.clip(normal @ LIGHT, 0, 1)
+    steep = 1 - gentle[..., None]
+    rocky = np.clip((slope - 0.10) / 0.15, 0, 1)[..., None] * steep
+    colour = colour * (1 - rocky) + rocks[(variant + hi) % len(rocks)] * rocky
+    shade = 0.45 + 0.75 * np.clip(normal @ LIGHT, 0, 1)
+    shade *= 1 - 0.55 * foot * steep[..., 0]
+    shade *= 1 + 0.25 * rim * steep[..., 0]
     lit = 0.85 + 0.05 * height
     return np.clip(colour * (shade * lit)[..., None], 0, 1)
 
@@ -190,7 +208,7 @@ def region_corners(tsmap, tileset, layout, u, v):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--map", default="Tiers of Sorrow")
-    parser.add_argument("--at", default="8,29")
+    parser.add_argument("--at", default="4,20")
     parser.add_argument("--size", default="14,10")
     parser.add_argument("--whole", action="store_true", help="the whole map, both ways, start points marked")
     parser.add_argument("--out", default=os.path.expanduser("~/Desktop/Tiberian Factions/ts-theatres/autotile-sample"))
@@ -208,6 +226,8 @@ def main():
     clear = tile_index(tileset, "Clear", 0)
     textures["."] = [seamless_texture(tileset, clear, light, i) for i in range(4)]
     rock = rock_texture(tileset)
+    rocks = [rock * (1 - INSIDE[..., None]) + np.roll(rock, (37 * i, 53 * i), (0, 1)) * INSIDE[..., None]
+             for i in range(4)]
 
     # Sheet 1: the textures, the 16 clear/rough transitions, the 16 one-level cliff pieces.
     gap = 8
@@ -222,8 +242,8 @@ def main():
     d.text((len(GROUND) * (HD + gap), 4), "rock (cliff face)", fill=(255, 255, 255))
     for m in range(16):
         bits = [(m >> i) & 1 for i in range(4)]
-        tr = piece([("r" if b else ".") for b in bits], [2] * 4, [0] * 4, textures, rock)
-        cl = piece(["."] * 4, [2 + 4 * b for b in bits], [0] * 4, textures, rock)
+        tr = piece([("r" if b else ".") for b in bits], [2] * 4, [0] * 4, textures, rocks)
+        cl = piece(["."] * 4, [2 + 4 * b for b in bits], [0] * 4, textures, rocks)
         sheet.paste(to_image(tr), (m * (HD + gap), 40 + HD + gap))
         sheet.paste(to_image(cl), (m * (HD + gap), 60 + 2 * (HD + gap)))
     d.text((0, 26 + HD + gap), "clear/rough transitions (corner sets)", fill=(255, 255, 255))
@@ -243,7 +263,7 @@ def main():
             key = (tuple(corners), variant)
             if key not in cache:
                 cache[key] = to_image(piece([c[0] for c in corners], [c[1] for c in corners],
-                                            [c[2] for c in corners], textures, rock, variant))
+                                            [c[2] for c in corners], textures, rocks, variant))
             region.paste(cache[key], ((u - u0) * HD, (v - v0) * HD))
     slug = conv.slug(args.map)
     region.save(os.path.join(args.out, f"{slug}_region_ra.png"))
