@@ -3669,11 +3669,17 @@ inline TheaterType TF_Base_Theater(TheaterType theater)
     return (theater >= THEATER_DESERT) ? THEATER_TEMPERATE : theater;
 }
 
-// The theatre flag a terrain type needs on this theatre: TD's own terrain its TD theatre's, RA's the temperate one
-// a TD theatre borrows.
+// TF: the theatre flag a terrain type needs on this theatre: TD's own terrain its TD theatre's, RA's the borrowed
+// temperate one, except on desert, whose tileset draws only RA's T08 and the ore mine.
 inline int TF_Terrain_Theater_Flag(TerrainType type, TheaterType theater)
 {
-    return 1 << (type >= TERRAIN_TREE4 ? theater : TF_Base_Theater(theater));
+    if (type >= TERRAIN_TREE4) {
+        return 1 << theater;
+    }
+    if (theater == THEATER_DESERT && type != TERRAIN_TREE8 && type != TERRAIN_MINE) {
+        return 0;
+    }
+    return 1 << TF_Base_Theater(theater);
 }
 
 // Suffix of TD's classic shapes for a TD theatre in TFASSETS.MIX (DES, TEM, WIN), else "".
