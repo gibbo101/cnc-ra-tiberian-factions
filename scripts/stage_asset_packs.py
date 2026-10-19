@@ -8,8 +8,9 @@ Workshop mod in asset_packs.USED carries: that mod is built whole in the folder 
 writes each of the mod's XML files that packs contribute to: the mod's own file from resources/,
 with every pack's entries in place of that pack's marker (before the closing tag when the file has
 no marker).
-A file two packs carry is copied from the later pack only, and a tileset
-ZIP that copies another's frames is left out (scripts/share_tileset_zips.py).
+A file two packs carry is copied from the later pack only, a tileset
+ZIP that copies another's frames is left out (scripts/share_tileset_zips.py), and so is a TD ZIP whose
+frames the base game ships (scripts/td_base_art.py).
 The XML always starts from the source tree, so staging twice gives the same result.
 
 --full first copies the mod's own tree (resources/remaster_mods/Vanilla_RA) over <mod dir>: a
@@ -29,6 +30,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import asset_packs as A  # noqa: E402
 import share_tileset_zips  # noqa: E402
+import td_base_art  # noqa: E402
 import workshop_packs  # noqa: E402
 
 def copy_tree(src, dst, skip=frozenset()):
@@ -73,7 +75,10 @@ def stage(mod_dir, full=False, strict=False):
         raise SystemExit("asset-pack files or XML entries are in resources/remaster_mods/Vanilla_RA: "
                          f"{', '.join(sorted(stray))}. Run scripts/asset_packs.py split, then build again.")
     texts = {rel: A.drop_pack_only(merged(rel, pack_file, root)) for rel, pack_file, root, _ in A.XML_FILES}
-    texts, shared = share_tileset_zips.share(texts, share_tileset_zips.zip_sources())
+    sources = share_tileset_zips.zip_sources()
+    texts, shared = share_tileset_zips.share(texts, sources)
+    texts, from_base, _moved = td_base_art.reroute(texts, sources)
+    shared = sorted(set(shared) | set(from_base))
     if full:
         copy_tree(A.MOD, mod_dir, {os.path.join("DATA", rel) for rel in shared})
     data = os.path.join(mod_dir, "Data")

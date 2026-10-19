@@ -1,7 +1,7 @@
 # TD art read from the base game
 
-**Status:** Design. Six theatres and TD art from the base game proven on the desktop; nothing ships yet.
-**Open:** the build plan below, an RA_VFX effects check, a Deck performance pass.
+**Status:** Design. Six theatres, TD art and TD maps from the base game built and tested on the desktop; next release.
+**Open:** a Deck performance pass.
 
 The mod copies TD's unit, building and effect ZIPs out of `TEXTURES_TD_SRGB.MEG` into
 `Data/ART/TEXTURES/SRGB/RED_ALERT/`, renamed with a `TD` prefix. Every player already has those
@@ -64,15 +64,20 @@ Measured on the 5.5.0 build:
 The build already shares frames between tiles (`TDGFACT` and `TDNFACT` read `tdfact\`), so the
 shipped saving is the base-identical part of the 169 MB of `TD*` ZIPs in the build.
 
-## Open
+## The build step
 
-- **Build step.** For TD's units, buildings and effects alike: generate the empty-rooted tilesets
-  and their openers from the frame-to-base map (the md5 matching in `scripts/probes/td_compare.py`),
-  and stop staging the replaced ZIPs.
-- **RA_VFX effects.** The probe re-rooted `RA_VFX` but no combat ran, so RA's own effects are
-  unchecked. A tileset with fewer of its own tiles is the lower-risk host.
-- **Performance.** The same ZIPs open from a MEG instead of a loose file. Load time and memory on
-  the Deck need a measured pass.
+`scripts/td_base_art.py` runs at staging (`stage_asset_packs.py`, after `share_tileset_zips.py`). A
+TD tile whose every frame is byte for byte a frame of a ZIP in `TEXTURES_TD_SRGB.MEG` (matched by
+the frame's and its `.meta`'s CRC and size) moves into `RA_VFX`, with its frames naming the base
+game's; `RA_VFX` is re-rooted at the texture root, its own frames gaining their old root, with an
+opener per ZIP folder (a loose frame folder, such as the rally-point dots, needs none). A TD ZIP no
+frame names any more stays out of the build: 89 TD tile names and 78 ZIPs, 126 MB, on this build.
+A tile with frames of its own (`TDFLAME-*`, half of `TDMLRS`) keeps its ZIP. The source tree is
+unchanged. TD buildings (yard, power plant, Hand of Nod and its build-up), the Nod MCV and the
+rocket soldier's missile draw from the base game, and RA's own effects in `RA_VFX` (the frag
+explosions) still draw.
+
+**Open:** load time and memory on the Deck, measured.
 
 ## Six theatres
 
