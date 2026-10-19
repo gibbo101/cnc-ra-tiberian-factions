@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Probe: the TD shore tiles laid out for a cell-by-cell land review (water, beach or land).
+"""Probe: the TD shore tiles laid out for a cell-by-cell land review (water, beach, clear or rock).
 
 usage: td_shore_review.py <out dir>
 Writes <out>/tiles.json (each tile's size, cells, measured water share and TD's own land type),
-<out>/seed.json (the proposed choice per cell) and <out>/img/*.jpg (each tile from its HD art).
+<out>/seed.json (TD's own land type per cell, the review's starting point) and <out>/img/*.jpg (each
+tile from its HD art).
 A tile is listed when TD types any of it water or its classic art draws water; rivers are not.
 """
 import io
@@ -27,6 +28,7 @@ CELL_PX = 64
 # review group -> (theatres reviewed together, the one measured and drawn first)
 GROUPS = {"des": (["DES"], "DES"), "tw": (["TEM", "WIN"], "TEM")}
 THEATRE_KEY = {"DES": "desert", "TEM": "temperate", "WIN": "winter"}
+LETTER = {"WATER": "W", "BEACH": "B", "CLEAR": "C", "ROCK": "R", "ROUGH": "U", "ROAD": "D"}
 
 
 def iconset(name, suffix):
@@ -112,8 +114,8 @@ def main():
             listing.append({"id": doc, "group": group, "name": name.upper(), "w": w, "h": h, "images": images,
                             "pct": [pct[s] for s in suffixes], "td": [None if p is None else t
                                                                       for p, t in zip(pct[first], typed)]})
-            seed[doc] = {"cells": [None if p is None else "W" if p >= 98 else "B" if p >= 5 else "L"
-                                   for p in pct[first]], "reviewed": False}
+            seed[doc] = {"cells": [None if p is None else LETTER[t] for p, t in zip(pct[first], typed)],
+                         "reviewed": False}
     json.dump(listing, open(os.path.join(out, "tiles.json"), "w"))
     json.dump(seed, open(os.path.join(out, "seed.json"), "w"))
     print("%d tiles: %d desert, %d temperate and winter" % (
