@@ -2895,6 +2895,7 @@ const SIZE_T LAUNCH_SEND = 0x7F1C40;
 const SIZE_T KEY_LOOKUP = 0x14FE820;
 const SIZE_T KEY_LOOKUP_CAVE = 0x1BE9380;
 const DWORD HANDOFF_MAX_AGE_MS = 60000;
+const char HASTINGS_MAP[] = "SCMD6EA.INI";
 
 DWORD SkirmishCarrierKey = 0;
 DWORD SkirmishLaunchedKey = 0;
@@ -2954,6 +2955,17 @@ void Write_Handoff(const char* map)
 }
 
 /*
+**	Withdraws a handoff whose launch was refused, so no later scenario load plays it.
+*/
+void Clear_Handoff(void)
+{
+    char handoff[MAX_PATH];
+    if (Handoff_Path(handoff, sizeof(handoff))) {
+        DeleteFileA(handoff);
+    }
+}
+
+/*
 **	Points a launch name at a stock instance, by name and key.
 */
 void Carrier_Name(InstanceNameView& view, char* text, size_t length, DWORD key)
@@ -3008,14 +3020,18 @@ char Skirmish_Carrier_Send(void* ipc, const MsvcString* name, int number, void* 
     Carrier_Name(skirmish, skirmish_text, sizeof(skirmish_text) - 1, Name_Key(skirmish_text));
     char map[16];
     if (number == 999) {
-        strcpy(map, "SCMD6EA.INI");
+        strcpy(map, HASTINGS_MAP);
     } else {
         snprintf(map, sizeof(map), "TFTD%03d.INI", number);
     }
     Write_Handoff(map);
     SkirmishCarrierKey = skirmish.key;
     SkirmishLaunchedKey = Name_Key(TF_String_Chars(name));
-    return ((LaunchSendFn)LAUNCH_SEND)(ipc, &skirmish, settings, mode, a, b);
+    char sent = ((LaunchSendFn)LAUNCH_SEND)(ipc, &skirmish, settings, mode, a, b);
+    if (!sent) {
+        Clear_Handoff();
+    }
+    return sent;
 }
 
 /*
@@ -3093,9 +3109,8 @@ char Mission_Carrier_Send(void* ipc, const MsvcString* name, void* settings, int
     Write_Handoff("SCG01EA.INI");
     char sent = ((LaunchSendFn)LAUNCH_SEND)(ipc, &carrier, settings, mode, a, b);
     CarrierSession = sent != 0;
-    char handoff[MAX_PATH];
-    if (!sent && Handoff_Path(handoff, sizeof(handoff))) {
-        DeleteFileA(handoff);
+    if (!sent) {
+        Clear_Handoff();
     }
     CarrierLaunchedKey = Name_Key(TF_String_Chars(name));
     return sent;
@@ -3137,12 +3152,14 @@ void __stdcall Stage_Check_Hit(const DWORD* regs)
 */
 char __fastcall Launch_Send(void* ipc, void*, const MsvcString* name, void* settings, int mode, int a, int b)
 {
+#if TF_DEV_BUILD
+    CarrierSession = false;
+#endif
     int number = Mod_Map_Number(name);
     if (number != 0) {
         return Skirmish_Carrier_Send(ipc, name, number, settings, mode, a, b);
     }
 #if TF_DEV_BUILD
-    CarrierSession = false;
     if (!IsBadReadPtr(name, sizeof(*name)) && name->size < 128 && strncmp(TF_String_Chars(name), "TF_", 3) == 0) {
         return Mission_Carrier_Send(ipc, name, settings, mode, a, b);
     }
@@ -3173,7 +3190,7 @@ void __stdcall Key_Lookup_Hit(const DWORD* regs)
 
 /*
 **	Installs the carrier's hooks, every site checked before any is written; a launch call that
-**	doesn't match is left alone.
+**	doesn't match is left alone, and the result counts the ones redirected.
 */
 const char* Carrier_Install(void)
 {
@@ -3201,12 +3218,17 @@ const char* Carrier_Install(void)
             SET_TEXTURE, texture_stock, sizeof(texture_stock), SET_TEXTURE_CAVE, (SIZE_T)&Set_Texture_Hit)) {
         return "carrier: write failed";
     }
-    for (size_t i = 0; i < sizeof(OTHER_LAUNCH_CALLS) / sizeof(OTHER_LAUNCH_CALLS[0]); i++) {
-        if (TF_Call_Ready(OTHER_LAUNCH_CALLS[i], LAUNCH_SEND)) {
-            TF_Redirect_Call(OTHER_LAUNCH_CALLS[i], (SIZE_T)&Launch_Send);
+    const int sites = sizeof(OTHER_LAUNCH_CALLS) / sizeof(OTHER_LAUNCH_CALLS[0]);
+    int redirected = 0;
+    for (int i = 0; i < sites; i++) {
+        if (TF_Call_Ready(OTHER_LAUNCH_CALLS[i], LAUNCH_SEND)
+            && TF_Redirect_Call(OTHER_LAUNCH_CALLS[i], (SIZE_T)&Launch_Send)) {
+            redirected++;
         }
     }
-    return "carrier installed";
+    static char result[48];
+    snprintf(result, sizeof(result), "carrier installed, %d of %d launch sites", redirected + 1, sites + 1);
+    return result;
 }
 
 } // namespace
@@ -3241,10 +3263,14 @@ const char* TF_Launcher_Install(void)
     return result;
 }
 
-bool TF_Launcher_Take_Carrier_Map(char* map, size_t size)
+bool TF_Launcher_Take_Carrier_Map(char* map, size_t size, const char* launched_map, bool campaign)
 {
+    bool carrier = launched_map != NULL && _stricmp(launched_map, HASTINGS_MAP) == 0;
+#if TF_DEV_BUILD
+    carrier = carrier || (campaign && (launched_map == NULL || launched_map[0] == 0));
+#endif
     char handoff[MAX_PATH];
-    if (!Handoff_Path(handoff, sizeof(handoff))) {
+    if (!carrier || !Handoff_Path(handoff, sizeof(handoff))) {
         return false;
     }
     WIN32_FILE_ATTRIBUTE_DATA info;

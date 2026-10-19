@@ -1681,7 +1681,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
 
     // TF: a carrier launch's own map, taken below
     char carrier_map[_MAX_FNAME + _MAX_EXT];
-    if (TF_Launcher_Take_Carrier_Map(carrier_map, sizeof(carrier_map))) {
+    if (TF_Launcher_Take_Carrier_Map(
+            carrier_map, sizeof(carrier_map), override_map_name, GAME_TO_PLAY == GAME_NORMAL)) {
         // TF: a carrier launch names the mod map, ahead of the carrier instance's own map file
         strcpy(Scen.ScenarioName, carrier_map);
     } else if (override_map_name && strlen(override_map_name)) {

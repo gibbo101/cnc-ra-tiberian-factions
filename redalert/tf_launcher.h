@@ -45,9 +45,9 @@ bool TF_Redirect_Call(SIZE_T site, SIZE_T hook);
 const char* TF_Launcher_Install(void);
 
 /*
-**	Takes the map a carrier launch asked for (written by the launcher side, under a minute old);
-**	false when there is none. Consumes the request.
+**	Takes, and consumes, the map a carrier launch asked for (under a minute old) when this launch is
+**	a carrier's, named by its instance map and game type; false otherwise.
 */
-bool TF_Launcher_Take_Carrier_Map(char* map, size_t size);
+bool TF_Launcher_Take_Carrier_Map(char* map, size_t size, const char* launched_map, bool campaign);
 
 #endif
