@@ -5004,7 +5004,6 @@ Red Alert Afterrmath
 		<LocationNameTextID> TEXT_NAME_MP_4_RIVER_RAID </LocationNameTextID>
 		<LocationDescriptionTextID network="client"> TEXT_NAME_MP_4_RIVER_RAID </LocationDescriptionTextID>
 		<Mission>904</Mission>
-		<ExternalGameID>TiberianDawn</ExternalGameID>
 		
 		<JSONDataText> { 
 			"cnc_climate_text_id" : "TEXT_CNC_CLIMATE_TEMPERATE", 

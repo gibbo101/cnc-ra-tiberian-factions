@@ -71,9 +71,9 @@ def fetch(stem, folder, work):
 
 
 def entry(number, td_body):
-    """An RA list entry from TD's: its text, players, size and ambience, with RA's music."""
+    """An RA list entry from TD's: its text, players, size and ambience, with RA's music and RA's game."""
     body = re.sub(r"<Mission>\d+</Mission>", "<Mission>%d</Mission>" % number, td_body)
-    body = re.sub(r"\s*<OverrideMapName>[^<]*</OverrideMapName>", "", body).replace("MUS_TD_", "MUS_RA_")
+    body = re.sub(r"\s*<(OverrideMapName|ExternalGameID)>[^<]*</\1>", "", body).replace("MUS_TD_", "MUS_RA_")
     return ('\t<Instance Name="Mobius_Red_Alert_Multiplayer_%d_Map" Variant="Mobius_Red_Alert_Multiplayer_Base">'
             "%s</Instance>\n" % (number, body))
 
