@@ -7956,36 +7956,18 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                     sidebar_entry.PlacementListLength = 0;
 
                     // TF: the launcher has no text channel to a cameo, so the bay's cooldown and the unit caps swap in
-                    // the locked art (_LK) by key.
-                    if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
-                        && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech)
-                        && PlayerPtr->TFDropBayTimer != 0) {
-                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                 "%s_LK", tech->IniName);
+                    // the locked art (_LK) by key. An order already in production is never locked.
+                    if (tech != NULL && factory == NULL
+                        && TF_Delivery_Order_Refused(PlayerPtr,
+                                                     Map.Column[c].Buildables[b].BuildableType,
+                                                     Map.Column[c].Buildables[b].BuildableID)) {
+                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName), "%s_LK", tech->IniName);
                     }
 
-                    if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
-                        && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC && TF_Mk2_At_Cap(PlayerPtr)) {
-                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                 "%s_LK", tech->IniName);
-                    }
-
-                    if (tech != NULL && sidebar_entry.Type == INFANTRY_TYPE
-                        && ((InfantryTypeClass const*)tech)->Type == INFANTRY_TSGHOST && TF_Ghost_At_Cap(PlayerPtr)) {
-                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                 "%s_LK", tech->IniName);
-                    }
-
-                    if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
-                        && ((UnitTypeClass const*)tech)->Type == UNIT_TSMWAR && TF_Mwar_At_Cap(PlayerPtr)) {
-                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                 "%s_LK", tech->IniName);
-                    }
-
-                    if (tech != NULL && sidebar_entry.Type == BUILDING_TYPE
-                        && ((BuildingTypeClass const*)tech)->Type == STRUCT_TSPLUG && TF_Plug_At_Cap(PlayerPtr)) {
-                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                 "%s_LK", tech->IniName);
+                    // TF: a reloading bay's units show the time left to reload as their build time.
+                    if (tech != NULL && factory == NULL && sidebar_entry.Type == UNIT_TYPE
+                        && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech) && PlayerPtr->TFDropBayTimer != 0) {
+                        sidebar_entry.BuildTime = (int)PlayerPtr->TFDropBayTimer;
                     }
 
                     if (factory) {
@@ -8175,35 +8157,16 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                         sidebar_entry.PlacementListLength = 0;
 
                         // TF: the locked cameo keys, as on the single-player path.
-                        if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
-                            && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech)
-                            && PlayerPtr->TFDropBayTimer != 0) {
-                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                     "%s_LK", tech->IniName);
+                        if (tech != NULL && factory == NULL
+                            && TF_Delivery_Order_Refused(PlayerPtr,
+                                                         context_sidebar->Column[c].Buildables[b].BuildableType,
+                                                         context_sidebar->Column[c].Buildables[b].BuildableID)) {
+                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName), "%s_LK", tech->IniName);
                         }
 
-                        if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
-                            && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC && TF_Mk2_At_Cap(PlayerPtr)) {
-                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                     "%s_LK", tech->IniName);
-                        }
-
-                        if (tech != NULL && sidebar_entry.Type == INFANTRY_TYPE
-                            && ((InfantryTypeClass const*)tech)->Type == INFANTRY_TSGHOST && TF_Ghost_At_Cap(PlayerPtr)) {
-                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                     "%s_LK", tech->IniName);
-                        }
-
-                        if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
-                            && ((UnitTypeClass const*)tech)->Type == UNIT_TSMWAR && TF_Mwar_At_Cap(PlayerPtr)) {
-                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                     "%s_LK", tech->IniName);
-                        }
-
-                        if (tech != NULL && sidebar_entry.Type == BUILDING_TYPE
-                            && ((BuildingTypeClass const*)tech)->Type == STRUCT_TSPLUG && TF_Plug_At_Cap(PlayerPtr)) {
-                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                     "%s_LK", tech->IniName);
+                        if (tech != NULL && factory == NULL && sidebar_entry.Type == UNIT_TYPE
+                            && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech) && PlayerPtr->TFDropBayTimer != 0) {
+                            sidebar_entry.BuildTime = (int)PlayerPtr->TFDropBayTimer;
                         }
 
                         if (factory) {
