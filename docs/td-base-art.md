@@ -119,8 +119,10 @@ variant, whatever its name; a TD entry set to Red Alert is not listed. New entri
 RA's own (`Mobius_Red_Alert_Multiplayer_<n>_Map`). One needs its text, a `Mission` number, a
 `CNCMAPPREVIEWDATA.XML` entry on RA's 128-cell grid with one waypoint per player, and a thumbnail
 named after the entry (`MOBIUS_RED_ALERT_MULTIPLAYER_<n>_MAP.DDS`); `PreviewLoadingTextureName` on
-the entry sets neither the lobby's thumbnail nor the loading screen's. Loose copies of both XMLs
-override CONFIG.MEG's.
+the entry sets neither the lobby's thumbnail nor the loading screen's. For the mod's TD entries the
+carrier's hook on ClientG's set-texture call (`0xF604C0`) asks for the base game's own thumbnail
+instead: TD map *n*'s for 9*nn*, TD community map *k*'s for 979+*k*, Hastings' D6 for 999, so no
+thumbnail ships. Loose copies of both XMLs override CONFIG.MEG's.
 
 InstanceServerG builds its instance list from the base `Instances.xml` before the DLL loads, so a
 new entry launches through the carrier (`tf_launcher.cpp`): ClientG sends any entry from 900 up under
@@ -151,7 +153,6 @@ memory at the menu is unchanged; a TD map in the match costs what any TD-terrain
    (`official-map-hybrids.md`), the transcoder and the parked maps move their blossom trees from
    `[STRUCTURES]` to `[TERRAIN]`; their Tiberium stays `TIB01`. Its own commit: it touches
    `bdata.cpp`.
-4. **The map list.** TD's 34 skirmish maps are in RA's official list (`td_official_maps.py`);
-   their thumbnails are TD's, which the lobby looks up under the RA entry's name, and the mod's
-   own maps go beside them.
+4. **The map list.** Done for TD's 34 skirmish maps (`td_official_maps.py`), thumbnails
+   included. The mod's own maps go beside them, numbered below 900 with a thumbnail of their own.
 

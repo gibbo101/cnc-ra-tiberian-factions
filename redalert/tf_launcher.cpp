@@ -2966,25 +2966,35 @@ void Carrier_Name(InstanceNameView& view, char* text, size_t length, DWORD key)
 
 /*
 **	The number of an official-list entry the mod adds (MOBIUS_RED_ALERT_MULTIPLAYER_<n>_MAP, n from
-**	900 to 999), or 0 for any other name, RA's own maps included.
+**	900 to 999) that `text` starts with, with `rest` after it; 0 for any other name, RA's own included.
 */
-int Mod_Map_Number(const MsvcString* name)
+int Mod_Map_Number(const char* text, const char** rest)
 {
     static const char prefix[] = "MOBIUS_RED_ALERT_MULTIPLAYER_";
-    if (IsBadReadPtr(name, sizeof(*name)) || name->size >= 128) {
-        return 0;
-    }
-    const char* text = TF_String_Chars(name);
     if (_strnicmp(text, prefix, sizeof(prefix) - 1) != 0) {
         return 0;
     }
     const char* digits = text + sizeof(prefix) - 1;
     if (!isdigit((unsigned char)digits[0]) || !isdigit((unsigned char)digits[1])
-        || !isdigit((unsigned char)digits[2]) || _stricmp(digits + 3, "_MAP") != 0) {
+        || !isdigit((unsigned char)digits[2]) || _strnicmp(digits + 3, "_MAP", 4) != 0) {
         return 0;
     }
     int number = atoi(digits);
+    *rest = digits + 7;
     return number >= 900 ? number : 0;
+}
+
+/*
+**	Mod_Map_Number for a whole launch name.
+*/
+int Mod_Map_Number(const MsvcString* name)
+{
+    if (IsBadReadPtr(name, sizeof(*name)) || name->size >= 128) {
+        return 0;
+    }
+    const char* rest = NULL;
+    int number = Mod_Map_Number(TF_String_Chars(name), &rest);
+    return (number != 0 && *rest == 0) ? number : 0;
 }
 
 /*
@@ -3006,6 +3016,40 @@ char Skirmish_Carrier_Send(void* ipc, const MsvcString* name, int number, void* 
     SkirmishCarrierKey = skirmish.key;
     SkirmishLaunchedKey = Name_Key(TF_String_Chars(name));
     return ((LaunchSendFn)LAUNCH_SEND)(ipc, &skirmish, settings, mode, a, b);
+}
+
+/*
+**	At the GUI's set-texture call: a mod entry's thumbnail is the base game's own, TD map n's for
+**	entry 9nn, TD community map k's for 979+k, Hastings' D6 for 999.
+*/
+const SIZE_T SET_TEXTURE = 0xF604C0;
+const SIZE_T SET_TEXTURE_CAVE = 0x1BE96C0;
+
+void __stdcall Set_Texture_Hit(const DWORD* regs)
+{
+    static MsvcString swapped = {};
+    static char text[96];
+    MsvcString** arg = (MsvcString**)(regs[3] + 8);
+    const MsvcString* name = *arg;
+    if (IsBadReadPtr(name, sizeof(*name)) || name->size >= 64) {
+        return;
+    }
+    const char* rest = NULL;
+    int number = Mod_Map_Number(TF_String_Chars(name), &rest);
+    if (number == 0) {
+        return;
+    }
+    if (number == 999) {
+        snprintf(text, sizeof(text), "MOBIUS_RED_ALERT_MULTIPLAYER_D6_MAP%s", rest);
+    } else if (number >= 980 && number <= 986) {
+        snprintf(text, sizeof(text), "MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_COMMUNITY_%d_MAP%s", number - 979, rest);
+    } else {
+        snprintf(text, sizeof(text), "MOBIUS_TIBERIAN_DAWN_MULTIPLAYER_%d_MAP%s", number - 900, rest);
+    }
+    InstanceNameView view = {};
+    Carrier_Name(view, text, strlen(text), 0);
+    swapped = view.name;
+    *arg = &swapped;
 }
 
 #if TF_DEV_BUILD
@@ -3134,8 +3178,10 @@ void __stdcall Key_Lookup_Hit(const DWORD* regs)
 const char* Carrier_Install(void)
 {
     static const unsigned char lookup_stock[6] = {0x55, 0x8B, 0xEC, 0x56, 0x8B, 0xF1};
+    static const unsigned char texture_stock[10] = {0x55, 0x8B, 0xEC, 0x80, 0x3D, 0x68, 0x84, 0xFE, 0x01, 0x00};
     if (!TF_Call_Ready(LAUNCH_SEND_CALL, LAUNCH_SEND)
-        || !Snapshot_Ready(KEY_LOOKUP, lookup_stock, sizeof(lookup_stock), KEY_LOOKUP_CAVE)) {
+        || !Snapshot_Ready(KEY_LOOKUP, lookup_stock, sizeof(lookup_stock), KEY_LOOKUP_CAVE)
+        || !Snapshot_Ready(SET_TEXTURE, texture_stock, sizeof(texture_stock), SET_TEXTURE_CAVE)) {
         return "carrier: unknown launcher build, left alone";
     }
 #if TF_DEV_BUILD
@@ -3150,7 +3196,9 @@ const char* Carrier_Install(void)
     }
 #endif
     if (!TF_Redirect_Call(LAUNCH_SEND_CALL, (SIZE_T)&Launch_Send)
-        || !Snapshot_Hook(KEY_LOOKUP, lookup_stock, sizeof(lookup_stock), KEY_LOOKUP_CAVE, (SIZE_T)&Key_Lookup_Hit)) {
+        || !Snapshot_Hook(KEY_LOOKUP, lookup_stock, sizeof(lookup_stock), KEY_LOOKUP_CAVE, (SIZE_T)&Key_Lookup_Hit)
+        || !Snapshot_Hook(
+            SET_TEXTURE, texture_stock, sizeof(texture_stock), SET_TEXTURE_CAVE, (SIZE_T)&Set_Texture_Hit)) {
         return "carrier: write failed";
     }
     for (size_t i = 0; i < sizeof(OTHER_LAUNCH_CALLS) / sizeof(OTHER_LAUNCH_CALLS[0]); i++) {
