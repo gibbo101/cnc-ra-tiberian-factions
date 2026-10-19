@@ -46,9 +46,6 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 - **C&C3 pack README's C3PRED turret seats:** a modder drawing the turret from the README's table finds the
   Predator close but not exact (the Hover MLRS seats are right). Compare its draw with ours in play and refine
   `_c3pred_seat_px` (`c3tanks.h`); C3MK3 not yet tried by them.
-- **TD asset-pack items don't draw in Tiberian Dawn** (`known-issues.md`): find why, then publish TS-HD-Assets-TD
-  (item 3819642832, Private; `asset_packs.WORKSHOP` hosts it RA-only until then) and recheck the public RA2 and C&C3
-  TD items.
 - **Save compatibility, before campaigns ship.** Flag saves that need the TS-HD-Assets pack when it is missing,
   and autosave at every campaign mission start, so a layout-changing update costs at most the mission in
   progress. A reorder of equal length still passes the save version. Campaigns wait for a stable roster.

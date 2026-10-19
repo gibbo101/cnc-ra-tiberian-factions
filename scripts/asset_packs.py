@@ -59,7 +59,7 @@ WORKSHOP = {
     "TS-HD-Assets": {
         "packs": ("TS-HD-Graphics-Pack", "TS-SFX-Pack", "TS-EVA-eng", "TS-Voices-eng"),
         "required": True, "marker": "TSHDPACK.INI", "xml_id": "TSHDAssets", "version": (1, 0), "game": "TS",
-        "prefix": "TS", "hosts": ("RA",), "workshop_ids": {"RA": "3819642604", "TD": "3819642832"},
+        "prefix": "TS", "hosts": ("RA", "TD"), "workshop_ids": {"RA": "3819642604", "TD": "3819642832"},
         "name": "Tiberian Sun HD Assets",
         "description": "Tiberian Sun units, buildings, effects, sounds and EVA for {host}, in HD.",
         "contents": ["**GDI infantry:** Light Infantry (TSE1), Disc Thrower (TSE2), Engineer (TSENGINEER), Medic "
@@ -121,13 +121,14 @@ REQUIRED = [mod for mod, w in WORKSHOP.items() if w["required"]]
 # whose content it plays when they are enabled.
 USED = [mod for mod, w in WORKSHOP.items() if w["required"] or w.get("used")]
 
-# The game a Workshop item is for: its ccmod game_type and art folder under ART/TEXTURES/SRGB, the prefix of its
-# launcher XML and buildable names, and its terrain theatres by RA theatre. A game reads art only from its own folder.
+# The game a Workshop item is for: its game_type, its own art folder (the only one it reads), its XML and buildable
+# prefix, its terrain theatres by RA theatre, and whether terrain must be loose files (TD's never reads a ZIP).
 HOSTS = {
     "RA": {"name": "Red Alert", "art": "RED_ALERT", "root": "Red_Alert", "prefix": "RA", "buildables": "RABUILDABLES",
-           "theatres": {"TEMPERATE": "TEMPERATE", "SNOW": "SNOW", "INTERIOR": "INTERIOR"}},
+           "theatres": {"TEMPERATE": "TEMPERATE", "SNOW": "SNOW", "INTERIOR": "INTERIOR"}, "loose_terrain": False},
     "TD": {"name": "Tiberian Dawn", "art": "TIBERIAN_DAWN", "root": "Tiberian_Dawn", "prefix": "TD",
-           "buildables": "CNCBUILDABLES", "theatres": {"TEMPERATE": "TEMPERATE", "SNOW": "WINTER"}},
+           "buildables": "CNCBUILDABLES", "theatres": {"TEMPERATE": "TEMPERATE", "SNOW": "WINTER"},
+           "loose_terrain": True},
 }
 
 

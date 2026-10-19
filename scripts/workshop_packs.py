@@ -5,10 +5,11 @@ Usage:  workshop_packs.py <out dir> [item ...]   (every Workshop item when none 
 
 Each item is a data-only mod for one game (asset_packs.items: Red Alert, or Tiberian Dawn as <mod>-TD):
 ccmod.json, README.md, every file of its source packs under Data/ART and Data/AUDIO (a later pack's copy
-of a path wins; a TD item's art moves to TD's own folder), and its XML: one file per launcher XML, the
-source packs' entries together, complete on their own (no ZIP shared with another mod), in that game's
-names and texture roots; a DLL mod copies the entries into its own XML. A pack Tiberian Factions requires
-also carries its marker in CCDATA, which the mod's DLL reads to know the pack is enabled.
+of a path wins; a TD item's art moves to TD's own folder, its terrain ZIPs unpacked into loose folders), and
+its XML: one file per launcher XML, the source packs' entries together, complete on their own (no ZIP shared
+with another mod), in that game's names and texture roots; a DLL mod copies the entries into its own XML. A
+pack Tiberian Factions requires also carries its marker in CCDATA, which the mod's DLL reads to know the pack
+is enabled.
 
 scripts/stage_asset_packs.py builds the required packs beside the staged mod the same way.
 
@@ -68,9 +69,33 @@ def host_path(rel, host):
     return os.path.join("TEXTURES", "SRGB", h["art"], *parts[3:])
 
 
+def unzip_loose(src, folder):
+    """Each file of the ZIP src in folder, written when its bytes differ, with src's mtime; returns the paths."""
+    st = os.stat(src)
+    paths = []
+    with zipfile.ZipFile(src) as z:
+        for name in z.namelist():
+            if name.endswith("/"):
+                continue
+            dst = os.path.join(folder, *name.split("/"))
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            data = z.read(name)
+            if os.path.exists(dst):
+                with open(dst, "rb") as fh:
+                    same = fh.read() == data
+            else:
+                same = False
+            if not same:
+                with open(dst, "wb") as fh:
+                    fh.write(data)
+                os.utime(dst, ns=(st.st_atime_ns, st.st_mtime_ns))
+            paths.append(dst)
+    return paths
+
+
 def copy_binaries(mod, folder, host):
     """Every file under the mod's source packs' Data/ART and Data/AUDIO, and no other; a later pack's copy of a
-    path wins."""
+    path wins. A host with loose terrain gets each terrain ZIP as a folder of its files."""
     packs = A.WORKSHOP[mod]["packs"]
     wanted = set()
     for i, pack in enumerate(packs):
@@ -87,14 +112,20 @@ def copy_binaries(mod, folder, host):
                     if target is None:
                         continue
                     dst = os.path.join(folder, "Data", sub, target)
+                    if sub == "ART" and A.HOSTS[host]["loose_terrain"] and is_terrain_zip(target):
+                        wanted.update(os.path.normcase(p) for p in unzip_loose(os.path.join(d, f), dst[:-4]))
+                        continue
                     os.makedirs(os.path.dirname(dst), exist_ok=True)
                     A.copy_newer(os.path.join(d, f), dst)
                     wanted.add(os.path.normcase(dst))
     for sub in ("ART", "AUDIO"):
-        for d, _, fs in os.walk(os.path.join(folder, "Data", sub)):
-            for f in fs:
-                if os.path.normcase(os.path.join(d, f)) not in wanted:
-                    os.remove(os.path.join(d, f))
+        prune(folder, os.path.join("Data", sub), wanted)
+
+
+def is_terrain_zip(rel):
+    """Whether a path under Data/ART is a terrain tileset's ZIP."""
+    parts = rel.upper().split(os.sep)
+    return len(parts) > 4 and parts[3] == "TERRAIN" and parts[-1].endswith(".ZIP")
 
 
 def combined_xml(mod, rel, pack_file, root):
@@ -269,7 +300,9 @@ def readme(mod, listed, host):
               "Some stock tiles are animated: they hold several `<Frame>`s and an `<AnimationData>` FPS"
               + (" (the Red Alert Heavy Tank and Mammoth Tank turrets have 8 frames at 5 FPS)" if host == "RA" else "")
               + ". When you point an existing tile at this pack's art, replace its whole `<Frames>` list and remove its "
-              f"`<AnimationData>`, or you'll see the {host} frames constantly switch with yours.", ""]
+              f"`<AnimationData>`, or you'll see the {host} frames constantly switch with yours. Copy the pack "
+              "object's own tiles as well: the game opens an object's art only when a tile with the object's own "
+              "name is loaded.", ""]
     if w["game"] == "TS":
         lines += ["Most units use the stock layout: one frame per facing, then a turret block where they have one. "
                   "Walkers, units with rolling treads, and buildings with doors, docks or add-ons "
@@ -337,9 +370,10 @@ def layout(mod):
     lines = ["## Frame layout", "",
              "C3MK3, C3PRED, C3MK3RAIL and C3PREDRAIL: frames 0-95 are the hull, 32 facings counter-clockwise from "
              "north with 3 tread steps each (frame = 3 x facing + step; step the treads while the tank drives), "
-             "and 96-127 the turret, 32 facings. The turret frames are centred on the canvas: draw the turret over "
-             "the hull moved by its seat for the hull's facing, in classic pixels (x east, y south), for hull facings "
-             "0-31 counter-clockwise from north:",
+             "and 96-127 the turret, 32 facings. The turret frames are centred on the canvas and look right drawn "
+             "centred on the hull. Optional, for a mod with its own DLL: the turret's exact seat per hull facing, "
+             "within 3 classic pixels (x east, y south), clockwise from north as EA's turret tables run, so index "
+             "it with `Dir_To_32(PrimaryFacing)`:",
              ""]
     text = open(C3_SEATS, encoding="utf-8").read()
     for tank in ("C3MK3", "C3PRED"):
@@ -444,16 +478,22 @@ def build(mod, folder, host="RA", strict=True):
 
 
 def check(folder, host):
-    """Stop if a tile's frame has no file in the item, or a ZIP has no tile of its own name to open it."""
+    """Stop if a tile's frame has no file in the item, a ZIP has no tile of its own name to open it, or a host
+    with loose terrain has a terrain ZIP."""
     art = os.path.join(folder, "Data", "ART", "TEXTURES", "SRGB", A.HOSTS[host]["art"])
-    zips = {}
+    zips, loose, problems = {}, {}, []
     for d, _, fs in os.walk(art):
         for f in fs:
+            rel = os.path.relpath(os.path.join(d, f), art).replace(os.sep, "\\").upper()
             if f.upper().endswith(".ZIP"):
-                rel = os.path.relpath(os.path.join(d, f), art).replace(os.sep, "\\").upper()
                 with zipfile.ZipFile(os.path.join(d, f)) as z:
                     zips[rel[:-4]] = {n.upper() for n in z.namelist()}
-    named, problems = set(), []
+                if A.HOSTS[host]["loose_terrain"] and rel.startswith("TERRAIN\\"):
+                    problems.append(f"{rel}: {A.HOSTS[host]['name']} reads terrain only from loose files")
+            else:
+                folder_key, _, name = rel.rpartition("\\")
+                loose.setdefault(folder_key, set()).add(name)
+    named = set()
     tilesets = os.path.join(folder, "Data", "XML", "TILESETS")
     for f in sorted(os.listdir(tilesets)) if os.path.isdir(tilesets) else []:
         text = open(os.path.join(tilesets, f), encoding="utf-8-sig").read()
@@ -469,8 +509,9 @@ def check(folder, host):
             named.add(f"{folder_key}\\{name.upper()}")
             for frame in re.findall(r"<Frame>([^<]+)</Frame>", frames):
                 z, _, tga = frame.upper().partition("\\")
-                if tga not in zips.get(f"{folder_key}\\{z}", ()):
-                    problems.append(f"{f}: {name} frame {frame} is not in {folder_key}\\{z}.ZIP")
+                where = f"{folder_key}\\{z}"
+                if tga not in zips.get(where, ()) and tga not in loose.get(where, ()):
+                    problems.append(f"{f}: {name} frame {frame} is not in {where}.ZIP or {where}\\")
     problems += [f"{z}.ZIP has no tile named {z.rsplit(chr(92), 1)[1]}, so the game never opens it"
                  for z in zips if z not in named]
     if problems:

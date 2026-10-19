@@ -32,7 +32,7 @@ Original Tiberian Sun assets: Electronic Arts. Prepared for Remastered by gibbo1
 - **Tiberian Factions** adds GDI and Nod as playable factions to Red Alert Remastered: [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3729834253), [ModDB](https://www.moddb.com/mods/tiberian-factions-for-red-alert), [GitHub](https://github.com/gibbo101/cnc-ra-tiberian-factions)
 - **Red Alert 2 HD Assets**: Red Alert 2 units, sounds and voices for Red Alert and Tiberian Dawn, in HD. [Steam Workshop, Red Alert](https://steamcommunity.com/sharedfiles/filedetails/?id=3819308290), [Steam Workshop, Tiberian Dawn](https://steamcommunity.com/sharedfiles/filedetails/?id=3819308459)
 - **C&C3 Tiberium Wars Assets**: Command & Conquer 3 units, effects, sounds and voices for Red Alert and Tiberian Dawn, in HD. [Steam Workshop, Red Alert](https://steamcommunity.com/sharedfiles/filedetails/?id=3819308545), [Steam Workshop, Tiberian Dawn](https://steamcommunity.com/sharedfiles/filedetails/?id=3819308668)
-- **Tiberian Sun Music**: Tiberian Sun and Firestorm's soundtrack for Red Alert.
+- **Tiberian Sun Music**: Tiberian Sun and Firestorm's soundtrack for Red Alert. [Steam Workshop, Red Alert](https://steamcommunity.com/sharedfiles/filedetails/?id=3822605221)
 - **OpenTS Pad** ports the OpenTS rebuild of Tiberian Sun to Linux and the Steam Deck, with controller play: [GitHub](https://github.com/gibbo101/opents-pad)
 - **Renegade Pad** brings controller play to C&C Renegade (an OpenW3D fork, built for the Steam Deck): [GitHub](https://github.com/gibbo101/renegade-pad)
 - **C&C Map Editor** is a Linux-native, mod-aware map editor for C&C Remastered (Red Alert and Tiberian Dawn): [GitHub](https://github.com/gibbo101/cnc-map-editor)
