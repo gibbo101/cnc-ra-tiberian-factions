@@ -8,6 +8,16 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
 - Concrete Wall costs 100 in skirmish and LAN, as in the campaigns (was 50).
 - Tiberian Sun GDI builds no sandbags, as in Tiberian Sun: its Concrete Wall, gates and component towers come with the Barracks.
 
+### Fixed
+- A paused Mammoth Mk. II, Ghost Stalker or Mobile War Factory resumes when you click it again.
+- The Dropship Bay's units show the time left on its reload.
+- Placing a turret on a component tower repairs the tower to full, as in Firestorm.
+- Turrets stay on the sidebar after the last bare component tower is armed, with no "new construction options".
+- A deployed Juggernaut ordered onto a target it can't hit stays put instead of wandering off.
+- H takes you to your Construction Yard again.
+- Another enabled mod's rules.ini no longer breaks Tiberian Factions.
+- Smoother play on large maps.
+
 ## [5.5.0] — 2026-10-14
 
 A Tiberian Sun rises in high definition! GDI's arsenal from the future came
