@@ -13,9 +13,10 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import dds_dxt5  # noqa: E402
+import steam_library  # noqa: E402
 
 SIZE = (344, 256)  # the 341x256 cameo on DXT's 4-pixel blocks; the sidebar quad stretches it
-TEXTURES = os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered/Data/TEXTURES_SRGB.MEG")
+TEXTURES = str(steam_library.path("common/CnCRemastered/Data/TEXTURES_SRGB.MEG"))
 _atlas_names = None
 
 

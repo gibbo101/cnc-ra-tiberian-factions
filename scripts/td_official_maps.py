@@ -20,10 +20,11 @@ import tempfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import td_map_to_ra  # noqa: E402
 from meg_extract import read_member  # noqa: E402
+import steam_library  # noqa: E402
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MOD = os.path.join(REPO, "resources/remaster_mods/Vanilla_RA")
-GAME = os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered/Data")
+GAME = str(steam_library.path("common/CnCRemastered/Data"))
 TD_DATA = os.path.join(GAME, "CNCDATA/TIBERIAN_DAWN")
 CONFIG = os.path.join(GAME, "CONFIG.MEG")
 CARRIER = "Mobius_Red_Alert_Multiplayer_D6_Map"

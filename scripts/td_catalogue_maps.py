@@ -15,8 +15,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from meg_extract import read_member  # noqa: E402
 from td_map_to_ra import EDITOR_SRC, OVERLAY_NONE, RA_CELLS, RA_TEMPLATE_NONE, parse_templates  # noqa: E402
 from td_map_to_ra import ra_cell, write_triplet  # noqa: E402
+import steam_library  # noqa: E402
 
-CONFIG = os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered/Data/CONFIG.MEG")
+CONFIG = str(steam_library.path("common/CnCRemastered/Data/CONFIG.MEG"))
 TILE_MAP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "td_ra_tile_map.json")
 # map theatre -> (tileset, the editor's RA theatre or the tile map's TD key, launcher label)
 THEATRES = {"temperate": ("RA_TERRAIN_TEMPERATE", "Temperate", "TEMPERATE"),

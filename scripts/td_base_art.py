@@ -19,9 +19,10 @@ import zipfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import asset_packs as A  # noqa: E402
 from meg_extract import member_index  # noqa: E402
+import steam_library  # noqa: E402
 
-TD_MEG = os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered/Data/TEXTURES_TD_SRGB.MEG")
-RA_MEG = os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered/Data/TEXTURES_RA_SRGB.MEG")
+TD_MEG = str(steam_library.path("common/CnCRemastered/Data/TEXTURES_TD_SRGB.MEG"))
+RA_MEG = str(steam_library.path("common/CnCRemastered/Data/TEXTURES_RA_SRGB.MEG"))
 CATEGORY = {"UNITS": "Units", "STRUCTURES": "Structures", "VFX": "VFX"}
 HOST = os.path.join("XML", "TILESETS", "RA_VFX.XML")
 TILE = re.compile(r"[ \t]*<Tile>\s*<Key>\s*<Name>([^<]+)</Name>.*?</Tile>[ \t]*\r?\n", re.S)

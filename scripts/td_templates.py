@@ -23,9 +23,10 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from meg_extract import read_member  # noqa: E402
 from td_map_to_ra import EDITOR_SRC, parse_templates  # noqa: E402
+import steam_library  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
-TD_CD1 = Path.home() / ".steam/steam/steamapps/common/CnCRemastered/Data/CNCDATA/TIBERIAN_DAWN/CD1"
+TD_CD1 = steam_library.path("common/CnCRemastered/Data/CNCDATA/TIBERIAN_DAWN/CD1")
 DEFINES_H = REPO / "redalert/defines.h"
 CDATA_CPP = REPO / "redalert/cdata.cpp"
 MAPPER_JSON = REPO / "scripts/td_ra_tile_map.json"
@@ -90,7 +91,7 @@ def td_tem_to_ra(data, map_w, map_h, land, altland, alt_icons):
 # TD's source: the workspace's reference/ clone, beside the repo or above a worktree.
 TD_CDATA = next(p / "reference/vanilla-conquer/tiberiandawn/cdata.cpp" for p in (REPO.parent, REPO.parent.parent)
                 if (p / "reference/vanilla-conquer/tiberiandawn/cdata.cpp").exists())
-CONFIG = os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered/Data/CONFIG.MEG")
+CONFIG = str(steam_library.path("common/CnCRemastered/Data/CONFIG.MEG"))
 # TD theatre: (editor token, HD tileset, classic MIX, classic extension, staged suffix, DLL flag, map key)
 THEATRES = [("Desert", "TD_TERRAIN_DESERT", "DESERT.MIX", "des", "DES", "THEATERF_DESERT", "desert"),
             ("Temperate", "TD_TERRAIN_TEMPERATE", "TEMPERAT.MIX", "tem", "TEM", "THEATERF_TDTEMPERATE", "temperate"),
