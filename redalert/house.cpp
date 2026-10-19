@@ -3894,12 +3894,6 @@ ProdFailType HouseClass::Begin_Production(RTTIType type, int id)
 
     fptr = Fetch_Factory(type, bay);
 
-    // TF: capped orders and dropship bay reloads are refused here, where every player production order
-    // arrives, because Can_Build keeps offering their cameos rather than hiding them.
-    if (TF_Delivery_Order_Refused(this, type, id)) {
-        return (PROD_CANT);
-    }
-
     /*
     **	If the house is already busy producing the requested object, then
     **	return with this failure code, unless we are restarting production.
@@ -3909,6 +3903,11 @@ ProdFailType HouseClass::Begin_Production(RTTIType type, int id)
             return (PROD_CANT);
         }
     } else {
+        // TF: capped orders and dropship bay reloads are refused here, where every new player order arrives.
+        // A held order resumes unchecked: the caps count its own unit.
+        if (TF_Delivery_Order_Refused(this, type, id)) {
+            return (PROD_CANT);
+        }
         fptr = new FactoryClass();
         if (!fptr)
             return (PROD_CANT);
