@@ -10297,12 +10297,26 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
         };
         // The launcher keeps one overlay a cell, so each cell sends one apron tile: one inside its building's plot
         // beats one that overhangs it (the refinery's empty fifth column would blank a War Factory's west edge).
+        static long _checked_frame = -1;
+        static bool _any_apron = false;
+        if (_checked_frame != (long)Frame) {
+            _checked_frame = (long)Frame;
+            _any_apron = false;
+            for (int b = 0; b < Buildings.Count() && !_any_apron; b++) {
+                BuildingClass const* building = Buildings.Ptr(b);
+                for (int a = 0; a < (int)(sizeof(_aprons) / sizeof(_aprons[0])); a++) {
+                    if (building != NULL && building->IsActive && *building == _aprons[a].owner) {
+                        _any_apron = true;
+                    }
+                }
+            }
+        }
         int pick = -1;
         int pick_tx = 0;
         int pick_ty = 0;
         bool pick_inside = false;
         BuildingClass* pick_owner = NULL;
-        for (int a = 0; a < (int)(sizeof(_aprons) / sizeof(_aprons[0])); a++) {
+        for (int a = 0; _any_apron && a < (int)(sizeof(_aprons) / sizeof(_aprons[0])); a++) {
             const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(_aprons[a].apron);
             bool resolved = false;
             for (int ty = 0; ty < apron_type.Height && !resolved; ty++) {
