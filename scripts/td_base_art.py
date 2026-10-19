@@ -13,12 +13,12 @@ License: GPL v3.
 import io
 import os
 import re
-import struct
 import sys
 import zipfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import asset_packs as A  # noqa: E402
+from meg_extract import member_index  # noqa: E402
 
 TD_MEG = os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered/Data/TEXTURES_TD_SRGB.MEG")
 RA_MEG = os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered/Data/TEXTURES_RA_SRGB.MEG")
@@ -26,26 +26,6 @@ CATEGORY = {"UNITS": "Units", "STRUCTURES": "Structures", "VFX": "VFX"}
 HOST = os.path.join("XML", "TILESETS", "RA_VFX.XML")
 TILE = re.compile(r"[ \t]*<Tile>\s*<Key>\s*<Name>([^<]+)</Name>.*?</Tile>[ \t]*\r?\n", re.S)
 FRAME = re.compile(r"<Frame>\s*([^<\s]+)\\([^\\<\s]+)\s*</Frame>")
-
-
-def meg_index(meg):
-    """Upper-case member path -> (size, offset) for a MEG archive."""
-    with open(meg, "rb") as f:
-        head = f.read(8)
-        off = 8 if struct.unpack_from("<I", head, 0)[0] in (0xFFFFFFFF, 0x8FFFFFFF) else 0
-        f.seek(off + 4)
-        n_files, n_strings, strings_size = struct.unpack("<III", f.read(12))
-        table = f.read(strings_size + n_files * 20)
-    names, o = [], 0
-    for _ in range(n_strings):
-        length = struct.unpack_from("<H", table, o)[0]
-        names.append(table[o + 2:o + 2 + length].decode("latin-1"))
-        o += 2 + length
-    out = {}
-    for i in range(n_files):
-        _a, _b, _c, size, data_off, name = struct.unpack_from("<HIiIIH", table, strings_size + i * 20)
-        out[names[name].upper()] = (size, data_off)
-    return out
 
 
 def identities(z):
@@ -64,7 +44,7 @@ def base_frames():
     folder is the ZIP's path from the texture root (Tiberian_Dawn\\Units\\mtnk)."""
     prefix = "DATA\\ART\\TEXTURES\\SRGB\\TIBERIAN_DAWN\\"
     out = {}
-    index = meg_index(TD_MEG)
+    index = member_index(TD_MEG)
     with open(TD_MEG, "rb") as f:
         for path in sorted(index):
             parts = path[len(prefix):].split("\\") if path.startswith(prefix) else []
@@ -165,7 +145,7 @@ def reroute(texts, sources):
         kept.append(texts[rel][last:])
         out[rel] = "".join(kept)
 
-    ra_vfx = meg_index(RA_MEG)
+    ra_vfx = member_index(RA_MEG)
     loose = loose_folders()
     host = next(rel for rel in tilesets if os.path.basename(rel).upper() == "RA_VFX.XML")
     folders = {}
