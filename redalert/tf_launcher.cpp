@@ -3117,7 +3117,8 @@ const char* Carrier_Install(void)
     }
     int others = 0;
     for (size_t i = 0; i < sizeof(OTHER_LAUNCH_CALLS) / sizeof(OTHER_LAUNCH_CALLS[0]); i++) {
-        if (Call_Ready(OTHER_LAUNCH_CALLS[i], LAUNCH_SEND) && Redirect_Call(OTHER_LAUNCH_CALLS[i], (SIZE_T)&Launch_Send)) {
+        if (TF_Call_Ready(OTHER_LAUNCH_CALLS[i], LAUNCH_SEND)
+            && TF_Redirect_Call(OTHER_LAUNCH_CALLS[i], (SIZE_T)&Launch_Send)) {
             others++;
         }
     }
