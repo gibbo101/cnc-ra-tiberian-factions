@@ -3168,9 +3168,8 @@ char __fastcall Launch_Send(void* ipc, void*, const MsvcString* name, void* sett
 }
 
 /*
-**	At the instance lookup by key: the skirmish carrier's key reads as the entry launched through
-**	it, so the loading screen names that map; during a mission carrier session (dev builds) the
-**	carrier's key reads as the mod mission's, and the mission list keeps the real lookup.
+**	At the instance lookup by key: a carrier's key reads as the entry it launched, so the loading
+**	screen names that map, except where the mission list looks up the mission carrier (dev builds).
 */
 void __stdcall Key_Lookup_Hit(const DWORD* regs)
 {
