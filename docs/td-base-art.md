@@ -154,5 +154,7 @@ memory at the menu is unchanged; a TD map in the match costs what any TD-terrain
    `[STRUCTURES]` to `[TERRAIN]`; their Tiberium stays `TIB01`. Its own commit: it touches
    `bdata.cpp`.
 4. **The map list.** Done for TD's 34 skirmish maps (`td_official_maps.py`), thumbnails
-   included. The mod's own maps go beside them, numbered below 900 with a thumbnail of their own.
+   included. The mod's own maps go beside them through the same carrier, on numbers from 900 that
+   TD leaves free (911 to 949, for one), each with a thumbnail of its own that the set-texture hook
+   must then pass through.
 
