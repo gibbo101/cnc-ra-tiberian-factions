@@ -3032,7 +3032,6 @@ void Begin_Carrier_Launch(int number, const MsvcString* name)
         snprintf(map, sizeof(map), "TFTD%03d.INI", number);
     }
     Write_Handoff(map);
-    SkirmishCarrierKey = Name_Key(SkirmishCarrierText);
     CarrierEntryKey = Name_Key(TF_String_Chars(name));
 }
 
@@ -3074,7 +3073,6 @@ void __stdcall Set_Texture_Hit(const DWORD* regs)
     }
     char entry[48];
     snprintf(entry, sizeof(entry), "MOBIUS_RED_ALERT_MULTIPLAYER_%03d_MAP", number);
-    SkirmishCarrierKey = Name_Key(SkirmishCarrierText);
     CarrierEntryKey = Name_Key(entry);
     if (number == 999) {
         snprintf(text, sizeof(text), "MOBIUS_RED_ALERT_MULTIPLAYER_D6_MAP%s", rest);
@@ -3234,6 +3232,9 @@ const char* Carrier_Install(void)
 {
     static const unsigned char lookup_stock[6] = {0x55, 0x8B, 0xEC, 0x56, 0x8B, 0xF1};
     static const unsigned char texture_stock[10] = {0x55, 0x8B, 0xEC, 0x80, 0x3D, 0x68, 0x84, 0xFE, 0x01, 0x00};
+    // D6 must always resolve: a client told to load it that finds no entry stalls the whole match.
+    SkirmishCarrierKey = Name_Key(SkirmishCarrierText);
+    CarrierEntryKey = Name_Key("MOBIUS_RED_ALERT_MULTIPLAYER_999_MAP");
     if (!TF_Call_Ready(LAUNCH_SEND_CALL, LAUNCH_SEND)
         || !Snapshot_Ready(KEY_LOOKUP, lookup_stock, sizeof(lookup_stock), KEY_LOOKUP_CAVE)
         || !Snapshot_Ready(SET_TEXTURE, texture_stock, sizeof(texture_stock), SET_TEXTURE_CAVE)) {
