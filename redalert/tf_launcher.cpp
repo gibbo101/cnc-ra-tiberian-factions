@@ -2896,6 +2896,12 @@ const SIZE_T KEY_LOOKUP = 0x14FE820;
 const SIZE_T KEY_LOOKUP_CAVE = 0x1BE9380;
 const DWORD HANDOFF_MAX_AGE_MS = 60000;
 const char HASTINGS_MAP[] = "SCMD6EA.INI";
+// The IPC send of a launch message built outside Host_Game: LAN, and Steam matchmaking lobbies.
+const SIZE_T LOBBY_LAUNCH_CALLS[] = {0x7943EA, 0x5DCE18};
+const SIZE_T IPC_SEND = 0x5860A0;
+const SIZE_T STRING_ASSIGN = 0x565130;
+const DWORD LAUNCH_MESSAGE_VTABLE = 0x1C055A4;
+const SIZE_T LAUNCH_MESSAGE_NAME = 0x08;
 
 DWORD SkirmishCarrierKey = 0;
 DWORD SkirmishLaunchedKey = 0;
@@ -2910,6 +2916,8 @@ struct InstanceNameView
 };
 
 typedef char(__thiscall* LaunchSendFn)(void* ipc, const void* name, void* settings, int mode, int a, int b);
+typedef void(__thiscall* IpcSendFn)(void* ipc, void* message);
+typedef void*(__thiscall* StringAssignFn)(void* string, const char* text, size_t length);
 
 /*
 **	An instance's key as ClientG computes it: the CRC32 of the upper-case name.
@@ -3009,15 +3017,14 @@ int Mod_Map_Number(const MsvcString* name)
     return (number != 0 && *rest == 0) ? number : 0;
 }
 
+static char SkirmishCarrierText[] = "MOBIUS_RED_ALERT_MULTIPLAYER_D6_MAP";
+
 /*
-**	Launches a mod official-list entry as Hastings' D6, handing over its map: TFTD<n>.INI, or
-**	SCMD6EA.INI for Hastings' own entry (999).
+**	Readies a mod official-list entry's launch as Hastings' D6: hands its map over (TFTD<n>.INI, or
+**	SCMD6EA.INI for Hastings' own entry, 999) and has the D6 key read as the entry's.
 */
-char Skirmish_Carrier_Send(void* ipc, const MsvcString* name, int number, void* settings, int mode, int a, int b)
+void Begin_Carrier_Launch(int number, const MsvcString* name)
 {
-    static char skirmish_text[] = "MOBIUS_RED_ALERT_MULTIPLAYER_D6_MAP";
-    InstanceNameView skirmish = {};
-    Carrier_Name(skirmish, skirmish_text, sizeof(skirmish_text) - 1, Name_Key(skirmish_text));
     char map[16];
     if (number == 999) {
         strcpy(map, HASTINGS_MAP);
@@ -3025,8 +3032,18 @@ char Skirmish_Carrier_Send(void* ipc, const MsvcString* name, int number, void* 
         snprintf(map, sizeof(map), "TFTD%03d.INI", number);
     }
     Write_Handoff(map);
-    SkirmishCarrierKey = skirmish.key;
+    SkirmishCarrierKey = Name_Key(SkirmishCarrierText);
     SkirmishLaunchedKey = Name_Key(TF_String_Chars(name));
+}
+
+/*
+**	Launches a mod official-list entry from the skirmish screen under Hastings' D6 entry.
+*/
+char Skirmish_Carrier_Send(void* ipc, const MsvcString* name, int number, void* settings, int mode, int a, int b)
+{
+    InstanceNameView skirmish = {};
+    Carrier_Name(skirmish, SkirmishCarrierText, sizeof(SkirmishCarrierText) - 1, Name_Key(SkirmishCarrierText));
+    Begin_Carrier_Launch(number, name);
     char sent = ((LaunchSendFn)LAUNCH_SEND)(ipc, &skirmish, settings, mode, a, b);
     if (!sent) {
         Clear_Handoff();
@@ -3168,6 +3185,24 @@ char __fastcall Launch_Send(void* ipc, void*, const MsvcString* name, void* sett
 }
 
 /*
+**	Sends a lobby's IPC message; a launch naming a mod official-list entry goes out under Hastings' D6
+**	entry, renamed in place with ClientG's own string assign, as the skirmish carrier launches it.
+*/
+void __fastcall Lobby_Ipc_Send(void* ipc, void*, void* message)
+{
+    if (!IsBadReadPtr(message, LAUNCH_MESSAGE_NAME + sizeof(MsvcString))
+        && *(const DWORD*)message == LAUNCH_MESSAGE_VTABLE) {
+        MsvcString* name = (MsvcString*)((char*)message + LAUNCH_MESSAGE_NAME);
+        int number = Mod_Map_Number(name);
+        if (number != 0) {
+            Begin_Carrier_Launch(number, name);
+            ((StringAssignFn)STRING_ASSIGN)(name, SkirmishCarrierText, sizeof(SkirmishCarrierText) - 1);
+        }
+    }
+    ((IpcSendFn)IPC_SEND)(ipc, message);
+}
+
+/*
 **	At the instance lookup by key: a carrier's key reads as the entry it launched, so the loading
 **	screen names that map, except where the mission list looks up the mission carrier (dev builds).
 */
@@ -3225,8 +3260,22 @@ const char* Carrier_Install(void)
             redirected++;
         }
     }
-    static char result[48];
-    snprintf(result, sizeof(result), "carrier installed, %d of %d launch sites", redirected + 1, sites + 1);
+    const int lobby_sites = sizeof(LOBBY_LAUNCH_CALLS) / sizeof(LOBBY_LAUNCH_CALLS[0]);
+    int lobby_redirected = 0;
+    for (int i = 0; i < lobby_sites; i++) {
+        if (TF_Call_Ready(LOBBY_LAUNCH_CALLS[i], IPC_SEND)
+            && TF_Redirect_Call(LOBBY_LAUNCH_CALLS[i], (SIZE_T)&Lobby_Ipc_Send)) {
+            lobby_redirected++;
+        }
+    }
+    static char result[80];
+    snprintf(result,
+             sizeof(result),
+             "carrier installed, %d of %d launch sites, %d of %d lobby sites",
+             redirected + 1,
+             sites + 1,
+             lobby_redirected,
+             lobby_sites);
     return result;
 }
 
