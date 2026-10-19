@@ -26,6 +26,12 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
   `TF_BOMB_LOOP`) releases a bomb by its distance along the line to the target, from two cells short
   to two past, and ends at a point four cells beyond it. Cause not yet looked into.
 
+### A second Limpet Drone never starts (reported, not reproduced)
+- **Severity:** minor (one player report on 5.5.0).
+- A player queued a second Limpet Drone and the cameo showed "1" with nothing building. Nothing caps the Limpet, and
+  two queued Limpets build in a test. A held War Factory order or a vehicle stuck at the factory exit would hold the
+  queue the same way; ask the player what else was in production.
+
 ### Infantry pushed aside in a narrow pass lose their orders (suspected)
 - **Severity:** minor.
 - When a vehicle drives through a one-cell pass, `DriveClass::Drain_Infantry_Along` (`drive.cpp`)
