@@ -164,6 +164,11 @@ to a full entry above or delete. One line each: where, what, severity.
   (`TDACCOM1`, `TDFAIL1` and `RAOLOST1` all went out through valid chains and stayed silent),
   so the endgame lines ride the EVA mailbox. Mid-game stub-and-refire is unaffected.
 
+### Build hotkeys miss the mod's own buildings and units
+- The launcher's build commands (`COMMAND_RA_ALLIED_BUILD_STRUCTURE_CONSTRUCTION_YARD` and the rest) each name a
+  stock object, as its camera-to-yard command names `FACT`. The faction yards and every TD and TS type have none, so
+  their build hotkeys do nothing; H is answered by the DLL instead (`launcher-vs-dll-ownership.md`).
+
 ### Classic graphics mode is unsupported
 - The mod's terrain and units have no classic art, so the mod is HD-only.
   `CNCDisableLegacyGraphicsOption` in `Data/XML/GameConstants_Mod.xml` removes the option and the
