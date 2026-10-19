@@ -7,8 +7,8 @@ One TD<NAME> template per TD template, flagged for each TD theatre whose HD tile
   - the enum entries (defines.h), static definitions and registrations (cdata.cpp), ids 401+ in
     TD's editor order with sh1 first (the code tests TType >= TEMPLATE_TDSH1);
   - each template's classic iconset per theatre, TD<NAME>.DES/.TEM/.WIN, converted from TD's own
-    theatre MIX with TD's land types (rivers as LAND_RIVER), into scripts/_td_tems for
-    build_tfassets.sh;
+    theatre MIX with TD's land types (rivers as LAND_RIVER) and each shore cell's land from
+    td_shore_land.json, into scripts/_td_tems for build_tfassets.sh;
   - scripts/td_ra_tile_map.json, {td name: {theatre: {ra_name, ra_id, size}}}.
 The HD art is TD's own, drawn by the launcher from TD's terrain tilesets.
 """
@@ -32,6 +32,8 @@ CDATA_CPP = REPO / "redalert/cdata.cpp"
 MAPPER_JSON = REPO / "scripts/td_ra_tile_map.json"
 TEM_STAGE = REPO / "scripts/_td_tems"
 LAND_NIBBLE = {"CLEAR": 0, "BEACH": 6, "ROCK": 8, "ROAD": 9, "WATER": 10, "RIVER": 11, "ROUGH": 14}
+SHORE_LAND = REPO / "scripts/td_shore_land.json"
+SHORE_LETTER = {"W": "WATER", "B": "BEACH", "C": "CLEAR", "R": "ROCK"}
 
 
 def markers(tag):
@@ -75,15 +77,19 @@ def template_count_base():
     return n
 
 
-def td_tem_to_ra(data, map_w, map_h, land, altland, alt_icons):
-    """A TD iconset (32-byte header) in RA's format (40-byte header with the map size), with the
-    per-icon land table RA reads from its ColorMap. Without the map size RA divides by zero in Land_Type."""
+def td_tem_to_ra(data, map_w, map_h, land, altland, alt_icons, cells=None):
+    """A TD iconset (32-byte header) in RA's format (40-byte header with the map size), with the per-icon
+    land table RA reads from its ColorMap, or `cells` (one W/B/C/R per cell) where given. Without the map
+    size RA divides by zero in Land_Type."""
     icon_w, icon_h, count, _alloc = struct.unpack_from("<4h", data, 0)
     _size, icons, _pal, _remaps, trans, imap = struct.unpack_from("<6i", data, 8)
     body = data[32:]
     color_off = 40 + len(body)
     n = map_w * map_h
-    cmap = bytes((LAND_NIBBLE[altland] if i in alt_icons else LAND_NIBBLE[land]) for i in range(n))
+    typed = [altland if i in alt_icons else land for i in range(n)]
+    if cells:
+        typed = [SHORE_LETTER.get(c, t) for c, t in zip(cells, typed)]
+    cmap = bytes(LAND_NIBBLE[t] for t in typed)
     hdr = struct.pack("<6H7i", icon_w, icon_h, count, 0, map_w, map_h,
                       color_off + n, icons + 8, 0, 0, trans + 8, color_off, imap + 8)
     return hdr + body + cmap
@@ -122,6 +128,7 @@ def main():
     td = [t for t in parse_templates(os.path.join(EDITOR_SRC, "TiberianDawn", "TemplateTypes.cs")) if t[1] != "clear1"]
     td.sort(key=lambda t: t[1] != "sh1")
     lands = land_specs()
+    shores = json.loads(SHORE_LAND.read_text())
     drawn = {th[0]: drawn_names(th[1]) for th in THEATRES}
     base = template_count_base()
     TEM_STAGE.mkdir(parents=True, exist_ok=True)
@@ -142,7 +149,8 @@ def main():
                             str(TEM_STAGE)], check=True, stdout=subprocess.DEVNULL)
             raw = (TEM_STAGE / classic).read_bytes()
             (TEM_STAGE / classic).unlink()
-            (TEM_STAGE / ("%s.%s" % (ra, suffix))).write_bytes(td_tem_to_ra(raw, w, h, land, alt, alt_icons))
+            cells = shores[key].get(name)
+            (TEM_STAGE / ("%s.%s" % (ra, suffix))).write_bytes(td_tem_to_ra(raw, w, h, land, alt, alt_icons, cells))
             mapper.setdefault(name, {})[key] = {"ra_name": ra, "ra_id": tid, "size": [w, h]}
         flags = " | ".join(th[5] for th in here)
         enum_lines.append("    TEMPLATE_%s, // id %d" % (ra, tid))
