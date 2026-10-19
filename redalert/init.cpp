@@ -57,6 +57,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include "tf_encyclopedia.h"
 #include "language.h"
 #include "msgbox.h"
 #include "loaddlg.h"
@@ -279,7 +280,14 @@ bool Init_Game(int, char*[])
     **	Find and process any rules for this game.
     */
     CCFileClass rulesIniFile("RULES.INI");
-    if (RuleINI.Load(rulesIniFile, false)) {
+    bool rules_loaded = RuleINI.Load(rulesIniFile, false);
+    // TF: another enabled mod's RULES.INI is found before ours and replaces it whole. One without the mod's
+    // sections gives way to our own; a copy of ours with edits still applies.
+    if (!rules_loaded || !RuleINI.Is_Present("TDGFACT")) {
+        RuleINI.Clear();
+        rules_loaded = TF_Load_Mod_Ini(RuleINI, "rules.ini");
+    }
+    if (rules_loaded) {
         Rule.Process(RuleINI);
     }
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98

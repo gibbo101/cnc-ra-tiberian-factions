@@ -97,6 +97,7 @@ extern void Init_SpeechTD(void);
 #include "tf_eva_mailbox.h"
 #include "tf_asset_pack.h"
 #include "tf_launcher.h"
+#include "tf_encyclopedia.h"
 // Tiberian Sun GDI's EVA (audio.cpp Init_SpeechTS). NULL slots fall back to SpeechTD[].
 extern char const* SpeechTS[VOX_COUNT];
 extern void Init_SpeechTS(void);
@@ -4919,6 +4920,12 @@ static void TF_Note_Mod_Root(const char* mod_path)
     }
     root[len - 6] = 0; // now "<mod>\" (keeps the trailing separator)
     _noted = true;
+    // TF: the root comes from the DLL's own folder when it can, as another enabled mod may register its CCDATA
+    // first.
+    char own[MAX_PATH];
+    if (TF_Mod_Folder(own, sizeof(own) - 1)) {
+        snprintf(root, sizeof(root), "%s\\", own);
+    }
     strncpy(TF_ModRootPath, root, sizeof(TF_ModRootPath));
     TF_ModRootPath[sizeof(TF_ModRootPath) - 1] = 0;
 
