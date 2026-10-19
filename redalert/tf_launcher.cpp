@@ -2904,7 +2904,7 @@ const DWORD LAUNCH_MESSAGE_VTABLE = 0x1C055A4;
 const SIZE_T LAUNCH_MESSAGE_NAME = 0x30;
 
 DWORD SkirmishCarrierKey = 0;
-DWORD SkirmishLaunchedKey = 0;
+DWORD CarrierEntryKey = 0;
 
 /*
 **	An instance name as the launch message reads it: the string, then the name's key.
@@ -3033,7 +3033,7 @@ void Begin_Carrier_Launch(int number, const MsvcString* name)
     }
     Write_Handoff(map);
     SkirmishCarrierKey = Name_Key(SkirmishCarrierText);
-    SkirmishLaunchedKey = Name_Key(TF_String_Chars(name));
+    CarrierEntryKey = Name_Key(TF_String_Chars(name));
 }
 
 /*
@@ -3052,8 +3052,8 @@ char Skirmish_Carrier_Send(void* ipc, const MsvcString* name, int number, void* 
 }
 
 /*
-**	At the GUI's set-texture call: a mod entry's thumbnail is the base game's own, TD map n's for
-**	entry 9nn, TD community map k's for 979+k, Hastings' D6 for 999.
+**	At the GUI's set-texture call: a mod entry's thumbnail is the base game's own (TD map n's for 9nn,
+**	community map k's for 979+k, D6's for 999), and D6 then reads as that entry, as a LAN joiner needs.
 */
 const SIZE_T SET_TEXTURE = 0xF604C0;
 const SIZE_T SET_TEXTURE_CAVE = 0x1BE96C0;
@@ -3072,6 +3072,10 @@ void __stdcall Set_Texture_Hit(const DWORD* regs)
     if (number == 0) {
         return;
     }
+    char entry[48];
+    snprintf(entry, sizeof(entry), "MOBIUS_RED_ALERT_MULTIPLAYER_%03d_MAP", number);
+    SkirmishCarrierKey = Name_Key(SkirmishCarrierText);
+    CarrierEntryKey = Name_Key(entry);
     if (number == 999) {
         snprintf(text, sizeof(text), "MOBIUS_RED_ALERT_MULTIPLAYER_D6_MAP%s", rest);
     } else if (number >= 980 && number <= 986) {
@@ -3203,14 +3207,14 @@ void __fastcall Lobby_Ipc_Send(void* ipc, void*, void* message)
 }
 
 /*
-**	At the instance lookup by key: a carrier's key reads as the entry it launched, so the loading
+**	At the instance lookup by key: D6's reads as the entry last launched or shown under it, so the loading
 **	screen names that map, except where the mission list looks up the mission carrier (dev builds).
 */
 void __stdcall Key_Lookup_Hit(const DWORD* regs)
 {
     DWORD stack = regs[3] + 4;
     if (SkirmishCarrierKey != 0 && *(const DWORD*)(stack + 4) == SkirmishCarrierKey) {
-        *(DWORD*)(stack + 4) = SkirmishLaunchedKey;
+        *(DWORD*)(stack + 4) = CarrierEntryKey;
         return;
     }
 #if TF_DEV_BUILD
