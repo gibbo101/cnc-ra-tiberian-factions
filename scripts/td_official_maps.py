@@ -114,6 +114,8 @@ def main():
         inst = inst[:m.start()] + inst[m.end():]
     elif BEGIN.strip() in inst:
         hastings = instances(inst)["Mobius_Red_Alert_Multiplayer_%d_Map" % HASTINGS].group(2)
+    if hastings is None:
+        raise SystemExit("no Hastings entry in %s: neither %s nor the TF_TD_MAPS block" % (path, CARRIER))
     hastings = re.sub(r"\s*<OverrideMapName>[^<]*</OverrideMapName>", "", hastings)
     hastings = hastings.replace("<Mission>0</Mission>", "<Mission>%d</Mission>" % HASTINGS)
 
@@ -122,19 +124,24 @@ def main():
     previews = [d6_preview.replace(CARRIER.upper(), "MOBIUS_RED_ALERT_MULTIPLAYER_%d_MAP" % HASTINGS)]
     entries = [entry(HASTINGS, hastings)]
 
-    work = tempfile.mkdtemp()
-    for number, td_name, stem, folder in td_maps(base_instances):
-        td_body = base_instances[td_name].group(2)
-        players = int(re.search(r"<MaxPlayers>\s*(\d+)", td_body).group(1))
-        ini = fetch(stem, folder, work)
-        name = dict(td_map_to_ra.get_sec(td_map_to_ra.read_ini(ini), "Basic")).get("Name", stem)
-        out = os.path.join(work, "TFTD%03d" % number)
-        td_map_to_ra.convert(ini, out + ".mpr", name)
-        with open(out + ".mpr", "rb") as f, open(os.path.join(MOD, "CCDATA/TFTD%03d.INI" % number), "wb") as g:
-            g.write(f.read())
-        entries.append(entry(number, td_body))
-        previews.append(preview(number, json.load(open(out + ".json")), players))
-        print("%d  %-14s %s" % (number, stem, name))
+    maps = td_maps(base_instances)
+    numbers = [m[0] for m in maps] + [HASTINGS]
+    if len(set(numbers)) != len(numbers):
+        raise SystemExit("TD maps share an entry number: %s" % sorted(n for n in numbers if numbers.count(n) > 1))
+    with tempfile.TemporaryDirectory() as work:
+        for number, td_name, stem, folder in maps:
+            td_body = base_instances[td_name].group(2)
+            players = int(re.search(r"<MaxPlayers>\s*(\d+)", td_body).group(1))
+            ini = fetch(stem, folder, work)
+            name = dict(td_map_to_ra.get_sec(td_map_to_ra.read_ini(ini), "Basic")).get("Name", stem)
+            out = os.path.join(work, "TFTD%03d" % number)
+            td_map_to_ra.convert(ini, out + ".mpr", name)
+            with open(out + ".mpr", "rb") as f, open(os.path.join(MOD, "CCDATA/TFTD%03d.INI" % number), "wb") as g:
+                g.write(f.read())
+            entries.append(entry(number, td_body))
+            with open(out + ".json") as f:
+                previews.append(preview(number, json.load(f), players))
+            print("%d  %-14s %s" % (number, stem, name))
 
     first = re.search(r'\t<Instance Name="Mobius_Red_Alert_Multiplayer_\w+_Map"', inst).group(0)
     inst = splice(inst, "".join(entries), BEGIN, END, first)
