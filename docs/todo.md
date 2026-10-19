@@ -23,7 +23,8 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 - **Check `asset-packs/` for unused files.** The rest of the checkout has been through it: every
   tracked script and art source is named by a build step, script or doc. The asset-pack instance
   owns `asset-packs/`, so it checks that folder.
-- **Shrink the package.** The build was 1,137 MB unpacked, 772 MB zipped. Cameos now stage as DXT1 DDS
+- **Shrink the package.** Players with 4 to 6 GB cards lag (`known-issues.md`, video memory: about 5.1 GB in TF
+  against 2.3 GB in vanilla). The build was 1,137 MB unpacked, 772 MB zipped. Cameos now stage as DXT1 DDS
   (`cameo-dds.md`, 176 MB to 33 MB); TD art read from the base game is next (`td-base-art.md`). Other leads:
   `TSWEAP2.ZIP` (2.5 MB), the pre-rebuild war factory overlay the game never draws, once the map editor's
   factory overlay (`editor_manifest.py`) reads the current layers. The 177 MB UI atlas, 67 MB of movies, 51 MB
