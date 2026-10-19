@@ -38,7 +38,7 @@ music uses: 44.1 kHz stereo MS-ADPCM. The tracks already sit at the stock tracks
 
 ## Settings
 
-TIBERIAN FACTIONS SETTINGS, in HELP's row on the main menu, sets the music. `TF_SETTINGS.BUI`
+TIBERIAN FACTIONS SETTINGS, under REPLAY / OBSERVER on the main menu, sets the music. `TF_SETTINGS.BUI`
 (`scripts/bui_settings_build.py`) is the CAMPAIGNS page run by `SplashScreen`, opened and bound by
 `redalert/tf_launcher.cpp` as the ADD-ONS screen is (`pack-panel.md`):
 
