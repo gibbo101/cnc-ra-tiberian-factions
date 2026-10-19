@@ -20,17 +20,12 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 - **Check `asset-packs/` for unused files.** The rest of the checkout has been through it: every
   tracked script and art source is named by a build step, script or doc. The asset-pack instance
   owns `asset-packs/`, so it checks that folder.
-- **Shrink the package.** The build is 1,137 MB unpacked, 772 MB zipped (5.0.0: 1,456 MB, zip
-  1.0 GB), with each frame stored once, copied ZIPs shared at staging and cameos staged as RLE TGA
-  (`docs/asset-packs.md`). Where the rest goes: 182 MB of sidebar cameos, the 177 MB UI atlas (same size as EA's),
-  67 MB of movies, 51 MB of lobby thumbnails (same-size swaps for EA's), 43 MB CONFIG.MEG. Leads:
-  `TSWEAP2.ZIP` (2.5 MB), the pre-rebuild war factory overlay, which the game never draws, can go
-  once the map editor's factory overlay (`editor_manifest.py`) reads the current layers; cameos as
-  DXT1 DDS (`cameo-dds.md`: proven in the sidebar, 176 MB to about 32 MB); TD art read from the base
-  game (`td-base-art.md`).
-  It grows from here: TS Nod (21 buildings and 19 units in the HD hand-offs) and the TS HD
-  rebuilds. Restage a build folder clean (`stage_asset_packs.py --full`, as
-  `package-for-workshop.sh` does) before measuring it.
+- **Shrink the package.** The build was 1,137 MB unpacked, 772 MB zipped. Cameos now stage as DXT1 DDS
+  (`cameo-dds.md`, 176 MB to 33 MB); TD art read from the base game is next (`td-base-art.md`). Other leads:
+  `TSWEAP2.ZIP` (2.5 MB), the pre-rebuild war factory overlay the game never draws, once the map editor's
+  factory overlay (`editor_manifest.py`) reads the current layers. The 177 MB UI atlas, 67 MB of movies, 51 MB
+  of lobby thumbnails and the 43 MB CONFIG.MEG are EA's sizes. TS Nod and the TS HD rebuilds will grow it;
+  restage clean (`stage_asset_packs.py --full`) before measuring.
 - **Check in play: "Unable to comply, building in progress"** speaks in the picked side's voice
   (the era mailbox's ninth line), including after a faction switch between matches.
 - **Check in play: a spy in TD and TS buildings.** In an enemy TD or TS power plant, refinery or silo, the
