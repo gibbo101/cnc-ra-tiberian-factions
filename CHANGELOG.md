@@ -2,6 +2,16 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [5.6.1] — 2026-10-20
+
+### Fixed
+- The Faction Encyclopedia shows Tiberian Dawn's units and buildings as they look in game, not their sidebar
+  pictures, and draws the Radar Jammer's dish, the Mobile Gap Generator's mast and the Tesla Tank's coil.
+
+### Removed
+- The Tiberian Sun Music add-on is withdrawn: EA's C&C modding guidelines don't allow mods to include music files
+  from C&C games. A way to import the soundtrack from your own copy of Tiberian Sun is planned.
+
 ## [5.6.0] — 2026-10-20
 
 A melodic performance improvement.
