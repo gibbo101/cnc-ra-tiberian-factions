@@ -4,8 +4,8 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
 ## [5.6.0] — 2026-10-20
 
-Command has trimmed the supply lines. Your units find their way twice as fast, the download is a third smaller,
-and a stack of your reports are fixed.
+Command has trimmed the supply lines. Your units find their way twice as fast, the game needs less memory, and a
+stack of your reports are fixed.
 
 ### Changed
 - Concrete Wall costs 100 in skirmish and LAN, as in the campaigns (was 50).
@@ -16,8 +16,8 @@ and a stack of your reports are fixed.
 ### Performance
 - Pathfinding is about twice as fast: each route search keeps its visited cells in one reused table.
 - Unit, building and effect art ships as compressed DDS wherever that is smaller, and the sidebar's UI sheet drops from
-  176 MB to 62 MB. Video memory at startup falls by about 600 MB, and the Workshop download with the Tiberian Sun HD
-  Assets falls from 565 MB to 376 MB.
+  176 MB to 62 MB. Video memory falls by about 400 MB, and the Tiberian Sun HD Assets download from about 226 MB to
+  124 MB.
 - The hidden classic-graphics view is no longer drawn every frame, and the Tiberian Sun War Factory and Refinery pads
   no longer cost more on bigger maps.
 - The mod's art always preloads at startup, even with the NOSPLASHPRELOAD launch option, which would leave shared art
