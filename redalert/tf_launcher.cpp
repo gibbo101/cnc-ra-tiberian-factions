@@ -3307,7 +3307,8 @@ static const char* Keep_Splash_Preload(void)
     if (memcmp((const void*)PRELOAD_TEST, stock, sizeof(stock)) != 0) {
         return "preload: unknown launcher build, left alone";
     }
-    return TF_Write_Own_Code(PRELOAD_TEST + 7, always, sizeof(always)) ? "preload: always on" : "preload: could not patch";
+    return TF_Write_Own_Code(PRELOAD_TEST + 7, always, sizeof(always)) ? "preload: always on"
+                                                                        : "preload: could not patch";
 }
 
 const char* TF_Launcher_Install(void)
