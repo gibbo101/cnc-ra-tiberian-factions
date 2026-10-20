@@ -2,34 +2,35 @@
 
 **Status:** Tracker. Open work and the backlog.
 
-Open work and the backlog, checked against main at the 5.0.0 release (2026-10-04). Bugs and
-limitations live in `known-issues.md`. Finished work is deleted from here once its lessons are in
-a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
+Bugs and limitations live in `known-issues.md`. Finished work is deleted from here once its lessons are in a
+topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ---
 
 ## Next version: first jobs
 
+The next release: the match warm-up (`sprite-memory.md`), then the TS music import. Map-editor work waits
+until maps past 128x128 land.
+
 - **Pack updates in ADD-ONS:** keep the hard minimum per pack (`PACK_NEEDS_*`, 1.0) and add the current
   version (TS-HD 1.1). An older installed pack shows its version and UPDATE AVAILABLE, and ADD-ONS asks Steam to
   download it at high priority; if it is still old once that finishes, unsubscribe and resubscribe it. Steam
   can sit on an update for hours (5.6.0 day: the PC kept TS-HD 1.0).
-- **The map editor on TD theatres.** `cnc-map-editor` knows RA's three theatres only: it needs
+- **The map editor on TD theatres,** after maps past 128x128. `cnc-map-editor` knows RA's three theatres only: it needs
   `Desert`, `TDTemperate` and `Winter` with TD's tilesets, and the desert terrain types (`T04`,
   `T09`, `T18`, `ROCK1` to `ROCK7`) in `mapeditor.json` (`td-base-art.md`).
-- **TS-Music, what's left** (`skirmish-music.md`): a Random lobby pick plays Mix whatever the faction's choice,
-  as its faction is known only after the host's `@@TFL` message. RA2-HD-Assets still lacks its TS-Music link.
+- **Tiberian Sun music from the player's own copy** (`ts-music-import.md`). Then the Random lobby pick plays Mix
+  whatever the faction's choice, as its faction is known only after the host's `@@TFL` (`skirmish-music.md`).
 - **Tech Center wedge shadow** (the `ts-to-ra-hd-art` canvas rule): whether it may be cut so the canvas fits
   the box. Every other TS HD building is on whole cells; Helipad, Silo, Firestorm Generator and section, Limpet
   Mine, Tick Tank and the big six are larger than their boxes, which keep today's placement grids.
 - **Check `asset-packs/` for unused files.** The rest of the checkout has been through it: every
   tracked script and art source is named by a build step, script or doc. The asset-pack instance
   owns `asset-packs/`, so it checks that folder.
-- **Shrink the package.** Players with 4 to 6 GB cards lag (`known-issues.md`, video memory: about 4.4 GB in TF
-  with DDS sprites and atlas against 2.3 GB in vanilla). The match warm-up is next (`sprite-memory.md`). Other
-  leads: `TSWEAP2.ZIP` (2.5 MB), the pre-rebuild war factory overlay the game never draws, once the map editor's
-  factory overlay (`editor_manifest.py`) reads the current layers. 67 MB of movies, 51 MB of lobby thumbnails and
-  the 43 MB CONFIG.MEG are EA's sizes. TS Nod and the TS HD rebuilds will grow it; restage clean
+- **Shrink the package.** Players with 4 to 6 GB cards lag (`known-issues.md`: about 4.4 GB of video memory in TF
+  against 2.3 GB in vanilla); the warm-up comes first. Other leads: `TSWEAP2.ZIP` (2.5 MB), the war factory overlay
+  the game never draws, once the map editor's factory overlay (`editor_manifest.py`) reads the current layers.
+  Movies (67 MB), lobby thumbnails (51 MB) and CONFIG.MEG (43 MB) are EA's sizes. Restage clean
   (`stage_asset_packs.py --full`) before measuring.
 - **Check in play: "Unable to comply, building in progress"** speaks in the picked side's voice
   (the era mailbox's ninth line), including after a faction switch between matches.
@@ -44,13 +45,12 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   `mastertext.edits.txt` names and `picker_emblems_paint.py` plates move with it.
 - **Nod's cargo plane circles the airstrip** (`known-issues.md`): find why the TDC17 sometimes
   misses its landing on `TDAFLD` and fix it, with a play test of several deliveries.
-- **C&C3 pack README's C3PRED turret seats:** a modder drawing the turret from the README's table finds the
-  Predator close but not exact (the Hover MLRS seats are right). Compare its draw with ours in play and refine
-  `_c3pred_seat_px` (`c3tanks.h`); C3MK3 not yet tried by them.
+- **C3PRED turret seats:** the README's tables now run clockwise. If a modder still finds the Predator off,
+  compare its draw with ours in play and refine `_c3pred_seat_px` (`c3tanks.h`).
 - **Save compatibility, before campaigns ship.** Flag saves that need the TS-HD-Assets pack when it is missing,
   and autosave at every campaign mission start, so a layout-changing update costs at most the mission in
   progress. A reorder of equal length still passes the save version. Campaigns wait for a stable roster.
-- **Map editor loads the TS-HD-Assets pack with Tiberian Factions.** The pack carries the TS art TF's XML
+- **Map editor loads the TS-HD-Assets pack with Tiberian Factions,** after maps past 128x128. The pack carries the TS art TF's XML
   points at, so the editor must load it whenever TF is active (from the Mods folder or the Workshop cache)
   and look up art across every active mod. `cnc-map-editor` already merges several mods' manifests.
 - **The Orca Bomber's five-bomb pass** (`known-issues.md`): find why a pass drops two or three
