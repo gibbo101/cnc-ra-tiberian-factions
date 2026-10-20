@@ -151,6 +151,7 @@ extern bool TF_Dev_Cheats(void); // TF dev-cheats runtime gate (see defines.h TF
 extern bool TF_Dev_Reveal(void); // full-map reveal on its own (tf_dev_reveal.flag) even when the other cheats are off
 extern long TF_Building_Scan_Bit(int btype); // building Type -> its BScan/ActiveBScan/OldBScan bit
 extern bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type); // Prerequisite= names a TS-tree building (house.cpp)
+extern bool TF_Factory_Fits(BuildingClass const* factory, TechnoTypeClass const* type); // side and era match (object.cpp)
 // Faction bits; a sidebar cameo's AssetName suffix names the factions that make it (cameo_variants_build.py).
 #define TF_FACTION_ALLIES 0x1
 #define TF_FACTION_SOVIET 0x2

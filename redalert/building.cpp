@@ -8710,6 +8710,12 @@ void BuildingClass::Factory_AI(void)
                         }
                     }
 
+                    // TF: a factory builds only its own side's and era's types; another side's order waits for that
+                    // side's factory, which Can_Build has seen stands.
+                    if (techno != NULL && !TF_Factory_Fits(this, techno)) {
+                        techno = NULL;
+                    }
+
                     // TF: only the dropship bay builds its deliveries and it builds nothing else, and no factory takes
                     // an order TF_Delivery_Order_Refused would refuse; the wrong one declines it for the other.
                     if (techno != NULL && Class->ToBuild == RTTI_UNITTYPE) {
