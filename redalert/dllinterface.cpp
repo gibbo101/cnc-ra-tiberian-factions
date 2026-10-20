@@ -936,6 +936,14 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Get_Visible_Page(unsigned char
         return false;
     }
 
+    // TF: the classic page is never shown (classic mode is off), so it is neither drawn nor copied. The launcher
+    // asks every frame and switches to an empty classic view on false, so the page's size still goes back.
+    if (Map.MapCellWidth > 0 && Map.MapCellHeight > 0) {
+        width = Map.MapCellWidth * CELL_PIXEL_W;
+        height = Map.MapCellHeight * CELL_PIXEL_H;
+        return true;
+    }
+
     /*
     ** Assume the seen page viewport is the same size as the page
     */
@@ -2611,10 +2619,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
         GameActive = false;
     }
 
-    if (DLLExportClass::Legacy_Render_Enabled()) {
-        TF_PERF(TF_Perf_Probe::RENDER);
-        Map.Render();
-    }
+    // TF: the classic page is never drawn; CNC_Get_Visible_Page answers without it.
 
     // Sync_Delay();
     // DLLExportClass::Set_Event_Callback(NULL);
