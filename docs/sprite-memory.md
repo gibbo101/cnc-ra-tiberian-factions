@@ -1,7 +1,7 @@
 # Sprite memory
 
-**Status:** Design. Staging writes whole-canvas DDS sprites and the launcher skips its splash preload; next
-release.
+**Status:** Design. Staging writes whole-canvas DDS sprites and a DDS UI atlas, and the launcher skips its splash
+preload; next release.
 **Open:** a Steam Deck check for first-draw hitches with the preload off; a Tiberian Dawn check before the TD asset
 packs ship DDS sprites (their builds keep the ZIPs until then).
 
@@ -19,7 +19,9 @@ ClientG's video memory on one desktop (RTX 5070), Tiberium Garden, TS GDI, the s
 | Whole-canvas DDS sprites, preload on | 4,246 MB | 4,284 MB |
 | Whole-canvas DDS sprites, preload off | 534 MB | 700 MB |
 
-With the preload off, a match where the AI builds a full TS GDI base, all of it on screen, peaks at 972 MB.
+With the preload off, a match where the AI builds a full TS GDI base, all of it on screen, peaks at 972 MB. The UI
+atlas as DDS takes a further 116 MB off every screen: Docklands, TS GDI, 534 to 418 MB at the menu and 972 to 856 MB
+in play.
 
 ## The splash preload
 
@@ -51,3 +53,12 @@ staged mod's `UNITS`, `STRUCTURES` and `VFX` whichever form takes less memory: a
 frames, or the ZIP with every frame's crop tightened to its visible pixels. Staging (`stage_asset_packs.py`) and the
 asset-pack builds (`workshop_packs.py`) run it, and it caches its output by ZIP content in `build/sprite-dds-cache`.
 The base game's own terrain DDS files carry full mips, so the sprites do too.
+
+## The UI atlas
+
+`MT_COMMANDBAR_COMMON` holds the sidebar, the crests, the cameos and every front-end region, and is drawn on every
+screen: 176 MB as a TGA. Staging writes it as DXT5 with mips, 62 MB (`sprite_dds.convert_atlas`). DXT needs sides
+that are multiples of 4, so it is padded from 6871 to 6872 px wide. ClientG computes each region's UVs from the size
+of the texture it loaded, so the radar crest records the DLL writes (`radar-crest-ram-spike.md`) take the atlas's
+size from the shipped DDS. `deploy.sh` and the packager check the locked atlas in `resources/`, the TGA the DDS is
+made from.

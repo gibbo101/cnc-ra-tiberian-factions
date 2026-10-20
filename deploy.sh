@@ -113,6 +113,15 @@ check_locked() {
 }
 echo "==> Checking locked gitignored files"
 while read -r want name; do
+    # Staging ships the UI atlas as DDS (scripts/sprite_dds.py), so the lock checks the source TGA it came from.
+    if [[ "$name" == "MT_COMMANDBAR_COMMON.TGA" ]]; then
+        check_locked "resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB/$name" "$want"
+        if [[ ! -f "${LOCAL_OUTPUT}Data/ART/TEXTURES/SRGB/MT_COMMANDBAR_COMMON.DDS" ]]; then
+            echo "ERROR: the staged UI atlas DDS is missing; rebuild without --no-build." >&2
+            exit 1
+        fi
+        continue
+    fi
     check_locked "${LOCAL_OUTPUT}Data/ART/TEXTURES/SRGB/$name" "$want"
 done < scripts/campaigns_work/textures.md5
 check_locked "${LOCAL_OUTPUT}Data/ART/MOVIES/RA/REDINTRO.BK2" "$(cat scripts/intro_work/REDINTRO.md5)"

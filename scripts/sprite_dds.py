@@ -196,8 +196,50 @@ def _note_used(keys):
         os.utime(os.path.join(CACHE, key), (now, now))
     for key in os.listdir(CACHE) if os.path.isdir(CACHE) else []:
         path = os.path.join(CACHE, key)
-        if os.path.isdir(path) and now - os.stat(path).st_mtime > 7 * 86400:
+        if now - os.stat(path).st_mtime <= 7 * 86400:
+            continue
+        if os.path.isdir(path):
             _clear(path)
+        else:
+            os.remove(path)
+
+
+ATLAS = os.path.join("Data", "ART", "TEXTURES", "SRGB", "MT_COMMANDBAR_COMMON")
+
+
+def _atlas_dds(tga_path):
+    """The UI atlas as DXT5 DDS with every mip level, its sides padded to a multiple of 4, encoded in strips."""
+    Image.MAX_IMAGE_PIXELS = None
+    img = Image.open(tga_path).convert("RGBA")
+    w, h = -(-img.width // 4) * 4, -(-img.height // 4) * 4
+    canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    canvas.paste(img, (0, 0))
+    levels, step = [], 0
+    while True:
+        size = (max(1, w >> step), max(1, h >> step))
+        level = canvas if step == 0 else canvas.resize(size, Image.BOX)
+        rows = range(0, level.height, 512) if level.height > 512 else [0]
+        levels.append(b"".join(_dxt5_level(level.crop((0, y, level.width, min(level.height, y + 512)))) for y in rows))
+        if size == (1, 1):
+            break
+        step += 1
+    return _header(w, h, len(levels), len(levels[0])) + b"".join(levels)
+
+
+def convert_atlas(mod_folder):
+    """Replaces a staged mod's UI atlas TGA by its cached DXT5 DDS; the DLL reads the DDS's size for the crests."""
+    tga = os.path.join(mod_folder, ATLAS + ".TGA")
+    if not os.path.exists(tga):
+        return
+    cached = os.path.join(CACHE, _key(tga) + ".DDS")
+    if not os.path.exists(cached):
+        os.makedirs(CACHE, exist_ok=True)
+        with open(cached + ".tmp", "wb") as fh:
+            fh.write(_atlas_dds(tga))
+        os.replace(cached + ".tmp", cached)
+    os.utime(cached)
+    shutil.copy2(cached, os.path.join(mod_folder, ATLAS + ".DDS"))
+    os.remove(tga)
 
 
 def sprite_zips(mod_folder):
@@ -233,3 +275,4 @@ if __name__ == "__main__":
         raise SystemExit(__doc__)
     for folder in sys.argv[1:]:
         convert(os.path.abspath(folder))
+        convert_atlas(os.path.abspath(folder))

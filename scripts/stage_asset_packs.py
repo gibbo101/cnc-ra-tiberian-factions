@@ -110,6 +110,7 @@ def stage(mod_dir, full=False, strict=False):
         if not os.path.exists(dst) or open(dst, encoding="utf-8", newline="").read() != text:
             open(dst, "w", encoding="utf-8", newline="").write(text)
     sprite_dds.convert(mod_dir)
+    sprite_dds.convert_atlas(mod_dir)
 
 
 if __name__ == "__main__":
