@@ -22,6 +22,9 @@ Railgun upgrade: a model from scripts/c3_rail_turrets.py carries the UGRAIL mesh
 --rails, on the Mammoth's texture sheet and with no house colour, as ObjectsNOD.fx draws them; C&C3 lights them like
 the body. --glow adds a self-lit term on the painted blue conduit, our own touch.
 
+Parts: 0 hull, 1 turret, 2 treads, 3 fixtures (an upgrade's hull-mounted pieces), drawn with the hull but left
+out of its footprint so the variant keeps its base tank's centre.
+
 Usage:
   c3_render.py <model.npz> <out_dir> --part hull|turret [--frames 32] [--tread-steps 3]
                [--ppu 13] [--canvas 1000] [--damaged] [--rails] [--glow 1]
@@ -76,10 +79,10 @@ def sample(tex, uv):
 
 
 def hull_centre(d):
-    """Ground point under the centre of the hull's bounding box (hull and treads, no turret)."""
+    """Ground point under the centre of the hull's bounding box (hull and treads; no turret or fixtures)."""
     used = np.zeros(len(d["pos"]), bool)
     used[np.unique(d["tris"])] = True
-    p = d["pos"][used & (d["part"] != 1)]
+    p = d["pos"][used & np.isin(d["part"], (0, 2))]
     return np.array([(p[:, 0].min() + p[:, 0].max()) / 2, (p[:, 1].min() + p[:, 1].max()) / 2, 0.0])
 
 
