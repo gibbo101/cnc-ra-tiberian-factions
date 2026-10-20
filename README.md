@@ -104,7 +104,7 @@ Tiberian Factions' code, scripts and tools are written with AI assistance. How i
 - **hazelnut** ([SteamGridDB](https://www.steamgriddb.com/)): the Tiberian Sun GDI emblem on the TS GDI faction's cameo badges and faction icon.
 - **[The Assembly Armada](https://github.com/TheAssemblyArmada):** Vanilla Conquer maintainers.
 
-This mod is not endorsed by or affiliated with Electronic Arts.
+EA has not endorsed and does not support this product.
 
 ## Acknowledgements & Inspiration
 

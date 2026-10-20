@@ -214,6 +214,8 @@ def write_manifest(mod, folder, host):
     return marker
 
 
+# The wording EA requires on every page that ships its assets.
+DISCLAIMER = "EA has not endorsed and does not support this product."
 GAME = {"TS": "Tiberian Sun", "RA2": "Red Alert 2", "CNC3": "Command & Conquer 3: Tiberium Wars"}
 TF_URL = "https://steamcommunity.com/sharedfiles/filedetails/?id=3729834253"
 EA_EXAMPLE_URL = {
@@ -263,7 +265,7 @@ def music_readme(mod, host):
     lines += ["## AI disclosure", "", "No AI made or changed the music: these are the original tracks, converted. "
               "The scripts that build this pack were written with AI assistance.", "",
               "## Credits", "", f"Original {GAME[w['game']]} and Firestorm music: Westwood Studios and Electronic Arts.",
-              "Converted for Remastered by gibbo101.", "", "## My other C&C projects", ""] + [f"- {m}" for m in D.more_mods(mod)] + [""]
+              "Converted for Remastered by gibbo101.", "", DISCLAIMER, "", "## My other C&C projects", ""] + [f"- {m}" for m in D.more_mods(mod)] + [""]
     return "\n".join(lines)
 
 
@@ -345,7 +347,7 @@ def readme(mod, listed, host):
         lines += [f"HD rebuilds of the {game} designs and preparation for Remastered: gibbo101."]
     else:
         lines += ["Rendered for Remastered from the game's own models by gibbo101."]
-    lines += ["", "## My other C&C projects", ""] + [f"- {m}" for m in D.more_mods(mod)] + [""]
+    lines += ["", DISCLAIMER, "", "## My other C&C projects", ""] + [f"- {m}" for m in D.more_mods(mod)] + [""]
     return "\n".join(lines)
 
 
