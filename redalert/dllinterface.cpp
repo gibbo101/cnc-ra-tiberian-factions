@@ -10270,6 +10270,78 @@ bool DLLExportClass::Get_Dynamic_Map_State(uint64 player_id, unsigned char* buff
  *
  * History: 2/8/2019 11:09AM - ST
  **************************************************************************************************/
+// The TS aprons drawn from their standing building, in the order the export tries them.
+static const struct
+{
+    StructType owner;
+    SmudgeType apron;
+    int off_x, off_y; // apron origin relative to the building's origin cell
+} TFAprons[] = {
+    {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 0, 0},
+    {STRUCT_TSDWEAP, SMUDGE_TSDWEAPBB, 0, 0},
+    {STRUCT_TSPROC, SMUDGE_TSPROCBB, 0, 0},
+};
+static const int TF_APRON_TYPES = (int)(sizeof(TFAprons) / sizeof(TFAprons[0]));
+
+// For one cell, each apron type's building and tile there; a tile nearer its building's origin wins. The launcher
+// keeps one overlay a cell, so the export sends one tile: one inside its building's plot beats one that overhangs.
+struct TFApronStamp
+{
+    unsigned long Serial;
+    BuildingClass* Owner[TF_APRON_TYPES];
+    unsigned short Tile[TF_APRON_TYPES];
+};
+
+// The cell's apron stamp, or NULL when no apron covers it. Stamps are rebuilt from the standing apron buildings
+// whenever the frame or the building count changes, so a lookup is one array read.
+static TFApronStamp const* TF_Apron_Stamp(CELL cell)
+{
+    static TFApronStamp _stamps[MAP_CELL_TOTAL];
+    static unsigned long _serial = 0;
+    static long _frame = -1;
+    static int _count = -1;
+    if (_frame != (long)Frame || _count != Buildings.Count()) {
+        _frame = (long)Frame;
+        _count = Buildings.Count();
+        _serial++;
+        for (int b = 0; b < Buildings.Count(); b++) {
+            BuildingClass* building = Buildings.Ptr(b);
+            if (building == NULL || !building->IsActive || building->IsInLimbo) {
+                continue;
+            }
+            for (int a = 0; a < TF_APRON_TYPES; a++) {
+                if (*building != TFAprons[a].owner) {
+                    continue;
+                }
+                const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(TFAprons[a].apron);
+                int origin = (int)Coord_Cell(building->Coord);
+                for (int ty = 0; ty < apron_type.Height; ty++) {
+                    for (int tx = 0; tx < apron_type.Width; tx++) {
+                        int at = origin + (TFAprons[a].off_x + tx) + (TFAprons[a].off_y + ty) * MAP_CELL_W;
+                        if (at < 0 || at >= MAP_CELL_TOTAL) {
+                            continue;
+                        }
+                        TFApronStamp& stamp = _stamps[at];
+                        if (stamp.Serial != _serial) {
+                            stamp.Serial = _serial;
+                            for (int k = 0; k < TF_APRON_TYPES; k++) {
+                                stamp.Owner[k] = NULL;
+                            }
+                        }
+                        unsigned short tile = (unsigned short)(tx + ty * apron_type.Width);
+                        if (stamp.Owner[a] == NULL || tile < stamp.Tile[a]) {
+                            stamp.Owner[a] = building;
+                            stamp.Tile[a] = tile;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    TFApronStamp const& stamp = _stamps[cell];
+    return (stamp.Serial == _serial) ? &stamp : NULL;
+}
+
 void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
                                         int& entry_index,
                                         CellClass* cell_ptr,
@@ -10289,74 +10361,32 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
     // TF: TS aprons are drawn from their standing building, not map state, ahead of the smudge and overlay
     // entries so bibs and ore draw over them; a hidden building hides its apron (docs/ts-gdi-tree-plan.md).
     {
-        static const struct
-        {
-            StructType owner;
-            SmudgeType apron;
-            int off_x, off_y; // apron origin relative to the building's origin cell
-            int probe;        // a cell the building occupies, relative to its origin cell
-        } _aprons[] = {
-            {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 0, 0, 0}, // the whole 3x3 plot
-            {STRUCT_TSDWEAP, SMUDGE_TSDWEAPBB, 0, 0, 0},
-            {STRUCT_TSPROC, SMUDGE_TSPROCBB, 0, 0, MAP_CELL_W}, // its north row is open: probe (0,1)
-        };
-        // The launcher keeps one overlay a cell, so each cell sends one apron tile: one inside its building's plot
-        // beats one that overhangs it (the refinery's empty fifth column would blank a War Factory's west edge).
-        static long _checked_frame = -1;
-        static bool _any_apron = false;
-        if (_checked_frame != (long)Frame) {
-            _checked_frame = (long)Frame;
-            _any_apron = false;
-            for (int b = 0; b < Buildings.Count() && !_any_apron; b++) {
-                BuildingClass const* building = Buildings.Ptr(b);
-                for (int a = 0; a < (int)(sizeof(_aprons) / sizeof(_aprons[0])); a++) {
-                    if (building != NULL && building->IsActive && *building == _aprons[a].owner) {
-                        _any_apron = true;
-                    }
-                }
-            }
-        }
         int pick = -1;
         int pick_tx = 0;
         int pick_ty = 0;
         bool pick_inside = false;
         BuildingClass* pick_owner = NULL;
-        for (int a = 0; _any_apron && a < (int)(sizeof(_aprons) / sizeof(_aprons[0])); a++) {
-            const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(_aprons[a].apron);
-            bool resolved = false;
-            for (int ty = 0; ty < apron_type.Height && !resolved; ty++) {
-                for (int tx = 0; tx < apron_type.Width && !resolved; tx++) {
-                    int origin = (int)cell - (_aprons[a].off_x + tx) - (_aprons[a].off_y + ty) * MAP_CELL_W;
-                    if (origin < 0 || origin >= MAP_CELL_TOTAL) {
-                        continue;
-                    }
-                    int probe = origin + _aprons[a].probe;
-                    if (probe < 0 || probe >= MAP_CELL_TOTAL) {
-                        continue;
-                    }
-                    BuildingClass* apron_owner = Map[(CELL)probe].Cell_Building();
-                    if (apron_owner == NULL || *apron_owner != _aprons[a].owner
-                        || Coord_Cell(apron_owner->Coord) != (CELL)origin) {
-                        continue;
-                    }
-                    resolved = true;
-                    if (apron_owner->Visual_Character() == VISUAL_HIDDEN) {
-                        break;
-                    }
-                    bool inside = (_aprons[a].off_x + tx) < apron_owner->Class->Width()
-                                  && (_aprons[a].off_y + ty) < apron_owner->Class->Height();
-                    if (pick < 0 || (inside && !pick_inside)) {
-                        pick = a;
-                        pick_tx = tx;
-                        pick_ty = ty;
-                        pick_inside = inside;
-                        pick_owner = apron_owner;
-                    }
-                }
+        TFApronStamp const* stamp = TF_Apron_Stamp(cell);
+        for (int a = 0; stamp != NULL && a < TF_APRON_TYPES; a++) {
+            BuildingClass* apron_owner = stamp->Owner[a];
+            if (apron_owner == NULL || apron_owner->Visual_Character() == VISUAL_HIDDEN) {
+                continue;
+            }
+            const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(TFAprons[a].apron);
+            int tx = stamp->Tile[a] % apron_type.Width;
+            int ty = stamp->Tile[a] / apron_type.Width;
+            bool inside = (TFAprons[a].off_x + tx) < apron_owner->Class->Width()
+                          && (TFAprons[a].off_y + ty) < apron_owner->Class->Height();
+            if (pick < 0 || (inside && !pick_inside)) {
+                pick = a;
+                pick_tx = tx;
+                pick_ty = ty;
+                pick_inside = inside;
+                pick_owner = apron_owner;
             }
         }
         if (pick >= 0) {
-            const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(_aprons[pick].apron);
+            const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(TFAprons[pick].apron);
             CNCDynamicMapEntryStruct& apron_entry = dynamic_map->Entries[entry_index++];
 
             strncpy(apron_entry.AssetName, apron_type.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
