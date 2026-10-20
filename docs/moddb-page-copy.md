@@ -162,7 +162,7 @@ layout behind the per slot AI difficulty),
 <b>Bast75</b> and <b>xXMini FrankiXx</b> (skirmish AI ideas) and
 <b>ChthonVII</b> with cfehunter and Root-Core (CFE Patch Redux, source of the rally points,
 harvester, repair bay and zoom features, GPL v3).</p>
-<p>Not endorsed by or affiliated with Electronic Arts.</p>
+<p>EA has not endorsed and does not support this product.</p>
 
 ---
 

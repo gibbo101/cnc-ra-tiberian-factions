@@ -1,5 +1,7 @@
 # Tiberian Factions for Red Alert
 
+**EA has not endorsed and does not support this product.**
+
 A mod for **Command & Conquer: Red Alert Remastered** that adds **GDI** and **Nod**, the two factions from *Tiberian Dawn*, and **GDI from *Tiberian Sun***, as fully playable sides alongside the original Allies and Soviets. Pick any of the five in skirmish and fight them all on the same map: **Allies vs Soviets vs GDI vs Nod vs Tiberian Sun GDI**.
 
 ## What this mod adds
@@ -104,7 +106,6 @@ Tiberian Factions' code, scripts and tools are written with AI assistance. How i
 - **hazelnut** ([SteamGridDB](https://www.steamgriddb.com/)): the Tiberian Sun GDI emblem on the TS GDI faction's cameo badges and faction icon.
 - **[The Assembly Armada](https://github.com/TheAssemblyArmada):** Vanilla Conquer maintainers.
 
-This mod is not endorsed by or affiliated with Electronic Arts.
 
 ## Acknowledgements & Inspiration
 
