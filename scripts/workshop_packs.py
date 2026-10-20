@@ -27,6 +27,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import asset_packs as A  # noqa: E402
 import asset_pack_docs as D  # noqa: E402
 import mix_tools  # noqa: E402
+import sprite_dds  # noqa: E402
 
 STUBS = os.path.join(A.MOD, "CCDATA", "TFASSETS.MIX")
 C3_SEATS = os.path.join(A.REPO, "redalert", "c3tanks.h")
@@ -472,6 +473,7 @@ def build(mod, folder, host="RA", strict=True):
     if problem:
         print("WARNING: skipped", mod, "--", problem, file=sys.stderr)
         return
+    sprite_dds.convert(folder)
     listed, written = write_xml(mod, folder, host)
     prune(folder, os.path.join("Data", "XML"), written)
     prune(folder, "CCDATA", [marker] if marker else [])
@@ -495,6 +497,8 @@ def check(folder, host):
             else:
                 folder_key, _, name = rel.rpartition("\\")
                 loose.setdefault(folder_key, set()).add(name)
+                if name.endswith(".DDS"):
+                    loose[folder_key].add(name[:-4] + ".TGA")
     named = set()
     tilesets = os.path.join(folder, "Data", "XML", "TILESETS")
     for f in sorted(os.listdir(tilesets)) if os.path.isdir(tilesets) else []:
