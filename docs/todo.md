@@ -163,8 +163,8 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   build space and blocks subterranean units. Costs: placement logic like the wall divert (the
   building becomes ground) and square-grid ground art, since TS's is isometric (as the HD Firestorm
   sections are, `scripts/ts_pack_hd_buildings.py`).
-- **The TS HD rebuild:** branch `ts-buildings-hd`, worktree `../worktrees/tf-ts-hd`, skill
-  `ts-to-ra-hd-art`.
+- **TS theatres and TS maps (parked):** branch `ts-theatres`, worktree `../worktrees/tf-ts-theatres`, design
+  doc on that branch. First job: its tileset video-memory test, which picks TS's own tiles or an autotile set.
 - **Big units show through a TS war factory's shut door (fix in test):** the HD harvester, Mobile War Factory,
   Titan and Juggernaut reached past the door from the shared bay seats, so they now wait deeper (`building.cpp`,
   the bay seat). The depths come from `scripts/probes/wf_bay_sim.py`, which composites a unit behind the near
