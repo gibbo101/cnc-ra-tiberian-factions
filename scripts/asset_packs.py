@@ -162,9 +162,8 @@ def drop_pack_only(text):
     text = re.sub(r"[ \t]*<Tile>\s*<Key>\s*<Name>(?:%s)</Name>.*?</Tile>\r?\n?" % names, "", text, flags=re.S)
     text = re.sub(r'[ \t]*<ObjectTypeClass Name="RA_(?:%s)(?:_\w+)?".*?</ObjectTypeClass>\r?\n?' % names, "", text,
                   flags=re.S)
-    if PACK_ONLY_SOUNDS:
-        sounds = "|".join(map(re.escape, PACK_ONLY_SOUNDS))
-        text = re.sub(r'[ \t]*<SFXEvent Name="RA[CR]_SFX_(?:%s)".*?</SFXEvent>\r?\n?' % sounds, "", text, flags=re.S)
+    sounds = "|".join(map(re.escape, PACK_ONLY_SOUNDS))
+    text = re.sub(r'[ \t]*<SFXEvent Name="RA[CR]_SFX_(?:%s)".*?</SFXEvent>\r?\n?' % sounds, "", text, flags=re.S)
     return text
 
 

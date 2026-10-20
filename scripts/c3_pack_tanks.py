@@ -281,9 +281,20 @@ def pack_variant(name, base, model, part):
     patch_tileset(name, len(frames), frames)
 
 
+def family(names):
+    """The named tanks with every tank unit_centring.py moves alongside them, so a family is always packed whole."""
+    import unit_centring
+    unknown = set(names) - {u[0] for u in UNITS} - {v[0] for v in VARIANTS}
+    if unknown:
+        raise SystemExit(f"unknown tank(s): {', '.join(sorted(unknown))}")
+    groups = [{leader} | {p for p, kind, _ in row[4] if kind == "UNITS"} for leader, row in unit_centring.UNITS.items()]
+    return set(names).union(*(g for g in groups if g & set(names)))
+
+
 def main(names):
     if not ART:
         raise SystemExit("set C3_ART_DIR (holding renders/, model/, cameo/)")
+    names = family(names)
     for name, model, shape, _ in UNITS:
         if names and name not in names:
             continue

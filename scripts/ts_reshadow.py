@@ -121,10 +121,10 @@ def drop_shadow(frame, dx, dy, alpha=EA_ALPHA, blur=EA_BLUR):
     return out
 
 
-def write_zip(path, name, frames):
-    """Identical contract to the packers: center-symmetric crop + meta."""
+def write_zip(path, name, frames, numbers):
+    """Identical contract to the packers: center-symmetric crop + meta, each frame under its original number."""
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
-        for i, img in enumerate(frames):
+        for i, img in zip(numbers, frames):
             base = f"{name}-{i:04d}"
             W, H = img.width, img.height
             bb = img.getbbox() or (W // 2 - 1, H // 2 - 1, W // 2 + 1, H // 2 + 1)
@@ -214,7 +214,7 @@ def process(unit, dry_run):
           f"[was {old}]  {n_sh}/{len(out)} frames{warn}")
 
     if not dry_run:
-        write_zip(path, stem, out)
+        write_zip(path, stem, out, [int(n.rsplit("-", 1)[1]) for n in names])
 
 
 if __name__ == "__main__":

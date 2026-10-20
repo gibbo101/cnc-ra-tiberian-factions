@@ -239,8 +239,11 @@ def audit():
                 continue
             offset = hull_offset(data, names, 32)
             size = json.loads(data[names[0][:-4] + ".meta"])["size"][1]
+            leader = next((u for u, row in UNITS.items() if name in (q for q, _, _ in row[4])), None)
             if name in UNITS:
                 mark = "centred by this script"
+            elif leader:
+                mark = f"moves with {leader}"
             elif size == 208:
                 mark = "infantry: EA feet line, not the hull rule"
             elif name in WALKERS or name in AIRCRAFT:

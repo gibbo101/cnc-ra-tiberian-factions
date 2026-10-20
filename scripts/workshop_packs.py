@@ -380,7 +380,8 @@ def layout(mod):
              "counter-clockwise from "
              "north with 3 tread steps each (frame = 3 x facing + step; step the treads while the tank drives), "
              "and 96-127 the turret, 32 facings. The turret frames are centred on the canvas and look right drawn "
-             "centred on the hull, except C3SCORPLAS's laser, which sits on the tail mount and needs its seat. For a "
+             "centred on the hull, except the Scorpions': C3SCORP's upper body sits up to 6 classic px off centre "
+             "and C3SCORPLAS's laser on the tail mount, so both need their seats. For a "
              "mod with its own DLL: the turret's exact seat per hull facing, "
              "in classic pixels (x east, y south), clockwise from north as EA's turret tables run, so index "
              "it with `Dir_To_32(PrimaryFacing)`:",
