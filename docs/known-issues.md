@@ -134,7 +134,7 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 - ClientG holds about 4.8 GB of video memory at the menu in a TF skirmish setup against about 2.3 GB for vanilla in
   play, nearly all of it loaded at startup. DDS sprites and the DDS UI atlas bring it to about 4.1 GB; the rest needs
   the match warm-up (`sprite-memory.md`). Where the card runs out, textures swap in as the view moves, so the lag
-  grows as more is revealed.
+  grows as more is revealed. The NOSPLASHPRELOAD launch option no longer lowers it: the preload always runs.
 
 ## Found in code review, not seen in play
 
