@@ -2152,6 +2152,23 @@ static int TF_Self_Action_Selected(void)
 
 static long TF_SelectAllLatchUntil[HOUSE_COUNT]; // per house: frame until which a select-all order still counts as fresh
 
+// True when at most one human plays. The game loop runs as the lobby's first player, so with two humans the host's
+// keys would act for whichever player that is.
+static bool TF_Keys_Have_One_Owner(void)
+{
+    if (GAME_TO_PLAY != GAME_GLYPHX_MULTIPLAYER) {
+        return true;
+    }
+    int humans = 0;
+    for (int i = 0; i < Houses.Count(); i++) {
+        HouseClass const* house = Houses.Ptr(i);
+        if (house != NULL && house->IsActive && house->IsHuman) {
+            humans++;
+        }
+    }
+    return humans < 2;
+}
+
 // True unless another program's window has the keyboard, so keys typed outside the game are ignored; when the
 // foreground can't be read, keys count, as they always have.
 static bool TF_Game_Has_Keyboard(void)
@@ -2189,7 +2206,7 @@ static bool TF_Game_Has_Keyboard(void)
 static void TF_Deploy_Key_Tick(void)
 {
     static bool _was_down = false;
-    bool down = (GetAsyncKeyState(VK_OEM_5) & 0x8000) != 0 && TF_Game_Has_Keyboard();
+    bool down = (GetAsyncKeyState(VK_OEM_5) & 0x8000) != 0 && TF_Game_Has_Keyboard() && TF_Keys_Have_One_Owner();
 #if TF_DEV_BUILD
     /*
     **	Dev builds also take the deploy order from a flag file, for headless runs where no
@@ -2253,7 +2270,7 @@ static void TF_Home_Key_Tick(void)
 {
     static bool _was_down = false;
     static int _last = -1;
-    bool down = (GetAsyncKeyState('H') & 0x8000) != 0 && TF_Game_Has_Keyboard();
+    bool down = (GetAsyncKeyState('H') & 0x8000) != 0 && TF_Game_Has_Keyboard() && TF_Keys_Have_One_Owner();
     if (down && !_was_down && PlayerPtr != NULL) {
         int count = Buildings.Count();
         for (int step = 1; step <= count; step++) {
