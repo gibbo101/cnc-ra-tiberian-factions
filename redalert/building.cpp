@@ -7504,7 +7504,7 @@ int BuildingClass::Mission_Unload(void)
         && (!Is_TS_War_Factory() || (!In_Radio_Contact() && (Status == 0 || BState == BSTATE_CONSTRUCTION)))) {
         if (Status == 0) {
             if (*this != STRUCT_TSDLIMP) {
-                Sound_Effect(VOC_TS_PLACE_BUILDING_DOWN, Center_Coord());
+                TF_Sound_Effect_For(House, VOC_TS_PLACE_BUILDING_DOWN, Center_Coord());
             }
             Do_Uncloak();
             Begin_Mode(BSTATE_CONSTRUCTION);

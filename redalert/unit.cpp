@@ -2181,7 +2181,7 @@ bool UnitClass::Try_To_Deploy(void)
             BuildingClass* building = new BuildingClass(into, House->Class->House);
             if (building != NULL && building->Unlimbo(Cell_Coord(cell))) {
                 if (into != STRUCT_TSDLIMP) {
-                    Sound_Effect(VOC_TS_PLACE_BUILDING_DOWN, Center_Coord());
+                    TF_Sound_Effect_For(House, VOC_TS_PLACE_BUILDING_DOWN, Center_Coord());
                 }
                 building->Revealed(House);
                 building->Strength = max(1, (int)(Health_Ratio() * (int)building->Class->MaxStrength));
@@ -2242,14 +2242,15 @@ bool UnitClass::Try_To_Deploy(void)
                     **	Play the buildup sound for the player if this is the players
                     **	MCV.
                     */
-                    if (building->House == PlayerPtr) {
-                        // TF: a TD or TS yard slams down with its own era's placement sound.
+                    // TF: a human's yard slams down for its owner, with its own era's placement sound; the game loop
+                    // runs as the lobby's first player, so in LAN PlayerPtr is often another human.
+                    if (building->House->IsHuman) {
                         bool td_bldg = building->Class->Is_Tiberian_Era();
                         bool ts_bldg = building->Class->Is_TS_Era();
-                        Sound_Effect(ts_bldg ? VOC_TS_PLACE_BUILDING_DOWN
-                                             : (td_bldg ? VOC_TD_PLACE_BUILDING_DOWN
-                                                        : VOC_PLACE_BUILDING_DOWN),
-                                     Center_Coord());
+                        TF_Sound_Effect_For(building->House,
+                                            ts_bldg ? VOC_TS_PLACE_BUILDING_DOWN
+                                                    : (td_bldg ? VOC_TD_PLACE_BUILDING_DOWN : VOC_PLACE_BUILDING_DOWN),
+                                            Center_Coord());
                     } else {
                         building->IsToRebuild = true;
                         building->IsToRepair = true;
@@ -3658,7 +3659,7 @@ void UnitClass::Deploy_Begin(bool deploy)
     DeployTick = 0;
     Mark(MARK_CHANGE);
 
-    Sound_Effect(VOC_TS_PLACE_BUILDING_DOWN, Center_Coord());
+    TF_Sound_Effect_For(House, VOC_TS_PLACE_BUILDING_DOWN, Center_Coord());
 }
 
 // The DeployToFire stance machine, ticked every frame: a move packs a set-down unit up first and waits out a

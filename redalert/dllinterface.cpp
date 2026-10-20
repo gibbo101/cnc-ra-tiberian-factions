@@ -600,6 +600,14 @@ void Display_Briefing_Text_GlyphX()
     DLLExportClass::On_Display_Briefing_Text();
 }
 
+// Plays a sound for one player's launcher, whichever player the game loop runs as.
+void TF_Sound_Effect_For(HouseClass const* player, VocType voc, COORDINATE coord)
+{
+    if (voc != VOC_NONE) {
+        DLLExportClass::On_Sound_Effect(player, (int)voc, "", 0, coord);
+    }
+}
+
 void On_Sound_Effect(int sound_index, int variation, COORDINATE coord, int house)
 {
     int voc = sound_index;
