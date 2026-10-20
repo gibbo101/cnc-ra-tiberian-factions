@@ -1,7 +1,8 @@
 # Skirmish music
 
 **Status:** Reference. The mod's skirmish, jukebox and menu music: TF's playlists, music by faction, and the
-optional TS-Music pack (Tiberian Sun and Firestorm's in-game themes).
+optional TS-Music folder (Tiberian Sun and Firestorm's in-game themes), withdrawn from the Workshop and to be
+built from the player's own Tiberian Sun (`ts-music-import.md`).
 **Open:** a Random lobby pick plays Mix whatever the faction's choice.
 
 ## What ships
@@ -43,8 +44,8 @@ TIBERIAN FACTIONS SETTINGS, under REPLAY / OBSERVER on the main menu, sets the m
 
 - **AUDIO** has a tab per faction under the game banners, the faction's crest, and four rows: MIX, RED ALERT, TIBERIAN
   DAWN and TIBERIAN SUN, the saved one ticked. A click saves it at once; it plays from the next track. While the
-  TS-Music add-on is off, TIBERIAN SUN reads "Needs its add-on" and GET ADD-ON opens the ADD-ONS screen with
-  TS-Music selected. DEFAULTS puts every faction back on MIX.
+  TS-Music tracks are missing, TIBERIAN SUN reads "Not installed" and can't be picked. DEFAULTS puts every faction
+  back on MIX.
 - **GAME RULES** shows COMING SOON.
 
 The page writes `Documents/CnCRemastered/tf_music.ini`, which the hook reads at every skirmish track:

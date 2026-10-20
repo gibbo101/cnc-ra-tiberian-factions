@@ -1,11 +1,12 @@
 # Asset packs
 
 **Status:** Reference. The TS, RA2 and C&C3 asset packs and the TS-Music pack: layout, routing by name,
-staging into the build, and publishing.
+staging into the build, and publishing. TS-Music is withdrawn from the Workshop (`ts-music-import.md`).
 
 The mod's Tiberian Sun, Red Alert 2 and C&C3 assets live in `asset-packs/`, one source folder per pack.
 `asset_packs.WORKSHOP` builds the Workshop items from them (`scripts/workshop_packs.py`): TS-HD-Assets,
-RA2-HD-Assets and CNC3-Assets, each as a Red Alert item and a Tiberian Dawn one, and TS-Music for Red Alert. Tiberian Factions' own files stay
+RA2-HD-Assets and CNC3-Assets, each as a Red Alert item and a Tiberian Dawn one, and TS-Music for Red Alert, which
+stays Private: EA's C&C modding guidelines don't allow a mod to include C&C music files. Tiberian Factions' own files stay
 in `resources/remaster_mods/Vanilla_RA/`.
 
 ## Layout
@@ -114,7 +115,8 @@ The mod keeps only their XML entries; their art and audio ship in the item.
 Firestorm's 26 in-game themes for Red Alert. Like a required item it stays its own folder beside the mod, so
 staging builds it there (`build/remaster/TS-Music`) and `deploy.sh` mirrors it; unlike one, the mod runs without
 it. Its WAVs are gitignored and rebuilt from an installed Tiberian Sun by `scripts/ts_music_build.py`; the
-item carries `CCDATA/TSMUSIC.INI`. How the mod uses it is in `skirmish-music.md`.
+item carries `CCDATA/TSMUSIC.INI`. How the mod uses it is in `skirmish-music.md`. It is not published; players
+will build the same folder from their own Tiberian Sun (`ts-music-import.md`).
 
 ## Not yet in the packs
 
