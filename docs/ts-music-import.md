@@ -37,13 +37,14 @@ stays the reference and its checksums (`scripts/ts_music_work/music.md5`) test t
 
 ## The ADD-ONS entry
 
-TIBERIAN SUN MUSIC stays on the ADD-ONS screen, with one of three states:
+TIBERIAN SUN MUSIC stays on the ADD-ONS screen. Its row's status line, where other add-ons show LOADED, follows
+the import:
 
-| State | Text | Button |
+| State | Status line | Detail panel button |
 |---|---|---|
-| Not found | Tiberian Sun's soundtrack, from your own copy of Tiberian Sun. It's a free download: install it, then come back here. | none |
-| Found, not imported | Tiberian Sun's soundtrack, from your copy of Tiberian Sun. | IMPORT |
-| Imported | Tiberian Sun's soundtrack, imported from your copy. | the usual on/off tick |
+| Not found | NO TIBERIAN SUN INSTALL DETECTED | none; the panel says Tiberian Sun is a free download |
+| Found, not imported | READY TO IMPORT | IMPORT |
+| Imported | LOADED, as any add-on | the usual on/off tick |
 
 IMPORT converts the themes with a progress bar, switches the mod on and restarts the game, as switching on any
 add-on does.
