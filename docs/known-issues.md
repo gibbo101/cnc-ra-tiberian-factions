@@ -64,11 +64,12 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 
 ## Multiplayer
 
-### LAN: sounds the game loop plays can reach the wrong player (suspected beyond deploys)
+### LAN: other loop-time sounds may skip the second player (suspected)
 - **Severity:** minor (LAN games only).
-- The game loop runs as the lobby's first player, so a sound sent from it goes to that player. MCV and TS deploy
-  sounds now name their owner (`TF_Sound_Effect_For`); other loop-time sounds and EVA lines still follow the first
-  player. Check a LAN match with the host second in the lobby, and route any the host misses the same way.
+- The game loop runs as the lobby's first player: PlayerPtr is that player and only they have IsPlayerControl.
+  MCV and TS deploys, the placement slam and the build-up now play for their owner (`TF_Sound_Effect_For`,
+  `IsHuman`). EA's code tests PlayerPtr or IsPlayerControl in about 80 more places; any of them that runs in the
+  loop and plays a sound or EVA line would skip the second player. Listen for one in a long LAN match.
 
 ### LAN joiners' credit tick: untested
 - **Severity:** minor.
