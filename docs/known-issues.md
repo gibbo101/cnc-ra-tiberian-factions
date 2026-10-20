@@ -64,6 +64,14 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 
 ## Multiplayer
 
+### LAN: the deploy key and H are off, and some sounds reach the wrong player
+- **Severity:** moderate (LAN games only).
+- The game loop runs as the lobby's first player, and only the host reads its keyboard. With two humans the host's
+  H centred the joiner's camera and the deploy key deployed both players' selections, so both keys work only with
+  one human player; LAN players deploy by clicking. Sounds go to that same player, so the host missed some of its
+  own deploy and placement sounds when the Deck was first in the lobby. Fix: route each player's keys through the
+  launcher's per-player mod commands, and address each sound to the player whose object made it.
+
 ### LAN joiners' credit tick: untested
 - **Severity:** minor.
 - In LAN the host alone simulates, so the DLL's faction-routed tick (`credits.cpp`
