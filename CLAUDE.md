@@ -57,6 +57,8 @@ packs against the rest before building them.
 ## Diagnostics
 - A diagnostic (log, probe, counter) compiles only under `#if TF_DEV_BUILD`, so the
   Workshop build has none.
+- `#if TF_DEV_BUILD` above `#include "function.h"` is always false: `defines.h` sets it. Put
+  dev-only includes after it.
 - It lives only while its feature or bug is open, and is deleted in the branch that ships
   the feature or fixes the bug.
 - It writes `Documents/CnCRemastered/tf_<topic>.log` and is rate-limited. Heavy work runs

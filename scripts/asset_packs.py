@@ -108,7 +108,8 @@ WORKSHOP = {
     },
     "TS-Music": {
         "packs": ("TS-Music",),
-        "required": False, "used": True, "kind": "music", "marker": "TSMUSIC.INI", "xml_id": "TSMusic",
+        "required": False, "used": True, "withdrawn": True, "kind": "music", "marker": "TSMUSIC.INI",
+        "xml_id": "TSMusic",
         "version": (1, 0), "md5": os.path.join("scripts", "ts_music_work", "music.md5"),
         "game": "TS", "prefix": "TS", "hosts": ("RA",), "workshop_ids": {"RA": "3822605221"},
         "name": "Tiberian Sun Music",

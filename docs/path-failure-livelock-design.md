@@ -6,7 +6,8 @@ A unit that keeps failing to path from the same cell gives up: infantry after 8 
 a minute, both handled by the caller (`FootClass::TF_Path_No_Progress`). A re-entrancy guard on
 the give-way retreat (`giveway_retreat_depth` in `DriveClass::Start_Of_Move`) ended the Docklands
 stack overflow. Units with no ground route still produce a retry storm; not measured since the
-ferry shipped. Read "Failed attempt" below before touching this code.
+ferry shipped; what failed searches cost on a normal map is under "What failed searches cost". Read "Failed
+attempt" below before touching this code.
 
 ## The shipped fix
 
@@ -56,12 +57,26 @@ ignore buildings), same recommended shape of cure (a no-progress detector, not a
 ## Porting TS's pathfinder: no (coach-day dive, 2026-09-11)
 
 TS's hierarchical A* (`reference/OpenTS`) would not fix what is left. Ours already has the heap
-and the 4096-node cap, which never tripped live. TS's zones also ignore ordinary
+and the 4096-node cap. TS's zones also ignore ordinary
 buildings (only walls, the Firestorm and laser fences block them), so a walled destination stays
 invisible to it too. A headless AI-vs-AI Docklands run counted 27,861 real-destination fallbacks,
 the Titans, Wolverines and Disruptors of the unreachable-target storm above, and 1,352 self-cell
 (`src==dst`) searches from the Amphibious APC (TSAPC). The APC's self-cell searches are the
 cheap targeted fix still open.
+
+## What failed searches cost
+
+Measured on Fields of Gold, 126x126, against 3 Hard AI over 12 minutes: 2,469 of 12,576 path
+requests fell back to the edge-follower.
+- **Most cost nothing.** 1,098 started on their destination (A* skips the search) and 1,052 aimed at an
+  impassable cell within 3 cells (A* gives up at once). Nearly all of the first were AI units returning to
+  their guard spot, the cell `HouseClass::Where_To_Go` gave them, which can lie among the base's buildings.
+- **The cost is in cap hits.** 233 searches ran to the 4096-node cap, about 1.1 ms each (0.25 s over the match),
+  half of them guard-spot returns. 86 emptied the open list, under 1,000 nodes in all.
+- **One match is not a measure.** Another match on the same map logged 70,595 fallbacks, the AI sending units at
+  unreachable corner cells, so two matches can differ by more than any code change. Compare code by running the
+  same search both ways in one build: the stamped visited table against the hash map it replaced came out
+  2.27 times faster that way, over 851 paired searches with identical paths.
 
 ---
 
