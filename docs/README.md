@@ -58,7 +58,7 @@ sections, and `package-for-workshop.sh` runs it.
 ### Tiberian Sun and other eras
 - `ts-gdi-faction.md` — TS GDI as the fifth faction; TS Nod and the multi-era ceiling.
 - `ts-gdi-tree-plan.md` — every TS GDI entity, the engine facts and the open queue.
-- `ts-theatres.md` — TS's theatres and maps on RA's grid: the converter, height, the square tileset.
+- `ts-theatres.md` — TS's theatres and maps on RA's grid: the converter, height, the art routes, the tileset memory test.
 - `ts-asset-import-spike.md` — the TS asset pipeline: extraction, voxel renders, SHPs.
 - `emp-cannon-design.md` — the EMP Pulse Cannon.
 - `firestorm-design.md` — the Firestorm Defense.

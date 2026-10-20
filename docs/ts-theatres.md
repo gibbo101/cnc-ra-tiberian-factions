@@ -1,9 +1,10 @@
 # Tiberian Sun theatres and maps
 
-**Status:** Design. A converter lays TS's multiplayer maps on Red Alert's grid; an art sample shows the
-square TS Temperate tileset. Nothing ships yet.
-**Open:** six maps with a pass the conversion closes; the art's upscale and tuning; the engine work
-(theatre slots, templates, the height rule); an end-to-end map.
+**Status:** Design, parked. A converter lays TS's multiplayer maps on Red Alert's grid, and probes draw
+them with TS's own art. Nothing ships yet.
+**Open:** run the tileset video-memory test, which picks the art route; dark notches on rare ramp
+shapes and a lake's diamond edge; six maps with a pass the conversion closes; the engine work (theatre
+slots 6 and 7, templates, the height rule); an end-to-end map.
 
 Tiberian Sun's Temperate and Snow theatres as two more Red Alert theatres, with TS's own maps converted
 onto them. A mod that ports Red Alert and Tiberian Dawn tilesets into TS's isometric engine
@@ -66,9 +67,8 @@ height rules apply only on a map that has them.
   lower cell a ramp (`FootClass::Can_Reach`). A height step is a wall even on clear ground. The DLL
   applies the same rule on a TS map, so plateau edges hold without blocking cells; the route check
   above assumes it.
-- **Art:** heights show as TS lights them (`[Lighting]` `Ambient` plus `Level` per level) and as
-  cliffs and ramps drawn into the cells, the way RA's own cliffs are. Units draw at their cell, not
-  lifted.
+- **Art:** heights show as TS lights them (`[Lighting]` `Ambient` plus `Level` per level), with ramps
+  drawn into the cells and cliffs drawn over them (below). Units draw at their cell, not lifted.
 - **Lifted drawing**, units raised on plateaus as in TS, is possible from the DLL (every draw
   position, click and cursor cell goes through it) but needs terrain baked per map, shroud and
   placement remapped and cliff faces as sorted sprites. It is not planned; a test of how the
@@ -76,38 +76,71 @@ height rules apply only on a map that has them.
 
 ## Art
 
-**Not TS's tiles cell by cell.** An RA cell's flat TS art depends on five TS cells' tiles and heights;
-across the 23 maps that fit that is 64,637 different Temperate cells and 31,391 Snow, too many for a
-tileset. `scripts/probes/ts_ground_sample.py` draws a region that way and counts them.
+The map should look as TS draws it. Two routes, and the tileset video-memory test (below) picks one.
 
-**A square autotile set made from TS's art** (`scripts/probes/ts_autotile_sample.py`):
+**TS's own tiles, one piece per RA cell** (`scripts/probes/ts_ground_sample.py`,
+`scripts/probes/ts_cliff_sprites_sample.py`, which writes `*_whole_ts_exact.png`):
 
-- **Ground textures** from TS's own tiles: a tile repeated on its lattice, stretched to top-down and
-  cut on lattice points tiles seamlessly, 48 source pixels to the RA cell. Clear, rough, sand, green,
-  pavement and water. TS Temperate has a single clear tile; mirrored centre diamonds give four
-  variants.
+- **Ground, water, roads and TS's own transitions:** each RA cell is cut from TS's art drawn flat, its
+  centre diamond and the quarters of its four corner cells, un-projected (y stretched twice, rotated
+  45 degrees).
+- **Ramps** are warped back to level: a ramp's diamond and extra image are mapped bilinearly from its
+  raised corners (OpenTS's ramp table, corners top, right, bottom, left) lowered 13 pixels per level.
+- **Cliffs are objects over the ground**, not ground tiles. A cell is cliff when its tileset is named
+  for cliffs, or it is rock with an extra image. Each piece keeps its plateau top on its own cells and
+  hangs its face south, at TS's height or half of it.
+- **Firestorm's tilesets first:** `expand01.mix`'s `TEMPERAT.INI` and `ISOTEMP.MIX` replace TS's and add
+  tiles 960 and up (crystal, swamp, blue mold), which TS's own multiplayer maps use.
+- **Cost:** across the 23 maps that fit, about 35,000 different Temperate pieces with light left to the
+  engine (ground 6,103, water 8,728, ramps 17,317, roads 3,206), and 64,637 with each map's lighting
+  baked in; Snow 31,391 with lighting. This works only if the launcher loads the tiles a map draws.
+- **Flaws:** small dark notches from rare ramp shapes, a lake's diamond edge, and softness at 128 pixels
+  a cell (Lanczos; an ESRGAN upscale needs a torch install).
+
+**A square autotile set made from TS's art** (`scripts/probes/ts_autotile_sample.py`), if whole
+tilesets load:
+
+- **Ground textures** from TS's tiles, repeated on their lattice, stretched to top-down and cut on
+  lattice points, so they tile seamlessly at 48 source pixels to the RA cell. TS Temperate has a single
+  clear tile; mirrored centre diamonds give four variants.
 - **Transitions** per corner: a class covers the cell where the corners' bilinear field, plus noise
-  with a period of one cell, passes one half. An edge then depends only on its two corners, so any
-  two pieces meet. Classes are painted by tile family (TS's sand and green tiles have rough's land
-  type) and layered over clear.
-- **Cliffs and ramps** from the same corner fields: each height level steps where its field passes
-  one half, steeply for cliffs and gently where a corner is a ramp, then is lit from TS's north-west
-  with rock on the steep band. The face falls in the cells between high and low corners, which are
-  TS's impassable cliff cells.
+  with a period of one cell, passes one half, so any two pieces meet. Classes go by tile family (TS's
+  sand and green tiles have rough's land type).
+- **Cliffs and ramps** step where each level's corner field passes one half, steep for cliffs and
+  gentle at ramps, lit from TS's north-west. Cliffs drawn this way lose TS's look; TS's cliff objects
+  above go over this ground too.
 
-A 14 by 10 cell region of Tiers of Sorrow takes 84 pieces. TS's clear tile repeats visibly at 128
-pixels a cell, and the textures need a better upscale than Lanczos.
+A 14 by 10 cell region of Tiers of Sorrow takes 84 pieces.
+
+**A curated TS tileset for new maps** is the third piece: the ground, transition, ramp and cliff pieces
+a mapper paints with, small enough for either route. It needs map editor support.
+
+## The tileset video-memory test
+
+The launcher holds every texture it draws in video memory (`sprite-memory.md`). Whether a terrain
+tileset costs memory whole or per tile drawn is untested.
+
+`scripts/probes/tileset_vram_probe.py` builds `TFTilesetProbe`, a data-only Red Alert mod: RA's own
+`RA_TERRAIN_TEMPERATE.XML` from `CONFIG.MEG` (2,053 tiles) plus 4,000 tiles no map uses, each a loose
+256 by 256 DXT5 frame (334 MiB).
+
+1. Copy it into its own folder, `Mods/Red_Alert/TFTilesetProbe/`, with the game closed.
+2. Disable Tiberian Factions, which overrides the same tileset.
+3. Play one RA Temperate skirmish map with the probe off, then on, from the same view, and read
+   video memory in the match (`nvidia-smi --query-gpu=memory.used` on the desktop).
+
+About 330 MiB more means whole tilesets load and the autotile route stands; no change means the
+launcher loads only drawn tiles and TS's own tiles can be used.
 
 ## Engine plan
 
-- **Two theatres**, TS Temperate and TS Snow, in the launcher's slots after TD's three, each with its
-  own terrain tileset.
-- **DLL templates** for the autotile pieces. The launcher draws a cell by the name and icon number the
+- **Two theatres**, TS Temperate and TS Snow, in the launcher's slots 6 and 7 after TD's three
+  (`td-base-art.md`), each with its own terrain tileset.
+- **DLL templates** for the pieces. The launcher draws a cell by the template name and icon number the
   DLL exports for it, and RA templates hold up to 256 icons.
+- **Terrain frames can be loose DDS:** the mod already ships `T17.TEM`'s frames that way.
 - **The add-on:** theatres, templates and the height rule are DLL code in the mod; the art, tileset
   XML, classic data and converted maps can be an asset pack.
-- **To measure first:** whether the launcher takes slots past TD's, whether a terrain tileset costs
-  video memory whole or per used tile, and whether terrain frames can be DDS.
 
 ## Red Alert 2
 
