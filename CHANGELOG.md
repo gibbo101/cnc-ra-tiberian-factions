@@ -26,7 +26,9 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
 - Placing a turret on a component tower repairs the tower to full, as in Firestorm.
 - Turrets stay on the sidebar after the last bare component tower is armed, with no "new construction options".
 - A deployed Juggernaut ordered onto a target it can't hit stays put instead of wandering off.
-- H takes you to your Construction Yard again.
+- H takes you to your Construction Yard again, and in LAN games it moves only your own camera.
+- In LAN games the deploy key deploys only your own units.
+- In LAN games every player hears their own building go down in full, the slam and the build-up after it.
 - Another enabled mod's rules.ini no longer breaks Tiberian Factions.
 - Units, infantry and aircraft come only from their own faction's factory. With another faction's Construction
   Yard, a Soviet War Factory no longer turns out GDI Mammoth Tanks for the AI, and placing a building no longer
