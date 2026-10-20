@@ -125,6 +125,14 @@ elif [[ -z "$STRIP_BIN" ]]; then
     echo "WARNING: i686-w64-mingw32-strip not found — shipping UNSTRIPPED DLL ($(du -h "$STAGED_DLL" | cut -f1))." >&2
 fi
 
+# --- EA's C&C modding guidelines (docs/ea-modding-guidelines.md) --------------
+if ! python3 scripts/ea_guidelines_check.py --manifest tools/workshop-uploader/workshop.json --readme README.md \
+    --content "$STAGE_DIR/$SUBFOLDER_NAME"; then
+    echo "ERROR: the release breaks EA's C&C modding guidelines (docs/ea-modding-guidelines.md)" >&2
+    exit 1
+fi
+echo "✓ EA's modding guidelines: disclaimer at the top, no music files"
+
 # --- ModDB zips: the mod with its required asset packs beside it, and each pack alone ---------------
 REQUIRED_DIRS=()
 while read -r mod; do

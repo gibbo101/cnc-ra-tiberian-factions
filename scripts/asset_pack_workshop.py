@@ -31,6 +31,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import asset_packs as A  # noqa: E402
+import ea_guidelines_check as guidelines  # noqa: E402
 import workshop_packs as W  # noqa: E402
 
 UPLOADS = os.path.join(A.REPO, "dist", "asset-pack-uploads")
@@ -254,6 +255,9 @@ def main(wanted):
         mod, host = known[item]
         folder, content = stage(item, mod, host)
         path, chars = manifest(item, mod, host, folder, content)
+        problems = guidelines.check_manifest(path) + guidelines.check_content(os.path.join(UPLOADS, item))
+        if problems:
+            raise SystemExit("\n".join(problems) + "\nEA's C&C modding guidelines: docs/ea-modding-guidelines.md")
         jpg = preview(item, mod, host)
         print(f"{item:20s} upload dist/asset-pack-uploads/{item}/  manifest {os.path.basename(path)} "
               f"({chars} chars)  preview {os.path.getsize(jpg) // 1024} KB")
