@@ -1894,6 +1894,10 @@ typedef enum UnitType : char
     UNIT_C3PRED,            // C&C3 Predator Tank (Tiberium Wars GDIPredator): single cannon, turret seated aft of the hull centre. Art = GUPREDTANK, same layout as UNIT_C3MK3.
     UNIT_TSTTNK,            // TS Tick Tank ([TTNK]): Nod's turret tank, found only in crates; turns south and digs in as STRUCT_TSTICK. Art: ts_pack_hd_buildings.py.
     UNIT_TS4PAIR,           // Mk. I Reserve: a dropship-bay group order; the pod lands two UNIT_TS4TNK.
+    UNIT_C3SCORP,           // C&C3 Scorpion Tank (Tiberium Wars NODRaiderTank): cannon on a turreted upper body. Art = NURADR, UNIT_C3PRED's layout.
+    UNIT_C3SCORPLAS,        // UNIT_C3SCORP with Laser Capacitors: no cannon, a laser turret on the tail mount. Own hull and turret art.
+    UNIT_C3SCORPDZR,        // UNIT_C3SCORP with Dozer Blades: the blade turns with the upper body, so only its turret art differs.
+    UNIT_C3SCORPLASDZR,     // UNIT_C3SCORPLAS with Dozer Blades: the blade rides the fixed body, so only its hull art differs.
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -3427,6 +3431,8 @@ typedef enum WeaponType : char
     WEAPON_C3PREDCANNON,   // C&C3 Predator cannon (GDIPredatorTankCannon) at RA scale. Registered "C3PredCannon".
     WEAPON_TS90MM,         // TS [90mm], the Tick Tank's gun, dug in or not. Registered "TS90mm".
     WEAPON_TSBAZOOKA,      // TS [Bazooka], the Rocket Infantry's launcher, air and ground. Registered "TSBazooka".
+    WEAPON_C3SCORPCANNON,  // C&C3 Scorpion cannon (NODRaiderTankCannon) at RA scale. Registered "C3ScorpCannon".
+    WEAPON_C3SCORPLASER,   // C&C3 Scorpion laser (NODRaiderTankCannonLaser), the Obelisk's beam. Registered "C3ScorpLaser".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -4285,6 +4291,26 @@ typedef enum VocType : short
     VOC_TS_GATEUP1,  // TS gate rising (GATEUP1, [General] GateUp=). Bundled TSGATEUP1.WAV.
     VOC_TSLACHG2R,   // The Tesla Coil charge-up (TSLACHG2) reversed: the Tesla gate's arcs winding down. TSLACHG2R.WAV.
     VOC_TS_RKETINF1, // TS Rocket Infantry's bazooka (RKETINF1, [Bazooka] Report=). Bundled TSRKETINF1.WAV.
+    VOC_C3SSEA,    // Scorpion select voice. Bundled C&C3 sample(s) as C3SSEA*.WAV.
+    VOC_C3SSEB,    // Scorpion select voice. Bundled C&C3 sample(s) as C3SSEB*.WAV.
+    VOC_C3SSEC,    // Scorpion select voice. Bundled C&C3 sample(s) as C3SSEC*.WAV.
+    VOC_C3SSED,    // Scorpion select voice. Bundled C&C3 sample(s) as C3SSED*.WAV.
+    VOC_C3SSEE,    // Scorpion select voice. Bundled C&C3 sample(s) as C3SSEE*.WAV.
+    VOC_C3SSEF,    // Scorpion select voice. Bundled C&C3 sample(s) as C3SSEF*.WAV.
+    VOC_C3SMOA,    // Scorpion move voice. Bundled C&C3 sample(s) as C3SMOA*.WAV.
+    VOC_C3SMOB,    // Scorpion move voice. Bundled C&C3 sample(s) as C3SMOB*.WAV.
+    VOC_C3SMOC,    // Scorpion move voice. Bundled C&C3 sample(s) as C3SMOC*.WAV.
+    VOC_C3SMOD,    // Scorpion move voice. Bundled C&C3 sample(s) as C3SMOD*.WAV.
+    VOC_C3SMOE,    // Scorpion move voice. Bundled C&C3 sample(s) as C3SMOE*.WAV.
+    VOC_C3SMOF,    // Scorpion move voice. Bundled C&C3 sample(s) as C3SMOF*.WAV.
+    VOC_C3SATA,    // Scorpion attack voice. Bundled C&C3 sample(s) as C3SATA*.WAV.
+    VOC_C3SATB,    // Scorpion attack voice. Bundled C&C3 sample(s) as C3SATB*.WAV.
+    VOC_C3SATC,    // Scorpion attack voice. Bundled C&C3 sample(s) as C3SATC*.WAV.
+    VOC_C3SATD,    // Scorpion attack voice. Bundled C&C3 sample(s) as C3SATD*.WAV.
+    VOC_C3SATE,    // Scorpion attack voice. Bundled C&C3 sample(s) as C3SATE*.WAV.
+    VOC_C3SATF,    // Scorpion attack voice. Bundled C&C3 sample(s) as C3SATF*.WAV.
+    VOC_C3SGUN,    // Scorpion cannon (random take). Bundled C&C3 sample(s) as C3SGUN*.WAV.
+    VOC_C3SLAS,    // Scorpion laser (random take). Bundled C&C3 sample(s) as C3SLAS*.WAV.
 
     VOC_COUNT,
     VOC_FIRST = 0
