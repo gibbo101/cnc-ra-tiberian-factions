@@ -10,6 +10,10 @@ static const struct
 } _unit_art_drop[] = {
     {UNIT_C3MK3, 43},
     {UNIT_C3PRED, 32},
+    {UNIT_C3SCORP, 19},
+    {UNIT_C3SCORPDZR, 19},
+    {UNIT_C3SCORPLAS, 19},
+    {UNIT_C3SCORPLASDZR, 19},
     {UNIT_R2APOC, 35},
     {UNIT_R2PRIS, 40},
     {UNIT_TS4TNK, 37},

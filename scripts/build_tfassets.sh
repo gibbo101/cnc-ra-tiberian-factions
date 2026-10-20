@@ -262,6 +262,11 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/c3mk3_stub.shp" 64 64 128
 PACK_ARGS+=("$TMPDIR/c3mk3_stub.shp:C3MK3.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/c3pred_stub.shp" 48 48 128
 PACK_ARGS+=("$TMPDIR/c3pred_stub.shp:C3PRED.SHP")
+# C&C3 Scorpion and its upgrades: every type draws its own tileset name, even where it shares frames.
+for scorp in C3SCORP C3SCORPLAS C3SCORPDZR C3SCORPLASDZR; do
+    python3 scripts/gen_stub_shp.py "$TMPDIR/${scorp,,}_stub.shp" 48 48 128
+    PACK_ARGS+=("$TMPDIR/${scorp,,}_stub.shp:$scorp.SHP")
+done
 # TS aircraft (Orca Fighter / Orca Bomber / Carryall / Orca Transport) -- HD-only voxel renders, 32
 # facings each; dims match each one's rules.ini ShapeSize.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsorca_stub.shp" 48 48 32

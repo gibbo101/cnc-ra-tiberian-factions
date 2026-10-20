@@ -150,9 +150,9 @@ def items():
 
 # Objects only the Workshop packs carry: art for other mods that no Tiberian Factions type draws, so its build leaves
 # out their ZIPs, tiles, cameos and sidebar entries (scripts/stage_asset_packs.py).
-PACK_ONLY = ("C3MK3RAIL", "C3PREDRAIL", "C3SCORP", "C3SCORPLAS", "C3SCORPDZR", "C3SCORPLASDZR")
+PACK_ONLY = ("C3MK3RAIL", "C3PREDRAIL")
 # Sound stems (sample names less their take number) only the packs carry, left out with their sound events.
-PACK_ONLY_SOUNDS = tuple(f"C3S{kind}{take}" for kind in ("SE", "MO", "AT") for take in "ABCDEF") + ("C3SGUN", "C3SLAS")
+PACK_ONLY_SOUNDS = ()
 
 
 def drop_pack_only(text):
