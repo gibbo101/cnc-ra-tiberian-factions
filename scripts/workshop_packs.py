@@ -473,7 +473,9 @@ def build(mod, folder, host="RA", strict=True):
     if problem:
         print("WARNING: skipped", mod, "--", problem, file=sys.stderr)
         return
-    sprite_dds.convert(folder)
+    # Loose DDS sprites are proven in Red Alert only (docs/sprite-memory.md).
+    if host == "RA":
+        sprite_dds.convert(folder)
     listed, written = write_xml(mod, folder, host)
     prune(folder, os.path.join("Data", "XML"), written)
     prune(folder, "CCDATA", [marker] if marker else [])

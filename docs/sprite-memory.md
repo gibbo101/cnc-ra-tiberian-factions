@@ -2,7 +2,8 @@
 
 **Status:** Design. Staging writes whole-canvas DDS sprites and the launcher skips its splash preload; next
 release.
-**Open:** a Steam Deck check for first-draw hitches with the preload off.
+**Open:** a Steam Deck check for first-draw hitches with the preload off; a Tiberian Dawn check before the TD asset
+packs ship DDS sprites (their builds keep the ZIPs until then).
 
 The launcher holds every texture it draws in video memory. Tiberian Factions and its asset packs carry far more art
 than the base game, so how that art is stored, and when it loads, decides whether the mod fits on a 4 GB card.
