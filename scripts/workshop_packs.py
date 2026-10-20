@@ -473,7 +473,7 @@ def build(mod, folder, host="RA", strict=True):
     if problem:
         print("WARNING: skipped", mod, "--", problem, file=sys.stderr)
         return
-    # Loose DDS sprites are proven in Red Alert only (docs/sprite-memory.md).
+    # Trap: loose DDS sprites are untested in Tiberian Dawn; converting its builds could ship art it never draws.
     if host == "RA":
         sprite_dds.convert(folder)
     listed, written = write_xml(mod, folder, host)
