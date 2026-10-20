@@ -1708,6 +1708,11 @@ static bool TF_RA2_Voice(UnitClass const* unit, TFVoiceKind kind)
         {VOC_C3PMOA, VOC_C3PMOB, VOC_C3PMOC, VOC_C3PMOD, VOC_C3PMOE, VOC_NONE},
         {VOC_C3PATA, VOC_C3PATB, VOC_C3PATC, VOC_C3PATD, VOC_C3PATE, VOC_C3PATF},
     };
+    static VocType const _c3scorp[3][6] = {
+        {VOC_C3SSEA, VOC_C3SSEB, VOC_C3SSEC, VOC_C3SSED, VOC_C3SSEE, VOC_C3SSEF},
+        {VOC_C3SMOA, VOC_C3SMOB, VOC_C3SMOC, VOC_C3SMOD, VOC_C3SMOE, VOC_C3SMOF},
+        {VOC_C3SATA, VOC_C3SATB, VOC_C3SATC, VOC_C3SATD, VOC_C3SATE, VOC_C3SATF},
+    };
     static VocType const _apoc_start[3] = {VOC_R2_VAPOSTAA, VOC_R2_VAPOSTAB, VOC_R2_VAPOSTAC};
     static VocType const _pris_start[3] = {VOC_R2_VPRISTAA, VOC_R2_VPRISTAB, VOC_R2_VPRISTAC};
 
@@ -1724,6 +1729,10 @@ static bool TF_RA2_Voice(UnitClass const* unit, TFVoiceKind kind)
         starts = NULL;
     } else if (*unit == UNIT_C3PRED) {
         lines = _c3pred[kind];
+        starts = NULL;
+    } else if (*unit == UNIT_C3SCORP || *unit == UNIT_C3SCORPLAS || *unit == UNIT_C3SCORPDZR
+               || *unit == UNIT_C3SCORPLASDZR) {
+        lines = _c3scorp[kind];
         starts = NULL;
     } else {
         return (false);

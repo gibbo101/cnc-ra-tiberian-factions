@@ -454,6 +454,26 @@ struct SoundEffectNameStruct
     {"TSGATEUP1", 5, IN_NOVAR},   // VOC_TS_GATEUP1 -- TS gate rising
     {"TSLACHG2R", 5, IN_NOVAR},   // VOC_TSLACHG2R -- Tesla gate arcs winding down
     {"TSRKETINF1", 1, IN_NOVAR},  // VOC_TS_RKETINF1 -- TS Rocket Infantry bazooka
+    {"C3SSEA", 20, IN_NOVAR},  // VOC_C3SSEA -- Scorpion select voice
+    {"C3SSEB", 20, IN_NOVAR},  // VOC_C3SSEB -- Scorpion select voice
+    {"C3SSEC", 20, IN_NOVAR},  // VOC_C3SSEC -- Scorpion select voice
+    {"C3SSED", 20, IN_NOVAR},  // VOC_C3SSED -- Scorpion select voice
+    {"C3SSEE", 20, IN_NOVAR},  // VOC_C3SSEE -- Scorpion select voice
+    {"C3SSEF", 20, IN_NOVAR},  // VOC_C3SSEF -- Scorpion select voice
+    {"C3SMOA", 20, IN_NOVAR},  // VOC_C3SMOA -- Scorpion move voice
+    {"C3SMOB", 20, IN_NOVAR},  // VOC_C3SMOB -- Scorpion move voice
+    {"C3SMOC", 20, IN_NOVAR},  // VOC_C3SMOC -- Scorpion move voice
+    {"C3SMOD", 20, IN_NOVAR},  // VOC_C3SMOD -- Scorpion move voice
+    {"C3SMOE", 20, IN_NOVAR},  // VOC_C3SMOE -- Scorpion move voice
+    {"C3SMOF", 20, IN_NOVAR},  // VOC_C3SMOF -- Scorpion move voice
+    {"C3SATA", 20, IN_NOVAR},  // VOC_C3SATA -- Scorpion attack voice
+    {"C3SATB", 20, IN_NOVAR},  // VOC_C3SATB -- Scorpion attack voice
+    {"C3SATC", 20, IN_NOVAR},  // VOC_C3SATC -- Scorpion attack voice
+    {"C3SATD", 20, IN_NOVAR},  // VOC_C3SATD -- Scorpion attack voice
+    {"C3SATE", 20, IN_NOVAR},  // VOC_C3SATE -- Scorpion attack voice
+    {"C3SATF", 20, IN_NOVAR},  // VOC_C3SATF -- Scorpion attack voice
+    {"C3SGUN", 1, IN_NOVAR},  // VOC_C3SGUN -- Scorpion cannon (random take)
+    {"C3SLAS", 1, IN_NOVAR},  // VOC_C3SLAS -- Scorpion laser (random take)
 };
 
 //

@@ -663,15 +663,38 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
 
     // TF: a C&C3 tank's turret seat follows the hull facing, and its fire points are C&C3's muzzle bones projected
     // per turret frame by scripts/c3_pack_tanks.py. The Mammoth's cannons and pods alternate shot by shot.
-    if (What_Am_I() == RTTI_UNIT
-        && (((UnitClass const*)this)->Class->Type == UNIT_C3MK3 || ((UnitClass const*)this)->Class->Type == UNIT_C3PRED)) {
-        bool mk3 = ((UnitClass const*)this)->Class->Type == UNIT_C3MK3;
+    if (What_Am_I() == RTTI_UNIT) {
+        UnitType type = ((UnitClass const*)this)->Class->Type;
         int hull = Dir_To_32(((UnitClass const*)this)->PrimaryFacing.Current());
         int fi = Dir_To_32(dir);
-        short const* seat = mk3 ? _c3mk3_seat_lep[hull] : _c3pred_seat_lep[hull];
-        short const* m = mk3 ? _c3mk3_fire[which != 0][IsSecondShot ? 1 : 0][fi] : _c3pred_fire[0][0][fi];
-        COORDINATE centre = centre_art;
-        return XY_Coord((int)Coord_X(centre) + seat[0] + m[0], (int)Coord_Y(centre) + seat[1] + m[1]);
+        short const* seat = NULL;
+        short const* m = NULL;
+        switch (type) {
+        case UNIT_C3MK3:
+            seat = _c3mk3_seat_lep[hull];
+            m = _c3mk3_fire[which != 0][IsSecondShot ? 1 : 0][fi];
+            break;
+        case UNIT_C3PRED:
+            seat = _c3pred_seat_lep[hull];
+            m = _c3pred_fire[0][0][fi];
+            break;
+        case UNIT_C3SCORP:
+        case UNIT_C3SCORPDZR:
+            seat = _c3scorp_seat_lep[hull];
+            m = _c3scorp_fire[0][0][fi];
+            break;
+        case UNIT_C3SCORPLAS:
+        case UNIT_C3SCORPLASDZR:
+            seat = _c3scorplas_seat_lep[hull];
+            m = _c3scorplas_fire[0][0][fi];
+            break;
+        default:
+            break;
+        }
+        if (seat != NULL) {
+            COORDINATE centre = centre_art;
+            return XY_Coord((int)Coord_X(centre) + seat[0] + m[0], (int)Coord_Y(centre) + seat[1] + m[1]);
+        }
     }
 
     // TF: the Tick Tank fires from its gun's tip in the turret frame drawn (tsttnk_muzzle.h), on the move from its art's
