@@ -3561,6 +3561,22 @@ static void Create_Units(bool official)
                     }
                 }
             }
+#if TF_DEV_BUILD
+            // TF: trial spawn, one of every C&C3 tank beside each human player's MCV.
+            if (hptr->IsHuman) {
+                static const UnitType _c3_trial[] = {
+                    UNIT_C3SCORP, UNIT_C3SCORPLAS, UNIT_C3SCORPDZR, UNIT_C3SCORPLASDZR, UNIT_C3MK3, UNIT_C3PRED};
+                for (int t = 0; t < (int)ARRAY_SIZE(_c3_trial); t++) {
+                    Reserve_Unit();
+                    UnitClass* tank = new UnitClass(_c3_trial[t], house);
+                    if (!Scan_Place_Object(tank, centroid)) {
+                        delete tank;
+                    } else {
+                        tank->Set_Mission(MISSION_GUARD);
+                    }
+                }
+            }
+#endif
         } else {
 
             /*
