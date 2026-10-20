@@ -3,8 +3,9 @@
 
 Usage:  stage_asset_packs.py <mod dir> [--full] [--strict]
 
-Copies every pack's Data/ART and Data/AUDIO into <mod dir>/Data, except the PACK_ONLY objects and the packs a
-Workshop mod in asset_packs.USED carries: that mod is built whole in the folder beside it (scripts/workshop_packs.py). Then
+Copies every pack's Data/ART and Data/AUDIO into <mod dir>/Data, except the PACK_ONLY objects and sounds and the
+packs a Workshop mod in asset_packs.USED carries: that mod is built whole in the folder beside it
+(scripts/workshop_packs.py). Then
 writes each of the mod's XML files that packs contribute to: the mod's own file from resources/,
 with every pack's entries in place of that pack's marker (before the closing tag when the file has
 no marker).
@@ -101,6 +102,7 @@ def stage(mod_dir, full=False, strict=False):
             later = set().union(*(pack_files(p, sub) for p in packs[i + 1:]))
             skip = later | {os.path.relpath(rel, sub.upper()) for rel in shared if rel.startswith(sub.upper() + os.sep)}
             skip |= {os.path.relpath(A.art_zip(name, "UNITS"), src).upper() for name in A.PACK_ONLY}
+            skip |= {rel for rel in pack_files(pack, sub) if A.pack_only_file(rel)}
             copy_tree(src, os.path.join(data, sub), skip)
     for mod in A.USED:
         workshop_packs.build(mod, os.path.join(os.path.dirname(os.path.normpath(mod_dir)), mod), strict=strict)

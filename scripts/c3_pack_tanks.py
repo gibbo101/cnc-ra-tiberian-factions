@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Package the C&C3 tanks: the Mammoth Mk. III (C3MK3) and the Predator (C3PRED).
+"""Package the C&C3 tanks: the Mammoth Mk. III (C3MK3), the Predator (C3PRED) and the Scorpion (C3SCORP) with its
+upgrades: Laser Capacitors (C3SCORPLAS), Dozer Blades (C3SCORPDZR) and both (C3SCORPLASDZR).
 
 Tileset layout per tank (the walker gait layout, contract 2 keeps the turret under 128):
   0-95    hull: 32 facings (CCW, 0 = N) x 3 tread steps; the gait code steps the treads
@@ -10,6 +11,13 @@ RENDER_PPU pixels per C&C3 unit and pack at PACK_PPU, on canvas = ShapeSize x 8.
 
 Hull frames are centred on the hull's own footprint. The turret frames pivot on the turret
 bone, which sits off that centre (the Mammoth's forward, the Predator's aft).
+The Scorpion's turret is its whole upper body. Laser Capacitors fix that body facing forward and
+seat a laser turret on a tail mount (the TURRET2 bone), so C3SCORPLAS has its own hull and turret
+frames. Its fixtures keep the plain tank's hull centre (c3_render.py part 3).
+A variant in VARIANTS packs only the frames its upgrade changes; its other tiles name its base
+tank's ZIP members. The Dozer Blade turns with the Scorpion's upper body, so C3SCORPDZR owns turret
+frames only; on the laser tank it rides the fixed body, so C3SCORPLASDZR owns hull frames only.
+Pack every Scorpion together, then run unit_centring.py, which moves the variants with C3SCORP.
 redalert/c3tanks.h carries, per hull facing, the turret seat in classic pixels for the draw and
 in leptons for fire coordinates, and per turret facing each fire point relative to the seat
 (projected through the render camera, 4/3 leptons per canvas px). Every table runs by Dir_To_32,
@@ -25,7 +33,10 @@ Art ZIPs, tiles, cameos, WAVs and sound events land where scripts/asset_packs.py
 the build merges the packs into the mod.
 
 Inputs (set C3_ART_DIR): renders/<model>_{hull,turret}/frame-NNNN.png and model/<model>.npz
-from tools/cnc3/c3_extract_model.py (workspace), cameo/<NAME>.png, audio/<model>/<C&C3 name>.wav.
+from tools/cnc3/c3_extract_model.py (workspace), cameo/<NAME>.png, audio/<model>/<C&C3 name>.wav
+from tools/cnc3/c3_extract_audio.py (workspace).
+Usage: c3_pack_tanks.py [NAME ...] packs the named tanks and variants, their audio and the header;
+with no names, every tank. c3_pack_tanks.py header | audio writes only that.
 
 License: GPL v3.
 """
@@ -59,7 +70,15 @@ LEPTONS_PER_PX = 4 / 3
 UNITS = (
     ("C3MK3", "mammoth", 64, (("MUZZLEFX01", "MUZZLEFX02"), ("ROCKETLAUNCH01", "ROCKETLAUNCH02"))),
     ("C3PRED", "predator", 48, (("FXMUZZLEFLASH",),)),
+    ("C3SCORP", "scorpion", 48, (("TURRETFX",),)),
+    ("C3SCORPLAS", "scorpion_laser", 48, (("TURRETMS",),)),
 )
+# name, base tank, model, the part whose frames it owns (the rest are its base's)
+VARIANTS = (
+    ("C3SCORPDZR", "C3SCORP", "scorpion_dozer", "turret"),
+    ("C3SCORPLASDZR", "C3SCORPLAS", "scorpion_laser_dozer", "hull"),
+)
+HULL_FRAMES = 32 * TREAD_STEPS
 
 
 def packed(path, canvas, shadow):
@@ -123,14 +142,19 @@ SOUNDS = (
     + [(f"C3PMO{c}", "predator", [f"GUPreda_VoiMove{c.lower()}"]) for c in "ABCDE"]
     + [(f"C3PAT{c}", "predator", [f"GUPreda_VoiAttack{c.lower()}"]) for c in "ABCDEF"]
     + [("C3PGUN", "predator", [f"GUPreda_wea1fire{c}" for c in "abcdefghi"])]
+    + [(f"C3SSE{c}", "scorpion", [f"NuScorp_VoiSelect{c.lower()}"]) for c in "ABCDEF"]
+    + [(f"C3SMO{c}", "scorpion", [f"NuScorp_VoiMove{c.lower()}"]) for c in "ABCDEF"]
+    + [(f"C3SAT{c}", "scorpion", [f"NUScorp_VoiAttack{c.lower()}"]) for c in "ABCDEF"]
+    + [("C3SGUN", "scorpion", [f"NUScorp_cannFire{c}" for c in "abcdefghi"]),
+       ("C3SLAS", "scorpion", [f"NUScorp_BeamFire{c}" for c in "abcde"])]
 )
 SFX_BEGIN = "  <!-- BEGIN C&C3 tank sounds (scripts/c3_pack_tanks.py) -->"
 SFX_END = "  <!-- END C&C3 tank sounds -->"
 
 
-def write_audio():
+def write_audio(models=None):
     """Each event goes in the sound-event XML of the pack its takes belong to, one marked block
-    per file."""
+    per file. Only the named models' takes are re-encoded (all when None)."""
     import subprocess
     events = {}
     for stem, model, samples in SOUNDS:
@@ -139,8 +163,9 @@ def write_audio():
             wav = stem if len(samples) == 1 else f"{stem}{i + 1}"
             dst = asset_packs.sound_wav(wav)
             os.makedirs(os.path.dirname(dst), exist_ok=True)
-            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f"{ART}/audio/{model}/{sample}.wav",
-                            "-c:a", "adpcm_ms", "-ar", "22050", "-ac", "1", dst], check=True)
+            if models is None or model in models:
+                subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f"{ART}/audio/{model}/{sample}.wav",
+                                "-c:a", "adpcm_ms", "-ar", "22050", "-ac", "1", dst], check=True)
             files.append(f"{wav}.WAV")
         entries = "".join(f"      <entry> {f} </entry>\n" for f in files)
         sfx_xml = asset_packs.sfx_xml(files[0], localized=False)
@@ -240,10 +265,28 @@ def write_header():
     print(f"wrote {os.path.normpath(HEADER)}")
 
 
-def main():
+def pack_variant(name, base, model, part):
+    """The frames of the variant's own part in its ZIP, at their shape numbers; its tiles name the rest in its base's."""
+    canvas = dict((u[0], u[2]) for u in UNITS)[base] * 8
+    if part == "hull":
+        own = [packed(f"{ART}/renders/{model}_hull/frame-{i:04d}.png", canvas, True) for i in range(HULL_FRAMES)]
+        first = 0
+    else:
+        own = [packed(f"{ART}/renders/{model}_turret/frame-{i:04d}.png", canvas, False) for i in range(32)]
+        first = HULL_FRAMES
+    write_zip(asset_packs.art_zip(name, "UNITS"), name.lower(), own, first)
+    shapes = asset_packs.shape_frames(base, "UNITS")
+    frames = [f"{name.lower()}\\{name.lower()}-{i:04d}.tga" if first <= i < first + len(own)
+              else f"{base.lower()}\\{shapes[i]}" for i in range(HULL_FRAMES + 32)]
+    patch_tileset(name, len(frames), frames)
+
+
+def main(names):
     if not ART:
         raise SystemExit("set C3_ART_DIR (holding renders/, model/, cameo/)")
     for name, model, shape, _ in UNITS:
+        if names and name not in names:
+            continue
         canvas = shape * 8
         frames = [packed(f"{ART}/renders/{model}_hull/frame-{i:04d}.png", canvas, True)
                   for i in range(32 * TREAD_STEPS)]
@@ -252,8 +295,11 @@ def main():
         write_zip(asset_packs.art_zip(name, "UNITS"), name.lower(), frames)
         patch_tileset(name, len(frames))
         write_cameo(name)
+    for name, base, model, part in VARIANTS:
+        if not names or name in names:
+            pack_variant(name, base, model, part)
     write_header()
-    write_audio()
+    write_audio({u[1] for u in UNITS if u[0] in names} if names else None)
 
 
 if __name__ == "__main__":
@@ -262,4 +308,4 @@ if __name__ == "__main__":
     elif sys.argv[1:] == ["audio"]:
         write_audio()
     else:
-        main()
+        main(sys.argv[1:])

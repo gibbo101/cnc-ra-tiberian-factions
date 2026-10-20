@@ -100,6 +100,8 @@ WORKSHOP = {
         "description": "Command & Conquer 3 units, effects, sounds and voices for {host}, in HD.",
         "contents": ["**GDI:** Mammoth Tank Mk. III (C3MK3), Predator Tank (C3PRED), and both with the railgun "
                      "upgrade (C3MK3RAIL, C3PREDRAIL)",
+                     "**Nod:** Scorpion Tank (C3SCORP), with Laser Capacitors (C3SCORPLAS), Dozer Blades "
+                     "(C3SCORPDZR) and both (C3SCORPLASDZR)",
                      "**Effects:** the railgun shot, in blue (C3RAILGLOW, C3RAILMZ, C3RAILHIT) and in orange "
                      "(C3RAILGLOWO, C3RAILMZO, C3RAILHITO)",
                      "A sidebar cameo for each tank", "Each tank's voices and weapon sounds"],
@@ -147,14 +149,32 @@ def items():
     return [(item(mod, host), mod, host) for mod, w in WORKSHOP.items() for host in w["hosts"]]
 
 # Objects only the Workshop packs carry: art for other mods that no Tiberian Factions type draws, so its build leaves
-# out their ZIPs and tiles (scripts/stage_asset_packs.py).
-PACK_ONLY = ("C3MK3RAIL", "C3PREDRAIL")
+# out their ZIPs, tiles, cameos and sidebar entries (scripts/stage_asset_packs.py).
+PACK_ONLY = ("C3MK3RAIL", "C3PREDRAIL", "C3SCORP", "C3SCORPLAS", "C3SCORPDZR", "C3SCORPLASDZR")
+# Sound stems (sample names less their take number) only the packs carry, left out with their sound events.
+PACK_ONLY_SOUNDS = tuple(f"C3S{kind}{take}" for kind in ("SE", "MO", "AT") for take in "ABCDEF") + ("C3SGUN", "C3SLAS")
 
 
 def drop_pack_only(text):
-    """A tileset XML's text without the PACK_ONLY objects' tiles."""
+    """A mod XML file's text without the PACK_ONLY objects' tiles and sidebar entries or the PACK_ONLY_SOUNDS'
+    events."""
     names = "|".join(map(re.escape, PACK_ONLY))
-    return re.sub(r"[ \t]*<Tile>\s*<Key>\s*<Name>(?:%s)</Name>.*?</Tile>\r?\n?" % names, "", text, flags=re.S)
+    text = re.sub(r"[ \t]*<Tile>\s*<Key>\s*<Name>(?:%s)</Name>.*?</Tile>\r?\n?" % names, "", text, flags=re.S)
+    text = re.sub(r'[ \t]*<ObjectTypeClass Name="RA_(?:%s)(?:_\w+)?".*?</ObjectTypeClass>\r?\n?' % names, "", text,
+                  flags=re.S)
+    if PACK_ONLY_SOUNDS:
+        sounds = "|".join(map(re.escape, PACK_ONLY_SOUNDS))
+        text = re.sub(r'[ \t]*<SFXEvent Name="RA[CR]_SFX_(?:%s)".*?</SFXEvent>\r?\n?' % sounds, "", text, flags=re.S)
+    return text
+
+
+def pack_only_file(rel):
+    """True for a pack file (path under Data/, upper case) that only the Workshop packs carry: a PACK_ONLY object's
+    cameo or a PACK_ONLY_SOUNDS take."""
+    name = os.path.basename(rel)
+    if any(name == f"BUILDICON_{n}.TGA" for n in PACK_ONLY):
+        return True
+    return any(re.fullmatch(r"%s\d*\.WAV" % re.escape(s), name) for s in PACK_ONLY_SOUNDS)
 
 
 def used_mod(pack):
@@ -236,7 +256,7 @@ def sound_pack(sample):
     if s.startswith("R2V"):
         return "RA2-Voices-eng" if re.match(r"R2V(APO|PRI)(SE|MO|AT)[A-F]$", s) else "RA2-SFX-Pack"
     if s.startswith("C3"):
-        return "CNC3-Voices-eng" if re.match(r"C3[MP](SE|MO|AT)[A-F]$", s) else "CNC3-SFX-Pack"
+        return "CNC3-Voices-eng" if re.match(r"C3[MPS](SE|MO|AT)[A-F]$", s) else "CNC3-SFX-Pack"
     return None
 
 

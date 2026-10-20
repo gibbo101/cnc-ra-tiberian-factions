@@ -32,8 +32,10 @@ import sprite_dds  # noqa: E402
 STUBS = os.path.join(A.MOD, "CCDATA", "TFASSETS.MIX")
 C3_SEATS = os.path.join(A.REPO, "redalert", "c3tanks.h")
 TS_SEATS = os.path.join(A.REPO, "redalert", "udata.cpp")
-# Objects drawn at another object's classic size: the rail tanks are their tanks with other turrets
-SHAPE_LIKE = {"C3MK3RAIL": "C3MK3", "C3PREDRAIL": "C3PRED"}
+# Objects drawn at another object's classic size: the rail tanks are their tanks with other turrets, and the
+# Scorpions, which TF has no stub for, share the Predator's 48 x 48, 128-frame layout
+SHAPE_LIKE = {"C3MK3RAIL": "C3MK3", "C3PREDRAIL": "C3PRED", "C3SCORP": "C3PRED", "C3SCORPLAS": "C3PRED",
+              "C3SCORPDZR": "C3PRED", "C3SCORPLASDZR": "C3PRED"}
 # Units with no classic stub that take a stock image's (idata.cpp, udata.cpp), and those images' classic sizes as
 # Red Alert's own MIX files hold them (E1.SHP in REDALERT.MIX/HIRES.MIX, MCV.SHP in MAIN.MIX/CONQUER.MIX)
 STOCK_IMAGE = {"TSE1": "E1", "TSE2": "E1", "TSE3": "E1", "TSENGINEER": "E1", "TSGHOST": "E1", "TSMEDIC": "E1",
@@ -374,18 +376,21 @@ def layout(mod):
     if game != "CNC3":
         return []
     lines = ["## Frame layout", "",
-             "C3MK3, C3PRED, C3MK3RAIL and C3PREDRAIL: frames 0-95 are the hull, 32 facings counter-clockwise from "
+             "Every C&C3 tank (C3MK3, C3PRED, C3SCORP and their upgrades): frames 0-95 are the hull, 32 facings "
+             "counter-clockwise from "
              "north with 3 tread steps each (frame = 3 x facing + step; step the treads while the tank drives), "
              "and 96-127 the turret, 32 facings. The turret frames are centred on the canvas and look right drawn "
-             "centred on the hull. Optional, for a mod with its own DLL: the turret's exact seat per hull facing, "
-             "within 3 classic pixels (x east, y south), clockwise from north as EA's turret tables run, so index "
+             "centred on the hull, except C3SCORPLAS's laser, which sits on the tail mount and needs its seat. For a "
+             "mod with its own DLL: the turret's exact seat per hull facing, "
+             "in classic pixels (x east, y south), clockwise from north as EA's turret tables run, so index "
              "it with `Dir_To_32(PrimaryFacing)`:",
              ""]
     text = open(C3_SEATS, encoding="utf-8").read()
-    for tank in ("C3MK3", "C3PRED"):
+    for tank, also in (("C3MK3", "C3MK3RAIL"), ("C3PRED", "C3PREDRAIL"), ("C3SCORP", "C3SCORPDZR"),
+                       ("C3SCORPLAS", "C3SCORPLASDZR")):
         seats = re.search(r"_%s_seat_px\[32\]\[2\] = \{(.*?)\};" % tank.lower(), text).group(1)
         pairs = " ".join(f"{x},{y}" for x, y in re.findall(r"\{(-?\d+), (-?\d+)\}", seats))
-        lines += [f"{tank} (and {tank}RAIL): `{pairs}`", ""]
+        lines += [f"{tank} (and {also}): `{pairs}`", ""]
     return lines
 
 
