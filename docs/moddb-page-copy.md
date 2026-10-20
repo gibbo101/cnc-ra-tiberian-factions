@@ -86,7 +86,7 @@ placing a wall in line with another of its kind, up to five cells away, fills th
 harms infantry, with a chance of Visceroids from Tiberium deaths. Most of Red Alert's own
 skirmish maps now mix Tiberium with ore.</li>
 <li><b>Unholy Alliance mode.</b> A lobby option that starts every player, human and AI, with
-an Allied, Soviet, GDI and Nod MCV.</li>
+an Allied, Soviet, GDI, Nod and Tiberian Sun GDI MCV.</li>
 <li><b>Crates.</b> The unit pool now covers every faction.</li>
 <li><b>Computer opponents for all five factions</b>, each AI on its own Easy, Medium or Hard
 setting from its lobby slot.</li>

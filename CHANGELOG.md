@@ -7,6 +7,7 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
 ### Changed
 - Concrete Wall costs 100 in skirmish and LAN, as in the campaigns (was 50).
 - Tiberian Sun GDI builds no sandbags, as in Tiberian Sun: its Concrete Wall, gates and component towers come with the Barracks.
+- Unholy Alliance starts every player with a Tiberian Sun GDI MCV too.
 
 ### Fixed
 - A paused Mammoth Mk. II, Ghost Stalker or Mobile War Factory resumes when you click it again.
