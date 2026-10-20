@@ -4,11 +4,11 @@ Command & Conquer 3 units and sidebar cameos as HD sprites, for Command & Conque
 
 ## Contents
 
-**Units** (4): C3MK3, C3MK3RAIL, C3PRED, C3PREDRAIL
+**Units** (8): C3MK3, C3MK3RAIL, C3PRED, C3PREDRAIL, C3SCORP, C3SCORPDZR, C3SCORPLAS, C3SCORPLASDZR
 
 **Effects** (6): C3RAILGLOW, C3RAILGLOWO, C3RAILHIT, C3RAILHITO, C3RAILMZ, C3RAILMZO
 
-**Sidebar cameos** (2): BuildIcon_C3MK3, BuildIcon_C3PRED
+**Sidebar cameos** (3): BuildIcon_C3MK3, BuildIcon_C3PRED, BuildIcon_C3SCORP
 
 ## Using it
 

@@ -14,4 +14,32 @@
 			<BuildIcon>BuildIcon_C3PRED</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3SCORP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3SCORP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3SCORP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3SCORP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3SCORPLAS" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3SCORPLAS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3SCORPLAS_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3SCORP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3SCORPDZR" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3SCORPDZR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3SCORPDZR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3SCORP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3SCORPLASDZR" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3SCORPLASDZR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3SCORPLASDZR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3SCORP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 </ObjectTypeList>
