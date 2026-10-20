@@ -10,6 +10,7 @@ import os
 import shutil
 import struct
 import sys
+import time
 import zipfile
 
 import numpy as np
@@ -124,13 +125,21 @@ def plan(zip_path):
     return ("dds" if dds <= tga * (1 - MIN_SAVING) else "zip"), tga, dds
 
 
+def _clear(folder):
+    """Deletes a folder the converter wrote: each file, then the emptied folders, as scripts/clear_dir.sh does."""
+    for d, _, files in os.walk(folder, topdown=False):
+        for f in files:
+            os.remove(os.path.join(d, f))
+        os.rmdir(d)
+
+
 def _build(zip_path, out_dir):
     """Writes the converted form of one ZIP into out_dir: a folder of DDS frames, or the tightened ZIP."""
     kind, _, _ = plan(zip_path)
     stem = os.path.splitext(os.path.basename(zip_path))[0]
     tmp = out_dir + ".tmp"
     if os.path.isdir(tmp):
-        shutil.rmtree(tmp)
+        _clear(tmp)
     os.makedirs(tmp)
     with zipfile.ZipFile(zip_path) as z:
         if kind == "dds":
@@ -160,7 +169,8 @@ def _key(zip_path):
 
 
 def _convert(zip_path):
-    """Replaces one ZIP in place by its cached converted form; returns (path, kind, TGA bytes, DDS bytes)."""
+    """Replaces one ZIP in place by its cached converted form; returns (path, kind, TGA bytes, DDS bytes, cache
+    key)."""
     kind, tga, dds = plan(zip_path)
     out_dir = os.path.join(CACHE, _key(zip_path))
     if not os.path.isdir(out_dir):
@@ -172,11 +182,22 @@ def _convert(zip_path):
         src, dst = os.path.join(out_dir, name), os.path.join(folder, name)
         if os.path.isdir(src):
             if os.path.isdir(dst):
-                shutil.rmtree(dst)
+                _clear(dst)
             shutil.copytree(src, dst)
         else:
             shutil.copy2(src, dst)
-    return os.path.join(folder, stem), kind, tga, dds
+    return os.path.join(folder, stem), kind, tga, dds, os.path.basename(out_dir)
+
+
+def _note_used(keys):
+    """Marks the cache entries a conversion used, and drops those no conversion has used for a week."""
+    now = time.time()
+    for key in keys:
+        os.utime(os.path.join(CACHE, key), (now, now))
+    for key in os.listdir(CACHE) if os.path.isdir(CACHE) else []:
+        path = os.path.join(CACHE, key)
+        if os.path.isdir(path) and now - os.stat(path).st_mtime > 7 * 86400:
+            _clear(path)
 
 
 def sprite_zips(mod_folder):
@@ -196,6 +217,7 @@ def convert(mod_folder, quiet=False):
     zips = sprite_zips(mod_folder)
     with multiprocessing.Pool(max(1, (os.cpu_count() or 2) - 2)) as pool:
         results = pool.map(_convert, zips, chunksize=1)
+    _note_used([r[4] for r in results])
     if not quiet and results:
         loose = [r for r in results if r[1] == "dds"]
         before = sum(r[2] for r in results)
