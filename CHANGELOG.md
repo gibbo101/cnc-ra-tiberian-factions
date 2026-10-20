@@ -12,7 +12,7 @@ A melodic performance improvement.
 - FACTION ENCYCLOPEDIA, under ADD-ONS: a tab per faction with its units and structures, each with its picture, its
   manual description and its in-game stats read from the mod's rules.
 - TIBERIAN FACTIONS SETTINGS: pick each faction's skirmish music.
-- Tiberian Sun Music, a free add-on: all 26 Tiberian Sun and Firestorm themes in skirmish and in the jukebox.
+- Tiberian Sun Music, an add-on: all 26 Tiberian Sun and Firestorm themes in skirmish and in the jukebox.
 - All 34 of Tiberian Dawn's skirmish maps in the Official list, with their own thumbnails, played on TD's own desert,
   temperate and winter terrain.
 - Tiberian Dawn's units, buildings and effects draw from the base game's own files, which makes the mod smaller.
