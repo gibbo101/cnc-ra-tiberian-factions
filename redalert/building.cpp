@@ -8710,9 +8710,9 @@ void BuildingClass::Factory_AI(void)
                         }
                     }
 
-                    // TF: a factory builds only its own side's and era's types; another side's order waits for that
-                    // side's factory, which Can_Build has seen stands.
-                    if (techno != NULL && !TF_Factory_Fits(this, techno)) {
+                    // TF: a factory builds only its own side's and era's units; another side's order waits for that
+                    // side's factory, which Can_Build has seen stands. Yards are tied to their buildings by Can_Build.
+                    if (techno != NULL && Class->ToBuild != RTTI_BUILDINGTYPE && !TF_Factory_Fits(this, techno)) {
                         techno = NULL;
                     }
 
