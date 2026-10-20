@@ -1,6 +1,6 @@
 # The faction encyclopedia
 
-**Status:** Design. Built and working on the desktop; ships with the ADD-ONS screen in the next release.
+**Status:** Design; shipped in 5.6.0 with the ADD-ONS screen.
 **Open:** the manual lines flagged in `scripts/encyclopedia_work/descriptions.json`.
 
 FACTION ENCYCLOPEDIA, under TIBERIAN FACTIONS ADD-ONS on the main menu, opens a tab per faction, the faction's units and structures

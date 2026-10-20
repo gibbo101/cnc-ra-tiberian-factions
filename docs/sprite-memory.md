@@ -1,6 +1,6 @@
 # Sprite memory
 
-**Status:** Design, partly shipped. Next release: DDS sprites, a DDS UI atlas, and the splash preload always on. The
+**Status:** Design, partly shipped. In 5.6.0: DDS sprites, a DDS UI atlas, and the splash preload always on. The
 match warm-up below follows, with the preload off.
 **Open:** the warm-up; a Steam Deck and a LAN test of it; a Tiberian Dawn check before the TD asset packs ship DDS
 sprites (their builds keep the ZIPs until then).

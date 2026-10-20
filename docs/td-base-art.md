@@ -1,6 +1,7 @@
 # TD art read from the base game
 
-**Status:** Design. Six theatres, TD art and TD maps from the base game built and tested on the desktop and the Deck, LAN included; next release.
+**Status:** Design; shipped in 5.6.0. Six theatres, TD art and TD maps from the base game, tested on the desktop and the
+Deck, LAN included. The opener tiles need the splash preload, which the DLL keeps on (`sprite-memory.md`).
 
 The mod copies TD's unit, building and effect ZIPs out of `TEXTURES_TD_SRGB.MEG` into
 `Data/ART/TEXTURES/SRGB/RED_ALERT/`, renamed with a `TD` prefix. Every player already has those
