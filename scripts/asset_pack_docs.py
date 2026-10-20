@@ -39,6 +39,8 @@ MORE_MODS = {
 }
 _packs = {}
 for _mod, _w in A.WORKSHOP.items():
+    if _w.get("withdrawn"):
+        continue
     _ids = _w.get("workshop_ids", {})
     _links = ", ".join(f"[Steam Workshop, {A.HOSTS[h]['name']}]({WORKSHOP_URL}{_ids[h]})" for h in _w["hosts"] if h in _ids)
     _hosts = " and ".join(A.HOSTS[h]["name"] for h in _w["hosts"])
