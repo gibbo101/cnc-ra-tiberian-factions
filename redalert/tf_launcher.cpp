@@ -443,14 +443,6 @@ const PackInfo PACKS[] = {
      {L"Units, buildings, effects, voices and EVA", L"from Tiberian Sun, rebuilt in HD."},
      KIND_ASSETS,
      {NULL, NULL}},
-    {"CCDATA\\TSMUSIC.INI",
-     "TSMUSIC",
-     "3822605221",
-     NULL,
-     L"TIBERIAN SUN MUSIC",
-     {L"Tiberian Sun and Firestorm's 26 in-game themes,", L"for the skirmish music and the jukebox."},
-     KIND_ASSETS,
-     {NULL, NULL}},
 };
 const int PACK_COUNT = sizeof(PACKS) / sizeof(PACKS[0]);
 const int TS_HD_PACK = 0;
@@ -2447,8 +2439,8 @@ int Music_Row(void)
 }
 
 /*
-**	Shows the open page: on AUDIO the faction tabs, the faction's crest and its music rows with the saved choice
-**	ticked; GET ADD-ON in place of Tiberian Sun while the TS-Music add-on is off; COMING SOON on an empty page.
+**	Shows the open page: AUDIO's faction tabs, crest and music rows with the saved choice ticked, the Tiberian Sun
+**	row unpickable and reading Not installed while its music is missing; COMING SOON on an empty page.
 */
 void Refresh_Settings(void)
 {
@@ -2500,12 +2492,10 @@ void Refresh_Settings(void)
                       green,
                       amber,
                       !audio      ? NULL
-                      : missing   ? L"Needs its add-on"
+                      : missing   ? L"Not installed"
                                   : MUSIC_CHOICES[row].About,
                       missing);
     }
-    Set_Hidden(Find_Button(screen, "TF_ST_Get"), !audio || ts);
-    Set_Hidden(Find_Widget(screen, "TF_ST_GetText", AS_TEXT), !audio || ts);
     Set_Hidden(Find_Button(screen, "Start_Button"), !audio);
     Set_Hidden(Find_Widget(screen, "StartButton_Text", AS_TEXT), !audio);
 }
@@ -2571,15 +2561,6 @@ void __stdcall Settings_Defaults_Click(void*)
 }
 
 /*
-**	GET ADD-ON: on to the ADD-ONS screen with the TS-Music pack ticked.
-*/
-void __stdcall Settings_Get_Click(void*)
-{
-    Close_Settings();
-    Open_AddOns(Pack_Index("TSMUSIC"));
-}
-
-/*
 **	Opens the Settings page over the main menu on AUDIO's first faction tab.
 */
 void Open_Settings(void)
@@ -2593,7 +2574,6 @@ void Open_Settings(void)
     }
     Bind_Click(screen, Find_Button(screen, "Back_Button"), (void*)&Settings_Back_Click, 0);
     Bind_Click(screen, Find_Button(screen, "Start_Button"), (void*)&Settings_Defaults_Click, 0);
-    Bind_Click(screen, Find_Button(screen, "TF_ST_Get"), (void*)&Settings_Get_Click, 0);
     for (int page = 0; page < SETTINGS_PAGES; page++) {
         char name[16];
         snprintf(name, sizeof(name), "TF_ST_Page%d", page);

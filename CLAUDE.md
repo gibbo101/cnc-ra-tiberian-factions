@@ -4,6 +4,11 @@ A fork of Vanilla Conquer (`upstream`) with our code interleaved into EA's and V
 rules keep ours easy to find, easy to read and easy to merge. Machine and deploy notes live in
 the workspace `../CLAUDE.md`.
 
+## EA's modding guidelines
+Everything we publish follows `docs/ea-modding-guidelines.md`: no C&C music files from any game, EA's disclaimer
+at the top of every page, no EA logos in promotion. The packagers enforce the first two; check new features and
+packs against the rest before building them.
+
 ## Ours and theirs
 - EA and VC code and comments are never edited for tidiness. Touch them only for a
   behaviour change the mod needs, with the smallest diff. `git merge-base HEAD

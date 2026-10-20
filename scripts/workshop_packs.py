@@ -214,6 +214,8 @@ def write_manifest(mod, folder, host):
     return marker
 
 
+# The wording EA requires at the top of every page that ships its assets.
+DISCLAIMER = "EA has not endorsed and does not support this product."
 GAME = {"TS": "Tiberian Sun", "RA2": "Red Alert 2", "CNC3": "Command & Conquer 3: Tiberium Wars"}
 TF_URL = "https://steamcommunity.com/sharedfiles/filedetails/?id=3729834253"
 EA_EXAMPLE_URL = {
@@ -245,7 +247,7 @@ def music_readme(mod, host):
     """A music pack's README.md: what it is, how Tiberian Factions and other mods play it, and credits."""
     w = A.WORKSHOP[mod]
     h = A.HOSTS[host]
-    lines = [f"# {w['name']}", "", w["description"].format(host=h["name"]) +
+    lines = [f"# {w['name']}", "", f"**{DISCLAIMER}**", "", w["description"].format(host=h["name"]) +
              " Built for Command & Conquer Remastered Collection.", "",
              "This is an asset pack: on its own it adds nothing to the game. A mod has to use it.", "",
              "## Playing Tiberian Factions", "",
@@ -274,7 +276,7 @@ def readme(mod, listed, host):
         return music_readme(mod, host)
     h = A.HOSTS[host]
     game = GAME[w["game"]]
-    lines = [f"# {w['name']}", "", w["description"].format(host=h["name"]) +
+    lines = [f"# {w['name']}", "", f"**{DISCLAIMER}**", "", w["description"].format(host=h["name"]) +
              " Built for Command & Conquer Remastered Collection.", "",
              "This is an asset pack: on its own it adds nothing to the game. A mod has to use it.", ""]
     ids = w.get("workshop_ids", {})

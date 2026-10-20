@@ -9,6 +9,7 @@ extern "C" {
 #include "puff.h"
 }
 
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -94,7 +95,7 @@ struct MegMember
 };
 
 // The game's MEGs the art and its tilesets come from; a member in more than one is read from the first.
-const char* const MEGS[] = {"TEXTURES_RA_SRGB.MEG", "TEXTURES_COMMON_SRGB.MEG", "CONFIG.MEG"};
+const char* const MEGS[] = {"TEXTURES_RA_SRGB.MEG", "TEXTURES_COMMON_SRGB.MEG", "CONFIG.MEG", "TEXTURES_TD_SRGB.MEG"};
 std::map<std::string, MegMember> MegIndex;
 std::string MegPaths[sizeof(MEGS) / sizeof(MEGS[0])];
 bool MegRead = false;
@@ -361,13 +362,22 @@ bool Zip_Member(const std::vector<unsigned char>& zip, const std::string& name, 
 }
 
 /*
+**	A frame's folder under the texture root, as the launcher opens it: the tileset's root, then the frame's own
+**	folders (a tileset with an empty root names its frames from the texture root).
+*/
+std::string Frame_Folder(const std::string& root, const std::string& folder)
+{
+    return "ART\\TEXTURES\\SRGB\\" + (root.empty() ? "" : Upper(root) + "\\") + Upper(folder);
+}
+
+/*
 **	A frame's ZIP: the asset packs' or the mod's loose copy, else the game's MEG; cached for the next frame.
 */
-const std::vector<unsigned char>* Zip_For(const std::string& root, const std::string& folder)
+const std::vector<unsigned char>* Zip_For(const std::string& folder)
 {
     static std::string cached_key;
     static std::vector<unsigned char> cached;
-    std::string rel = "ART\\TEXTURES\\SRGB\\" + Upper(root) + "\\" + Upper(folder) + ".ZIP";
+    std::string rel = folder + ".ZIP";
     if (rel == cached_key) {
         return cached.empty() ? NULL : &cached;
     }
@@ -535,12 +545,12 @@ bool Decode_Dds(const std::vector<unsigned char>& dds, Image& out)
 }
 
 /*
-**	A theatre frame stored as a loose DDS (MSLO.TEM\MSLO.TEM-0000.DDS): the asset packs' or the mod's, else the MEG's.
+**	A frame stored as a loose DDS in a folder of its ZIP's name (MSLO.TEM\MSLO.TEM-0000.DDS): the asset packs' or
+**	the mod's, else the MEG's.
 */
-bool Loose_Frame(const std::string& root, const std::string& folder, const std::string& file, Image& out)
+bool Loose_Frame(const std::string& folder, const std::string& file, Image& out)
 {
-    std::string rel = "ART\\TEXTURES\\SRGB\\" + Upper(root) + "\\" + Upper(folder) + "\\"
-                      + Upper(file.substr(0, file.size() - 4)) + ".DDS";
+    std::string rel = folder + "\\" + Upper(file.substr(0, file.size() - 4)) + ".DDS";
     std::vector<unsigned char> dds;
     bool found = false;
     for (int i = 0; !found && TF_Encyclopedia_Root(i) != NULL; i++) {
@@ -576,15 +586,12 @@ bool Read_Frame(const Tile& tile, int shape, Image& out)
         return false;
     }
     std::string file = path.substr(slash + 1);
-    std::string folder = path.substr(0, slash);
-    size_t up = folder.find_last_of("\\/");
-    if (up != std::string::npos) {
-        folder = folder.substr(up + 1);
-    }
-    const std::vector<unsigned char>* zip = Zip_For(tile.Root, folder);
+    std::string folder = Frame_Folder(tile.Root, path.substr(0, slash));
+    std::replace(folder.begin(), folder.end(), '/', '\\');
+    const std::vector<unsigned char>* zip = Zip_For(folder);
     std::vector<unsigned char> tga, meta;
     if (zip == NULL || !Zip_Member(*zip, file, tga)) {
-        return Loose_Frame(tile.Root, folder, file, out);
+        return Loose_Frame(folder, file, out);
     }
     Image sprite;
     if (!Decode_Tga(tga, sprite)) {

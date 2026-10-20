@@ -10,13 +10,15 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ## Next version: first jobs
 
+- **Pack updates in ADD-ONS:** keep the hard minimum per pack (`PACK_NEEDS_*`, 1.0) and add the current
+  version (TS-HD 1.1). An older installed pack shows its version and UPDATE AVAILABLE, and ADD-ONS asks Steam to
+  download it at high priority; if it is still old once that finishes, unsubscribe and resubscribe it. Steam
+  can sit on an update for hours (5.6.0 day: the PC kept TS-HD 1.0).
 - **The map editor on TD theatres.** `cnc-map-editor` knows RA's three theatres only: it needs
   `Desert`, `TDTemperate` and `Winter` with TD's tilesets, and the desert terrain types (`T04`,
   `T09`, `T18`, `ROCK1` to `ROCK7`) in `mapeditor.json` (`td-base-art.md`).
-- **TS-Music, what's left** (`skirmish-music.md`): make the Workshop item Public with the next TF release, after
-  the maintainer's OK on its page; then regenerate the pack READMEs (`asset_pack_docs.py`) for its link and
-  republish its description. A Random lobby pick plays Mix whatever the faction's choice: its faction is known
-  only after the host's `@@TFL` message.
+- **TS-Music, what's left** (`skirmish-music.md`): a Random lobby pick plays Mix whatever the faction's choice,
+  as its faction is known only after the host's `@@TFL` message. RA2-HD-Assets still lacks its TS-Music link.
 - **Tech Center wedge shadow** (the `ts-to-ra-hd-art` canvas rule): whether it may be cut so the canvas fits
   the box. Every other TS HD building is on whole cells; Helipad, Silo, Firestorm Generator and section, Limpet
   Mine, Tick Tank and the big six are larger than their boxes, which keep today's placement grids.

@@ -71,6 +71,7 @@ The picture is drawn live from the game's sprite art when an entry is selected. 
 
 - a vehicle: its body frame (a walker's standing frame; the Limpet Drone's first crawl frame), and its turret at
   its seat (`Turret_Adjust`, as `UnitClass::Draw_It` draws it; a deploy-to-fire walker shows none while mobile);
+  the Radar Jammer's dish, the Gap Generator's mast and the Tesla Tank's coil (frames 32 on) where Draw_It seats them;
 - a ship: facing 12 of 32, with each turret overlay at its seat as `VesselClass::Draw_It` draws it;
 - infantry: standing frame 3; aircraft: facing 12 of 32, a helicopter with its landed blades (`RROTOR`,
   `LROTOR`) as `AircraftClass::Draw_Rotors` seats them, the Chinook facing north as it lands (Draw_Rotors' spacing
@@ -80,9 +81,12 @@ The picture is drawn live from the game's sprite art when an entry is selected. 
   plug on the Upgrade Centre.
 
 `TF_Encyclopedia_Render` (`redalert/tf_encyclopedia_art.cpp`) finds each art's frames in the tileset XMLs of the
-mod and the asset packs, then the game's RA and common ones in CONFIG.MEG (temperate first), reads them from the
-art's ZIP (the packs', the mod's, else `TEXTURES_RA_SRGB.MEG` or `TEXTURES_COMMON_SRGB.MEG`, where the rotors are; theatre art such as the Missile Silo is loose DXT5 DDS there), places them by their `.meta` crop, seats layers at classic pixels x 128/24, applies the
-house colour and fits the result to 256x192.
+mod and the asset packs, then the game's RA and common ones in CONFIG.MEG (temperate first). A frame's folder is
+the tileset's root plus the frame's own folders, as the launcher opens it, so `RA_VFX`'s empty root reaches TD's
+art in the base game (`td-base-art.md`). The frame is read from that folder's ZIP, or as a loose whole-canvas DDS
+in a folder of that name (`sprite-memory.md`): the packs', the mod's, else `TEXTURES_RA_SRGB.MEG`,
+`TEXTURES_COMMON_SRGB.MEG` (the rotors) or `TEXTURES_TD_SRGB.MEG`. Each is placed by its `.meta` crop, layers are
+seated at classic pixels x 128/24, and the house colour is applied before the result is fitted to 256x192.
 
 House colour is the client's own team-colour rule (`CNCRATEAMCOLORS.XML`, `CNCTDTEAMCOLORS.XML` in CONFIG.MEG; the
 maths is `TextureManager.cs` in the game's SOURCECODE map editor): in linear light, green with a hue between the
