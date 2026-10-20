@@ -50,9 +50,9 @@ until maps past 128x128 land.
 - **Save compatibility, before campaigns ship.** Flag saves that need the TS-HD-Assets pack when it is missing,
   and autosave at every campaign mission start, so a layout-changing update costs at most the mission in
   progress. A reorder of equal length still passes the save version. Campaigns wait for a stable roster.
-- **Map editor loads the TS-HD-Assets pack with Tiberian Factions,** after maps past 128x128. The pack carries the TS art TF's XML
-  points at, so the editor must load it whenever TF is active (from the Mods folder or the Workshop cache)
-  and look up art across every active mod. `cnc-map-editor` already merges several mods' manifests.
+- **Map editor loads the TS-HD-Assets pack with Tiberian Factions,** after maps past 128x128. The pack carries
+  the TS art TF's XML points at, so the editor must load it whenever TF is active (from the Mods folder or the
+  Workshop cache) and look up art across every active mod. `cnc-map-editor` already merges several mods' manifests.
 - **The Orca Bomber's five-bomb pass** (`known-issues.md`): find why a pass drops two or three
   bombs, and make each pass lay all five across the target, with a play test of a full sortie.
 - **Light orange selection box on a limpeted unit.** TS draws a limpeted object's bracket from
@@ -149,22 +149,22 @@ until maps past 128x128 land.
   Titan 6, against an RA heavy tank at 4.75 and a TD medium at about 4. Range first, then damage,
   ROF, HP, cost, speed and the Devil's Tongue stream. Known deviation: the Mk. II AA tusks carry RA
   MammothTusk stats (7.5 range) instead of TS's 6.
-- **TS Nod, the sixth faction:** France as `HOUSEF_TSNOD`, `Faction9`, CABAL from `SPEECH02.MIX`,
-  one more `ERAS` entry in `scripts/eva_mailbox_build.py`, an emblem at
-  `scripts/tab_emblems/tsnod.png`, and a crest region. The atlas can grow to 8192x8192 for it
-  (`ui-atlas-modding.md`). Recipe: `ts-gdi-faction.md`. HD hand-offs (21 buildings, 19 units) are
-  in `~/Desktop/Tiberian Factions/`. The TS Nod wall is already in, dormant, and so is the Rocket
-  Infantry (`TSE3`, `TechLevel=-1`, TS GDI's owners and barracks): give it TS Nod's owner, Hand of Nod
-  and TechLevel 2 then. The other Nod infantry cameos wait in `ts-hd-cameos/waiting-for-units/`.
-  Check the Tick Tank's shot in play then: `tsttnk_muzzle.h` is measured from the unit's position, but
-  `Fire_Coord` adds it to the art-dropped centre, which may start the shot 29 leptons south. Listen too to
-  the Devil's Tongue flame (`TSFLAMTNK1`) and the Subterranean APC's dig (`TSSUBDRIL1`) from the TS pack.
+- **TS Nod, the sixth faction:** France as `HOUSEF_TSNOD`, `Faction9`, CABAL from `SPEECH02.MIX`, one more `ERAS`
+  entry in `scripts/eva_mailbox_build.py`, an emblem at `scripts/tab_emblems/tsnod.png`, and a crest region. The
+  atlas can grow to 8192x8192 for it (`ui-atlas-modding.md`). Recipe: `ts-gdi-faction.md`. Its HD art is done, to be
+  handed over. The TS Nod wall is already in, dormant, and so is the Rocket Infantry (`TSE3`, `TechLevel=-1`, TS
+  GDI's owners and barracks): give it TS Nod's owner, Hand of Nod and TechLevel 2 then. The other Nod infantry cameos
+  wait in `ts-hd-cameos/waiting-for-units/`. Check the Tick Tank's shot in play then: `tsttnk_muzzle.h` is measured
+  from the unit's position, but `Fire_Coord` adds it to the art-dropped centre, which may start the shot 29 leptons
+  south. Listen too to the Devil's Tongue flame (`TSFLAMTNK1`) and the Subterranean APC's dig (`TSSUBDRIL1`) from the
+  TS pack.
 - **TS Pavement (GAPAVE), alongside TS Nod.** It turns cells into pavement: it keeps Tiberium off
   build space and blocks subterranean units. Costs: placement logic like the wall divert (the
   building becomes ground) and square-grid ground art, since TS's is isometric (as the HD Firestorm
   sections are, `scripts/ts_pack_hd_buildings.py`).
 - **TS theatres and TS maps (parked):** branch `ts-theatres`, worktree `../worktrees/tf-ts-theatres`, design
   doc on that branch. First job: its tileset video-memory test, which picks TS's own tiles or an autotile set.
+  TS maps then want TS's civilian buildings and terrain objects: art-chat hand-offs on the Desktop, rebuilt then.
 - **Big units show through a TS war factory's shut door (fix in test):** the HD harvester, Mobile War Factory,
   Titan and Juggernaut reached past the door from the shared bay seats, so they now wait deeper (`building.cpp`,
   the bay seat). The depths come from `scripts/probes/wf_bay_sim.py`, which composites a unit behind the near
