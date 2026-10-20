@@ -28,8 +28,8 @@ At startup ClientG uploads every texture of every enabled mod, whatever factions
 reaches the card, so `No_Splash_Preload` (`tf_launcher.cpp`) clears the byte itself, once it has checked the test's
 bytes. Each texture then loads when it is first drawn.
 
-Over 195 s of the same AI match, the preload off gave 24.4 distinct frames a second against 26.0, and two freezes
-of 0.30 s in the first ten seconds against a longest of 0.23 s.
+A recording of the same AI match with the preload on and off showed no still frame longer than 0.30 s either way.
+That count can't tell a hitch from a scene where nothing moves, so first-draw hitches need checking by eye.
 
 ## Sprites as DDS
 
