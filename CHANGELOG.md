@@ -2,7 +2,10 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
-## [Unreleased]
+## [5.6.0] — 2026-10-20
+
+Command has trimmed the supply lines. Your units find their way twice as fast, the download is a third smaller,
+and a stack of your reports are fixed.
 
 ### Changed
 - Concrete Wall costs 100 in skirmish and LAN, as in the campaigns (was 50).
