@@ -3545,9 +3545,9 @@ static void Create_Units(bool official)
                     hptr->Flag_Attach((UnitClass*)obj, true);
                 }
             }
-            // TF: Unholy Alliance gives every house, human or AI, the Allied, Soviet, GDI and Nod MCVs it lacks.
+            // TF: Unholy Alliance gives every house, human or AI, the MCV of every faction it lacks.
             if (TF_UnholyAlliance) {
-                static const UnitType _all_mcvs[] = {UNIT_AMCV, UNIT_SMCV, UNIT_TDGMCV, UNIT_TDNMCV};
+                static const UnitType _all_mcvs[] = {UNIT_AMCV, UNIT_SMCV, UNIT_TDGMCV, UNIT_TDNMCV, UNIT_TSMCV};
                 for (int m = 0; m < (int)ARRAY_SIZE(_all_mcvs); m++) {
                     if (_all_mcvs[m] == mcv_type) {
                         continue;
