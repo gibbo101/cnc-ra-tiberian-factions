@@ -98,5 +98,61 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
       <entry> C3PGUN9.WAV </entry>
     </SampleNamesList>
   </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3SGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3SGUN1.WAV </entry>
+      <entry> C3SGUN2.WAV </entry>
+      <entry> C3SGUN3.WAV </entry>
+      <entry> C3SGUN4.WAV </entry>
+      <entry> C3SGUN5.WAV </entry>
+      <entry> C3SGUN6.WAV </entry>
+      <entry> C3SGUN7.WAV </entry>
+      <entry> C3SGUN8.WAV </entry>
+      <entry> C3SGUN9.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3SGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3SGUN1.WAV </entry>
+      <entry> C3SGUN2.WAV </entry>
+      <entry> C3SGUN3.WAV </entry>
+      <entry> C3SGUN4.WAV </entry>
+      <entry> C3SGUN5.WAV </entry>
+      <entry> C3SGUN6.WAV </entry>
+      <entry> C3SGUN7.WAV </entry>
+      <entry> C3SGUN8.WAV </entry>
+      <entry> C3SGUN9.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3SLAS" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3SLAS1.WAV </entry>
+      <entry> C3SLAS2.WAV </entry>
+      <entry> C3SLAS3.WAV </entry>
+      <entry> C3SLAS4.WAV </entry>
+      <entry> C3SLAS5.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3SLAS" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3SLAS1.WAV </entry>
+      <entry> C3SLAS2.WAV </entry>
+      <entry> C3SLAS3.WAV </entry>
+      <entry> C3SLAS4.WAV </entry>
+      <entry> C3SLAS5.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
   <!-- END C&C3 tank sounds -->
 </SFXEvents>
