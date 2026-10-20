@@ -1770,6 +1770,128 @@ static UnitTypeClass const UnitC3Pred(UNIT_C3PRED,
                                       MISSION_HUNT  // ORDERS: Default order.
 );
 
+// C&C3 Scorpion Tank (UNIT_C3SCORP), Tiberium Wars NODRaiderTank; found only in Nod's unit crates. Its turret is
+// the whole upper body, seated ahead of the hull centre by the generated c3tanks.h.
+static UnitTypeClass const UnitC3Scorp(UNIT_C3SCORP,
+                                       TXT_MTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                       "C3SCORP",    // NAME: IniName.
+                                       ANIM_FBALL1,  // EXPLOSION: big fireball.
+                                       REMAP_NORMAL, // Sidebar remap logic.
+                                       0x0020,       // Vertical offset.
+                                       0x0080,       // Primary weapon offset along turret centerline.
+                                       0x0000,       // Primary weapon lateral offset.
+                                       0x0000,       // Secondary weapon offset (none).
+                                       0x0000,       // Secondary weapon lateral offset.
+                                       true,         // Can this be a goodie surprise from a crate?
+                                       false,        // Always use the given name for the vehicle?
+                                       true,         // Can this unit squash infantry?
+                                       false,        // Does this unit harvest Tiberium?
+                                       false,        // Is invisible to radar?
+                                       false,        // Is it insignificant (won't be announced)?
+                                       true,         // Is it equipped with a combat turret?
+                                       false,        // Does it have a rotating radar dish?
+                                       false,        // Is there an associated firing animation?
+                                       false,        // Must the turret be in a locked down position while moving?
+                                       false,        // Is this a gigundo-rotund-enormous unit?
+                                       false,        // Does the unit have a constant animation?
+                                       false,        // Is the unit capable of jamming radar?
+                                       false,        // Is the unit a mobile gap generator?
+                                       32,           // Rotation stages.
+                                       0,            // Turret center offset along body centerline.
+                                       MISSION_HUNT  // ORDERS: Default order.
+);
+
+// The Scorpion with Laser Capacitors (UNIT_C3SCORPLAS): the body is fixed facing forward and the laser turret
+// turns on the tail mount, seated aft by c3tanks.h.
+static UnitTypeClass const UnitC3ScorpLas(UNIT_C3SCORPLAS,
+                                          TXT_MTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                          "C3SCORPLAS", // NAME: IniName.
+                                          ANIM_FBALL1,  // EXPLOSION: big fireball.
+                                          REMAP_NORMAL, // Sidebar remap logic.
+                                          0x0020,       // Vertical offset.
+                                          0x0080,       // Primary weapon offset along turret centerline.
+                                          0x0000,       // Primary weapon lateral offset.
+                                          0x0000,       // Secondary weapon offset (none).
+                                          0x0000,       // Secondary weapon lateral offset.
+                                          true,         // Can this be a goodie surprise from a crate?
+                                          false,        // Always use the given name for the vehicle?
+                                          true,         // Can this unit squash infantry?
+                                          false,        // Does this unit harvest Tiberium?
+                                          false,        // Is invisible to radar?
+                                          false,        // Is it insignificant (won't be announced)?
+                                          true,         // Is it equipped with a combat turret?
+                                          false,        // Does it have a rotating radar dish?
+                                          false,        // Is there an associated firing animation?
+                                          false,        // Must the turret be in a locked down position while moving?
+                                          false,        // Is this a gigundo-rotund-enormous unit?
+                                          false,        // Does the unit have a constant animation?
+                                          false,        // Is the unit capable of jamming radar?
+                                          false,        // Is the unit a mobile gap generator?
+                                          32,           // Rotation stages.
+                                          0,            // Turret center offset along body centerline.
+                                          MISSION_HUNT  // ORDERS: Default order.
+);
+
+// The Scorpion with Dozer Blades (UNIT_C3SCORPDZR): UNIT_C3SCORP's seat and fire points, the blade on its turret.
+static UnitTypeClass const UnitC3ScorpDzr(UNIT_C3SCORPDZR,
+                                          TXT_MTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                          "C3SCORPDZR", // NAME: IniName.
+                                          ANIM_FBALL1,  // EXPLOSION: big fireball.
+                                          REMAP_NORMAL, // Sidebar remap logic.
+                                          0x0020,       // Vertical offset.
+                                          0x0080,       // Primary weapon offset along turret centerline.
+                                          0x0000,       // Primary weapon lateral offset.
+                                          0x0000,       // Secondary weapon offset (none).
+                                          0x0000,       // Secondary weapon lateral offset.
+                                          true,         // Can this be a goodie surprise from a crate?
+                                          false,        // Always use the given name for the vehicle?
+                                          true,         // Can this unit squash infantry?
+                                          false,        // Does this unit harvest Tiberium?
+                                          false,        // Is invisible to radar?
+                                          false,        // Is it insignificant (won't be announced)?
+                                          true,         // Is it equipped with a combat turret?
+                                          false,        // Does it have a rotating radar dish?
+                                          false,        // Is there an associated firing animation?
+                                          false,        // Must the turret be in a locked down position while moving?
+                                          false,        // Is this a gigundo-rotund-enormous unit?
+                                          false,        // Does the unit have a constant animation?
+                                          false,        // Is the unit capable of jamming radar?
+                                          false,        // Is the unit a mobile gap generator?
+                                          32,           // Rotation stages.
+                                          0,            // Turret center offset along body centerline.
+                                          MISSION_HUNT  // ORDERS: Default order.
+);
+
+// The Scorpion with both upgrades (UNIT_C3SCORPLASDZR): UNIT_C3SCORPLAS's seat and fire points.
+static UnitTypeClass const UnitC3ScorpLasDzr(UNIT_C3SCORPLASDZR,
+                                             TXT_MTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                             "C3SCORPLASDZR", // NAME: IniName.
+                                             ANIM_FBALL1,  // EXPLOSION: big fireball.
+                                             REMAP_NORMAL, // Sidebar remap logic.
+                                             0x0020,       // Vertical offset.
+                                             0x0080,       // Primary weapon offset along turret centerline.
+                                             0x0000,       // Primary weapon lateral offset.
+                                             0x0000,       // Secondary weapon offset (none).
+                                             0x0000,       // Secondary weapon lateral offset.
+                                             true,         // Can this be a goodie surprise from a crate?
+                                             false,        // Always use the given name for the vehicle?
+                                             true,         // Can this unit squash infantry?
+                                             false,        // Does this unit harvest Tiberium?
+                                             false,        // Is invisible to radar?
+                                             false,        // Is it insignificant (won't be announced)?
+                                             true,         // Is it equipped with a combat turret?
+                                             false,        // Does it have a rotating radar dish?
+                                             false,        // Is there an associated firing animation?
+                                             false,        // Must the turret be in a locked down position while moving?
+                                             false,        // Is this a gigundo-rotund-enormous unit?
+                                             false,        // Does the unit have a constant animation?
+                                             false,        // Is the unit capable of jamming radar?
+                                             false,        // Is the unit a mobile gap generator?
+                                             32,           // Rotation stages.
+                                             0,            // Turret center offset along body centerline.
+                                             MISSION_HUNT  // ORDERS: Default order.
+);
+
 // TS Tick Tank (UNIT_TSTTNK), TS rules [TTNK]: Nod's turret tank, found only in crates. It turns south and digs in as
 // STRUCT_TSTICK; its fire points come from the generated tsttnk_muzzle.h (techno.cpp Fire_Coord).
 static UnitTypeClass const UnitTsTtnk(UNIT_TSTTNK,
@@ -2301,6 +2423,10 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitC3Pred);    // UNIT_C3PRED (C&C3 Predator Tank)
     new UnitTypeClass(UnitTsTtnk);    // UNIT_TSTTNK (TS Tick Tank)
     new UnitTypeClass(UnitTs4Pair);   // UNIT_TS4PAIR (Mk. I Reserve token)
+    new UnitTypeClass(UnitC3Scorp);       // UNIT_C3SCORP (C&C3 Scorpion Tank)
+    new UnitTypeClass(UnitC3ScorpLas);    // UNIT_C3SCORPLAS (Scorpion, Laser Capacitors)
+    new UnitTypeClass(UnitC3ScorpDzr);    // UNIT_C3SCORPDZR (Scorpion, Dozer Blades)
+    new UnitTypeClass(UnitC3ScorpLasDzr); // UNIT_C3SCORPLASDZR (Scorpion, both upgrades)
 }
 
 /***********************************************************************************************
@@ -2599,6 +2725,10 @@ void UnitTypeClass::Dimensions(int& width, int& height) const
         {UNIT_R2PRIS, 33, 34},
         {UNIT_C3MK3, 53, 33},
         {UNIT_C3PRED, 32, 22},
+        {UNIT_C3SCORP, 28, 21},
+        {UNIT_C3SCORPLAS, 28, 22},
+        {UNIT_C3SCORPDZR, 29, 21},
+        {UNIT_C3SCORPLASDZR, 29, 26},
         {UNIT_TSTTNK, 27, 19},
         {UNIT_TS4TNK, 33, 30},
         {UNIT_TSSONIC, 37, 31},
@@ -2730,6 +2860,18 @@ void UnitTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
     case UNIT_C3PRED:
         x += _c3pred_seat_px[Dir_To_32(dir)][0];
         y += _c3pred_seat_px[Dir_To_32(dir)][1];
+        break;
+
+    case UNIT_C3SCORP:
+    case UNIT_C3SCORPDZR:
+        x += _c3scorp_seat_px[Dir_To_32(dir)][0];
+        y += _c3scorp_seat_px[Dir_To_32(dir)][1];
+        break;
+
+    case UNIT_C3SCORPLAS:
+    case UNIT_C3SCORPLASDZR:
+        x += _c3scorplas_seat_px[Dir_To_32(dir)][0];
+        y += _c3scorplas_seat_px[Dir_To_32(dir)][1];
         break;
 
     default:
