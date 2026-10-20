@@ -10320,7 +10320,9 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
         TFApronStamp const* stamp = TF_Apron_Stamp(cell);
         for (int a = 0; stamp != NULL && a < TF_APRON_TYPES; a++) {
             BuildingClass* apron_owner = stamp->Owner[a];
-            if (apron_owner == NULL || apron_owner->Visual_Character() == VISUAL_HIDDEN) {
+            // Trap: a save loaded at the same frame and building count keeps the stamps, so recheck the owner.
+            if (apron_owner == NULL || !apron_owner->IsActive || apron_owner->IsInLimbo
+                || *apron_owner != TFAprons[a].owner || apron_owner->Visual_Character() == VISUAL_HIDDEN) {
                 continue;
             }
             const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(TFAprons[a].apron);
