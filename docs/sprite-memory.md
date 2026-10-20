@@ -1,9 +1,9 @@
 # Sprite memory
 
-**Status:** Design. Staging writes whole-canvas DDS sprites and a DDS UI atlas, and the launcher skips its splash
-preload; next release.
-**Open:** a Steam Deck check for first-draw hitches with the preload off; a Tiberian Dawn check before the TD asset
-packs ship DDS sprites (their builds keep the ZIPs until then).
+**Status:** Design, partly shipped. Next release: DDS sprites, a DDS UI atlas, and the splash preload always on. The
+match warm-up below follows, with the preload off.
+**Open:** the warm-up; a Steam Deck and a LAN test of it; a Tiberian Dawn check before the TD asset packs ship DDS
+sprites (their builds keep the ZIPs until then).
 
 The launcher holds every texture it draws in video memory. Tiberian Factions and its asset packs carry far more art
 than the base game, so how that art is stored, and when it loads, decides whether the mod fits on a 4 GB card.
@@ -27,12 +27,18 @@ in play.
 
 At startup ClientG uploads every texture of every enabled mod, whatever factions a match uses. The
 `NOSPLASHPRELOAD` launch option clears the byte at `0x1F7F455` (ClientG 1.153.745903); the launcher tests it at
-`0x7AE14B` before it runs the preload. Our `DllMain` runs in ClientG about three seconds before the first texture
-reaches the card, so `No_Splash_Preload` (`tf_launcher.cpp`) clears the byte itself, once it has checked the test's
-bytes. Each texture then loads when it is first drawn.
+`0x7AE14B` before it runs the preload. Without the preload each tile loads when it is first drawn, and a tile opens
+only the ZIP that carries its own name. A tile whose frames sit in another tile's ZIP then draws as the
+missing-texture frog: the shared art (`share_tileset_zips.py`) and the opener tiles that bring in the base game's TD
+art (`td-base-art.md`). `Keep_Splash_Preload` (`tf_launcher.cpp`) patches the test so the preload always runs.
 
-A recording of the same AI match with the preload on and off showed no still frame longer than 0.30 s either way.
-That count can't tell a hitch from a scene where nothing moves, so first-draw hitches need checking by eye.
+## The match warm-up
+
+Without the preload a match holds 0.7 to 1 GB (Measured), if those ZIPs are opened some other way. ClientG's
+`Load_Archive` (`0x1747030`) opens `<type root>\<name>.zip` by name, and a hook on the per-frame update call at
+`0x7AF105` runs on the main thread, through the loading screen too. Opening all 240 such ZIPs at once took 3.4 s and
+1.4 GB, so the warm-up opens each ZIP when its object is first built, by any house; crate drops and reinforcements
+still load on first draw. ClientG never unloads unit, building or effect art within a session.
 
 ## Sprites as DDS
 

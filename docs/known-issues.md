@@ -131,10 +131,10 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 ### Lag on cards with little video memory, worst on large ore-filled maps
 - **Severity:** major for players with 4 to 6 GB cards (reported on "Fields of Gold", Workshop 2120367076, 126x126
   and 92% ore).
-- ClientG holds about 5.1 GB of video memory in a TF skirmish against about 2.3 GB in vanilla on the same map, nearly
-  all of it loaded at startup; revealing the whole map adds under 0.1 GB. The DLL's own per-frame work stays near
-  4.5 ms (measured by a dev-build probe). Where the card runs out, textures swap in as the view moves, so the lag
-  grows as more is revealed. The fix is smaller art (`todo.md`, "Shrink the package").
+- ClientG holds about 4.8 GB of video memory at the menu in a TF skirmish setup against about 2.3 GB for vanilla in
+  play, nearly all of it loaded at startup. DDS sprites and the DDS UI atlas bring it to about 4.1 GB; the rest needs
+  the match warm-up (`sprite-memory.md`). Where the card runs out, textures swap in as the view moves, so the lag
+  grows as more is revealed.
 
 ## Found in code review, not seen in play
 
