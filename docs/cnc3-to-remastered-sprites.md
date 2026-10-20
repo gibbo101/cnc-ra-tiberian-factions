@@ -1,12 +1,12 @@
 # C&C3 units to C&C Remastered sprites: a working recipe
 
 **Status:** Reference. Pulling a C&C3 unit into HD Remastered sprites, as done for the Mammoth
-Mk. III and the Predator.
+Mk. III, the Predator and the Nod Scorpion with its upgrades.
 
 How to pull a unit out of Command & Conquer 3: Tiberium Wars (models, textures, audio,
 stats) and turn it into HD sprites for a C&C Remastered Collection mod. Written for an AI
 coding agent to follow. Every fact here was verified on the GDI Mammoth Tank and Predator
-Tank (Steam release, patch 1.9, 2026), except where a line says it is unverified. No
+Tank (Steam release, patch 1.9, 2026) and the Scorpion Tank, except where a line says it is unverified. No
 external modding tools are needed: Python 3 with numpy and Pillow, plus ffmpeg for audio.
 
 **Legal:** EA's assets come from your own install. Ship them in your mod on the same terms as
@@ -44,6 +44,11 @@ slice-copy fast path does it in about 7 seconds; cache the result.
 
 **Stream files** inside each BIG: `data\<stream>.manifest`, `.bin` (instance data),
 `.relo`, `.imp`, and `data\<stream>\cdata\*.cdata` (bulk payloads such as audio).
+
+**Stream cache:** the tools read each stream from `<stem>.assets.pkl` (the parsed manifest's asset list) and
+`<stem>.bin` (the decompressed instance data) in one folder. Build them once per stream with
+`assets, bin, relo, imp = manifest.load_stream(big_path, stem)` (`tools/cnc3/manifest.py`), pickling `assets` and
+writing `bin` out; it takes about 7 s for `static_common`.
 
 ## 3. The manifest (version 5)
 
@@ -87,9 +92,11 @@ the Mammoth `GUMAMM`):
 - The wreck and debris pieces: `GUMAMM_R.*` and `GUMAMM_R01..R05` for the Mammoth,
   `GUPREDTANKR.*` and `GUPREDTANKR01..R05` for the Predator (the underscore varies).
 - `Texture:<name>`: diffuse, `D` = damaged diffuse, `_NRM`/`_Nrm` = normal map, `_SPM` =
-  spec, `HC_<name>` = house-colour mask, plus a separate tread texture. `_K` variants also
+  spec, `HC_<name>` = house-colour mask (GDI only, see House colour), plus a separate tread texture. `_K` variants also
   exist (unused here; purpose not checked).
-- `GameObject:GDIMammoth`, `GameObject:GDIPredator`: the unit's gameplay object.
+- `GameObject:GDIMammoth`, `GameObject:GDIPredator`: the unit's gameplay object. Internal names can differ
+  from the unit's: the Scorpion is `GameObject:NODRaiderTank` (from patch 7), model `NURADR` (meshes under
+  `NURADR_SKN`), while `NODScorpionBuggy` is the Raider Buggy.
 - `PackedTextureImage:PORTRAIT_GDIPredatorTank` / `Portrait_GDIMammothTank`: the sidebar
   portrait. Its asset reference is a `Texture:PackedImages_NNN` and its data holds the pixel
   rectangle (for both tanks `0, 0, 128, 128`, the whole texture).
@@ -124,7 +131,9 @@ u32 namePtr, u32 index}`, mapping sub-mesh name to the pivot it is bound to.
 - Triangles: records at +0x60, stride 24: `{u32 3, ptr -> u32[3] indices, 16 bytes}`. The
   trailing 16 bytes are not a usable face normal; ignore them. The array ends where record 0's
   index triple starts (`ptr == 0x60 + 24*count`). `w3dmesh.py` reads the same records from
-  +0x5c with a dummy leading field; it only uses the pointer.
+  +0x5c with a dummy leading field; it only uses the pointer. Apply the end rule, not a scan for
+  `3` markers: the Scorpion's `GUN_UPGRADE` has 54 triangles, and a scan reads a 55th whose
+  indices (4092 on a 74-vertex mesh) are garbage.
 - Geometry trailer: 7 u32s `{vertexCount, stride, vbPtr, declBytes, declPtr, boneCount,
   bonePtr}` with `vbPtr + vertexCount*stride == declPtr`, `declPtr + declBytes == bonePtr`,
   and the declaration ending in the D3D `0xFF` terminator element. `w3dmesh.py` finds it by
@@ -156,7 +165,24 @@ Tag each vertex by its pivot's ancestry: anything under the turret bone (`BONE_T
 the Mammoth, `TURRET` on the Predator, which includes the barrels, pods and muzzle bones) is
 turret; tread meshes are treads; everything else is hull. The turret pivot is NOT always at
 the hull centre (the Predator's is 4.2 C&C3 units aft of it, the Mammoth's 3.1 forward), so
-keep its position: you need it to seat the turret sprite per hull facing.
+keep its position: you need it to seat the turret sprite per hull facing. The Scorpion's
+`NEWSKIN` mesh is skinned to `BONE_CHASSIS`, `BONE_TAIL` and `BONE_TURRET`: its whole upper body
+is the turret, seated 7.8 units ahead of the hull centre.
+
+**Upgrades** show and hide meshes; read which in the GameObject's model conditions
+(`CurDrawableShowSubObject` / `CurDrawableHideSubObject` strings). A mesh's pivot decides which
+part it joins:
+- the railgun (`UGRAIL_*`) hides nothing and adds turret meshes;
+- Laser Capacitors (`Upgrade_NODTechCenterLaserCapacitor`) hide `GUN` and show `GUN_UPGRADE`, `TURRET2`
+  and `TURRET2_GUN`: a second turret on a tail mount, firing from `TurretMS` (the cannon fires from
+  `TurretFX`). The engine draws one turret, and turret 0 has no weapon once the cannon is hidden, so the
+  upper body is drawn fixed facing forward with the hull and `TURRET2` is the turret, seated 14.4 units aft;
+- Dozer Blades show `DOZERBLADE`, bound to `BONE_TURRET`, so it turns with the upper body; on the laser
+  tank it rides the fixed body.
+
+Hull-mounted upgrade pieces (the fixed body, the tail mount, the blade on the laser tank) are
+"fixtures": drawn with the hull but kept out of the hull's footprint, so every variant keeps its base
+tank's hull centre and seat origin (`c3_render.py` part 3).
 
 ### Treads
 C&C3 swaps whole tread meshes by state (`TREADSSTOP`, `TREADSMOVE`, `TREADSLEFT`,
@@ -181,6 +207,12 @@ mesh and scroll its U coordinate yourself:
 The `HC_*` texture's **alpha** is the recolour mask (about 5% of the sheet). Its RGB is not
 the colour. See step 7 for how to paint it for Remastered.
 
+Nod units have no `HC_` texture. Their meshes use `ObjectsNOD.fx`, and the house mask is the
+spec map's **blue** channel, which covers exactly the red markings on the diffuse
+(`c3_extract_model.py` `house_from_spec`). In C&C3 those strips glow: the shader adds spec blue x a
+scrolling mask x house colour x 3 as light. Painted by step 7's formula alone they read dim on the
+Scorpion's dark panels (median G 96, luminance 64, under the target below).
+
 ### Audio
 `.cdata` audio is EA SNR/SNS (EA-XAS ADPCM). **ffmpeg has a built-in demuxer for exactly
 this** (`ea_cdata`): save the payload with a `.cdata` extension and run
@@ -191,7 +223,17 @@ Resolve `AudioEvent` asset references (`(typeId, instanceId)` pairs) to `AudioFi
 then to their cdata. The English stream repeats every non-localised `AudioFile` as a stub
 (0 bytes of instance data, no cdata file): resolve against every stream and take the first
 one whose cdata actually exists. Voices come from `global_english`, weapon sounds from
-`global_common`.
+`global_common`. The audio patches (`Core/1.5`, `Core/1.7`, `EnglishAudio/1.5`, `EnglishAudio/1.7`) form a
+chain like the static ones, but `global_common_5` holds a 548-byte, 19 ms placeholder for every unit
+voice, so skip payloads that small and take the 1.0 English take. `tools/cnc3/c3_extract_audio.py`
+(workspace) does all of this from AudioEvent names.
+
+Follow a unit's sounds through its assets' references: the GameObject's references name its voice
+events (`AudioEvent:NOD_ScorpionTank_VoiceSelect`, `...VoiceMove`, `...VoiceAttack`), and each
+weapon's name its fire sound. The Scorpion's cannon fires `NOD_ScorpionTank_CannonFire` (9 takes);
+its laser names `Multisound:NOD_ScorpionTank_BeamWeaponLoopMS`, which plays `NOD_ScorpionTank_BeamFire`
+(5 one-shot takes) with a sparking loop. Internal names mislead here too: the `NURaide_*` files are the
+Raider Buggy's; the Scorpion's are `NUScorp_*`/`NuScorp_*`.
 
 ### Stats (partial)
 GameObjects are compiled structs with no field names, and module layouts vary per unit.
@@ -213,7 +255,30 @@ the tanks' `WeaponTemplate`s is 12 bytes longer from patch 5 on.
 | Damage | float in the warhead `WeaponTemplate` (the weapon's asset reference): `MammothTankShellWarhead` +0x1fc (1.0) / +0x208 (patch 5 on), `GDIPredatorTankCannonWarhead` +0x208 / +0x214 | 500 / 400 |
 
 The weapon name sits at +0x15c in 1.0 and +0x168 from patch 5 on, with its length at +0x04.
-Cross-check anything you rely on; these offsets are proven only for these two units. For the
+Cross-check anything you rely on; these offsets are proven only for these two units.
+
+**Offsets move with the inline name.** Every field after the weapon's or object's inline name
+shifts with its length. On the Scorpion (patch 7; names 4 bytes longer) the reload floats sit at
+`WeaponTemplate` +0x180, the cannon warhead's damage at +0x210 (not +0x214), vision 72 bytes from
+the end (not 68), and MaxHealth at GameObject +0x2c44. Its LocomotorSet entry is not `{1, 0, speed}`:
+after the name come `1, 0, 2, 3, 8`, then the speed (90.0) at +0x308, unconfirmed. Find each value by
+pattern, then confirm it on a sibling.
+
+| Scorpion (`NODRaiderTank`) | Value |
+|---|---|
+| Cost, MaxHealth, vision | 800, 2400, 400 |
+| Cannon `NODRaiderTankCannon` | range 275, 2.0 s between shots, warhead damage 240 |
+| Laser `NODRaiderTankCannonLaser` | range 275, clip of 2 (u32 +0x70) 0.1 s apart, reload 2.36 s; 520 at +0x230 in its first nugget, the likely damage (the laser has no warhead asset to cross-check) |
+| Dozer Blades | armour `NODRaiderTankArmorDozerBlades` adds one entry to the plain armour: damage type 31 at 0.01; `AttributeModifier:Modifier_NODDozerBlades` holds one modifier, type 23 x 0.75. The data names neither type. |
+
+**Lasers.** C&C3 draws the Scorpion's laser with a draw module inside the GameObject, not a
+separate laser object: three `Laser.fx` shader blocks whose `Texture1`/`Texture2` constants index
+the object's asset references (`FXObeliskLaser` + `FXLaserOverlay`, the railgun's distortion pair,
+and `FXObeliskLaserHeroic` + `FXLaserOverlay` for veterans), each after a run of floats (1, 0.5, 1,
+0.03, 0, 0.2, 0, 1, 30, 30, 10) whose fields are not named in the data. `FXObeliskLaser` is the
+Obelisk's own beam: 64 x 256, a red glow round a white-hot core, constant along its length. The
+weapon's FX lists are `FX_NODSpitfireFire` (distortion and glow particles) and `FX_NODSpitfireHit`
+(distortion, fire, glow and flash); particle-system layouts were not decoded. For the
 record, the Mammoth's pods (`GDIMammothTankRocketPods`) read shot gap 0.1/0.25 and reload
 10.2/9.8 at +0x178..+0x184 (1.0), and their warhead does 300 in 1.9.
 
@@ -282,6 +347,14 @@ rather than using Blender: you need exact control of camera, light and colour.
   portraits are square: crop the centre 4:3 band, then resize.
 - **Classic stub:** Remastered still needs a classic-mode SHP of the same frame count, sized
   canvas / 8 (ours: 64x64 and 48x48, 128 frames each).
+- **Centring:** after packing, `scripts/unit_centring.py` moves every frame down by the hull's
+  measured offset so the hull sits centred on the unit as EA's vehicles do, records the drop
+  (`unit_art_drop.json`, `redalert/unit_art_drop.h`, which the fire points add) and prints the
+  selection box. Ours: C3PRED 24 canvas px, C3MK3 32, C3SCORP 14 (its hull sat 1.81 classic px high).
+  Upgrade variants move with their base tank.
+- **Variants:** an upgrade that changes only one part packs only that part's frames; its other
+  tiles name the base tank's ZIP members (`VARIANTS` in `c3_pack_tanks.py`). C3SCORPDZR owns turret
+  frames only, C3SCORPLASDZR hull frames only. C3SCORPLAS owns both, as the laser changes the hull.
 - **Railgun upgrade (`C3MK3RAIL`, `C3PREDRAIL`):** C&C3 shows the `UGRAIL` meshes (a sleeve round each
   barrel, a cable, a forked tip) and hides nothing. `scripts/c3_rail_turrets.py` adds them to the model
   (`extract`), renders the 32 turret facings with `c3_render.py --rails --glow` (`render`; a facing whose
@@ -330,6 +403,9 @@ convert at 15 game frames per second (RA's `TICKS_PER_SECOND`). What that gave (
 tuned in play): Predator 400 HP, speed 7, cannon 47 damage every 30 frames; Mammoth 1176 HP,
 speed 5, cannon 59 x 2 every 35 frames, pods 35 x 4 every 150 frames; range 300 -> 4.75
 cells, vision 400 -> 6. C&C3 kills much faster per second than classic RA, so expect to tune.
+The Scorpion at the same scale: 282 HP, speed 10, cannon 28 every 30 frames, range 275 -> 4.35;
+the laser 61 a shot, 2 a burst, every 35 frames. C&C3 draws its laser with the Obelisk's beam
+texture and its draw module is not decoded, so a DLL's own Obelisk beam is the nearest match.
 
 ## 10. Checks before going in game
 
