@@ -8,6 +8,7 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
 - Concrete Wall costs 100 in skirmish and LAN, as in the campaigns (was 50).
 - Tiberian Sun GDI builds no sandbags, as in Tiberian Sun: its Concrete Wall, gates and component towers come with the Barracks.
 - Unholy Alliance starts every player with a Tiberian Sun GDI MCV too.
+- The GDI Mammoth Tank needs GDI's own Repair Facility.
 
 ### Fixed
 - A paused Mammoth Mk. II, Ghost Stalker or Mobile War Factory resumes when you click it again.
@@ -17,6 +18,9 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
 - A deployed Juggernaut ordered onto a target it can't hit stays put instead of wandering off.
 - H takes you to your Construction Yard again.
 - Another enabled mod's rules.ini no longer breaks Tiberian Factions.
+- Units, infantry and aircraft come only from their own faction's factory. With another faction's Construction
+  Yard, a Soviet War Factory no longer turns out GDI Mammoth Tanks for the AI, and placing a building no longer
+  repeats "new construction options".
 
 ## [5.5.0] — 2026-10-14
 

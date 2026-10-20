@@ -32,14 +32,6 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
   two queued Limpets build in a test. A held War Factory order or a vehicle stuck at the factory exit would hold the
   queue the same way; ask the player what else was in production.
 
-### Placing a building repeats "new construction options" (edge buildings)
-- **Severity:** moderate (EVA repeats on every placement while it lasts).
-- Seen in an Unholy Alliance match on Fields of Gold with a Nod Construction Yard and a Soviet War Factory against the
-  map's right edge. Each placement dropped 10 to 15 infantry and harvester cameos (TD infantry, E1, E2, E6, medic,
-  mechanic, spy, TD Harvester) from the sidebar and added them back, each re-add announced. Moving the yard off the
-  edge and selling the factory stopped it. Not yet traced: log the removals too, and check which prerequisite scan
-  misses a building on the map's last column.
-
 ### Infantry pushed aside in a narrow pass lose their orders (suspected)
 - **Severity:** minor.
 - When a vehicle drives through a one-cell pass, `DriveClass::Drain_Infantry_Along` (`drive.cpp`)
