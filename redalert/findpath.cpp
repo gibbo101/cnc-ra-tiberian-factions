@@ -584,8 +584,8 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
         }
     }
 
-    // TF: visited cells live in a per-cell table stamped per search rather than a hash map built per search; the
-    // search is the same. Trap: one search at a time, since the result path points into the table.
+    // TF: visited cells live in a per-cell table, stamped per search. Trap: the tables are static, so a search
+    // must never run inside another or on a second thread.
     static AStarCell visited_cells[MAP_CELL_TOTAL];
     static unsigned visited_stamp[MAP_CELL_TOTAL];
     static unsigned search_stamp = 0;

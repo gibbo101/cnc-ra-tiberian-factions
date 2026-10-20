@@ -4914,8 +4914,8 @@ static void TF_Tell_Launchers_Tick(void)
     }
 }
 
-// Records the mod's root once its CCDATA path registers, and deletes any TD map copies an older install of the
-// mod left in Local_Custom_Maps/Red_Alert/.
+// Records the mod's root, its DLL's folder where readable, once its CCDATA path registers, and deletes any TD
+// map copies an older install of the mod left in Local_Custom_Maps/Red_Alert/.
 static void TF_Note_Mod_Root(const char* mod_path)
 {
     static bool _noted = false;
@@ -4936,8 +4936,6 @@ static void TF_Note_Mod_Root(const char* mod_path)
     }
     root[len - 6] = 0; // now "<mod>\" (keeps the trailing separator)
     _noted = true;
-    // TF: the root comes from the DLL's own folder when it can, as another enabled mod may register its CCDATA
-    // first.
     char own[MAX_PATH];
     if (TF_Mod_Folder(own, sizeof(own) - 1)) {
         snprintf(root, sizeof(root), "%s\\", own);
