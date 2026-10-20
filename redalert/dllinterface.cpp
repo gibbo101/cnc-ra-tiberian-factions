@@ -5231,22 +5231,16 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
             || sound_effect_index == VOC_RADAR_ON || sound_effect_index == VOC_RADAR_OFF
             || sound_effect_index == VOC_TS_PLACE_BUILDING_DOWN
             || sound_effect_index == VOC_TD_PLACE_BUILDING_DOWN
-            || sound_effect_index == VOC_PLACE_BUILDING_DOWN || sound_effect_index == VOC_CONSTRUCTION
-            || sound_effect_index == VOC_TD_CONSTRUCTION) {
+            || sound_effect_index == VOC_PLACE_BUILDING_DOWN) {
             const char* up = getenv("USERPROFILE");
             if (up != NULL) {
                 char path[512];
                 snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_sfx_dispatch.log", up);
                 FILE* f = fopen(path, "a");
                 if (f != NULL) {
-                    fprintf(f, "[sfx] ms=%lu frame=%ld voc=%d name=%s actlike=%d to=%llx first=%llx x=%d prio=%d ctx=%d\n",
-                            (unsigned long)GetTickCount(), (long)Frame, sound_effect_index,
+                    fprintf(f, "[sfx] voc=%d name=%s actlike=%d\n", sound_effect_index,
                             new_event.SoundEffect.SoundEffectName,
-                            (player_ptr != NULL) ? (int)player_ptr->ActLike : -1,
-                            (unsigned long long)new_event.GlyphXPlayerID,
-                            (unsigned long long)DLLExportClass::GlyphxPlayerIDs[0],
-                            new_event.SoundEffect.PixelX, new_event.SoundEffect.SoundEffectPriority,
-                            new_event.SoundEffect.SoundEffectContext);
+                            (player_ptr != NULL) ? (int)player_ptr->ActLike : -1);
                     fclose(f);
                 }
             }
