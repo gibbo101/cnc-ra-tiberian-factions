@@ -13,8 +13,8 @@ A melodic performance improvement.
   manual description and its in-game stats read from the mod's rules.
 - TIBERIAN FACTIONS SETTINGS: pick each faction's skirmish music.
 - Tiberian Sun Music, an add-on: all 26 Tiberian Sun and Firestorm themes in skirmish and in the jukebox.
-- All 34 of Tiberian Dawn's skirmish maps in the Official list, with their own thumbnails, played on TD's own desert,
-  temperate and winter terrain.
+- Six theatres: Tiberian Dawn's desert, temperate and winter join Red Alert's temperate, snow and interior, and all 34
+  of TD's skirmish maps are in the Official list with their own thumbnails.
 - Tiberian Dawn's units, buildings and effects draw from the base game's own files, which makes the mod smaller.
 
 ### Changed
