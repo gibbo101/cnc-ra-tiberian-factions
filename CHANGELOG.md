@@ -10,6 +10,16 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
 - Unholy Alliance starts every player with a Tiberian Sun GDI MCV too.
 - The GDI Mammoth Tank needs GDI's own Repair Facility.
 
+### Performance
+- Pathfinding is about twice as fast: each route search keeps its visited cells in one reused table.
+- Unit, building and effect art ships as compressed DDS wherever that is smaller, and the sidebar's UI sheet drops from
+  176 MB to 62 MB. Video memory at startup falls by about 600 MB, and the Workshop download with the Tiberian Sun HD
+  Assets falls from 565 MB to 376 MB.
+- The hidden classic-graphics view is no longer drawn every frame, and the Tiberian Sun War Factory and Refinery pads
+  no longer cost more on bigger maps.
+- The mod's art always preloads at startup, even with the NOSPLASHPRELOAD launch option, which would leave shared art
+  as missing textures.
+
 ### Fixed
 - A paused Mammoth Mk. II, Ghost Stalker or Mobile War Factory resumes when you click it again.
 - The Dropship Bay's units show the time left on its reload.
