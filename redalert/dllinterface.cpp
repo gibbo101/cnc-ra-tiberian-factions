@@ -2259,32 +2259,48 @@ static void TF_Deploy_Key_Tick(void)
     }
     _was_down = down;
 
-    if ((GetAsyncKeyState('A') & 0x8000) != 0 && PlayerPtr != NULL && TF_Game_Has_Keyboard()) {
+    if ((GetAsyncKeyState('A') & 0x8000) != 0 && PlayerPtr != NULL && TF_Game_Has_Keyboard()
+        && TF_Keys_Have_One_Owner()) {
         TF_SelectAllLatchUntil[PlayerPtr->Class->House] = (long)Frame + 10;
     }
 }
 
-// Per frame: on a fresh press of H, centres the camera on the player's next construction yard. The launcher's own
-// command looks for a building named FACT, which no faction yard is.
+// Centres the camera of the player in context on their next construction yard, once per press: on the host a
+// press arrives both from the keyboard and as mod command 3. The launcher's own command looks for FACT only.
+static void TF_Home_Camera(void)
+{
+    static long _pressed[HOUSE_COUNT];
+    static int _last[HOUSE_COUNT];
+    if (PlayerPtr == NULL) {
+        return;
+    }
+    HousesType me = PlayerPtr->Class->House;
+    if (_pressed[me] != 0 && (long)Frame - _pressed[me] < 8 && (long)Frame >= _pressed[me]) {
+        return;
+    }
+    _pressed[me] = (long)Frame;
+    int count = Buildings.Count();
+    for (int step = 1; step <= count; step++) {
+        int index = (_last[me] + step) % count;
+        BuildingClass const* building = Buildings.Ptr(index);
+        if (building != NULL && building->IsActive && !building->IsInLimbo && building->Owner() == me
+            && building->Class->Is_Construction_Yard()) {
+            _last[me] = index;
+            COORDINATE center = building->Center_Coord();
+            DLLExportClass::On_Center_Camera(PlayerPtr, Coord_X(center), Coord_Y(center));
+            return;
+        }
+    }
+}
+
+// Per frame: a fresh press of H runs TF_Home_Camera, for the one human; LAN players' presses arrive as mod
+// command 3.
 static void TF_Home_Key_Tick(void)
 {
     static bool _was_down = false;
-    static int _last = -1;
     bool down = (GetAsyncKeyState('H') & 0x8000) != 0 && TF_Game_Has_Keyboard() && TF_Keys_Have_One_Owner();
-    if (down && !_was_down && PlayerPtr != NULL) {
-        int count = Buildings.Count();
-        for (int step = 1; step <= count; step++) {
-            int index = (_last + step) % count;
-            BuildingClass const* building = Buildings.Ptr(index);
-            if (building != NULL && building->IsActive && !building->IsInLimbo
-                && building->Owner() == PlayerPtr->Class->House && building->Class->Is_Construction_Yard()
-                && *building != STRUCT_CONST) {
-                _last = index;
-                COORDINATE center = building->Center_Coord();
-                DLLExportClass::On_Center_Camera(PlayerPtr, Coord_X(center), Coord_Y(center));
-                break;
-            }
-        }
+    if (down && !_was_down) {
+        TF_Home_Camera();
     }
     _was_down = down;
 }
@@ -4849,10 +4865,13 @@ static const char* TF_Patch_Launcher_Keys_In(void)
         unsigned command;
     };
     static const Slot deploy = {10, 0x168AB18, 0x1020};
+    static const Slot home = {5, 0x168AB0C, 0x100B};
     static const Slot selects[2] = {{8, 0x168A830, 0x101B}, {7, 0x168A9E7, 0x101A}};
 
     SIZE_T const deploy_slot = TABLE + deploy.index * 4;
-    if (*(SIZE_T const*)deploy_slot != deploy.stock || *(SIZE_T const*)(TABLE + selects[0].index * 4) != selects[0].stock
+    SIZE_T const home_slot = TABLE + home.index * 4;
+    if (*(SIZE_T const*)deploy_slot != deploy.stock || *(SIZE_T const*)home_slot != home.stock
+        || *(SIZE_T const*)(TABLE + selects[0].index * 4) != selects[0].stock
         || *(SIZE_T const*)(TABLE + selects[1].index * 4) != selects[1].stock) {
         return "keys: unknown launcher build, left alone";
     }
@@ -4872,6 +4891,17 @@ static const char* TF_Patch_Launcher_Keys_In(void)
     }
     SIZE_T target = CAVE;
     if (!TF_Write_Own_Code(deploy_slot, (unsigned char const*)&target, 4)) {
+        return "keys: write failed";
+    }
+
+    /*
+    **	Camera to yard: mov ebx,0x1034 / jmp MOD_SEND
+    */
+    unsigned char home_stub[10] = {0xBB, 0x34, 0x10, 0x00, 0x00, 0xE9, 0, 0, 0, 0};
+    TF_Put_Rel32(home_stub + 6, CAVE + 0x10 + 10, MOD_SEND);
+    target = CAVE + 0x10;
+    if (!TF_Write_Own_Code(CAVE + 0x10, home_stub, sizeof(home_stub))
+        || !TF_Write_Own_Code(home_slot, (unsigned char const*)&target, 4)) {
         return "keys: write failed";
     }
 
@@ -7334,6 +7364,11 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Input(InputRequestEnum 
         // selection skips harvesters and MCVs (TF_Select_All_Excludes).
         if (input_event == INPUT_REQUEST_MOD_GAME_COMMAND_2_AT_POSITION && PlayerPtr != NULL) {
             TF_SelectAllLatchUntil[PlayerPtr->Class->House] = (long)Frame + 10;
+        }
+
+        // TF: mod command 3 is the launcher's camera-to-yard key (H), sent by each player's own launcher.
+        if (input_event == INPUT_REQUEST_MOD_GAME_COMMAND_3_AT_POSITION) {
+            TF_Home_Camera();
         }
 
         // TF: mod command 1 is the deploy key: each selected object whose self-click answer is ACTION_SELF
