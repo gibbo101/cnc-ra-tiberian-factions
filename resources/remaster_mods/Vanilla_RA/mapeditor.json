@@ -1966,6 +1966,94 @@
       ]
     },
     {
+      "id": 64,
+      "kind": "vehicle",
+      "name": "c3scorp",
+      "display_name": "Scorpion Tank",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "walk_frames": 3,
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 65,
+      "kind": "vehicle",
+      "name": "c3scorplas",
+      "display_name": "Scorpion Tank (Laser)",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "walk_frames": 3,
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 66,
+      "kind": "vehicle",
+      "name": "c3scorpdzr",
+      "display_name": "Scorpion Tank (Dozer Blades)",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "walk_frames": 3,
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 67,
+      "kind": "vehicle",
+      "name": "c3scorplasdzr",
+      "display_name": "Scorpion Tank (Laser, Dozer Blades)",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "walk_frames": 3,
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
       "id": 7,
       "kind": "aircraft",
       "name": "tdc17",

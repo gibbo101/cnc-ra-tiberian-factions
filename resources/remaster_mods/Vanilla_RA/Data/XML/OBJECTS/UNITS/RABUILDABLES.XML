@@ -2624,7 +2624,7 @@
 			<BuildIcon>BuildIcon_TS4TNK_G</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
-	<!-- C&C3 Mammoth Mk. III and Predator: C&C3's own portraits, unbadged on every variant; hand block, outside every generated one. -->
+	<!-- C&C3 Mammoth Mk. III, Predator and Scorpion: C&C3's own portraits, unbadged on every variant; hand block, outside every generated one. -->
 	<!-- asset-pack: CNC3-Graphics-Pack -->
 	<ObjectTypeClass Name="RA_C3MK3_0" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
@@ -2666,6 +2666,62 @@
 			<ObjectNameTextID>TEXT_UNIT_C3PRED</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_C3PRED_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_C3PRED</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3SCORP_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3SCORP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3SCORP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3SCORP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3SCORP_8" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3SCORP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3SCORP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3SCORP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3SCORPLAS_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3SCORPLAS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3SCORPLAS_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3SCORP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3SCORPLAS_8" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3SCORPLAS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3SCORPLAS_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3SCORP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3SCORPDZR_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3SCORPDZR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3SCORPDZR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3SCORP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3SCORPDZR_8" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3SCORPDZR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3SCORPDZR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3SCORP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3SCORPLASDZR_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3SCORPLASDZR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3SCORPLASDZR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3SCORP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3SCORPLASDZR_8" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3SCORPLASDZR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3SCORPLASDZR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3SCORP</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	<!-- RA2 Apocalypse and Prism Tank (easter eggs): RA2's own cameos, unbadged on every variant; hand block, outside every generated one. -->
