@@ -83,6 +83,7 @@ sections, and `package-for-workshop.sh` runs it.
 - `building-sound-routing.md` — TD building, credit and UI sounds for GDI and Nod.
 - `eva-ram-patch-spike.md` — EVA lines that follow the faction.
 - `skirmish-music.md` — skirmish, jukebox and menu music: the playlists, music by faction, the TS-Music pack.
+- `ea-modding-guidelines.md` — EA's C&C modding guidelines: what they forbid, the required disclaimer, and the check the packagers run.
 - `ts-music-import.md` — Tiberian Sun's soundtrack converted from the player's own copy, replacing the TS-Music pack.
 
 ### Launcher and front end

@@ -36,6 +36,10 @@ Don't try to skip this. The symptom is silent — no error, just an indefinite h
 The maintainer reviews and OKs the full public text first: the Workshop description changelog block, the
 `CHANGELOG.md` section, and the GitHub release notes. Present the actual text, not a summary.
 
+Check anything new in the release, a pack, a feature or a page, against EA's C&C modding guidelines
+(`ea-modding-guidelines.md`): no C&C music files, the disclaimer at the top of every page, no EA logos in
+promotion. The packagers run `scripts/ea_guidelines_check.py` and refuse a release that fails it.
+
 Ask explicitly whether anything should stay **unannounced**. That is not derivable from the
 CHANGELOG: easter eggs are meant to stay quiet, and some fixed surfaces are ones he would rather
 not draw attention to. The changelog is the engineering record; the listing is the shopfront.
