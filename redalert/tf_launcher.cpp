@@ -2439,8 +2439,8 @@ int Music_Row(void)
 }
 
 /*
-**	Shows the open page: on AUDIO the faction tabs, the faction's crest and its music rows with the saved choice
-**	ticked; the Tiberian Sun row only while its music is installed; COMING SOON on an empty page.
+**	Shows the open page: AUDIO's faction tabs, crest and music rows with the saved choice ticked, the Tiberian Sun
+**	row unpickable and reading Not installed while its music is missing; COMING SOON on an empty page.
 */
 void Refresh_Settings(void)
 {
@@ -2496,8 +2496,6 @@ void Refresh_Settings(void)
                                   : MUSIC_CHOICES[row].About,
                       missing);
     }
-    Set_Hidden(Find_Button(screen, "TF_ST_Get"), true);
-    Set_Hidden(Find_Widget(screen, "TF_ST_GetText", AS_TEXT), true);
     Set_Hidden(Find_Button(screen, "Start_Button"), !audio);
     Set_Hidden(Find_Widget(screen, "StartButton_Text", AS_TEXT), !audio);
 }
