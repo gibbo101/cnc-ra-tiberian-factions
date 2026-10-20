@@ -4050,11 +4050,38 @@ struct TF_AtlasRect
     int x, y, w, h;
 };
 
+// The size of the UI atlas the mod ships: the DDS (sides padded to a multiple of 4) when there is one, else the TGA.
+// ClientG divides by the size of the texture it loaded, so the crest records must too.
+static void TF_Atlas_Size(double& w, double& h)
+{
+    static double _w = 0.0, _h = 0.0;
+    if (_w == 0.0) {
+        _w = 6871.0;
+        _h = 6716.0;
+        char folder[MAX_PATH], path[MAX_PATH];
+        if (TF_Mod_Folder(folder, sizeof(folder))) {
+            snprintf(path, sizeof(path), "%s\\Data\\ART\\TEXTURES\\SRGB\\MT_COMMANDBAR_COMMON.DDS", folder);
+            FILE* f = fopen(path, "rb");
+            if (f != NULL) {
+                unsigned int header[5];
+                if (fread(header, 4, 5, f) == 5 && header[0] == 0x20534444 && header[3] > 0 && header[4] > 0) {
+                    _h = (double)header[3];
+                    _w = (double)header[4];
+                }
+                fclose(f);
+            }
+        }
+    }
+    w = _w;
+    h = _h;
+}
+
 // ClientG's cached UV record for an atlas rect, computed as ClientG does so the bytes match its copies. nudge
 // moves u0 a sub-pixel per slot, so slots sharing a target each restore to their own stock rect.
 static void TF_Atlas_UV_Record(const TF_AtlasRect& r, float out[4], int nudge = 0)
 {
-    const double W = 6871.0, H = 6716.0; // MT_COMMANDBAR_COMMON.TGA
+    double W, H;
+    TF_Atlas_Size(W, H);
     out[0] = (float)(r.y / H);
     out[1] = (float)(r.x / W + nudge * 1e-6);
     out[2] = (float)(r.w / W);
