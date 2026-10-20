@@ -247,6 +247,10 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ## AI milestone (plan: `ai-upgrade-plan.md`)
 
+- **Early pressure and wave size:** stock RA's AI pushes sooner than ours, and once its economy
+  runs ours streams units in rather than attacking in big waves. Time the first attack and
+  measure wave sizes against stock RA on the same map and difficulty, then retune W3 pacing and
+  W4 staging.
 - **Naval invasions don't land.** The ferry pipeline logs its full chain, but no match has shown
   a force landing, holding a beach and building on it. Structural item, the harbour seal: a naval
   yard and parked fleet can seal their own channel, and zones ignore buildings, so no zone check
