@@ -115,10 +115,11 @@ def tight(tga, meta):
 
 
 def plan(zip_path):
-    """("dds" or "zip", the ZIP's memory as TGA crops, as whole-canvas DDS) for a sprite ZIP."""
+    """("dds" or "zip", the ZIP's memory as TGA crops, as whole-canvas DDS) for a sprite ZIP. DXT needs sides that
+    are multiples of 4, so any other canvas stays a ZIP."""
     with zipfile.ZipFile(zip_path) as z:
         frames = _frames(z)
-    if not frames or any(meta is None for _, meta in frames):
+    if not frames or any(meta is None or meta["size"][0] % 4 or meta["size"][1] % 4 for _, meta in frames):
         return "zip", 0, 0
     tga = sum((m["crop"][2] - m["crop"][0]) * (m["crop"][3] - m["crop"][1]) * 4 for _, m in frames)
     dds = sum(_dds_bytes(*m["size"]) for _, m in frames)
@@ -163,7 +164,8 @@ def _build(zip_path, out_dir):
 
 
 def _key(zip_path):
-    digest = hashlib.sha1(open(zip_path, "rb").read())
+    digest = hashlib.sha1(os.path.basename(zip_path).upper().encode())
+    digest.update(open(zip_path, "rb").read())
     digest.update(open(__file__, "rb").read())
     return digest.hexdigest()
 
@@ -178,6 +180,8 @@ def _convert(zip_path):
     folder = os.path.dirname(zip_path)
     stem = os.path.splitext(os.path.basename(zip_path))[0]
     os.remove(zip_path)
+    if kind == "zip" and os.path.isdir(os.path.join(folder, stem)):
+        _clear(os.path.join(folder, stem))
     for name in os.listdir(out_dir):
         src, dst = os.path.join(out_dir, name), os.path.join(folder, name)
         if os.path.isdir(src):
