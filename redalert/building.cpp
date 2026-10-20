@@ -5775,7 +5775,8 @@ int BuildingClass::Mission_Construction(void)
     case INITIAL:
         Begin_Mode(BSTATE_CONSTRUCTION);
         Transmit_Message(RADIO_BUILDING);
-        if (House->IsPlayerControl) {
+        // TF: every human's building plays its build-up; IsPlayerControl marks only the player the loop runs as.
+        if (House->IsHuman) {
             // TF: TD buildings play TD's construction loop; TS buildings rise in silence, as no TS structure
             // defines a build-up sound.
             if (Class->Is_TS_Era()) {
