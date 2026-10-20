@@ -54,9 +54,8 @@ WALKERS = {"TSTITN", "TSHMEC", "TSJUGG", "TSSMEC"}
 AIRCRAFT = {"TSORCA", "TSORCAB", "TSCARRY"}
 VOXEL_PREFIXES = ("TS", "R2", "C3")
 
-# name: (hull frames, hull frames per facing, first turret frame or None, turret seat, partners)
-# Partners are (ZIP name, kind, density) moved by the same classic distance; a UNITS partner is a variant
-# drawn on its leader's hull centre, and records the same drop.
+# name: (hull frames, hull frames per facing, first turret frame or None, turret seat, partners). Partners are
+# (ZIP name, kind, density) moved by the same classic distance; a UNITS partner records its leader's drop.
 SCORP_VARIANTS = tuple((n, "UNITS", UNIT_DENSITY) for n in ("C3SCORPLAS", "C3SCORPDZR", "C3SCORPLASDZR"))
 UNITS = {
     "C3MK3": (96, 3, 96, "c3mk3", ()),
