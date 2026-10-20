@@ -2152,12 +2152,44 @@ static int TF_Self_Action_Selected(void)
 
 static long TF_SelectAllLatchUntil[HOUSE_COUNT]; // per house: frame until which a select-all order still counts as fresh
 
+// True unless another program's window has the keyboard, so keys typed outside the game are ignored; when the
+// foreground can't be read, keys count, as they always have.
+static bool TF_Game_Has_Keyboard(void)
+{
+    static DWORD _pid = 0;
+    static bool _game = true;
+    HWND window = GetForegroundWindow();
+    DWORD pid = 0;
+    if (window == NULL || GetWindowThreadProcessId(window, &pid) == 0 || pid == 0) {
+        return true;
+    }
+    if (pid != _pid) {
+        _pid = pid;
+        _game = true;
+        HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if (snap != INVALID_HANDLE_VALUE) {
+            PROCESSENTRY32W pe;
+            pe.dwSize = sizeof(pe);
+            if (Process32FirstW(snap, &pe)) {
+                do {
+                    if (pe.th32ProcessID == pid) {
+                        _game = _wcsicmp(pe.szExeFile, L"ClientG.exe") == 0;
+                        break;
+                    }
+                } while (Process32NextW(snap, &pe));
+            }
+            CloseHandle(snap);
+        }
+    }
+    return _game;
+}
+
 // Per frame: runs the deploy key on a fresh press of backslash, and holds an 'A' press for ten frames, since
 // the launcher's select-all reaches CNC_Select_Object a frame or two after the key goes down.
 static void TF_Deploy_Key_Tick(void)
 {
     static bool _was_down = false;
-    bool down = (GetAsyncKeyState(VK_OEM_5) & 0x8000) != 0;
+    bool down = (GetAsyncKeyState(VK_OEM_5) & 0x8000) != 0 && TF_Game_Has_Keyboard();
 #if TF_DEV_BUILD
     /*
     **	Dev builds also take the deploy order from a flag file, for headless runs where no
@@ -2210,7 +2242,7 @@ static void TF_Deploy_Key_Tick(void)
     }
     _was_down = down;
 
-    if ((GetAsyncKeyState('A') & 0x8000) != 0 && PlayerPtr != NULL) {
+    if ((GetAsyncKeyState('A') & 0x8000) != 0 && PlayerPtr != NULL && TF_Game_Has_Keyboard()) {
         TF_SelectAllLatchUntil[PlayerPtr->Class->House] = (long)Frame + 10;
     }
 }
@@ -2221,14 +2253,15 @@ static void TF_Home_Key_Tick(void)
 {
     static bool _was_down = false;
     static int _last = -1;
-    bool down = (GetAsyncKeyState('H') & 0x8000) != 0;
+    bool down = (GetAsyncKeyState('H') & 0x8000) != 0 && TF_Game_Has_Keyboard();
     if (down && !_was_down && PlayerPtr != NULL) {
         int count = Buildings.Count();
         for (int step = 1; step <= count; step++) {
             int index = (_last + step) % count;
             BuildingClass const* building = Buildings.Ptr(index);
             if (building != NULL && building->IsActive && !building->IsInLimbo
-                && building->Owner() == PlayerPtr->Class->House && building->Class->Is_Construction_Yard()) {
+                && building->Owner() == PlayerPtr->Class->House && building->Class->Is_Construction_Yard()
+                && *building != STRUCT_CONST) {
                 _last = index;
                 COORDINATE center = building->Center_Coord();
                 DLLExportClass::On_Center_Camera(PlayerPtr, Coord_X(center), Coord_Y(center));
