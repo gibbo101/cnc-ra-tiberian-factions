@@ -94,7 +94,7 @@ WORKSHOP = {
     },
     "CNC3-Assets": {
         "packs": ("CNC3-Graphics-Pack", "CNC3-SFX-Pack", "CNC3-Voices-eng"),
-        "required": False, "xml_id": "CNC3Assets", "version": (1, 0), "game": "CNC3", "prefix": "C3",
+        "required": False, "xml_id": "CNC3Assets", "version": (1, 1), "game": "CNC3", "prefix": "C3",
         "hosts": ("RA", "TD"), "workshop_ids": {"RA": "3819308545", "TD": "3819308668"},
         "name": "C&C3 Tiberium Wars Assets",
         "description": "Command & Conquer 3 units, effects, sounds and voices for {host}, in HD.",
