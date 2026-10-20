@@ -1556,8 +1556,11 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     **	Check to see if this owner can build the object type specified.
     */
     // TF: a construction yard grants its faction's tree to whoever holds it, so holding a yard listed in
-    // Owner= also passes.
+    // Owner= also passes; a unit, infantry, aircraft or vessel also needs a factory of a side in Owner=.
     bool yard_grants = ((own & Yard_Factions()) != 0);
+    if (yard_grants && type->What_Am_I() != RTTI_BUILDINGTYPE) {
+        yard_grants = type->Who_Can_Build_Me(true, false, Class->House) != NULL;
+    }
     if (((1L << house) & own) == 0 && !yard_grants) {
         return (false);
     }
