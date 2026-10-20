@@ -10,6 +10,10 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ## Next version: first jobs
 
+- **Pack updates in ADD-ONS:** keep the hard minimum per pack (`PACK_NEEDS_*`, 1.0) and add the current
+  version (TS-HD 1.1). An older installed pack shows its version and UPDATE AVAILABLE, and ADD-ONS asks Steam to
+  download it at high priority; if it is still old once that finishes, unsubscribe and resubscribe it. Steam
+  can sit on an update for hours (5.6.0 day: the PC kept TS-HD 1.0).
 - **The map editor on TD theatres.** `cnc-map-editor` knows RA's three theatres only: it needs
   `Desert`, `TDTemperate` and `Winter` with TD's tilesets, and the desert terrain types (`T04`,
   `T09`, `T18`, `ROCK1` to `ROCK7`) in `mapeditor.json` (`td-base-art.md`).
