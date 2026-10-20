@@ -5780,9 +5780,9 @@ int BuildingClass::Mission_Construction(void)
             // defines a build-up sound.
             if (Class->Is_TS_Era()) {
             } else if (Class->Is_Tiberian_Era()) {
-                Sound_Effect(VOC_TD_CONSTRUCTION, Coord);
+                TF_Sound_Effect_For(House, VOC_TD_CONSTRUCTION, Coord);
             } else {
-                Sound_Effect(VOC_CONSTRUCTION, Coord);
+                TF_Sound_Effect_For(House, VOC_CONSTRUCTION, Coord);
             }
         }
         Status = DURING;

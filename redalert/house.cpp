@@ -4994,10 +4994,14 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
                             TF_Wall_Line_Fill(this, fill, cell);
                         }
 
+                        // TF: the slam goes to the placing player; in LAN a placement runs as the lobby's first
+                        // player, who may be another human.
+                        if (IsHuman) {
+                            VocType slam = ts_bldg ? VOC_TS_PLACE_BUILDING_DOWN
+                                                   : (td_bldg ? VOC_TD_PLACE_BUILDING_DOWN : VOC_PLACE_BUILDING_DOWN);
+                            TF_Sound_Effect_For(this, slam, 0);
+                        }
                         if (PlayerPtr == this) {
-                            Sound_Effect(ts_bldg ? VOC_TS_PLACE_BUILDING_DOWN
-                                                : (td_bldg ? VOC_TD_PLACE_BUILDING_DOWN
-                                                           : VOC_PLACE_BUILDING_DOWN));
                             Map.Set_Cursor_Shape(0);
                             Map.PendingObjectPtr = 0;
                             Map.PendingObject = 0;
