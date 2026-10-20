@@ -289,7 +289,8 @@ def readme(mod, listed, host):
                   "3. Restart the game: the game only picks up a change to enabled mods after a restart.", "",
                   f"Without the pack, Tiberian Factions still plays, but its {game} factions are locked.", ""]
     lines += ["If the game crashes on the splash screen, the extra art needs more video memory than it has: add "
-              "`NOSPLASHPRELOAD` to the game's launch options.", ""]
+              "`NOSPLASHPRELOAD` to the game's launch options. Tiberian Factions ignores this option for now, while "
+              "its performance work is under way.", ""]
     lines += ["## Using the assets in your own mod", "",
               f"Every object, cameo and sound is named with the `{w['prefix']}` prefix, so nothing clashes with the "
               "base game's own assets.", "",
