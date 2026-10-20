@@ -195,29 +195,27 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 - **Game rules editor** (`game-rules.md`): every faction's unit values and a short list of match
   rules (a Settings page tab), DEFAULT / CUSTOM and reset always shown. First: a
   hand-written `tf_rules.ini` changing one value in a skirmish, then the slider probe.
-- **RA and TD campaign maps in the skirmish list.** After TD's multiplayer maps (`td-base-art.md`,
-  build plan step 4), read from the players' own files: keep terrain, resources, trees, smudges and
-  civilian buildings as neutral; strip triggers, teams, scripted units and the mission's bases; the
-  player starts where the mission put them and the AI where the enemy base stood (single player, so
-  no fairness pass). Each needs a rendered thumbnail; leave out maps that can't play, such as
-  interior missions without ore. Listed as "Campaign: <mission name>".
-- **TS chrono arrival at skirmish start.** A TS player's opening units are held back while a
-  chrono vortex opens on their start, then come through one by one and fan out. The vortex is
-  launcher-drawn and the DLL can place it (`launcher-render-contracts.md` 10: `VortexActive/X/Y`
-  in `Get_Dynamic_Map_State`, about 350 px, one per map, so stagger two TS players). Send it only
-  to players who see the start cell (`Get_Dynamic_Map_State` gets `player_id`). Voice:
-  "Establishing battlefield control. Stand by." is `00-I200` in both EVA (SPEECH01) and CABAL
-  (SPEECH02); EVA never recorded "established", CABAL has "Battle control established" as
-  `01-N008`. Text as TS does it: `****ESTABLISHING BATTLEFIELD CONTROL****.........Standby!`,
-  then `****BATTLEFIELD CONTROL ESTABLISHED****`. Keep it to about 5 s; AI TS players arrive the
-  same way. Fallback look: the RA2 Chronosphere warp per unit.
-- **Range rings for defences:** a ring round a selected defence, and following the cursor while
-  one is placed; the same pass draws the Sensor Array's and the EMP Cannon's reach. The DLL hears
-  everything it needs (`SIDEBAR_REQUEST_START_PLACEMENT`, `INPUT_REQUEST_MOUSE_MOVE`,
-  `SIDEBAR_REQUEST_PLACE` / `SIDEBAR_CANCEL_PLACE`). Draw with the launcher line renderer
-  (`CNCObjectStruct::Lines`, 3 per object, frames 0-4) on carrier entries visible to the owner
-  only. Prove one clean circle round a selected turret first. An aiming-only ring for the
-  E.M. Pulse has to read ClientG's input mode from inside the player's launcher
+- **RA and TD campaign maps in the skirmish list.** After TD's multiplayer maps (`td-base-art.md`, build plan
+  step 4), read from the players' own files: keep terrain, resources, trees, smudges and civilian buildings as
+  neutral; strip triggers, teams, scripted units and the mission's bases; the player starts where the mission put
+  them and the AI where the enemy base stood (single player, so no fairness pass). Each needs a rendered
+  thumbnail; leave out maps that can't play, such as interior missions without ore. Listed as "Campaign: <mission
+  name>".
+- **TS chrono arrival at skirmish start.** A TS player's opening units are held back while a chrono vortex opens
+  on their start, then come through one by one and fan out. The vortex is launcher-drawn and the DLL can place it
+  (`launcher-render-contracts.md` 10: `VortexActive/X/Y` in `Get_Dynamic_Map_State`, about 350 px, one per map,
+  so stagger two TS players). Send it only to players who see the start cell (`Get_Dynamic_Map_State` gets
+  `player_id`). Voice: "Establishing battlefield control. Stand by." is `00-I200` in both EVA (SPEECH01) and
+  CABAL (SPEECH02); EVA never recorded "established", CABAL has "Battle control established" as `01-N008`. Text
+  as TS does it: `****ESTABLISHING BATTLEFIELD CONTROL****.........Standby!`, then `****BATTLEFIELD CONTROL
+  ESTABLISHED****`. Keep it to about 5 s; AI TS players arrive the same way. Fallback look: the RA2 Chronosphere
+  warp per unit.
+- **Range rings for defences:** a ring round a selected defence, and following the cursor while one is placed;
+  the same pass draws the Sensor Array's and the EMP Cannon's reach. The DLL hears everything it needs
+  (`SIDEBAR_REQUEST_START_PLACEMENT`, `INPUT_REQUEST_MOUSE_MOVE`, `SIDEBAR_REQUEST_PLACE` /
+  `SIDEBAR_CANCEL_PLACE`). Draw with the launcher line renderer (`CNCObjectStruct::Lines`, 3 per object, frames
+  0-4) on carrier entries visible to the owner only. Prove one clean circle round a selected turret first. An
+  aiming-only ring for the E.M. Pulse has to read ClientG's input mode from inside the player's launcher
   (`launcher-vs-dll-ownership.md`, "Aiming is invisible to the sim").
 - **Resource spill on destruction:** silos and refineries (TS and TD) spill Tiberium when
   destroyed, RA's spill Ore. Settle how much, where, and whether harvesters get TS's cargo
@@ -242,22 +240,19 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   harvester's load can't be told apart. A per-harvester Tiberium counter (one member, Save/Load,
   two reset sites) would allow cargo-coloured dock smoke: green for Tiberium, grey for Ore, maybe
   blue for gems. New HD anim names ship as loose VFX ZIPs registered in `RA_VFX.XML`.
-- **Chimney smoke** on power plants and refineries: `ANIM_SMOKE_M` spawned from
-  `BuildingClass::AI` at a per-type stack offset, off while building, selling or unpowered,
-  deterministic for lockstep.
+- **Chimney smoke** on power plants and refineries: `ANIM_SMOKE_M` spawned from `BuildingClass::AI` at a per-type
+  stack offset, off while building, selling or unpowered, deterministic for lockstep.
 
 ## AI milestone (plan: `ai-upgrade-plan.md`)
 
-- **Early pressure and wave size:** stock RA's AI pushes sooner than ours, and once its economy
-  runs ours streams units in rather than attacking in big waves. Time the first attack and
-  measure wave sizes against stock RA on the same map and difficulty, then retune W3 pacing and
-  W4 staging.
-- **Naval invasions don't land.** The ferry pipeline logs its full chain, but no match has shown
-  a force landing, holding a beach and building on it. Structural item, the harbour seal: a naval
-  yard and parked fleet can seal their own channel, and zones ignore buildings, so no zone check
-  sees it. Design: naval yards must not seal their channel; pickup shores must be reachable by
-  the transport (or re-pick after N stalls); filter landing cells next to micro-islands. The
-  FERRY-WAVE release and FERRY-MCV forward base were never seen.
+- **Early pressure and wave size:** stock RA's AI pushes sooner than ours, and once its economy runs ours streams
+  units in rather than attacking in big waves. Time the first attack and measure wave sizes against stock RA on
+  the same map and difficulty, then retune W3 pacing and W4 staging.
+- **Naval invasions don't land.** The ferry pipeline logs its full chain, but no match has shown a force landing,
+  holding a beach and building on it. Structural item, the harbour seal: a naval yard and parked fleet can seal
+  their own channel, and zones ignore buildings, so no zone check sees it. Design: naval yards must not seal
+  their channel; pickup shores must be reachable by the transport (or re-pick after N stalls); filter landing
+  cells next to micro-islands. The FERRY-WAVE release and FERRY-MCV forward base were never seen.
 - **Ferry waits for sea control:** launch only when the house's armed hulls match the strongest
   enemy fleet seen on that water (or none seen and a patrol has crossed).
 - **Tech ordering:** no house had a tech centre, advanced comm or temple after 12 sim-minutes of
@@ -274,19 +269,24 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 - **Minelayer brain:** where to lay (approaches, chokepoints, its own ring), when to reload, not
   walking its own field (W5 special units).
 - **TS GDI AI** builds no transports or navy and never uses the Firestorm or the EMP Cannon.
+- **Pathfinding cost** (`path-failure-livelock-design.md`): A* skipping a destination in another zone on every map
+  waits on the maintainer's OK; nothing ends differently, and the harvesters' direct A* calls need it too. AI guard
+  spots in a base cost only when A* hits its cap: look again if a match logs tens of thousands of fallbacks.
 - Pathfinding and AI bugs: `known-issues.md`.
 
 ## Bigger arcs
 
-- **Campaign, "The Inheritance War"** (`gdi-nod-campaign-story.md`, `campaigns-page.md`):
-  waits behind the AI milestone. First task: a launch route that ships, either the mission
-  carrier reading its missions from data or a hijacked Aftermath slot given `<House>GDI</House>`,
-  then GDI mission 1 for real on the GDI tab, with a map, briefing and win/lose conditions,
-  before committing to all nine. With it, flatten the
-  difficulty stat multipliers: `CCDATA/rules.ini` `[Easy]`/`[Difficult]` still carry the stock
-  spread (Easy Firepower 1.2 / Armor 1.2 / ROF .8 / Cost .8), and difficulty is meant to be
-  behavioural only. Check whether `Scen.CDifficulty` feeds `Rule.Diff[]` in skirmish.
+- **Campaign, "The Inheritance War"** (`gdi-nod-campaign-story.md`, `campaigns-page.md`): waits behind the AI
+  milestone. First task: a launch route that ships, either the mission carrier reading its missions from data or
+  a hijacked Aftermath slot given `<House>GDI</House>`, then GDI mission 1 for real on the GDI tab, with a map,
+  briefing and win/lose conditions, before committing to all nine. With it, flatten the difficulty stat
+  multipliers: `CCDATA/rules.ini` `[Easy]`/`[Difficult]` still carry the stock spread (Easy Firepower 1.2 / Armor
+  1.2 / ROF .8 / Cost .8), and difficulty is meant to be behavioural only. Check whether `Scen.CDifficulty` feeds
+  `Rule.Diff[]` in skirmish.
 - **Co-op missions** (`coop-missions-design.md`).
+- **Maps past 128x128,** up to 253x253: branch `megamaps-spike`, worktree `../worktrees/tf-megamaps`, its doc
+  megamaps.md. After 5.6.0: rebase onto main, a 253x253 stress run of its sector routing, LAN with a joiner,
+  format 4 in `cnc-map-editor`, the lobby's start markers, then its diagnostics out and the branch review.
 
 ## Decided: not doing
 
