@@ -214,7 +214,7 @@ def write_manifest(mod, folder, host):
     return marker
 
 
-# The wording EA requires on every page that ships its assets.
+# The wording EA requires at the top of every page that ships its assets.
 DISCLAIMER = "EA has not endorsed and does not support this product."
 GAME = {"TS": "Tiberian Sun", "RA2": "Red Alert 2", "CNC3": "Command & Conquer 3: Tiberium Wars"}
 TF_URL = "https://steamcommunity.com/sharedfiles/filedetails/?id=3729834253"
@@ -247,7 +247,7 @@ def music_readme(mod, host):
     """A music pack's README.md: what it is, how Tiberian Factions and other mods play it, and credits."""
     w = A.WORKSHOP[mod]
     h = A.HOSTS[host]
-    lines = [f"# {w['name']}", "", w["description"].format(host=h["name"]) +
+    lines = [f"# {w['name']}", "", f"**{DISCLAIMER}**", "", w["description"].format(host=h["name"]) +
              " Built for Command & Conquer Remastered Collection.", "",
              "This is an asset pack: on its own it adds nothing to the game. A mod has to use it.", "",
              "## Playing Tiberian Factions", "",
@@ -265,7 +265,7 @@ def music_readme(mod, host):
     lines += ["## AI disclosure", "", "No AI made or changed the music: these are the original tracks, converted. "
               "The scripts that build this pack were written with AI assistance.", "",
               "## Credits", "", f"Original {GAME[w['game']]} and Firestorm music: Westwood Studios and Electronic Arts.",
-              "Converted for Remastered by gibbo101.", "", DISCLAIMER, "", "## My other C&C projects", ""] + [f"- {m}" for m in D.more_mods(mod)] + [""]
+              "Converted for Remastered by gibbo101.", "", "## My other C&C projects", ""] + [f"- {m}" for m in D.more_mods(mod)] + [""]
     return "\n".join(lines)
 
 
@@ -276,7 +276,7 @@ def readme(mod, listed, host):
         return music_readme(mod, host)
     h = A.HOSTS[host]
     game = GAME[w["game"]]
-    lines = [f"# {w['name']}", "", w["description"].format(host=h["name"]) +
+    lines = [f"# {w['name']}", "", f"**{DISCLAIMER}**", "", w["description"].format(host=h["name"]) +
              " Built for Command & Conquer Remastered Collection.", "",
              "This is an asset pack: on its own it adds nothing to the game. A mod has to use it.", ""]
     ids = w.get("workshop_ids", {})
@@ -347,7 +347,7 @@ def readme(mod, listed, host):
         lines += [f"HD rebuilds of the {game} designs and preparation for Remastered: gibbo101."]
     else:
         lines += ["Rendered for Remastered from the game's own models by gibbo101."]
-    lines += ["", DISCLAIMER, "", "## My other C&C projects", ""] + [f"- {m}" for m in D.more_mods(mod)] + [""]
+    lines += ["", "## My other C&C projects", ""] + [f"- {m}" for m in D.more_mods(mod)] + [""]
     return "\n".join(lines)
 
 
