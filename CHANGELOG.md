@@ -4,7 +4,17 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
 ## [5.6.0] — 2026-10-20
 
-Performance improvements and bug fixes.
+A melodic performance improvement.
+
+### Added
+- TIBERIAN FACTIONS ADD-ONS on the main menu: subscribe to the asset packs and add-ons, and switch them on, without
+  leaving the game. The main menu points at any add-on that isn't on.
+- FACTION ENCYCLOPEDIA, under ADD-ONS: a tab per faction with its units and structures.
+- TIBERIAN FACTIONS SETTINGS: pick each faction's skirmish music.
+- Tiberian Sun Music, a free add-on: all 26 Tiberian Sun and Firestorm themes in skirmish and in the jukebox.
+- All 34 of Tiberian Dawn's skirmish maps in the Official list, with their own thumbnails, played on TD's own desert,
+  temperate and winter terrain.
+- Tiberian Dawn's units, buildings and effects draw from the base game's own files, which makes the mod smaller.
 
 ### Changed
 - Concrete Wall costs 100 in skirmish and LAN, as in the campaigns (was 50).
