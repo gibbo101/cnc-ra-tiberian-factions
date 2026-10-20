@@ -854,84 +854,10 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Add_Mod_Path(const char* mod_p
  *
  * History: 1/3/2019 11:33AM - ST
  **************************************************************************************************/
-#if TF_DEV_BUILD
-#include <chrono>
-// Times the per-frame exports and writes their averages to tf_perf.log every ten seconds.
-struct TF_Perf_Probe
-{
-    enum
-    {
-        ADVANCE = 9,
-        RENDER,
-        PAGE,
-        SLOTS
-    };
-    static long long Ns[SLOTS];
-    static int Calls[SLOTS];
-    static std::chrono::steady_clock::time_point Since;
-    int Slot;
-    std::chrono::steady_clock::time_point Start;
-    TF_Perf_Probe(int slot)
-        : Slot(slot)
-        , Start(std::chrono::steady_clock::now())
-    {
-    }
-    ~TF_Perf_Probe()
-    {
-        auto now = std::chrono::steady_clock::now();
-        Ns[Slot] += std::chrono::duration_cast<std::chrono::nanoseconds>(now - Start).count();
-        Calls[Slot]++;
-        if (Slot == ADVANCE && now - Since > std::chrono::seconds(10)) {
-            Flush(now);
-        }
-    }
-    static void Flush(std::chrono::steady_clock::time_point now)
-    {
-        static const char* _names[SLOTS] = {
-            "none", "static", "dynmap", "layers", "sidebar", "place", "shroud", "occup", "pinfo", "advance", "render", "page"};
-        double secs = std::chrono::duration<double>(now - Since).count();
-        Since = now;
-        const char* profile = getenv("USERPROFILE");
-        if (profile == NULL) {
-            return;
-        }
-        char path[512];
-        snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_perf.log", profile);
-        FILE* f = fopen(path, "a");
-        if (f == NULL) {
-            return;
-        }
-        int mapped = 0;
-        if (PlayerPtr != NULL) {
-            for (int c = 0; c < MAP_CELL_TOTAL; c++) {
-                mapped += Map[(CELL)c].Is_Mapped(PlayerPtr) ? 1 : 0;
-            }
-        }
-        fprintf(f, "frame=%ld mapped=%d secs=%.1f", (long)Frame, mapped, secs);
-        for (int i = 1; i < SLOTS; i++) {
-            if (Calls[i] > 0) {
-                fprintf(f, " %s=%d/%.2fms/%.0fms_s", _names[i], Calls[i], Ns[i] / 1e6 / Calls[i], Ns[i] / 1e6 / secs);
-            }
-            Ns[i] = 0;
-            Calls[i] = 0;
-        }
-        fprintf(f, "\n");
-        fclose(f);
-    }
-};
-long long TF_Perf_Probe::Ns[TF_Perf_Probe::SLOTS];
-int TF_Perf_Probe::Calls[TF_Perf_Probe::SLOTS];
-std::chrono::steady_clock::time_point TF_Perf_Probe::Since = std::chrono::steady_clock::now();
-#define TF_PERF(slot) TF_Perf_Probe tf_perf_probe(slot)
-#else
-#define TF_PERF(slot)
-#endif
-
 extern "C" __declspec(dllexport) bool __cdecl CNC_Get_Visible_Page(unsigned char* buffer_in,
                                                                    unsigned int& width,
                                                                    unsigned int& height)
 {
-    TF_PERF(TF_Perf_Probe::PAGE);
     if (!DLLExportClass::Legacy_Render_Enabled() || (buffer_in == NULL)) {
         return false;
     }
@@ -2386,7 +2312,6 @@ static const char* TF_Color_Name(PlayerColorType color)
  **************************************************************************************************/
 extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player_id)
 {
-    TF_PERF(TF_Perf_Probe::ADVANCE);
     // DLLExportClass::Set_Event_Callback(event_callback);
 
     if (Frame <= 10) { // Don't spam forever, but useful to know that we actually started advancing
@@ -6040,7 +5965,6 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Get_Game_State(GameStateReques
                                                                  unsigned int buffer_size)
 {
     bool got_state = false;
-    TF_PERF(state_type < 9 ? (int)state_type : 0);
 
     switch (state_type) {
 
