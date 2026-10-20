@@ -71,6 +71,7 @@ The picture is drawn live from the game's sprite art when an entry is selected. 
 
 - a vehicle: its body frame (a walker's standing frame; the Limpet Drone's first crawl frame), and its turret at
   its seat (`Turret_Adjust`, as `UnitClass::Draw_It` draws it; a deploy-to-fire walker shows none while mobile);
+  the Radar Jammer's dish, the Gap Generator's mast and the Tesla Tank's coil (frames 32 on) where Draw_It seats them;
 - a ship: facing 12 of 32, with each turret overlay at its seat as `VesselClass::Draw_It` draws it;
 - infantry: standing frame 3; aircraft: facing 12 of 32, a helicopter with its landed blades (`RROTOR`,
   `LROTOR`) as `AircraftClass::Draw_Rotors` seats them, the Chinook facing north as it lands (Draw_Rotors' spacing

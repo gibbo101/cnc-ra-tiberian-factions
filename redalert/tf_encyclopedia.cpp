@@ -609,6 +609,8 @@ const int TSPULS_TURRET_Y = 10;   // classic px: the EMP cannon's seat on its do
 const int ROTOR_LANDED = 4;       // the first landed-blade frame (AircraftClass::Draw_Rotors)
 const int ROTOR_LIFT = 2;         // classic px Draw_Rotors lifts the blades by
 const int CHINOOK_STRETCH = 8;    // Draw_Rotors' rotor spacing facing north (its _stretch)
+const int DISH_FRAME = 32;        // a vehicle's first radar dish or Tesla coil frame (UnitClass::Draw_It)
+const int DISH_LIFT = 5;          // classic px Draw_It lifts a radar dish by
 
 /*
 **	Appends a layer to `out`; layers past TF_ENC_SPRITE_LAYERS are dropped.
@@ -700,6 +702,13 @@ bool TF_Encyclopedia_Sprite(const char* ini, int faction, TFEncSprite* out)
             int x = 0, y = 0;
             unit->Turret_Adjust(DIR_SW, x, y);
             Add_Layer(out, type->Graphic_Name(), facing + turret_base, x, y);
+        }
+        if (unit->IsRadarEquipped) {
+            int x = 0, y = unit->Type == UNIT_MGG || unit->Type == UNIT_TESLATANK ? 0 : -DISH_LIFT;
+            if (unit->Type == UNIT_MGG) {
+                unit->Turret_Adjust(DIR_SW, x, y);
+            }
+            Add_Layer(out, type->Graphic_Name(), DISH_FRAME + (unit->Type == UNIT_MGG ? 0 : facing), x, y);
         }
     }
     out->Team = faction == TF_FACTION_ALLIES  ? TF_ENC_TEAM_GREECE
