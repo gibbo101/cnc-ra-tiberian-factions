@@ -97,7 +97,12 @@ fi
 echo "✓ Startup intro is the locked cut ($WANT_INTRO)"
 
 # --- CAMPAIGNS page textures and the UI atlas: gitignored, so make sure the locked set ships ---
-if ! (cd "$STAGE_DIR/$SUBFOLDER_NAME/Data/ART/TEXTURES/SRGB" && md5sum --quiet -c -) < scripts/campaigns_work/textures.md5; then
+# Staging ships the UI atlas as DDS (scripts/sprite_dds.py), so its lock checks the source TGA it came from.
+if ! (cd "$STAGE_DIR/$SUBFOLDER_NAME/Data/ART/TEXTURES/SRGB" && md5sum --quiet -c -) \
+    < <(grep -v " MT_COMMANDBAR_COMMON.TGA$" scripts/campaigns_work/textures.md5) \
+    || ! (cd resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB && md5sum --quiet -c -) \
+    < <(grep " MT_COMMANDBAR_COMMON.TGA$" scripts/campaigns_work/textures.md5) \
+    || [[ ! -f "$STAGE_DIR/$SUBFOLDER_NAME/Data/ART/TEXTURES/SRGB/MT_COMMANDBAR_COMMON.DDS" ]]; then
     echo "ERROR: the staged CAMPAIGNS page textures or UI atlas are missing or stale. Build them: scripts/campaigns_page_build.sh" >&2
     exit 1
 fi

@@ -97,6 +97,7 @@ extern void Init_SpeechTD(void);
 #include "tf_eva_mailbox.h"
 #include "tf_asset_pack.h"
 #include "tf_launcher.h"
+#include "tf_encyclopedia.h"
 // Tiberian Sun GDI's EVA (audio.cpp Init_SpeechTS). NULL slots fall back to SpeechTD[].
 extern char const* SpeechTS[VOX_COUNT];
 extern void Init_SpeechTS(void);
@@ -599,6 +600,14 @@ void Display_Briefing_Text_GlyphX()
     DLLExportClass::On_Display_Briefing_Text();
 }
 
+// Plays a sound for one player's launcher, whichever player the game loop runs as.
+void TF_Sound_Effect_For(HouseClass const* player, VocType voc, COORDINATE coord)
+{
+    if (voc != VOC_NONE) {
+        DLLExportClass::On_Sound_Effect(player, (int)voc, "", 0, coord);
+    }
+}
+
 void On_Sound_Effect(int sound_index, int variation, COORDINATE coord, int house)
 {
     int voc = sound_index;
@@ -859,6 +868,14 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Get_Visible_Page(unsigned char
 {
     if (!DLLExportClass::Legacy_Render_Enabled() || (buffer_in == NULL)) {
         return false;
+    }
+
+    // TF: the classic page is never shown (classic mode is off), so it is neither drawn nor copied. The launcher
+    // asks every frame and switches to an empty classic view on false, so the page's size still goes back.
+    if (Map.MapCellWidth > 0 && Map.MapCellHeight > 0) {
+        width = Map.MapCellWidth * CELL_PIXEL_W;
+        height = Map.MapCellHeight * CELL_PIXEL_H;
+        return true;
     }
 
     /*
@@ -2143,12 +2160,61 @@ static int TF_Self_Action_Selected(void)
 
 static long TF_SelectAllLatchUntil[HOUSE_COUNT]; // per house: frame until which a select-all order still counts as fresh
 
+// True when at most one human plays. The game loop runs as the lobby's first player, so with two humans the host's
+// keys would act for whichever player that is.
+static bool TF_Keys_Have_One_Owner(void)
+{
+    if (GAME_TO_PLAY != GAME_GLYPHX_MULTIPLAYER) {
+        return true;
+    }
+    int humans = 0;
+    for (int i = 0; i < Houses.Count(); i++) {
+        HouseClass const* house = Houses.Ptr(i);
+        if (house != NULL && house->IsActive && house->IsHuman) {
+            humans++;
+        }
+    }
+    return humans < 2;
+}
+
+// True unless another program's window has the keyboard, so keys typed outside the game are ignored; when the
+// foreground can't be read, keys count, as they always have.
+static bool TF_Game_Has_Keyboard(void)
+{
+    static DWORD _pid = 0;
+    static bool _game = true;
+    HWND window = GetForegroundWindow();
+    DWORD pid = 0;
+    if (window == NULL || GetWindowThreadProcessId(window, &pid) == 0 || pid == 0) {
+        return true;
+    }
+    if (pid != _pid) {
+        _pid = pid;
+        _game = true;
+        HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if (snap != INVALID_HANDLE_VALUE) {
+            PROCESSENTRY32W pe;
+            pe.dwSize = sizeof(pe);
+            if (Process32FirstW(snap, &pe)) {
+                do {
+                    if (pe.th32ProcessID == pid) {
+                        _game = _wcsicmp(pe.szExeFile, L"ClientG.exe") == 0;
+                        break;
+                    }
+                } while (Process32NextW(snap, &pe));
+            }
+            CloseHandle(snap);
+        }
+    }
+    return _game;
+}
+
 // Per frame: runs the deploy key on a fresh press of backslash, and holds an 'A' press for ten frames, since
 // the launcher's select-all reaches CNC_Select_Object a frame or two after the key goes down.
 static void TF_Deploy_Key_Tick(void)
 {
     static bool _was_down = false;
-    bool down = (GetAsyncKeyState(VK_OEM_5) & 0x8000) != 0;
+    bool down = (GetAsyncKeyState(VK_OEM_5) & 0x8000) != 0 && TF_Game_Has_Keyboard() && TF_Keys_Have_One_Owner();
 #if TF_DEV_BUILD
     /*
     **	Dev builds also take the deploy order from a flag file, for headless runs where no
@@ -2201,9 +2267,50 @@ static void TF_Deploy_Key_Tick(void)
     }
     _was_down = down;
 
-    if ((GetAsyncKeyState('A') & 0x8000) != 0 && PlayerPtr != NULL) {
+    if ((GetAsyncKeyState('A') & 0x8000) != 0 && PlayerPtr != NULL && TF_Game_Has_Keyboard()
+        && TF_Keys_Have_One_Owner()) {
         TF_SelectAllLatchUntil[PlayerPtr->Class->House] = (long)Frame + 10;
     }
+}
+
+// Centres the camera of the player in context on their next construction yard, once per press: on the host a
+// press arrives both from the keyboard and as mod command 3. The launcher's own command looks for FACT only.
+static void TF_Home_Camera(void)
+{
+    static long _pressed[HOUSE_COUNT];
+    static int _last[HOUSE_COUNT];
+    if (PlayerPtr == NULL) {
+        return;
+    }
+    HousesType me = PlayerPtr->Class->House;
+    if (_pressed[me] != 0 && (long)Frame - _pressed[me] < 8 && (long)Frame >= _pressed[me]) {
+        return;
+    }
+    _pressed[me] = (long)Frame;
+    int count = Buildings.Count();
+    for (int step = 1; step <= count; step++) {
+        int index = (_last[me] + step) % count;
+        BuildingClass const* building = Buildings.Ptr(index);
+        if (building != NULL && building->IsActive && !building->IsInLimbo && building->Owner() == me
+            && building->Class->Is_Construction_Yard()) {
+            _last[me] = index;
+            COORDINATE center = building->Center_Coord();
+            DLLExportClass::On_Center_Camera(PlayerPtr, Coord_X(center), Coord_Y(center));
+            return;
+        }
+    }
+}
+
+// Per frame: a fresh press of H runs TF_Home_Camera, for the one human; LAN players' presses arrive as mod
+// command 3.
+static void TF_Home_Key_Tick(void)
+{
+    static bool _was_down = false;
+    bool down = (GetAsyncKeyState('H') & 0x8000) != 0 && TF_Game_Has_Keyboard() && TF_Keys_Have_One_Owner();
+    if (down && !_was_down) {
+        TF_Home_Camera();
+    }
+    _was_down = down;
 }
 
 // For a moment after a house's select-all order (its launcher's mod command 2, or the host's 'A' key), drops
@@ -2305,6 +2412,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
     TF_Tell_Launchers_Tick();
 
     TF_Deploy_Key_Tick();
+
+    TF_Home_Key_Tick();
 
     TF_Sensor_Tick();
 
@@ -2509,9 +2618,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
         GameActive = false;
     }
 
-    if (DLLExportClass::Legacy_Render_Enabled()) {
-        Map.Render();
-    }
+    // TF: the classic page is never drawn; CNC_Get_Visible_Page answers without it.
 
     // Sync_Delay();
     // DLLExportClass::Set_Event_Callback(NULL);
@@ -3942,11 +4049,38 @@ struct TF_AtlasRect
     int x, y, w, h;
 };
 
+// The size of the UI atlas the mod ships: the DDS (sides padded to a multiple of 4) when there is one, else the TGA.
+// ClientG divides by the size of the texture it loaded, so the crest records must too.
+static void TF_Atlas_Size(double& w, double& h)
+{
+    static double _w = 0.0, _h = 0.0;
+    if (_w == 0.0) {
+        _w = 6871.0;
+        _h = 6716.0;
+        char folder[MAX_PATH], path[MAX_PATH];
+        if (TF_Mod_Folder(folder, sizeof(folder))) {
+            snprintf(path, sizeof(path), "%s\\Data\\ART\\TEXTURES\\SRGB\\MT_COMMANDBAR_COMMON.DDS", folder);
+            FILE* f = fopen(path, "rb");
+            if (f != NULL) {
+                unsigned int header[5];
+                if (fread(header, 4, 5, f) == 5 && header[0] == 0x20534444 && header[3] > 0 && header[4] > 0) {
+                    _h = (double)header[3];
+                    _w = (double)header[4];
+                }
+                fclose(f);
+            }
+        }
+    }
+    w = _w;
+    h = _h;
+}
+
 // ClientG's cached UV record for an atlas rect, computed as ClientG does so the bytes match its copies. nudge
 // moves u0 a sub-pixel per slot, so slots sharing a target each restore to their own stock rect.
 static void TF_Atlas_UV_Record(const TF_AtlasRect& r, float out[4], int nudge = 0)
 {
-    const double W = 6871.0, H = 6716.0; // MT_COMMANDBAR_COMMON.TGA
+    double W, H;
+    TF_Atlas_Size(W, H);
     out[0] = (float)(r.y / H);
     out[1] = (float)(r.x / W + nudge * 1e-6);
     out[2] = (float)(r.w / W);
@@ -4739,10 +4873,13 @@ static const char* TF_Patch_Launcher_Keys_In(void)
         unsigned command;
     };
     static const Slot deploy = {10, 0x168AB18, 0x1020};
+    static const Slot home = {5, 0x168AB0C, 0x100B};
     static const Slot selects[2] = {{8, 0x168A830, 0x101B}, {7, 0x168A9E7, 0x101A}};
 
     SIZE_T const deploy_slot = TABLE + deploy.index * 4;
-    if (*(SIZE_T const*)deploy_slot != deploy.stock || *(SIZE_T const*)(TABLE + selects[0].index * 4) != selects[0].stock
+    SIZE_T const home_slot = TABLE + home.index * 4;
+    if (*(SIZE_T const*)deploy_slot != deploy.stock || *(SIZE_T const*)home_slot != home.stock
+        || *(SIZE_T const*)(TABLE + selects[0].index * 4) != selects[0].stock
         || *(SIZE_T const*)(TABLE + selects[1].index * 4) != selects[1].stock) {
         return "keys: unknown launcher build, left alone";
     }
@@ -4762,6 +4899,17 @@ static const char* TF_Patch_Launcher_Keys_In(void)
     }
     SIZE_T target = CAVE;
     if (!TF_Write_Own_Code(deploy_slot, (unsigned char const*)&target, 4)) {
+        return "keys: write failed";
+    }
+
+    /*
+    **	Camera to yard: mov ebx,0x1034 / jmp MOD_SEND
+    */
+    unsigned char home_stub[10] = {0xBB, 0x34, 0x10, 0x00, 0x00, 0xE9, 0, 0, 0, 0};
+    TF_Put_Rel32(home_stub + 6, CAVE + 0x10 + 10, MOD_SEND);
+    target = CAVE + 0x10;
+    if (!TF_Write_Own_Code(CAVE + 0x10, home_stub, sizeof(home_stub))
+        || !TF_Write_Own_Code(home_slot, (unsigned char const*)&target, 4)) {
         return "keys: write failed";
     }
 
@@ -4821,8 +4969,8 @@ static void TF_Tell_Launchers_Tick(void)
     }
 }
 
-// Records the mod's root once its CCDATA path registers, and deletes any TD map copies an older install of the
-// mod left in Local_Custom_Maps/Red_Alert/.
+// Records the mod's root, its DLL's folder where readable, once its CCDATA path registers, and deletes any TD
+// map copies an older install of the mod left in Local_Custom_Maps/Red_Alert/.
 static void TF_Note_Mod_Root(const char* mod_path)
 {
     static bool _noted = false;
@@ -4843,6 +4991,10 @@ static void TF_Note_Mod_Root(const char* mod_path)
     }
     root[len - 6] = 0; // now "<mod>\" (keeps the trailing separator)
     _noted = true;
+    char own[MAX_PATH];
+    if (TF_Mod_Folder(own, sizeof(own) - 1)) {
+        snprintf(root, sizeof(root), "%s\\", own);
+    }
     strncpy(TF_ModRootPath, root, sizeof(TF_ModRootPath));
     TF_ModRootPath[sizeof(TF_ModRootPath) - 1] = 0;
 
@@ -7222,6 +7374,11 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Input(InputRequestEnum 
             TF_SelectAllLatchUntil[PlayerPtr->Class->House] = (long)Frame + 10;
         }
 
+        // TF: mod command 3 is the launcher's camera-to-yard key (H), sent by each player's own launcher.
+        if (input_event == INPUT_REQUEST_MOD_GAME_COMMAND_3_AT_POSITION) {
+            TF_Home_Camera();
+        }
+
         // TF: mod command 1 is the deploy key: each selected object whose self-click answer is ACTION_SELF
         // acts on it, through the queued mission path so multiplayer stays in step (TF_Self_Action_Selected).
         if (input_event == INPUT_REQUEST_MOD_GAME_COMMAND_1_AT_POSITION) {
@@ -7956,36 +8113,18 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                     sidebar_entry.PlacementListLength = 0;
 
                     // TF: the launcher has no text channel to a cameo, so the bay's cooldown and the unit caps swap in
-                    // the locked art (_LK) by key.
-                    if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
-                        && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech)
-                        && PlayerPtr->TFDropBayTimer != 0) {
-                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                 "%s_LK", tech->IniName);
+                    // the locked art (_LK) by key. An order already in production is never locked.
+                    if (tech != NULL && factory == NULL
+                        && TF_Delivery_Order_Refused(PlayerPtr,
+                                                     Map.Column[c].Buildables[b].BuildableType,
+                                                     Map.Column[c].Buildables[b].BuildableID)) {
+                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName), "%s_LK", tech->IniName);
                     }
 
-                    if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
-                        && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC && TF_Mk2_At_Cap(PlayerPtr)) {
-                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                 "%s_LK", tech->IniName);
-                    }
-
-                    if (tech != NULL && sidebar_entry.Type == INFANTRY_TYPE
-                        && ((InfantryTypeClass const*)tech)->Type == INFANTRY_TSGHOST && TF_Ghost_At_Cap(PlayerPtr)) {
-                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                 "%s_LK", tech->IniName);
-                    }
-
-                    if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
-                        && ((UnitTypeClass const*)tech)->Type == UNIT_TSMWAR && TF_Mwar_At_Cap(PlayerPtr)) {
-                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                 "%s_LK", tech->IniName);
-                    }
-
-                    if (tech != NULL && sidebar_entry.Type == BUILDING_TYPE
-                        && ((BuildingTypeClass const*)tech)->Type == STRUCT_TSPLUG && TF_Plug_At_Cap(PlayerPtr)) {
-                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                 "%s_LK", tech->IniName);
+                    // TF: a reloading bay's units show the time left to reload as their build time.
+                    if (tech != NULL && factory == NULL && sidebar_entry.Type == UNIT_TYPE
+                        && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech) && PlayerPtr->TFDropBayTimer != 0) {
+                        sidebar_entry.BuildTime = (int)PlayerPtr->TFDropBayTimer;
                     }
 
                     if (factory) {
@@ -8175,35 +8314,16 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                         sidebar_entry.PlacementListLength = 0;
 
                         // TF: the locked cameo keys, as on the single-player path.
-                        if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
-                            && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech)
-                            && PlayerPtr->TFDropBayTimer != 0) {
-                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                     "%s_LK", tech->IniName);
+                        if (tech != NULL && factory == NULL
+                            && TF_Delivery_Order_Refused(PlayerPtr,
+                                                         context_sidebar->Column[c].Buildables[b].BuildableType,
+                                                         context_sidebar->Column[c].Buildables[b].BuildableID)) {
+                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName), "%s_LK", tech->IniName);
                         }
 
-                        if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
-                            && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC && TF_Mk2_At_Cap(PlayerPtr)) {
-                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                     "%s_LK", tech->IniName);
-                        }
-
-                        if (tech != NULL && sidebar_entry.Type == INFANTRY_TYPE
-                            && ((InfantryTypeClass const*)tech)->Type == INFANTRY_TSGHOST && TF_Ghost_At_Cap(PlayerPtr)) {
-                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                     "%s_LK", tech->IniName);
-                        }
-
-                        if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
-                            && ((UnitTypeClass const*)tech)->Type == UNIT_TSMWAR && TF_Mwar_At_Cap(PlayerPtr)) {
-                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                     "%s_LK", tech->IniName);
-                        }
-
-                        if (tech != NULL && sidebar_entry.Type == BUILDING_TYPE
-                            && ((BuildingTypeClass const*)tech)->Type == STRUCT_TSPLUG && TF_Plug_At_Cap(PlayerPtr)) {
-                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                     "%s_LK", tech->IniName);
+                        if (tech != NULL && factory == NULL && sidebar_entry.Type == UNIT_TYPE
+                            && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech) && PlayerPtr->TFDropBayTimer != 0) {
+                            sidebar_entry.BuildTime = (int)PlayerPtr->TFDropBayTimer;
                         }
 
                         if (factory) {
@@ -10192,6 +10312,78 @@ bool DLLExportClass::Get_Dynamic_Map_State(uint64 player_id, unsigned char* buff
  *
  * History: 2/8/2019 11:09AM - ST
  **************************************************************************************************/
+// The TS aprons drawn from their standing building, in the order the export tries them.
+static const struct
+{
+    StructType owner;
+    SmudgeType apron;
+    int off_x, off_y; // apron origin relative to the building's origin cell
+} TFAprons[] = {
+    {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 0, 0},
+    {STRUCT_TSDWEAP, SMUDGE_TSDWEAPBB, 0, 0},
+    {STRUCT_TSPROC, SMUDGE_TSPROCBB, 0, 0},
+};
+static const int TF_APRON_TYPES = (int)(sizeof(TFAprons) / sizeof(TFAprons[0]));
+
+// For one cell, each apron type's building and tile there; a tile nearer its building's origin wins. The launcher
+// keeps one overlay a cell, so the export sends one tile: one inside its building's plot beats one that overhangs.
+struct TFApronStamp
+{
+    unsigned long Serial;
+    BuildingClass* Owner[TF_APRON_TYPES];
+    unsigned short Tile[TF_APRON_TYPES];
+};
+
+// The cell's apron stamp, or NULL when no apron covers it. Stamps are rebuilt from the standing apron buildings
+// whenever the frame or the building count changes, so a lookup is one array read.
+static TFApronStamp const* TF_Apron_Stamp(CELL cell)
+{
+    static TFApronStamp _stamps[MAP_CELL_TOTAL];
+    static unsigned long _serial = 0;
+    static long _frame = -1;
+    static int _count = -1;
+    if (_frame != (long)Frame || _count != Buildings.Count()) {
+        _frame = (long)Frame;
+        _count = Buildings.Count();
+        _serial++;
+        for (int b = 0; b < Buildings.Count(); b++) {
+            BuildingClass* building = Buildings.Ptr(b);
+            if (building == NULL || !building->IsActive || building->IsInLimbo) {
+                continue;
+            }
+            for (int a = 0; a < TF_APRON_TYPES; a++) {
+                if (*building != TFAprons[a].owner) {
+                    continue;
+                }
+                const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(TFAprons[a].apron);
+                int origin = (int)Coord_Cell(building->Coord);
+                for (int ty = 0; ty < apron_type.Height; ty++) {
+                    for (int tx = 0; tx < apron_type.Width; tx++) {
+                        int at = origin + (TFAprons[a].off_x + tx) + (TFAprons[a].off_y + ty) * MAP_CELL_W;
+                        if (at < 0 || at >= MAP_CELL_TOTAL) {
+                            continue;
+                        }
+                        TFApronStamp& stamp = _stamps[at];
+                        if (stamp.Serial != _serial) {
+                            stamp.Serial = _serial;
+                            for (int k = 0; k < TF_APRON_TYPES; k++) {
+                                stamp.Owner[k] = NULL;
+                            }
+                        }
+                        unsigned short tile = (unsigned short)(tx + ty * apron_type.Width);
+                        if (stamp.Owner[a] == NULL || tile < stamp.Tile[a]) {
+                            stamp.Owner[a] = building;
+                            stamp.Tile[a] = tile;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    TFApronStamp const& stamp = _stamps[cell];
+    return (stamp.Serial == _serial) ? &stamp : NULL;
+}
+
 void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
                                         int& entry_index,
                                         CellClass* cell_ptr,
@@ -10211,60 +10403,34 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
     // TF: TS aprons are drawn from their standing building, not map state, ahead of the smudge and overlay
     // entries so bibs and ore draw over them; a hidden building hides its apron (docs/ts-gdi-tree-plan.md).
     {
-        static const struct
-        {
-            StructType owner;
-            SmudgeType apron;
-            int off_x, off_y; // apron origin relative to the building's origin cell
-            int probe;        // a cell the building occupies, relative to its origin cell
-        } _aprons[] = {
-            {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 0, 0, 0}, // the whole 3x3 plot
-            {STRUCT_TSDWEAP, SMUDGE_TSDWEAPBB, 0, 0, 0},
-            {STRUCT_TSPROC, SMUDGE_TSPROCBB, 0, 0, MAP_CELL_W}, // its north row is open: probe (0,1)
-        };
-        // The launcher keeps one overlay a cell, so each cell sends one apron tile: one inside its building's plot
-        // beats one that overhangs it (the refinery's empty fifth column would blank a War Factory's west edge).
         int pick = -1;
         int pick_tx = 0;
         int pick_ty = 0;
         bool pick_inside = false;
         BuildingClass* pick_owner = NULL;
-        for (int a = 0; a < (int)(sizeof(_aprons) / sizeof(_aprons[0])); a++) {
-            const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(_aprons[a].apron);
-            bool resolved = false;
-            for (int ty = 0; ty < apron_type.Height && !resolved; ty++) {
-                for (int tx = 0; tx < apron_type.Width && !resolved; tx++) {
-                    int origin = (int)cell - (_aprons[a].off_x + tx) - (_aprons[a].off_y + ty) * MAP_CELL_W;
-                    if (origin < 0 || origin >= MAP_CELL_TOTAL) {
-                        continue;
-                    }
-                    int probe = origin + _aprons[a].probe;
-                    if (probe < 0 || probe >= MAP_CELL_TOTAL) {
-                        continue;
-                    }
-                    BuildingClass* apron_owner = Map[(CELL)probe].Cell_Building();
-                    if (apron_owner == NULL || *apron_owner != _aprons[a].owner
-                        || Coord_Cell(apron_owner->Coord) != (CELL)origin) {
-                        continue;
-                    }
-                    resolved = true;
-                    if (apron_owner->Visual_Character() == VISUAL_HIDDEN) {
-                        break;
-                    }
-                    bool inside = (_aprons[a].off_x + tx) < apron_owner->Class->Width()
-                                  && (_aprons[a].off_y + ty) < apron_owner->Class->Height();
-                    if (pick < 0 || (inside && !pick_inside)) {
-                        pick = a;
-                        pick_tx = tx;
-                        pick_ty = ty;
-                        pick_inside = inside;
-                        pick_owner = apron_owner;
-                    }
-                }
+        TFApronStamp const* stamp = TF_Apron_Stamp(cell);
+        for (int a = 0; stamp != NULL && a < TF_APRON_TYPES; a++) {
+            BuildingClass* apron_owner = stamp->Owner[a];
+            // Trap: a save loaded at the same frame and building count keeps the stamps, so recheck the owner.
+            if (apron_owner == NULL || !apron_owner->IsActive || apron_owner->IsInLimbo
+                || *apron_owner != TFAprons[a].owner || apron_owner->Visual_Character() == VISUAL_HIDDEN) {
+                continue;
+            }
+            const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(TFAprons[a].apron);
+            int tx = stamp->Tile[a] % apron_type.Width;
+            int ty = stamp->Tile[a] / apron_type.Width;
+            bool inside = (TFAprons[a].off_x + tx) < apron_owner->Class->Width()
+                          && (TFAprons[a].off_y + ty) < apron_owner->Class->Height();
+            if (pick < 0 || (inside && !pick_inside)) {
+                pick = a;
+                pick_tx = tx;
+                pick_ty = ty;
+                pick_inside = inside;
+                pick_owner = apron_owner;
             }
         }
         if (pick >= 0) {
-            const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(_aprons[pick].apron);
+            const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(TFAprons[pick].apron);
             CNCDynamicMapEntryStruct& apron_entry = dynamic_map->Entries[entry_index++];
 
             strncpy(apron_entry.AssetName, apron_type.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);

@@ -666,8 +666,8 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
     if (What_Am_I() == RTTI_UNIT
         && (((UnitClass const*)this)->Class->Type == UNIT_C3MK3 || ((UnitClass const*)this)->Class->Type == UNIT_C3PRED)) {
         bool mk3 = ((UnitClass const*)this)->Class->Type == UNIT_C3MK3;
-        int hull = TechnoClass::BodyShape[Dir_To_32(((UnitClass const*)this)->PrimaryFacing.Current())];
-        int fi = TechnoClass::BodyShape[Dir_To_32(dir)];
+        int hull = Dir_To_32(((UnitClass const*)this)->PrimaryFacing.Current());
+        int fi = Dir_To_32(dir);
         short const* seat = mk3 ? _c3mk3_seat_lep[hull] : _c3pred_seat_lep[hull];
         short const* m = mk3 ? _c3mk3_fire[which != 0][IsSecondShot ? 1 : 0][fi] : _c3pred_fire[0][0][fi];
         COORDINATE centre = centre_art;

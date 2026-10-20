@@ -1187,6 +1187,17 @@ bool TF_Plug_At_Cap(HouseClass const* house)
     return (false);
 }
 
+// True while the house has a building a plug for the host type can count as: any component tower, armed or
+// bare, stands for TSCTWR.
+static bool TF_Has_Plug_Host(HouseClass const* house, StructType host)
+{
+    if (host == STRUCT_TSCTWR) {
+        return (house->Has_Building_Active(STRUCT_TSCTWR) || house->Has_Building_Active(STRUCT_TSVULC)
+                || house->Has_Building_Active(STRUCT_TSROCK) || house->Has_Building_Active(STRUCT_TSCSAM));
+    }
+    return (house->Has_Building_Active(host));
+}
+
 // Line fill (the TS and RA2 wall rule): a section placed within this many cells in line of one of the house's
 // own sections of its type fills the cells between, if all are clear to build and the house can pay for all.
 static const int TF_WALL_FILL_RANGE = 5;
@@ -1492,7 +1503,7 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     // this: the era rule lets another era's building satisfy a token, and a plug needs its real host.
     if (type->What_Am_I() == RTTI_BUILDINGTYPE) {
         BuildingTypeClass const* btype = (BuildingTypeClass const*)type;
-        if (btype->PowersUpBuilding != STRUCT_NONE && !Has_Building_Active(btype->PowersUpBuilding)) {
+        if (btype->PowersUpBuilding != STRUCT_NONE && !TF_Has_Plug_Host(this, btype->PowersUpBuilding)) {
             return (false);
         }
     }
@@ -1545,8 +1556,11 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     **	Check to see if this owner can build the object type specified.
     */
     // TF: a construction yard grants its faction's tree to whoever holds it, so holding a yard listed in
-    // Owner= also passes.
-    bool yard_grants = ((own & Yard_Factions()) != 0);
+    // Owner= also passes; a unit, infantry, aircraft or vessel also needs a factory of a side in Owner=.
+    bool yard_grants = ((1L << house) & own) == 0 && (own & Yard_Factions()) != 0;
+    if (yard_grants && type->What_Am_I() != RTTI_BUILDINGTYPE) {
+        yard_grants = type->Who_Can_Build_Me(true, false, Class->House) != NULL;
+    }
     if (((1L << house) & own) == 0 && !yard_grants) {
         return (false);
     }
@@ -1651,6 +1665,9 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             continue;
         // TF: a deployed Mobile War Factory counts as a war factory, as in TS Firestorm.
         if (t == STRUCT_TSWEAP && Has_Building_Active(STRUCT_TSDWEAP))
+            continue;
+        // TF: an armed component tower is still a component tower, as in TS.
+        if (t == STRUCT_TSCTWR && TF_Has_Plug_Host(this, STRUCT_TSCTWR))
             continue;
         // TF: any faction yard satisfies the vanilla 'fact' token. Houses own faction yards, never
         // STRUCT_CONST, so without this the whole tree stops at the power plant.
@@ -3894,12 +3911,6 @@ ProdFailType HouseClass::Begin_Production(RTTIType type, int id)
 
     fptr = Fetch_Factory(type, bay);
 
-    // TF: capped orders and dropship bay reloads are refused here, where every player production order
-    // arrives, because Can_Build keeps offering their cameos rather than hiding them.
-    if (TF_Delivery_Order_Refused(this, type, id)) {
-        return (PROD_CANT);
-    }
-
     /*
     **	If the house is already busy producing the requested object, then
     **	return with this failure code, unless we are restarting production.
@@ -3909,6 +3920,11 @@ ProdFailType HouseClass::Begin_Production(RTTIType type, int id)
             return (PROD_CANT);
         }
     } else {
+        // TF: capped orders and dropship bay reloads are refused here, where every new player order arrives.
+        // A held order resumes unchecked: the caps count its own unit.
+        if (TF_Delivery_Order_Refused(this, type, id)) {
+            return (PROD_CANT);
+        }
         fptr = new FactoryClass();
         if (!fptr)
             return (PROD_CANT);
@@ -4978,10 +4994,14 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
                             TF_Wall_Line_Fill(this, fill, cell);
                         }
 
+                        // TF: the slam goes to the placing player; in LAN a placement runs as the lobby's first
+                        // player, who may be another human.
+                        if (IsHuman) {
+                            VocType slam = ts_bldg ? VOC_TS_PLACE_BUILDING_DOWN
+                                                   : (td_bldg ? VOC_TD_PLACE_BUILDING_DOWN : VOC_PLACE_BUILDING_DOWN);
+                            TF_Sound_Effect_For(this, slam, 0);
+                        }
                         if (PlayerPtr == this) {
-                            Sound_Effect(ts_bldg ? VOC_TS_PLACE_BUILDING_DOWN
-                                                : (td_bldg ? VOC_TD_PLACE_BUILDING_DOWN
-                                                           : VOC_PLACE_BUILDING_DOWN));
                             Map.Set_Cursor_Shape(0);
                             Map.PendingObjectPtr = 0;
                             Map.PendingObject = 0;

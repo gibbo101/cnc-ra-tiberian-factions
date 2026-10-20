@@ -28,7 +28,7 @@ GDI and Nod aren't reskins. They're complete factions with their own bases, armi
 
 **Walls and gates for every faction.** Each faction builds its own gate, and walls placed in a line fill the gap between them.
 
-**Every faction keeps its own tree, and capturing changes hands.** GDI, Nod, Allies, and Soviets each build their own Construction Yard, MCV, War Factory, and Helipad. Capture a rival's yard or factory and you can build that faction's arsenal too, with badges on the cameos showing which of your factions builds what. The **Unholy Alliance** skirmish mode starts every player with an Allied, Soviet, GDI, and Nod MCV.
+**Every faction keeps its own tree, and capturing changes hands.** GDI, Nod, Allies, and Soviets each build their own Construction Yard, MCV, War Factory, and Helipad. Capture a rival's yard or factory and you can build that faction's arsenal too, with badges on the cameos showing which of your factions builds what. The **Unholy Alliance** skirmish mode starts every player with an Allied, Soviet, GDI, Nod, and Tiberian Sun GDI MCV.
 
 **Tiberium.** Green crystal fields alongside Red Alert's ore, worth the same to a harvester. They grow and spread, hurt infantry who walk through them, and infantry who die in them can rise again as visceroids. Blossom trees seed fresh fields around them.
 

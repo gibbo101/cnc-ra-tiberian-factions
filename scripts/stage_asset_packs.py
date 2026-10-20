@@ -30,6 +30,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import asset_packs as A  # noqa: E402
 import share_tileset_zips  # noqa: E402
+import sprite_dds  # noqa: E402
 import td_base_art  # noqa: E402
 import workshop_packs  # noqa: E402
 
@@ -108,6 +109,8 @@ def stage(mod_dir, full=False, strict=False):
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         if not os.path.exists(dst) or open(dst, encoding="utf-8", newline="").read() != text:
             open(dst, "w", encoding="utf-8", newline="").write(text)
+    sprite_dds.convert(mod_dir)
+    sprite_dds.convert_atlas(mod_dir)
 
 
 if __name__ == "__main__":

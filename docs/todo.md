@@ -23,12 +23,12 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 - **Check `asset-packs/` for unused files.** The rest of the checkout has been through it: every
   tracked script and art source is named by a build step, script or doc. The asset-pack instance
   owns `asset-packs/`, so it checks that folder.
-- **Shrink the package.** The build was 1,137 MB unpacked, 772 MB zipped. Cameos now stage as DXT1 DDS
-  (`cameo-dds.md`, 176 MB to 33 MB); TD art read from the base game is next (`td-base-art.md`). Other leads:
-  `TSWEAP2.ZIP` (2.5 MB), the pre-rebuild war factory overlay the game never draws, once the map editor's
-  factory overlay (`editor_manifest.py`) reads the current layers. The 177 MB UI atlas, 67 MB of movies, 51 MB
-  of lobby thumbnails and the 43 MB CONFIG.MEG are EA's sizes. TS Nod and the TS HD rebuilds will grow it;
-  restage clean (`stage_asset_packs.py --full`) before measuring.
+- **Shrink the package.** Players with 4 to 6 GB cards lag (`known-issues.md`, video memory: about 4.4 GB in TF
+  with DDS sprites and atlas against 2.3 GB in vanilla). The match warm-up is next (`sprite-memory.md`). Other
+  leads: `TSWEAP2.ZIP` (2.5 MB), the pre-rebuild war factory overlay the game never draws, once the map editor's
+  factory overlay (`editor_manifest.py`) reads the current layers. 67 MB of movies, 51 MB of lobby thumbnails and
+  the 43 MB CONFIG.MEG are EA's sizes. TS Nod and the TS HD rebuilds will grow it; restage clean
+  (`stage_asset_packs.py --full`) before measuring.
 - **Check in play: "Unable to comply, building in progress"** speaks in the picked side's voice
   (the era mailbox's ninth line), including after a faction switch between matches.
 - **Check in play: a spy in TD and TS buildings.** In an enemy TD or TS power plant, refinery or silo, the
@@ -42,15 +42,9 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   `mastertext.edits.txt` names and `picker_emblems_paint.py` plates move with it.
 - **Nod's cargo plane circles the airstrip** (`known-issues.md`): find why the TDC17 sometimes
   misses its landing on `TDAFLD` and fix it, with a play test of several deliveries.
-- **H (jump to the home base) does nothing** (`known-issues.md`): find which side owns the key and fix it, with a
-  play test on each faction.
-- **C&C3 pack README's turret seat offsets** (reported by a modder using the pack): with the README's C3PRED seat
-  offsets applied the turret looks wrong, without them it looks right; C3MK3 not tried yet. Check the README's
-  "Frame layout" table (`workshop_packs.layout`, from `c3tanks.h`) against how a stock-DLL mod draws the turret:
-  whether the art already carries the seat, the axes or sign, or the units; then fix the README or drop the table.
-- **TD asset-pack items don't draw in Tiberian Dawn** (`known-issues.md`): find why, then publish TS-HD-Assets-TD
-  (item 3819642832, Private; `asset_packs.WORKSHOP` hosts it RA-only until then) and recheck the public RA2 and C&C3
-  TD items.
+- **C&C3 pack README's C3PRED turret seats:** a modder drawing the turret from the README's table finds the
+  Predator close but not exact (the Hover MLRS seats are right). Compare its draw with ours in play and refine
+  `_c3pred_seat_px` (`c3tanks.h`); C3MK3 not yet tried by them.
 - **Save compatibility, before campaigns ship.** Flag saves that need the TS-HD-Assets pack when it is missing,
   and autosave at every campaign mission start, so a layout-changing update costs at most the mission in
   progress. A reorder of equal length still passes the save version. Campaigns wait for a stable roster.
@@ -252,6 +246,10 @@ a topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ## AI milestone (plan: `ai-upgrade-plan.md`)
 
+- **Early pressure and wave size:** stock RA's AI pushes sooner than ours, and once its economy
+  runs ours streams units in rather than attacking in big waves. Time the first attack and
+  measure wave sizes against stock RA on the same map and difficulty, then retune W3 pacing and
+  W4 staging.
 - **Naval invasions don't land.** The ferry pipeline logs its full chain, but no match has shown
   a force landing, holding a beach and building on it. Structural item, the harbour seal: a naval
   yard and parked fleet can seal their own channel, and zones ignore buildings, so no zone check

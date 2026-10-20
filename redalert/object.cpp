@@ -2372,6 +2372,15 @@ void ObjectTypeClass::One_Time(void)
  * HISTORY:                                                                                    *
  *   07/29/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
+// True when a factory's side and era let it build a unit, infantry, aircraft or vessel type: its side is in
+// the type's Owner=, and a TS-tree type exits only a TS factory, which builds only TS-tree types.
+bool TF_Factory_Fits(BuildingClass const* factory, TechnoTypeClass const* type)
+{
+    bool const ts_factory = (factory->Is_TS_War_Factory() || *factory == STRUCT_TSPILE || *factory == STRUCT_TSHPAD
+                             || *factory == STRUCT_TSDROP);
+    return ((1L << factory->ActLike) & type->Get_Ownable()) && ts_factory == TF_Is_TS_Tree_Type(type);
+}
+
 BuildingClass* ObjectTypeClass::Who_Can_Build_Me(bool intheory, bool legal, HousesType house) const
 {
     BuildingClass* anybuilding = NULL;
@@ -2407,14 +2416,9 @@ BuildingClass* ObjectTypeClass::Who_Can_Build_Me(bool intheory, bool legal, Hous
         BuildingClass* building = Buildings.Ptr(index);
         assert(building != NULL);
 
-        // TF: eras keep their own doors: a TS-tree unit exits only a TS factory, which builds only TS-tree units.
-        // Owner= can't pair them, as every side owns the TS tree; buildings are exempt, tied to a TS yard by Can_Build.
-        if (RTTI != RTTI_BUILDINGTYPE) {
-            bool const ts_factory = (building->Is_TS_War_Factory() || *building == STRUCT_TSPILE
-                                     || *building == STRUCT_TSHPAD || *building == STRUCT_TSDROP);
-            if (ts_factory != TF_Is_TS_Tree_Type((TechnoTypeClass const*)this)) {
-                continue;
-            }
+        // TF: buildings are exempt, tied to their yard by Can_Build.
+        if (RTTI != RTTI_BUILDINGTYPE && !TF_Factory_Fits(building, (TechnoTypeClass const*)this)) {
+            continue;
         }
 
         if (!building->IsInLimbo && building->House->Class->House == house && building->Class->ToBuild == RTTI

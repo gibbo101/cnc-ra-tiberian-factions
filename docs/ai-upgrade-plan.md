@@ -229,8 +229,8 @@ still four buckets. They also discard the economy-aware `WarRatio * CurBuildings
 fixed ceiling that does not care what the AI can afford.
 
 **Frequency.** In ordinary skirmish captures are rare, so the redundant build is an edge case
-there. In **Unholy Alliance** every house, AI included, starts with an MCV of all four factions
-(`scenario.cpp:3593`), so all four lineages are live from frame 0 and the counting is wrong
+there. In **Unholy Alliance** every house, AI included, starts with an MCV of every faction
+(`scenario.cpp:3593`), so every lineage is live from frame 0 and the counting is wrong
 continuously on every role. That mode is also where the AI is most broken today: home-only
 `TF_Skirmish_Pick` means three of its four MCVs are dead weight.
 

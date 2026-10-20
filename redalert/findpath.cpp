@@ -50,7 +50,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <unordered_map>
 #include <vector>
 #include "function.h"
 //#include	<string.h>
@@ -585,11 +584,21 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
         }
     }
 
-    std::unordered_map<CELL, AStarCell> visited_cells;
+    // TF: visited cells live in a per-cell table, stamped per search. Trap: the tables are static, so a search
+    // must never run inside another or on a second thread.
+    static AStarCell visited_cells[MAP_CELL_TOTAL];
+    static unsigned visited_stamp[MAP_CELL_TOTAL];
+    static unsigned search_stamp = 0;
+    if (++search_stamp == 0) {
+        memset(visited_stamp, 0, sizeof(visited_stamp));
+        search_stamp = 1;
+    }
     static std::vector<AStarCell*> open_list;
     open_list.clear();
 
-    open_list.push_back(&visited_cells.emplace(source, AStarCell()).first->second);
+    visited_cells[source] = AStarCell();
+    visited_stamp[source] = search_stamp;
+    open_list.push_back(&visited_cells[source]);
     open_list.back()->position = source;
 
     AStarCell* dest_result = nullptr;
@@ -632,11 +641,15 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
                 cell_cost += TIB_AVERSION_COST;
             }
 
-            if (cell_cost > 0) {
+            if (cell_cost > 0 && (unsigned)adjacent_cell_id < MAP_CELL_TOTAL) {
                 cell_cost += prev_cell.cost_from_start;
-                auto emplace_result = visited_cells.emplace(adjacent_cell_id, AStarCell());
-                AStarCell& current_cell = emplace_result.first->second;
-                if (emplace_result.second || cell_cost < current_cell.cost_from_start) {
+                bool first_visit = visited_stamp[adjacent_cell_id] != search_stamp;
+                AStarCell& current_cell = visited_cells[adjacent_cell_id];
+                if (first_visit) {
+                    current_cell = AStarCell();
+                    visited_stamp[adjacent_cell_id] = search_stamp;
+                }
+                if (first_visit || cell_cost < current_cell.cost_from_start) {
                     current_cell.position = adjacent_cell_id;
                     current_cell.prev = &prev_cell;
                     current_cell.cell_distance_from_start = prev_cell.cell_distance_from_start + 1;

@@ -2148,7 +2148,7 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
     }
 
     // TF: an addon plug installs into the building under it (power, full strength) and deletes itself. A tower
-    // plug instead replaces the bare tower, keeping its health ratio, and unlimbos as a normal building.
+    // plug instead replaces the bare tower and unlimbos as a normal building at full strength, as in TS.
     bool tf_plug_swap = false;
 
     if (Class->PowersUpBuilding != STRUCT_NONE) {
@@ -2156,15 +2156,11 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
         bool swapped = false;
         if (host != NULL && *host == STRUCT_TSCTWR && host->Can_Upgrade(Class, House)) {
             coord = host->Coord;
-            fixed ratio = host->Health_Ratio();
             host->Transmit_Message(RADIO_OVER_OUT);
             host->Limbo();
             delete host;
             host = NULL;
-            Strength = (int)Class->MaxStrength * ratio;
-            if (Strength < 1) {
-                Strength = 1;
-            }
+            Strength = Class->MaxStrength;
             swapped = true;
             tf_plug_swap = true;
             TFPlugInstallInProgress = true;
@@ -5779,14 +5775,15 @@ int BuildingClass::Mission_Construction(void)
     case INITIAL:
         Begin_Mode(BSTATE_CONSTRUCTION);
         Transmit_Message(RADIO_BUILDING);
-        if (House->IsPlayerControl) {
+        // TF: every human's building plays its build-up; IsPlayerControl marks only the player the loop runs as.
+        if (House->IsHuman) {
             // TF: TD buildings play TD's construction loop; TS buildings rise in silence, as no TS structure
             // defines a build-up sound.
             if (Class->Is_TS_Era()) {
             } else if (Class->Is_Tiberian_Era()) {
-                Sound_Effect(VOC_TD_CONSTRUCTION, Coord);
+                TF_Sound_Effect_For(House, VOC_TD_CONSTRUCTION, Coord);
             } else {
-                Sound_Effect(VOC_CONSTRUCTION, Coord);
+                TF_Sound_Effect_For(House, VOC_CONSTRUCTION, Coord);
             }
         }
         Status = DURING;
@@ -7508,7 +7505,7 @@ int BuildingClass::Mission_Unload(void)
         && (!Is_TS_War_Factory() || (!In_Radio_Contact() && (Status == 0 || BState == BSTATE_CONSTRUCTION)))) {
         if (Status == 0) {
             if (*this != STRUCT_TSDLIMP) {
-                Sound_Effect(VOC_TS_PLACE_BUILDING_DOWN, Center_Coord());
+                TF_Sound_Effect_For(House, VOC_TS_PLACE_BUILDING_DOWN, Center_Coord());
             }
             Do_Uncloak();
             Begin_Mode(BSTATE_CONSTRUCTION);
@@ -8712,6 +8709,12 @@ void BuildingClass::Factory_AI(void)
                         if (fixed_wing != strip_host) {
                             techno = NULL;
                         }
+                    }
+
+                    // TF: a factory builds only its own side's and era's units; another side's order waits for that
+                    // side's factory, which Can_Build has seen stands. Yards are tied to their buildings by Can_Build.
+                    if (techno != NULL && Class->ToBuild != RTTI_BUILDINGTYPE && !TF_Factory_Fits(this, techno)) {
+                        techno = NULL;
                     }
 
                     // TF: only the dropship bay builds its deliveries and it builds nothing else, and no factory takes

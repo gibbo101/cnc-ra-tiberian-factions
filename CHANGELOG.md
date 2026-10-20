@@ -2,10 +2,40 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
-## [Unreleased]
+## [5.6.0] — 2026-10-20
+
+Command has trimmed the supply lines. Your units find their way twice as fast, the download is a third smaller,
+and a stack of your reports are fixed.
 
 ### Changed
 - Concrete Wall costs 100 in skirmish and LAN, as in the campaigns (was 50).
+- Tiberian Sun GDI builds no sandbags, as in Tiberian Sun: its Concrete Wall, gates and component towers come with the Barracks.
+- Unholy Alliance starts every player with a Tiberian Sun GDI MCV too.
+- The GDI Mammoth Tank needs GDI's own Repair Facility.
+
+### Performance
+- Pathfinding is about twice as fast: each route search keeps its visited cells in one reused table.
+- Unit, building and effect art ships as compressed DDS wherever that is smaller, and the sidebar's UI sheet drops from
+  176 MB to 62 MB. Video memory at startup falls by about 600 MB, and the Workshop download with the Tiberian Sun HD
+  Assets falls from 565 MB to 376 MB.
+- The hidden classic-graphics view is no longer drawn every frame, and the Tiberian Sun War Factory and Refinery pads
+  no longer cost more on bigger maps.
+- The mod's art always preloads at startup, even with the NOSPLASHPRELOAD launch option, which would leave shared art
+  as missing textures.
+
+### Fixed
+- A paused Mammoth Mk. II, Ghost Stalker or Mobile War Factory resumes when you click it again.
+- The Dropship Bay's units show the time left on its reload.
+- Placing a turret on a component tower repairs the tower to full, as in Firestorm.
+- Turrets stay on the sidebar after the last bare component tower is armed, with no "new construction options".
+- A deployed Juggernaut ordered onto a target it can't hit stays put instead of wandering off.
+- H takes you to your Construction Yard again, and in LAN games it moves only your own camera.
+- In LAN games the deploy key deploys only your own units.
+- In LAN games every player hears their own building go down in full, the slam and the build-up after it.
+- Another enabled mod's rules.ini no longer breaks Tiberian Factions.
+- Units, infantry and aircraft come only from their own faction's factory. With another faction's Construction
+  Yard, a Soviet War Factory no longer turns out GDI Mammoth Tanks for the AI, and placing a building no longer
+  repeats "new construction options".
 
 ## [5.5.0] — 2026-10-14
 

@@ -11,13 +11,6 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 
 ---
 
-## Controls
-
-### H (jump to the home base) does nothing
-- **Severity:** minor (seen in play on 5.5.0's build).
-- Pressing H to centre the view on the base does nothing. Not looked into yet: first check whether the
-  launcher or the DLL owns the key (`launcher-vs-dll-ownership.md`; Deploy and select-all are the DLL's).
-
 ## Units and buildings
 
 ### Nod's cargo plane sometimes circles the airstrip
@@ -33,6 +26,12 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
   `TF_BOMB_LOOP`) releases a bomb by its distance along the line to the target, from two cells short
   to two past, and ends at a point four cells beyond it. Cause not yet looked into.
 
+### A second Limpet Drone never starts (reported, not reproduced)
+- **Severity:** minor (one player report on 5.5.0).
+- A player queued a second Limpet Drone and the cameo showed "1" with nothing building. Nothing caps the Limpet, and
+  two queued Limpets build in a test. A held War Factory order or a vehicle stuck at the factory exit would hold the
+  queue the same way; ask the player what else was in production.
+
 ### Infantry pushed aside in a narrow pass lose their orders (suspected)
 - **Severity:** minor.
 - When a vehicle drives through a one-cell pass, `DriveClass::Drain_Infantry_Along` (`drive.cpp`)
@@ -45,13 +44,6 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 ---
 
 ## Audio and launcher art
-
-### TD asset-pack art doesn't draw in Tiberian Dawn
-- **Severity:** major for modders using the TD items (TF itself only uses the RA items).
-- A TD repaint test mod pointing stock TD units and bibs at TS-HD-Assets-TD's art draws the missing-texture frog:
-  TD logs every frame as not found, though the item holds them at `TIBERIAN_DAWN/UNITS/<NAME>.ZIP` in the RA
-  item's format. A single ZIP in its own mod, a distinct mod name and either load order all fail the same way.
-  Untested: whether the public RA2 and C&C3 TD items work, and how DCJD's RA Assets (a working TD art mod) is laid out.
 
 ### GDI and Nod players' RA special infantry answer in TD soldier voices (suspected)
 - **Severity:** cosmetic.
@@ -71,6 +63,13 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 ---
 
 ## Multiplayer
+
+### LAN: other loop-time sounds may skip the second player (suspected)
+- **Severity:** minor (LAN games only).
+- The game loop runs as the lobby's first player: PlayerPtr is that player and only they have IsPlayerControl.
+  MCV and TS deploys, the placement slam and the build-up now play for their owner (`TF_Sound_Effect_For`,
+  `IsHuman`). EA's code tests PlayerPtr or IsPlayerControl in about 80 more places; any of them that runs in the
+  loop and plays a sound or EVA line would skip the second player. Listen for one in a long LAN match.
 
 ### LAN joiners' credit tick: untested
 - **Severity:** minor.
@@ -134,6 +133,16 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
 
 ---
 
+## Performance
+
+### Lag on cards with little video memory, worst on large ore-filled maps
+- **Severity:** major for players with 4 to 6 GB cards (reported on "Fields of Gold", Workshop 2120367076, 126x126
+  and 92% ore).
+- ClientG holds about 4.8 GB of video memory at the menu in a TF skirmish setup against about 2.3 GB for vanilla in
+  play, nearly all of it loaded at startup. DDS sprites and the DDS UI atlas bring it to about 4.1 GB; the rest needs
+  the match warm-up (`sprite-memory.md`). Where the card runs out, textures swap in as the view moves, so the lag
+  grows as more is revealed. The NOSPLASHPRELOAD launch option no longer lowers it: the preload always runs.
+
 ## Found in code review, not seen in play
 
 Suspected from reading the code during the code tidy (`code-tidy.md`). Confirm in play, then promote
@@ -160,6 +169,11 @@ to a full entry above or delete. One line each: where, what, severity.
 - The launcher discards speech dispatched during or after `On_Multiplayer_Game_Over`
   (`TDACCOM1`, `TDFAIL1` and `RAOLOST1` all went out through valid chains and stayed silent),
   so the endgame lines ride the EVA mailbox. Mid-game stub-and-refire is unaffected.
+
+### Build hotkeys miss the mod's own buildings and units
+- The launcher's build commands (`COMMAND_RA_ALLIED_BUILD_STRUCTURE_CONSTRUCTION_YARD` and the rest) each name a
+  stock object, as its camera-to-yard command names `FACT`. The faction yards and every TD and TS type have none, so
+  their build hotkeys do nothing; H is answered by the DLL instead (`launcher-vs-dll-ownership.md`).
 
 ### Classic graphics mode is unsupported
 - The mod's terrain and units have no classic art, so the mod is HD-only.

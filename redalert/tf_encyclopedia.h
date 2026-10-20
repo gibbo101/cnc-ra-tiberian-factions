@@ -115,4 +115,16 @@ bool TF_Encyclopedia_Render(const char* ini, int faction, unsigned char* rgba, i
 */
 int TF_Encyclopedia_Needs(const char* ini, char (*keys)[64], int max);
 
+class CCINIClass;
+
+/*
+**	The mod's own folder (its DLL sits in its Data folder), without a trailing separator.
+*/
+bool TF_Mod_Folder(char* out, size_t size);
+
+/*
+**	Loads one of the mod's own CCDATA INIs by absolute path; false when it is missing or empty.
+*/
+bool TF_Load_Mod_Ini(CCINIClass& ini, const char* name);
+
 #endif

@@ -376,6 +376,17 @@ void TF_Encyclopedia_Add_Root(const char* folder)
     }
 }
 
+bool TF_Mod_Folder(char* out, size_t size)
+{
+    return Mod_Folder(out, size);
+}
+
+bool TF_Load_Mod_Ini(CCINIClass& ini, const char* name)
+{
+    char folder[MAX_PATH];
+    return Mod_Folder(folder, sizeof(folder)) && Load_Ini(ini, folder, name);
+}
+
 bool TF_Encyclopedia_Load(void)
 {
     if (Loaded) {

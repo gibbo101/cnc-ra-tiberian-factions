@@ -76,10 +76,11 @@ UNITS = {
 
 
 def c3_seats(name):
-    """The C&C3 turret seats per hull facing, classic px (c3tanks.h _<name>_seat_px)."""
+    """The C&C3 turret seats per hull frame, classic px, from c3tanks.h's _<name>_seat_px (by Dir_To_32)."""
     text = open(C3_HEADER).read()
     m = re.search(r"_%s_seat_px\[32\]\[2\] = \{(.*?)\};" % name, text, re.S)
-    return [tuple(int(v) for v in p) for p in re.findall(r"\{(-?\d+), (-?\d+)\}", m.group(1))]
+    by_dir = [tuple(int(v) for v in p) for p in re.findall(r"\{(-?\d+), (-?\d+)\}", m.group(1))]
+    return [by_dir[(32 - f) % 32] for f in range(32)]
 
 
 def sonic_seats():

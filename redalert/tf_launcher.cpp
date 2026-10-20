@@ -3297,6 +3297,20 @@ int TF_Mod_Roots(const MsvcString** first)
     return (int)(roots->Last - roots->First);
 }
 
+// The splash preload always runs, so a tile whose frames sit in another tile's ZIP finds it open; the
+// NOSPLASHPRELOAD launch option would leave those tiles as the missing-texture frog (docs/sprite-memory.md).
+static const char* Keep_Splash_Preload(void)
+{
+    static const SIZE_T PRELOAD_TEST = 0x7AE14B; // cmp byte [PRELOAD_ON], 0 / je past the preload
+    static const unsigned char stock[] = {0x80, 0x3D, 0x55, 0xF4, 0xF7, 0x01, 0x00, 0x74, 0x0C};
+    static const unsigned char always[] = {0x90, 0x90};
+    if (memcmp((const void*)PRELOAD_TEST, stock, sizeof(stock)) != 0) {
+        return "preload: unknown launcher build, left alone";
+    }
+    return TF_Write_Own_Code(PRELOAD_TEST + 7, always, sizeof(always)) ? "preload: always on"
+                                                                        : "preload: could not patch";
+}
+
 const char* TF_Launcher_Install(void)
 {
     /*
@@ -3311,8 +3325,9 @@ const char* TF_Launcher_Install(void)
     const char* page = Campaign_Page_Install();
     const char* notice = Pack_Notice_Install();
     const char* music = TF_Music_Install();
-    static char result[224];
-    snprintf(result, sizeof(result), "%s; %s; %s; %s", page, notice, music, Carrier_Install());
+    const char* preload = Keep_Splash_Preload();
+    static char result[256];
+    snprintf(result, sizeof(result), "%s; %s; %s; %s; %s", page, notice, music, Carrier_Install(), preload);
     return result;
 }
 
