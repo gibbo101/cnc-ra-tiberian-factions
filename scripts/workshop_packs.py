@@ -116,8 +116,8 @@ def copy_binaries(mod, folder, host):
                         wanted.update(os.path.normcase(p) for p in unzip_loose(os.path.join(d, f), dst[:-4]))
                         continue
                     os.makedirs(os.path.dirname(dst), exist_ok=True)
-                    A.copy_newer(os.path.join(d, f), dst)
-                    wanted.add(os.path.normcase(dst))
+                    # A cameo is written as .DDS beside dst; keep the file copy_newer wrote, or prune deletes it.
+                    wanted.add(os.path.normcase(A.copy_newer(os.path.join(d, f), dst)))
     for sub in ("ART", "AUDIO"):
         prune(folder, os.path.join("Data", sub), wanted)
 
