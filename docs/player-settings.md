@@ -82,6 +82,8 @@ greyed out and off).
 - Vanilla's five choice functions, `AI_Building`, `AI_Unit`, `AI_Infantry`, `AI_Aircraft` and `AI_Vessel` (831
   lines in Vanilla Conquer against 1,334 in ours), go into `tf_ai_classic.cpp` with the mapping, behind one
   branch at the top of each. A vanilla branch inside every TF block of today's functions would be far messier.
+- Classic AI keeps vanilla's one difficulty: `Assign_Handicap(Scen.Difficulty)` gives every house the match's
+  stat biases (`Rule.Diff[]`), and the lobby's per-slot picks and our IQ tiers are not read.
 - Stock RA's AI attacks sooner than ours (`todo.md`, the AI milestone), so Classic plays differently, and it is
   the baseline our AI is tuned against.
 
@@ -103,4 +105,3 @@ and a LAN game checking the host's choice reaches the joiner. The other switches
 - The LAN lobby line's home: MasterText on an existing label, or a new widget.
 - Whether attack-move and rally points get switches at all: off only blocks their keys.
 - Smart harvesters as one switch or several.
-- Classic AI's difficulty: our IQ tiers, where every tier builds a base, or vanilla's.
