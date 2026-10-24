@@ -112,6 +112,7 @@ sections, and `package-for-workshop.sh` runs it.
 ### Balance
 - `balance-deep-dive.md` — the stat audit and the playtest log.
 - `game-rules.md` — the in-game editor for unit values and match rules, and `tf_rules.ini`.
+- `player-settings.md` — switches for every non-balance behaviour change, and `tf_settings.ini`.
 
 ### Maps, campaign and co-op
 - `official-map-hybrids.md` — official maps as Tiberium/Ore hybrids.

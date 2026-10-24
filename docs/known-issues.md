@@ -26,6 +26,12 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
   `TF_BOMB_LOOP`) releases a bomb by its distance along the line to the target, from two cells short
   to two past, and ends at a point four cells beyond it. Cause not yet looked into.
 
+### A Tesla Coil on a jump jet taking off loops its charge sound (reported, not reproduced)
+- **Severity:** cosmetic (one player report).
+- A coil charging at jump jet infantry as it lifts off plays its power-up sound over and over for several seconds.
+  `BuildingClass::Charging_AI` resets the charge and replays `VOC_TESLA_POWER_UP` whenever its target stops being
+  legal and comes back. Test: log `Target_Legal` and every charge restart while a coil targets a jump jet taking off.
+
 ### A second Limpet Drone never starts (reported, not reproduced)
 - **Severity:** minor (one player report on 5.5.0).
 - A player queued a second Limpet Drone and the cameo showed "1" with nothing building. Nothing caps the Limpet, and

@@ -195,6 +195,7 @@ until maps past 128x128 land.
 - **Game rules editor** (`game-rules.md`): every faction's unit values and a short list of match
   rules (a Settings page tab), DEFAULT / CUSTOM and reset always shown. First: a
   hand-written `tf_rules.ini` changing one value in a skirmish, then the slider probe.
+- **Player settings** (`player-settings.md`): a Settings switch per non-balance change. First: sidebar sort, badges.
 - **RA and TD campaign maps in the skirmish list.** After TD's multiplayer maps (`td-base-art.md`, build plan
   step 4), read from the players' own files: keep terrain, resources, trees, smudges and civilian buildings as
   neutral; strip triggers, teams, scripted units and the mission's bases; the player starts where the mission put
@@ -233,9 +234,8 @@ until maps past 128x128 land.
   request with a cell (`CNC_Handle_Beacon_Request`) and beacons are useless in skirmish, so a
   re-skinned PING can toggle power on the building at that cell. Waypoints stay a hotkey mode
   unless another DLL-reaching command turns up.
-- **Crates that give another faction's construction yard,** so a wiped player can come back as a
-  different faction. The faction MCVs exist now (AMCV, SMCV, TDGMCV, TDNMCV, TSMCV); the crate
-  hands one out. `CrateType` (defines.h) is a plain enum.
+- **Crates that give another faction's construction yard,** so a wiped player can come back as a different faction.
+  The faction MCVs exist now (AMCV, SMCV, TDGMCV, TDNMCV, TSMCV); the crate hands one out. `CrateType` (defines.h) is a plain enum.
 - **Harvester cargo:** Tiberium banks as Gold (`unit.cpp`, the `OVERLAY_TIB01` case), so a
   harvester's load can't be told apart. A per-harvester Tiberium counter (one member, Save/Load,
   two reset sites) would allow cargo-coloured dock smoke: green for Tiberium, grey for Ore, maybe
