@@ -1642,7 +1642,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
     // TF: a match starts from the default difficulty; a skirmish's lobby value arrives after this call.
     TF_Lobby_Difficulty_Reset();
     // TF: the player's switches, read once for the match.
-    TF_Settings_Load();
+    TF_Settings_Load(game_type != NULL && stricmp(game_type, "GAME_NORMAL") == 0);
 
     if (game_type == NULL) {
         return false;
@@ -1893,7 +1893,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Custom_Instance(const ch
     // TF: a match starts from the default difficulty; a skirmish's lobby value arrives after this call.
     TF_Lobby_Difficulty_Reset();
     // TF: the player's switches, read once for the match.
-    TF_Settings_Load();
+    TF_Settings_Load(!multiplayer);
 
     DLLExportClass::Set_Content_Directory(content_directory);
 
@@ -2681,7 +2681,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save,
         }
 
         // TF: a loaded save plays by the player's switches as they stand now.
-        TF_Settings_Load();
+        TF_Settings_Load(GAME_TO_PLAY == GAME_NORMAL);
         result = Load_Game(file_path_and_name);
 
         if (result == false) {

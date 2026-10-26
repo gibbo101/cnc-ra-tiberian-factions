@@ -15,9 +15,17 @@ const int TF_SETTINGS_MAX_HOUSES = 32;
 bool TF_Documents_Path(const char* file, char* path, size_t size);
 
 /*
-**	Reads tf_settings.ini for the match and clears every house's sent choices; runs as a match starts or a save loads.
+**	Reads tf_settings.ini for the match and clears every house's sent choices; runs as a match starts or a save
+**	loads. The campaign keeps every AI switch on.
 */
-void TF_Settings_Load(void);
+void TF_Settings_Load(bool campaign);
+
+/*
+**	The AI switches, from the host's file as the match read it: fair fog with scouting, staged attack waves, naval.
+*/
+bool TF_AI_Fair_Fog(void);
+bool TF_AI_Staged_Waves(void);
+bool TF_AI_Naval(void);
 
 /*
 **	A launcher's sidebar switches travel to the host as mod command 4 at x = this mark, y = these bits.
