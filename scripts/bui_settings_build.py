@@ -4,7 +4,7 @@
 usage: bui_settings_build.py <loose RA_MISSIONSELECT.BUI> <UI_BONUSCONTENT base BUI> <RA_MAIN_MENU BUI> <out BUI>
 
 The CAMPAIGNS page run by ClientG's SplashScreen, so the launcher layer (redalert/tf_launcher.cpp) runs it, as the
-ADD-ONS screen (scripts/bui_addons_build.py). Its faction tabs and banners stay. Added: the PAGES tabs above the
+ADD-ONS screen (scripts/bui_addons_build.py). Its faction tabs stay, its era banners go. Added: the PAGES tabs above the
 banners; on the left the CATEGORIES rows, or COMING SOON for an empty page; on the right a heading over the
 encyclopedia's green plate (scripts/encyclopedia_art.py), MUSIC_ROWS rows, each with a checkbox, a name, a
 description and two choice buttons in the page tabs' style, and on the Tiberian Sun row GET ADD-ON for a missing
@@ -26,11 +26,12 @@ HIDE = (b'CampaignSelect_Custom_Button', b'CampaignSelect_Custom_Disabled', b'Ca
         b'CampaignSelect_Aftermath_USSR_Disabled', b'CampaignSelect_Ant_Disabled', b'UI_CampaignSelect_Header_Text',
         b'MissionList_Box', b'MissionList_Box_SOVIET', b'MissionList_Box_ALLIED', b'MissionList_SampleEntry',
         b'CustomCampaignList_Group', b'TF_Coming_Soon', b'UI_MissionDescription_Group', b'CinematicButtonGroup',
-        b'MissionDifficulty_Group', b'BackButtonDisabled_Quad', b'StartButtonDisabled_Quad')
+        b'MissionDifficulty_Group', b'BackButtonDisabled_Quad', b'StartButtonDisabled_Quad', b'TF_Banner_RA',
+        b'TF_Banner_TD', b'TF_Banner_TS')
 PAGES = (b'GENERAL', b'AI', b'GAME RULES')       # SETTINGS_PAGES in redalert/tf_launcher.cpp
 CATEGORIES = ((b'AUDIO', b'Skirmish music for each faction'),   # SETTINGS_CATEGORIES in tf_launcher.cpp
               (b'SIDEBAR', b'Cameo order and faction badges'))
-PAGE_LEFT, PAGE_STEP, PAGE_WIDTH, PAGE_TOP, PAGE_HEIGHT = 222, 218, 200, 152, 30
+PAGE_LEFT, PAGE_STEP, PAGE_WIDTH, PAGE_TOP, PAGE_HEIGHT = 222, 218, 200, 167, 30
 MUSIC_ROWS = (b'MIX', b'RED ALERT', b'TIBERIAN DAWN', b'TIBERIAN SUN')   # MUSIC_CHOICES in tf_launcher.cpp
 ROW_TOP, ROW_STEP, ROW_HEIGHT = 362, 74, 66
 GET_ROW = 3

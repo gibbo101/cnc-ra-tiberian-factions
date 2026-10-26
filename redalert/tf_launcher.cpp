@@ -2415,7 +2415,6 @@ const int CATEGORY_SIDEBAR = 1;
 const int MUSIC_ROWS = 4;          // MUSIC_ROWS in scripts/bui_settings_build.py
 const int MUSIC_MIX_ROW = 0;
 const int MUSIC_TS_ROW = 3;
-const char* const BANNERS[] = {"TF_Banner_RA", "TF_Banner_TD", "TF_Banner_TS"};
 
 struct MusicChoiceInfo
 {
@@ -2533,9 +2532,6 @@ void Refresh_Settings(void)
             ((SetToggledFn)SET_TOGGLED)(button, tab == SettingsTab, 0, 1);
         }
         Set_Hidden(button, !audio);
-    }
-    for (size_t i = 0; i < ARRAY_SIZE(BANNERS); i++) {
-        Set_Hidden(Find_Widget(screen, BANNERS[i], AS_TEXT), !audio);
     }
     wchar_t heading[48];
     swprintf(heading, ARRAY_SIZE(heading), L"MUSIC: %ls", ENC_TABS_INFO[SettingsTab].Name);
