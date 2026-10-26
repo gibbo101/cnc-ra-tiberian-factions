@@ -33,7 +33,6 @@
 
 #include "function.h"
 #include "sidebarglyphx.h"
-#include "tf_settings.h" // TF: the sidebar sort switch
 
 /*
 **  ST - 3/14/2019 10:49AM
@@ -337,21 +336,6 @@ void SidebarGlyphxClass::StripClass::Init_Clear(void)
  * HISTORY:                                                                                    *
  *   12/31/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-// Sidebar order key: price, cheapest first, so a cameo keeps its place across recalcs and a captured tree's cameo
-// lands at its price slot. Superweapons, with no cost, sort first.
-static int TF_Sidebar_Sort_Key(RTTIType type, int id)
-{
-    if (type == RTTI_SPECIAL) {
-        return (0);
-    }
-
-    TechnoTypeClass const* tech = Fetch_Techno_Type(type, id);
-    if (tech == NULL) {
-        return (0);
-    }
-    return (tech->Cost < 0 ? 0 : tech->Cost);
-}
-
 bool SidebarGlyphxClass::StripClass::Add(RTTIType type, int id, bool via_capture)
 {
     // TF: < not <=: at BuildableCount == MAX_BUILDABLES the write lands out of bounds.
@@ -364,21 +348,10 @@ bool SidebarGlyphxClass::StripClass::Add(RTTIType type, int id, bool via_capture
         if (!ScenarioInit && type != RTTI_SPECIAL) {
             Speak(VOX_NEW_CONSTRUCT);
         }
-        // TF: insert sorted by price unless the player's settings keep arrival order. Entries move whole, their
-        // Factory with them, and clicks name Type and ID, never positions, so inserting mid-game is safe.
-        int key = TF_Sidebar_Sort_Key(type, id);
-        int at = BuildableCount;
-        while (TF_Settings.IsSortByPrice && at > 0
-               && TF_Sidebar_Sort_Key(Buildables[at - 1].BuildableType, Buildables[at - 1].BuildableID) > key) {
-            at--;
-        }
-        for (int move = BuildableCount; move > at; move--) {
-            Buildables[move] = Buildables[move - 1];
-        }
-        Buildables[at].BuildableType = type;
-        Buildables[at].BuildableID = id;
-        Buildables[at].Factory = -1;
-        Buildables[at].BuildableViaCapture = via_capture;
+        Buildables[BuildableCount].BuildableType = type;
+        Buildables[BuildableCount].BuildableID = id;
+        Buildables[BuildableCount].Factory = -1;
+        Buildables[BuildableCount].BuildableViaCapture = via_capture;
         BuildableCount++;
         return (true);
     }
