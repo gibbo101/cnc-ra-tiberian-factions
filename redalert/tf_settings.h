@@ -26,6 +26,31 @@ bool TF_Documents_Path(const char* file, char* path, size_t size);
 void TF_Settings_Load(void);
 
 /*
+**	A launcher's sidebar switches travel to the host as mod command 4 at x = this mark, y = these bits.
+*/
+const int TF_SIDEBAR_CHOICE_MARK = 0x7E57;
+const int TF_SIDEBAR_SORT_BY_PRICE = 0x1;
+const int TF_SIDEBAR_FACTION_BADGES = 0x2;
+const int TF_SIDEBAR_SENT = 0x100;
+
+/*
+**	This machine's sidebar switches as the bits a launcher sends, read from the file now.
+*/
+int TF_Settings_Sidebar_Bits(void);
+
+/*
+**	Host side: keeps a house's sidebar bits from its launcher, for this match.
+*/
+void TF_Settings_Take_Sidebar(int house, int bits);
+
+/*
+**	Whether a house's player sorts the sidebar by cost and wants faction badges: its launcher's choice when it has
+**	sent one this match, else this machine's file as the match read it.
+*/
+bool TF_Sidebar_Sorts_By_Price(int house);
+bool TF_Sidebar_Has_Badges(int house);
+
+/*
 **	One switch as the file holds it now: on unless its key says 0.
 */
 bool TF_Setting_On(const char* section, const char* key);

@@ -11,6 +11,9 @@
 namespace {
 
 const char SETTINGS_FILE[] = "tf_settings.ini";
+const int MAX_HOUSES = 32;
+
+int HouseSidebar[MAX_HOUSES];
 
 } // namespace
 
@@ -47,4 +50,32 @@ void TF_Settings_Load(void)
 {
     TF_Settings.IsSortByPrice = TF_Setting_On("Sidebar", "SortByPrice");
     TF_Settings.IsFactionBadges = TF_Setting_On("Sidebar", "FactionBadges");
+    for (int house = 0; house < MAX_HOUSES; house++) {
+        HouseSidebar[house] = 0;
+    }
+}
+
+int TF_Settings_Sidebar_Bits(void)
+{
+    return TF_SIDEBAR_SENT | (TF_Setting_On("Sidebar", "SortByPrice") ? TF_SIDEBAR_SORT_BY_PRICE : 0)
+           | (TF_Setting_On("Sidebar", "FactionBadges") ? TF_SIDEBAR_FACTION_BADGES : 0);
+}
+
+void TF_Settings_Take_Sidebar(int house, int bits)
+{
+    if (house >= 0 && house < MAX_HOUSES && (bits & TF_SIDEBAR_SENT) != 0) {
+        HouseSidebar[house] = bits;
+    }
+}
+
+bool TF_Sidebar_Sorts_By_Price(int house)
+{
+    bool sent = house >= 0 && house < MAX_HOUSES && (HouseSidebar[house] & TF_SIDEBAR_SENT) != 0;
+    return sent ? (HouseSidebar[house] & TF_SIDEBAR_SORT_BY_PRICE) != 0 : TF_Settings.IsSortByPrice;
+}
+
+bool TF_Sidebar_Has_Badges(int house)
+{
+    bool sent = house >= 0 && house < MAX_HOUSES && (HouseSidebar[house] & TF_SIDEBAR_SENT) != 0;
+    return sent ? (HouseSidebar[house] & TF_SIDEBAR_FACTION_BADGES) != 0 : TF_Settings.IsFactionBadges;
 }
