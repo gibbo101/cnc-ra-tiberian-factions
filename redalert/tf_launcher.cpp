@@ -1228,6 +1228,7 @@ const SIZE_T CREATE_SCENE = 0xF2CB70;
 const SIZE_T SCENE_FOCUS = 0xF0E1D0;
 const SIZE_T SCENE_RELEASE = 0x55FE10;
 const SIZE_T AS_BUTTON = 0x606990;
+const SIZE_T AS_ANY_BUTTON = 0; // Indexed_Widget: whichever button class it is, as Find_Button
 const int SCENE_CLOSE = 0x2CC;
 const int SCENE_IMPL = 0x330;
 const UINT ADDONS_POLL_MS = 1000;
@@ -1317,23 +1318,13 @@ void* Find_Button(void* owner, const char* name)
 }
 
 /*
-**	A widget of a screen named `name` followed by `index`.
+**	A widget of a screen named `name` followed by `index`; AS_ANY_BUTTON finds a button of any class.
 */
 void* Indexed_Widget(void* screen, const char* name, int index, SIZE_T cast)
 {
     char full[32];
     snprintf(full, sizeof(full), "%s%d", name, index);
-    return Find_Widget(screen, full, cast);
-}
-
-/*
-**	Find_Button on `name` with `index` appended.
-*/
-void* Indexed_Button(void* screen, const char* name, int index)
-{
-    char full[32];
-    snprintf(full, sizeof(full), "%s%d", name, index);
-    return Find_Button(screen, full);
+    return cast == AS_ANY_BUTTON ? Find_Button(screen, full) : Find_Widget(screen, full, cast);
 }
 
 /*
@@ -2576,7 +2567,7 @@ void Refresh_Settings(void)
             const wchar_t* text = option != NULL ? option->Choices[choice].Label : NULL;
             bool lit = text != NULL && choice == picked;
             Set_Hidden(Indexed_Widget(screen, "TF_ST_OptGlow", index, AS_QUAD), !lit);
-            Set_Hidden(Indexed_Button(screen, "TF_ST_Opt", index), text == NULL);
+            Set_Hidden(Indexed_Widget(screen, "TF_ST_Opt", index, AS_ANY_BUTTON), text == NULL);
             char grey[20], bright[20];
             snprintf(grey, sizeof(grey), "TF_ST_OptText%d", index);
             snprintf(bright, sizeof(bright), "TF_ST_OptOn%d", index);
@@ -2699,9 +2690,8 @@ void Open_Settings(void)
     Bind_Click(screen, Find_Button(screen, "Back_Button"), (void*)&Settings_Back_Click, 0);
     Bind_Click(screen, Find_Button(screen, "Start_Button"), (void*)&Settings_Defaults_Click, 0);
     for (int page = 0; page < SETTINGS_PAGES; page++) {
-        char name[16];
-        snprintf(name, sizeof(name), "TF_ST_Page%d", page);
-        Bind_Click(screen, Find_Button(screen, name), (void*)&Settings_Page_Click, page);
+        Bind_Click(
+            screen, Indexed_Widget(screen, "TF_ST_Page", page, AS_ANY_BUTTON), (void*)&Settings_Page_Click, page);
     }
     for (int category = 0; category < SETTINGS_CATEGORIES; category++) {
         Bind_Click(screen,
@@ -2716,8 +2706,10 @@ void Open_Settings(void)
         Bind_Click(screen, Indexed_Widget(screen, "TF_ST_Row", row, AS_ICON_BUTTON), (void*)&Settings_Row_Click, row);
         Bind_Click(screen, Indexed_Widget(screen, "TF_ST_Check", row, AS_BUTTON), (void*)&Settings_Row_Click, row);
         for (int index = row * 2; index < row * 2 + 2; index++) {
-            Bind_Click(
-                screen, Indexed_Button(screen, "TF_ST_Opt", index), (void*)&Settings_Choice_Click, index);
+            Bind_Click(screen,
+                       Indexed_Widget(screen, "TF_ST_Opt", index, AS_ANY_BUTTON),
+                       (void*)&Settings_Choice_Click,
+                       index);
         }
     }
     SettingsPage = SETTINGS_GENERAL;
