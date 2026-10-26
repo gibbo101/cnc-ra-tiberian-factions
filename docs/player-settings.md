@@ -2,8 +2,8 @@
 
 **Status:** Design. Built, unreleased: `tf_settings.ini`, the GENERAL page (AUDIO and SIDEBAR), sidebar sorting and
 faction badges in skirmish. The other switch sites come from reading the source, unproven in play.
-**Open:** each player's sidebar choices reaching the host in LAN; the AI page and its lobby line; Classic AI; the
-decisions at the end.
+**Open:** a LAN game proving a joiner's sidebar choices reach the host; the AI page and its lobby line; Classic AI;
+the decisions at the end.
 
 Every behaviour the mod changes from vanilla Red Alert, other than balance, becomes a switch on the TIBERIAN
 FACTIONS SETTINGS page. Every switch is on by default, so a player who never opens the page plays the mod as it
@@ -25,10 +25,12 @@ ships; a player who prefers vanilla behaviour, the sidebar's arrival order among
 Only the host runs the sim (`launcher-vs-dll-ownership.md`), and the host's DLL also builds every player's sidebar
 export. What ClientG does on each machine stays that player's own: the radar crest, the sidebar tab icons and music.
 
-- **Sidebar switches are each player's own.** The host needs every joiner's choices: each launcher sends its
-  player's sidebar switches to the host as a mod command at match start (the route the deploy and select-all keys
-  take), and the host keeps them per house, re-sorting that house's strips if they land after its first cameos.
-  Sending a mod command with no key press behind it is unproven. Until it works, the host's choices apply to all.
+- **Sidebar switches are each player's own.** When the host's `@@TFL` message reaches a launcher, it sends its
+  player's sidebar switches as mod command 4 (x = `TF_SIDEBAR_CHOICE_MARK`, y = the bits), built and queued as the
+  launcher's own mod-command send does. The host keeps them per house (`TF_Settings_Take_Sidebar`); a house with
+  none yet, an older joiner's included, follows the host's file. A strip keeps vanilla's arrival order and the
+  sidebar export orders each player's copy (`TF_Sidebar_Order`), so choices landing a few frames in apply at once.
+  Proven in skirmish, where the host's own launcher sends them; a LAN joiner sending them is untested.
 - **Sim switches follow the host's file**: controls, units and the AI. The AI page and the LAN lobby carry
   "Gameplay settings follow the host." Where the lobby can carry it is open: a MasterText string on an existing
   label (`scripts/loc_work/mastertext.edits.txt`), or a BUI text widget (`bui-front-end-modding.md`).
