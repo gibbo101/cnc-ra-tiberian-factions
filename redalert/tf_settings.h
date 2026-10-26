@@ -22,9 +22,10 @@ void TF_Settings_Load(bool campaign);
 
 /*
 **	The AI switches, from the host's file as the match read it: Classic AI (vanilla's decisions, which turns the
-**	others off), fair fog with scouting, staged attack waves, naval.
+**	others off), fair fog with scouting, staged attack waves, naval, an early radar.
 */
 bool TF_AI_Classic(void);
+bool TF_AI_Early_Radar(void);
 bool TF_AI_Fair_Fog(void);
 bool TF_AI_Staged_Waves(void);
 bool TF_AI_Naval(void);
