@@ -1,9 +1,10 @@
 # Player settings
 
-**Status:** Design. Built, unreleased: `tf_settings.ini`, the GENERAL page (AUDIO and SIDEBAR), sidebar sorting and
-faction badges in skirmish. The other switch sites come from reading the source, unproven in play.
-**Open:** a LAN game proving a joiner's sidebar choices reach the host; the AI page and its lobby line; Classic AI;
-the decisions at the end.
+**Status:** Design. Built, unreleased: `tf_settings.ini`, the GENERAL page (AUDIO and SIDEBAR) with sidebar sorting
+and faction badges, and the AI page's three TF AI switches. The controls and units switch sites come from reading
+the source, unproven in play.
+**Open:** a LAN game proving a joiner's sidebar choices reach the host; the LAN lobby line; Classic AI; the controls
+and units switches; the decisions at the end.
 
 Every behaviour the mod changes from vanilla Red Alert, other than balance, becomes a switch on the TIBERIAN
 FACTIONS SETTINGS page. Every switch is on by default, so a player who never opens the page plays the mod as it
@@ -31,8 +32,8 @@ export. What ClientG does on each machine stays that player's own: the radar cre
   none yet, an older joiner's included, follows the host's file. A strip keeps vanilla's arrival order and the
   sidebar export orders each player's copy (`TF_Sidebar_Order`), so choices landing a few frames in apply at once.
   Proven in skirmish, where the host's own launcher sends them; a LAN joiner sending them is untested.
-- **Sim switches follow the host's file**: controls, units and the AI. The AI page and the LAN lobby carry
-  "Gameplay settings follow the host." Where the lobby can carry it is open: a MasterText string on an existing
+- **Sim switches follow the host's file**: controls, units and the AI. The AI page carries "In a LAN game the
+  host's AI settings apply to every player.", and the LAN lobby is to carry "Gameplay settings follow the host." Where the lobby can carry it is open: a MasterText string on an existing
   label (`scripts/loc_work/mastertext.edits.txt`), or a BUI text widget (`bui-front-end-modding.md`).
 - **At match start** the host names its non-default sim switches to each human player in a direct message, as
   `game-rules.md` plans for custom values.
@@ -69,14 +70,18 @@ export. What ClientG does on each machine stays that player's own: the radar cre
 | Units | Smart harvesters | vanilla's refinery choice and waits | `Find_Best_Refinery`, queue-jump, full-load return, field blacklist, anti-stuck watchdog (`unit.cpp`, `building.cpp`) | medium; one switch for the set |
 | Units | Smarter repair bay | vanilla's queue and exit | `unit.cpp`, `building.cpp` | medium |
 | Units | SAMs retarget before lowering | vanilla's lower-then-raise | `building.cpp` | small |
-| AI | Fair fog | the AI sees the whole map | `techno.cpp`, `house.cpp` | about five sites |
-| AI | Scouting | no probing of start locations | `foot.cpp`, `house.cpp` | small |
-| AI | Staged waves and home guard | units sent as built | `TF_Wave_AI`, `TF_Wave_Dials`, `house.cpp` | medium |
-| AI | Naval | no patrols, massing or ferrying | `house.cpp`, `vessel.cpp` | medium |
-| AI | Base placement | vanilla's placement | `house.cpp` | medium |
-| AI | Sell logic | vanilla's selling | `house.cpp` | small |
+| AI | Fair fog | the AI sees the whole map and never scouts | `HouseClass::TF_Knows`, the hunt probe in `foot.cpp` | built |
+| AI | Attack waves | vanilla's random hunts | `AI_Attack` runs `TF_Classic_AI_Attack` (`tf_ai_classic.cpp`) | built |
+| AI | Naval | no ships, patrols or ferrying | `TF_Naval_Assessment` and `TF_Ferry_Assault` say no | built |
 
-AI switches apply where the AI changes do: skirmish and LAN, never the campaign.
+- **Fair fog and scouting are one switch.** Scouting exists because fair fog blinds the AI: with fog on and no
+  scouting it never finds the enemy, and with fog off scouting has nothing to find. Off, every object counts as
+  known (`TF_Knows`), so the waves' staging point and the naval coast check still find their targets.
+- **Naval off** also stops the ferry: it needs the transports only a naval yard builds.
+- **Base placement and sell logic are not switches.** They are bug fixes and support for our base builder (the
+  naval and expansion-yard placement, the sell priorities of what it rebuilds), so Classic AI is their way back.
+- The AI switches come from the host's file and hold for the match. The campaign keeps them all on
+  (`TF_Settings_Load`), as the AI changes never reach it.
 
 ### Classic AI
 
@@ -97,10 +102,12 @@ greyed out and off).
 ## The page
 
 The Settings page (`scripts/bui_settings_build.py`, `Refresh_Settings` in `tf_launcher.cpp`) has three page tabs:
-GENERAL, AI and GAME RULES. The last two read COMING SOON until their switches land.
+GENERAL, AI and GAME RULES. GAME RULES reads COMING SOON. Each page is a category list on the left (the code's
+`SETTINGS_PAGE_INFO`) and the picked category's options on the right.
 
-- **GENERAL:** a category list on the left, AUDIO and SIDEBAR, and the picked category's options on the right.
-  AUDIO shows the faction tabs and that faction's music rows (`skirmish-music.md`); SIDEBAR shows its switches.
+- **GENERAL:** AUDIO shows the faction tabs and that faction's music rows (`skirmish-music.md`); SIDEBAR shows its
+  switches.
+- **AI:** TF AI holds fair fog, attack waves and naval, over the LAN note. CLASSIC AI joins the list with its slice.
 - **A switch is one row:** its name, a line describing the picked choice, and two buttons in the page tabs' style,
   the picked one lit and the default on the left (COST / VANILLA, ON / OFF). A choice saves at once and takes
   effect from the next match.
