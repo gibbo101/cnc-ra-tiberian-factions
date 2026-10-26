@@ -1,10 +1,10 @@
 # Player settings
 
 **Status:** Design. Built, unreleased: `tf_settings.ini`, the GENERAL page (AUDIO and SIDEBAR) with sidebar sorting
-and faction badges, and the AI page's three TF AI switches. The controls and units switch sites come from reading
+and faction badges, and the GAMEPLAY page's TF AI switches and Classic AI. The controls and units switch sites come from reading
 the source, unproven in play.
-**Open:** a LAN game proving a joiner's sidebar choices reach the host; the LAN lobby line; Classic AI; the controls
-and units switches; the decisions at the end.
+**Open:** a LAN game proving a joiner's sidebar choices reach the host; the LAN lobby line; the UNITS category;
+the controls switches; the decisions at the end.
 
 Every behaviour the mod changes from vanilla Red Alert, other than balance, becomes a switch on the TIBERIAN
 FACTIONS SETTINGS page. Every switch is on by default, so a player who never opens the page plays the mod as it
@@ -32,8 +32,8 @@ export. What ClientG does on each machine stays that player's own: the radar cre
   none yet, an older joiner's included, follows the host's file. A strip keeps vanilla's arrival order and the
   sidebar export orders each player's copy (`TF_Sidebar_Order`), so choices landing a few frames in apply at once.
   Proven in skirmish, where the host's own launcher sends them; a LAN joiner sending them is untested.
-- **Sim switches follow the host's file**: controls, units and the AI. The AI page carries "In a LAN game the
-  host's AI settings apply to every player.", and the LAN lobby is to carry "Gameplay settings follow the host." Where the lobby can carry it is open: a MasterText string on an existing
+- **Sim switches follow the host's file**: controls, units and the AI. The GAMEPLAY page carries "In a LAN game the
+  host's settings apply to every player.", and the LAN lobby is to carry "Gameplay settings follow the host." Where the lobby can carry it is open: a MasterText string on an existing
   label (`scripts/loc_work/mastertext.edits.txt`), or a BUI text widget (`bui-front-end-modding.md`).
 - **At match start** the host names its non-default sim switches to each human player in a direct message, as
   `game-rules.md` plans for custom values.
@@ -48,7 +48,7 @@ export. What ClientG does on each machine stays that player's own: the radar cre
 - **The AI's anti-air response** is vanilla Red Alert's (`HouseClass::AI_Building`: build AA when an enemy has
   aircraft). Ours only teaches it the GDI, Nod and TS SAMs and radars, so it has no switch.
 - **The AI's build order, unit picks and economy gate** replaced vanilla's code rather than branching from it, so
-  the AI page's switches with every one off still leave our AI. The Classic AI switch below is the way back.
+  the TF AI switches with every one off still leave our AI. The Classic AI switch below is the way back.
 
 ## The switches
 
@@ -85,29 +85,33 @@ export. What ClientG does on each machine stays that player's own: the radar cre
 
 ### Classic AI
 
-The AI page's master switch: **TF AI** (the default, the AI switches shown) or **Classic AI** (the AI switches
-greyed out and off).
+The GAMEPLAY page's CLASSIC AI category holds the master switch, **TF AI** (the default) or **CLASSIC** (key
+`TFAI=0`). With CLASSIC picked, TF AI's switches are off and read "Off with Classic AI".
 
 - Classic AI is vanilla's decisions with only what it needs to play every faction. Vanilla's AI knows only RA's
-  buildings; ours maps each to the faction's own (`TF_Skirmish_Pick` / `TF_Skirmish_Type`, 36 sites in
-  `house.cpp`), and Classic keeps that mapping.
-- Vanilla's five choice functions, `AI_Building`, `AI_Unit`, `AI_Infantry`, `AI_Aircraft` and `AI_Vessel` (831
-  lines in Vanilla Conquer against 1,334 in ours), go into `tf_ai_classic.cpp` with the mapping, behind one
-  branch at the top of each. A vanilla branch inside every TF block of today's functions would be far messier.
-- Classic AI keeps vanilla's one difficulty: `Assign_Handicap(Scen.Difficulty)` gives every house the match's
-  stat biases (`Rule.Diff[]`), and the lobby's per-slot picks and our IQ tiers are not read.
+  buildings; ours maps each to the faction's own (`TF_Skirmish_Pick` / `TF_Skirmish_Type`), and Classic keeps it.
+- **The base builder** is vanilla's `AI_Building`, copied into `tf_ai_classic.cpp` (`TF_Classic_AI_Building`)
+  with each RA building routed to the faction's own and counted with it (`TF_Classic_Count`).
+- **Units, infantry, aircraft and ships** keep our pickers, which are vanilla's plus the mapping: with Classic
+  picked they skip the economy hold and build one harvester a refinery, as vanilla did. Naval is off, so no ships.
+- **Attacks** are vanilla's (`TF_Classic_AI_Attack`), and fair fog is off.
+- **Selling** uses vanilla's urgencies (the Classic column of the `AI_Raise_Power` and `AI_Raise_Money` tables).
+- **Difficulty** is vanilla's one for the match: every computer house gets `Rule.MaxIQ`
+  (`TF_AI_IQ_From_Difficulty`), and the lobby's per-slot picks are not read.
 - Stock RA's AI attacks sooner than ours (`todo.md`, the AI milestone), so Classic plays differently, and it is
   the baseline our AI is tuned against.
+- Proven in skirmish against a Soviet and a Nod computer house: each built vanilla's order with its own buildings.
 
 ## The page
 
 The Settings page (`scripts/bui_settings_build.py`, `Refresh_Settings` in `tf_launcher.cpp`) has three page tabs:
-GENERAL, AI and GAME RULES. GAME RULES reads COMING SOON. Each page is a category list on the left (the code's
+GENERAL, GAMEPLAY and GAME RULES. GAME RULES reads COMING SOON. Each page is a category list on the left (the code's
 `SETTINGS_PAGE_INFO`) and the picked category's options on the right.
 
 - **GENERAL:** AUDIO shows the faction tabs and that faction's music rows (`skirmish-music.md`); SIDEBAR shows its
   switches.
-- **AI:** TF AI holds fair fog, attack waves and naval, over the LAN note. CLASSIC AI joins the list with its slice.
+- **GAMEPLAY:** TF AI holds fair fog, attack waves and naval; CLASSIC AI the master switch; both over the LAN note.
+  UNITS (A* pathfinding, chokepoint give-way, smart harvesters) joins the list with its slice.
 - **A switch is one row:** its name, a line describing the picked choice, and two buttons in the page tabs' style,
   the picked one lit and the default on the left (COST / VANILLA, ON / OFF). A choice saves at once and takes
   effect from the next match.
