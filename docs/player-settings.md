@@ -1,7 +1,9 @@
 # Player settings
 
-**Status:** Design. Nothing ships; the switch list and its code sites come from reading the source, unproven in play.
-**Open:** the first slice (sidebar sort and badges); the LAN lobby line; Classic AI; the decisions at the end.
+**Status:** Design. Built, unreleased: `tf_settings.ini`, the GENERAL page (AUDIO and SIDEBAR), sidebar sorting and
+faction badges in skirmish. The other switch sites come from reading the source, unproven in play.
+**Open:** each player's sidebar choices reaching the host in LAN; the AI page and its lobby line; Classic AI; the
+decisions at the end.
 
 Every behaviour the mod changes from vanilla Red Alert, other than balance, becomes a switch on the TIBERIAN
 FACTIONS SETTINGS page. Every switch is on by default, so a player who never opens the page plays the mod as it
@@ -9,25 +11,28 @@ ships; a player who prefers vanilla behaviour, the sidebar's arrival order among
 
 ## The file
 
-- `Documents/CnCRemastered/tf_settings.ini`, one section per page (`[Sidebar] SortByPrice=0`). It holds only the
+- `Documents/CnCRemastered/tf_settings.ini`, one section per group (`[Sidebar] SortByPrice=0`). It holds only the
   keys the player changed; a missing key is on.
-- Read and written as `tf_music.ini` is (`tf_music.cpp`): `GetPrivateProfileStringA` on the player's Documents
-  folder, `;` comments stripped, a key set back to its default deleted with `WritePrivateProfileStringA(NULL)`.
+- `tf_settings.cpp` reads a key with `GetPrivateProfileIntA` (anything but 0 is on) and writes one with
+  `WritePrivateProfileStringA`, deleting a key set back to on. It shares the Documents path with `tf_music.ini`.
 - Workshop updates never touch `Documents`, so the choices survive mod updates.
 - **The DLL reads the file once, at match start,** into one `TF_Settings` struct, and every site tests a member.
   Pathfinding, the sidebar export and the AI run every frame and never read the file. A loaded save takes the
   file as it stands at load: the switches change behaviour, not stored state.
 
-## LAN: the host's settings rule the match
+## LAN: sidebar per player, the rest from the host
 
 Only the host runs the sim (`launcher-vs-dll-ownership.md`), and the host's DLL also builds every player's sidebar
-export. So every sim switch and both sidebar switches follow the host's file, for every player. What ClientG does
-on each machine stays that player's own: the radar crest, the sidebar tab icons and music.
+export. What ClientG does on each machine stays that player's own: the radar crest, the sidebar tab icons and music.
 
-- **A line on the LAN lobby:** "Gameplay settings follow the host." Where the lobby can carry it is open: a
-  MasterText string on an existing label (`scripts/loc_work/mastertext.edits.txt`), or a BUI text widget
-  (`bui-front-end-modding.md`).
-- **At match start** the host names its non-default switches to each human player in a direct message, as
+- **Sidebar switches are each player's own.** The host needs every joiner's choices: each launcher sends its
+  player's sidebar switches to the host as a mod command at match start (the route the deploy and select-all keys
+  take), and the host keeps them per house, re-sorting that house's strips if they land after its first cameos.
+  Sending a mod command with no key press behind it is unproven. Until it works, the host's choices apply to all.
+- **Sim switches follow the host's file**: controls, units and the AI. The AI page and the LAN lobby carry
+  "Gameplay settings follow the host." Where the lobby can carry it is open: a MasterText string on an existing
+  label (`scripts/loc_work/mastertext.edits.txt`), or a BUI text widget (`bui-front-end-modding.md`).
+- **At match start** the host names its non-default sim switches to each human player in a direct message, as
   `game-rules.md` plans for custom values.
 - Not planned: a lobby page where the players pick the switches together. The host's file covers it.
 
@@ -46,8 +51,8 @@ on each machine stays that player's own: the radar crest, the sidebar tab icons 
 
 | Page | Switch | Off means | Where | Size |
 |---|---|---|---|---|
-| Sidebar | Sort by price | vanilla: a new cameo joins the end of its strip | `TF_Sidebar_Sort_Key`, `sidebarglyphx.cpp` | one branch |
-| Sidebar | Faction badges | plain cameos | `TF_Apply_Cameo_Badge`, three export sites in `dllinterface.cpp` | small |
+| Sidebar | Sorting: Cost / Vanilla | vanilla: a new cameo joins the end of its strip | `TF_Sidebar_Sort_Key`, `sidebarglyphx.cpp` | built |
+| Sidebar | Faction badges | plain cameos | `TF_Apply_Cameo_Badge` and `TF_Apply_Special_Badge`, `dllinterface.cpp` | built |
 | Sidebar | Faction crest and tab icons (per machine) | RA's crest and icons | `TF_Patch_ClientG_Crest`, `TF_Patch_ClientG_Tab_Prefix` | small |
 | Controls | Select-all skips harvesters and MCVs | vanilla select-all | `dllinterface.cpp` | small |
 | Controls | Band-select skips MCVs | harvesters only, as vanilla | `display.cpp` | one branch |
@@ -89,19 +94,25 @@ greyed out and off).
 
 ## The page
 
-The Settings page (`scripts/bui_settings_build.py`, `Refresh_Settings` in `tf_launcher.cpp`) has two page tabs,
-AUDIO and GAME RULES (COMING SOON), and four checkbox rows a page. The switches need more rows than that:
-new page tabs (SIDEBAR, CONTROLS, UNITS, AI) or a scrolling list. The music rows' checkbox, name and description
-are the row to copy; DEFAULTS turns every switch on.
+The Settings page (`scripts/bui_settings_build.py`, `Refresh_Settings` in `tf_launcher.cpp`) has three page tabs:
+GENERAL, AI and GAME RULES. The last two read COMING SOON until their switches land.
+
+- **GENERAL:** a category list on the left, AUDIO and SIDEBAR, and the picked category's options on the right.
+  AUDIO shows the faction tabs and that faction's music rows (`skirmish-music.md`); SIDEBAR shows its switches.
+- **A switch is one row:** its name, a line describing the picked choice, and two buttons in the page tabs' style,
+  the picked one lit and the default on the left (COST / VANILLA, ON / OFF). A choice saves at once and takes
+  effect from the next match.
+- **DEFAULTS** resets the open category: every faction's music to MIX, or every switch on.
+- A category holds at most four rows, so a group with more switches splits into categories.
 
 ## First slice
 
-Sort by price and faction badges, end to end: the INI, the struct, two rows on a SIDEBAR page, the LAN lobby line
-and a LAN game checking the host's choice reaches the joiner. The other switches follow the same pattern.
+Sorting and faction badges, end to end: the INI, the struct, the SIDEBAR rows, each player's choices reaching the
+host, and a LAN game with the host and a joiner set differently, each seeing their own sidebar. The other switches
+follow the same pattern.
 
 ## Decisions
 
-- Page tabs per group, or one scrolling list.
 - The LAN lobby line's home: MasterText on an existing label, or a new widget.
 - Whether attack-move and rally points get switches at all: off only blocks their keys.
 - Smart harvesters as one switch or several.
