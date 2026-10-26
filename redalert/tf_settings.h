@@ -4,16 +4,10 @@
 #include <stddef.h>
 
 /*
-**	The player's switches from Documents/CnCRemastered/tf_settings.ini (docs/player-settings.md), as the match
-**	reads them: every site tests a member here and never the file.
+**	The player's switches in Documents/CnCRemastered/tf_settings.ini (docs/player-settings.md). The match reads the
+**	file once at its start; per-frame sites ask the functions below and never read the file.
 */
-struct TF_SettingsType
-{
-    bool IsSortByPrice;
-    bool IsFactionBadges;
-};
-
-extern TF_SettingsType TF_Settings;
+const int TF_SETTINGS_MAX_HOUSES = 32;
 
 /*
 **	The full path of a file in Documents/CnCRemastered; false without a user profile.
@@ -21,7 +15,7 @@ extern TF_SettingsType TF_Settings;
 bool TF_Documents_Path(const char* file, char* path, size_t size);
 
 /*
-**	Reads tf_settings.ini into TF_Settings; runs as a match starts or a save loads.
+**	Reads tf_settings.ini for the match and clears every house's sent choices; runs as a match starts or a save loads.
 */
 void TF_Settings_Load(void);
 
@@ -44,8 +38,8 @@ int TF_Settings_Sidebar_Bits(void);
 void TF_Settings_Take_Sidebar(int house, int bits);
 
 /*
-**	Whether a house's player sorts the sidebar by cost and wants faction badges: its launcher's choice when it has
-**	sent one this match, else this machine's file as the match read it.
+**	Whether a house's player sorts the sidebar by cost and wants faction badges: its launcher's choice when sent
+**	this match, else the host's file as the match read it.
 */
 bool TF_Sidebar_Sorts_By_Price(int house);
 bool TF_Sidebar_Has_Badges(int house);

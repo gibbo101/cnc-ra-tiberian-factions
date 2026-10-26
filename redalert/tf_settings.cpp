@@ -11,13 +11,20 @@
 namespace {
 
 const char SETTINGS_FILE[] = "tf_settings.ini";
-const int MAX_HOUSES = 32;
 
-int HouseSidebar[MAX_HOUSES];
+int HostSidebar = TF_SIDEBAR_SENT | TF_SIDEBAR_SORT_BY_PRICE | TF_SIDEBAR_FACTION_BADGES;
+int HouseSidebar[TF_SETTINGS_MAX_HOUSES];
+
+/*
+**	A house's sidebar bits: its launcher's when sent this match, else the host's file as the match read it.
+*/
+int Sidebar_Bits(int house)
+{
+    bool sent = house >= 0 && house < TF_SETTINGS_MAX_HOUSES && (HouseSidebar[house] & TF_SIDEBAR_SENT) != 0;
+    return sent ? HouseSidebar[house] : HostSidebar;
+}
 
 } // namespace
-
-TF_SettingsType TF_Settings = {true, true};
 
 bool TF_Documents_Path(const char* file, char* path, size_t size)
 {
@@ -48,9 +55,8 @@ void TF_Setting_Set(const char* section, const char* key, bool on)
 
 void TF_Settings_Load(void)
 {
-    TF_Settings.IsSortByPrice = TF_Setting_On("Sidebar", "SortByPrice");
-    TF_Settings.IsFactionBadges = TF_Setting_On("Sidebar", "FactionBadges");
-    for (int house = 0; house < MAX_HOUSES; house++) {
+    HostSidebar = TF_Settings_Sidebar_Bits();
+    for (int house = 0; house < TF_SETTINGS_MAX_HOUSES; house++) {
         HouseSidebar[house] = 0;
     }
 }
@@ -63,19 +69,17 @@ int TF_Settings_Sidebar_Bits(void)
 
 void TF_Settings_Take_Sidebar(int house, int bits)
 {
-    if (house >= 0 && house < MAX_HOUSES && (bits & TF_SIDEBAR_SENT) != 0) {
+    if (house >= 0 && house < TF_SETTINGS_MAX_HOUSES && (bits & TF_SIDEBAR_SENT) != 0) {
         HouseSidebar[house] = bits;
     }
 }
 
 bool TF_Sidebar_Sorts_By_Price(int house)
 {
-    bool sent = house >= 0 && house < MAX_HOUSES && (HouseSidebar[house] & TF_SIDEBAR_SENT) != 0;
-    return sent ? (HouseSidebar[house] & TF_SIDEBAR_SORT_BY_PRICE) != 0 : TF_Settings.IsSortByPrice;
+    return (Sidebar_Bits(house) & TF_SIDEBAR_SORT_BY_PRICE) != 0;
 }
 
 bool TF_Sidebar_Has_Badges(int house)
 {
-    bool sent = house >= 0 && house < MAX_HOUSES && (HouseSidebar[house] & TF_SIDEBAR_SENT) != 0;
-    return sent ? (HouseSidebar[house] & TF_SIDEBAR_FACTION_BADGES) != 0 : TF_Settings.IsFactionBadges;
+    return (Sidebar_Bits(house) & TF_SIDEBAR_FACTION_BADGES) != 0;
 }
