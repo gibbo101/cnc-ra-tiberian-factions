@@ -10278,9 +10278,9 @@ int HouseClass::AI_Building(void)
             }
         }
 
-        // TF: every faction builds radar once the economy gate passes. It gates GDI/Nod tech and RA air, and the
-        // air-defence branch below asks for it only once an enemy flies.
-        {
+        // TF: radar comes once the economy gate passes (it gates GDI/Nod tech and RA air). With the early-radar
+        // switch off, Allies and Soviets leave it to the air-defence branch below, once an enemy flies, as vanilla.
+        if (TF_AI_Early_Radar() || ActLike == HOUSE_GOOD || ActLike == HOUSE_BAD || Is_TS_GDI(ActLike)) {
             int tf_hq = TF_Skirmish_Type(STRUCT_RADAR, ActLike);
             current = BQuantity[STRUCT_RADAR] + (tf_hq >= 0 ? BQuantity[tf_hq] : 0);
             if (current < 1 && tf_economy_ready && Power_Fraction() >= 1) {
