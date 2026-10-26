@@ -2399,7 +2399,7 @@ void __stdcall Encyclopedia_Menu_Click(void*)
 **	page's frame run by SplashScreen, page tabs, each page a category list beside the picked category's options.
 */
 const int SETTINGS_PAGES = 3;      // PAGES in scripts/bui_settings_build.py
-const int SETTINGS_CATEGORIES = 2; // CATEGORY_ROWS in scripts/bui_settings_build.py
+const int SETTINGS_CATEGORIES = 3; // CATEGORY_ROWS in scripts/bui_settings_build.py
 const int MUSIC_ROWS = 4;          // MUSIC_ROWS in scripts/bui_settings_build.py
 const int MUSIC_MIX_ROW = 0;
 const int MUSIC_TS_ROW = 3;
@@ -2442,6 +2442,9 @@ const SwitchInfo SIDEBAR_SWITCHES[] = {
      L"FACTION BADGES",
      {{L"ON", true, L"Marks each cameo's faction"}, {L"OFF", false, L"Plain cameos"}}}};
 
+const SwitchInfo CLASSIC_AI_SWITCHES[] = {
+    {"AI", "TFAI", L"AI", {{L"TF AI", true, L"Tiberian Factions' AI"}, {L"CLASSIC", false, L"Stock Red Alert's AI"}}}};
+
 const SwitchInfo TF_AI_SWITCHES[] = {
     {"AI", "FairFog", L"FAIR FOG", {{L"ON", true, L"Scouts to find you"}, {L"OFF", false, L"Sees the whole map"}}},
     {"AI", "StagedWaves", L"ATTACK WAVES", {{L"ON", true, L"Masses, then strikes"}, {L"OFF", false, L"Random hunts"}}},
@@ -2455,23 +2458,38 @@ struct CategoryInfo
     const SwitchInfo* Switches; // NULL for the music rows
     int SwitchCount;
     const wchar_t* Note[2];     // under its options
+    const SwitchInfo* Master;   // while this switch is off, so are the category's switches
+    const wchar_t* MasterOff;   // what each row reads then
 };
 
 const CategoryInfo GENERAL_CATEGORIES[] = {
-    {L"AUDIO", L"Skirmish music for each faction", NULL, NULL, 0, {NULL, NULL}},
+    {L"AUDIO", L"Skirmish music for each faction", NULL, NULL, 0, {NULL, NULL}, NULL, NULL},
     {L"SIDEBAR",
      L"Cameo order and faction badges",
      L"SIDEBAR",
      SIDEBAR_SWITCHES,
      ARRAY_SIZE(SIDEBAR_SWITCHES),
-     {NULL, NULL}}};
+     {NULL, NULL},
+     NULL,
+     NULL}};
 
-const CategoryInfo AI_CATEGORIES[] = {{L"TF AI",
-                                       L"Fog, attack waves and navy",
-                                       L"TF AI",
-                                       TF_AI_SWITCHES,
-                                       ARRAY_SIZE(TF_AI_SWITCHES),
-                                       {L"In a LAN game the host's AI settings", L"apply to every player."}}};
+const CategoryInfo GAMEPLAY_CATEGORIES[] = {
+    {L"TF AI",
+     L"Fog, attack waves and navy",
+     L"TF AI",
+     TF_AI_SWITCHES,
+     ARRAY_SIZE(TF_AI_SWITCHES),
+     {L"In a LAN game the host's settings", L"apply to every player."},
+     &CLASSIC_AI_SWITCHES[0],
+     L"Off with Classic AI"},
+    {L"CLASSIC AI",
+     L"Stock Red Alert's computer",
+     L"CLASSIC AI",
+     CLASSIC_AI_SWITCHES,
+     ARRAY_SIZE(CLASSIC_AI_SWITCHES),
+     {L"In a LAN game the host's settings", L"apply to every player."},
+     NULL,
+     NULL}};
 
 struct PageInfo
 {
@@ -2480,7 +2498,7 @@ struct PageInfo
 };
 
 const PageInfo SETTINGS_PAGE_INFO[SETTINGS_PAGES] = {{GENERAL_CATEGORIES, ARRAY_SIZE(GENERAL_CATEGORIES)},
-                                                     {AI_CATEGORIES, ARRAY_SIZE(AI_CATEGORIES)},
+                                                     {GAMEPLAY_CATEGORIES, ARRAY_SIZE(GAMEPLAY_CATEGORIES)},
                                                      {NULL, 0}};
 
 void* SettingsScene = NULL;
@@ -2545,8 +2563,8 @@ int Music_Row(void)
 }
 
 /*
-**	Shows the open page: its categories with the picked one lit and that one's options, music for the faction tab
-**	(Tiberian Sun reading Not installed while missing) or switches with their picked choice lit; else COMING SOON.
+**	Shows the open page: its categories, the picked one lit, and its options: music for the faction tab, switches with
+**	the picked choice lit; amber for missing TS music or a category its master switch turns off. Else COMING SOON.
 */
 void Refresh_Settings(void)
 {
@@ -2589,6 +2607,7 @@ void Refresh_Settings(void)
     Show_Text(screen, "TF_ST_Note1", filled ? shown->Note[1] : NULL);
     Set_Hidden(Find_Widget(screen, "TF_ST_Soon", AS_TEXT), filled);
     Set_Hidden(Find_Widget(screen, "TF_ST_Plate", AS_QUAD), !filled);
+    bool mastered = filled && shown->Master != NULL && !TF_Setting_On(shown->Master->Section, shown->Master->Key);
     bool ts = TF_TS_Music_Present();
     int chosen = Music_Row();
     chosen = chosen == MUSIC_TS_ROW && !ts ? MUSIC_MIX_ROW : chosen;
@@ -2596,19 +2615,21 @@ void Refresh_Settings(void)
         const wchar_t* name = NULL;
         const wchar_t* about = NULL;
         bool ticked = false;
-        bool missing = false;
+        bool warn = false;
         const SwitchInfo* option = audio || row >= switch_count ? NULL : &switches[row];
         int picked = option != NULL ? Picked_Choice(*option) : 0;
         if (audio) {
-            missing = row == MUSIC_TS_ROW && !ts;
+            warn = row == MUSIC_TS_ROW && !ts;
             name = MUSIC_CHOICES[row].Name;
-            about = missing ? L"Not installed" : MUSIC_CHOICES[row].About;
+            about = warn ? L"Not installed" : MUSIC_CHOICES[row].About;
             ticked = row == chosen;
         } else if (option != NULL) {
             name = option->Name;
-            about = option->Choices[picked].About;
+            about = mastered ? shown->MasterOff : option->Choices[picked].About;
+            warn = mastered;
+            option = mastered ? NULL : option;
         }
-        bool checkbox = audio && !missing;
+        bool checkbox = audio && !warn;
         Set_Hidden(Indexed_Widget(screen, "TF_ST_Glow", row, AS_QUAD), !ticked);
         Set_Hidden(Indexed_Widget(screen, "TF_ST_Row", row, AS_ICON_BUTTON), !checkbox);
         void* check = Indexed_Widget(screen, "TF_ST_Check", row, AS_BUTTON);
@@ -2621,7 +2642,7 @@ void Refresh_Settings(void)
         snprintf(green, sizeof(green), "TF_ST_Desc%d", row);
         snprintf(amber, sizeof(amber), "TF_ST_Warn%d", row);
         Show_Text(screen, label, name);
-        Set_Twin_Text(screen, green, amber, about, missing);
+        Set_Twin_Text(screen, green, amber, about, warn);
         for (int choice = 0; choice < 2; choice++) {
             int index = row * 2 + choice;
             const wchar_t* text = option != NULL ? option->Choices[choice].Label : NULL;

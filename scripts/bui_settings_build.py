@@ -21,8 +21,8 @@ HIDE = (b'CampaignSelect_Custom_Button', b'CampaignSelect_Custom_Disabled', b'Ca
         b'CustomCampaignList_Group', b'TF_Coming_Soon', b'UI_MissionDescription_Group', b'CinematicButtonGroup',
         b'MissionDifficulty_Group', b'BackButtonDisabled_Quad', b'StartButtonDisabled_Quad', b'TF_Banner_RA',
         b'TF_Banner_TD', b'TF_Banner_TS')
-PAGES = (b'GENERAL', b'AI', b'GAME RULES')       # SETTINGS_PAGES in redalert/tf_launcher.cpp
-CATEGORY_ROWS = 2                                  # SETTINGS_CATEGORIES in tf_launcher.cpp
+PAGES = (b'GENERAL', b'GAMEPLAY', b'GAME RULES')       # SETTINGS_PAGES in redalert/tf_launcher.cpp
+CATEGORY_ROWS = 3                                  # SETTINGS_CATEGORIES in tf_launcher.cpp
 PAGE_LEFT, PAGE_STEP, PAGE_WIDTH, PAGE_TOP, PAGE_HEIGHT = 222, 218, 200, 167, 30
 MUSIC_ROWS = (b'MIX', b'RED ALERT', b'TIBERIAN DAWN', b'TIBERIAN SUN')   # MUSIC_CHOICES in tf_launcher.cpp
 ROW_TOP, ROW_STEP, ROW_HEIGHT = 362, 74, 66
