@@ -86,9 +86,9 @@ def widgets(roots, bonus, menu):
         out.append(text(roots, SMALL_TEXT, b'TF_ST_Desc%d' % row, (708, y + 34, 350, 20), b'ABOUT', GREEN, LEFT))
         out.append(text(roots, SMALL_TEXT, b'TF_ST_Warn%d' % row, (708, y + 34, 180, 20), b'NEEDS', AMBER, LEFT))
         out += choice_buttons(roots, menu, row, y + (ROW_HEIGHT - CHOICE_HEIGHT) // 2)
-    y = ROW_TOP + len(MUSIC_ROWS) * ROW_STEP - 64
-    out += [text(roots, SMALL_TEXT, b'TF_ST_Note0', (662, y, 407, 22), b'NOTE', GREEN, CENTRE),
-            text(roots, SMALL_TEXT, b'TF_ST_Note1', (662, y + 24, 407, 22), b'NOTE', GREEN, CENTRE)]
+    y = ROW_TOP + CATEGORY_ROWS * ROW_STEP + 12
+    out += [text(roots, SMALL_TEXT, b'TF_ST_Note0', (214, y, 397, 22), b'NOTE', GREEN, CENTRE),
+            text(roots, SMALL_TEXT, b'TF_ST_Note1', (214, y + 24, 397, 22), b'NOTE', GREEN, CENTRE)]
     y = ROW_TOP + GET_ROW * ROW_STEP
     get = copy.deepcopy(element_in(roots, b'Back_Button'))
     set_header(get, b'Back_Button', b'TF_ST_Get', fit(900, y + 16, 160, 34), hidden=True)

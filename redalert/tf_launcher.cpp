@@ -2448,7 +2448,11 @@ const SwitchInfo CLASSIC_AI_SWITCHES[] = {
 const SwitchInfo TF_AI_SWITCHES[] = {
     {"AI", "FairFog", L"FAIR FOG", {{L"ON", true, L"Scouts to find you"}, {L"OFF", false, L"Sees the whole map"}}},
     {"AI", "StagedWaves", L"ATTACK WAVES", {{L"ON", true, L"Masses, then strikes"}, {L"OFF", false, L"Random hunts"}}},
-    {"AI", "Naval", L"NAVAL", {{L"ON", true, L"Builds a navy, ferries"}, {L"OFF", false, L"Never builds ships"}}}};
+    {"AI", "Naval", L"NAVAL", {{L"ON", true, L"Builds a navy, ferries"}, {L"OFF", false, L"Never builds ships"}}},
+    {"AI",
+     "EarlyRadar",
+     L"RADAR (ALLIES, SOVIETS)",
+     {{L"TF", true, L"Built as its economy grows"}, {L"VANILLA", false, L"Waits for enemy aircraft"}}}};
 
 struct CategoryInfo
 {
@@ -2474,14 +2478,6 @@ const CategoryInfo GENERAL_CATEGORIES[] = {
      NULL}};
 
 const CategoryInfo GAMEPLAY_CATEGORIES[] = {
-    {L"TF AI",
-     L"Fog, attack waves and navy",
-     L"TF AI",
-     TF_AI_SWITCHES,
-     ARRAY_SIZE(TF_AI_SWITCHES),
-     {L"In a LAN game the host's settings", L"apply to every player."},
-     &CLASSIC_AI_SWITCHES[0],
-     L"Off with Classic AI"},
     {L"CLASSIC AI",
      L"Stock Red Alert's computer",
      L"CLASSIC AI",
@@ -2489,7 +2485,15 @@ const CategoryInfo GAMEPLAY_CATEGORIES[] = {
      ARRAY_SIZE(CLASSIC_AI_SWITCHES),
      {L"In a LAN game the host's settings", L"apply to every player."},
      NULL,
-     NULL}};
+     NULL},
+    {L"TF AI",
+     L"Fog, waves, navy and radar",
+     L"TF AI",
+     TF_AI_SWITCHES,
+     ARRAY_SIZE(TF_AI_SWITCHES),
+     {L"In a LAN game the host's settings", L"apply to every player."},
+     &CLASSIC_AI_SWITCHES[0],
+     L"Off with Classic AI"}};
 
 struct PageInfo
 {
