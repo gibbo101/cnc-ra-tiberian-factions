@@ -33,6 +33,7 @@
 
 #include "function.h"
 #include "sidebarglyphx.h"
+#include "tf_settings.h" // TF: the sidebar sort switch
 
 /*
 **  ST - 3/14/2019 10:49AM
@@ -363,11 +364,12 @@ bool SidebarGlyphxClass::StripClass::Add(RTTIType type, int id, bool via_capture
         if (!ScenarioInit && type != RTTI_SPECIAL) {
             Speak(VOX_NEW_CONSTRUCT);
         }
-        // TF: insert sorted by price. Entries move whole, their Factory with them, and clicks name Type and ID,
-        // never positions, so inserting mid-game is safe.
+        // TF: insert sorted by price unless the player's settings keep arrival order. Entries move whole, their
+        // Factory with them, and clicks name Type and ID, never positions, so inserting mid-game is safe.
         int key = TF_Sidebar_Sort_Key(type, id);
         int at = BuildableCount;
-        while (at > 0 && TF_Sidebar_Sort_Key(Buildables[at - 1].BuildableType, Buildables[at - 1].BuildableID) > key) {
+        while (TF_Settings.IsSortByPrice && at > 0
+               && TF_Sidebar_Sort_Key(Buildables[at - 1].BuildableType, Buildables[at - 1].BuildableID) > key) {
             at--;
         }
         for (int move = BuildableCount; move > at; move--) {
