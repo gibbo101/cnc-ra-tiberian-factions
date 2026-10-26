@@ -313,7 +313,7 @@ bool TFLobbyAIDifficultySet = false;
 
 int TF_AI_IQ_From_Difficulty(DiffType diff)
 {
-    if (!TFLobbyAIDifficultySet) {
+    if (!TFLobbyAIDifficultySet || TF_AI_Classic()) {
         return (Rule.MaxIQ);
     }
     switch (diff) {
@@ -8297,25 +8297,27 @@ bool HouseClass::AI_Raise_Power(UrgencyType urgency) const
     {
         StructType Structure;
         UrgencyType Urgency;
-    } _types[] = {{STRUCT_CHRONOSPHERE, URGENCY_LOW},
+        UrgencyType Classic; // TF: vanilla's urgency, for Classic AI
+    } _types[] = {{STRUCT_CHRONOSPHERE, URGENCY_LOW, URGENCY_LOW},
                   // TF: naval yards are production buildings, so only a power emergency under attack sells them,
                   // not every mild dip.
-                  {STRUCT_SHIP_YARD, URGENCY_HIGH},
-                  {STRUCT_SUB_PEN, URGENCY_HIGH},
-                  {STRUCT_ADVANCED_TECH, URGENCY_LOW},
-                  {STRUCT_FORWARD_COM, URGENCY_LOW},
-                  {STRUCT_SOVIET_TECH, URGENCY_LOW},
-                  {STRUCT_IRON_CURTAIN, URGENCY_MEDIUM},
-                  {STRUCT_RADAR, URGENCY_MEDIUM},
-                  {STRUCT_REPAIR, URGENCY_MEDIUM},
-                  {STRUCT_TESLA, URGENCY_HIGH}};
+                  {STRUCT_SHIP_YARD, URGENCY_HIGH, URGENCY_LOW},
+                  {STRUCT_SUB_PEN, URGENCY_HIGH, URGENCY_LOW},
+                  {STRUCT_ADVANCED_TECH, URGENCY_LOW, URGENCY_LOW},
+                  {STRUCT_FORWARD_COM, URGENCY_LOW, URGENCY_LOW},
+                  {STRUCT_SOVIET_TECH, URGENCY_LOW, URGENCY_LOW},
+                  {STRUCT_IRON_CURTAIN, URGENCY_MEDIUM, URGENCY_MEDIUM},
+                  {STRUCT_RADAR, URGENCY_MEDIUM, URGENCY_MEDIUM},
+                  {STRUCT_REPAIR, URGENCY_MEDIUM, URGENCY_MEDIUM},
+                  {STRUCT_TESLA, URGENCY_HIGH, URGENCY_HIGH}};
 
     /*
     **	Find a structure to sell and then sell it. Bail from further scanning until
     **	the next time.
     */
     for (int i = 0; i < ARRAY_SIZE(_types); i++) {
-        if (urgency >= _types[i].Urgency) {
+        // TF: Classic AI sells at vanilla's urgencies.
+        if (urgency >= (TF_AI_Classic() ? _types[i].Classic : _types[i].Urgency)) {
             BuildingClass* b = Find_Building(_types[i].Structure);
             if (b != NULL) {
 #if TF_DEV_BUILD // TF_AI_DIAG -- every Expert_AI emergency sell, so a vanishing building
@@ -8365,24 +8367,25 @@ bool HouseClass::AI_Raise_Money(UrgencyType urgency) const
     {
         StructType Structure;
         UrgencyType Urgency;
-    } _types[] = {{STRUCT_CHRONOSPHERE, URGENCY_LOW},
+        UrgencyType Classic; // TF: vanilla's urgency, for Classic AI
+    } _types[] = {{STRUCT_CHRONOSPHERE, URGENCY_LOW, URGENCY_LOW},
                   // TF: the base builder rebuilds naval yards, tech centres and the repair bay, so they sell only
                   // when broke with no income. At LOW they would be sold and rebuilt between harvester dumps.
-                  {STRUCT_SHIP_YARD, URGENCY_MEDIUM},
-                  {STRUCT_SUB_PEN, URGENCY_MEDIUM},
-                  {STRUCT_ADVANCED_TECH, URGENCY_MEDIUM},
-                  {STRUCT_FORWARD_COM, URGENCY_LOW},
-                  {STRUCT_SOVIET_TECH, URGENCY_MEDIUM},
-                  {STRUCT_STORAGE, URGENCY_LOW},
-                  {STRUCT_REPAIR, URGENCY_MEDIUM},
-                  {STRUCT_TESLA, URGENCY_MEDIUM},
-                  {STRUCT_HELIPAD, URGENCY_MEDIUM},
-                  {STRUCT_POWER, URGENCY_HIGH},
-                  {STRUCT_AIRSTRIP, URGENCY_HIGH},
+                  {STRUCT_SHIP_YARD, URGENCY_MEDIUM, URGENCY_LOW},
+                  {STRUCT_SUB_PEN, URGENCY_MEDIUM, URGENCY_LOW},
+                  {STRUCT_ADVANCED_TECH, URGENCY_MEDIUM, URGENCY_LOW},
+                  {STRUCT_FORWARD_COM, URGENCY_LOW, URGENCY_LOW},
+                  {STRUCT_SOVIET_TECH, URGENCY_MEDIUM, URGENCY_LOW},
+                  {STRUCT_STORAGE, URGENCY_LOW, URGENCY_LOW},
+                  {STRUCT_REPAIR, URGENCY_MEDIUM, URGENCY_LOW},
+                  {STRUCT_TESLA, URGENCY_MEDIUM, URGENCY_MEDIUM},
+                  {STRUCT_HELIPAD, URGENCY_MEDIUM, URGENCY_MEDIUM},
+                  {STRUCT_POWER, URGENCY_HIGH, URGENCY_HIGH},
+                  {STRUCT_AIRSTRIP, URGENCY_HIGH, URGENCY_HIGH},
                   //		{STRUCT_WEAP,URGENCY_HIGH},
                   //		{STRUCT_BARRACKS,URGENCY_HIGH},
                   //		{STRUCT_TENT,URGENCY_HIGH},
-                  {STRUCT_CONST, URGENCY_CRITICAL}};
+                  {STRUCT_CONST, URGENCY_CRITICAL, URGENCY_CRITICAL}};
     BuildingClass* b = 0;
 
     /*
@@ -8390,7 +8393,8 @@ bool HouseClass::AI_Raise_Money(UrgencyType urgency) const
     **	the next time.
     */
     for (int i = 0; i < ARRAY_SIZE(_types); i++) {
-        if (urgency >= _types[i].Urgency) {
+        // TF: Classic AI sells at vanilla's urgencies.
+        if (urgency >= (TF_AI_Classic() ? _types[i].Classic : _types[i].Urgency)) {
             b = Find_Building(_types[i].Structure);
             if (b != NULL) {
 #if TF_DEV_BUILD // TF_AI_DIAG -- every Expert_AI emergency sell, so a vanishing building
@@ -8676,7 +8680,7 @@ static BuildingTypeClass const* TF_Skirmish_Equivalent(StructType ra, HousesType
 
 // The building the skirmish AI queues for a base role: the house's own faction equivalent, else the vanilla
 // RA structure. Can_Build still has the final say.
-static BuildingTypeClass const* TF_Skirmish_Pick(StructType ra, HousesType actlike)
+BuildingTypeClass const* TF_Skirmish_Pick(StructType ra, HousesType actlike)
 {
     BuildingTypeClass const* sub = TF_Skirmish_Equivalent(ra, actlike);
     return (sub != NULL) ? sub : &BuildingTypeClass::As_Reference(ra);
@@ -8738,7 +8742,7 @@ static StructType TF_AI_Upgrade_Plug(HouseClass const* house)
 
 // Type of the house's faction equivalent for a base role, or -1 when the vanilla pick stands. Callers add
 // its BQuantity to the vanilla slot's so "do I have one?" gates see the faction's own buildings.
-static int TF_Skirmish_Type(StructType ra, HousesType actlike)
+int TF_Skirmish_Type(StructType ra, HousesType actlike)
 {
     BuildingTypeClass const* sub = TF_Skirmish_Equivalent(ra, actlike);
     return (sub != NULL) ? (int)sub->Type : -1;
@@ -10001,6 +10005,11 @@ int HouseClass::AI_Building(void)
 {
     assert(Houses.ID(this) == ID);
 
+    // TF: Classic AI builds its base as vanilla's did (tf_ai_classic.cpp).
+    if (TF_AI_Classic()) {
+        return (TF_Classic_AI_Building());
+    }
+
     if (BuildStructure != STRUCT_NONE)
         return (TICKS_PER_SECOND);
 
@@ -10746,7 +10755,9 @@ int HouseClass::AI_Unit(void)
     unsigned tf_refq = BQuantity[STRUCT_REFINERY] + (tf_proc_t >= 0 ? BQuantity[tf_proc_t] : 0);
     UnitType tf_harv = Is_TS_GDI(ActLike) ? UNIT_TSHARV : ((tf_proc_t >= 0) ? UNIT_TDHARV : UNIT_HARVESTER);
     int tf_harv_owned = TF_Harvesters_Owned();
-    if (IQ >= Rule.IQHarvester && !IsTiberiumShort && !IsHuman && TF_Eco_Harvester_Target((int)tf_refq) > tf_harv_owned
+    // TF: Classic AI keeps vanilla's one harvester a refinery.
+    int tf_harv_target = TF_AI_Classic() ? (int)tf_refq : TF_Eco_Harvester_Target((int)tf_refq);
+    if (IQ >= Rule.IQHarvester && !IsTiberiumShort && !IsHuman && tf_harv_target > tf_harv_owned
         && Difficulty != DIFF_HARD) {
         if (UnitTypeClass::As_Reference(tf_harv).Level <= (unsigned)Control.TechLevel) {
             BuildUnit = tf_harv;
@@ -10840,8 +10851,8 @@ int HouseClass::AI_Unit(void)
     if (IsBaseBuilding) {
 
         // TF: economy first. Past the garrison, combat vehicles wait while the house is below its refinery or
-        // harvester target.
-        if (Session.Type != GAME_NORMAL && CurUnits - tf_harv_owned >= TF_Eco_Garrison_Vehicles()
+        // harvester target. Classic AI never holds.
+        if (Session.Type != GAME_NORMAL && !TF_AI_Classic() && CurUnits - tf_harv_owned >= TF_Eco_Garrison_Vehicles()
             && TF_Eco_Below_Target()) {
             TF_Eco_Hold_Diag(this, "vehicle");
             return (TICKS_PER_SECOND * 2);
@@ -11200,8 +11211,9 @@ int HouseClass::AI_Infantry(void)
 
     if (IsBaseBuilding) {
         // TF: economy first, as in AI_Unit: past the garrison, infantry waits for the refinery and harvester
-        // targets.
-        if (Session.Type != GAME_NORMAL && CurInfantry >= TF_Eco_Garrison_Infantry() && TF_Eco_Below_Target()) {
+        // targets. Classic AI never holds.
+        if (Session.Type != GAME_NORMAL && !TF_AI_Classic() && CurInfantry >= TF_Eco_Garrison_Infantry()
+            && TF_Eco_Below_Target()) {
             TF_Eco_Hold_Diag(this, "infantry");
             return (TICKS_PER_SECOND * 2);
         }

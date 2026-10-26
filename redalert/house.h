@@ -728,6 +728,11 @@ public:
     bool TF_Knows_Any_Enemy_Building(void);
     bool TF_Knows(TechnoClass const* object) const;
     bool TF_Classic_AI_Attack(void);
+    int TF_Classic_AI_Building(void);
+    unsigned TF_Classic_Count(StructType a,
+                              StructType b = STRUCT_NONE,
+                              StructType c = STRUCT_NONE,
+                              StructType d = STRUCT_NONE) const;
     COORDINATE TF_Wave_Known_Enemy_Coord(void) const;
     CELL TF_Wave_Stage_Cell(void) const;
     void TF_Wave_AI(void);
@@ -1118,5 +1123,12 @@ struct TFPlaceScanStruct
 };
 extern TFPlaceScanStruct TF_PlaceScan;
 #endif
+
+/*
+**	The skirmish AI's faction mapping (house.cpp): the house's own building for an RA base role, and its type, or
+**	-1 when the RA building stands.
+*/
+BuildingTypeClass const* TF_Skirmish_Pick(StructType ra, HousesType actlike);
+int TF_Skirmish_Type(StructType ra, HousesType actlike);
 
 #endif
