@@ -141,6 +141,7 @@
 ** New sidebar for GlyphX multiplayer. ST - 8/7/2019 10:10AM
 */
 #include "sidebarglyphx.h"
+#include "tf_settings.h"
 
 TFixedIHeapClass<HouseClass::BuildChoiceClass> HouseClass::BuildChoice;
 
@@ -4124,7 +4125,7 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
 
             // TF: in skirmish a computer house aims only at buildings it has discovered; no house aims at a
             // cloaked building, and the E.M. Pulse only at what one of its EMP Cannons can reach.
-            if (!IsHuman && Session.Type != GAME_NORMAL && !b->Is_Discovered_By_Player(this)) {
+            if (!IsHuman && Session.Type != GAME_NORMAL && !TF_Knows(b)) {
                 continue;
             }
 
@@ -4156,12 +4157,18 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
     }
 }
 
-// A standing building the house has discovered, held by an enemy still in the match: a defeated house can leave
-// buildings behind, and they are no objective.
+// A standing building the house knows of (TF_Knows), held by an enemy still in the match: a defeated house can
+// leave buildings behind, and they are no objective.
 static bool TF_Is_Known_Enemy_Building(HouseClass const* house, BuildingClass const* b)
 {
     return (b != NULL && !b->IsInLimbo && b->Strength > 0 && !house->Is_Ally(b) && !b->House->IsDefeated
-            && b->House->Class->House != HOUSE_NEUTRAL && b->Is_Discovered_By_Player((HouseClass*)house));
+            && b->House->Class->House != HOUSE_NEUTRAL && house->TF_Knows(b));
+}
+
+// True when this house may act on the object: always with fair fog off, else once the object is discovered.
+bool HouseClass::TF_Knows(TechnoClass const* object) const
+{
+    return !TF_AI_Fair_Fog() || object->Is_Discovered_By_Player((HouseClass*)this);
 }
 
 // True once this house has discovered a standing enemy building. Blind-scout dispatch runs until then,
@@ -7878,6 +7885,11 @@ bool HouseClass::AI_Attack(UrgencyType)
 {
     assert(Houses.ID(this) == ID);
 
+    // TF: with the attack-waves switch off, vanilla's attack (tf_ai_classic.cpp).
+    if (!TF_AI_Staged_Waves()) {
+        return (TF_Classic_AI_Attack());
+    }
+
     // TF: launch on army size and worth rather than a flat roll: hold below the floor, commit at the ceiling,
     // roll between, and recheck a decline sooner than a launch (docs/ai-upgrade-plan.md).
     TFWaveDialsStruct dials = TF_Wave_Dials(IQ);
@@ -8822,10 +8834,13 @@ static int const TF_NAVAL_PATROL_CAP = 2;
 static int const TF_NAVAL_FLEET_FLOOR = 4;
 static int const TF_NAVAL_FLEET_MAX = 12;
 
-// The largest water zone in reach of the base worth a navy, and whether a discovered enemy building is on
-// its shore. False when none is. Reads deterministic state only: lockstep-safe.
+// The largest water zone in reach of the base worth a navy, and whether a known enemy building is on its
+// shore. False when none is or the naval switch is off. Reads deterministic state only: lockstep-safe.
 bool HouseClass::TF_Naval_Assessment(int& zone, int& size, bool& enemy_coastal) const
 {
+    if (!TF_AI_Naval()) {
+        return (false);
+    }
     assert(Houses.ID(this) == ID);
 
     zone = 0;
@@ -8860,7 +8875,7 @@ bool HouseClass::TF_Naval_Assessment(int& zone, int& size, bool& enemy_coastal) 
     for (int index = 0; index < Buildings.Count() && !enemy_coastal; index++) {
         BuildingClass const* b = Buildings.Ptr(index);
         if (b == NULL || b->IsInLimbo || b->Strength == 0 || Is_Ally(b)
-            || b->House->Class->House == HOUSE_NEUTRAL || !b->Is_Discovered_By_Player(this)) {
+            || b->House->Class->House == HOUSE_NEUTRAL || !TF_Knows(b)) {
             continue;
         }
         CELL bcell = Coord_Cell(b->Center_Coord());
@@ -8900,7 +8915,7 @@ int HouseClass::TF_Naval_Fleet_Cap(bool enemy_coastal, int* enemy_navy) const
     for (int index = 0; index < Vessels.Count(); index++) {
         VesselClass const* v = Vessels.Ptr(index);
         if (v != NULL && !v->IsInLimbo && v->Strength > 0 && !Is_Ally(v)
-            && v->House->Class->House != HOUSE_NEUTRAL && v->Is_Discovered_By_Player(this)) {
+            && v->House->Class->House != HOUSE_NEUTRAL && TF_Knows(v)) {
             int h = (int)v->House->Class->House;
             if (h >= 0 && h < HOUSE_COUNT) {
                 navy[h]++;
@@ -8910,7 +8925,7 @@ int HouseClass::TF_Naval_Fleet_Cap(bool enemy_coastal, int* enemy_navy) const
     for (int index = 0; index < Buildings.Count(); index++) {
         BuildingClass const* b = Buildings.Ptr(index);
         if (b == NULL || b->IsInLimbo || b->Strength == 0 || Is_Ally(b)
-            || b->House->Class->House == HOUSE_NEUTRAL || !b->Is_Discovered_By_Player(this)) {
+            || b->House->Class->House == HOUSE_NEUTRAL || !TF_Knows(b)) {
             continue;
         }
         StructType t = b->Class->Type;
@@ -9132,7 +9147,7 @@ static CELL TF_Ferry_Shore_Cell(int wzone, int landzone, COORDINATE nearto, CELL
             BuildingClass const* b = Buildings.Ptr(index);
             if (b != NULL && !b->IsInLimbo && b->Strength > 0 && !house->Is_Ally(b)
                 && b->House->Class->House != HOUSE_NEUTRAL && b->Class->PrimaryWeapon != NULL
-                && b->Is_Discovered_By_Player(house)) {
+                && house->TF_Knows(b)) {
                 threat[threats++] = b->Center_Coord();
             }
         }
@@ -9280,7 +9295,7 @@ bool HouseClass::TF_Ferry_Assault(int& targetland, bool& second_front) const
 
     targetland = 0;
     second_front = false;
-    if (Session.Type == GAME_NORMAL) {
+    if (Session.Type == GAME_NORMAL || !TF_AI_Naval()) {
         return (false);
     }
     if (TF_Ferry_Route_Blocked(&targetland)) {
