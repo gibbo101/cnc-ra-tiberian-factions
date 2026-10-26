@@ -21,8 +21,10 @@ bool TF_Documents_Path(const char* file, char* path, size_t size);
 void TF_Settings_Load(bool campaign);
 
 /*
-**	The AI switches, from the host's file as the match read it: fair fog with scouting, staged attack waves, naval.
+**	The AI switches, from the host's file as the match read it: Classic AI (vanilla's decisions, which turns the
+**	others off), fair fog with scouting, staged attack waves, naval.
 */
+bool TF_AI_Classic(void);
 bool TF_AI_Fair_Fog(void);
 bool TF_AI_Staged_Waves(void);
 bool TF_AI_Naval(void);

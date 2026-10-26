@@ -14,6 +14,7 @@ const char SETTINGS_FILE[] = "tf_settings.ini";
 
 int HostSidebar = TF_SIDEBAR_SENT | TF_SIDEBAR_SORT_BY_PRICE | TF_SIDEBAR_FACTION_BADGES;
 int HouseSidebar[TF_SETTINGS_MAX_HOUSES];
+bool AIClassic = false;
 bool AIFairFog = true;
 bool AIStagedWaves = true;
 bool AINaval = true;
@@ -59,9 +60,10 @@ void TF_Setting_Set(const char* section, const char* key, bool on)
 void TF_Settings_Load(bool campaign)
 {
     HostSidebar = TF_Settings_Sidebar_Bits();
-    AIFairFog = campaign || TF_Setting_On("AI", "FairFog");
-    AIStagedWaves = campaign || TF_Setting_On("AI", "StagedWaves");
-    AINaval = campaign || TF_Setting_On("AI", "Naval");
+    AIClassic = !campaign && !TF_Setting_On("AI", "TFAI");
+    AIFairFog = campaign || (!AIClassic && TF_Setting_On("AI", "FairFog"));
+    AIStagedWaves = campaign || (!AIClassic && TF_Setting_On("AI", "StagedWaves"));
+    AINaval = campaign || (!AIClassic && TF_Setting_On("AI", "Naval"));
     for (int house = 0; house < TF_SETTINGS_MAX_HOUSES; house++) {
         HouseSidebar[house] = 0;
     }
@@ -88,6 +90,11 @@ bool TF_Sidebar_Sorts_By_Price(int house)
 bool TF_Sidebar_Has_Badges(int house)
 {
     return (Sidebar_Bits(house) & TF_SIDEBAR_FACTION_BADGES) != 0;
+}
+
+bool TF_AI_Classic(void)
+{
+    return AIClassic;
 }
 
 bool TF_AI_Fair_Fog(void)
