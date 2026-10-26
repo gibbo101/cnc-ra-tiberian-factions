@@ -142,6 +142,7 @@
 #include "tsjugg_muzzle.h"
 #include "tsctwr_muzzle.h"
 #include "utracker.h"
+#include "tf_settings.h"
 
 /***************************************************************************
 **	Cloaking control values.
@@ -1877,9 +1878,9 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         return (false);
     }
 
-    // TF: outside the campaign a computer house evaluates only targets it has discovered (recorded per house in
-    // Revealed). Aircraft are exempt, as in the campaign check above.
-    if (Session.Type != GAME_NORMAL && !House->IsHuman && !object->Is_Discovered_By_Player(House)
+    // TF: outside the campaign a computer house evaluates only targets it knows of (TF_Knows; discovery is recorded
+    // per house in Revealed). Aircraft are exempt, as in the campaign check above.
+    if (Session.Type != GAME_NORMAL && !House->IsHuman && !House->TF_Knows(object)
         && object->What_Am_I() != RTTI_AIRCRAFT) {
         BEnd(BENCH_EVAL_OBJECT);
         return (false);
