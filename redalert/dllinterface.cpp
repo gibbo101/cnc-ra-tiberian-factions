@@ -98,6 +98,7 @@ extern void Init_SpeechTD(void);
 #include "tf_asset_pack.h"
 #include "tf_launcher.h"
 #include "tf_encyclopedia.h"
+#include "tf_settings.h"
 // Tiberian Sun GDI's EVA (audio.cpp Init_SpeechTS). NULL slots fall back to SpeechTD[].
 extern char const* SpeechTS[VOX_COUNT];
 extern void Init_SpeechTS(void);
@@ -1640,6 +1641,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
 {
     // TF: a match starts from the default difficulty; a skirmish's lobby value arrives after this call.
     TF_Lobby_Difficulty_Reset();
+    // TF: the player's switches, read once for the match.
+    TF_Settings_Load();
 
     if (game_type == NULL) {
         return false;
@@ -1889,6 +1892,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Custom_Instance(const ch
 {
     // TF: a match starts from the default difficulty; a skirmish's lobby value arrives after this call.
     TF_Lobby_Difficulty_Reset();
+    // TF: the player's switches, read once for the match.
+    TF_Settings_Load();
 
     DLLExportClass::Set_Content_Directory(content_directory);
 
@@ -2675,6 +2680,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save,
             Session.Players.Delete(Session.Players[0]);
         }
 
+        // TF: a loaded save plays by the player's switches as they stand now.
+        TF_Settings_Load();
         result = Load_Game(file_path_and_name);
 
         if (result == false) {
@@ -7761,7 +7768,7 @@ static TF_ProducerMasks TF_Compute_Producer_Masks(HouseClass const* house)
 }
 
 // Appends _<badge> to a sidebar asset key, one base-32 digit: the entry's factions among those the player
-// makes its category from, or 0 when the player makes that category from fewer than two factions.
+// makes its category from; 0 below two such factions or with the badges switch off.
 static void TF_Apply_Cameo_Badge(char* asset_name, int entry_owner_mask, int held_mask)
 {
     if (asset_name == NULL || asset_name[0] == '\0') {
@@ -7770,6 +7777,7 @@ static void TF_Apply_Cameo_Badge(char* asset_name, int entry_owner_mask, int hel
 
     int badge = 0;
     int held_count = 0;
+    held_mask = TF_Settings.IsFactionBadges ? held_mask : 0;
     for (int bit = 0x1; bit <= TF_FACTION_TSGDI; bit <<= 1) {
         if (held_mask & bit) {
             held_count++;
@@ -7838,11 +7846,11 @@ static int TF_Special_Display_Mask(SpecialWeaponType id, HouseClass* house)
     }
 }
 
-// Rewrites a special's "SW_" key to "S<digit>_" once the house's specials span two or more factions. The
-// digit is base-32, as for buildables, and the key keeps its length to fit AssetName.
+// Rewrites a special's "SW_" key to "S<digit>_" once the house's specials span two or more factions, unless the
+// badges switch is off. The digit is base-32, as for buildables, and the key keeps its length to fit AssetName.
 static void TF_Apply_Special_Badge(char* asset_name, SpecialWeaponType id, HouseClass* house)
 {
-    if (asset_name == NULL || strncmp(asset_name, "SW_", 3) != 0 || house == NULL) {
+    if (asset_name == NULL || strncmp(asset_name, "SW_", 3) != 0 || house == NULL || !TF_Settings.IsFactionBadges) {
         return;
     }
 
