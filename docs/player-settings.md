@@ -16,7 +16,7 @@ ships; a player who prefers vanilla behaviour, the sidebar's arrival order among
 - `tf_settings.cpp` reads a key with `GetPrivateProfileIntA` (anything but 0 is on) and writes one with
   `WritePrivateProfileStringA`, deleting a key set back to on. It shares the Documents path with `tf_music.ini`.
 - Workshop updates never touch `Documents`, so the choices survive mod updates.
-- **The DLL reads the file once, at match start,** into one `TF_Settings` struct, and every site tests a member.
+- **The DLL reads the file once, at match start** (`TF_Settings_Load`), and every site asks `tf_settings.h`.
   Pathfinding, the sidebar export and the AI run every frame and never read the file. A loaded save takes the
   file as it stands at load: the switches change behaviour, not stored state.
 
@@ -53,7 +53,7 @@ export. What ClientG does on each machine stays that player's own: the radar cre
 
 | Page | Switch | Off means | Where | Size |
 |---|---|---|---|---|
-| Sidebar | Sorting: Cost / Vanilla | vanilla: a new cameo joins the end of its strip | `TF_Sidebar_Sort_Key`, `sidebarglyphx.cpp` | built |
+| Sidebar | Sorting: Cost / Vanilla | vanilla: a new cameo joins the end of its strip | `TF_Sidebar_Order`, `dllinterface.cpp` | built |
 | Sidebar | Faction badges | plain cameos | `TF_Apply_Cameo_Badge` and `TF_Apply_Special_Badge`, `dllinterface.cpp` | built |
 | Sidebar | Faction crest and tab icons (per machine) | RA's crest and icons | `TF_Patch_ClientG_Crest`, `TF_Patch_ClientG_Tab_Prefix` | small |
 | Controls | Select-all skips harvesters and MCVs | vanilla select-all | `dllinterface.cpp` | small |
@@ -105,7 +105,11 @@ GENERAL, AI and GAME RULES. The last two read COMING SOON until their switches l
   the picked one lit and the default on the left (COST / VANILLA, ON / OFF). A choice saves at once and takes
   effect from the next match.
 - **DEFAULTS** resets the open category: every faction's music to MIX, or every switch on.
-- A category holds at most four rows, so a group with more switches splits into categories.
+- A category holds at most four rows, so a group with more switches splits into categories. A switch's
+  description fits about 26 characters before it runs under its buttons.
+- The page is the CAMPAIGNS page's frame (`RA_MISSIONSELECT.BUI`) run by ClientG's SplashScreen, as the ADD-ONS
+  screen is: its faction tabs stay, its era banners and campaign widgets are hidden, and Start becomes DEFAULTS.
+  The builder's rects are pixels of a 1280x800 Deck screenshot.
 
 ## First slice
 

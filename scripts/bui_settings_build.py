@@ -1,15 +1,8 @@
 #!/usr/bin/env python3
-"""Write the Settings page, Data/ART/GUI/RA/TF_SETTINGS.BUI, from the CAMPAIGNS page's frame (docs/skirmish-music.md).
+"""Write the Settings page, Data/ART/GUI/RA/TF_SETTINGS.BUI, from the CAMPAIGNS page's frame; the layout is in
+docs/player-settings.md. License: GPL v3.
 
 usage: bui_settings_build.py <loose RA_MISSIONSELECT.BUI> <UI_BONUSCONTENT base BUI> <RA_MAIN_MENU BUI> <out BUI>
-
-The CAMPAIGNS page run by ClientG's SplashScreen, so the launcher layer (redalert/tf_launcher.cpp) runs it, as the
-ADD-ONS screen (scripts/bui_addons_build.py). Its faction tabs stay, its era banners go. Added: the PAGES tabs above the
-banners; on the left the CATEGORIES rows, or COMING SOON for an empty page; on the right a heading over the
-encyclopedia's green plate (scripts/encyclopedia_art.py), MUSIC_ROWS rows, each with a checkbox, a name, a
-description and two choice buttons in the page tabs' style, and on the Tiberian Sun row GET ADD-ON for a missing
-add-on. Start becomes DEFAULTS. The launcher sets the right side's text. Rects are pixels of a 1280x800 Deck
-screenshot of the screen. License: GPL v3.
 """
 import copy
 import sys
