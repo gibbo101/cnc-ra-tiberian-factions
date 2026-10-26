@@ -73,11 +73,14 @@ export. What ClientG does on each machine stays that player's own: the radar cre
 | AI | Fair fog | the AI sees the whole map and never scouts | `HouseClass::TF_Knows`, the hunt probe in `foot.cpp` | built |
 | AI | Attack waves | vanilla's random hunts | `AI_Attack` runs `TF_Classic_AI_Attack` (`tf_ai_classic.cpp`) | built |
 | AI | Naval | no ships, patrols or ferrying | `TF_Naval_Assessment` and `TF_Ferry_Assault` say no | built |
+| AI | Radar (Allies, Soviets): TF / Vanilla | an RA-side AI builds radar only once an enemy flies, so no air or top tech before | the early radar in `AI_Building` | built |
 
 - **Fair fog and scouting are one switch.** Scouting exists because fair fog blinds the AI: with fog on and no
   scouting it never finds the enemy, and with fog off scouting has nothing to find. Off, every object counts as
   known (`TF_Knows`), so the waves' staging point and the naval coast check still find their targets.
 - **Naval off** also stops the ferry: it needs the transports only a naval yard builds.
+- **Radar** matters only to Allies and Soviets. Vanilla's builder asks for a radar only when an enemy has aircraft,
+  and RA's helipad, airfield and tech centres need one. GDI, Nod and TS GDI build theirs early either way.
 - **Base placement and sell logic are not switches.** They are bug fixes and support for our base builder (the
   naval and expansion-yard placement, the sell priorities of what it rebuilds), so Classic AI is their way back.
 - The AI switches come from the host's file and hold for the match. The campaign keeps them all on
@@ -110,7 +113,8 @@ GENERAL, GAMEPLAY and GAME RULES. GAME RULES reads COMING SOON. Each page is a c
 
 - **GENERAL:** AUDIO shows the faction tabs and that faction's music rows (`skirmish-music.md`); SIDEBAR shows its
   switches.
-- **GAMEPLAY:** TF AI holds fair fog, attack waves and naval; CLASSIC AI the master switch; both over the LAN note.
+- **GAMEPLAY:** CLASSIC AI holds the master switch; TF AI fair fog, attack waves, naval and radar. The LAN note
+  sits under the category list.
   UNITS (A* pathfinding, chokepoint give-way, smart harvesters) joins the list with its slice.
 - **A switch is one row:** its name, a line describing the picked choice, and two buttons in the page tabs' style,
   the picked one lit and the default on the left (COST / VANILLA, ON / OFF). A choice saves at once and takes
