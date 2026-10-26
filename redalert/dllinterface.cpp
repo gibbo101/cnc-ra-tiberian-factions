@@ -3365,7 +3365,8 @@ static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff,
             DiffType house_diff = global_diff;
             int house_index = (int)housep->Class->House - (int)HOUSE_MULTI1;
             int slot_number = (house_index >= 0 && house_index < MAX_PLAYERS) ? TF_AILobbySlotByHouse[house_index] : 0;
-            if (slots_read > 0 && slot_number >= 1 && slot_number <= TF_LOBBY_MAX_AI_SLOTS
+            // TF: Classic AI keeps vanilla's one difficulty for every computer house.
+            if (!TF_AI_Classic() && slots_read > 0 && slot_number >= 1 && slot_number <= TF_LOBBY_MAX_AI_SLOTS
                 && slot_diff[slot_number] != 0) {
                 house_diff = (slot_diff[slot_number] == 1)   ? DIFF_EASY
                              : (slot_diff[slot_number] == 2) ? DIFF_NORMAL
