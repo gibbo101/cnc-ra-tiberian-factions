@@ -22,8 +22,7 @@ HIDE = (b'CampaignSelect_Custom_Button', b'CampaignSelect_Custom_Disabled', b'Ca
         b'MissionDifficulty_Group', b'BackButtonDisabled_Quad', b'StartButtonDisabled_Quad', b'TF_Banner_RA',
         b'TF_Banner_TD', b'TF_Banner_TS')
 PAGES = (b'GENERAL', b'AI', b'GAME RULES')       # SETTINGS_PAGES in redalert/tf_launcher.cpp
-CATEGORIES = ((b'AUDIO', b'Skirmish music for each faction'),   # SETTINGS_CATEGORIES in tf_launcher.cpp
-              (b'SIDEBAR', b'Cameo order and faction badges'))
+CATEGORY_ROWS = 2                                  # SETTINGS_CATEGORIES in tf_launcher.cpp
 PAGE_LEFT, PAGE_STEP, PAGE_WIDTH, PAGE_TOP, PAGE_HEIGHT = 222, 218, 200, 167, 30
 MUSIC_ROWS = (b'MIX', b'RED ALERT', b'TIBERIAN DAWN', b'TIBERIAN SUN')   # MUSIC_CHOICES in tf_launcher.cpp
 ROW_TOP, ROW_STEP, ROW_HEIGHT = 362, 74, 66
@@ -66,13 +65,13 @@ def widgets(roots, bonus, menu):
         out.append(text(roots, SMALL_TEXT, b'TF_ST_PageOn%d' % page, (x, PAGE_TOP + 5, PAGE_WIDTH, 22), label, BRIGHT,
                         CENTRE))
     out += [text(roots, BIG_TEXT, b'TF_ST_Soon', (207, 480, 411, 40), b'COMING SOON', BRIGHT, CENTRE)]
-    for row, (label, about) in enumerate(CATEGORIES):
+    for row in range(CATEGORY_ROWS):
         y = ROW_TOP + row * ROW_STEP
         out.append(quad(menu, b'BonusButtonGlow_Quad', b'TF_ST_CatGlow%d' % row, (214, y - 2, 397, ROW_HEIGHT + 4),
                         None))
         out.append(quad(menu, b'Jurassic_Button_1', b'TF_ST_Cat%d' % row, (214, y - 2, 397, ROW_HEIGHT + 4), None))
-        out.append(text(roots, SMALL_TEXT, b'TF_ST_CatName%d' % row, (230, y + 9, 360, 22), label, BRIGHT, LEFT))
-        out.append(text(roots, SMALL_TEXT, b'TF_ST_CatDesc%d' % row, (230, y + 34, 360, 20), about, GREEN, LEFT))
+        out.append(text(roots, SMALL_TEXT, b'TF_ST_CatName%d' % row, (230, y + 9, 360, 22), b'NAME', BRIGHT, LEFT))
+        out.append(text(roots, SMALL_TEXT, b'TF_ST_CatDesc%d' % row, (230, y + 34, 360, 20), b'ABOUT', GREEN, LEFT))
     out += [text(roots, BIG_TEXT, b'TF_ST_Music', (660, 312, 410, 28), b'MUSIC', BRIGHT, CENTRE),
             quad(menu, b'Button_BG', b'TF_ST_Plate', (657, 355, 417, 311), b'tf_ui_enc_stats')]
     check = element_in(bonus, b'ShowLocked_Checkbox')
@@ -87,6 +86,9 @@ def widgets(roots, bonus, menu):
         out.append(text(roots, SMALL_TEXT, b'TF_ST_Desc%d' % row, (708, y + 34, 350, 20), b'ABOUT', GREEN, LEFT))
         out.append(text(roots, SMALL_TEXT, b'TF_ST_Warn%d' % row, (708, y + 34, 180, 20), b'NEEDS', AMBER, LEFT))
         out += choice_buttons(roots, menu, row, y + (ROW_HEIGHT - CHOICE_HEIGHT) // 2)
+    y = ROW_TOP + len(MUSIC_ROWS) * ROW_STEP - 64
+    out += [text(roots, SMALL_TEXT, b'TF_ST_Note0', (662, y, 407, 22), b'NOTE', GREEN, CENTRE),
+            text(roots, SMALL_TEXT, b'TF_ST_Note1', (662, y + 24, 407, 22), b'NOTE', GREEN, CENTRE)]
     y = ROW_TOP + GET_ROW * ROW_STEP
     get = copy.deepcopy(element_in(roots, b'Back_Button'))
     set_header(get, b'Back_Button', b'TF_ST_Get', fit(900, y + 16, 160, 34), hidden=True)

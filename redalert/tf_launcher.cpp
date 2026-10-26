@@ -2396,13 +2396,10 @@ void __stdcall Encyclopedia_Menu_Click(void*)
 
 /*
 **	The Settings page (scripts/bui_settings_build.py, docs/skirmish-music.md, docs/player-settings.md): the CAMPAIGNS
-**	page's frame run by SplashScreen, page tabs, on GENERAL a category list beside the picked category's options.
+**	page's frame run by SplashScreen, page tabs, each page a category list beside the picked category's options.
 */
 const int SETTINGS_PAGES = 3;      // PAGES in scripts/bui_settings_build.py
-const int SETTINGS_GENERAL = 0;
-const int SETTINGS_CATEGORIES = 2; // CATEGORIES in scripts/bui_settings_build.py
-const int CATEGORY_AUDIO = 0;
-const int CATEGORY_SIDEBAR = 1;
+const int SETTINGS_CATEGORIES = 2; // CATEGORY_ROWS in scripts/bui_settings_build.py
 const int MUSIC_ROWS = 4;          // MUSIC_ROWS in scripts/bui_settings_build.py
 const int MUSIC_MIX_ROW = 0;
 const int MUSIC_TS_ROW = 3;
@@ -2445,9 +2442,50 @@ const SwitchInfo SIDEBAR_SWITCHES[] = {
      L"FACTION BADGES",
      {{L"ON", true, L"Marks each cameo's faction"}, {L"OFF", false, L"Plain cameos"}}}};
 
+const SwitchInfo TF_AI_SWITCHES[] = {
+    {"AI", "FairFog", L"FAIR FOG", {{L"ON", true, L"Scouts to find you"}, {L"OFF", false, L"Sees the whole map"}}},
+    {"AI", "StagedWaves", L"ATTACK WAVES", {{L"ON", true, L"Masses, then strikes"}, {L"OFF", false, L"Random hunts"}}},
+    {"AI", "Naval", L"NAVAL", {{L"ON", true, L"Builds a navy, ferries"}, {L"OFF", false, L"Never builds ships"}}}};
+
+struct CategoryInfo
+{
+    const wchar_t* Name;
+    const wchar_t* About;
+    const wchar_t* Heading;     // over its options; music names the faction instead
+    const SwitchInfo* Switches; // NULL for the music rows
+    int SwitchCount;
+    const wchar_t* Note[2];     // under its options
+};
+
+const CategoryInfo GENERAL_CATEGORIES[] = {
+    {L"AUDIO", L"Skirmish music for each faction", NULL, NULL, 0, {NULL, NULL}},
+    {L"SIDEBAR",
+     L"Cameo order and faction badges",
+     L"SIDEBAR",
+     SIDEBAR_SWITCHES,
+     ARRAY_SIZE(SIDEBAR_SWITCHES),
+     {NULL, NULL}}};
+
+const CategoryInfo AI_CATEGORIES[] = {{L"TF AI",
+                                       L"Fog, attack waves and navy",
+                                       L"TF AI",
+                                       TF_AI_SWITCHES,
+                                       ARRAY_SIZE(TF_AI_SWITCHES),
+                                       {L"In a LAN game the host's AI settings", L"apply to every player."}}};
+
+struct PageInfo
+{
+    const CategoryInfo* Categories; // NULL: COMING SOON
+    int CategoryCount;
+};
+
+const PageInfo SETTINGS_PAGE_INFO[SETTINGS_PAGES] = {{GENERAL_CATEGORIES, ARRAY_SIZE(GENERAL_CATEGORIES)},
+                                                     {AI_CATEGORIES, ARRAY_SIZE(AI_CATEGORIES)},
+                                                     {NULL, 0}};
+
 void* SettingsScene = NULL;
-int SettingsPage = SETTINGS_GENERAL;
-int SettingsCategory = CATEGORY_AUDIO;
+int SettingsPage = 0;
+int SettingsCategory = 0;
 int SettingsTab = 0;
 
 void* Settings_Screen(void)
@@ -2464,16 +2502,31 @@ int Picked_Choice(const SwitchInfo& row)
 }
 
 /*
-**	The switches the open page and category show, at most MUSIC_ROWS; none for music or an empty page.
+**	The open page's picked category; NULL on an empty page.
+*/
+const CategoryInfo* Shown_Category(void)
+{
+    const PageInfo& page = SETTINGS_PAGE_INFO[SettingsPage];
+    return SettingsCategory < page.CategoryCount ? &page.Categories[SettingsCategory] : NULL;
+}
+
+/*
+**	True while the open category is the music rows.
+*/
+bool Showing_Music(void)
+{
+    const CategoryInfo* category = Shown_Category();
+    return category != NULL && category->Switches == NULL;
+}
+
+/*
+**	The switches the open category shows, at most MUSIC_ROWS; none for music or an empty page.
 */
 const SwitchInfo* Shown_Switches(int* count)
 {
-    if (SettingsPage == SETTINGS_GENERAL && SettingsCategory == CATEGORY_SIDEBAR) {
-        *count = ARRAY_SIZE(SIDEBAR_SWITCHES);
-        return SIDEBAR_SWITCHES;
-    }
-    *count = 0;
-    return NULL;
+    const CategoryInfo* category = Shown_Category();
+    *count = category != NULL ? category->SwitchCount : 0;
+    return category != NULL ? category->Switches : NULL;
 }
 
 /*
@@ -2492,7 +2545,7 @@ int Music_Row(void)
 }
 
 /*
-**	Shows the open page: on GENERAL the categories with the picked one lit and its options, music for the faction tab
+**	Shows the open page: its categories with the picked one lit and that one's options, music for the faction tab
 **	(Tiberian Sun reading Not installed while missing) or switches with their picked choice lit; else COMING SOON.
 */
 void Refresh_Settings(void)
@@ -2501,8 +2554,10 @@ void Refresh_Settings(void)
     if (screen == NULL) {
         return;
     }
-    bool general = SettingsPage == SETTINGS_GENERAL;
-    bool audio = general && SettingsCategory == CATEGORY_AUDIO;
+    const PageInfo& page_info = SETTINGS_PAGE_INFO[SettingsPage];
+    const CategoryInfo* shown = Shown_Category();
+    bool filled = shown != NULL;
+    bool audio = Showing_Music();
     int switch_count = 0;
     const SwitchInfo* switches = Shown_Switches(&switch_count);
     for (int page = 0; page < SETTINGS_PAGES; page++) {
@@ -2511,11 +2566,14 @@ void Refresh_Settings(void)
         Set_Hidden(Indexed_Widget(screen, "TF_ST_PageText", page, AS_TEXT), page == SettingsPage);
     }
     for (int category = 0; category < SETTINGS_CATEGORIES; category++) {
-        Set_Hidden(Indexed_Widget(screen, "TF_ST_CatGlow", category, AS_QUAD),
-                   !general || category != SettingsCategory);
-        Set_Hidden(Indexed_Widget(screen, "TF_ST_Cat", category, AS_ICON_BUTTON), !general);
-        Set_Hidden(Indexed_Widget(screen, "TF_ST_CatName", category, AS_TEXT), !general);
-        Set_Hidden(Indexed_Widget(screen, "TF_ST_CatDesc", category, AS_TEXT), !general);
+        const CategoryInfo* info = category < page_info.CategoryCount ? &page_info.Categories[category] : NULL;
+        char name[20], about[20];
+        snprintf(name, sizeof(name), "TF_ST_CatName%d", category);
+        snprintf(about, sizeof(about), "TF_ST_CatDesc%d", category);
+        Set_Hidden(Indexed_Widget(screen, "TF_ST_CatGlow", category, AS_QUAD), info == NULL || info != shown);
+        Set_Hidden(Indexed_Widget(screen, "TF_ST_Cat", category, AS_ICON_BUTTON), info == NULL);
+        Show_Text(screen, name, info != NULL ? info->Name : NULL);
+        Show_Text(screen, about, info != NULL ? info->About : NULL);
     }
     for (int tab = 0; tab < ENC_TABS; tab++) {
         void* button = Find_Button(screen, ENC_TABS_INFO[tab].Button);
@@ -2526,9 +2584,11 @@ void Refresh_Settings(void)
     }
     wchar_t heading[48];
     swprintf(heading, ARRAY_SIZE(heading), L"MUSIC: %ls", ENC_TABS_INFO[SettingsTab].Name);
-    Show_Text(screen, "TF_ST_Music", audio ? heading : switches != NULL ? L"SIDEBAR" : NULL);
-    Set_Hidden(Find_Widget(screen, "TF_ST_Soon", AS_TEXT), general);
-    Set_Hidden(Find_Widget(screen, "TF_ST_Plate", AS_QUAD), !general);
+    Show_Text(screen, "TF_ST_Music", audio ? heading : filled ? shown->Heading : NULL);
+    Show_Text(screen, "TF_ST_Note0", filled ? shown->Note[0] : NULL);
+    Show_Text(screen, "TF_ST_Note1", filled ? shown->Note[1] : NULL);
+    Set_Hidden(Find_Widget(screen, "TF_ST_Soon", AS_TEXT), filled);
+    Set_Hidden(Find_Widget(screen, "TF_ST_Plate", AS_QUAD), !filled);
     bool ts = TF_TS_Music_Present();
     int chosen = Music_Row();
     chosen = chosen == MUSIC_TS_ROW && !ts ? MUSIC_MIX_ROW : chosen;
@@ -2575,8 +2635,8 @@ void Refresh_Settings(void)
             Show_Text(screen, bright, lit ? text : NULL);
         }
     }
-    Set_Hidden(Find_Button(screen, "Start_Button"), !general);
-    Set_Hidden(Find_Widget(screen, "StartButton_Text", AS_TEXT), !general);
+    Set_Hidden(Find_Button(screen, "Start_Button"), !filled);
+    Set_Hidden(Find_Widget(screen, "StartButton_Text", AS_TEXT), !filled);
 }
 
 void Close_Settings(void)
@@ -2598,18 +2658,19 @@ void __fastcall Settings_Page_Click(char* screen_plus_page, void*, void*)
     int page = screen != NULL ? (int)(screen_plus_page - (char*)screen) : -1;
     if (page >= 0 && page < SETTINGS_PAGES) {
         SettingsPage = page;
+        SettingsCategory = 0;
         Refresh_Settings();
     }
 }
 
 /*
-**	A category row on GENERAL, called as a page tab is.
+**	A category row, called as a page tab is.
 */
 void __fastcall Settings_Category_Click(char* screen_plus_category, void*, void*)
 {
     void* screen = Settings_Screen();
     int category = screen != NULL ? (int)(screen_plus_category - (char*)screen) : -1;
-    if (category >= 0 && category < SETTINGS_CATEGORIES) {
+    if (category >= 0 && category < SETTINGS_PAGE_INFO[SettingsPage].CategoryCount) {
         SettingsCategory = category;
         Refresh_Settings();
     }
@@ -2635,8 +2696,7 @@ void __fastcall Settings_Row_Click(char* screen_plus_row, void*, void*)
 {
     void* screen = Settings_Screen();
     int row = screen != NULL ? (int)(screen_plus_row - (char*)screen) : -1;
-    bool audio = SettingsPage == SETTINGS_GENERAL && SettingsCategory == CATEGORY_AUDIO;
-    if (audio && row >= 0 && row < MUSIC_ROWS && (row != MUSIC_TS_ROW || TF_TS_Music_Present())) {
+    if (Showing_Music() && row >= 0 && row < MUSIC_ROWS && (row != MUSIC_TS_ROW || TF_TS_Music_Present())) {
         TF_Music_Set_Choice(ENC_TABS_INFO[SettingsTab].Suffix, MUSIC_CHOICES[row].Value);
     }
     Refresh_Settings();
@@ -2663,7 +2723,7 @@ void __fastcall Settings_Choice_Click(char* screen_plus_index, void*, void*)
 */
 void __stdcall Settings_Defaults_Click(void*)
 {
-    bool audio = SettingsPage == SETTINGS_GENERAL && SettingsCategory == CATEGORY_AUDIO;
+    bool audio = Showing_Music();
     int switch_count = 0;
     const SwitchInfo* switches = Shown_Switches(&switch_count);
     for (int tab = 0; audio && tab < ENC_TABS; tab++) {
@@ -2712,8 +2772,8 @@ void Open_Settings(void)
                        index);
         }
     }
-    SettingsPage = SETTINGS_GENERAL;
-    SettingsCategory = CATEGORY_AUDIO;
+    SettingsPage = 0;
+    SettingsCategory = 0;
     SettingsTab = 0;
     Refresh_Settings();
 }
