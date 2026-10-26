@@ -4758,7 +4758,8 @@ static void TF_Launcher_Send_Sidebar_Choices(void)
     static const SIZE_T EVENT_SEND = 0x10F8640;
     static const SIZE_T EVENT_POST = 0x10F82D0;
     static const SIZE_T EVENT_FREE = 0x73BC50;
-    static const int MOD_COMMAND_4 = 15; // ClientG's number: its 0x1035 less 0x1026
+    static const SIZE_T MOD_COMMANDS_ON = 0x20E39B1;
+    static const int MOD_COMMAND_4 = 0x1035 - 0x1026;
     typedef void(__thiscall * EventInitFn)(void* event, int type, int x, int y, int x2, int y2);
     typedef void*(__cdecl * SessionFn)(void);
     typedef void*(__thiscall * SessionPlayerFn)(void* session);
@@ -4768,6 +4769,9 @@ static void TF_Launcher_Send_Sidebar_Choices(void)
     // Trap: these calls are ClientG 1.153's; on any other build the call sites differ and nothing is sent.
     if (*(unsigned char const*)INIT_CALL != 0xE8 || INIT_CALL + 5 + *(int const*)(INIT_CALL + 1) != EVENT_INIT
         || *(unsigned char const*)SEND_CALL != 0xE8 || SEND_CALL + 5 + *(int const*)(SEND_CALL + 1) != EVENT_SEND) {
+        return;
+    }
+    if (*(volatile unsigned char const*)MOD_COMMANDS_ON != 1) {
         return;
     }
     void* session = ((SessionFn)SESSION)();
@@ -7224,6 +7228,27 @@ void DLLExportClass::Convert_Type(const ObjectClass* object, CNCObjectStruct& ob
  *
  * History: 1/7/2019 5:20PM - ST
  **************************************************************************************************/
+// Keeps the sidebar switches a launcher sent for the house in context (TF_Launcher_Send_Sidebar_Choices).
+static void TF_Take_Sidebar_Choices(int bits)
+{
+    static_assert(HOUSE_COUNT <= TF_SETTINGS_MAX_HOUSES, "tf_settings.cpp keeps fewer houses than the game has");
+    if (PlayerPtr != NULL) {
+        TF_Settings_Take_Sidebar(PlayerPtr->Class->House, bits);
+    }
+#if TF_DEV_BUILD
+    char path[MAX_PATH];
+    FILE* log = TF_Documents_Path("tf_settings.log", path, sizeof(path)) ? fopen(path, "a") : NULL;
+    if (log != NULL) {
+        fprintf(log,
+                "frame %ld house %d bits 0x%x\n",
+                (long)Frame,
+                PlayerPtr != NULL ? (int)PlayerPtr->Class->House : -1,
+                bits);
+        fclose(log);
+    }
+#endif
+}
+
 extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Input(InputRequestEnum input_event,
                                                                unsigned char special_key_flags,
                                                                uint64 player_id,
@@ -7367,27 +7392,6 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Input(InputRequestEnum 
     }
 
     case INPUT_REQUEST_SELECT_AT_POSITION: {
-        // TF: mod command 4 with the sidebar mark is a launcher's sidebar switches for its own house, not a click.
-        if (input_event == INPUT_REQUEST_MOD_GAME_COMMAND_4_AT_POSITION && x1 == TF_SIDEBAR_CHOICE_MARK) {
-            if (PlayerPtr != NULL) {
-                TF_Settings_Take_Sidebar(PlayerPtr->Class->House, y1);
-            }
-#if TF_DEV_BUILD
-            {
-                char path[MAX_PATH];
-                FILE* log = TF_Documents_Path("tf_settings.log", path, sizeof(path)) ? fopen(path, "a") : NULL;
-                if (log != NULL) {
-                    fprintf(log,
-                            "frame %ld house %d bits 0x%x\n",
-                            (long)Frame,
-                            PlayerPtr != NULL ? (int)PlayerPtr->Class->House : -1,
-                            y1);
-                    fclose(log);
-                }
-            }
-#endif
-            break;
-        }
         DLLExportClass::Adjust_Internal_View();
         DLLForceMouseX = x1;
         DLLForceMouseY = y1;
@@ -7407,27 +7411,6 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Input(InputRequestEnum 
     }
 
     case INPUT_REQUEST_COMMAND_AT_POSITION: {
-        // TF: mod command 4 with the sidebar mark is a launcher's sidebar switches for its own house, not a click.
-        if (input_event == INPUT_REQUEST_MOD_GAME_COMMAND_4_AT_POSITION && x1 == TF_SIDEBAR_CHOICE_MARK) {
-            if (PlayerPtr != NULL) {
-                TF_Settings_Take_Sidebar(PlayerPtr->Class->House, y1);
-            }
-#if TF_DEV_BUILD
-            {
-                char path[MAX_PATH];
-                FILE* log = TF_Documents_Path("tf_settings.log", path, sizeof(path)) ? fopen(path, "a") : NULL;
-                if (log != NULL) {
-                    fprintf(log,
-                            "frame %ld house %d bits 0x%x\n",
-                            (long)Frame,
-                            PlayerPtr != NULL ? (int)PlayerPtr->Class->House : -1,
-                            y1);
-                    fclose(log);
-                }
-            }
-#endif
-            break;
-        }
         DLLExportClass::Adjust_Internal_View();
         DLLForceMouseX = x1;
         DLLForceMouseY = y1;
@@ -7452,23 +7435,7 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Input(InputRequestEnum 
     case INPUT_REQUEST_MOD_GAME_COMMAND_4_AT_POSITION: {
         // TF: mod command 4 with the sidebar mark is a launcher's sidebar switches for its own house, not a click.
         if (input_event == INPUT_REQUEST_MOD_GAME_COMMAND_4_AT_POSITION && x1 == TF_SIDEBAR_CHOICE_MARK) {
-            if (PlayerPtr != NULL) {
-                TF_Settings_Take_Sidebar(PlayerPtr->Class->House, y1);
-            }
-#if TF_DEV_BUILD
-            {
-                char path[MAX_PATH];
-                FILE* log = TF_Documents_Path("tf_settings.log", path, sizeof(path)) ? fopen(path, "a") : NULL;
-                if (log != NULL) {
-                    fprintf(log,
-                            "frame %ld house %d bits 0x%x\n",
-                            (long)Frame,
-                            PlayerPtr != NULL ? (int)PlayerPtr->Class->House : -1,
-                            y1);
-                    fclose(log);
-                }
-            }
-#endif
+            TF_Take_Sidebar_Choices(y1);
             break;
         }
         DLLExportClass::Adjust_Internal_View();
