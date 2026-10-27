@@ -26,7 +26,6 @@ CATEGORY_ROWS = 3                                  # SETTINGS_CATEGORIES in tf_l
 PAGE_LEFT, PAGE_STEP, PAGE_WIDTH, PAGE_TOP, PAGE_HEIGHT = 222, 218, 200, 167, 30
 MUSIC_ROWS = (b'MIX', b'RED ALERT', b'TIBERIAN DAWN', b'TIBERIAN SUN')   # MUSIC_CHOICES in tf_launcher.cpp
 ROW_TOP, ROW_STEP, ROW_HEIGHT = 362, 74, 66
-GET_ROW = 3
 CHOICE_LEFT, CHOICE_STEP, CHOICE_WIDTH, CHOICE_HEIGHT = 905, 84, 76, 30
 
 
@@ -89,10 +88,6 @@ def widgets(roots, bonus, menu):
     y = ROW_TOP + CATEGORY_ROWS * ROW_STEP + 12
     out += [text(roots, SMALL_TEXT, b'TF_ST_Note0', (214, y, 397, 22), b'NOTE', GREEN, CENTRE),
             text(roots, SMALL_TEXT, b'TF_ST_Note1', (214, y + 24, 397, 22), b'NOTE', GREEN, CENTRE)]
-    y = ROW_TOP + GET_ROW * ROW_STEP
-    get = copy.deepcopy(element_in(roots, b'Back_Button'))
-    set_header(get, b'Back_Button', b'TF_ST_Get', fit(900, y + 16, 160, 34), hidden=True)
-    out += [get, text(roots, SMALL_TEXT, b'TF_ST_GetText', (900, y + 22, 160, 22), b'GET ADD-ON', AMBER, CENTRE)]
     return out
 
 
