@@ -98,6 +98,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include "tf_settings.h"
 
 // TF: attack-move (CFE port) -- launcher-side Shift state, per local player.
 extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
@@ -4973,10 +4974,10 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
                 if (is_moving) {
                     int face = Dir_Facing(PrimaryFacing);
                     int techface = Dir_Facing(((FootClass const*)obj)->PrimaryFacing) ^ 4;
-                    // TF: only a vehicle head-on is a hard block. A moving infantryman stays a soft block, which
-                    // DriveClass::Infantry_Give_Way clears; a hard block would freeze the vehicle facing him.
+                    // TF: with give-way on, only a vehicle head-on is a hard block. A moving infantryman stays a soft
+                    // block, which DriveClass::Infantry_Give_Way clears; a hard block would freeze the vehicle.
                     if (face == techface && Distance((AbstractClass const*)obj) <= 0x1FF
-                        && obj->What_Am_I() == RTTI_UNIT) {
+                        && (obj->What_Am_I() == RTTI_UNIT || !TF_Units_Give_Way())) {
 #if TF_DEV_BUILD
                         /*
                         ** TF DEV: head-on deadlock confirmation (v2.2.3). Two MOVING allied vehicles
