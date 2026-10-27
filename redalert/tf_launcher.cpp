@@ -2477,6 +2477,20 @@ const CategoryInfo GENERAL_CATEGORIES[] = {
      NULL,
      NULL}};
 
+const SwitchInfo UNITS_SWITCHES[] = {
+    {"Units",
+     "AStar",
+     L"A* PATHFINDING",
+     {{L"ON", true, L"Plans the whole route"}, {L"OFF", false, L"Vanilla's edge-following"}}},
+    {"Units",
+     "GiveWay",
+     L"GIVE WAY",
+     {{L"ON", true, L"Clears narrow passages"}, {L"OFF", false, L"No yielding, as vanilla"}}},
+    {"Units",
+     "Harvesters",
+     L"HARVESTERS",
+     {{L"ON", true, L"Never stuck, always unload"}, {L"OFF", false, L"Vanilla's harvesters"}}}};
+
 const CategoryInfo GAMEPLAY_CATEGORIES[] = {
     {L"CLASSIC AI",
      L"Stock Red Alert's computer",
@@ -2493,7 +2507,15 @@ const CategoryInfo GAMEPLAY_CATEGORIES[] = {
      ARRAY_SIZE(TF_AI_SWITCHES),
      {L"In a LAN game the host's settings", L"apply to every player."},
      &CLASSIC_AI_SWITCHES[0],
-     L"Off with Classic AI"}};
+     L"Off with Classic AI"},
+    {L"UNITS",
+     L"Pathfinding and harvesters",
+     L"UNITS",
+     UNITS_SWITCHES,
+     ARRAY_SIZE(UNITS_SWITCHES),
+     {L"In a LAN game the host's settings", L"apply to every player."},
+     NULL,
+     NULL}};
 
 struct PageInfo
 {
