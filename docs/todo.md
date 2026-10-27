@@ -195,7 +195,8 @@ until maps past 128x128 land.
 - **Game rules editor** (`game-rules.md`): every faction's unit values and a short list of match
   rules (a Settings page tab), DEFAULT / CUSTOM and reset always shown. First: a
   hand-written `tf_rules.ini` changing one value in a skirmish, then the slider probe.
-- **Player settings** (`player-settings.md`): a Settings switch per non-balance change. First: sidebar sort, badges.
+- **Player settings** (`player-settings.md`): a Settings switch per non-balance change. Built: the sidebar, AI
+  and units switches. Next: the LAN test, then the controls switches and the remaining units switches.
 - **RA and TD campaign maps in the skirmish list.** After TD's multiplayer maps (`td-base-art.md`, build plan
   step 4), read from the players' own files: keep terrain, resources, trees, smudges and civilian buildings as
   neutral; strip triggers, teams, scripted units and the mission's bases; the player starts where the mission put
