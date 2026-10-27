@@ -7215,20 +7215,6 @@ void DLLExportClass::Convert_Type(const ObjectClass* object, CNCObjectStruct& ob
     }
 }
 
-/**************************************************************************************************
- * CNC_Handle_Input -- Process input to the game
- *
- * In:
- *
- *
- *
- *
- * Out:  Game state returned in buffer
- *
- *
- *
- * History: 1/7/2019 5:20PM - ST
- **************************************************************************************************/
 // Keeps the sidebar switches a launcher sent for the house in context (TF_Launcher_Send_Sidebar_Choices).
 static void TF_Take_Sidebar_Choices(int bits)
 {
@@ -7250,6 +7236,20 @@ static void TF_Take_Sidebar_Choices(int bits)
 #endif
 }
 
+/**************************************************************************************************
+ * CNC_Handle_Input -- Process input to the game
+ *
+ * In:
+ *
+ *
+ *
+ *
+ * Out:  Game state returned in buffer
+ *
+ *
+ *
+ * History: 1/7/2019 5:20PM - ST
+ **************************************************************************************************/
 extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Input(InputRequestEnum input_event,
                                                                unsigned char special_key_flags,
                                                                uint64 player_id,
@@ -7847,14 +7847,14 @@ static void TF_Apply_Cameo_Badge(char* asset_name, int entry_owner_mask, int hel
 
     int badge = 0;
     int held_count = 0;
-    held_mask = house != NULL && TF_Sidebar_Has_Badges(house->Class->House) ? held_mask : 0;
+    int held = house != NULL && TF_Sidebar_Has_Badges(house->Class->House) ? held_mask : 0;
     for (int bit = 0x1; bit <= TF_FACTION_TSGDI; bit <<= 1) {
-        if (held_mask & bit) {
+        if (held & bit) {
             held_count++;
         }
     }
     if (held_count >= 2) {
-        badge = entry_owner_mask & held_mask;
+        badge = entry_owner_mask & held;
     }
 
     size_t length = strnlen(asset_name, CNC_OBJECT_ASSET_NAME_LENGTH);
