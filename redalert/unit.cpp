@@ -513,9 +513,9 @@ void UnitClass::AI(void)
         Mark(MARK_CHANGE);
     }
 
-    // TF: a harvester that stops closing on its ore for 5 s blacklists the field, after up to three more windows
-    // while A* still finds a path. Zones ignore buildings. See docs/harvester-recovery-design.md.
-    if (Class->IsToHarvest && Mission == MISSION_HARVEST && Target_Legal(NavCom)
+    // TF: with the harvester switch on, one that stops closing on its ore for 5 s blacklists the field, after up to
+    // three more windows while A* still finds a path. Zones ignore buildings. See docs/harvester-recovery-design.md.
+    if (TF_Units_Harvesters() && Class->IsToHarvest && Mission == MISSION_HARVEST && Target_Legal(NavCom)
         && Map[As_Cell(NavCom)].Land_Type() == LAND_TIBERIUM) {
         const long HARV_STALL_FRAMES = TICKS_PER_SECOND * 5; // no progress for 5s == suspect unreachable
         const int HARV_PROGRESS_MARGIN = 256;                // 1 cell; ignore sub-cell jitter
@@ -549,7 +549,7 @@ void UnitClass::AI(void)
     }
 
     // TF: anti-stuck watchdog for a harvester idle in one cell and not parked by a human: it clears infantry,
-    // scatters, then restarts its harvest cycle. See docs/harvester-recovery-design.md.
+    // scatters, then restarts its harvest cycle; only tracks with the switch off (docs/harvester-recovery-design.md).
     if (Class->IsToHarvest) {
         bool player_parked = House->IsHuman
                              && (Mission == MISSION_MOVE || Mission == MISSION_GUARD
@@ -557,7 +557,7 @@ void UnitClass::AI(void)
         bool productive = IsHarvesting || IsDumping;
         CELL mycell = Coord_Cell(Center_Coord());
 
-        if (player_parked || productive || mycell != HarvStuckCell) {
+        if (player_parked || productive || mycell != HarvStuckCell || !TF_Units_Harvesters()) {
             HarvStuckCell = mycell;
             HarvStuckFrame = Frame;
         } else {
@@ -4437,8 +4437,8 @@ int UnitClass::Mission_Harvest(void)
     **	Go and find a Tiberium field to harvest.
     */
     case LOOKING:
-        // TF: a full harvester heads straight home instead of looking for ore it can't carry (CFE port).
-        if (Tiberium_Load() == 1) {
+        // TF: with the harvester switch on, a full harvester heads straight home instead of looking for ore (CFE port).
+        if (TF_Units_Harvesters() && Tiberium_Load() == 1) {
             IsHarvesting = false;
             Status = FINDHOME;
             Assign_Target(TARGET_NONE);
@@ -4458,13 +4458,17 @@ int UnitClass::Mission_Harvest(void)
         /*
         ** Look for ore where we last found some - mine the same patch
         */
-        TiberiumUnloadRefinery = TARGET_NONE; // TF: re-pick the refinery for every fresh load (CFE optimize mode)
+        // TF: with the harvester switch on, re-pick the refinery for every fresh load (CFE optimize mode).
+        if (TF_Units_Harvesters()) {
+            TiberiumUnloadRefinery = TARGET_NONE;
+        }
         if (Target_Legal(ArchiveTarget)) {
             Assign_Destination(ArchiveTarget);
             ArchiveTarget = 0;
         }
         IsHarvesting = false;
-        if (Goto_Tiberium(Rule.TiberiumLongScan / CELL_LEPTON_W, true /* TF: travel-distance-aware field pick */)) {
+        // TF: the travel-distance-aware field pick, with the harvester switch on.
+        if (Goto_Tiberium(Rule.TiberiumLongScan / CELL_LEPTON_W, TF_Units_Harvesters())) {
             IsHarvesting = true;
             // TF: finding ore clears the house's Tiberium-short latch, which EA only ever sets. Left set, the AI
             // stops counting on income and can't afford its upper tiers.
@@ -4615,14 +4619,9 @@ int UnitClass::Mission_Harvest(void)
     **	no where to go.
     */
     case GOINGTOIDLE: {
-        /*
-        **	Wait out the ore drought on defended ground beside a refinery
-        **	instead of in the open field. Nearby_Location spreads idlers so
-        **	they don't block the dock approach; if already near home (or
-        **	there is no refinery), just guard in place. A player order or
-        **	the AI harvest re-queue overrides the guard as usual.
-        */
-        BuildingClass* refinery = Find_Best_Refinery();
+        // TF: with the harvester switch on, wait out an ore drought beside a refinery (Refinery_Waiting_Cell spreads
+        // idlers off the dock); else, or when already near home, guard in place as vanilla does.
+        BuildingClass* refinery = TF_Units_Harvesters() ? Find_Best_Refinery() : NULL;
         if (refinery != NULL) {
             CELL home = Refinery_Waiting_Cell(this, refinery);
             if (home != 0 && Distance(::As_Target(home)) > (CELL_LEPTON_W * 4)) {
@@ -6467,20 +6466,35 @@ bool UnitClass::MinelayerFindSpot(void)
     return false;
 }
 
+// True when the building is one of the harvester's house's standing refineries, of any faction, in its zone.
+static bool TF_Refinery_In_Reach(UnitClass const* harv, BuildingClass const* refinery)
+{
+    return (refinery != NULL && refinery->House == harv->House && !refinery->IsInLimbo
+            && refinery->Mission != MISSION_DECONSTRUCTION
+            && (*refinery == STRUCT_REFINERY || *refinery == STRUCT_TDPROC || *refinery == STRUCT_TSPROC)
+            && Map[refinery->Center_Coord()].Zones[harv->Techno_Type_Class()->MZone]
+                   == Map[harv->Center_Coord()].Zones[harv->Techno_Type_Class()->MZone]);
+}
+
 // The nearest refinery in the harvester's zone, after a distance penalty for each other harvester bound for
-// it, except one this harvester is much nearer than (CFE harvester optimisation).
+// it, except one this harvester is much nearer than (CFE harvester optimisation); vanilla's with the switch off.
 BuildingClass* UnitClass::Find_Best_Refinery(void) const
 {
+    if (!TF_Units_Harvesters()) {
+        BuildingClass* remembered = As_Building(TiberiumUnloadRefinery);
+        if (TF_Refinery_In_Reach(this, remembered)) {
+            return remembered;
+        }
+        TiberiumUnloadRefinery = TARGET_NONE;
+        return TF_Harvester_Refinery(this, false);
+    }
+
     static DynamicVectorClass<RefineryData> _refineries;
     _refineries.Clear();
 
     for (int i = 0; i < Buildings.Count(); ++i) {
         BuildingClass* refinery = Buildings.Ptr(i);
-        if (refinery != NULL && refinery->House == House && !refinery->IsInLimbo
-            && refinery->Mission != MISSION_DECONSTRUCTION
-            && (*refinery == STRUCT_REFINERY || *refinery == STRUCT_TDPROC || *refinery == STRUCT_TSPROC)
-            && Map[refinery->Center_Coord()].Zones[Techno_Type_Class()->MZone]
-                   == Map[Center_Coord()].Zones[Techno_Type_Class()->MZone]) {
+        if (TF_Refinery_In_Reach(this, refinery)) {
             _refineries.Add(RefineryData{refinery, Distance(refinery), 0});
         }
     }
