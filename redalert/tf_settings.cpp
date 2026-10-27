@@ -19,6 +19,9 @@ bool AIFairFog = true;
 bool AIStagedWaves = true;
 bool AINaval = true;
 bool AIEarlyRadar = true;
+bool UnitsAStar = true;
+bool UnitsGiveWay = true;
+bool UnitsHarvesters = true;
 
 /*
 **	A house's sidebar bits: its launcher's when sent this match, else the host's file as the match read it.
@@ -66,6 +69,9 @@ void TF_Settings_Load(bool campaign)
     AIStagedWaves = campaign || (!AIClassic && TF_Setting_On("AI", "StagedWaves"));
     AINaval = campaign || (!AIClassic && TF_Setting_On("AI", "Naval"));
     AIEarlyRadar = campaign || (!AIClassic && TF_Setting_On("AI", "EarlyRadar"));
+    UnitsAStar = TF_Setting_On("Units", "AStar");
+    UnitsGiveWay = TF_Setting_On("Units", "GiveWay");
+    UnitsHarvesters = TF_Setting_On("Units", "Harvesters");
     for (int house = 0; house < TF_SETTINGS_MAX_HOUSES; house++) {
         HouseSidebar[house] = 0;
     }
@@ -117,4 +123,19 @@ bool TF_AI_Naval(void)
 bool TF_AI_Early_Radar(void)
 {
     return AIEarlyRadar;
+}
+
+bool TF_Units_AStar(void)
+{
+    return UnitsAStar;
+}
+
+bool TF_Units_Give_Way(void)
+{
+    return UnitsGiveWay;
+}
+
+bool TF_Units_Harvesters(void)
+{
+    return UnitsHarvesters;
 }

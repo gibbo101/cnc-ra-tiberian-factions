@@ -26,6 +26,14 @@ void TF_Settings_Load(bool campaign);
 */
 bool TF_AI_Classic(void);
 bool TF_AI_Early_Radar(void);
+
+/*
+**	The unit switches, from the host's file as the match read it, the campaign included: A* pathfinding, giving
+**	way at chokepoints, the harvester fixes.
+*/
+bool TF_Units_AStar(void);
+bool TF_Units_Give_Way(void);
+bool TF_Units_Harvesters(void);
 bool TF_AI_Fair_Fog(void);
 bool TF_AI_Staged_Waves(void);
 bool TF_AI_Naval(void);
