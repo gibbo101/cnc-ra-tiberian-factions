@@ -52,6 +52,7 @@
 #include <cmath>
 #include <vector>
 #include "function.h"
+#include "tf_settings.h"
 //#include	<string.h>
 
 /*
@@ -752,8 +753,9 @@ PathType* FootClass::Find_Path(CELL dest, FacingType* final_moves, int maxlen, M
 
     memset(path.Overlap, 0, sizeof(MainOverlap));
 
-    // TF: an A* search (CFE Patch Redux port) runs first, and the edge-follower below only when it finds no path.
-    {
+    // TF: an A* search (CFE Patch Redux port) runs first, unless the A* switch is off, and the edge-follower below
+    // only when it finds no path.
+    if (TF_Units_AStar()) {
         int asThreat = threat;
         int as_threat_stage = threat_stage;
         bool result = false;
