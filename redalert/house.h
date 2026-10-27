@@ -1124,10 +1124,8 @@ struct TFPlaceScanStruct
 extern TFPlaceScanStruct TF_PlaceScan;
 #endif
 
-/*
-**	The skirmish AI's faction mapping (house.cpp): the house's own building for an RA base role, and its type, or
-**	-1 when the RA building stands.
-*/
+// TF: the skirmish AI's faction mapping (house.cpp): the house's own building for an RA base role, and its type,
+// or -1 when the RA building stands.
 BuildingTypeClass const* TF_Skirmish_Pick(StructType ra, HousesType actlike);
 int TF_Skirmish_Type(StructType ra, HousesType actlike);
 

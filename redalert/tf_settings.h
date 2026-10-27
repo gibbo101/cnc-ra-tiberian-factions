@@ -25,6 +25,9 @@ void TF_Settings_Load(bool campaign);
 **	others off), fair fog with scouting, staged attack waves, naval, an early radar.
 */
 bool TF_AI_Classic(void);
+bool TF_AI_Fair_Fog(void);
+bool TF_AI_Staged_Waves(void);
+bool TF_AI_Naval(void);
 bool TF_AI_Early_Radar(void);
 
 /*
@@ -34,9 +37,6 @@ bool TF_AI_Early_Radar(void);
 bool TF_Units_AStar(void);
 bool TF_Units_Give_Way(void);
 bool TF_Units_Harvesters(void);
-bool TF_AI_Fair_Fog(void);
-bool TF_AI_Staged_Waves(void);
-bool TF_AI_Naval(void);
 
 /*
 **	A launcher's sidebar switches travel to the host as mod command 4 at x = this mark, y = these bits.
