@@ -50,6 +50,38 @@ Subscribe on the Steam Workshop to **Tiberian Factions for Red Alert** and to **
 
 (Alternatively, download the release zip from GitHub and extract both folders it holds into `Documents/CnCRemastered/Mods/Red_Alert/`.)
 
+## Settings
+
+**TIBERIAN FACTIONS SETTINGS**, on the main menu, switches each of the mod's changes to how Red Alert plays back to vanilla. Every switch starts on, and a change applies from the next match.
+
+The page saves to two files in `Documents/CnCRemastered/`, which you can also edit by hand while no match is running. On Linux and the Steam Deck that folder is in the game's Proton prefix: `steamapps/compatdata/1213210/pfx/drive_c/users/steamuser/Documents/CnCRemastered/`.
+
+`tf_settings.ini` holds only the switches you have turned off. A key set to `0` is off; delete it, or the whole file, to go back to the defaults.
+
+| Section | Key | `0` means |
+|---|---|---|
+| `[Sidebar]` | `SortByPrice` | cameos in vanilla's arrival order instead of by cost |
+| `[Sidebar]` | `FactionBadges` | no faction badges on cameos |
+| `[AI]` | `TFAI` | Classic AI: Red Alert's own AI, which turns the other `[AI]` keys off |
+| `[AI]` | `FairFog` | the AI sees the whole map and never scouts |
+| `[AI]` | `StagedWaves` | vanilla's attacks instead of staged waves |
+| `[AI]` | `Naval` | the AI builds no ships |
+| `[AI]` | `EarlyRadar` | an Allied or Soviet AI builds its radar only once an enemy flies |
+| `[Units]` | `AStar` | vanilla's pathfinding |
+| `[Units]` | `GiveWay` | units don't give way in narrow passages |
+| `[Units]` | `Harvesters` | vanilla's harvester logic |
+
+```ini
+[Sidebar]
+SortByPrice=0
+[AI]
+TFAI=0
+```
+
+In a LAN game each player's `[Sidebar]` is their own, and the host's `[AI]` and `[Units]` apply to everyone. The campaigns always play the mod's AI; `[Units]` applies there too.
+
+`tf_music.ini` holds each faction's skirmish music: under `[Music]`, the keys `ALLIES`, `SOVIETS`, `GDI`, `NOD` and `TSGDI` each take `MIX` (the default), `RA`, `TD` or `TS`.
+
 ## Graphics
 
 **Tiberian Factions is HD only.** Play with Remastered graphics: classic graphics mode is locked out, because the mod's new units and buildings have no classic art.
