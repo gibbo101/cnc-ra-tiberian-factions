@@ -33,8 +33,9 @@ export. What ClientG does on each machine stays that player's own: the radar cre
   sidebar export orders each player's copy (`TF_Sidebar_Order`), so choices landing a few frames in apply at once.
   Proven in skirmish, where the host's own launcher sends them; a LAN joiner sending them is untested.
 - **Sim switches follow the host's file**: controls, units and the AI. The GAMEPLAY page carries "In a LAN game the
-  host's settings apply to every player.", and the LAN lobby is to carry "Gameplay settings follow the host." Where the lobby can carry it is open: a MasterText string on an existing
-  label (`scripts/loc_work/mastertext.edits.txt`), or a BUI text widget (`bui-front-end-modding.md`).
+  host's settings apply to every player.", and the LAN lobby is to carry "Gameplay settings follow the host."
+  Where the lobby can carry it is open: a MasterText string on an existing label
+  (`scripts/loc_work/mastertext.edits.txt`), or a BUI text widget (`bui-front-end-modding.md`).
 - **At match start** the host names its non-default sim switches to each human player in a direct message, as
   `game-rules.md` plans for custom values.
 - Not planned: a lobby page where the players pick the switches together. The host's file covers it.
