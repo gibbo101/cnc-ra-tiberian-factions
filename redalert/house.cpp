@@ -4123,7 +4123,7 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
         */
         if (b != NULL && !b->IsInLimbo && b->Strength && !Is_Ally(b)) {
 
-            // TF: in skirmish a computer house aims only at buildings it has discovered; no house aims at a
+            // TF: in skirmish a computer house aims only at buildings it knows of (TF_Knows); no house aims at a
             // cloaked building, and the E.M. Pulse only at what one of its EMP Cannons can reach.
             if (!IsHuman && Session.Type != GAME_NORMAL && !TF_Knows(b)) {
                 continue;
@@ -4147,9 +4147,9 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
     if (bestptr) {
         CELL cell = Coord_Cell(bestptr->Center_Coord());
         Place_Special_Blast(id, cell);
-    } else if (id == SPC_SPY_MISSION || id == SPC_TD_SPY_MISSION) {
-        // TF: with no discovered target, recon specials probe the start position the house's blind scouts
-        // would take next, so plane and scouts share one rotation. Destructive specials never fire blind.
+    } else if ((id == SPC_SPY_MISSION || id == SPC_TD_SPY_MISSION) && TF_AI_Fair_Fog()) {
+        // TF: under fair fog, with no known target, recon specials probe the start position the house's blind
+        // scouts would take next, so plane and scouts share one rotation. Destructive specials never fire blind.
         CELL cell = TF_Scout_Destination(Coord_Cell(Center));
         if (cell > 0) {
             Place_Special_Blast(id, cell);
@@ -6784,9 +6784,9 @@ int HouseClass::Expert_AI(void)
         }
     }
 
-    // TF: while a house has sighted no enemy building, keep two armed units hunting so Mission_Hunt's blind
-    // probe finds the enemy. MCVs (a hunt order deploys them) and harvesters never scout.
-    if (Session.Type != GAME_NORMAL && IsStarted && !TF_Knows_Any_Enemy_Building()) {
+    // TF: under fair fog, while a house has sighted no enemy building, keep two armed units hunting so Mission_Hunt's
+    // blind probe finds the enemy. MCVs (a hunt order deploys them) and harvesters never scout.
+    if (Session.Type != GAME_NORMAL && IsStarted && TF_AI_Fair_Fog() && !TF_Knows_Any_Enemy_Building()) {
         enum
         {
             TF_SCOUT_DETAIL = 2
@@ -8842,14 +8842,14 @@ static int const TF_NAVAL_FLEET_MAX = 12;
 // shore. False when none is or the naval switch is off. Reads deterministic state only: lockstep-safe.
 bool HouseClass::TF_Naval_Assessment(int& zone, int& size, bool& enemy_coastal) const
 {
-    if (!TF_AI_Naval()) {
-        return (false);
-    }
     assert(Houses.ID(this) == ID);
 
     zone = 0;
     size = 0;
     enemy_coastal = false;
+    if (!TF_AI_Naval()) {
+        return (false);
+    }
 
     CELL center = Coord_Cell(Center);
     if (center <= 0) {
