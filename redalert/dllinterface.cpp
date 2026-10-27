@@ -2650,6 +2650,17 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
  *
  * History: 1/7/2019 5:20PM - ST
  **************************************************************************************************/
+// With Classic AI on, every skirmish computer house plays at vanilla's IQ, a loaded save's houses included.
+static void TF_Classic_AI_IQ(void)
+{
+    for (int index = 0; TF_AI_Classic() && index < Houses.Count(); index++) {
+        HouseClass* housep = Houses.Ptr(index);
+        if (housep != NULL && housep->IsActive && !housep->IsHuman && housep->Class->House >= HOUSE_MULTI1) {
+            housep->IQ = Rule.MaxIQ;
+        }
+    }
+}
+
 extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save,
                                                             const char* file_path_and_name,
                                                             const char* game_type)
@@ -2687,6 +2698,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save,
         if (result == false) {
             return false;
         }
+        // TF: a save keeps each computer house's IQ, so Classic AI sets vanilla's again.
+        TF_Classic_AI_IQ();
 
         DLLExportClass::Set_Player_Context(DLLExportClass::GlyphxPlayerIDs[0], true);
         DLLExportClass::Cancel_Placement(DLLExportClass::GlyphxPlayerIDs[0], -1, -1);
