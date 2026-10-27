@@ -1,5 +1,5 @@
 /*
-**	Vanilla Red Alert's computer-player decisions for Classic AI and the switches that turn ours off
+**	Vanilla Red Alert's computer-player decisions that Classic AI and the attack-waves switch use
 **	(docs/player-settings.md). Copied from EA's house.cpp, each RA building routed to the house's faction.
 */
 #include "function.h"
@@ -59,11 +59,6 @@ bool HouseClass::TF_Classic_AI_Attack(void)
             if (!shuffle && u->Is_Weapon_Equipped() && (forced || Percent_Chance(75))) {
                 u->Assign_Mission(MISSION_HUNT);
             } else {
-
-                /*
-                **	If this unit is guarding the base, then cause it to shuffle
-                **	location instead.
-                */
                 if (Percent_Chance(20) && u->Mission == MISSION_GUARD_AREA && Which_Zone(u) != ZONE_NONE) {
                     u->ArchiveTarget = ::As_Target(Where_To_Go(u));
                 }
@@ -77,11 +72,6 @@ bool HouseClass::TF_Classic_AI_Attack(void)
             if (!shuffle && (i->Is_Weapon_Equipped() || *i == INFANTRY_RENOVATOR) && (forced || Percent_Chance(75))) {
                 i->Assign_Mission(MISSION_HUNT);
             } else {
-
-                /*
-                **	If this soldier is guarding the base, then cause it to shuffle
-                **	location instead.
-                */
                 if (Percent_Chance(20) && i->Mission == MISSION_GUARD_AREA && Which_Zone(i) != ZONE_NONE) {
                     i->ArchiveTarget = ::As_Target(Where_To_Go(i));
                 }
@@ -114,10 +104,6 @@ int HouseClass::TF_Classic_AI_Building(void)
             enemy = HouseClass::As_Pointer(Enemy);
         }
 
-        /*
-        **	Try to build a power plant if there is insufficient power and there is enough
-        **	money available.
-        */
         b = TF_Skirmish_Pick(STRUCT_ADVANCED_POWER, ActLike);
         if (Can_Build(b, ActLike) && Power <= Drain + Rule.PowerSurplus && b->Cost_Of() < money) {
             choiceptr = BuildChoice.Alloc();
@@ -137,9 +123,6 @@ int HouseClass::TF_Classic_AI_Building(void)
             }
         }
 
-        /*
-        **	Build a refinery if there isn't one already available.
-        */
         unsigned int current = TF_Classic_Count(STRUCT_REFINERY);
         if (!IsTiberiumShort && current < Round_Up(Rule.RefineryRatio * fixed(CurBuildings))
             && current < (unsigned)Rule.RefineryLimit) {
@@ -154,10 +137,6 @@ int HouseClass::TF_Classic_AI_Building(void)
             }
         }
 
-        /*
-        **	Always make sure there is a barracks available, but only if there
-        **	will be sufficient money to train troopers.
-        */
         current = TF_Classic_Count(STRUCT_BARRACKS, STRUCT_TENT);
         if (current < Round_Up(Rule.BarracksRatio * fixed(CurBuildings)) && current < (unsigned)Rule.BarracksLimit
             && (money > 300 || hasincome)) {
@@ -178,9 +157,6 @@ int HouseClass::TF_Classic_AI_Building(void)
             }
         }
 
-        /*
-        **	Try to build one dog house.
-        */
         current = TF_Classic_Count(STRUCT_KENNEL);
         if (current < 1 && (money > 300 || hasincome)) {
             b = TF_Skirmish_Pick(STRUCT_KENNEL, ActLike);
@@ -192,9 +168,6 @@ int HouseClass::TF_Classic_AI_Building(void)
             }
         }
 
-        /*
-        **	Try to build one gap generator.
-        */
         current = TF_Classic_Count(STRUCT_GAP);
         if (current < 1 && Power_Fraction() >= 1 && hasincome) {
             b = TF_Skirmish_Pick(STRUCT_GAP, ActLike);
@@ -206,10 +179,6 @@ int HouseClass::TF_Classic_AI_Building(void)
             }
         }
 
-        /*
-        **	A source of combat vehicles is always needed, but only if there will
-        **	be sufficient money to build vehicles.
-        */
         current = TF_Classic_Count(STRUCT_WEAP);
         if (current < Round_Up(Rule.WarRatio * fixed(CurBuildings)) && current < (unsigned)Rule.WarLimit
             && (money > 2000 || hasincome)) {
@@ -222,9 +191,6 @@ int HouseClass::TF_Classic_AI_Building(void)
             }
         }
 
-        /*
-        **	Always build up some base defense.
-        */
         current = TF_Classic_Count(STRUCT_PILLBOX, STRUCT_CAMOPILLBOX, STRUCT_TURRET, STRUCT_FLAME_TURRET);
         if (current < Round_Up(Rule.DefenseRatio * fixed(CurBuildings)) && current < (unsigned)Rule.DefenseLimit) {
             b = TF_Skirmish_Pick(STRUCT_FLAME_TURRET, ActLike);
@@ -254,16 +220,8 @@ int HouseClass::TF_Classic_AI_Building(void)
             }
         }
 
-        /*
-        **	Build some air defense.
-        */
         current = TF_Classic_Count(STRUCT_SAM, STRUCT_AAGUN);
         if (current < Round_Up(Rule.AARatio * fixed(CurBuildings)) && current < (unsigned)Rule.AALimit) {
-
-            /*
-            **	Building air defense only makes sense if the opponent has aircraft
-            **	of some kind.
-            */
             bool airthreat = false;
             int threat_quantity = 0;
             if (enemy != NULL && enemy->AScan != 0) {
@@ -281,7 +239,6 @@ int HouseClass::TF_Classic_AI_Building(void)
             }
 
             if (airthreat) {
-
                 if (TF_Classic_Count(STRUCT_RADAR) == 0) {
                     b = TF_Skirmish_Pick(STRUCT_RADAR, ActLike);
                     if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
@@ -312,9 +269,6 @@ int HouseClass::TF_Classic_AI_Building(void)
             }
         }
 
-        /*
-        **	Advanced base defense would be good.
-        */
         current = TF_Classic_Count(STRUCT_TESLA);
         if (current < Round_Up(Rule.TeslaRatio * fixed(CurBuildings)) && current < (unsigned)Rule.TeslaLimit) {
             b = TF_Skirmish_Pick(STRUCT_TESLA, ActLike);
@@ -326,9 +280,6 @@ int HouseClass::TF_Classic_AI_Building(void)
             }
         }
 
-        /*
-        **	Build a tech center as soon as possible.
-        */
         current = TF_Classic_Count(STRUCT_ADVANCED_TECH, STRUCT_SOVIET_TECH);
         if (current < 1) {
             b = TF_Skirmish_Pick(STRUCT_ADVANCED_TECH, ActLike);
@@ -348,9 +299,6 @@ int HouseClass::TF_Classic_AI_Building(void)
             }
         }
 
-        /*
-        **	A helipad would be good.
-        */
         current = TF_Classic_Count(STRUCT_HELIPAD);
         if (current < Round_Up(Rule.HelipadRatio * fixed(CurBuildings)) && current < (unsigned)Rule.HelipadLimit) {
             b = TF_Skirmish_Pick(STRUCT_HELIPAD, ActLike);
@@ -368,9 +316,6 @@ int HouseClass::TF_Classic_AI_Building(void)
             }
         }
 
-        /*
-        **	An airstrip would be good.
-        */
         current = TF_Classic_Count(STRUCT_AIRSTRIP);
         if (current < Round_Up(Rule.AirstripRatio * fixed(CurBuildings)) && current < (unsigned)Rule.AirstripLimit) {
             b = TF_Skirmish_Pick(STRUCT_AIRSTRIP, ActLike);
@@ -388,9 +333,6 @@ int HouseClass::TF_Classic_AI_Building(void)
             }
         }
 
-        /*
-        **	Pick the choice that is the most urgent.
-        */
         UrgencyType best = URGENCY_NONE;
         int bestindex;
         for (int index = 0; index < BuildChoice.Count(); index++) {
