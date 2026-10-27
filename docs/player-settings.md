@@ -1,10 +1,10 @@
 # Player settings
 
 **Status:** Design. Built, unreleased: `tf_settings.ini`, the GENERAL page (AUDIO and SIDEBAR) with sidebar sorting
-and faction badges, and the GAMEPLAY page's TF AI switches and Classic AI. The controls and units switch sites come from reading
-the source, unproven in play.
-**Open:** a LAN game proving a joiner's sidebar choices reach the host; the LAN lobby line; the UNITS category;
-the controls switches; the decisions at the end.
+and faction badges, and the GAMEPLAY page's Classic AI, TF AI and UNITS switches. The remaining switch sites come
+from reading the source, unproven in play.
+**Open:** a LAN game proving a joiner's sidebar choices reach the host; the LAN lobby line; the remaining units
+switches and the controls switches; the decisions at the end.
 
 Every behaviour the mod changes from vanilla Red Alert, other than balance, becomes a switch on the TIBERIAN
 FACTIONS SETTINGS page. Every switch is on by default, so a player who never opens the page plays the mod as it
@@ -63,11 +63,10 @@ export. What ClientG does on each machine stays that player's own: the radar cre
 | Controls | Attack-move | the keys do nothing | the event's input, `techno.cpp` and `event.cpp`; the order itself is spread over about 40 sites and stays | small |
 | Controls | Rally points | no rally point | the input in `building.cpp` | small |
 | Controls | Wall line-fill | one wall a placement | `house.cpp` | one branch |
-| Units | Smarter pathfinding (A*) | vanilla's edge follower | `Find_Path_AStar`, `findpath.cpp` | one branch; give-way and claims assume A*, so they turn off with it |
-| Units | Give way at chokepoints | no give-way or corridor claims | `drive.cpp`, `findpath.cpp`, `CellClass` claims | about five sites |
+| Units | A* pathfinding | vanilla's edge follower; infantry walk through Tiberium | the A* block in `Find_Path` | built |
+| Units | Give way | no yielding or corridor claims: a jammed unit abandons its move, a moving infantryman hard-blocks | `Start_Of_Move` and the blocked-path branches in `drive.cpp`, `Can_Enter_Cell` | built |
 | Units | Give up on unreachable moves | units retry forever | `TF_Path_No_Progress`, `foot.cpp`, `drive.cpp`, `infantry.cpp` | about five sites |
-| Units | Infantry avoid Tiberium | infantry walk straight through | the A* cost, `findpath.cpp` | one branch |
-| Units | Smart harvesters | vanilla's refinery choice and waits | `Find_Best_Refinery`, queue-jump, full-load return, field blacklist, anti-stuck watchdog (`unit.cpp`, `building.cpp`) | medium; one switch for the set |
+| Units | Harvesters | vanilla's refinery choice, field pick and waits | see below | built |
 | Units | Smarter repair bay | vanilla's queue and exit | `unit.cpp`, `building.cpp` | medium |
 | Units | SAMs retarget before lowering | vanilla's lower-then-raise | `building.cpp` | small |
 | AI | Fair fog | the AI sees the whole map and never scouts | `HouseClass::TF_Knows`, the hunt probe in `foot.cpp` | built |
@@ -83,6 +82,13 @@ export. What ClientG does on each machine stays that player's own: the radar cre
   and RA's helipad, airfield and tech centres need one. GDI, Nod and TS GDI build theirs early either way.
 - **Base placement and sell logic are not switches.** They are bug fixes and support for our base builder (the
   naval and expansion-yard placement, the sell priorities of what it rebuilds), so Classic AI is their way back.
+- **The unit switches** come from the host's file too, and apply in the campaign as well: the pathing and
+  harvester changes reach it. A* and give way are independent: give way works on either pathfinder's route.
+- **Harvesters off** drops the stall detector and field blacklist, the anti-stuck watchdog (it only tracks, so a
+  save loaded with it on never fires at once), the full-load return, the per-load refinery re-pick, the field pick
+  by travel distance, waiting out a drought beside a refinery, queue jumping and the CFE refinery spread. Vanilla
+  picks the remembered refinery, else the nearest of any faction's. Fixes stay: a refinery docks only its own
+  customer, a stale booking drops, an attached harvester blocks hellos, a walled-off field is forgotten.
 - The AI switches come from the host's file and hold for the match. The campaign keeps them all on
   (`TF_Settings_Load`), as the AI changes never reach it.
 
@@ -115,7 +121,7 @@ GENERAL, GAMEPLAY and GAME RULES. GAME RULES reads COMING SOON. Each page is a c
   switches.
 - **GAMEPLAY:** CLASSIC AI holds the master switch; TF AI fair fog, attack waves, naval and radar. The LAN note
   sits under the category list.
-  UNITS (A* pathfinding, chokepoint give-way, smart harvesters) joins the list with its slice.
+  UNITS holds A* pathfinding, give way and harvesters.
 - **A switch is one row:** its name, a line describing the picked choice, and two buttons in the page tabs' style,
   the picked one lit and the default on the left (COST / VANILLA, ON / OFF). A choice saves at once and takes
   effect from the next match.
