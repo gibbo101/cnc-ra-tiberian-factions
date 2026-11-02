@@ -9,8 +9,8 @@ topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ## Next version: first jobs
 
-The next release: the match warm-up (`sprite-memory.md`), then the TS music import. Map-editor work waits
-until maps past 128x128 land.
+5.7.0 ships the player settings (`player-settings.md`). The next release: the match warm-up
+(`sprite-memory.md`), then the TS music import. Map-editor work waits until maps past 128x128 land.
 
 - **Pack updates in ADD-ONS:** keep the hard minimum per pack (`PACK_NEEDS_*`, 1.0) and add the current
   version (TS-HD 1.1). An older installed pack shows its version and UPDATE AVAILABLE, and ADD-ONS asks Steam to
