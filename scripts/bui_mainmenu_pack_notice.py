@@ -6,9 +6,9 @@ usage: bui_mainmenu_pack_notice.py <edited RA_MAIN_MENU.BUI> <out loose RA_MAIN_
 Adds TIBERIAN FACTIONS ADD-ONS (TF_AddOns, a clone of EXIT GAME) between LAN MODE and REPLAY / OBSERVER, the rows
 under it lower; it opens the ADD-ONS screen (scripts/bui_addons_build.py). FACTION ENCYCLOPEDIA (TF_Encyclopedia)
 goes under it, opening the encyclopedia (scripts/bui_encyclopedia_build.py), and REPLAY / OBSERVER takes BONUS
-GALLERY's row; the gallery's button and its new-content badge move off screen, as the launcher shows them again
-(shrunk, the badge stretched into view). TIBERIAN FACTIONS SETTINGS (TF_Settings) goes under REPLAY / OBSERVER,
-opening the Settings page (scripts/bui_settings_build.py), OPTIONS taking HELP's row; HELP moves off screen.
+GALLERY's row; the gallery's button and its new-content badge, every piece of it, shrink to nothing, as the
+launcher shows them again. TIBERIAN FACTIONS SETTINGS (TF_Settings) goes under REPLAY / OBSERVER,
+opening the Settings page (scripts/bui_settings_build.py), OPTIONS taking HELP's row; HELP shrinks to nothing.
 Adds the add-ons notice top right (the Westwood plate's mirror), every piece hidden and placed straight in
 ScreenFitter_Group: the frame (TF_Pack_Frame) and the title-over-ADD-ONS logo (TF_Pack_Logo), images cloned from
 the menu box's Button_BG; the menu box's moving scanline sheen over the frame (TF_Pack_Sheen); two centred lines
@@ -43,7 +43,9 @@ VERSION_RECT = (0.426, 0.822, 0.18, 0.017)   # centred on the menu box, on BUILD
 BUTTONS = ((b'TF_Pack_Open', b'ENABLE ADD-ONS'),)
 ADDONS_ROW_Y = 0.3978              # LAN MODE's row + one row, in the button column's units
 ROW_STEP = 0.0995
-OFF_SCREEN_X = -20.0               # far left of the button column, outside any screen
+# Shrunk to nothing in place, the badge's pieces too, or the launcher stretches the badge back into view.
+HIDDEN = (b'Button_Bonus_Content', b'BonusNotification_Group', b'BonusButtonGlow_Quad',
+          b'BonusNotificationNumberBG_Quad', b'BonusNotificationNumber_Text', b'Button_Help')
 LOWER_ROWS = (b'Button_Replays', b'Button_Video_Options', b'Button_Help', b'Button_Exit')
 
 
@@ -158,10 +160,11 @@ def addons_row(roots):
     set_header(options, b'Button_Video_Options', b'Button_Video_Options', rect_of(help_button, b'Button_Help'),
                hidden=False)
     set_label(settings, b'TIBERIAN FACTIONS SETTINGS')
-    for name in (b'Button_Bonus_Content', b'BonusNotification_Group', b'Button_Help'):
+    # Trap: a widget moved off screen widens the screen fit, stretching the menu and its clicks on ultrawide.
+    for name in HIDDEN:
         element = element_in(roots, name)
-        _, y, w, h = rect_of(element, name)
-        set_header(element, name, name, (OFF_SCREEN_X, y, w, h), hidden=True)
+        x, y, _, _ = rect_of(element, name)
+        set_header(element, name, name, (x, y, 0.0, 0.0), hidden=True)
     return column, [button, encyclopedia, settings]
 
 
