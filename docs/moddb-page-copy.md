@@ -272,10 +272,10 @@ for automatic updates.</p>
 
 | Field | Value |
 |---|---|
-| Name | Tiberian Factions for Red Alert 5.7.0 |
-| Filename | `TiberianFactions-5.7.0.zip`, 361,278,780 bytes (345 MB) |
+| Name | Tiberian Factions for Red Alert 5.7.1 |
+| Filename | `TiberianFactions-5.7.1.zip`, 361,278,756 bytes (345 MB) |
 | Category | Full Version |
-| Description | Version 5.7.0, with Tiberian Sun HD Assets included. Extract both folders into Documents/CnCRemastered/Mods/Red_Alert/, enable both, then restart the game. |
+| Description | Version 5.7.1, with Tiberian Sun HD Assets included. Extract both folders into Documents/CnCRemastered/Mods/Red_Alert/, enable both, then restart the game. |
 
 | Field | Value |
 |---|---|
