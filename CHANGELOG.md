@@ -2,6 +2,14 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [5.7.2] — 2026-11-02
+
+### Fixed
+- Units, buildings and effects look as sharp as they did in 5.5: they ship as their original art again, which also
+  clears the coloured speckle on grey surfaces such as concrete pads. It takes about 250 MB more video memory than
+  5.6.0 to 5.7.1.
+- Tiberian Sun HD Assets 1.2 does the same for the Tiberian Sun art.
+
 ## [5.7.1] — 2026-11-02
 
 ### Fixed
