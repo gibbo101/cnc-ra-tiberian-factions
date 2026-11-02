@@ -56,6 +56,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include "tf_settings.h"
 
 #ifdef NEVER
 void test(void)
@@ -1551,16 +1552,17 @@ bool DriveClass::Start_Of_Move(void)
         return (false); // Why is it calling this routine!?!
     }
 
-    // TF: give-way in 1-wide corridors (docs/chokepoint-reservation-design.md). A retreat re-enters here through
-    // Assign_Destination; the nested pass skips give-way, or a jammed pinch recurses until the stack overflows.
+    // TF: give-way in 1-wide corridors, while its switch is on (docs/chokepoint-reservation-design.md). A retreat
+    // re-enters through Assign_Destination; the nested pass skips give-way, or a jammed pinch overflows the stack.
     static int giveway_retreat_depth = 0;
+    bool give_way = TF_Units_Give_Way();
 
-    if (giveway_retreat_depth == 0 && Infantry_Give_Way() == 2) {
+    if (give_way && giveway_retreat_depth == 0 && Infantry_Give_Way() == 2) {
         Stop_Driver();
         return (false); // hold at the mouth; the moving column owns the corridor
     }
 
-    if (Target_Legal(NavCom) && giveway_retreat_depth == 0) {
+    if (give_way && Target_Legal(NavCom) && giveway_retreat_depth == 0) {
         TechnoClass* gw_winner = NULL;
         int gw = Give_Way_Decision(&gw_winner);
         if (gw == 1) {
@@ -1712,7 +1714,8 @@ bool DriveClass::Start_Of_Move(void)
             }
 #endif
 
-            if (Target_Legal(NavCom)) {
+            // TF: a lower-id vehicle head-on with an opposing ally steps aside, while give-way is on.
+            if (TF_Units_Give_Way() && Target_Legal(NavCom)) {
                 FacingType navface = Dir_Facing(Direction(NavCom));
                 CELL aheadcell = Adjacent_Cell(Coord_Cell(Center_Coord()), navface);
                 if (Map.In_Radar(aheadcell) && Can_Enter_Cell(aheadcell, navface) == MOVE_NO) {
@@ -1818,10 +1821,10 @@ bool DriveClass::Start_Of_Move(void)
                 if (TryTryAgain > 0) {
                     TryTryAgain--;
                 } else {
-                    // TF: a path blocked only by allied traffic or an active corridor claim keeps retrying instead of
-                    // abandoning, until a minute without progress (docs/path-failure-livelock-design.md).
+                    // TF: with give-way on, a path blocked only by allied traffic or a live corridor claim retries
+                    // rather than abandon, until a minute without progress (docs/path-failure-livelock-design.md).
                     bool traffic_blocked = false;
-                    {
+                    if (TF_Units_Give_Way()) {
                         CELL hc = Coord_Cell(Center_Coord());
                         for (FacingType nf = FACING_N; nf < FACING_COUNT && !traffic_blocked; nf++) {
                             CELL ncell = Adjacent_Cell(hc, nf);
@@ -2019,9 +2022,9 @@ bool DriveClass::Start_Of_Move(void)
 
         if (cando != MOVE_OK) {
 
-            // TF: a head-on block by an allied vehicle counts toward the deadlock-breaker scatter. Only a vehicle:
-            // a bare MOVE_NO is terrain, and scattering there would jiggle the unit against it forever.
-            if (cando == MOVE_NO) {
+            // TF: with give-way on, a head-on allied vehicle counts toward the deadlock-breaker scatter. Only a
+            // vehicle: a bare MOVE_NO is terrain, and scattering there would jiggle the unit against it forever.
+            if (cando == MOVE_NO && TF_Units_Give_Way()) {
                 TechnoClass* headon = Map[destcell].Cell_Techno();
                 if (headon != NULL && headon != this && headon->What_Am_I() == RTTI_UNIT
                     && House->Is_Ally(headon)) {

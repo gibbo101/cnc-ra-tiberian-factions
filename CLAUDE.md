@@ -48,6 +48,14 @@ packs against the rest before building them.
 - The repo's own `min`/`max` (`jshell.h`) take ints: floats passed through them are
   truncated without a warning. Float code uses `std::min`/`std::max` or its own templates.
 
+## Player settings
+- Every behaviour change from vanilla Red Alert, other than balance, content and bug fixes,
+  ships with a switch on the Settings page (`docs/player-settings.md`), in the same branch.
+- New AI and unit behaviour branches from vanilla's code instead of replacing it, so the
+  switch turning it off gives vanilla's behaviour exactly.
+- A switch is on by default. A site asks `tf_settings.h` and never reads the file. Sim
+  switches (AI, units, controls) follow the host in LAN; only a client-side choice is per player.
+
 ## Dead code
 - No commented-out code and no `#if 0` blocks in our code. Delete it; git keeps it.
 - When a feature goes, its helpers, statics, `tf_*.flag` checks and log files go in the

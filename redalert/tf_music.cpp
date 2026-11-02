@@ -5,6 +5,7 @@
 #include "function.h"
 #include "tf_music.h"
 #include "tf_launcher.h"
+#include "tf_settings.h"
 
 #include <cctype>
 #include <cstdio>
@@ -46,12 +47,7 @@ const char* const FACTION_KEYS[] =
 */
 bool Settings_Path(char* path, size_t size)
 {
-    const char* up = getenv("USERPROFILE");
-    if (up == NULL) {
-        return false;
-    }
-    snprintf(path, size, "%s\\Documents\\CnCRemastered\\tf_music.ini", up);
-    return true;
+    return TF_Documents_Path("tf_music.ini", path, size);
 }
 
 } // namespace

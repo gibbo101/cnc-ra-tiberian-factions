@@ -79,6 +79,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include "tf_settings.h"
 
 /***********************************************************************************************
  * FootClass::FootClass -- Default constructor for foot class objects.                         *
@@ -718,7 +719,7 @@ int FootClass::Mission_Hunt(void)
 
         // TF: a blind AI hunter probes the start locations rather than standing down, as fair fog makes it sight
         // the enemy first. An Easy house (IQ 3 or less) stops probing once it knows an enemy building.
-        if (!House->IsHuman && Session.Type != GAME_NORMAL && !Target_Legal(NavCom)
+        if (!House->IsHuman && Session.Type != GAME_NORMAL && TF_AI_Fair_Fog() && !Target_Legal(NavCom)
             && (What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_INFANTRY)) {
             bool probe = true;
             if (House->IQ <= 3) {

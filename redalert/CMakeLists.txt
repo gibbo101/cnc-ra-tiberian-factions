@@ -205,6 +205,8 @@ if(BUILD_REMASTERRA)
         tf_encyclopedia_art.cpp
         tf_asset_pack.cpp
         tf_music.cpp
+        tf_settings.cpp
+        tf_ai_classic.cpp
         puff.c
         tf_railgun.cpp
         sidebarglyphx.cpp

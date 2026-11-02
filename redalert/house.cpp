@@ -141,6 +141,7 @@
 ** New sidebar for GlyphX multiplayer. ST - 8/7/2019 10:10AM
 */
 #include "sidebarglyphx.h"
+#include "tf_settings.h"
 
 TFixedIHeapClass<HouseClass::BuildChoiceClass> HouseClass::BuildChoice;
 
@@ -312,7 +313,7 @@ bool TFLobbyAIDifficultySet = false;
 
 int TF_AI_IQ_From_Difficulty(DiffType diff)
 {
-    if (!TFLobbyAIDifficultySet) {
+    if (!TFLobbyAIDifficultySet || TF_AI_Classic()) {
         return (Rule.MaxIQ);
     }
     switch (diff) {
@@ -4122,9 +4123,9 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
         */
         if (b != NULL && !b->IsInLimbo && b->Strength && !Is_Ally(b)) {
 
-            // TF: in skirmish a computer house aims only at buildings it has discovered; no house aims at a
+            // TF: in skirmish a computer house aims only at buildings it knows of (TF_Knows); no house aims at a
             // cloaked building, and the E.M. Pulse only at what one of its EMP Cannons can reach.
-            if (!IsHuman && Session.Type != GAME_NORMAL && !b->Is_Discovered_By_Player(this)) {
+            if (!IsHuman && Session.Type != GAME_NORMAL && !TF_Knows(b)) {
                 continue;
             }
 
@@ -4146,9 +4147,9 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
     if (bestptr) {
         CELL cell = Coord_Cell(bestptr->Center_Coord());
         Place_Special_Blast(id, cell);
-    } else if (id == SPC_SPY_MISSION || id == SPC_TD_SPY_MISSION) {
-        // TF: with no discovered target, recon specials probe the start position the house's blind scouts
-        // would take next, so plane and scouts share one rotation. Destructive specials never fire blind.
+    } else if ((id == SPC_SPY_MISSION || id == SPC_TD_SPY_MISSION) && TF_AI_Fair_Fog()) {
+        // TF: under fair fog, with no known target, recon specials probe the start position the house's blind
+        // scouts would take next, so plane and scouts share one rotation. Destructive specials never fire blind.
         CELL cell = TF_Scout_Destination(Coord_Cell(Center));
         if (cell > 0) {
             Place_Special_Blast(id, cell);
@@ -4156,12 +4157,18 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
     }
 }
 
-// A standing building the house has discovered, held by an enemy still in the match: a defeated house can leave
-// buildings behind, and they are no objective.
+// A standing building the house knows of (TF_Knows), held by an enemy still in the match: a defeated house can
+// leave buildings behind, and they are no objective.
 static bool TF_Is_Known_Enemy_Building(HouseClass const* house, BuildingClass const* b)
 {
     return (b != NULL && !b->IsInLimbo && b->Strength > 0 && !house->Is_Ally(b) && !b->House->IsDefeated
-            && b->House->Class->House != HOUSE_NEUTRAL && b->Is_Discovered_By_Player((HouseClass*)house));
+            && b->House->Class->House != HOUSE_NEUTRAL && house->TF_Knows(b));
+}
+
+// True when this house may act on the object: always with fair fog off, else once the object is discovered.
+bool HouseClass::TF_Knows(TechnoClass const* object) const
+{
+    return !TF_AI_Fair_Fog() || object->Is_Discovered_By_Player((HouseClass*)this);
 }
 
 // True once this house has discovered a standing enemy building. Blind-scout dispatch runs until then,
@@ -6777,9 +6784,9 @@ int HouseClass::Expert_AI(void)
         }
     }
 
-    // TF: while a house has sighted no enemy building, keep two armed units hunting so Mission_Hunt's blind
-    // probe finds the enemy. MCVs (a hunt order deploys them) and harvesters never scout.
-    if (Session.Type != GAME_NORMAL && IsStarted && !TF_Knows_Any_Enemy_Building()) {
+    // TF: under fair fog, while a house has sighted no enemy building, keep two armed units hunting so Mission_Hunt's
+    // blind probe finds the enemy. MCVs (a hunt order deploys them) and harvesters never scout.
+    if (Session.Type != GAME_NORMAL && IsStarted && TF_AI_Fair_Fog() && !TF_Knows_Any_Enemy_Building()) {
         enum
         {
             TF_SCOUT_DETAIL = 2
@@ -7878,6 +7885,11 @@ bool HouseClass::AI_Attack(UrgencyType)
 {
     assert(Houses.ID(this) == ID);
 
+    // TF: with the attack-waves switch off, vanilla's attack (tf_ai_classic.cpp).
+    if (!TF_AI_Staged_Waves()) {
+        return (TF_Classic_AI_Attack());
+    }
+
     // TF: launch on army size and worth rather than a flat roll: hold below the floor, commit at the ceiling,
     // roll between, and recheck a decline sooner than a launch (docs/ai-upgrade-plan.md).
     TFWaveDialsStruct dials = TF_Wave_Dials(IQ);
@@ -8285,25 +8297,27 @@ bool HouseClass::AI_Raise_Power(UrgencyType urgency) const
     {
         StructType Structure;
         UrgencyType Urgency;
-    } _types[] = {{STRUCT_CHRONOSPHERE, URGENCY_LOW},
+        UrgencyType Classic; // TF: vanilla's urgency, for Classic AI
+    } _types[] = {{STRUCT_CHRONOSPHERE, URGENCY_LOW, URGENCY_LOW},
                   // TF: naval yards are production buildings, so only a power emergency under attack sells them,
                   // not every mild dip.
-                  {STRUCT_SHIP_YARD, URGENCY_HIGH},
-                  {STRUCT_SUB_PEN, URGENCY_HIGH},
-                  {STRUCT_ADVANCED_TECH, URGENCY_LOW},
-                  {STRUCT_FORWARD_COM, URGENCY_LOW},
-                  {STRUCT_SOVIET_TECH, URGENCY_LOW},
-                  {STRUCT_IRON_CURTAIN, URGENCY_MEDIUM},
-                  {STRUCT_RADAR, URGENCY_MEDIUM},
-                  {STRUCT_REPAIR, URGENCY_MEDIUM},
-                  {STRUCT_TESLA, URGENCY_HIGH}};
+                  {STRUCT_SHIP_YARD, URGENCY_HIGH, URGENCY_LOW},
+                  {STRUCT_SUB_PEN, URGENCY_HIGH, URGENCY_LOW},
+                  {STRUCT_ADVANCED_TECH, URGENCY_LOW, URGENCY_LOW},
+                  {STRUCT_FORWARD_COM, URGENCY_LOW, URGENCY_LOW},
+                  {STRUCT_SOVIET_TECH, URGENCY_LOW, URGENCY_LOW},
+                  {STRUCT_IRON_CURTAIN, URGENCY_MEDIUM, URGENCY_MEDIUM},
+                  {STRUCT_RADAR, URGENCY_MEDIUM, URGENCY_MEDIUM},
+                  {STRUCT_REPAIR, URGENCY_MEDIUM, URGENCY_MEDIUM},
+                  {STRUCT_TESLA, URGENCY_HIGH, URGENCY_HIGH}};
 
     /*
     **	Find a structure to sell and then sell it. Bail from further scanning until
     **	the next time.
     */
     for (int i = 0; i < ARRAY_SIZE(_types); i++) {
-        if (urgency >= _types[i].Urgency) {
+        // TF: Classic AI sells at vanilla's urgencies.
+        if (urgency >= (TF_AI_Classic() ? _types[i].Classic : _types[i].Urgency)) {
             BuildingClass* b = Find_Building(_types[i].Structure);
             if (b != NULL) {
 #if TF_DEV_BUILD // TF_AI_DIAG -- every Expert_AI emergency sell, so a vanishing building
@@ -8353,24 +8367,25 @@ bool HouseClass::AI_Raise_Money(UrgencyType urgency) const
     {
         StructType Structure;
         UrgencyType Urgency;
-    } _types[] = {{STRUCT_CHRONOSPHERE, URGENCY_LOW},
+        UrgencyType Classic; // TF: vanilla's urgency, for Classic AI
+    } _types[] = {{STRUCT_CHRONOSPHERE, URGENCY_LOW, URGENCY_LOW},
                   // TF: the base builder rebuilds naval yards, tech centres and the repair bay, so they sell only
                   // when broke with no income. At LOW they would be sold and rebuilt between harvester dumps.
-                  {STRUCT_SHIP_YARD, URGENCY_MEDIUM},
-                  {STRUCT_SUB_PEN, URGENCY_MEDIUM},
-                  {STRUCT_ADVANCED_TECH, URGENCY_MEDIUM},
-                  {STRUCT_FORWARD_COM, URGENCY_LOW},
-                  {STRUCT_SOVIET_TECH, URGENCY_MEDIUM},
-                  {STRUCT_STORAGE, URGENCY_LOW},
-                  {STRUCT_REPAIR, URGENCY_MEDIUM},
-                  {STRUCT_TESLA, URGENCY_MEDIUM},
-                  {STRUCT_HELIPAD, URGENCY_MEDIUM},
-                  {STRUCT_POWER, URGENCY_HIGH},
-                  {STRUCT_AIRSTRIP, URGENCY_HIGH},
+                  {STRUCT_SHIP_YARD, URGENCY_MEDIUM, URGENCY_LOW},
+                  {STRUCT_SUB_PEN, URGENCY_MEDIUM, URGENCY_LOW},
+                  {STRUCT_ADVANCED_TECH, URGENCY_MEDIUM, URGENCY_LOW},
+                  {STRUCT_FORWARD_COM, URGENCY_LOW, URGENCY_LOW},
+                  {STRUCT_SOVIET_TECH, URGENCY_MEDIUM, URGENCY_LOW},
+                  {STRUCT_STORAGE, URGENCY_LOW, URGENCY_LOW},
+                  {STRUCT_REPAIR, URGENCY_MEDIUM, URGENCY_LOW},
+                  {STRUCT_TESLA, URGENCY_MEDIUM, URGENCY_MEDIUM},
+                  {STRUCT_HELIPAD, URGENCY_MEDIUM, URGENCY_MEDIUM},
+                  {STRUCT_POWER, URGENCY_HIGH, URGENCY_HIGH},
+                  {STRUCT_AIRSTRIP, URGENCY_HIGH, URGENCY_HIGH},
                   //		{STRUCT_WEAP,URGENCY_HIGH},
                   //		{STRUCT_BARRACKS,URGENCY_HIGH},
                   //		{STRUCT_TENT,URGENCY_HIGH},
-                  {STRUCT_CONST, URGENCY_CRITICAL}};
+                  {STRUCT_CONST, URGENCY_CRITICAL, URGENCY_CRITICAL}};
     BuildingClass* b = 0;
 
     /*
@@ -8378,7 +8393,8 @@ bool HouseClass::AI_Raise_Money(UrgencyType urgency) const
     **	the next time.
     */
     for (int i = 0; i < ARRAY_SIZE(_types); i++) {
-        if (urgency >= _types[i].Urgency) {
+        // TF: Classic AI sells at vanilla's urgencies.
+        if (urgency >= (TF_AI_Classic() ? _types[i].Classic : _types[i].Urgency)) {
             b = Find_Building(_types[i].Structure);
             if (b != NULL) {
 #if TF_DEV_BUILD // TF_AI_DIAG -- every Expert_AI emergency sell, so a vanishing building
@@ -8664,7 +8680,7 @@ static BuildingTypeClass const* TF_Skirmish_Equivalent(StructType ra, HousesType
 
 // The building the skirmish AI queues for a base role: the house's own faction equivalent, else the vanilla
 // RA structure. Can_Build still has the final say.
-static BuildingTypeClass const* TF_Skirmish_Pick(StructType ra, HousesType actlike)
+BuildingTypeClass const* TF_Skirmish_Pick(StructType ra, HousesType actlike)
 {
     BuildingTypeClass const* sub = TF_Skirmish_Equivalent(ra, actlike);
     return (sub != NULL) ? sub : &BuildingTypeClass::As_Reference(ra);
@@ -8674,16 +8690,17 @@ static BuildingTypeClass const* TF_Skirmish_Pick(StructType ra, HousesType actli
 **	True when the builder can use this building now: always for an ordinary building, and for
 **	an addon plug only while a host slot is free and unclaimed.
 */
-static bool TF_AI_Plug_Fits(HouseClass const* house, BuildingTypeClass const* b)
+bool TF_AI_Plug_Fits(HouseClass const* house, BuildingTypeClass const* b)
 {
     return (b == NULL || b->PowersUpBuilding == STRUCT_NONE || TF_Plug_Room(house, b) > 0);
 }
 
-// For a component tower plug: the plug while a bare tower is free, else the bare tower, so the builder lays
-// a tower on one pass and arms it on a later one. Any other building passes through.
-static BuildingTypeClass const* TF_AI_Tower_Step(HouseClass const* house, BuildingTypeClass const* b)
+// For a component tower plug: the plug while a bare tower is free or the plug is above the tech level, else the
+// bare tower, so the builder arms on a later pass every tower it lays. Any other building passes through.
+BuildingTypeClass const* TF_AI_Tower_Step(HouseClass const* house, BuildingTypeClass const* b)
 {
-    if (b == NULL || b->PowersUpBuilding != STRUCT_TSCTWR || TF_AI_Plug_Fits(house, b)) {
+    if (b == NULL || b->PowersUpBuilding != STRUCT_TSCTWR || TF_AI_Plug_Fits(house, b)
+        || b->Level > (unsigned)house->Control.TechLevel) {
         return (b);
     }
     return (&BuildingTypeClass::As_Reference(STRUCT_TSCTWR));
@@ -8726,7 +8743,7 @@ static StructType TF_AI_Upgrade_Plug(HouseClass const* house)
 
 // Type of the house's faction equivalent for a base role, or -1 when the vanilla pick stands. Callers add
 // its BQuantity to the vanilla slot's so "do I have one?" gates see the faction's own buildings.
-static int TF_Skirmish_Type(StructType ra, HousesType actlike)
+int TF_Skirmish_Type(StructType ra, HousesType actlike)
 {
     BuildingTypeClass const* sub = TF_Skirmish_Equivalent(ra, actlike);
     return (sub != NULL) ? (int)sub->Type : -1;
@@ -8822,8 +8839,8 @@ static int const TF_NAVAL_PATROL_CAP = 2;
 static int const TF_NAVAL_FLEET_FLOOR = 4;
 static int const TF_NAVAL_FLEET_MAX = 12;
 
-// The largest water zone in reach of the base worth a navy, and whether a discovered enemy building is on
-// its shore. False when none is. Reads deterministic state only: lockstep-safe.
+// The largest water zone in reach of the base worth a navy, and whether a known enemy building is on its
+// shore. False when none is or the naval switch is off. Reads deterministic state only: lockstep-safe.
 bool HouseClass::TF_Naval_Assessment(int& zone, int& size, bool& enemy_coastal) const
 {
     assert(Houses.ID(this) == ID);
@@ -8831,6 +8848,9 @@ bool HouseClass::TF_Naval_Assessment(int& zone, int& size, bool& enemy_coastal) 
     zone = 0;
     size = 0;
     enemy_coastal = false;
+    if (!TF_AI_Naval()) {
+        return (false);
+    }
 
     CELL center = Coord_Cell(Center);
     if (center <= 0) {
@@ -8860,7 +8880,7 @@ bool HouseClass::TF_Naval_Assessment(int& zone, int& size, bool& enemy_coastal) 
     for (int index = 0; index < Buildings.Count() && !enemy_coastal; index++) {
         BuildingClass const* b = Buildings.Ptr(index);
         if (b == NULL || b->IsInLimbo || b->Strength == 0 || Is_Ally(b)
-            || b->House->Class->House == HOUSE_NEUTRAL || !b->Is_Discovered_By_Player(this)) {
+            || b->House->Class->House == HOUSE_NEUTRAL || !TF_Knows(b)) {
             continue;
         }
         CELL bcell = Coord_Cell(b->Center_Coord());
@@ -8900,7 +8920,7 @@ int HouseClass::TF_Naval_Fleet_Cap(bool enemy_coastal, int* enemy_navy) const
     for (int index = 0; index < Vessels.Count(); index++) {
         VesselClass const* v = Vessels.Ptr(index);
         if (v != NULL && !v->IsInLimbo && v->Strength > 0 && !Is_Ally(v)
-            && v->House->Class->House != HOUSE_NEUTRAL && v->Is_Discovered_By_Player(this)) {
+            && v->House->Class->House != HOUSE_NEUTRAL && TF_Knows(v)) {
             int h = (int)v->House->Class->House;
             if (h >= 0 && h < HOUSE_COUNT) {
                 navy[h]++;
@@ -8910,7 +8930,7 @@ int HouseClass::TF_Naval_Fleet_Cap(bool enemy_coastal, int* enemy_navy) const
     for (int index = 0; index < Buildings.Count(); index++) {
         BuildingClass const* b = Buildings.Ptr(index);
         if (b == NULL || b->IsInLimbo || b->Strength == 0 || Is_Ally(b)
-            || b->House->Class->House == HOUSE_NEUTRAL || !b->Is_Discovered_By_Player(this)) {
+            || b->House->Class->House == HOUSE_NEUTRAL || !TF_Knows(b)) {
             continue;
         }
         StructType t = b->Class->Type;
@@ -9132,7 +9152,7 @@ static CELL TF_Ferry_Shore_Cell(int wzone, int landzone, COORDINATE nearto, CELL
             BuildingClass const* b = Buildings.Ptr(index);
             if (b != NULL && !b->IsInLimbo && b->Strength > 0 && !house->Is_Ally(b)
                 && b->House->Class->House != HOUSE_NEUTRAL && b->Class->PrimaryWeapon != NULL
-                && b->Is_Discovered_By_Player(house)) {
+                && house->TF_Knows(b)) {
                 threat[threats++] = b->Center_Coord();
             }
         }
@@ -9280,7 +9300,7 @@ bool HouseClass::TF_Ferry_Assault(int& targetland, bool& second_front) const
 
     targetland = 0;
     second_front = false;
-    if (Session.Type == GAME_NORMAL) {
+    if (Session.Type == GAME_NORMAL || !TF_AI_Naval()) {
         return (false);
     }
     if (TF_Ferry_Route_Blocked(&targetland)) {
@@ -9986,6 +10006,11 @@ int HouseClass::AI_Building(void)
 {
     assert(Houses.ID(this) == ID);
 
+    // TF: Classic AI builds its base as vanilla's did (tf_ai_classic.cpp).
+    if (TF_AI_Classic()) {
+        return (TF_Classic_AI_Building());
+    }
+
     if (BuildStructure != STRUCT_NONE)
         return (TICKS_PER_SECOND);
 
@@ -10254,9 +10279,9 @@ int HouseClass::AI_Building(void)
             }
         }
 
-        // TF: every faction builds radar once the economy gate passes. It gates GDI/Nod tech and RA air, and the
-        // air-defence branch below asks for it only once an enemy flies.
-        {
+        // TF: radar comes once the economy gate passes (it gates GDI/Nod tech and RA air). With the early-radar
+        // switch off, Allies and Soviets leave it to the air-defence branch below, once an enemy flies, as vanilla.
+        if (TF_AI_Early_Radar() || ActLike == HOUSE_GOOD || ActLike == HOUSE_BAD || Is_TS_GDI(ActLike)) {
             int tf_hq = TF_Skirmish_Type(STRUCT_RADAR, ActLike);
             current = BQuantity[STRUCT_RADAR] + (tf_hq >= 0 ? BQuantity[tf_hq] : 0);
             if (current < 1 && tf_economy_ready && Power_Fraction() >= 1) {
@@ -10731,7 +10756,9 @@ int HouseClass::AI_Unit(void)
     unsigned tf_refq = BQuantity[STRUCT_REFINERY] + (tf_proc_t >= 0 ? BQuantity[tf_proc_t] : 0);
     UnitType tf_harv = Is_TS_GDI(ActLike) ? UNIT_TSHARV : ((tf_proc_t >= 0) ? UNIT_TDHARV : UNIT_HARVESTER);
     int tf_harv_owned = TF_Harvesters_Owned();
-    if (IQ >= Rule.IQHarvester && !IsTiberiumShort && !IsHuman && TF_Eco_Harvester_Target((int)tf_refq) > tf_harv_owned
+    // TF: Classic AI keeps vanilla's one harvester a refinery.
+    int tf_harv_target = TF_AI_Classic() ? (int)tf_refq : TF_Eco_Harvester_Target((int)tf_refq);
+    if (IQ >= Rule.IQHarvester && !IsTiberiumShort && !IsHuman && tf_harv_target > tf_harv_owned
         && Difficulty != DIFF_HARD) {
         if (UnitTypeClass::As_Reference(tf_harv).Level <= (unsigned)Control.TechLevel) {
             BuildUnit = tf_harv;
@@ -10825,8 +10852,8 @@ int HouseClass::AI_Unit(void)
     if (IsBaseBuilding) {
 
         // TF: economy first. Past the garrison, combat vehicles wait while the house is below its refinery or
-        // harvester target.
-        if (Session.Type != GAME_NORMAL && CurUnits - tf_harv_owned >= TF_Eco_Garrison_Vehicles()
+        // harvester target. Classic AI never holds.
+        if (Session.Type != GAME_NORMAL && !TF_AI_Classic() && CurUnits - tf_harv_owned >= TF_Eco_Garrison_Vehicles()
             && TF_Eco_Below_Target()) {
             TF_Eco_Hold_Diag(this, "vehicle");
             return (TICKS_PER_SECOND * 2);
@@ -11185,8 +11212,9 @@ int HouseClass::AI_Infantry(void)
 
     if (IsBaseBuilding) {
         // TF: economy first, as in AI_Unit: past the garrison, infantry waits for the refinery and harvester
-        // targets.
-        if (Session.Type != GAME_NORMAL && CurInfantry >= TF_Eco_Garrison_Infantry() && TF_Eco_Below_Target()) {
+        // targets. Classic AI never holds.
+        if (Session.Type != GAME_NORMAL && !TF_AI_Classic() && CurInfantry >= TF_Eco_Garrison_Infantry()
+            && TF_Eco_Below_Target()) {
             TF_Eco_Hold_Diag(this, "infantry");
             return (TICKS_PER_SECOND * 2);
         }

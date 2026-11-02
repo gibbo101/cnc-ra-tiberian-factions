@@ -1,7 +1,9 @@
 # Player settings
 
-**Status:** Design. Nothing ships; the switch list and its code sites come from reading the source, unproven in play.
-**Open:** the first slice (sidebar sort and badges); the LAN lobby line; Classic AI; the decisions at the end.
+**Status:** Design. Built, unreleased: `tf_settings.ini`, the GENERAL page (AUDIO and SIDEBAR) with sidebar sorting
+and faction badges, and the GAMEPLAY page's Classic AI, TF AI and UNITS switches. The remaining switch sites come
+from reading the source, unproven in play.
+**Open:** the LAN lobby line; the remaining units switches and the controls switches; the decisions at the end.
 
 Every behaviour the mod changes from vanilla Red Alert, other than balance, becomes a switch on the TIBERIAN
 FACTIONS SETTINGS page. Every switch is on by default, so a player who never opens the page plays the mod as it
@@ -9,25 +11,31 @@ ships; a player who prefers vanilla behaviour, the sidebar's arrival order among
 
 ## The file
 
-- `Documents/CnCRemastered/tf_settings.ini`, one section per page (`[Sidebar] SortByPrice=0`). It holds only the
+- `Documents/CnCRemastered/tf_settings.ini`, one section per group (`[Sidebar] SortByPrice=0`). It holds only the
   keys the player changed; a missing key is on.
-- Read and written as `tf_music.ini` is (`tf_music.cpp`): `GetPrivateProfileStringA` on the player's Documents
-  folder, `;` comments stripped, a key set back to its default deleted with `WritePrivateProfileStringA(NULL)`.
+- `tf_settings.cpp` reads a key with `GetPrivateProfileIntA` (anything but 0 is on) and writes one with
+  `WritePrivateProfileStringA`, deleting a key set back to on. It shares the Documents path with `tf_music.ini`.
 - Workshop updates never touch `Documents`, so the choices survive mod updates.
-- **The DLL reads the file once, at match start,** into one `TF_Settings` struct, and every site tests a member.
+- **The DLL reads the file once, at match start** (`TF_Settings_Load`), and every site asks `tf_settings.h`.
   Pathfinding, the sidebar export and the AI run every frame and never read the file. A loaded save takes the
   file as it stands at load: the switches change behaviour, not stored state.
 
-## LAN: the host's settings rule the match
+## LAN: sidebar per player, the rest from the host
 
 Only the host runs the sim (`launcher-vs-dll-ownership.md`), and the host's DLL also builds every player's sidebar
-export. So every sim switch and both sidebar switches follow the host's file, for every player. What ClientG does
-on each machine stays that player's own: the radar crest, the sidebar tab icons and music.
+export. What ClientG does on each machine stays that player's own: the radar crest, the sidebar tab icons and music.
 
-- **A line on the LAN lobby:** "Gameplay settings follow the host." Where the lobby can carry it is open: a
-  MasterText string on an existing label (`scripts/loc_work/mastertext.edits.txt`), or a BUI text widget
-  (`bui-front-end-modding.md`).
-- **At match start** the host names its non-default switches to each human player in a direct message, as
+- **Sidebar switches are each player's own.** When the host's `@@TFL` message reaches a launcher, it sends its
+  player's sidebar switches as mod command 4 (x = `TF_SIDEBAR_CHOICE_MARK`, y = the bits), built and queued as the
+  launcher's own mod-command send does. The host keeps them per house (`TF_Settings_Take_Sidebar`); a house with
+  none yet, an older joiner's included, follows the host's file. A strip keeps vanilla's arrival order and the
+  sidebar export orders each player's copy (`TF_Sidebar_Order`), so choices landing a few frames in apply at once.
+  Proven in a LAN game: a Deck joiner's choices reached the PC host, and each player saw their own sidebar.
+- **Sim switches follow the host's file**: controls, units and the AI. The GAMEPLAY page carries "In a LAN game the
+  host's settings apply to every player.", and the LAN lobby is to carry "Gameplay settings follow the host."
+  Where the lobby can carry it is open: a MasterText string on an existing label
+  (`scripts/loc_work/mastertext.edits.txt`), or a BUI text widget (`bui-front-end-modding.md`).
+- **At match start** the host names its non-default sim switches to each human player in a direct message, as
   `game-rules.md` plans for custom values.
 - Not planned: a lobby page where the players pick the switches together. The host's file covers it.
 
@@ -40,14 +48,14 @@ on each machine stays that player's own: the radar crest, the sidebar tab icons 
 - **The AI's anti-air response** is vanilla Red Alert's (`HouseClass::AI_Building`: build AA when an enemy has
   aircraft). Ours only teaches it the GDI, Nod and TS SAMs and radars, so it has no switch.
 - **The AI's build order, unit picks and economy gate** replaced vanilla's code rather than branching from it, so
-  the AI page's switches with every one off still leave our AI. The Classic AI switch below is the way back.
+  the TF AI switches with every one off still leave our AI. The Classic AI switch below is the way back.
 
 ## The switches
 
 | Page | Switch | Off means | Where | Size |
 |---|---|---|---|---|
-| Sidebar | Sort by price | vanilla: a new cameo joins the end of its strip | `TF_Sidebar_Sort_Key`, `sidebarglyphx.cpp` | one branch |
-| Sidebar | Faction badges | plain cameos | `TF_Apply_Cameo_Badge`, three export sites in `dllinterface.cpp` | small |
+| Sidebar | Sorting: Cost / Vanilla | vanilla: a new cameo joins the end of its strip | `TF_Sidebar_Order`, `dllinterface.cpp` | built |
+| Sidebar | Faction badges | plain cameos | `TF_Apply_Cameo_Badge` and `TF_Apply_Special_Badge`, `dllinterface.cpp` | built |
 | Sidebar | Faction crest and tab icons (per machine) | RA's crest and icons | `TF_Patch_ClientG_Crest`, `TF_Patch_ClientG_Tab_Prefix` | small |
 | Controls | Select-all skips harvesters and MCVs | vanilla select-all | `dllinterface.cpp` | small |
 | Controls | Band-select skips MCVs | harvesters only, as vanilla | `display.cpp` | one branch |
@@ -55,53 +63,85 @@ on each machine stays that player's own: the radar crest, the sidebar tab icons 
 | Controls | Attack-move | the keys do nothing | the event's input, `techno.cpp` and `event.cpp`; the order itself is spread over about 40 sites and stays | small |
 | Controls | Rally points | no rally point | the input in `building.cpp` | small |
 | Controls | Wall line-fill | one wall a placement | `house.cpp` | one branch |
-| Units | Smarter pathfinding (A*) | vanilla's edge follower | `Find_Path_AStar`, `findpath.cpp` | one branch; give-way and claims assume A*, so they turn off with it |
-| Units | Give way at chokepoints | no give-way or corridor claims | `drive.cpp`, `findpath.cpp`, `CellClass` claims | about five sites |
+| Units | A* pathfinding | vanilla's edge follower; infantry walk through Tiberium | the A* block in `Find_Path` | built |
+| Units | Give way | no yielding or corridor claims: a jammed unit abandons its move, a moving infantryman hard-blocks | `Start_Of_Move` and the blocked-path branches in `drive.cpp`, `Can_Enter_Cell` | built |
 | Units | Give up on unreachable moves | units retry forever | `TF_Path_No_Progress`, `foot.cpp`, `drive.cpp`, `infantry.cpp` | about five sites |
-| Units | Infantry avoid Tiberium | infantry walk straight through | the A* cost, `findpath.cpp` | one branch |
-| Units | Smart harvesters | vanilla's refinery choice and waits | `Find_Best_Refinery`, queue-jump, full-load return, field blacklist, anti-stuck watchdog (`unit.cpp`, `building.cpp`) | medium; one switch for the set |
+| Units | Harvesters | vanilla's refinery choice, field pick and waits | see below | built |
 | Units | Smarter repair bay | vanilla's queue and exit | `unit.cpp`, `building.cpp` | medium |
 | Units | SAMs retarget before lowering | vanilla's lower-then-raise | `building.cpp` | small |
-| AI | Fair fog | the AI sees the whole map | `techno.cpp`, `house.cpp` | about five sites |
-| AI | Scouting | no probing of start locations | `foot.cpp`, `house.cpp` | small |
-| AI | Staged waves and home guard | units sent as built | `TF_Wave_AI`, `TF_Wave_Dials`, `house.cpp` | medium |
-| AI | Naval | no patrols, massing or ferrying | `house.cpp`, `vessel.cpp` | medium |
-| AI | Base placement | vanilla's placement | `house.cpp` | medium |
-| AI | Sell logic | vanilla's selling | `house.cpp` | small |
+| AI | Fair fog | the AI sees the whole map and never scouts | `HouseClass::TF_Knows`, the hunt probe in `foot.cpp` | built |
+| AI | Attack waves | vanilla's random hunts | `AI_Attack` runs `TF_Classic_AI_Attack` (`tf_ai_classic.cpp`) | built |
+| AI | Naval | no ships, patrols or ferrying | `TF_Naval_Assessment` and `TF_Ferry_Assault` say no | built |
+| AI | Radar (Allies, Soviets): TF / Vanilla | an RA-side AI builds radar only once an enemy flies, so no air or top tech before | the early radar in `AI_Building` | built |
 
-AI switches apply where the AI changes do: skirmish and LAN, never the campaign.
+- **Fair fog and scouting are one switch.** Scouting exists because fair fog blinds the AI: with fog on and no
+  scouting it never finds the enemy, and with fog off scouting has nothing to find. Off, every object counts as
+  known (`TF_Knows`), so the waves' staging point and the naval coast check still find their targets.
+- **Naval off** also stops the ferry: it needs the transports only a naval yard builds.
+- **Radar** matters only to Allies and Soviets. Vanilla's builder asks for a radar only when an enemy has aircraft,
+  and RA's helipad, airfield and tech centres need one. GDI, Nod and TS GDI build theirs early either way.
+- **Base placement and sell logic are not switches.** They are bug fixes and support for our base builder (the
+  naval and expansion-yard placement, the sell priorities of what it rebuilds), so Classic AI is their way back.
+- **The unit switches** come from the host's file too. A* and give way are independent: give way works on either
+  pathfinder's route.
+- **Harvesters off** drops the stall detector and field blacklist, the anti-stuck watchdog (it only tracks, so a
+  save loaded with it on never fires at once), the full-load return, the per-load refinery re-pick, the field pick
+  by travel distance, waiting out a drought beside a refinery, queue jumping and the CFE refinery spread. Vanilla
+  picks the remembered refinery, else the nearest of any faction's. Fixes stay: a refinery docks only its own
+  customer, a stale booking drops, an attached harvester blocks hellos, a walled-off field is forgotten.
+- The AI switches come from the host's file and hold for the match.
 
 ### Classic AI
 
-The AI page's master switch: **TF AI** (the default, the AI switches shown) or **Classic AI** (the AI switches
-greyed out and off).
+The GAMEPLAY page's CLASSIC AI category holds the master switch, **TF AI** (the default) or **CLASSIC** (key
+`TFAI=0`). With CLASSIC picked, TF AI's switches are off and read "Off with Classic AI".
 
 - Classic AI is vanilla's decisions with only what it needs to play every faction. Vanilla's AI knows only RA's
-  buildings; ours maps each to the faction's own (`TF_Skirmish_Pick` / `TF_Skirmish_Type`, 36 sites in
-  `house.cpp`), and Classic keeps that mapping.
-- Vanilla's five choice functions, `AI_Building`, `AI_Unit`, `AI_Infantry`, `AI_Aircraft` and `AI_Vessel` (831
-  lines in Vanilla Conquer against 1,334 in ours), go into `tf_ai_classic.cpp` with the mapping, behind one
-  branch at the top of each. A vanilla branch inside every TF block of today's functions would be far messier.
-- Classic AI keeps vanilla's one difficulty: `Assign_Handicap(Scen.Difficulty)` gives every house the match's
-  stat biases (`Rule.Diff[]`), and the lobby's per-slot picks and our IQ tiers are not read.
+  buildings; ours maps each to the faction's own (`TF_Skirmish_Pick` / `TF_Skirmish_Type`), and Classic keeps it.
+- **The base builder** is vanilla's `AI_Building`, copied into `tf_ai_classic.cpp` (`TF_Classic_AI_Building`)
+  with each RA building routed to the faction's own and counted with it (`TF_Classic_Count`). TS GDI's addons
+  use the TF AI's guards: a component tower is laid bare and armed on a later pass (`TF_AI_Tower_Step`), and a
+  turbine goes only on a free power plant (`TF_AI_Plug_Fits`).
+- **Units, infantry, aircraft and ships** keep our pickers, which are vanilla's plus the mapping: with Classic
+  picked they skip the economy hold and build one harvester a refinery, as vanilla did. Naval is off, so no ships.
+- **Attacks** are vanilla's (`TF_Classic_AI_Attack`), and fair fog is off.
+- **Selling** uses vanilla's urgencies (the Classic column of the `AI_Raise_Power` and `AI_Raise_Money` tables).
+- **Difficulty** is vanilla's one for the match: every computer house gets `Rule.MaxIQ`
+  (`TF_AI_IQ_From_Difficulty`), and the lobby's per-slot picks are not read.
 - Stock RA's AI attacks sooner than ours (`todo.md`, the AI milestone), so Classic plays differently, and it is
   the baseline our AI is tuned against.
+- Proven in skirmish against a Soviet, a Nod and a TS GDI computer house: each built vanilla's order with its own
+  buildings, TS GDI's armed towers and turbines among them.
 
 ## The page
 
-The Settings page (`scripts/bui_settings_build.py`, `Refresh_Settings` in `tf_launcher.cpp`) has two page tabs,
-AUDIO and GAME RULES (COMING SOON), and four checkbox rows a page. The switches need more rows than that:
-new page tabs (SIDEBAR, CONTROLS, UNITS, AI) or a scrolling list. The music rows' checkbox, name and description
-are the row to copy; DEFAULTS turns every switch on.
+The Settings page (`scripts/bui_settings_build.py`, `Refresh_Settings` in `tf_launcher.cpp`) has three page tabs:
+GENERAL, GAMEPLAY and GAME RULES. GAME RULES reads COMING SOON. Each page is a category list on the left (the code's
+`SETTINGS_PAGE_INFO`) and the picked category's options on the right.
+
+- **GENERAL:** AUDIO shows the faction tabs and that faction's music rows (`skirmish-music.md`); SIDEBAR shows its
+  switches.
+- **GAMEPLAY:** CLASSIC AI holds the master switch; TF AI fair fog, attack waves, naval and radar. The LAN note
+  sits under the category list.
+  UNITS holds A* pathfinding, give way and harvesters.
+- **A switch is one row:** its name, a line describing the picked choice, and two buttons in the page tabs' style,
+  the picked one lit and the default on the left (COST / VANILLA, ON / OFF). A choice saves at once and takes
+  effect from the next match.
+- **DEFAULTS** resets the open category: every faction's music to MIX, or every switch on.
+- A category holds at most four rows, so a group with more switches splits into categories. A switch's
+  description fits about 26 characters before it runs under its buttons.
+- The page is the CAMPAIGNS page's frame (`RA_MISSIONSELECT.BUI`) run by ClientG's SplashScreen, as the ADD-ONS
+  screen is: its faction tabs stay, its era banners and campaign widgets are hidden, and Start becomes DEFAULTS.
+  The builder's rects are pixels of a 1280x800 Deck screenshot.
 
 ## First slice
 
-Sort by price and faction badges, end to end: the INI, the struct, two rows on a SIDEBAR page, the LAN lobby line
-and a LAN game checking the host's choice reaches the joiner. The other switches follow the same pattern.
+Sorting and faction badges, end to end: the INI, the struct, the SIDEBAR rows, each player's choices reaching the
+host, and a LAN game with the host and a joiner set differently, each seeing their own sidebar. The other switches
+follow the same pattern.
 
 ## Decisions
 
-- Page tabs per group, or one scrolling list.
 - The LAN lobby line's home: MasterText on an existing label, or a new widget.
 - Whether attack-move and rally points get switches at all: off only blocks their keys.
 - Smart harvesters as one switch or several.

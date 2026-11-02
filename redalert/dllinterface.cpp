@@ -98,6 +98,7 @@ extern void Init_SpeechTD(void);
 #include "tf_asset_pack.h"
 #include "tf_launcher.h"
 #include "tf_encyclopedia.h"
+#include "tf_settings.h"
 // Tiberian Sun GDI's EVA (audio.cpp Init_SpeechTS). NULL slots fall back to SpeechTD[].
 extern char const* SpeechTS[VOX_COUNT];
 extern void Init_SpeechTS(void);
@@ -1640,6 +1641,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
 {
     // TF: a match starts from the default difficulty; a skirmish's lobby value arrives after this call.
     TF_Lobby_Difficulty_Reset();
+    // TF: the player's switches, read once for the match.
+    TF_Settings_Load(game_type != NULL && stricmp(game_type, "GAME_NORMAL") == 0);
 
     if (game_type == NULL) {
         return false;
@@ -1889,6 +1892,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Custom_Instance(const ch
 {
     // TF: a match starts from the default difficulty; a skirmish's lobby value arrives after this call.
     TF_Lobby_Difficulty_Reset();
+    // TF: the player's switches, read once for the match.
+    TF_Settings_Load(!multiplayer);
 
     DLLExportClass::Set_Content_Directory(content_directory);
 
@@ -2645,6 +2650,17 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
  *
  * History: 1/7/2019 5:20PM - ST
  **************************************************************************************************/
+// With Classic AI on, every skirmish computer house plays at vanilla's IQ, a loaded save's houses included.
+static void TF_Classic_AI_IQ(void)
+{
+    for (int index = 0; TF_AI_Classic() && index < Houses.Count(); index++) {
+        HouseClass* housep = Houses.Ptr(index);
+        if (housep != NULL && housep->IsActive && !housep->IsHuman && housep->Class->House >= HOUSE_MULTI1) {
+            housep->IQ = Rule.MaxIQ;
+        }
+    }
+}
+
 extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save,
                                                             const char* file_path_and_name,
                                                             const char* game_type)
@@ -2675,11 +2691,15 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save,
             Session.Players.Delete(Session.Players[0]);
         }
 
+        // TF: a loaded save plays by the player's switches as they stand now.
+        TF_Settings_Load(GAME_TO_PLAY == GAME_NORMAL);
         result = Load_Game(file_path_and_name);
 
         if (result == false) {
             return false;
         }
+        // TF: a save keeps each computer house's IQ, so Classic AI sets vanilla's again.
+        TF_Classic_AI_IQ();
 
         DLLExportClass::Set_Player_Context(DLLExportClass::GlyphxPlayerIDs[0], true);
         DLLExportClass::Cancel_Placement(DLLExportClass::GlyphxPlayerIDs[0], -1, -1);
@@ -3358,7 +3378,8 @@ static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff,
             DiffType house_diff = global_diff;
             int house_index = (int)housep->Class->House - (int)HOUSE_MULTI1;
             int slot_number = (house_index >= 0 && house_index < MAX_PLAYERS) ? TF_AILobbySlotByHouse[house_index] : 0;
-            if (slots_read > 0 && slot_number >= 1 && slot_number <= TF_LOBBY_MAX_AI_SLOTS
+            // TF: Classic AI keeps vanilla's one difficulty for every computer house.
+            if (!TF_AI_Classic() && slots_read > 0 && slot_number >= 1 && slot_number <= TF_LOBBY_MAX_AI_SLOTS
                 && slot_diff[slot_number] != 0) {
                 house_diff = (slot_diff[slot_number] == 1)   ? DIFF_EASY
                              : (slot_diff[slot_number] == 2) ? DIFF_NORMAL
@@ -4740,6 +4761,48 @@ static bool TF_Parse_Hex64(const char* text, unsigned long long& value)
     return true;
 }
 
+// In ClientG: sends this player's sidebar switches to the host as mod command 4, built and queued as the launcher's
+// own mod-command send at 0x168AC2E builds and queues one (docs/player-settings.md).
+static void TF_Launcher_Send_Sidebar_Choices(void)
+{
+    static const SIZE_T INIT_CALL = 0x168ACA0;
+    static const SIZE_T SEND_CALL = 0x168ACBA;
+    static const SIZE_T EVENT_INIT = 0x12A2AE0;
+    static const SIZE_T SESSION = 0x110F6E0;
+    static const SIZE_T EVENT_SEND = 0x10F8640;
+    static const SIZE_T EVENT_POST = 0x10F82D0;
+    static const SIZE_T EVENT_FREE = 0x73BC50;
+    static const SIZE_T MOD_COMMANDS_ON = 0x20E39B1;
+    static const int MOD_COMMAND_4 = 0x1035 - 0x1026;
+    typedef void(__thiscall * EventInitFn)(void* event, int type, int x, int y, int x2, int y2);
+    typedef void*(__cdecl * SessionFn)(void);
+    typedef void*(__thiscall * SessionPlayerFn)(void* session);
+    typedef void(__thiscall * EventSendFn)(void* event, int player, int flags);
+    typedef void(__thiscall * EventFn)(void* event);
+
+    // Trap: these calls are ClientG 1.153's; on any other build the call sites differ and nothing is sent.
+    if (*(unsigned char const*)INIT_CALL != 0xE8 || INIT_CALL + 5 + *(int const*)(INIT_CALL + 1) != EVENT_INIT
+        || *(unsigned char const*)SEND_CALL != 0xE8 || SEND_CALL + 5 + *(int const*)(SEND_CALL + 1) != EVENT_SEND) {
+        return;
+    }
+    if (*(volatile unsigned char const*)MOD_COMMANDS_ON != 1) {
+        return;
+    }
+    void* session = ((SessionFn)SESSION)();
+    if (session == NULL) {
+        return;
+    }
+    void* player = ((SessionPlayerFn)(*(void***)session)[0x60 / 4])(session);
+    if (player == NULL) {
+        return;
+    }
+    alignas(16) unsigned char event[0x100] = {};
+    ((EventInitFn)EVENT_INIT)(event, MOD_COMMAND_4, TF_SIDEBAR_CHOICE_MARK, TF_Settings_Sidebar_Bits(), -1, -1);
+    ((EventSendFn)EVENT_SEND)(event, *(int const*)((unsigned char const*)player + 0x1E8), 0);
+    ((EventFn)EVENT_POST)(event);
+    ((EventFn)EVENT_FREE)(event);
+}
+
 extern "C" void __cdecl TF_Launcher_Event_Hook(unsigned char* event)
 {
     static const int MESSAGE_EVENT = 6;
@@ -4768,6 +4831,7 @@ extern "C" void __cdecl TF_Launcher_Event_Hook(unsigned char* event)
     }
     InterlockedExchange(&TF_LauncherActLike, house);
     InterlockedExchange(&TF_LauncherRequest, 1);
+    TF_Launcher_Send_Sidebar_Choices();
     if (TF_LauncherWake == NULL) {
         TF_LauncherWake = CreateEventA(NULL, FALSE, FALSE, NULL);
         HANDLE thread = CreateThread(NULL, 0, TF_Launcher_Resident_Thread, NULL, 0, NULL);
@@ -7164,6 +7228,15 @@ void DLLExportClass::Convert_Type(const ObjectClass* object, CNCObjectStruct& ob
     }
 }
 
+// Keeps the sidebar switches a launcher sent for the house in context (TF_Launcher_Send_Sidebar_Choices).
+static void TF_Take_Sidebar_Choices(int bits)
+{
+    static_assert(HOUSE_COUNT <= TF_SETTINGS_MAX_HOUSES, "tf_settings.cpp keeps fewer houses than the game has");
+    if (PlayerPtr != NULL) {
+        TF_Settings_Take_Sidebar(PlayerPtr->Class->House, bits);
+    }
+}
+
 /**************************************************************************************************
  * CNC_Handle_Input -- Process input to the game
  *
@@ -7362,6 +7435,11 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Input(InputRequestEnum 
     case INPUT_REQUEST_MOD_GAME_COMMAND_2_AT_POSITION:
     case INPUT_REQUEST_MOD_GAME_COMMAND_3_AT_POSITION:
     case INPUT_REQUEST_MOD_GAME_COMMAND_4_AT_POSITION: {
+        // TF: mod command 4 with the sidebar mark is a launcher's sidebar switches for its own house, not a click.
+        if (input_event == INPUT_REQUEST_MOD_GAME_COMMAND_4_AT_POSITION && x1 == TF_SIDEBAR_CHOICE_MARK) {
+            TF_Take_Sidebar_Choices(y1);
+            break;
+        }
         DLLExportClass::Adjust_Internal_View();
         DLLForceMouseX = x1;
         DLLForceMouseY = y1;
@@ -7761,8 +7839,8 @@ static TF_ProducerMasks TF_Compute_Producer_Masks(HouseClass const* house)
 }
 
 // Appends _<badge> to a sidebar asset key, one base-32 digit: the entry's factions among those the player
-// makes its category from, or 0 when the player makes that category from fewer than two factions.
-static void TF_Apply_Cameo_Badge(char* asset_name, int entry_owner_mask, int held_mask)
+// makes its category from; 0 below two such factions or with the player's badges switch off.
+static void TF_Apply_Cameo_Badge(char* asset_name, int entry_owner_mask, int held_mask, HouseClass const* house)
 {
     if (asset_name == NULL || asset_name[0] == '\0') {
         return;
@@ -7770,13 +7848,14 @@ static void TF_Apply_Cameo_Badge(char* asset_name, int entry_owner_mask, int hel
 
     int badge = 0;
     int held_count = 0;
+    int held = house != NULL && TF_Sidebar_Has_Badges(house->Class->House) ? held_mask : 0;
     for (int bit = 0x1; bit <= TF_FACTION_TSGDI; bit <<= 1) {
-        if (held_mask & bit) {
+        if (held & bit) {
             held_count++;
         }
     }
     if (held_count >= 2) {
-        badge = entry_owner_mask & held_mask;
+        badge = entry_owner_mask & held;
     }
 
     size_t length = strnlen(asset_name, CNC_OBJECT_ASSET_NAME_LENGTH);
@@ -7838,11 +7917,12 @@ static int TF_Special_Display_Mask(SpecialWeaponType id, HouseClass* house)
     }
 }
 
-// Rewrites a special's "SW_" key to "S<digit>_" once the house's specials span two or more factions. The
-// digit is base-32, as for buildables, and the key keeps its length to fit AssetName.
+// Rewrites a special's "SW_" key to "S<digit>_" once the house's specials span two or more factions, unless its
+// player's badges switch is off. The digit is base-32, as for buildables; the key keeps its length to fit.
 static void TF_Apply_Special_Badge(char* asset_name, SpecialWeaponType id, HouseClass* house)
 {
-    if (asset_name == NULL || strncmp(asset_name, "SW_", 3) != 0 || house == NULL) {
+    if (asset_name == NULL || strncmp(asset_name, "SW_", 3) != 0 || house == NULL
+        || !TF_Sidebar_Has_Badges(house->Class->House)) {
         return;
     }
 
@@ -7871,6 +7951,34 @@ static void TF_Apply_Special_Badge(char* asset_name, SpecialWeaponType id, House
     rest[sizeof(rest) - 1] = '\0';
     snprintf(asset_name, CNC_OBJECT_ASSET_NAME_LENGTH, "S%c_%s",
              "0123456789ABCDEFGHIJKLMNOPQRSTUV"[badge & 0x1F], rest);
+}
+
+// Sidebar order key: cost, cheapest first. Superweapons, with no cost, sort first.
+static int TF_Sidebar_Sort_Key(RTTIType type, int id)
+{
+    if (type == RTTI_SPECIAL) {
+        return 0;
+    }
+    TechnoTypeClass const* tech = Fetch_Techno_Type(type, id);
+    return (tech == NULL || tech->Cost < 0) ? 0 : tech->Cost;
+}
+
+// Fills `order` with a strip's slots as `house`'s player sees them: in arrival order, or stably by cost when that
+// player sorts by cost. The strip itself keeps arrival order, so a choice arriving mid-match applies at once.
+static void TF_Sidebar_Order(SidebarGlyphxClass::StripClass const& strip, int house, int* order)
+{
+    int key[SidebarGlyphxClass::StripClass::MAX_BUILDABLES];
+    bool by_cost = TF_Sidebar_Sorts_By_Price(house);
+    for (int slot = 0; slot < strip.BuildableCount; slot++) {
+        SidebarGlyphxClass::StripClass::BuildType const& entry = strip.Buildables[slot];
+        key[slot] = by_cost ? TF_Sidebar_Sort_Key(entry.BuildableType, entry.BuildableID) : 0;
+        int at = slot;
+        while (at > 0 && key[order[at - 1]] > key[slot]) {
+            order[at] = order[at - 1];
+            at--;
+        }
+        order[at] = slot;
+    }
 }
 
 /**************************************************************************************************
@@ -8086,7 +8194,7 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                                    ? producer_masks.by_rtti[category]
                                    : 0;
                     TF_Apply_Cameo_Badge(sidebar_entry.AssetName,
-                                         TF_Entry_Faction_Mask((TechnoTypeClass const*)tech), held);
+                                         TF_Entry_Faction_Mask((TechnoTypeClass const*)tech), held, PlayerPtr);
                 }
 
                 if (super_weapon != nullptr) {
@@ -8179,10 +8287,15 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
 
                 sidebar->EntryCount[c] = context_sidebar->Column[c].BuildableCount;
 
+                // TF: each player's strips go out in the order that player chose (TF_Sidebar_Order).
+                int order[SidebarGlyphxClass::StripClass::MAX_BUILDABLES];
+                TF_Sidebar_Order(context_sidebar->Column[c], PlayerPtr->Class->House, order);
+
                 /*
                 ** Each production slot in the column
                 */
-                for (int b = 0; b < context_sidebar->Column[c].BuildableCount; b++) {
+                for (int slot = 0; slot < context_sidebar->Column[c].BuildableCount; slot++) {
+                    int const b = order[slot];
 
                     CNCSidebarEntryStruct& sidebar_entry = sidebar->Entries[entry_index++];
                     if ((entry_index + 1) * sizeof(CNCSidebarEntryStruct) + memory_needed > buffer_size) {
@@ -8286,7 +8399,7 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                                        ? producer_masks.by_rtti[category]
                                        : 0;
                         TF_Apply_Cameo_Badge(sidebar_entry.AssetName,
-                                             TF_Entry_Faction_Mask((TechnoTypeClass const*)tech), held);
+                                             TF_Entry_Faction_Mask((TechnoTypeClass const*)tech), held, PlayerPtr);
                     }
 
                     if (super_weapon != nullptr) {

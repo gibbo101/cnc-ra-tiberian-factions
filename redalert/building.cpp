@@ -105,6 +105,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include "tf_settings.h"
 #include "utracker.h"
 #include "event.h"
 // The TS war factory's door-mouth seats, where a finished vehicle appears.
@@ -247,8 +248,8 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
 
     switch (message) {
 
-    // TF: harvester queue jumping (CFE Patch Redux port): a refinery serving one harvester lets a clearly
-    // closer one cut in. A harvester within HARV_QUEUE_JUMP_CUTOFF of the dock is never bumped.
+    // TF: with the harvester switch on, queue jumping (CFE Patch Redux port): a refinery serving one harvester lets
+    // a clearly closer one cut in. A harvester within HARV_QUEUE_JUMP_CUTOFF of the dock is never bumped.
     case RADIO_HELLO:
         // A refinery's attached harvester is in limbo, which breaks radio contact, so the dock looks free. Refuse
         // hellos while one is attached, or a second harvester docks into it and attaches twice.
@@ -256,7 +257,8 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             && Is_Something_Attached()) {
             return (RADIO_NEGATIVE);
         }
-        if ((Class->Type == STRUCT_REFINERY || Class->Type == STRUCT_TDPROC || Class->Type == STRUCT_TSPROC)
+        if (TF_Units_Harvesters()
+            && (Class->Type == STRUCT_REFINERY || Class->Type == STRUCT_TDPROC || Class->Type == STRUCT_TSPROC)
             && In_Radio_Contact()) {
             if (from != NULL && from->What_Am_I() == RTTI_UNIT && ((UnitClass*)from)->Class->IsToHarvest
                 && Contact_With_Whom()->What_Am_I() == RTTI_UNIT) {
@@ -598,12 +600,12 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
                 return (RADIO_ROGER);
             }
         }
-        // TF: when the harvester leaves, the refinery's lights go off, as in TD, and the house's queued harvesters
-        // re-run refinery selection so the freed dock is considered (CFE Patch Redux port).
+        // TF: when the harvester leaves, the refinery's lights go off, as in TD, and with the harvester switch on the
+        // house's queued harvesters re-run refinery selection so the freed dock is considered (CFE Patch Redux port).
         if (*this == STRUCT_REFINERY || *this == STRUCT_TDPROC || *this == STRUCT_TSPROC) {
             Begin_Mode(BSTATE_IDLE);
 
-            if (IsActive && !IsInLimbo && HasOpened) {
+            if (TF_Units_Harvesters() && IsActive && !IsInLimbo && HasOpened) {
                 for (int i = 0; i < Units.Count(); ++i) {
                     UnitClass* unit = Units.Ptr(i);
                     if (unit != NULL && unit->IsActive && !unit->IsInLimbo && unit->Class->IsToHarvest

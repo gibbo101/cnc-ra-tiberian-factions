@@ -1,14 +1,8 @@
 #!/usr/bin/env python3
-"""Write the Settings page, Data/ART/GUI/RA/TF_SETTINGS.BUI, from the CAMPAIGNS page's frame (docs/skirmish-music.md).
+"""Write the Settings page, Data/ART/GUI/RA/TF_SETTINGS.BUI, from the CAMPAIGNS page's frame; the layout is in
+docs/player-settings.md. License: GPL v3.
 
 usage: bui_settings_build.py <loose RA_MISSIONSELECT.BUI> <UI_BONUSCONTENT base BUI> <RA_MAIN_MENU BUI> <out BUI>
-
-The CAMPAIGNS page run by ClientG's SplashScreen, so the launcher layer (redalert/tf_launcher.cpp) runs it, as the
-ADD-ONS screen (scripts/bui_addons_build.py). Its faction tabs and banners stay. Added: AUDIO and GAME RULES page tabs
-above the banners; on the left the picked faction's name and crest, or COMING SOON for an empty page; on the right
-MUSIC over the encyclopedia's green plate (scripts/encyclopedia_art.py) and MUSIC_ROWS rows, each with a checkbox, a
-name and a description, and on the Tiberian Sun row GET ADD-ON for a missing add-on. Start becomes DEFAULTS. Rects
-are pixels of a 1280x800 Deck screenshot of the screen. License: GPL v3.
 """
 import copy
 import sys
@@ -25,12 +19,33 @@ HIDE = (b'CampaignSelect_Custom_Button', b'CampaignSelect_Custom_Disabled', b'Ca
         b'CampaignSelect_Aftermath_USSR_Disabled', b'CampaignSelect_Ant_Disabled', b'UI_CampaignSelect_Header_Text',
         b'MissionList_Box', b'MissionList_Box_SOVIET', b'MissionList_Box_ALLIED', b'MissionList_SampleEntry',
         b'CustomCampaignList_Group', b'TF_Coming_Soon', b'UI_MissionDescription_Group', b'CinematicButtonGroup',
-        b'MissionDifficulty_Group', b'BackButtonDisabled_Quad', b'StartButtonDisabled_Quad')
-PAGES = (b'AUDIO', b'GAME RULES')                 # SETTINGS_PAGES in redalert/tf_launcher.cpp
-PAGE_LEFT, PAGE_STEP, PAGE_WIDTH, PAGE_TOP, PAGE_HEIGHT = 222, 218, 200, 152, 30
+        b'MissionDifficulty_Group', b'BackButtonDisabled_Quad', b'StartButtonDisabled_Quad', b'TF_Banner_RA',
+        b'TF_Banner_TD', b'TF_Banner_TS')
+PAGES = (b'GENERAL', b'GAMEPLAY', b'GAME RULES')       # SETTINGS_PAGES in redalert/tf_launcher.cpp
+CATEGORY_ROWS = 3                                  # SETTINGS_CATEGORIES in tf_launcher.cpp
+PAGE_LEFT, PAGE_STEP, PAGE_WIDTH, PAGE_TOP, PAGE_HEIGHT = 222, 218, 200, 167, 30
 MUSIC_ROWS = (b'MIX', b'RED ALERT', b'TIBERIAN DAWN', b'TIBERIAN SUN')   # MUSIC_CHOICES in tf_launcher.cpp
 ROW_TOP, ROW_STEP, ROW_HEIGHT = 362, 74, 66
-GET_ROW = 3
+CHOICE_LEFT, CHOICE_STEP, CHOICE_WIDTH, CHOICE_HEIGHT = 905, 84, 76, 30
+
+
+def choice_buttons(roots, menu, row, top):
+    """A row's two choice buttons, indexed row * 2 + choice: a glow, the button, and grey and lit labels."""
+    out = []
+    for choice in range(2):
+        index = row * 2 + choice
+        x = CHOICE_LEFT + choice * CHOICE_STEP
+        out.append(quad(menu, b'BonusButtonGlow_Quad', b'TF_ST_OptGlow%d' % index,
+                        (x - 5, top - 4, CHOICE_WIDTH + 10, CHOICE_HEIGHT + 8), None))
+        button = copy.deepcopy(element_in(roots, b'Back_Button'))
+        set_header(button, b'Back_Button', b'TF_ST_Opt%d' % index, fit(x, top, CHOICE_WIDTH, CHOICE_HEIGHT),
+                   hidden=True)
+        out.append(button)
+        out.append(text(roots, SMALL_TEXT, b'TF_ST_OptText%d' % index, (x, top + 5, CHOICE_WIDTH, 22), b'OFF', GREY,
+                        CENTRE))
+        out.append(text(roots, SMALL_TEXT, b'TF_ST_OptOn%d' % index, (x, top + 5, CHOICE_WIDTH, 22), b'ON', BRIGHT,
+                        CENTRE))
+    return out
 
 
 def widgets(roots, bonus, menu):
@@ -48,10 +63,15 @@ def widgets(roots, bonus, menu):
                         CENTRE, hidden=False))
         out.append(text(roots, SMALL_TEXT, b'TF_ST_PageOn%d' % page, (x, PAGE_TOP + 5, PAGE_WIDTH, 22), label, BRIGHT,
                         CENTRE))
-    out += [text(roots, BIG_TEXT, b'TF_ST_Faction', (207, 306, 411, 28), b'FACTION', BRIGHT, CENTRE),
-            quad(menu, b'Button_BG', b'TF_ST_Crest', (302, 392, 220, 220), b'tf_enc_about_allies'),
-            text(roots, BIG_TEXT, b'TF_ST_Soon', (207, 480, 411, 40), b'COMING SOON', BRIGHT, CENTRE),
-            text(roots, BIG_TEXT, b'TF_ST_Music', (660, 312, 410, 28), b'MUSIC', BRIGHT, CENTRE),
+    out += [text(roots, BIG_TEXT, b'TF_ST_Soon', (207, 480, 411, 40), b'COMING SOON', BRIGHT, CENTRE)]
+    for row in range(CATEGORY_ROWS):
+        y = ROW_TOP + row * ROW_STEP
+        out.append(quad(menu, b'BonusButtonGlow_Quad', b'TF_ST_CatGlow%d' % row, (214, y - 2, 397, ROW_HEIGHT + 4),
+                        None))
+        out.append(quad(menu, b'Jurassic_Button_1', b'TF_ST_Cat%d' % row, (214, y - 2, 397, ROW_HEIGHT + 4), None))
+        out.append(text(roots, SMALL_TEXT, b'TF_ST_CatName%d' % row, (230, y + 9, 360, 22), b'NAME', BRIGHT, LEFT))
+        out.append(text(roots, SMALL_TEXT, b'TF_ST_CatDesc%d' % row, (230, y + 34, 360, 20), b'ABOUT', GREEN, LEFT))
+    out += [text(roots, BIG_TEXT, b'TF_ST_Music', (660, 312, 410, 28), b'MUSIC', BRIGHT, CENTRE),
             quad(menu, b'Button_BG', b'TF_ST_Plate', (657, 355, 417, 311), b'tf_ui_enc_stats')]
     check = element_in(bonus, b'ShowLocked_Checkbox')
     for row, label in enumerate(MUSIC_ROWS):
@@ -64,10 +84,10 @@ def widgets(roots, bonus, menu):
         out.append(text(roots, SMALL_TEXT, b'TF_ST_Name%d' % row, (708, y + 9, 240, 22), label, BRIGHT, LEFT))
         out.append(text(roots, SMALL_TEXT, b'TF_ST_Desc%d' % row, (708, y + 34, 350, 20), b'ABOUT', GREEN, LEFT))
         out.append(text(roots, SMALL_TEXT, b'TF_ST_Warn%d' % row, (708, y + 34, 180, 20), b'NEEDS', AMBER, LEFT))
-    y = ROW_TOP + GET_ROW * ROW_STEP
-    get = copy.deepcopy(element_in(roots, b'Back_Button'))
-    set_header(get, b'Back_Button', b'TF_ST_Get', fit(900, y + 16, 160, 34), hidden=True)
-    out += [get, text(roots, SMALL_TEXT, b'TF_ST_GetText', (900, y + 22, 160, 22), b'GET ADD-ON', AMBER, CENTRE)]
+        out += choice_buttons(roots, menu, row, y + (ROW_HEIGHT - CHOICE_HEIGHT) // 2)
+    y = ROW_TOP + CATEGORY_ROWS * ROW_STEP + 12
+    out += [text(roots, SMALL_TEXT, b'TF_ST_Note0', (214, y, 397, 22), b'NOTE', GREEN, CENTRE),
+            text(roots, SMALL_TEXT, b'TF_ST_Note1', (214, y + 24, 397, 22), b'NOTE', GREEN, CENTRE)]
     return out
 
 
