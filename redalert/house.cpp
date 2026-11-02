@@ -8695,11 +8695,12 @@ bool TF_AI_Plug_Fits(HouseClass const* house, BuildingTypeClass const* b)
     return (b == NULL || b->PowersUpBuilding == STRUCT_NONE || TF_Plug_Room(house, b) > 0);
 }
 
-// For a component tower plug: the plug while a bare tower is free, else the bare tower, so the builder lays
-// a tower on one pass and arms it on a later one. Any other building passes through.
+// For a component tower plug: the plug while a bare tower is free or the plug is above the tech level, else the
+// bare tower, so the builder arms on a later pass every tower it lays. Any other building passes through.
 BuildingTypeClass const* TF_AI_Tower_Step(HouseClass const* house, BuildingTypeClass const* b)
 {
-    if (b == NULL || b->PowersUpBuilding != STRUCT_TSCTWR || TF_AI_Plug_Fits(house, b)) {
+    if (b == NULL || b->PowersUpBuilding != STRUCT_TSCTWR || TF_AI_Plug_Fits(house, b)
+        || b->Level > (unsigned)house->Control.TechLevel) {
         return (b);
     }
     return (&BuildingTypeClass::As_Reference(STRUCT_TSCTWR));
