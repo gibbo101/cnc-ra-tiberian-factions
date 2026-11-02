@@ -8690,14 +8690,14 @@ BuildingTypeClass const* TF_Skirmish_Pick(StructType ra, HousesType actlike)
 **	True when the builder can use this building now: always for an ordinary building, and for
 **	an addon plug only while a host slot is free and unclaimed.
 */
-static bool TF_AI_Plug_Fits(HouseClass const* house, BuildingTypeClass const* b)
+bool TF_AI_Plug_Fits(HouseClass const* house, BuildingTypeClass const* b)
 {
     return (b == NULL || b->PowersUpBuilding == STRUCT_NONE || TF_Plug_Room(house, b) > 0);
 }
 
 // For a component tower plug: the plug while a bare tower is free, else the bare tower, so the builder lays
 // a tower on one pass and arms it on a later one. Any other building passes through.
-static BuildingTypeClass const* TF_AI_Tower_Step(HouseClass const* house, BuildingTypeClass const* b)
+BuildingTypeClass const* TF_AI_Tower_Step(HouseClass const* house, BuildingTypeClass const* b)
 {
     if (b == NULL || b->PowersUpBuilding != STRUCT_TSCTWR || TF_AI_Plug_Fits(house, b)) {
         return (b);

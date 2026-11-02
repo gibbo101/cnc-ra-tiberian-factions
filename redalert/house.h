@@ -1129,4 +1129,9 @@ extern TFPlaceScanStruct TF_PlaceScan;
 BuildingTypeClass const* TF_Skirmish_Pick(StructType ra, HousesType actlike);
 int TF_Skirmish_Type(StructType ra, HousesType actlike);
 
+// TF: the AI's addon plug guards (house.cpp): whether a plug has a free host slot, and the bare component tower
+// in place of a tower plug that has none.
+bool TF_AI_Plug_Fits(HouseClass const* house, BuildingTypeClass const* b);
+BuildingTypeClass const* TF_AI_Tower_Step(HouseClass const* house, BuildingTypeClass const* b);
+
 #endif
