@@ -7235,18 +7235,6 @@ static void TF_Take_Sidebar_Choices(int bits)
     if (PlayerPtr != NULL) {
         TF_Settings_Take_Sidebar(PlayerPtr->Class->House, bits);
     }
-#if TF_DEV_BUILD
-    char path[MAX_PATH];
-    FILE* log = TF_Documents_Path("tf_settings.log", path, sizeof(path)) ? fopen(path, "a") : NULL;
-    if (log != NULL) {
-        fprintf(log,
-                "frame %ld house %d bits 0x%x\n",
-                (long)Frame,
-                PlayerPtr != NULL ? (int)PlayerPtr->Class->House : -1,
-                bits);
-        fclose(log);
-    }
-#endif
 }
 
 /**************************************************************************************************
