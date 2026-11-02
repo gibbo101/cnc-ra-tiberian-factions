@@ -1,6 +1,6 @@
-# ModDB page copy (current: v5.0.0)
+# ModDB page copy (current: v5.7.0)
 
-**Status:** Reference. The ModDB page text for the current release, 5.0.0.
+**Status:** Reference. The ModDB page text for the current release, 5.7.0.
 
 **Live page: https://www.moddb.com/mods/tiberian-factions-for-red-alert**
 (ModDB serves 403 to automated fetches, so the live page can only be checked in a browser.)
@@ -166,99 +166,123 @@ harvester, repair bay and zoom features, GPL v3).</p>
 
 ---
 
-# 5.0.0 release article
+# 5.7.0 release article
 
-**Title:** Version 5.0.0: A Rip in Time
+The page's previous release was 5.0.0, so this article covers 5.5 to 5.7.
 
-**Summary field (short):** Another Tiberian faction joins the fray! A Chronosphere accident drags GDI
-out of the future. A terrible accident, or an insidious plot by Kane?
+**Title:** Version 5.7.0: Command Your Way
+
+**Summary field (short):** Five factions, two eras and one rift in time. Now you set the rules of
+engagement: every change Tiberian Factions makes to how Red Alert plays can be switched back to vanilla.
 
 **Body:**
 
-<p>Another Tiberian faction joins the fray! A Chronosphere accident tears a hole in time and drags GDI out of the future. A terrible accident, or an insidious plot by Kane?</p>
+<p><b>EA has not endorsed and does not support this product.</b></p>
+
+<p>Five factions, two eras and one rift in time. Since our last ModDB update, Tiberian Sun GDI has
+been rebuilt in HD, Tiberian Dawn's own theatres have come through the Chronosphere, and now you set
+the rules of engagement. Here is everything from 5.5 to 5.7.</p>
 <ul>
-<li>Tiberian Sun GDI, a fifth playable faction!</li>
-<li>All-new intro movie!</li>
-<li>UI overhaul!</li>
-<li>Gates and walls for every side!</li>
-<li>Tiberium on Red Alert's own maps!</li>
-<li>AI improvements!</li>
+<li>Every Tiberian Sun GDI building, unit and soldier rebuilt in HD!</li>
+<li>All six theatres, with Tiberian Dawn's 34 skirmish maps!</li>
+<li>A Faction Encyclopedia and an ADD-ONS screen on the main menu!</li>
+<li>Pathfinding twice as fast, and about 400 MB less video memory!</li>
+<li>New GAMEPLAY settings: switch any of the mod's gameplay changes back to vanilla!</li>
+<li>Classic AI: face Red Alert's own AI, taught to build every faction's base!</li>
 </ul>
 
-<h2>Tiberian Sun GDI</h2>
-<p>Pick TS GDI in the lobby and you start on a Tiberian Sun MCV with a Tiberian Sun army. The
-base is its own tree, from the Construction Yard and Power Plant (with turbines) through the War
-Factory, Radar, Tech Center and Service Depot to the Upgrade Center and the Dropship Bay. The
-infantry are Light Infantry, Disc Throwers, Engineers, Medics, Jumpjet Infantry and the Ghost
-Stalker. The armour runs from the Wolverine and Titan to the Hover MLRS, Disruptor, Juggernaut
-and Mammoth Mk. I, with Orcas and the Carryall in the air. The Dropship Bay brings down the
-Mammoth Mk. II and the Mech Division from orbit.</p>
-<p>The support kit is Tiberian Sun's too. Firestorm Defense: build the generator, lay its wall
-sections, and one click raises a field that destroys whatever crosses it, your own units
-included, and stops enemy shots, for as long as its charge lasts. The EMP Cannon's pulse freezes
-vehicles and silences buildings where it lands. The Upgrade Center takes an Ion Cannon uplink, a drop pod node and the Hunter
-Seeker: one click sends the droid to hunt down an enemy. The Mobile War Factory deploys
-into a working war factory, the Mobile Sensor Array shows cloaked enemies, and component
-towers take Vulcan, RPG or SAM upgrades.</p>
+<h2>5.5: Tiberian Sun rises in HD</h2>
+<p>GDI's arsenal from the future came through the Chronosphere's rift rough around the edges. Now
+every building, vehicle and soldier stands rebuilt, sharper than ever. Kane will not be pleased.</p>
+<ul>
+<li><b>Tiberian Sun GDI in HD:</b> every TS GDI building, vehicle, aircraft and infantry unit
+rebuilt from 3D models at Remastered's resolution, on whole map cells.</li>
+<li><b>HD sidebar cameos</b> for every TS GDI unit and building.</li>
+<li><b>New railgun shots</b> for the Mammoth Mk. II and the Ghost Stalker, and the Mammoth Mk. II
+now fires from its rail gun cannons.</li>
+<li><b>Mammoth Mk. I Reserve:</b> the Dropship Bay lands two Mammoth Mk. Is, and tells you when its
+reload is done.</li>
+<li><b>Load Game knows a save it can't load:</b> a save from another version, from vanilla or another
+mod is greyed out with the reason instead of crashing the game.</li>
+<li>The main menu shows the Tiberian Factions version.</li>
+<li>The Allied and Soviet campaigns are removed while the mod is enabled. Disable Tiberian Factions
+to play them.</li>
+<li><b>Changes:</b> some TS buildings take their correct names, TS GDI's starting units are adjusted,
+the TS Service Depot repairs at Tiberian Sun's rate, and the Orca Bomber lays its bombs in a line
+across the target.</li>
+<li><b>Fixes:</b> GDI and Nod build slower on low power; spies read every faction's power and money;
+a player isn't out while a building they hold still stands; a damaged harvester docks at any
+refinery type; the TS Engineer shows the capture cursor over any building it can take; "Unable to
+comply" speaks in your side's voice; and more.</li>
+</ul>
+<p>The Tiberian Sun art, sounds and EVA now come as their own pack, <b>Tiberian Sun HD Assets</b>.
+Without it the mod still plays, but TS GDI is locked. The download below has both folders in it.</p>
 
-<h2>Every faction looks like itself</h2>
-<p>GDI and Nod now play on Tiberian Dawn's own sidebar, and every faction gets its own radar
-crest, sidebar tabs and EVA lines, including lines the game's launcher speaks itself. The
-lobby picker shows each faction's emblem and lists every faction. All of it works for every
-player in a LAN game, not just the host.</p>
+<h2>5.6: Six theatres, an encyclopedia and a faster game</h2>
+<ul>
+<li><b>Six theatres:</b> Tiberian Dawn's desert, temperate and winter join Red Alert's temperate,
+snow and interior, and all 34 of Tiberian Dawn's skirmish maps are back in the Official list with
+their own thumbnails.</li>
+<li><b>Faction Encyclopedia:</b> a tab per faction with its units and structures, each with its
+picture, its manual description and its in-game stats.</li>
+<li><b>ADD-ONS:</b> get and switch on the asset packs without leaving the game. The main menu points
+at any pack that isn't on.</li>
+<li><b>Performance:</b> pathfinding about twice as fast, and about 400 MB less video memory. The
+Tiberian Sun HD Assets download falls from about 226 MB to 124 MB.</li>
+<li><b>Changes:</b> Concrete Wall costs 100, as in the campaigns; TS GDI builds no sandbags, as in
+Tiberian Sun; Unholy Alliance starts every player with a TS GDI MCV too; and the GDI Mammoth Tank
+needs GDI's own Repair Facility.</li>
+<li><b>Fixes from your reports:</b> paused units resume when clicked again; units come only from
+their own faction's factory; placing a turret on a component tower repairs the tower; a deployed
+Juggernaut stays put; another mod's rules.ini no longer breaks Tiberian Factions; and in LAN games
+H, the deploy key and building sounds work for every player.</li>
+<li>The Faction Encyclopedia shows Tiberian Dawn's units and buildings as they look in game.</li>
+</ul>
 
-<h2>A new front end</h2>
-<p>The mod has its own title, its own startup intro cut to Hell March, a new main menu, a
-loading screen with the faction emblems, and lobbies to match.</p>
+<h2>5.7: Command your way</h2>
+<p>TIBERIAN FACTIONS SETTINGS gains GENERAL and GAMEPLAY pages. Every switch starts on, so the mod
+plays as it always has until you change one.</p>
+<ul>
+<li><b>Classic AI:</b> take on Red Alert's own AI, taught to build every faction's own buildings,
+with vanilla's attacks, selling and single difficulty.</li>
+<li><b>TF AI:</b> switch fair fog and scouting, attack waves, naval play and the Allied and Soviet
+early radar, each on its own.</li>
+<li><b>Units:</b> switch A* pathfinding, giving way in narrow passages, and the harvester fixes.</li>
+<li><b>Sidebar:</b> sort cameos by cost or in arrival order, and show or hide faction badges.</li>
+<li>In LAN games the host's gameplay settings apply to everyone, and each player keeps their own
+sidebar.</li>
+<li>Every switch is saved in Documents/CnCRemastered/tf_settings.ini, so you can set them by hand
+too.</li>
+</ul>
 
-<h2>Walls and gates</h2>
-<p>Every faction has a gate: the GDI gate, the Nod laser gate, the Allied gate, the Soviet Tesla
-gate and the Tiberian Sun GDI gate. It opens for your units and shuts behind them. Walls fill a
-straight line the way they do in Tiberian Sun and Red Alert 2: place a wall in line with another
-of its kind, up to five cells away, and the gap fills in.</p>
-
-<h2>Tiberium on Red Alert's own maps</h2>
-<p>Most of Red Alert's official skirmish maps now mix Tiberium fields with the ore, balanced
-so every start gets a fair mix, with lobby thumbnails to match.</p>
-<p>The 31 Tiberian Dawn maps are out of the mod for now: they raised video memory use for every
-player. They are planned to return as a separate download. Copies installed by earlier versions
-are removed from your custom maps.</p>
-
-<h2>Hotkeys for every faction</h2>
-<p>The Deploy key works again on every faction's MCVs and transports, and select-all (A) leaves
-harvesters and MCVs out of your army, for every player in LAN games too.</p>
-
-<h2>Crates</h2>
-<p>The unit pool now covers every faction.</p>
-
-<h2>The AI</h2>
-<p>The computer opponents play all five factions, TS GDI included. In 5.0 they field a stronger
-economy and build a navy on water maps. More AI work is to come.</p>
-
-<h2>Known limitations</h2>
-<p>The TS GDI AI does not use Firestorm Defense or build the EMP Cannon, and builds no
-transports or navy on maps split by water (a TS GDI navy may come later). No faction's AI builds
-walls or gates.</p>
-
-<p>Thanks to <b>hazelnut</b> for the Tiberian Sun GDI emblem and to the <b>OpenTS
-Developers</b>, whose OpenTS is the reference for every Tiberian Sun unit in this release.</p>
-
-<p>Download below, or subscribe on the
+<h2>Installing</h2>
+<p>Extract the zip into <b>Documents/CnCRemastered/Mods/Red_Alert/</b>. It holds two folders,
+Tiberian Factions and Tiberian Sun HD Assets: enable both in the game's mod list, then restart the
+game. Or subscribe to both on the
 <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3729834253">Steam Workshop</a>
-for automatic updates. Full changelog on
+for automatic updates.</p>
+<p>Saves from 5.0 and earlier won't load; Load Game greys them out.</p>
+
+<p>Full changelog on
 <a href="https://github.com/gibbo101/cnc-ra-tiberian-factions/blob/main/CHANGELOG.md">GitHub</a>.</p>
 
 ---
 
-# 5.0.0 download entry
+# 5.7.0 download entries
 
 | Field | Value |
 |---|---|
-| Name | Tiberian Factions for Red Alert 5.0.0 |
-| Filename | `TiberianFactions-v5.0.0.zip`, 1,006,896,567 bytes (960 MB) |
-| Source | GitHub release asset, identical file: https://github.com/gibbo101/cnc-ra-tiberian-factions/releases/tag/v5.0.0 |
+| Name | Tiberian Factions for Red Alert 5.7.0 |
+| Filename | `TiberianFactions-5.7.0.zip`, 361,278,780 bytes (345 MB) |
 | Category | Full Version |
-| Description | Version 5.0.0: Tiberian Sun GDI joins as a fifth faction, with an all-new intro movie, a UI overhaul and more. Extract into Documents/CnCRemastered/Mods/Red_Alert/ or subscribe on the Steam Workshop. |
+| Description | Version 5.7.0, with Tiberian Sun HD Assets included. Extract both folders into Documents/CnCRemastered/Mods/Red_Alert/, enable both, then restart the game. |
+
+| Field | Value |
+|---|---|
+| Name | Tiberian Sun HD Assets 1.1 |
+| Filename | `TS-HD-Assets-1.1.zip`, 130,462,557 bytes (124 MB) |
+| Category | Addon |
+| Description | The Tiberian Sun art, sounds and EVA on their own, already in the full download. For modders, or to update the pack alone. |
 
 ---
 
