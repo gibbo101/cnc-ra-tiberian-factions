@@ -111,7 +111,7 @@ def stage(mod_dir, full=False, strict=False):
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         if not os.path.exists(dst) or open(dst, encoding="utf-8", newline="").read() != text:
             open(dst, "w", encoding="utf-8", newline="").write(text)
-    sprite_dds.convert(mod_dir)
+    sprite_dds.drop_frames(mod_dir)
     sprite_dds.convert_atlas(mod_dir)
 
 

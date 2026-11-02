@@ -246,6 +246,19 @@ def convert_atlas(mod_folder):
     os.remove(tga)
 
 
+def drop_frames(mod_folder):
+    """Deletes the DDS frame folders an earlier conversion left in a staged mod folder, so each sprite ships as its
+    ZIP."""
+    srgb = os.path.join(mod_folder, "Data", "ART", "TEXTURES", "SRGB")
+    for game in sorted(os.listdir(srgb)) if os.path.isdir(srgb) else []:
+        for sub in SPRITE_FOLDERS:
+            d = os.path.join(srgb, game, sub)
+            for name in sorted(os.listdir(d)) if os.path.isdir(d) else []:
+                path = os.path.join(d, name)
+                if os.path.isdir(path) and any(f.lower().endswith(".dds") for f in os.listdir(path)):
+                    _clear(path)
+
+
 def sprite_zips(mod_folder):
     """Every sprite ZIP under a staged mod folder's Data/ART."""
     srgb = os.path.join(mod_folder, "Data", "ART", "TEXTURES", "SRGB")

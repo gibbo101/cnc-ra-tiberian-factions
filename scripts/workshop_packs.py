@@ -483,9 +483,7 @@ def build(mod, folder, host="RA", strict=True):
     if problem:
         print("WARNING: skipped", mod, "--", problem, file=sys.stderr)
         return
-    # Trap: loose DDS sprites are untested in Tiberian Dawn; converting its builds could ship art it never draws.
-    if host == "RA":
-        sprite_dds.convert(folder)
+    sprite_dds.drop_frames(folder)
     listed, written = write_xml(mod, folder, host)
     prune(folder, os.path.join("Data", "XML"), written)
     prune(folder, "CCDATA", [marker] if marker else [])
