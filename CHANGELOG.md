@@ -2,6 +2,11 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [5.7.1] — 2026-11-02
+
+### Fixed
+- On ultrawide screens the main menu keeps its proportions, and clicks land on the button under the pointer.
+
 ## [5.7.0] — 2026-11-02
 
 ### Added
