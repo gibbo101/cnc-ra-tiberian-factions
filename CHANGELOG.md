@@ -2,6 +2,22 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [5.7.0] — 2026-11-02
+
+### Added
+- TIBERIAN FACTIONS SETTINGS gains GENERAL and GAMEPLAY pages: each of the mod's changes to how Red Alert plays can
+  be switched back to vanilla. Every switch starts on, so the mod plays as before until you change one.
+- SIDEBAR: sort cameos by cost or in vanilla's arrival order, and show or hide faction badges. In LAN games each
+  player's sidebar follows their own choice.
+- CLASSIC AI: play against Red Alert's own AI, taught to build every faction's own buildings, with vanilla's
+  attacks, selling and single difficulty.
+- TF AI: switch fair fog and scouting, attack waves, naval play and the Allied and Soviet early radar, each on its
+  own.
+- UNITS: switch A* pathfinding, giving way in narrow passages, and the harvester fixes.
+- In LAN games the host's GAMEPLAY settings apply to every player.
+- Every switch is saved in `Documents/CnCRemastered/tf_settings.ini`, so you can still set them by hand; the README
+  lists the keys.
+
 ## [5.6.1] — 2026-10-20
 
 ### Fixed
