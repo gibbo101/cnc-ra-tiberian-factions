@@ -1,9 +1,8 @@
 # Sprite memory
 
-**Status:** Design, partly shipped. In 5.6.0: DDS sprites, a DDS UI atlas, and the splash preload always on. The
-match warm-up below follows, with the preload off.
-**Open:** the warm-up; a Steam Deck and a LAN test of it; a Tiberian Dawn check before the TD asset packs ship DDS
-sprites (their builds keep the ZIPs until then).
+**Status:** Design, partly shipped: a DDS UI atlas, and the splash preload always on. Sprites ship as their ZIPs (Sprites
+as DDS). The match warm-up below follows, with the preload off.
+**Open:** the warm-up; a Steam Deck and a LAN test of it.
 
 The launcher holds every texture it draws in video memory. Tiberian Factions and its asset packs carry far more art
 than the base game, so how that art is stored, and when it loads, decides whether the mod fits on a 4 GB card.
@@ -22,6 +21,13 @@ ClientG's video memory on one desktop (RTX 5070), Tiberium Garden, TS GDI, the s
 With the preload off, a match where the AI builds a full TS GDI base, all of it on screen, peaks at 972 MB. The UI
 atlas as DDS takes a further 116 MB off every screen: Docklands, TS GDI, 534 to 418 MB at the menu and 972 to 856 MB
 in play.
+
+The shipped builds on the same desktop, a played Tiberium Garden skirmish, TS GDI against one Medium AI:
+
+| Build | Main menu | In play |
+|---|---|---|
+| DDS sprites and DDS UI atlas | 4,402 MB | 4,476 MB |
+| ZIP sprites and DDS UI atlas | 4,658 MB | 4,712 MB |
 
 ## The splash preload
 
@@ -54,16 +60,18 @@ XML unchanged (its `.tga` names find the `.dds` files). Three rules hold for loo
   saved on its whole canvas, with the margins clear.
 - A frame cut smaller than its canvas is drawn stretched, so the canvas can't be trimmed.
 
-DXT5 with mips takes about one byte a pixel of the canvas. `scripts/sprite_dds.py` gives each sprite ZIP under a
-staged mod's `UNITS`, `STRUCTURES` and `VFX` whichever form takes less memory: a folder of whole-canvas DXT5
-frames, or the ZIP with every frame's crop tightened to its visible pixels. Staging (`stage_asset_packs.py`) and the
-asset-pack builds (`workshop_packs.py`) run it, and it caches its output by ZIP content in `build/sprite-dds-cache`.
-The base game's own terrain DDS files carry full mips, so the sprites do too.
+DXT5 with mips takes about one byte a pixel of the canvas, and whole-canvas DXT5 sprites saved about 250 MB in play
+(Measured), but sprites ship as their ZIPs. DXT keeps two colours for each 4x4 block, so the art loses its fine
+detail, and its 5:6:5 colours round greys towards green: a third of the Allied Construction Yard's grey pixels lean
+green once encoded, against 1% in its TGA, and in game they drew as a team-colour speckle over its concrete pad.
+Staging (`stage_asset_packs.py`) and the asset-pack builds (`workshop_packs.py`) delete any DDS frame folder an
+earlier build left (`sprite_dds.drop_frames`).
 
 ## The UI atlas
 
 `MT_COMMANDBAR_COMMON` holds the sidebar, the crests, the cameos and every front-end region, and is drawn on every
-screen: 176 MB as a TGA. Staging writes it as DXT5 with mips, 62 MB (`sprite_dds.convert_atlas`). DXT needs sides
+screen: 176 MB as a TGA. Staging writes it as DXT5 with mips, 62 MB (`sprite_dds.convert_atlas`); the sidebar and
+menus look as they did as a TGA. DXT needs sides
 that are multiples of 4, so it is padded from 6871 to 6872 px wide. ClientG computes each region's UVs from the size
 of the texture it loaded, so the radar crest records the DLL writes (`radar-crest-ram-spike.md`) take the atlas's
 size from the shipped DDS. `deploy.sh` and the packager check the locked atlas in `resources/`, the TGA the DDS is
