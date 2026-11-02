@@ -186,7 +186,7 @@ the rules of engagement. Here is everything from 5.5 to 5.7.</p>
 <li>Every Tiberian Sun GDI building, unit and soldier rebuilt in HD!</li>
 <li>All six theatres, with Tiberian Dawn's 34 skirmish maps!</li>
 <li>A Faction Encyclopedia and an ADD-ONS screen on the main menu!</li>
-<li>Pathfinding twice as fast, and about 400 MB less video memory!</li>
+<li>Pathfinding twice as fast!</li>
 <li>New GAMEPLAY settings: switch any of the mod's gameplay changes back to vanilla!</li>
 <li>Classic AI: face Red Alert's own AI, taught to build every faction's base!</li>
 </ul>
@@ -227,8 +227,7 @@ their own thumbnails.</li>
 picture, its manual description and its in-game stats.</li>
 <li><b>ADD-ONS:</b> get and switch on the asset packs without leaving the game. The main menu points
 at any pack that isn't on.</li>
-<li><b>Performance:</b> pathfinding about twice as fast, and about 400 MB less video memory. The
-Tiberian Sun HD Assets download falls from about 226 MB to 124 MB.</li>
+<li><b>Performance:</b> pathfinding about twice as fast.</li>
 <li><b>Changes:</b> Concrete Wall costs 100, as in the campaigns; TS GDI builds no sandbags, as in
 Tiberian Sun; Unholy Alliance starts every player with a TS GDI MCV too; and the GDI Mammoth Tank
 needs GDI's own Repair Facility.</li>
@@ -253,6 +252,7 @@ early radar, each on its own.</li>
 sidebar.</li>
 <li>Every switch is saved in Documents/CnCRemastered/tf_settings.ini, so you can set them by hand
 too.</li>
+<li>On ultrawide screens the main menu keeps its shape, and clicks land where you point.</li>
 </ul>
 
 <h2>Installing</h2>
@@ -272,15 +272,15 @@ for automatic updates.</p>
 
 | Field | Value |
 |---|---|
-| Name | Tiberian Factions for Red Alert 5.7.1 |
-| Filename | `TiberianFactions-5.7.1.zip`, 361,278,756 bytes (345 MB) |
+| Name | Tiberian Factions for Red Alert 5.7.2 |
+| Filename | `TiberianFactions-5.7.2.zip`, 518,796,541 bytes (495 MB) |
 | Category | Full Version |
-| Description | Version 5.7.1, with Tiberian Sun HD Assets included. Extract both folders into Documents/CnCRemastered/Mods/Red_Alert/, enable both, then restart the game. |
+| Description | Version 5.7.2, with Tiberian Sun HD Assets 1.2 included. Extract both folders into Documents/CnCRemastered/Mods/Red_Alert/, enable both, then restart the game. |
 
 | Field | Value |
 |---|---|
-| Name | Tiberian Sun HD Assets 1.1 |
-| Filename | `TS-HD-Assets-1.1.zip`, 130,462,557 bytes (124 MB) |
+| Name | Tiberian Sun HD Assets 1.2 |
+| Filename | `TS-HD-Assets-1.2.zip`, 236,708,671 bytes (226 MB) |
 | Category | Addon |
 | Description | The Tiberian Sun art, sounds and EVA on their own, already in the full download. For modders, or to update the pack alone. |
 
