@@ -105,7 +105,8 @@ int HouseClass::TF_Classic_AI_Building(void)
         }
 
         b = TF_Skirmish_Pick(STRUCT_ADVANCED_POWER, ActLike);
-        if (Can_Build(b, ActLike) && Power <= Drain + Rule.PowerSurplus && b->Cost_Of() < money) {
+        if (Can_Build(b, ActLike) && TF_AI_Plug_Fits(this, b) && Power <= Drain + Rule.PowerSurplus
+            && b->Cost_Of() < money) {
             choiceptr = BuildChoice.Alloc();
             if (choiceptr != NULL) {
                 *choiceptr =
@@ -193,7 +194,7 @@ int HouseClass::TF_Classic_AI_Building(void)
 
         current = TF_Classic_Count(STRUCT_PILLBOX, STRUCT_CAMOPILLBOX, STRUCT_TURRET, STRUCT_FLAME_TURRET);
         if (current < Round_Up(Rule.DefenseRatio * fixed(CurBuildings)) && current < (unsigned)Rule.DefenseLimit) {
-            b = TF_Skirmish_Pick(STRUCT_FLAME_TURRET, ActLike);
+            b = TF_AI_Tower_Step(this, TF_Skirmish_Pick(STRUCT_FLAME_TURRET, ActLike));
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
@@ -201,7 +202,7 @@ int HouseClass::TF_Classic_AI_Building(void)
                 }
             } else {
                 if (Percent_Chance(50)) {
-                    b = TF_Skirmish_Pick(STRUCT_PILLBOX, ActLike);
+                    b = TF_AI_Tower_Step(this, TF_Skirmish_Pick(STRUCT_PILLBOX, ActLike));
                     if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                         choiceptr = BuildChoice.Alloc();
                         if (choiceptr != NULL) {
@@ -209,7 +210,7 @@ int HouseClass::TF_Classic_AI_Building(void)
                         }
                     }
                 } else {
-                    b = TF_Skirmish_Pick(STRUCT_TURRET, ActLike);
+                    b = TF_AI_Tower_Step(this, TF_Skirmish_Pick(STRUCT_TURRET, ActLike));
                     if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                         choiceptr = BuildChoice.Alloc();
                         if (choiceptr != NULL) {
@@ -249,7 +250,7 @@ int HouseClass::TF_Classic_AI_Building(void)
                     }
                 }
 
-                b = TF_Skirmish_Pick(STRUCT_SAM, ActLike);
+                b = TF_AI_Tower_Step(this, TF_Skirmish_Pick(STRUCT_SAM, ActLike));
                 if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                     choiceptr = BuildChoice.Alloc();
                     if (choiceptr != NULL) {
@@ -257,7 +258,7 @@ int HouseClass::TF_Classic_AI_Building(void)
                             (current < (unsigned)threat_quantity) ? URGENCY_HIGH : URGENCY_MEDIUM, b->Type);
                     }
                 } else {
-                    b = TF_Skirmish_Pick(STRUCT_AAGUN, ActLike);
+                    b = TF_AI_Tower_Step(this, TF_Skirmish_Pick(STRUCT_AAGUN, ActLike));
                     if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                         choiceptr = BuildChoice.Alloc();
                         if (choiceptr != NULL) {
@@ -271,7 +272,7 @@ int HouseClass::TF_Classic_AI_Building(void)
 
         current = TF_Classic_Count(STRUCT_TESLA);
         if (current < Round_Up(Rule.TeslaRatio * fixed(CurBuildings)) && current < (unsigned)Rule.TeslaLimit) {
-            b = TF_Skirmish_Pick(STRUCT_TESLA, ActLike);
+            b = TF_AI_Tower_Step(this, TF_Skirmish_Pick(STRUCT_TESLA, ActLike));
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome) && Power_Fraction() >= 1) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
