@@ -3,8 +3,7 @@
 **Status:** Design. Built, unreleased: `tf_settings.ini`, the GENERAL page (AUDIO and SIDEBAR) with sidebar sorting
 and faction badges, and the GAMEPLAY page's Classic AI, TF AI and UNITS switches. The remaining switch sites come
 from reading the source, unproven in play.
-**Open:** the LAN lobby line; the remaining units
-switches and the controls switches; the decisions at the end.
+**Open:** the LAN lobby line; the remaining units switches and the controls switches; the decisions at the end.
 
 Every behaviour the mod changes from vanilla Red Alert, other than balance, becomes a switch on the TIBERIAN
 FACTIONS SETTINGS page. Every switch is on by default, so a player who never opens the page plays the mod as it
@@ -100,7 +99,9 @@ The GAMEPLAY page's CLASSIC AI category holds the master switch, **TF AI** (the 
 - Classic AI is vanilla's decisions with only what it needs to play every faction. Vanilla's AI knows only RA's
   buildings; ours maps each to the faction's own (`TF_Skirmish_Pick` / `TF_Skirmish_Type`), and Classic keeps it.
 - **The base builder** is vanilla's `AI_Building`, copied into `tf_ai_classic.cpp` (`TF_Classic_AI_Building`)
-  with each RA building routed to the faction's own and counted with it (`TF_Classic_Count`).
+  with each RA building routed to the faction's own and counted with it (`TF_Classic_Count`). TS GDI's addons
+  use the TF AI's guards: a component tower is laid bare and armed on a later pass (`TF_AI_Tower_Step`), and a
+  turbine goes only on a free power plant (`TF_AI_Plug_Fits`).
 - **Units, infantry, aircraft and ships** keep our pickers, which are vanilla's plus the mapping: with Classic
   picked they skip the economy hold and build one harvester a refinery, as vanilla did. Naval is off, so no ships.
 - **Attacks** are vanilla's (`TF_Classic_AI_Attack`), and fair fog is off.
@@ -109,7 +110,8 @@ The GAMEPLAY page's CLASSIC AI category holds the master switch, **TF AI** (the 
   (`TF_AI_IQ_From_Difficulty`), and the lobby's per-slot picks are not read.
 - Stock RA's AI attacks sooner than ours (`todo.md`, the AI milestone), so Classic plays differently, and it is
   the baseline our AI is tuned against.
-- Proven in skirmish against a Soviet and a Nod computer house: each built vanilla's order with its own buildings.
+- Proven in skirmish against a Soviet, a Nod and a TS GDI computer house: each built vanilla's order with its own
+  buildings, TS GDI's armed towers and turbines among them.
 
 ## The page
 
