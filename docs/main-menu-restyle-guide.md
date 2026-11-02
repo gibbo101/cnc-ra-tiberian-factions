@@ -86,8 +86,9 @@ Step 4 shows how to look up any other region.
    common reason an edit "does nothing". Compare md5s of the deployed file and your build, then
    restart the launcher fully.
 6. **Hide a widget by shrinking it, not by moving it off screen.** Off-screen positions are
-   clamped, so a "removed" button peeks back in on ultrawide screens. Set its size to almost
-   zero and its tint alpha to 0.
+   clamped, so a "removed" button peeks back in on ultrawide screens, and one far off screen
+   stretches the whole menu and misplaces its clicks there. Set its size to zero, and its
+   children's sizes too when the launcher shows it again.
 7. **A widget's rect and tint come before its name in the `.BUI`.** The tags after a widget's
    name belong to the *next* widget. Get this backwards and you move the button below the one you
    meant.

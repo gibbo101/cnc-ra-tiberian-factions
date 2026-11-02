@@ -139,5 +139,6 @@ The selected row's button is toggled on (`0xF80920`). A tab is the page's tab bu
 ## Menu
 
 `scripts/bui_mainmenu_pack_notice.py` puts FACTION ENCYCLOPEDIA (`TF_Encyclopedia`) under TIBERIAN FACTIONS ADD-ONS,
-REPLAY / OBSERVER in BONUS GALLERY's row, and moves the gallery's button and new-content badge off screen: the
-launcher shows them again, and shrunk to nothing the badge stretched into view.
+REPLAY / OBSERVER in BONUS GALLERY's row, and shrinks the gallery's button and new-content badge to nothing in place:
+the launcher shows them again, so each piece of the badge is shrunk too, or the launcher stretches it back into view.
+Moved off screen instead, they stretch the whole menu and misplace its clicks on ultrawide screens.
