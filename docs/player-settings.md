@@ -3,7 +3,7 @@
 **Status:** Design. Built, unreleased: `tf_settings.ini`, the GENERAL page (AUDIO and SIDEBAR) with sidebar sorting
 and faction badges, and the GAMEPLAY page's Classic AI, TF AI and UNITS switches. The remaining switch sites come
 from reading the source, unproven in play.
-**Open:** a LAN game proving a joiner's sidebar choices reach the host; the LAN lobby line; the remaining units
+**Open:** the LAN lobby line; the remaining units
 switches and the controls switches; the decisions at the end.
 
 Every behaviour the mod changes from vanilla Red Alert, other than balance, becomes a switch on the TIBERIAN
@@ -31,7 +31,7 @@ export. What ClientG does on each machine stays that player's own: the radar cre
   launcher's own mod-command send does. The host keeps them per house (`TF_Settings_Take_Sidebar`); a house with
   none yet, an older joiner's included, follows the host's file. A strip keeps vanilla's arrival order and the
   sidebar export orders each player's copy (`TF_Sidebar_Order`), so choices landing a few frames in apply at once.
-  Proven in skirmish, where the host's own launcher sends them; a LAN joiner sending them is untested.
+  Proven in a LAN game: a Deck joiner's choices reached the PC host, and each player saw their own sidebar.
 - **Sim switches follow the host's file**: controls, units and the AI. The GAMEPLAY page carries "In a LAN game the
   host's settings apply to every player.", and the LAN lobby is to carry "Gameplay settings follow the host."
   Where the lobby can carry it is open: a MasterText string on an existing label
@@ -83,15 +83,14 @@ export. What ClientG does on each machine stays that player's own: the radar cre
   and RA's helipad, airfield and tech centres need one. GDI, Nod and TS GDI build theirs early either way.
 - **Base placement and sell logic are not switches.** They are bug fixes and support for our base builder (the
   naval and expansion-yard placement, the sell priorities of what it rebuilds), so Classic AI is their way back.
-- **The unit switches** come from the host's file too, and apply in the campaign as well: the pathing and
-  harvester changes reach it. A* and give way are independent: give way works on either pathfinder's route.
+- **The unit switches** come from the host's file too. A* and give way are independent: give way works on either
+  pathfinder's route.
 - **Harvesters off** drops the stall detector and field blacklist, the anti-stuck watchdog (it only tracks, so a
   save loaded with it on never fires at once), the full-load return, the per-load refinery re-pick, the field pick
   by travel distance, waiting out a drought beside a refinery, queue jumping and the CFE refinery spread. Vanilla
   picks the remembered refinery, else the nearest of any faction's. Fixes stay: a refinery docks only its own
   customer, a stale booking drops, an attached harvester blocks hellos, a walled-off field is forgotten.
-- The AI switches come from the host's file and hold for the match. The campaign keeps them all on
-  (`TF_Settings_Load`), as the AI changes never reach it.
+- The AI switches come from the host's file and hold for the match.
 
 ### Classic AI
 

@@ -78,7 +78,7 @@ SortByPrice=0
 TFAI=0
 ```
 
-In a LAN game each player's `[Sidebar]` is their own, and the host's `[AI]` and `[Units]` apply to everyone. The campaigns always play the mod's AI; `[Units]` applies there too.
+In a LAN game each player's `[Sidebar]` is their own, and the host's `[AI]` and `[Units]` apply to everyone.
 
 `tf_music.ini` holds each faction's skirmish music: under `[Music]`, the keys `ALLIES`, `SOVIETS`, `GDI`, `NOD` and `TSGDI` each take `MIX` (the default), `RA`, `TD` or `TS`.
 
