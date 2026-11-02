@@ -5,7 +5,7 @@ Usage:  stage_asset_packs.py <mod dir> [--full] [--strict]
 
 Copies every pack's Data/ART and Data/AUDIO into <mod dir>/Data, except the PACK_ONLY objects and sounds and the
 packs a Workshop mod in asset_packs.USED carries: that mod is built whole in the folder beside it
-(scripts/workshop_packs.py). Then
+(scripts/workshop_packs.py). A withdrawn mod's packs (asset_packs.WITHDRAWN) are not staged at all. Then
 writes each of the mod's XML files that packs contribute to: the mod's own file from resources/,
 with every pack's entries in place of that pack's marker (before the closing tag when the file has
 no marker).
@@ -92,7 +92,7 @@ def stage(mod_dir, full=False, strict=False):
     for i, pack in enumerate(packs):
         for sub in ("ART", "AUDIO"):
             src = os.path.join(A.pack_data(pack), sub)
-            if A.used_mod(pack):
+            if A.used_mod(pack) or pack in A.WITHDRAWN:
                 for d, _, fs in os.walk(src):
                     for f in fs:
                         stale = os.path.join(data, sub, os.path.relpath(os.path.join(d, f), src))

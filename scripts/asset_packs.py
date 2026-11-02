@@ -123,6 +123,8 @@ REQUIRED = [mod for mod, w in WORKSHOP.items() if w["required"]]
 # The Workshop mods Tiberian Factions uses as their own folders beside it: the required ones, and the optional ones
 # whose content it plays when they are enabled.
 USED = [mod for mod, w in WORKSHOP.items() if w["required"] or w.get("used")]
+# The packs of a withdrawn Workshop mod: staged nowhere, neither into the mod nor beside it.
+WITHDRAWN = {pack for w in WORKSHOP.values() if w.get("withdrawn") for pack in w["packs"]}
 
 # The game a Workshop item is for: its game_type, its own art folder (the only one it reads), its XML and buildable
 # prefix, its terrain theatres by RA theatre, and whether terrain must be loose files (TD's never reads a ZIP).
