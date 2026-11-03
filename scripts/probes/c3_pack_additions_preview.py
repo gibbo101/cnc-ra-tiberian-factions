@@ -193,7 +193,7 @@ def firing_gif(name, out):
 def main(out):
     os.makedirs(out, exist_ok=True)
     sheet(out, ["C3PRED", "C3SCORP", "C3FLAME", "C3STNK", "C3BEAM"], "C3_NOD_TANKS_sheet.png")
-    sheet(out, ["C3PRED", "C3PITB", "C3PITBMOR", "C3APC", "C3RIG"], "C3_GDI_LIGHT_sheet.png")
+    sheet(out, ["C3PRED", "C3PITB", "C3PITBMOR", "C3APC"], "C3_GDI_LIGHT_sheet.png")
     for name in ("C3FLAME", "C3STNK", "C3BEAM", "C3PITB", "C3PITBMOR", "C3APC"):
         firing_gif(name, out)
     print(f"wrote previews to {out}")

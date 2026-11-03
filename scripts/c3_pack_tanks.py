@@ -2,14 +2,13 @@
 """Package the C&C3 tanks: the Mammoth Mk. III (C3MK3), the Predator (C3PRED), the Scorpion (C3SCORP) with its
 upgrades: Laser Capacitors (C3SCORPLAS), Dozer Blades (C3SCORPDZR) and both (C3SCORPLASDZR), the Flame Tank
 (C3FLAME), the Stealth Tank (C3STNK) and the Beam Cannon (C3BEAM); the Pitbull (C3PITB) and with the Mortar
-upgrade (C3PITBMOR), the Guardian APC (C3APC) and the Rig (C3RIG).
+upgrade (C3PITBMOR) and the Guardian APC (C3APC).
 
 Tileset layout per tank (the walker gait layout, contract 2 keeps the turret under 128):
   0-95    hull: 32 facings (CCW, 0 = N) x 3 tread steps; the gait code steps the treads
           while the tank drives, so the belts roll instead of the hull gliding.
   96-127  turret: 32 facings, no shadow.
 A wheeled tank (WHEELED) has one hull frame per facing: its three step tiles name that one member.
-A vehicle with no turret (NO_TURRET, the Rig) has the hull frames only, and no seat or fire table.
 Hull frames carry EA's baked drop shadow (ts_reshadow.py). Renders come from c3_render.py at
 RENDER_PPU pixels per C&C3 unit and pack at PACK_PPU, on canvas = ShapeSize x 8.
 
@@ -81,11 +80,9 @@ UNITS = (
     ("C3BEAM", "beamcannon", 48, (("FX_WEAPON",),)),
     ("C3PITB", "pitbull", 48, (("FXWEAPON01", "FXWEAPON02"),)),
     ("C3APC", "apc", 48, (("FXWEAPON01", "FXWEAPON02"),)),
-    ("C3RIG", "rig", 48, ()),
 )
 # Tanks on wheels: their renders have one hull frame per facing (c3_render.py --tread-steps 1)
 WHEELED = {"C3BEAM", "C3PITB", "C3APC"}
-NO_TURRET = {"C3RIG"}
 # name, base tank, model, the part whose frames it owns (the rest are its base's)
 VARIANTS = (
     ("C3SCORPDZR", "C3SCORP", "scorpion_dozer", "turret"),
@@ -192,10 +189,6 @@ SOUNDS = (
     + [(f"C3AMO{c}", "apc", [f"GUAPC_VoiMove{t}"]) for c, t in zip("ABCDEF", "abdefg")]
     + [(f"C3AAT{c}", "apc", [f"GUAPC_VoiAttack{c.lower()}"]) for c in "ABCDE"]
     + [("C3AGUN", "apc", [f"GUGuard_gun8Fire{c}" for c in "abcdefghijklmnopq"])]
-    + [(f"C3RSE{c}", "rig", [t])
-       for c, t in zip("ABCDEFG", [f"GURig_VoiSelect{c}" for c in "abcdef"] + ["GURig_VoiCreatea"])]
-    + [(f"C3RMO{c}", "rig", [f"GURig_VoiMove{c.lower()}"]) for c in "ABCDEFG"]
-    + [("C3RPKA", "rig", ["GURig_VoiCreateb"])]
 )
 SFX_BEGIN = "  <!-- BEGIN C&C3 tank sounds (scripts/c3_pack_tanks.py) -->"
 SFX_END = "  <!-- END C&C3 tank sounds -->"
@@ -296,8 +289,6 @@ def write_header():
            "// _seat_px = classic px from the unit centre (draw); _seat_lep = the same in leptons.",
            "// _fire = leptons from the seat, [weapon][side][turret facing][east, south].", ""]
     for name, model, _, weapons in UNITS:
-        if name in NO_TURRET:
-            continue
         seat, fire = tables(model, weapons)
         low = name.lower()
         out.append(f"static const signed char _{low}_seat_px[32][2] = {rows_c(seat, 1 / 8)};")
@@ -345,7 +336,7 @@ def pack_variant(name, base, model, part):
     write_zip(asset_packs.art_zip(name, "UNITS"), name.lower(), own, numbers=numbers)
     shapes = asset_packs.shape_frames(base, "UNITS")
     sub = name.lower()
-    count = HULL_FRAMES + (0 if base in NO_TURRET else 32)
+    count = HULL_FRAMES + 32
     frames = [f"{sub}\\{sub}-{owner(base, i):04d}.tga" if owner(base, i) in numbers
               else f"{base.lower()}\\{shapes[i]}" for i in range(count)]
     patch_tileset(name, count, frames)
@@ -369,14 +360,13 @@ def main(names):
         if names and name not in names:
             continue
         canvas = shape * 8
-        turret = 0 if name in NO_TURRET else 32
         frames = hull_frames(model, name, canvas)
-        frames += [packed(f"{ART}/renders/{model}_turret/frame-{i:04d}.png", canvas, False) for i in range(turret)]
-        numbers = list(hull_shapes(name)) + list(range(HULL_FRAMES, HULL_FRAMES + turret))
+        frames += [packed(f"{ART}/renders/{model}_turret/frame-{i:04d}.png", canvas, False) for i in range(32)]
+        numbers = list(hull_shapes(name)) + list(range(HULL_FRAMES, HULL_FRAMES + 32))
         write_zip(asset_packs.art_zip(name, "UNITS"), name.lower(), frames, numbers=numbers)
         sub = name.lower()
-        patch_tileset(name, HULL_FRAMES + turret,
-                      [f"{sub}\\{sub}-{owner(name, i):04d}.tga" for i in range(HULL_FRAMES + turret)])
+        patch_tileset(name, HULL_FRAMES + 32,
+                      [f"{sub}\\{sub}-{owner(name, i):04d}.tga" for i in range(HULL_FRAMES + 32)])
         write_cameo(name)
     for name, base, model, part in VARIANTS:
         if not names or name in names:

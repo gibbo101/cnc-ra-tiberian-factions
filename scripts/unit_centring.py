@@ -66,7 +66,6 @@ UNITS = {
     "C3BEAM": (96, 3, 96, "c3beam", ()),
     "C3PITB": (96, 3, 96, "c3pitb", (("C3PITBMOR", "UNITS", UNIT_DENSITY),)),
     "C3APC": (96, 3, 96, "c3apc", ()),
-    "C3RIG": (96, 3, None, None, ()),
     "R2APOC": (32, 1, 32, None, ()),
     "R2PRIS": (32, 1, 32, None, ()),
     "TS4TNK": (32, 1, 32, None, ()),

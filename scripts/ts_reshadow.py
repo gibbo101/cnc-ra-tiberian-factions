@@ -51,7 +51,7 @@ OFFSET_OVERRIDE = {"TSHVR": (5, 17)}
 # The HD units are shadowed by their packer (scripts/ts_pack_hd_buildings.py, which uses drop_shadow
 # for its vehicles) and are never re-shadowed here; the pass re-shadows the C&C3 tanks' packed ZIPs.
 UNITS = ["C3MK3", "C3PRED", "C3SCORP", "C3SCORPLAS", "C3SCORPLASDZR", "C3FLAME", "C3STNK", "C3BEAM", "C3PITB",
-         "C3PITBMOR", "C3APC", "C3RIG"]
+         "C3PITBMOR", "C3APC"]
 
 # Whether a unit currently carries a shadow is DETECTED from the art (a flat
 # pure-black alpha plateau), never hardcoded -- that keeps the pass idempotent
