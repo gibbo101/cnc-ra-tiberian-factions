@@ -1,7 +1,8 @@
 # C&C3 units to C&C Remastered sprites: a working recipe
 
 **Status:** Reference. Pulling a C&C3 unit into HD Remastered sprites, as done for GDI's Mammoth
-Mk. III, Predator, Pitbull, Guardian APC and Rig, and Nod's Scorpion, Flame Tank, Stealth Tank and Beam Cannon.
+Mk. III, Predator, Pitbull and Guardian APC, and Nod's Scorpion, Flame Tank, Stealth Tank and Beam Cannon. The
+Rig waits for its deploy sequence, which needs C&C3's skeletal animations decoded.
 
 How to pull a unit out of Command & Conquer 3: Tiberium Wars (models, textures, audio,
 stats) and turn it into HD sprites for a C&C Remastered Collection mod. Written for an AI
@@ -375,9 +376,8 @@ rather than using Blender: you need exact control of camera, light and colour.
   (`unit_art_drop.json`, `redalert/unit_art_drop.h`, which the fire points add) and prints the
   selection box. Ours: C3PRED 24 canvas px, C3MK3 32, C3SCORP 14 (its hull sat 1.81 classic px high).
   Upgrade variants move with their base tank.
-- **Wheels and no turret:** a wheeled vehicle (the Beam Cannon, Pitbull, Guardian APC) has no tread mesh, so it
-  renders one hull frame per facing (`--tread-steps 1`) and its three step tiles name that one member. The Rig has
-  no turret, so its tiles end at 95 and it has no seat table.
+- **Wheels:** a wheeled vehicle (the Beam Cannon, Pitbull, Guardian APC) has no tread mesh, so it
+  renders one hull frame per facing (`--tread-steps 1`) and its three step tiles name that one member.
 - **Weapon effects:** `scripts/c3_tank_fx.py` builds each unit's firing effects (flame stream, rockets, beam
   charge, muzzle flashes, impacts) from the textures its weapon's FX lists name (`FXFireScroll`,
   `FXFireball4x4`, `FXLenzFlare*`, `FXMuzzle` and others, in `resources/custom-art/c3-tank-fx/`). Particle-system
