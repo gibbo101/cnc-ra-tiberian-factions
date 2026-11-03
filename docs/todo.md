@@ -9,13 +9,12 @@ topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ## Next version: first jobs
 
-5.7.0 ships the player settings (`player-settings.md`). The next release: the match warm-up
-(`sprite-memory.md`), then the TS music import. Map-editor work waits until maps past 128x128 land.
+Next release: the match warm-up (`sprite-memory.md`), then the TS music import; map editor after maps past 128x128.
 
 - **Pack updates in ADD-ONS:** keep the hard minimum per pack (`PACK_NEEDS_*`, 1.0) and add the current
-  version (TS-HD 1.1). An older installed pack shows its version and UPDATE AVAILABLE, and ADD-ONS asks Steam to
-  download it at high priority; if it is still old once that finishes, unsubscribe and resubscribe it. Steam
-  can sit on an update for hours (5.6.0 day: the PC kept TS-HD 1.0).
+  version (TS-HD 1.2). An older installed pack shows its version and UPDATE AVAILABLE, and ADD-ONS asks Steam to
+  download it at high priority; if it is still old once that finishes, unsubscribe and resubscribe it. Steam can
+  sit on an update for hours.
 - **The map editor on TD theatres,** after maps past 128x128. `cnc-map-editor` knows RA's three theatres only: it needs
   `Desert`, `TDTemperate` and `Winter` with TD's tilesets, and the desert terrain types (`T04`,
   `T09`, `T18`, `ROCK1` to `ROCK7`) in `mapeditor.json` (`td-base-art.md`).
@@ -158,6 +157,7 @@ topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
   from the unit's position, but `Fire_Coord` adds it to the art-dropped centre, which may start the shot 29 leptons
   south. Listen too to the Devil's Tongue flame (`TSFLAMTNK1`) and the Subterranean APC's dig (`TSSUBDRIL1`) from the
   TS pack.
+- **ModDB blog "Bringing Nod to HD"** once its art is signed off: 3-4 subjects, TS beside HD, in Nod red.
 - **TS Pavement (GAPAVE), alongside TS Nod.** It turns cells into pavement: it keeps Tiberium off
   build space and blocks subterranean units. Costs: placement logic like the wall divert (the
   building becomes ground) and square-grid ground art, since TS's is isometric (as the HD Firestorm
@@ -195,7 +195,7 @@ topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 - **Game rules editor** (`game-rules.md`): every faction's unit values and a short list of match
   rules (a Settings page tab), DEFAULT / CUSTOM and reset always shown. First: a
   hand-written `tf_rules.ini` changing one value in a skirmish, then the slider probe.
-- **Player settings** (`player-settings.md`): sidebar, AI and units switches built. Next: the LAN test, controls.
+- **Player settings** (`player-settings.md`): the controls switches and the remaining units switches.
 - **RA and TD campaign maps in the skirmish list.** After TD's multiplayer maps (`td-base-art.md`, build plan
   step 4), read from the players' own files: keep terrain, resources, trees, smudges and civilian buildings as
   neutral; strip triggers, teams, scripted units and the mission's bases; the player starts where the mission put
