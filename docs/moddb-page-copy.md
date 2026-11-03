@@ -268,7 +268,7 @@ for automatic updates.</p>
 
 ---
 
-# 5.7.0 download entries
+# 5.7.0 download entry
 
 | Field | Value |
 |---|---|
@@ -276,13 +276,6 @@ for automatic updates.</p>
 | Filename | `TiberianFactions-5.7.2.zip`, 518,796,541 bytes (495 MB) |
 | Category | Full Version |
 | Description | Version 5.7.2, with Tiberian Sun HD Assets 1.2 included. Extract both folders into Documents/CnCRemastered/Mods/Red_Alert/, enable both, then restart the game. |
-
-| Field | Value |
-|---|---|
-| Name | Tiberian Sun HD Assets 1.2 |
-| Filename | `TS-HD-Assets-1.2.zip`, 236,708,671 bytes (226 MB) |
-| Category | Addon |
-| Description | The Tiberian Sun art, sounds and EVA on their own, already in the full download. For modders, or to update the pack alone. |
 
 ---
 
