@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Package the C&C3 tanks: the Mammoth Mk. III (C3MK3), the Predator (C3PRED) and the Scorpion (C3SCORP) with its
-upgrades: Laser Capacitors (C3SCORPLAS), Dozer Blades (C3SCORPDZR) and both (C3SCORPLASDZR).
+"""Package the C&C3 tanks: the Mammoth Mk. III (C3MK3), the Predator (C3PRED), the Scorpion (C3SCORP) with its
+upgrades: Laser Capacitors (C3SCORPLAS), Dozer Blades (C3SCORPDZR) and both (C3SCORPLASDZR), the Flame Tank
+(C3FLAME), the Stealth Tank (C3STNK) and the Beam Cannon (C3BEAM).
 
 Tileset layout per tank (the walker gait layout, contract 2 keeps the turret under 128):
   0-95    hull: 32 facings (CCW, 0 = N) x 3 tread steps; the gait code steps the treads
           while the tank drives, so the belts roll instead of the hull gliding.
   96-127  turret: 32 facings, no shadow.
+A wheeled tank (WHEELED) has one hull frame per facing: its three step tiles name that one member.
 Hull frames carry EA's baked drop shadow (ts_reshadow.py). Renders come from c3_render.py at
 RENDER_PPU pixels per C&C3 unit and pack at PACK_PPU, on canvas = ShapeSize x 8.
 
@@ -72,7 +74,12 @@ UNITS = (
     ("C3PRED", "predator", 48, (("FXMUZZLEFLASH",),)),
     ("C3SCORP", "scorpion", 48, (("TURRETFX",),)),
     ("C3SCORPLAS", "scorpion_laser", 48, (("TURRETMS",),)),
+    ("C3FLAME", "flametank", 48, (("FXFIREL", "FXFIRER"),)),
+    ("C3STNK", "stealthtank", 48, (("FXWEAPONL", "FXWEAPONR"),)),
+    ("C3BEAM", "beamcannon", 48, (("FX_WEAPON",),)),
 )
+# Tanks on wheels: their renders have one hull frame per facing (c3_render.py --tread-steps 1)
+WHEELED = {"C3BEAM"}
 # name, base tank, model, the part whose frames it owns (the rest are its base's)
 VARIANTS = (
     ("C3SCORPDZR", "C3SCORP", "scorpion_dozer", "turret"),
@@ -100,10 +107,12 @@ def tga_bytes(img):
     return buf.getvalue()
 
 
-def write_zip(path, name, frames, first=0):
-    """The frames as <name>-NNNN members numbered from first, each cropped symmetrically round its art."""
+def write_zip(path, name, frames, first=0, numbers=None):
+    """The frames as <name>-NNNN members numbered from first (or by numbers), each cropped symmetrically round its
+    art."""
+    numbers = numbers or range(first, first + len(frames))
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
-        for i, img in enumerate(frames, first):
+        for i, img in zip(numbers, frames):
             base = f"{name}-{i:04d}"
             W, H = img.width, img.height
             bb = img.getbbox() or (W // 2 - 1, H // 2 - 1, W // 2 + 1, H // 2 + 1)
@@ -147,6 +156,23 @@ SOUNDS = (
     + [(f"C3SAT{c}", "scorpion", [f"NUScorp_VoiAttack{c.lower()}"]) for c in "ABCDEF"]
     + [("C3SGUN", "scorpion", [f"NUScorp_cannFire{c}" for c in "abcdefghi"]),
        ("C3SLAS", "scorpion", [f"NUScorp_BeamFire{c}" for c in "abcde"])]
+    + [(f"C3FSE{c}", "flametank", [f"NUFlame_VoiSelect{c.lower()}"]) for c in "ABCDEFGHIJ"]
+    + [(f"C3FMO{c}", "flametank", [f"NUFlame_VoiMove{c.lower()}"]) for c in "ABCDEF"]
+    + [(f"C3FAT{c}", "flametank", [f"NUFlame_VoiAttack{c.lower()}"]) for c in "ABCDEF"]
+    + [("C3FGUN", "flametank", [f"NUFlame_weaFlaml{n}{c}" for n, takes in ((1, "abcde"), (2, "abcdef"), (3, "abcdef"))
+                                for c in takes])]
+    + [(f"C3TSE{c}", "stealthtank", [f"NuSteal_VoiSelect{c.lower()}"]) for c in "ABCDEFG"]
+    + [(f"C3TMO{c}", "stealthtank", [f"NuSteal_VoiMove{c.lower()}"]) for c in "ABCDEFG"]
+    + [(f"C3TAT{c}", "stealthtank", [f"NuSteal_VoiAttack{c.lower()}"]) for c in "ABCDE"]
+    + [("C3TGUN", "stealthtank", [f"NUSteal_rockLaun{c}" for c in "abcdef"]),
+       ("C3THIT", "stealthtank", [f"NUSteal_rockExpl{c}" for c in "abcdefgh"]),
+       ("C3TCLK", "stealthtank", [f"NUSteal_stealOn{c}" for c in "abcde"]),
+       ("C3TUNC", "stealthtank", [f"NUSteal_stealOff{c}" for c in "abcde"])]
+    + [(f"C3BSE{c}", "beamcannon", [f"NuBeamC_VoiSelect{c.lower()}"]) for c in "ABCDEF"]
+    + [(f"C3BMO{c}", "beamcannon", [f"NuBeamC_VoiMove{c.lower()}"]) for c in "ABCDEF"]
+    + [(f"C3BAT{c}", "beamcannon", [f"NuBeamC_VoiAttack{c.lower()}"]) for c in "ABCDEF"]
+    + [("C3BGUN", "beamcannon", [f"NUBeamC_wea1Fire{c}" for c in "abcdefg"]),
+       ("C3BCHG", "beamcannon", [f"NUBeamC_wea1Swel{c}" for c in "abcdef"])]
 )
 SFX_BEGIN = "  <!-- BEGIN C&C3 tank sounds (scripts/c3_pack_tanks.py) -->"
 SFX_END = "  <!-- END C&C3 tank sounds -->"
@@ -299,12 +325,17 @@ def main(names):
         if names and name not in names:
             continue
         canvas = shape * 8
-        frames = [packed(f"{ART}/renders/{model}_hull/frame-{i:04d}.png", canvas, True)
-                  for i in range(32 * TREAD_STEPS)]
+        hull = range(0, HULL_FRAMES, TREAD_STEPS) if name in WHEELED else range(HULL_FRAMES)
+        frames = [packed(f"{ART}/renders/{model}_hull/frame-{i // (HULL_FRAMES // len(hull)):04d}.png", canvas, True)
+                  for i in hull]
         frames += [packed(f"{ART}/renders/{model}_turret/frame-{i:04d}.png", canvas, False)
                    for i in range(32)]
-        write_zip(asset_packs.art_zip(name, "UNITS"), name.lower(), frames)
-        patch_tileset(name, len(frames))
+        numbers = list(hull) + list(range(HULL_FRAMES, HULL_FRAMES + 32))
+        write_zip(asset_packs.art_zip(name, "UNITS"), name.lower(), frames, numbers=numbers)
+        sub = name.lower()
+        patch_tileset(name, HULL_FRAMES + 32,
+                      [f"{sub}\\{sub}-{(i - i % TREAD_STEPS if name in WHEELED and i < HULL_FRAMES else i):04d}.tga"
+                       for i in range(HULL_FRAMES + 32)])
         write_cameo(name)
     for name, base, model, part in VARIANTS:
         if not names or name in names:

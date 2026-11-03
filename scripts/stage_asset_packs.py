@@ -101,7 +101,8 @@ def stage(mod_dir, full=False, strict=False):
                 continue
             later = set().union(*(pack_files(p, sub) for p in packs[i + 1:]))
             skip = later | {os.path.relpath(rel, sub.upper()) for rel in shared if rel.startswith(sub.upper() + os.sep)}
-            skip |= {os.path.relpath(A.art_zip(name, "UNITS"), src).upper() for name in A.PACK_ONLY}
+            skip |= {os.path.relpath(A.art_zip(name, kind), src).upper() for name in A.PACK_ONLY
+                     for kind in ("UNITS", "VFX")}
             skip |= {rel for rel in pack_files(pack, sub) if A.pack_only_file(rel)}
             copy_tree(src, os.path.join(data, sub), skip)
     for mod in A.USED:

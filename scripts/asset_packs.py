@@ -101,9 +101,17 @@ WORKSHOP = {
         "contents": ["**GDI:** Mammoth Tank Mk. III (C3MK3), Predator Tank (C3PRED), and both with the railgun "
                      "upgrade (C3MK3RAIL, C3PREDRAIL)",
                      "**Nod:** Scorpion Tank (C3SCORP), with Laser Capacitors (C3SCORPLAS), Dozer Blades "
-                     "(C3SCORPDZR) and both (C3SCORPLASDZR)",
+                     "(C3SCORPDZR) and both (C3SCORPLASDZR); Flame Tank (C3FLAME), Stealth Tank (C3STNK), "
+                     "Beam Cannon (C3BEAM)",
                      "**Effects:** the railgun shot, in blue (C3RAILGLOW, C3RAILMZ, C3RAILHIT) and in orange "
                      "(C3RAILGLOWO, C3RAILMZO, C3RAILHITO)",
+                     "**Flame Tank effects:** the flame stream in 8 directions (C3FLMN, C3FLMNE, C3FLME, C3FLMSE, "
+                     "C3FLMS, C3FLMSW, C3FLMW, C3FLMNW), its fire on the ground (C3FLMHIT) and the pilot light "
+                     "(C3FLMPIL)",
+                     "**Stealth Tank effects:** the rocket in 32 facings (C3STMIS), its smoke trail (C3STTRL), "
+                     "launch flash (C3STMZ) and impact (C3STHIT)",
+                     "**Beam Cannon effects:** the charge (C3BMCHG), the beam's glow (C3BMGLOW), muzzle flash "
+                     "(C3BMMZ) and impact (C3BMHIT)",
                      "A sidebar cameo for each tank", "Each tank's voices and weapon sounds"],
     },
     "TS-Music": {
@@ -153,9 +161,15 @@ def items():
 
 # Objects only the Workshop packs carry: art for other mods that no Tiberian Factions type draws, so its build leaves
 # out their ZIPs, tiles, cameos and sidebar entries (scripts/stage_asset_packs.py).
-PACK_ONLY = ("C3MK3RAIL", "C3PREDRAIL", "C3SCORP", "C3SCORPLAS", "C3SCORPDZR", "C3SCORPLASDZR")
+PACK_ONLY = ("C3MK3RAIL", "C3PREDRAIL", "C3SCORP", "C3SCORPLAS", "C3SCORPDZR", "C3SCORPLASDZR",
+             "C3FLAME", "C3STNK", "C3BEAM", "C3FLMHIT", "C3FLMPIL", "C3STMIS", "C3STTRL", "C3STMZ", "C3STHIT",
+             "C3BMCHG", "C3BMGLOW", "C3BMMZ", "C3BMHIT") + tuple(f"C3FLM{d}" for d in ("N", "NE", "E", "SE", "S",
+                                                                                     "SW", "W", "NW"))
 # Sound stems (sample names less their take number) only the packs carry, left out with their sound events.
-PACK_ONLY_SOUNDS = tuple(f"C3S{kind}{take}" for kind in ("SE", "MO", "AT") for take in "ABCDEF") + ("C3SGUN", "C3SLAS")
+PACK_ONLY_SOUNDS = (tuple(f"C3{tank}{kind}{take}" for tank, takes in (("S", "ABCDEF"), ("F", "ABCDEFGHIJ"),
+                                                                     ("T", "ABCDEFG"), ("B", "ABCDEF"))
+                          for kind in ("SE", "MO", "AT") for take in takes)
+                    + ("C3SGUN", "C3SLAS", "C3FGUN", "C3TGUN", "C3THIT", "C3TCLK", "C3TUNC", "C3BGUN", "C3BCHG"))
 
 
 def drop_pack_only(text):
@@ -258,7 +272,7 @@ def sound_pack(sample):
     if s.startswith("R2V"):
         return "RA2-Voices-eng" if re.match(r"R2V(APO|PRI)(SE|MO|AT)[A-F]$", s) else "RA2-SFX-Pack"
     if s.startswith("C3"):
-        return "CNC3-Voices-eng" if re.match(r"C3[MPS](SE|MO|AT)[A-F]$", s) else "CNC3-SFX-Pack"
+        return "CNC3-Voices-eng" if re.match(r"C3[MPSFTB](SE|MO|AT)[A-J]$", s) else "CNC3-SFX-Pack"
     return None
 
 
