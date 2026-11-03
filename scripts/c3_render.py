@@ -24,6 +24,8 @@ the body. --glow adds a self-lit term on the painted blue conduit, our own touch
 
 Parts: 0 hull, 1 turret, 2 treads, 3 fixtures (an upgrade's hull-mounted pieces), drawn with the hull but left
 out of its footprint so the variant keeps its base tank's centre.
+Sheets: a body mesh painted from another unit's texture sheet (the Pitbull's spotlight and mortar, on the Rig's)
+carries sheet 1 and draws from body2, house2 and normal2, its house colour normalised on its own.
 
 Usage:
   c3_render.py <model.npz> <out_dir> --part hull|turret [--frames 32] [--tread-steps 3]
@@ -91,6 +93,7 @@ class Model:
         d = np.load(path)
         self.pos, self.nrm, self.tan, self.bin = d["pos"], d["nrm"], d["tan"], d["bin"]
         self.uv, self.tris, self.part, self.mat = d["uv"], d["tris"], d["part"], d["mat"]
+        self.sheet = d["sheet"] if "sheet" in d.files else np.zeros(len(self.pos), np.int64)
         self.turret_pivot = d["turret_pivot"]
         self.hull_centre = hull_centre(d)
         self.dudx_sign = 1.0 if float(d["tread_dudx"]) >= 0 else -1.0
@@ -103,14 +106,18 @@ class Model:
         if "rail_body" in tex:
             self.rail_body = load_rgba(os.path.join(base, tex["rail_body"]))
             self.rail_normal = load_rgba(os.path.join(base, tex["rail_normal"]))
+        self.sheets = [(self.body, self.house, self.normal)]
+        if "body2" in tex:
+            self.sheets.append(tuple(load_rgba(os.path.join(base, tex[k])) for k in ("body2", "house2", "normal2")))
         self.link_pitch = self._link_pitch()
-        self.team_mean = self._team_mean()
+        self.team_means = [self._team_mean(b, h) for b, h, _ in self.sheets]
 
-    def _team_mean(self):
-        """Mean luminance of the diffuse texels under the house-colour mask (1 for a model without house colour)."""
-        h, w = self.body.shape[:2]
-        mask = np.asarray(Image.fromarray(self.house[..., 3].astype(np.uint8)).resize((w, h), Image.BILINEAR))
-        lum = self.body[..., :3] @ LUMA
+    @staticmethod
+    def _team_mean(body, house):
+        """Mean luminance of the diffuse texels under the house-colour mask (1 for a sheet without house colour)."""
+        h, w = body.shape[:2]
+        mask = np.asarray(Image.fromarray(house[..., 3].astype(np.uint8)).resize((w, h), Image.BILINEAR))
+        lum = body[..., :3] @ LUMA
         return float(lum[mask > 128].mean()) if (mask > 128).any() else 1.0
 
     def _link_pitch(self):
@@ -226,18 +233,22 @@ def render(m, yaw_deg, part, ppu, canvas, elev_deg, tread_phase=0.0, ss=3, turre
         if glow > 0:
             blue = np.clip((col[:, 2] - np.maximum(col[:, 0], col[:, 1]) - 20.0) / 60.0, 0, 1)
             emissive[is_rail] = glow * blue[:, None] * np.array([90.0, 170.0, 255.0])
-    if body.any():
-        buv = uv[body]
-        col = sample(m.body, buv)[:, :3]
-        mask = sample(m.house, buv)[:, 3:4] / 255.0
+    sheet = m.sheet[tv[:, 0]]
+    for si, (sbody, shouse, snormal) in enumerate(m.sheets):
+        sel = body & (sheet == si)
+        if not sel.any():
+            continue
+        buv = uv[sel]
+        col = sample(sbody, buv)[:, :3]
+        mask = sample(shouse, buv)[:, 3:4] / 255.0
         lum = (col @ LUMA)[:, None]
-        team = np.clip(TEAM_GREEN * TEAM_LEVEL * lum / m.team_mean, 0, 255)
+        team = np.clip(TEAM_GREEN * TEAM_LEVEL * lum / m.team_means[si], 0, 255)
         # white decals painted over house colour (unit numbers, the GDI eagle) stay white
         sat = (col.max(1, keepdims=True) - col.min(1, keepdims=True)) / np.maximum(col.max(1, keepdims=True), 1)
         white = np.clip((lum - 170.0) / 40.0, 0, 1) * np.clip(1 - sat * 3, 0, 1)
         mask = mask * (1 - white)
-        rgb[body] = col * (1 - mask) + team * mask
-        n[body] = normal_mapped(body, m.normal, buv)
+        rgb[sel] = col * (1 - mask) + team * mask
+        n[sel] = normal_mapped(sel, snormal, buv)
     if is_tread.any():
         tuv = uv[is_tread].copy()
         tuv[:, 0] -= m.dudx_sign * tread_phase * m.link_pitch
