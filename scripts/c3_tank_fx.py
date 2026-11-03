@@ -21,10 +21,10 @@ Beam Cannon (NODBeamCannonLaser, drawn with the Obelisk's red beam, FXObeliskLas
   C3BMGLOW, C3BMMZ, C3BMHIT  the glow laid along the beam, the muzzle flash and the impact: c3_rail_beam.py's pieces
                              in the Obelisk's red.
 
-Inputs: resources/custom-art/c3-nod-fx/ (C&C3's static stream) and c3_rail_beam.py's textures; C3_ART_DIR holding
+Inputs: resources/custom-art/c3-tank-fx/ (C&C3's static stream) and c3_rail_beam.py's textures; C3_ART_DIR holding
 renders/stealthmissile/ from c3_render.py (the missile npz from tools/cnc3/c3_extract_model.py, workspace).
 Writes the ZIPs and tiles where scripts/asset_packs.py routes the names.
-Usage: c3_nod_fx.py [NAME ...]   (every effect when no names are given)
+Usage: c3_tank_fx.py [NAME ...]   (every effect when no names are given)
 License: GPL v3.
 """
 import io
@@ -43,7 +43,7 @@ import asset_packs  # noqa: E402
 import c3_rail_beam as rail  # noqa: E402
 from ts_gen_sonicwave import patch_tileset  # noqa: E402
 
-TEX = os.path.join(SCRIPTS, "..", "resources", "custom-art", "c3-nod-fx")
+TEX = os.path.join(SCRIPTS, "..", "resources", "custom-art", "c3-tank-fx")
 ART = os.environ.get("C3_ART_DIR")
 SS = 2
 UNIT = rail.UNIT          # HD px per C&C3 world unit
