@@ -9,7 +9,7 @@ topic doc; the full old file is `git show b6d3b52c:docs/todo.md`.
 
 ## Next version: first jobs
 
-Next release: the match warm-up (`sprite-memory.md`), then the TS music import; map editor after maps past 128x128.
+Order: TS Nod, the match warm-up (`sprite-memory.md`), maps past 128x128, TS theatres, AI pass, campaigns.
 
 - **Pack updates in ADD-ONS:** keep the hard minimum per pack (`PACK_NEEDS_*`, 1.0) and add the current
   version (TS-HD 1.2). An older installed pack shows its version and UPDATE AVAILABLE, and ADD-ONS asks Steam to
