@@ -1,7 +1,7 @@
 # C&C3 units to C&C Remastered sprites: a working recipe
 
-**Status:** Reference. Pulling a C&C3 unit into HD Remastered sprites, as done for the Mammoth
-Mk. III, the Predator and the Nod Scorpion with its upgrades.
+**Status:** Reference. Pulling a C&C3 unit into HD Remastered sprites, as done for GDI's Mammoth
+Mk. III, Predator, Pitbull, Guardian APC and Rig, and Nod's Scorpion, Flame Tank, Stealth Tank and Beam Cannon.
 
 How to pull a unit out of Command & Conquer 3: Tiberium Wars (models, textures, audio,
 stats) and turn it into HD sprites for a C&C Remastered Collection mod. Written for an AI
@@ -96,7 +96,11 @@ the Mammoth `GUMAMM`):
   exist (unused here; purpose not checked).
 - `GameObject:GDIMammoth`, `GameObject:GDIPredator`: the unit's gameplay object. Internal names can differ
   from the unit's: the Scorpion is `GameObject:NODRaiderTank` (from patch 7), model `NURADR` (meshes under
-  `NURADR_SKN`), while `NODScorpionBuggy` is the Raider Buggy.
+  `NURADR_SKN`), while `NODScorpionBuggy` is the Raider Buggy. Containers are not always `_SKN`: the Flame
+  Tank's is `NUFLAMETANK` (skeleton `NUFLAMETANK_SKL`) and the Rig's `GURIG` (skeleton `GURIG`). The others:
+  Stealth Tank `NUSTLTHTNK_SKN`, Beam Cannon `NUBEAM_SKN`, Pitbull `GUPITBULL_SKN`, Guardian APC `GUAPC_SKN`.
+- Every unit's construct command (`LogicCommand:Command_Construct<GameObject>`) references its GameObject: the
+  quickest roster of what a side can build.
 - `PackedTextureImage:PORTRAIT_GDIPredatorTank` / `Portrait_GDIMammothTank`: the sidebar
   portrait. Its asset reference is a `Texture:PackedImages_NNN` and its data holds the pixel
   rectangle (for both tanks `0, 0, 128, 128`, the whole texture).
@@ -156,6 +160,9 @@ u32 namePtr, u32 index}`, mapping sub-mesh name to the pivot it is bound to.
 
 > **TRAP 3: textures are per mesh.** The tread belts UV into their own tread texture. Painting
 > them with the hull diffuse gives pale garbage stripes that are worst at the north facing.
+> A body mesh can use another unit's sheet too: the Pitbull's spotlight and Mortar tube are painted on
+> the Rig's (`GURig`, `HC_GURig`). The extractor tags such a mesh sheet 1, and the renderer draws it from
+> `body2`, `house2` and `normal2`, with its own house-colour level.
 
 > The railgun-upgrade meshes (`UGRAIL_*`) decode with the same code (their bounding boxes
 > match) but use `ObjectsNOD.fx` with a scrolling mask texture; they were never rendered.
@@ -180,7 +187,13 @@ part it joins:
 - Dozer Blades show `DOZERBLADE`, bound to `BONE_TURRET`, so it turns with the upper body; on the laser
   tank it rides the fixed body.
 
-Hull-mounted upgrade pieces (the fixed body, the tail mount, the blade on the laser tank) are
+- the Pitbull's Mortar (`Upgrade_GDIArmoryPitbullMortar`, at the Armory) shows `MORTORTUBE`, bound to its own
+  pivot off the root, so it rides the hull, not the rocket pod.
+
+The Flame Tank, Stealth Tank, Beam Cannon, Guardian APC and Rig have no Tiberium Wars upgrade (the Flame
+Tank's Purifying Flame is Kane's Wrath).
+
+Hull-mounted upgrade pieces (the fixed body, the tail mount, the blade on the laser tank, the Mortar tube) are
 "fixtures": drawn with the hull but kept out of the hull's footprint, so every variant keeps its base
 tank's hull centre and seat origin (`c3_render.py` part 3).
 
@@ -223,7 +236,9 @@ Resolve `AudioEvent` asset references (`(typeId, instanceId)` pairs) to `AudioFi
 then to their cdata. The English stream repeats every non-localised `AudioFile` as a stub
 (0 bytes of instance data, no cdata file): resolve against every stream and take the first
 one whose cdata actually exists. Voices come from `global_english`, weapon sounds from
-`global_common`. The audio patches (`Core/1.5`, `Core/1.7`, `EnglishAudio/1.5`, `EnglishAudio/1.7`) form a
+`global_common`. Takes are shared across units: the Pitbull's rockets fire `GUGuard_wea1fire*`, its rocket and
+Mortar hits are both `NBBrown_wea1expl*`, and some select events mix in a create line (the APC's and Rig's
+`VoiCreatea`). The audio patches (`Core/1.5`, `Core/1.7`, `EnglishAudio/1.5`, `EnglishAudio/1.7`) form a
 chain like the static ones, but `global_common_5` holds a 548-byte, 19 ms placeholder for every unit
 voice, so skip payloads that small and take the 1.0 English take. `tools/cnc3/c3_extract_audio.py`
 (workspace) does all of this from AudioEvent names.
@@ -253,6 +268,14 @@ the tanks' `WeaponTemplate`s is 12 bytes longer from patch 5 on.
 | Shot gap, reload (s) | four floats after the weapon's inline name: shot gap min/max, then reload min/max; +0x174..+0x180 in 1.0, +0x180..+0x18c from patch 5 (these two guns; the pods' sit 4 bytes later, so find them by value) | 0.3 then 2.0 / 0.3 then 1.9-2.1 |
 | Shots per clip | not pinned; u32 at `WeaponTemplate` +0x70 reads 2 / 1 for the two guns in every copy (unconfirmed) | 2 / 1 |
 | Damage | float in the warhead `WeaponTemplate` (the weapon's asset reference): `MammothTankShellWarhead` +0x1fc (1.0) / +0x208 (patch 5 on), `GDIPredatorTankCannonWarhead` +0x208 / +0x214 | 500 / 400 |
+
+| Patch 1.9 (unconfirmed, found by the same patterns) | Cost | MaxHealth | Speed | Vision | Weapon |
+|---|---|---|---|---|---|
+| Flame Tank (`NODFlameTank`) | 1200 | 3700 | 75 | 350 | flamer, range 100, 0.1 s shots, warhead 500 |
+| Stealth Tank (`NODStealthTank`) | 1500 | 1875 | 120 | 350 | rockets, range 275, warhead 375 |
+| Beam Cannon (`NODBeamCannon`) | 1000 | 3000 | 75 | 500 | beam, range 500 |
+
+Health sits in a run of floats `500, 80, 100, <health>, 200, 200`; find it by that run, not by offset.
 
 The weapon name sits at +0x15c in 1.0 and +0x168 from patch 5 on, with its length at +0x04.
 Cross-check anything you rely on; these offsets are proven only for these two units.
@@ -352,6 +375,14 @@ rather than using Blender: you need exact control of camera, light and colour.
   (`unit_art_drop.json`, `redalert/unit_art_drop.h`, which the fire points add) and prints the
   selection box. Ours: C3PRED 24 canvas px, C3MK3 32, C3SCORP 14 (its hull sat 1.81 classic px high).
   Upgrade variants move with their base tank.
+- **Wheels and no turret:** a wheeled vehicle (the Beam Cannon, Pitbull, Guardian APC) has no tread mesh, so it
+  renders one hull frame per facing (`--tread-steps 1`) and its three step tiles name that one member. The Rig has
+  no turret, so its tiles end at 95 and it has no seat table.
+- **Weapon effects:** `scripts/c3_tank_fx.py` builds each unit's firing effects (flame stream, rockets, beam
+  charge, muzzle flashes, impacts) from the textures its weapon's FX lists name (`FXFireScroll`,
+  `FXFireball4x4`, `FXLenzFlare*`, `FXMuzzle` and others, in `resources/custom-art/c3-tank-fx/`). Particle-system
+  layouts are not decoded, so the timing is by eye. Projectiles (`NPMISSILE`'s `PMHELLMIS`, the Mortar's
+  `NBRDEFMIS`) render through `c3_render.py` like a hull, 32 facings, at the effects' 4 px per C&C3 unit.
 - **Variants:** an upgrade that changes only one part packs only that part's frames; its other
   tiles name the base tank's ZIP members (`VARIANTS` in `c3_pack_tanks.py`). C3SCORPDZR owns turret
   frames only, C3SCORPLASDZR hull frames only. C3SCORPLAS owns both, as the laser changes the hull.
