@@ -157,7 +157,7 @@ Next release: the match warm-up (`sprite-memory.md`), then the TS music import; 
   from the unit's position, but `Fire_Coord` adds it to the art-dropped centre, which may start the shot 29 leptons
   south. Listen too to the Devil's Tongue flame (`TSFLAMTNK1`) and the Subterranean APC's dig (`TSSUBDRIL1`) from the
   TS pack.
-- **ModDB blog "Bringing Nod to HD"** once its art is signed off: 3-4 subjects, TS beside HD, in Nod red.
+- **ModDB blogs, each once its work is done:** Bringing Nod to HD (TS beside HD), big maps, TS theatres.
 - **TS Pavement (GAPAVE), alongside TS Nod.** It turns cells into pavement: it keeps Tiberium off
   build space and blocks subterranean units. Costs: placement logic like the wall divert (the
   building becomes ground) and square-grid ground art, since TS's is isometric (as the HD Firestorm
