@@ -360,5 +360,129 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
       <entry> C3BCHG6.WAV </entry>
     </SampleNamesList>
   </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3UGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3UGUN1.WAV </entry>
+      <entry> C3UGUN2.WAV </entry>
+      <entry> C3UGUN3.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3UGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3UGUN1.WAV </entry>
+      <entry> C3UGUN2.WAV </entry>
+      <entry> C3UGUN3.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3UMOR" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3UMOR1.WAV </entry>
+      <entry> C3UMOR2.WAV </entry>
+      <entry> C3UMOR3.WAV </entry>
+      <entry> C3UMOR4.WAV </entry>
+      <entry> C3UMOR5.WAV </entry>
+      <entry> C3UMOR6.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3UMOR" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3UMOR1.WAV </entry>
+      <entry> C3UMOR2.WAV </entry>
+      <entry> C3UMOR3.WAV </entry>
+      <entry> C3UMOR4.WAV </entry>
+      <entry> C3UMOR5.WAV </entry>
+      <entry> C3UMOR6.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3UHIT" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3UHIT1.WAV </entry>
+      <entry> C3UHIT2.WAV </entry>
+      <entry> C3UHIT3.WAV </entry>
+      <entry> C3UHIT4.WAV </entry>
+      <entry> C3UHIT5.WAV </entry>
+      <entry> C3UHIT6.WAV </entry>
+      <entry> C3UHIT7.WAV </entry>
+      <entry> C3UHIT8.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3UHIT" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3UHIT1.WAV </entry>
+      <entry> C3UHIT2.WAV </entry>
+      <entry> C3UHIT3.WAV </entry>
+      <entry> C3UHIT4.WAV </entry>
+      <entry> C3UHIT5.WAV </entry>
+      <entry> C3UHIT6.WAV </entry>
+      <entry> C3UHIT7.WAV </entry>
+      <entry> C3UHIT8.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3AGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3AGUN1.WAV </entry>
+      <entry> C3AGUN2.WAV </entry>
+      <entry> C3AGUN3.WAV </entry>
+      <entry> C3AGUN4.WAV </entry>
+      <entry> C3AGUN5.WAV </entry>
+      <entry> C3AGUN6.WAV </entry>
+      <entry> C3AGUN7.WAV </entry>
+      <entry> C3AGUN8.WAV </entry>
+      <entry> C3AGUN9.WAV </entry>
+      <entry> C3AGUN10.WAV </entry>
+      <entry> C3AGUN11.WAV </entry>
+      <entry> C3AGUN12.WAV </entry>
+      <entry> C3AGUN13.WAV </entry>
+      <entry> C3AGUN14.WAV </entry>
+      <entry> C3AGUN15.WAV </entry>
+      <entry> C3AGUN16.WAV </entry>
+      <entry> C3AGUN17.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3AGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3AGUN1.WAV </entry>
+      <entry> C3AGUN2.WAV </entry>
+      <entry> C3AGUN3.WAV </entry>
+      <entry> C3AGUN4.WAV </entry>
+      <entry> C3AGUN5.WAV </entry>
+      <entry> C3AGUN6.WAV </entry>
+      <entry> C3AGUN7.WAV </entry>
+      <entry> C3AGUN8.WAV </entry>
+      <entry> C3AGUN9.WAV </entry>
+      <entry> C3AGUN10.WAV </entry>
+      <entry> C3AGUN11.WAV </entry>
+      <entry> C3AGUN12.WAV </entry>
+      <entry> C3AGUN13.WAV </entry>
+      <entry> C3AGUN14.WAV </entry>
+      <entry> C3AGUN15.WAV </entry>
+      <entry> C3AGUN16.WAV </entry>
+      <entry> C3AGUN17.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
   <!-- END C&C3 tank sounds -->
 </SFXEvents>
