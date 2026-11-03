@@ -170,7 +170,7 @@ harvester, repair bay and zoom features, GPL v3).</p>
 
 The page's previous release was 5.0.0, so this article covers 5.5 to 5.7.
 
-**Title:** Version 5.7.0: Command Your Way
+**Title:** Version 5.7.2: Command Your Way
 
 **Summary field (short):** Five factions, two eras and one rift in time. Now you set the rules of
 engagement: every change Tiberian Factions makes to how Red Alert plays can be switched back to vanilla.
