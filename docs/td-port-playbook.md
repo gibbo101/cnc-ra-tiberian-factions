@@ -639,6 +639,15 @@ values UTF-16; use `loc_edit.py get`), and that guaranteed zero was once recorde
 turret building that packs up (the dug-in Tick Tank, in `MISSION_UNLOAD`) needs its pack-up mission added to that
 test, or its reversed build-up runs past its last frame (a white box) and never signals the pack-up.
 
+### 3.33 — A weapon, projectile or warhead named like a unit shares its section
+
+**Trap:** INI section names ignore case, so a weapon `[C3Beam]` and the unit `[C3BEAM]` are one section.
+
+**Symptom:** the weapon reads none of its own keys; with no `Projectile=` its bullet stays NULL and the first threat
+scan crashes (`WeaponTypeClass::Allowed_Threats`).
+
+**Fix:** give weapons, projectiles and warheads a suffix the unit doesn't have (`C3BeamGun`, `C3BeamWH`).
+
 ---
 
 ## 4. Templates to copy
