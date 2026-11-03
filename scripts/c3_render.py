@@ -109,6 +109,9 @@ class Model:
         self.sheets = [(self.body, self.house, self.normal)]
         if "body2" in tex:
             self.sheets.append(tuple(load_rgba(os.path.join(base, tex[k])) for k in ("body2", "house2", "normal2")))
+        if self.sheet.max(initial=0) >= len(self.sheets):
+            raise SystemExit(f"{path}: a mesh is tagged texture sheet {self.sheet.max()}, but the model has "
+                             f"{len(self.sheets)}")
         self.link_pitch = self._link_pitch()
         self.team_means = [self._team_mean(b, h) for b, h, _ in self.sheets]
 

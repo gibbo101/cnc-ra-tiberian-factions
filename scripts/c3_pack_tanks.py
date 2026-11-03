@@ -199,6 +199,9 @@ def write_audio(models=None):
     """Each event goes in the sound-event XML of the pack its takes belong to, one marked block
     per file. Only the named models' takes are re-encoded (all when None)."""
     import subprocess
+    unlisted = [s for s, _, _ in SOUNDS if s[:3] not in ("C3M", "C3P") and s not in asset_packs.PACK_ONLY_SOUNDS]
+    if unlisted:
+        raise SystemExit(f"pack-only stems missing from asset_packs.PACK_ONLY_SOUNDS: {', '.join(unlisted)}")
     events = {}
     for stem, model, samples in SOUNDS:
         files = []
