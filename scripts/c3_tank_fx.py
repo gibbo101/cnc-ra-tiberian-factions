@@ -34,12 +34,9 @@ Writes the ZIPs and tiles where scripts/asset_packs.py routes the names.
 Usage: c3_tank_fx.py [NAME ...]   (every effect when no names are given)
 License: GPL v3.
 """
-import io
-import json
 import math
 import os
 import sys
-import zipfile
 
 import numpy as np
 from PIL import Image
@@ -47,6 +44,7 @@ from PIL import Image
 SCRIPTS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPTS)
 import asset_packs  # noqa: E402
+import c3_pack_tanks  # noqa: E402
 import c3_rail_beam as rail  # noqa: E402
 from ts_gen_sonicwave import patch_tileset  # noqa: E402
 
@@ -56,8 +54,9 @@ SS = 2
 UNIT = rail.UNIT          # HD px per C&C3 world unit
 CELL = 128                # HD px per cell
 STREAM_CELLS = 2.0
-DIRECTIONS = ("N", "NE", "E", "SE", "S", "SW", "W", "NW")
+DIRECTIONS = asset_packs.DIRECTIONS
 MISSILE_RENDER_PPU = 26.0
+MISSILE_TAIL = 3.6        # C&C3 units from a projectile's centre to its exhaust
 
 # Obelisk red, read off FXObeliskLaser's glow round its white core
 RED = {"halo": [(0, (1, .25, .15)), (.35, (.9, .15, .08)), (.7, (0, 0, 0)), (1, (0, 0, 0))],
@@ -150,19 +149,8 @@ def write_zip(name, frames):
     """Each frame centred on its point, cropped symmetrically round its art, and its tiles."""
     path = asset_packs.art_zip(name, "VFX")
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    low = name.lower()
-    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
-        for i, img in enumerate(frames):
-            W, H = img.size
-            bb = img.getbbox() or (W // 2 - 1, H // 2 - 1, W // 2 + 1, H // 2 + 1)
-            x0, y0 = min(bb[0], W - bb[2]), min(bb[1], H - bb[3])
-            box = (x0, y0, W - x0, H - y0)
-            buf = io.BytesIO()
-            img.crop(box).save(buf, format="TGA")
-            z.writestr(f"{low}-{i:04d}.tga", buf.getvalue())
-            z.writestr(f"{low}-{i:04d}.meta", json.dumps({"size": [W, H], "crop": list(box)}))
+    c3_pack_tanks.write_zip(path, name.lower(), frames)
     patch_tileset(asset_packs.tileset_xml(name, "VFX"), name, len(frames))
-    print(f"wrote {path} ({len(frames)} frames)")
 
 
 def fade(age, start, end):
@@ -247,10 +235,10 @@ def missile(f, model="stealthmissile"):
     k = UNIT / MISSILE_RENDER_PPU
     im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
     fr = Frame(64)
-    yaw = math.radians(90 + f * 11.25)
-    tail = 3.6 * UNIT
+    yaw = c3_pack_tanks.facing_yaw(f)
+    tail = MISSILE_TAIL * UNIT
     tx = 32 - math.cos(yaw) * tail
-    ty = 32 + math.sin(yaw) * tail * math.sin(math.radians(32))
+    ty = 32 + math.sin(yaw) * tail * math.sin(c3_pack_tanks.ELEV)
     fr.add(T_FLARE4, tx, ty, 26, (1.0, .7, .35))
     glow = fr.image()
     out = Image.new("RGBA", (64, 64))
@@ -354,7 +342,7 @@ def build(names):
         a, v = rng.uniform(0, 2 * math.pi), rng.uniform(8, 22)
         sparks.append((v * math.cos(a), v * math.sin(a), rng.uniform(.65, .8), rng.uniform(2, 4),
                        rng.uniform(-40, 40) / 255))
-    quadrants = rng.integers(4, size=1)
+    quadrant = int(rng.integers(4))
     clumps = []
     for _ in range(7):
         a, v = rng.uniform(0, 2 * math.pi), rng.uniform(4, 9)
@@ -366,7 +354,7 @@ def build(names):
         "C3FLMHIT": lambda: [flame_hit(f) for f in range(16)],
         "C3FLMPIL": lambda: [pilot_light(f) for f in range(8)],
         "C3STMIS": lambda: [missile(f) for f in range(32)],
-        "C3STTRL": lambda: [trail_puff(f, int(quadrants[0])) for f in range(12)],
+        "C3STTRL": lambda: [trail_puff(f, quadrant) for f in range(12)],
         "C3STMZ": lambda: [launch_flash(f) for f in range(9)],
         "C3STHIT": lambda: [missile_hit(f) for f in range(16)],
         "C3PBMZ": lambda: [rocket_launch(f) for f in range(8)],

@@ -164,13 +164,16 @@ def items():
     """(item, mod, host) for every Workshop item."""
     return [(item(mod, host), mod, host) for mod, w in WORKSHOP.items() for host in w["hosts"]]
 
+# The eight facings a directional effect is drawn in, clockwise from north (one tileset name each).
+DIRECTIONS = ("N", "NE", "E", "SE", "S", "SW", "W", "NW")
+
 # Objects only the Workshop packs carry: art for other mods that no Tiberian Factions type draws, so its build leaves
 # out their ZIPs, tiles, cameos and sidebar entries (scripts/stage_asset_packs.py).
 PACK_ONLY = ("C3MK3RAIL", "C3PREDRAIL", "C3SCORP", "C3SCORPLAS", "C3SCORPDZR", "C3SCORPLASDZR",
              "C3FLAME", "C3STNK", "C3BEAM", "C3FLMHIT", "C3FLMPIL", "C3STMIS", "C3STTRL", "C3STMZ", "C3STHIT",
              "C3BMCHG", "C3BMGLOW", "C3BMMZ", "C3BMHIT", "C3PITB", "C3PITBMOR", "C3APC", "C3PBMZ",
              "C3PBSHL", "C3MEDEXP") + tuple(f"C3{fx}{d}" for fx in ("FLM", "APCMZ")
-                                            for d in ("N", "NE", "E", "SE", "S", "SW", "W", "NW"))
+                                            for d in DIRECTIONS)
 # Sound stems (sample names less their take number) only the packs carry, left out with their sound events.
 PACK_ONLY_SOUNDS = (tuple(f"C3{tank}{kind}{take}" for tank, takes in (("S", "ABCDEF"), ("F", "ABCDEFGHIJ"),
                                                                      ("T", "ABCDEFG"), ("B", "ABCDEF"),
