@@ -854,5 +854,949 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
       <entry> C3SATF.WAV </entry>
     </SampleNamesList>
   </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FSEA" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSEA.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FSEA" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSEA.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FSEB" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSEB.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FSEB" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSEB.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FSEC" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSEC.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FSEC" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSEC.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FSED" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSED.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FSED" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSED.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FSEE" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSEE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FSEE" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSEE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FSEF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSEF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FSEF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSEF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FSEG" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSEG.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FSEG" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSEG.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FSEH" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSEH.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FSEH" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSEH.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FSEI" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSEI.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FSEI" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSEI.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FSEJ" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSEJ.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FSEJ" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FSEJ.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FMOA" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FMOA.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FMOA" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FMOA.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FMOB" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FMOB.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FMOB" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FMOB.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FMOC" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FMOC.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FMOC" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FMOC.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FMOD" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FMOD.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FMOD" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FMOD.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FMOE" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FMOE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FMOE" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FMOE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FMOF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FMOF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FMOF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FMOF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FATA" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FATA.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FATA" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FATA.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FATB" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FATB.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FATB" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FATB.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FATC" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FATC.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FATC" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FATC.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FATD" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FATD.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FATD" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FATD.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FATE" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FATE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FATE" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FATE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3FATF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FATF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3FATF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3FATF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TSEA" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TSEA.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TSEA" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TSEA.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TSEB" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TSEB.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TSEB" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TSEB.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TSEC" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TSEC.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TSEC" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TSEC.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TSED" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TSED.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TSED" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TSED.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TSEE" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TSEE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TSEE" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TSEE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TSEF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TSEF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TSEF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TSEF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TSEG" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TSEG.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TSEG" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TSEG.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TMOA" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TMOA.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TMOA" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TMOA.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TMOB" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TMOB.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TMOB" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TMOB.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TMOC" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TMOC.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TMOC" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TMOC.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TMOD" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TMOD.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TMOD" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TMOD.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TMOE" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TMOE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TMOE" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TMOE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TMOF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TMOF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TMOF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TMOF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TMOG" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TMOG.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TMOG" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TMOG.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TATA" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TATA.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TATA" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TATA.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TATB" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TATB.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TATB" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TATB.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TATC" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TATC.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TATC" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TATC.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TATD" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TATD.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TATD" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TATD.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3TATE" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TATE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3TATE" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3TATE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3BSEA" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BSEA.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3BSEA" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BSEA.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3BSEB" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BSEB.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3BSEB" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BSEB.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3BSEC" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BSEC.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3BSEC" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BSEC.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3BSED" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BSED.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3BSED" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BSED.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3BSEE" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BSEE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3BSEE" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BSEE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3BSEF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BSEF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3BSEF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BSEF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3BMOA" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BMOA.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3BMOA" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BMOA.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3BMOB" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BMOB.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3BMOB" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BMOB.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3BMOC" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BMOC.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3BMOC" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BMOC.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3BMOD" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BMOD.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3BMOD" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BMOD.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3BMOE" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BMOE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3BMOE" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BMOE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3BMOF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BMOF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3BMOF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BMOF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3BATA" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BATA.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3BATA" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BATA.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3BATB" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BATB.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3BATB" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BATB.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3BATC" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BATC.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3BATC" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BATC.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3BATD" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BATD.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3BATD" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BATD.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3BATE" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BATE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3BATE" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BATE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3BATF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BATF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3BATF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3BATF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
   <!-- END C&C3 tank sounds -->
 </SFXEvents>
