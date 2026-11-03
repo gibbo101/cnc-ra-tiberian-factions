@@ -99,7 +99,8 @@ WORKSHOP = {
         "name": "C&C3 Tiberium Wars Assets",
         "description": "Command & Conquer 3 units, effects, sounds and voices for {host}, in HD.",
         "contents": ["**GDI:** Mammoth Tank Mk. III (C3MK3), Predator Tank (C3PRED), and both with the railgun "
-                     "upgrade (C3MK3RAIL, C3PREDRAIL)",
+                     "upgrade (C3MK3RAIL, C3PREDRAIL); Pitbull (C3PITB) and with the Mortar upgrade (C3PITBMOR), "
+                     "Guardian APC (C3APC), Rig (C3RIG)",
                      "**Nod:** Scorpion Tank (C3SCORP), with Laser Capacitors (C3SCORPLAS), Dozer Blades "
                      "(C3SCORPDZR) and both (C3SCORPLASDZR); Flame Tank (C3FLAME), Stealth Tank (C3STNK), "
                      "Beam Cannon (C3BEAM)",
@@ -112,6 +113,10 @@ WORKSHOP = {
                      "launch flash (C3STMZ) and impact (C3STHIT)",
                      "**Beam Cannon effects:** the charge (C3BMCHG), the beam's glow (C3BMGLOW), muzzle flash "
                      "(C3BMMZ) and impact (C3BMHIT)",
+                     "**Pitbull effects:** its rocket launch (C3PBMZ; the rocket, trail and hit are the Stealth "
+                     "Tank's), the mortar shell (C3PBSHL) and its blast (C3MEDEXP)",
+                     "**Guardian APC effects:** the autocannon's muzzle flash in 8 directions (C3APCMZN ... "
+                     "C3APCMZNW)",
                      "A sidebar cameo for each tank", "Each tank's voices and weapon sounds"],
     },
     "TS-Music": {
@@ -163,13 +168,18 @@ def items():
 # out their ZIPs, tiles, cameos and sidebar entries (scripts/stage_asset_packs.py).
 PACK_ONLY = ("C3MK3RAIL", "C3PREDRAIL", "C3SCORP", "C3SCORPLAS", "C3SCORPDZR", "C3SCORPLASDZR",
              "C3FLAME", "C3STNK", "C3BEAM", "C3FLMHIT", "C3FLMPIL", "C3STMIS", "C3STTRL", "C3STMZ", "C3STHIT",
-             "C3BMCHG", "C3BMGLOW", "C3BMMZ", "C3BMHIT") + tuple(f"C3FLM{d}" for d in ("N", "NE", "E", "SE", "S",
-                                                                                     "SW", "W", "NW"))
+             "C3BMCHG", "C3BMGLOW", "C3BMMZ", "C3BMHIT", "C3PITB", "C3PITBMOR", "C3APC", "C3RIG", "C3PBMZ",
+             "C3PBSHL", "C3MEDEXP") + tuple(f"C3{fx}{d}" for fx in ("FLM", "APCMZ")
+                                            for d in ("N", "NE", "E", "SE", "S", "SW", "W", "NW"))
 # Sound stems (sample names less their take number) only the packs carry, left out with their sound events.
 PACK_ONLY_SOUNDS = (tuple(f"C3{tank}{kind}{take}" for tank, takes in (("S", "ABCDEF"), ("F", "ABCDEFGHIJ"),
-                                                                     ("T", "ABCDEFG"), ("B", "ABCDEF"))
+                                                                     ("T", "ABCDEFG"), ("B", "ABCDEF"),
+                                                                     ("U", "ABCDEFGHIJ"), ("A", "ABCDEF"),
+                                                                     ("R", "ABCDEFG"))
                           for kind in ("SE", "MO", "AT") for take in takes)
-                    + ("C3SGUN", "C3SLAS", "C3FGUN", "C3TGUN", "C3THIT", "C3TCLK", "C3TUNC", "C3BGUN", "C3BCHG"))
+                    + tuple(f"C3UAM{take}" for take in "ABCD") + ("C3RPKA",)
+                    + ("C3SGUN", "C3SLAS", "C3FGUN", "C3TGUN", "C3THIT", "C3TCLK", "C3TUNC", "C3BGUN", "C3BCHG",
+                       "C3UGUN", "C3UMOR", "C3UHIT", "C3AGUN"))
 
 
 def drop_pack_only(text):
@@ -272,7 +282,7 @@ def sound_pack(sample):
     if s.startswith("R2V"):
         return "RA2-Voices-eng" if re.match(r"R2V(APO|PRI)(SE|MO|AT)[A-F]$", s) else "RA2-SFX-Pack"
     if s.startswith("C3"):
-        return "CNC3-Voices-eng" if re.match(r"C3[MPSFTB](SE|MO|AT)[A-J]$", s) else "CNC3-SFX-Pack"
+        return "CNC3-Voices-eng" if re.match(r"C3[MPSFTBUAR](SE|MO|AT|AM|PK)[A-J]$", s) else "CNC3-SFX-Pack"
     return None
 
 
