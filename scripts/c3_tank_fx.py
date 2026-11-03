@@ -67,6 +67,7 @@ RED = {"halo": [(0, (1, .25, .15)), (.35, (.9, .15, .08)), (.7, (0, 0, 0)), (1, 
 
 
 def load(name):
+    """The named FX texture as float RGBA in 0..1."""
     return np.asarray(Image.open(os.path.join(TEX, name + ".png")).convert("RGBA"), np.float32) / 255.0
 
 
@@ -98,7 +99,8 @@ class Frame:
         self.light = np.zeros((size * SS, size * SS, 3), np.float32)
 
     def _place(self, t, cx, cy, size, angle):
-        """(rows, cols, sampled RGBA) of texture t as a square size px wide, turned by angle, centred on (cx, cy)."""
+        """(rows, cols, sampled RGBA) of texture t as a square size px wide, turned by angle, centred on (cx, cy).
+        The square's rim fades out, so a flipbook cell whose art runs to its edge shows no straight edge."""
         S = self.size * SS
         cx, cy, size = cx * SS, cy * SS, size * SS
         r = size * 0.75
@@ -112,7 +114,6 @@ class Frame:
         u = (dx * ca + dy * sa) / size + 0.5
         v = (-dx * sa + dy * ca) / size + 0.5
         ok = ((u >= 0) & (u <= 1) & (v >= 0) & (v <= 1))[..., None]
-        # a flipbook cell's art can run to its edge: fade the square's rim so no straight edge shows
         rim = np.clip((0.5 - np.maximum(abs(u - 0.5), abs(v - 0.5))) / 0.12, 0, 1)[..., None]
         return slice(y0, y1), slice(x0, x1), np.where(ok, rail.bilinear(t, u, v, wrap_v=False) * rim, 0)
 
@@ -186,7 +187,8 @@ def stream_puffs(rng):
 
 
 def flame_stream(f, heading, puffs):
-    """Frame f of the stream heading (radians, 0 = north, clockwise) from the nozzle at the frame centre."""
+    """Frame f of the stream heading (radians, 0 = north, clockwise) from the nozzle at the frame centre: flame
+    tongues licking along it, tips away from the nozzle, over fireballs once a puff is under way."""
     reach = STREAM_CELLS * CELL
     size = int(2 * (reach + 70))
     fr = Frame(size)
@@ -206,7 +208,6 @@ def flame_stream(f, heading, puffs):
         x = c + ux * dist - uy * lat
         y = c + uy * dist + ux * lat - p["lift"] * s - 5 * after
         width = 22 + 84 * s + 10 * after
-        # tongues licking along the stream, tip pointing away from the nozzle
         tongue = cell(T_SCROLL, 4, p["cell"] + int(age))
         fr.add(tongue, x, y, width * 1.15, np.array((1.0, .78, .5)) * 1.6 * burn, heading + p["spin"])
         if s > 0.25:
@@ -266,6 +267,7 @@ def trail_puff(f, quadrant):
 
 
 def launch_flash(f):
+    """The Stealth Tank's rocket leaving its pod: a burst and a fading flare."""
     fr = Frame(96)
     fr.add(cell(T_HIT, 3, f), 48, 48, 64, (1.0, .85, .6))
     if f < 4:
@@ -316,13 +318,13 @@ def medium_explosion(f, clumps):
 
 
 def apc_muzzle(f, heading):
-    """The autocannon's flash at the frame centre: a star at the muzzle and the streak thrown along the heading."""
+    """The autocannon's flash at the frame centre: a star at the muzzle and the streak thrown along the heading
+    (the streak lies along its texture's u axis, so it turns a quarter less than the heading)."""
     fr = Frame(160)
     c = 80
     k = (1 - f / 4)
     ux, uy = math.sin(heading), -math.cos(heading)
     streak = T_MUZZLE[0:256, 256:512]
-    # the streak lies along the texture's u axis: turn it a quarter less than the heading
     fr.add(streak, c + ux * 30, c + uy * 30, 92 - 10 * f, np.array((1.0, .9, .7)) * 1.4 * k, heading - math.pi / 2)
     fr.add(T_MUZZLE[0:128, 0:128], c, c, 40, np.array((1.0, .95, .8)) * 1.2 * k, f * .5)
     fr.add(rail.T_FLARE, c, c, 50, np.array((1.0, .8, .5)) * .6 * k)
@@ -342,6 +344,7 @@ def beam_charge(f):
 
 
 def build(names):
+    """Writes the named effects (all when names is empty), their random layouts drawn once from a fixed seed."""
     rng = np.random.default_rng(11)
     puffs = stream_puffs(rng)
     beam_flash = {"flash": rng.uniform(18, 24), "angle": rng.uniform(-7, 7)}

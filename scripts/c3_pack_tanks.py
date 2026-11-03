@@ -144,7 +144,8 @@ def patch_tileset(name, count, frames=None):
     print(f"patched {os.path.basename(units_xml)}: {name} -> {count} tiles")
 
 
-# VOC stem -> (model, C&C3 sample names). The stems are the VOC table names in audio.cpp.
+# VOC stem -> (model, C&C3 sample names). TF's own tanks' stems (C3M, C3P) are VOCs in audio.cpp; the rest are
+# pack-only and must be in asset_packs.PACK_ONLY_SOUNDS.
 SOUNDS = (
     [(f"C3MSE{c}", "mammoth", [f"GUMammo_VoiSelect{c.lower()}"]) for c in "ABCDEF"]
     + [(f"C3MMO{c}", "mammoth", [f"GUMammo_VoiMove{c.lower()}"]) for c in "ABCDEF"]
