@@ -107,11 +107,11 @@ class Model:
         self.team_mean = self._team_mean()
 
     def _team_mean(self):
-        """Mean luminance of the diffuse texels under the house-colour mask."""
+        """Mean luminance of the diffuse texels under the house-colour mask (1 for a model without house colour)."""
         h, w = self.body.shape[:2]
         mask = np.asarray(Image.fromarray(self.house[..., 3].astype(np.uint8)).resize((w, h), Image.BILINEAR))
         lum = self.body[..., :3] @ LUMA
-        return float(lum[mask > 128].mean())
+        return float(lum[mask > 128].mean()) if (mask > 128).any() else 1.0
 
     def _link_pitch(self):
         """Tread link spacing in U, from the sheet's horizontal autocorrelation."""
