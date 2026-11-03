@@ -1,8 +1,8 @@
 # C&C3 units to C&C Remastered sprites: a working recipe
 
 **Status:** Reference. Pulling a C&C3 unit into HD Remastered sprites, as done for GDI's Mammoth
-Mk. III, Predator, Pitbull and Guardian APC, and Nod's Scorpion, Flame Tank, Stealth Tank and Beam Cannon. The
-Rig waits for its deploy sequence, which needs C&C3's skeletal animations decoded.
+Mk. III, Predator, Pitbull and Guardian APC, and Nod's Scorpion, Flame Tank, Stealth Tank and Beam Cannon.
+**Open:** the Rig, which ships with its deploy sequence once C&C3's skeletal animations are decoded.
 
 How to pull a unit out of Command & Conquer 3: Tiberium Wars (models, textures, audio,
 stats) and turn it into HD sprites for a C&C Remastered Collection mod. Written for an AI
@@ -374,7 +374,8 @@ rather than using Blender: you need exact control of camera, light and colour.
 - **Centring:** after packing, `scripts/unit_centring.py` moves every frame down by the hull's
   measured offset so the hull sits centred on the unit as EA's vehicles do, records the drop
   (`unit_art_drop.json`, `redalert/unit_art_drop.h`, which the fire points add) and prints the
-  selection box. Ours: C3PRED 24 canvas px, C3MK3 32, C3SCORP 14 (its hull sat 1.81 classic px high).
+  selection box. Ours: C3PRED 24 canvas px, C3MK3 32, C3SCORP 14 (its hull sat 1.81 classic px high), C3FLAME 11,
+  C3STNK 7, C3BEAM 24, C3PITB 40, C3APC 26.
   Upgrade variants move with their base tank.
 - **Wheels:** a wheeled vehicle (the Beam Cannon, Pitbull, Guardian APC) has no tread mesh, so it
   renders one hull frame per facing (`--tread-steps 1`) and its three step tiles name that one member.
