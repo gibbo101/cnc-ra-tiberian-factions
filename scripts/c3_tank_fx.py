@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the C&C3 Nod tanks' weapon effects as HD anim frames, from C&C3's own effect textures.
+"""Render the C&C3 tanks' and vehicles' weapon effects as HD anim frames, from C&C3's own effect textures.
 
 C&C3 draws these with particle systems whose layouts are not decoded; each piece here is built from the textures the
 weapon's FX lists name, timed by eye against them. The launcher draws an exported sprite unrotated, so anything
@@ -20,9 +20,16 @@ Beam Cannon (NODBeamCannonLaser, drawn with the Obelisk's red beam, FXObeliskLas
   C3BMCHG   the charge swelling at the emitter before it fires, 16 frames.
   C3BMGLOW, C3BMMZ, C3BMHIT  the glow laid along the beam, the muzzle flash and the impact: c3_rail_beam.py's pieces
                              in the Obelisk's red.
+Pitbull (GDIPitbullRocketWeapon fires the Stealth Tank's rocket, trail and hit: C3STMIS, C3STTRL, C3STHIT):
+  C3PBMZ    the rocket launch flash (GDIMissleFire), 8 frames.
+  C3PBSHL   the Mortar upgrade's shell (GDIPitBullArtilleryProjectile), 32 facings, its exhaust lit.
+  C3MEDEXP  where the shell lands (FX_MediumXplosion): flash, fireball, flames, thrown dirt and a shock ring, 16 frames.
+Guardian APC (GDIAPCAutoCannon):
+  C3APCMZN ... C3APCMZNW  the autocannon's muzzle flash along the barrel, one per direction, 4 frames.
 
 Inputs: resources/custom-art/c3-tank-fx/ (C&C3's static stream) and c3_rail_beam.py's textures; C3_ART_DIR holding
-renders/stealthmissile/ from c3_render.py (the missile npz from tools/cnc3/c3_extract_model.py, workspace).
+renders/stealthmissile/ and renders/pitbullshell/ from c3_render.py (the npz files from
+tools/cnc3/c3_extract_model.py, workspace).
 Writes the ZIPs and tiles where scripts/asset_packs.py routes the names.
 Usage: c3_tank_fx.py [NAME ...]   (every effect when no names are given)
 License: GPL v3.
@@ -69,6 +76,9 @@ T_FLARE2 = load("FXLenzFlare02")
 T_FLARE4 = load("FXLenzFlare04")
 T_HIT = load("FXBulletHit")           # 3 x 3 spark burst, additive
 T_SMOKE = load("FXSmoke2x2_02")       # 2 x 2 puffs, white by alpha
+T_MUZZLE = load("FXMuzzle")           # atlas: star flash top left, side-on streak top right, burst bottom right
+T_RING = load("FXRing01")             # shock ring, additive
+T_DIRT = load("FXDirtClumps")         # thrown dirt, by alpha
 
 
 def cell(t, grid, i):
@@ -118,7 +128,8 @@ class Frame:
         if p:
             a = p[2][..., 3] * opacity
             ys, xs = p[0], p[1]
-            self.rgb[ys, xs] = p[2][..., :3] * np.array(tint, np.float32) * a[..., None] + self.rgb[ys, xs] * (1 - a[..., None])
+            colour = p[2][..., :3] * np.array(tint, np.float32)
+            self.rgb[ys, xs] = colour * a[..., None] + self.rgb[ys, xs] * (1 - a[..., None])
             self.a[ys, xs] = a + self.a[ys, xs] * (1 - a)
 
     def image(self):
@@ -229,9 +240,9 @@ def pilot_light(f):
 
 # ---- Stealth Tank -----------------------------------------------------------------------------------------------
 
-def missile(f):
-    """The rocket at facing f, packed at UNIT px per C&C3 unit, with its exhaust lit at the tail."""
-    im = Image.open(f"{ART}/renders/stealthmissile/frame-{f:04d}.png").convert("RGBA")
+def missile(f, model="stealthmissile"):
+    """The projectile at facing f, packed at UNIT px per C&C3 unit, with its exhaust lit at the tail."""
+    im = Image.open(f"{ART}/renders/{model}/frame-{f:04d}.png").convert("RGBA")
     k = UNIT / MISSILE_RENDER_PPU
     im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
     fr = Frame(64)
@@ -275,6 +286,49 @@ def missile_hit(f):
     return fr.image()
 
 
+# ---- Pitbull and Guardian APC ----------------------------------------------------------------------------------
+
+def rocket_launch(f):
+    """The Pitbull's rocket leaving its pod: a flare and a short tongue of fire, fading."""
+    fr = Frame(96)
+    fr.add(T_FLARE4, 48, 48, 64 - 4 * f, np.array((1.0, .7, .35)) * (1 - f / 8))
+    fr.add(cell(T_SCROLL, 4, f * 2), 48, 46, 34, np.array((1.0, .75, .45)) * 1.3 * fade(f, 2, 8))
+    return fr.image()
+
+
+def medium_explosion(f, clumps):
+    """The mortar shell's blast: a white flash, a rolling fireball with flames, a shock ring and thrown dirt."""
+    fr = Frame(256)
+    c = 128
+    if f < 4:
+        fr.add(rail.T_BLAST, c, c, 150 - 10 * f, np.array((1.0, .85, .6)) * (1 - f / 4), f * .4)
+    fr.add(T_RING, c, c, 60 + 22 * f, np.array((1.0, .8, .6)) * .7 * fade(f, 2, 8))
+    for dx, dy, vx, vy, spin in clumps:
+        fr.over(T_DIRT, c + dx + vx * f, c + dy + vy * f + 1.2 * f * f, 40, tint=(.55, .48, .4),
+                opacity=fade(f, 6, 12), angle=spin * f)
+    fr.over(cell(T_BALL, 4, f), c, c - 2 * f, 100 + 4 * f, opacity=fade(f, 10, 16))
+    for i, dx in enumerate((-22, 0, 20)):
+        if f >= 2 + i:
+            age = f - 2 - i
+            fr.add(cell(T_SCROLL, 4, age + 4 * i), c + dx, c - 30 - 3 * age, 60,
+                   np.array((1.0, .7, .4)) * fade(age, 6, 11))
+    return fr.image()
+
+
+def apc_muzzle(f, heading):
+    """The autocannon's flash at the frame centre: a star at the muzzle and the streak thrown along the heading."""
+    fr = Frame(160)
+    c = 80
+    k = (1 - f / 4)
+    ux, uy = math.sin(heading), -math.cos(heading)
+    streak = T_MUZZLE[0:256, 256:512]
+    # the streak lies along the texture's u axis: turn it a quarter less than the heading
+    fr.add(streak, c + ux * 30, c + uy * 30, 92 - 10 * f, np.array((1.0, .9, .7)) * 1.4 * k, heading - math.pi / 2)
+    fr.add(T_MUZZLE[0:128, 0:128], c, c, 40, np.array((1.0, .95, .8)) * 1.2 * k, f * .5)
+    fr.add(rail.T_FLARE, c, c, 50, np.array((1.0, .8, .5)) * .6 * k)
+    return fr.image()
+
+
 # ---- Beam Cannon ------------------------------------------------------------------------------------------------
 
 def beam_charge(f):
@@ -298,6 +352,11 @@ def build(names):
         sparks.append((v * math.cos(a), v * math.sin(a), rng.uniform(.65, .8), rng.uniform(2, 4),
                        rng.uniform(-40, 40) / 255))
     quadrants = rng.integers(4, size=1)
+    clumps = []
+    for _ in range(7):
+        a, v = rng.uniform(0, 2 * math.pi), rng.uniform(4, 9)
+        clumps.append((math.cos(a) * 10, math.sin(a) * 6, math.cos(a) * v, math.sin(a) * v * .6 - 6,
+                       rng.uniform(-.3, .3)))
     effects = {f"C3FLM{d}": lambda d=d: [flame_stream(f, math.radians(45 * DIRECTIONS.index(d)), puffs)
                                          for f in range(STREAM_FRAMES)] for d in DIRECTIONS}
     effects.update({
@@ -307,16 +366,21 @@ def build(names):
         "C3STTRL": lambda: [trail_puff(f, int(quadrants[0])) for f in range(12)],
         "C3STMZ": lambda: [launch_flash(f) for f in range(9)],
         "C3STHIT": lambda: [missile_hit(f) for f in range(16)],
+        "C3PBMZ": lambda: [rocket_launch(f) for f in range(8)],
+        "C3PBSHL": lambda: [missile(f, "pitbullshell") for f in range(32)],
+        "C3MEDEXP": lambda: [medium_explosion(f, clumps) for f in range(16)],
         "C3BMCHG": lambda: [beam_charge(f) for f in range(16)],
         "C3BMGLOW": lambda: [rail.dot(f, rail.GLOW_FRAME, rail.GLOW_PX, RED["halo"], 1.0) for f in range(rail.FRAMES)],
         "C3BMMZ": lambda: [rail.muzzle(f, beam_flash, RED["flash"]) for f in range(rail.MUZZLE_FRAMES)],
         "C3BMHIT": lambda: [rail.impact(f, glows, sparks, RED["glow"], RED["spark"]) for f in range(rail.FRAMES)],
     })
+    effects.update({f"C3APCMZ{d}": lambda d=d: [apc_muzzle(f, math.radians(45 * DIRECTIONS.index(d)))
+                                                 for f in range(4)] for d in DIRECTIONS})
     unknown = set(names) - set(effects)
     if unknown:
         raise SystemExit(f"unknown effect(s): {', '.join(sorted(unknown))}")
-    if (not names or "C3STMIS" in names) and not ART:
-        raise SystemExit("set C3_ART_DIR (holding renders/stealthmissile/)")
+    if (not names or {"C3STMIS", "C3PBSHL"} & set(names)) and not ART:
+        raise SystemExit("set C3_ART_DIR (holding renders/stealthmissile/ and renders/pitbullshell/)")
     for name, make in effects.items():
         if not names or name in names:
             write_zip(name, make())
