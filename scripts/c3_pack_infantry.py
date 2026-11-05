@@ -8,8 +8,10 @@ Tileset layout per unit (292 tiles): Tiberian Sun's light infantry (idata.cpp Ts
   0-7 ready, 8-55 walk (6 a facing), 56-70 idle1, 71-84 idle2 (85 repeats its last), 86-133 crawl (6),
   134-148 die1, 149-163 die2, 164-211 fire (6), 212-259 fire prone (6), 260-275 down (2), 276-291 up (2).
 Idles and deaths face south, toward the camera. Frames sit on the TS infantry's 267 x 208 canvas with the feet
-on its line (6 px below the centre), at the C&C3 tanks' scale (32 C&C3 units a cell), and carry EA's drop shadow.
-Each soldier's diffuse sheet is lifted to the tanks' brightness first (TARGET_LUM).
+on TSE1's line, scaled to TF's TS infantry height, each over its own shadow cast along the
+render light onto the ground. Each soldier's diffuse sheet is lifted to the tanks' brightness first (TARGET_LUM)
+with its team colour raised to the TS infantry's (TEAM_BOOST), and its frames are toned to their brightness and
+contrast (TS_LUM_MEAN, TS_LUM_STD).
 
 Inputs (set C3_ART_DIR): infantry/<unit>.npz and infantry/<unit>_squad.npz from tools/cnc3/c3_extract_infantry.py
 (workspace), cameo/<NAME>.png for each single soldier, and audio/<model>/<C&C3 name>.wav from
@@ -30,19 +32,27 @@ sys.path.insert(0, HERE)
 import asset_packs  # noqa: E402
 import c3_pack_tanks as tanks  # noqa: E402
 import c3_render  # noqa: E402
-from ts_reshadow import drop_shadow  # noqa: E402
 
 ART = tanks.ART
 RENDER_PPU = 12.0
-PACK_PPU = 4.0
+# TF's TS infantry stand about 61 px tall, the C&C3 Rifleman 52 at the tanks' 4 px a C&C3 unit.
+PACK_PPU = 4.7
 RENDER_CANVAS = 900
 CANVAS = (267, 208)
-FEET = (133.5, 110)
-SHADOW = (1, 4)  # EA's vehicle drop shadow, (2, 6) at 8 px a classic px, at the infantry's 16/3
+FEET = (133.5, 103)  # the ground point; the feet's lowest pixels then sit where TSE1's do (about y 109)
+# The cast shadow's opacity: TF's TS infantry shadows sit at a median alpha of about 90.
+SHADOW_ALPHA = 0.36
+# Team colour level over the tanks': the TS infantry's team green has a median G of about 120, the C&C3 soldiers'
+# 85 at the tanks' level.
+TEAM_BOOST = 1.45
 SOUTH = 4
 # Mean diffuse luminance the infantry sheets are lifted to: the C&C3 tanks' sheets sit at 85 to 103, the infantry's
 # at 35 to 50, which C&C3's own lighting brightens and the TS voxel ramp does not.
 TARGET_LUM = 85.0
+# Mean and spread of luminance over the body pixels of TF's TS infantry (TSE1, TSE2, TSGHOST), which every
+# soldier's packed frames are mapped to.
+TS_LUM_MEAN = 63.9
+TS_LUM_STD = 36.3
 
 # name, model file, cameo (None: the squad keeps its single soldier's)
 INFANTRY = (
@@ -97,46 +107,94 @@ def shape_jobs(model):
     return jobs
 
 
+def bled(body):
+    """The sheet with each transparent texel's colour filled from its opaque neighbours, so edges never sample black."""
+    out = body.copy()
+    solid = out[..., 3] >= 128
+    for _ in range(32):
+        if solid.all():
+            break
+        acc = np.zeros(out.shape[:2] + (3,))
+        cnt = np.zeros(out.shape[:2])
+        for dy, dx in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+            s = np.roll(solid, (dy, dx), (0, 1))
+            acc += np.roll(out[..., :3], (dy, dx), (0, 1)) * s[..., None]
+            cnt += s
+        grow = ~solid & (cnt > 0)
+        out[grow, :3] = acc[grow] / cnt[grow, None]
+        solid = solid | grow
+    return out
+
+
 def lifted(m):
-    """The model with its diffuse sheet gamma-lifted to TARGET_LUM mean luminance (darks rise, highlights hold)."""
+    """The model with its diffuse sheet bled into its transparent texels and gamma-lifted to TARGET_LUM mean
+    luminance (darks rise, highlights hold)."""
+    m.body = bled(m.body)
     rgb = m.body[..., :3] / 255.0
     mean = float((rgb @ c3_render.LUMA).mean())
-    if mean <= 0 or mean * 255.0 >= TARGET_LUM:
-        return m
-    g = np.log(TARGET_LUM / 255.0) / np.log(mean)
-    m.body = m.body.copy()
-    m.body[..., :3] = np.power(rgb, g) * 255.0
+    if 0 < mean and mean * 255.0 < TARGET_LUM:
+        g = np.log(TARGET_LUM / 255.0) / np.log(mean)
+        m.body[..., :3] = np.power(rgb, g) * 255.0
     m.sheets[0] = (m.body, m.sheets[0][1], m.sheets[0][2])
-    m.team_means[0] = m._team_mean(m.body, m.sheets[0][1])
+    m.team_means[0] = m._team_mean(m.body, m.sheets[0][1]) / TEAM_BOOST
     return m
 
 
 def render_shape(args):
+    """The soldier at a pose and facing, and his shadow cast along the render light onto the ground: two PNG paths."""
     model, pose, facing = args
     path = f"{ART}/renders/inf_{model}/pose{pose:03d}-f{facing}.png"
-    if os.path.exists(path):
-        return path
+    shadow = path[:-4] + "-shadow.png"
+    if os.path.exists(path) and os.path.exists(shadow):
+        return path, shadow
     m = lifted(c3_render.Model(f"{ART}/infantry/{model}.npz"))
     d = np.load(f"{ART}/infantry/{model}.npz")
     m.pos, m.nrm = d["poses_pos"][pose], d["poses_nrm"][pose]
     m.hull_centre = np.zeros(3)
-    img = c3_render.render(m, 90.0 + facing * 45.0, "hull", RENDER_PPU, RENDER_CANVAS, 32.0)
+    yaw = 90.0 + facing * 45.0
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    img.save(path)
-    return path
+    c3_render.render(m, yaw, "hull", RENDER_PPU, RENDER_CANVAS, 32.0).save(path)
+    a = np.radians(yaw)
+    light = np.array([[np.cos(a), np.sin(a), 0], [-np.sin(a), np.cos(a), 0], [0, 0, 1]]) @ c3_render.LIGHT
+    pos = m.pos.copy()
+    m.pos = pos - light[None, :] * (np.maximum(pos[:, 2], 0) / light[2])[:, None]
+    m.pos[:, 2] = 0.0
+    c3_render.render(m, yaw, "hull", RENDER_PPU, RENDER_CANVAS, 32.0).getchannel("A").save(shadow)
+    return path, shadow
 
 
-def framed(path):
-    im = Image.open(path).convert("RGBA")
+def placed(path):
+    """The render (or shadow mask) scaled to the pack and placed on the canvas with its feet on the line."""
+    im = Image.open(path)
+    im = im.convert("RGBA") if im.mode != "L" else Image.merge("RGBA", (im, im, im, im))
     f = PACK_PPU / RENDER_PPU
     im = im.resize((round(im.width * f), round(im.height * f)), Image.LANCZOS)
     x, y = round(FEET[0] - im.width / 2), round(FEET[1] - im.height / 2)
     b = im.getbbox()
-    if b and (x + b[0] < 0 or y + b[1] < 0 or x + b[2] > CANVAS[0] - SHADOW[0] or y + b[3] > CANVAS[1] - SHADOW[1]):
+    if b and (x + b[0] < 0 or y + b[1] < 0 or x + b[2] > CANVAS[0] or y + b[3] > CANVAS[1]):
         raise SystemExit(f"{path}: content clipped by the {CANVAS} canvas")
     fr = Image.new("RGBA", CANVAS, (0, 0, 0, 0))
     fr.alpha_composite(im, (max(x, 0), max(y, 0)), (max(-x, 0), max(-y, 0)))
-    return drop_shadow(fr, *SHADOW)
+    return fr
+
+
+def toned(frames, shadows):
+    """The frames with one linear map on their colour, taking the body pixels' luminance mean and spread over every
+    frame to the TS infantry's, each laid over its cast shadow."""
+    arrs = [np.asarray(f).astype(np.float32) for f in frames]
+    body = np.concatenate([a[a[..., 3] > 250][:, :3] for a in arrs])
+    lum = body @ c3_render.LUMA
+    k = TS_LUM_STD / max(float(lum.std()), 1.0)
+    out = []
+    for a, sh in zip(arrs, shadows):
+        a = a.copy()
+        a[..., :3] = np.clip((a[..., :3] - float(lum.mean())) * k + TS_LUM_MEAN, 0, 255) * (a[..., 3:] > 0)
+        under = np.zeros_like(a)
+        under[..., 3] = np.asarray(sh)[..., 3].astype(np.float32) * SHADOW_ALPHA
+        fr = Image.fromarray(under.astype(np.uint8), "RGBA")
+        fr.alpha_composite(Image.fromarray(a.astype(np.uint8), "RGBA"))
+        out.append(fr)
+    return out
 
 
 def pack(name, model, cameo):
@@ -145,8 +203,8 @@ def pack(name, model, cameo):
         paths = pool.map(render_shape, [(model, p, f) for _, p, f in jobs])
     by_shape = dict(zip([s for s, _, _ in jobs], paths))
     numbers = sorted(by_shape)
-    tanks.write_zip(asset_packs.art_zip(name, "UNITS"), name.lower(), [framed(by_shape[s]) for s in numbers],
-                    numbers=numbers)
+    frames = toned([placed(by_shape[s][0]) for s in numbers], [placed(by_shape[s][1]) for s in numbers])
+    tanks.write_zip(asset_packs.art_zip(name, "UNITS"), name.lower(), frames, numbers=numbers)
     sub = name.lower()
     tiles = [f"{sub}\\{sub}-{(s if s in by_shape else s - 1):04d}.tga" for s in range(SHAPES)]
     tanks.patch_tileset(name, SHAPES, tiles)
