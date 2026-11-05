@@ -3,7 +3,8 @@
 Tank (bdata.cpp Shape_Number: 32 facings x {idle, recoil, damaged idle, damaged recoil}):
   C3BBASE      the base without its guns, healthy and damaged: 128 tiles, 64 of each
   C3BBASET     both cannons in 32 facings (CCW, 0 = N), drawn in place over the base: 128 tiles, the facings x 4
-  C3BBASEMAKE  the deploy, 25 frames from the mobile Rig to the finished base; played backwards it packs up
+  C3BBASEMAKE  the deploy, 32 frames from the mobile Rig to the finished base; played backwards it packs up.
+               At 2 ticks a frame it runs as long as C&C3's (3.37 s); a host sets that rate itself.
 
 The base stands as the Rig left it, hull facing south (nose to the camera, the Tick's deploy facing), so both guns
 sit beside the tower. Each gun turns about its own yaw pivot (TURRET_L, TURRET_R). The canvas is centred on the
@@ -37,7 +38,8 @@ PACK_PPU = 4.0  # 128 px a cell over the 32 C&C3 units a cell the tanks are pack
 RENDER_CANVAS = 1400
 HULL_YAW = 270.0  # facing 16, south
 DEPLOY_FRAMES = 101
-MAKE = [round(i * (DEPLOY_FRAMES - 1) / 24) for i in range(25)]
+MAKE_FRAMES = 32  # at 2 game ticks a frame, C&C3's 3.37 s deploy at the speed TF is played at
+MAKE = [round(i * (DEPLOY_FRAMES - 1) / (MAKE_FRAMES - 1)) for i in range(MAKE_FRAMES)]
 GUN_PIVOTS = ("TURRET_L", "TURRET_R")
 
 

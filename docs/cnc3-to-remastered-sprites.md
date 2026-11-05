@@ -427,7 +427,8 @@ rather than using Blender: you need exact control of camera, light and colour.
 - **Deploying vehicles:** the Rig deploys with `GURIGUPAK_AN` (101 frames at 30 fps) on its own skeleton
   (`GURIGUPAK_SK`, meshes `GURIGUPAK_SN.*`); packing up plays it backwards, and the deployed base holds the last
   frame. `scripts/c3_pack_battlebase.py` packs the Battle Base as a turret building in the dug-in Tick Tank's
-  layout (body, both guns in 32 facings turned about their own yaw pivots, 25 deploy frames), hull facing south,
+  layout (body, both guns in 32 facings turned about their own yaw pivots, 32 deploy frames: at 2 game ticks a
+  frame they run C&C3's 3.37 s at the speed TF is played at, about 19 ticks a second), hull facing south,
   on a canvas centred on the Rig's ground point at 128 px a cell. Its three sets move with the Rig's art drop
   (`unit_centring.py` partners), so the deploy starts where the Rig's sprite stands. The pads start underground;
   geometry below the ground plane is cut away, as C&C3's terrain hides it.
