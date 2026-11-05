@@ -9,9 +9,8 @@ Tileset layout per unit (292 tiles): Tiberian Sun's light infantry (idata.cpp Ts
   134-148 die1, 149-163 die2, 164-211 fire (6), 212-259 fire prone (6), 260-275 down (2), 276-291 up (2).
 Idles and deaths face south, toward the camera. Frames sit on the TS infantry's 267 x 208 canvas with the feet
 on TSE1's line, scaled to TF's TS infantry height, each over its own shadow cast along the
-render light onto the ground. Each soldier's diffuse sheet is lifted to the tanks' brightness first (TARGET_LUM)
-with its team colour raised to the TS infantry's (TEAM_BOOST), and its frames are toned to their brightness and
-contrast (TS_LUM_MEAN, TS_LUM_STD).
+render light onto the ground. Each soldier's team colour is raised to the TS infantry's (TEAM_BOOST), and his frames
+are exposed to their brightness (TS_LUM_MEAN).
 
 Inputs (set C3_ART_DIR): infantry/<unit>.npz and infantry/<unit>_squad.npz from tools/cnc3/c3_extract_infantry.py
 (workspace), cameo/<NAME>.png for each single soldier, and audio/<model>/<C&C3 name>.wav from
@@ -46,13 +45,10 @@ SHADOW_ALPHA = 0.36
 # 85 at the tanks' level.
 TEAM_BOOST = 1.45
 SOUTH = 4
-# Mean diffuse luminance the infantry sheets are lifted to: the C&C3 tanks' sheets sit at 85 to 103, the infantry's
-# at 35 to 50, which C&C3's own lighting brightens and the TS voxel ramp does not.
-TARGET_LUM = 85.0
-# Mean and spread of luminance over the body pixels of TF's TS infantry (TSE1, TSE2, TSGHOST), which every
-# soldier's packed frames are mapped to.
+# Mean luminance over the body pixels of TF's TS infantry (TSE1, TSE2, TSGHOST), which each soldier's frames are
+# exposed to; above KNEE, colour rolls off toward white instead of clipping.
 TS_LUM_MEAN = 63.9
-TS_LUM_STD = 36.3
+KNEE = 200.0
 
 # name, model file, cameo (None: the squad keeps its single soldier's)
 INFANTRY = (
@@ -126,15 +122,9 @@ def bled(body):
     return out
 
 
-def lifted(m):
-    """The model with its diffuse sheet bled into its transparent texels and gamma-lifted to TARGET_LUM mean
-    luminance (darks rise, highlights hold)."""
+def prepared(m):
+    """The model with its diffuse sheet bled into its transparent texels and its team colour raised (TEAM_BOOST)."""
     m.body = bled(m.body)
-    rgb = m.body[..., :3] / 255.0
-    mean = float((rgb @ c3_render.LUMA).mean())
-    if 0 < mean and mean * 255.0 < TARGET_LUM:
-        g = np.log(TARGET_LUM / 255.0) / np.log(mean)
-        m.body[..., :3] = np.power(rgb, g) * 255.0
     m.sheets[0] = (m.body, m.sheets[0][1], m.sheets[0][2])
     m.team_means[0] = m._team_mean(m.body, m.sheets[0][1]) / TEAM_BOOST
     return m
@@ -147,7 +137,7 @@ def render_shape(args):
     shadow = path[:-4] + "-shadow.png"
     if os.path.exists(path) and os.path.exists(shadow):
         return path, shadow
-    m = lifted(c3_render.Model(f"{ART}/infantry/{model}.npz"))
+    m = prepared(c3_render.Model(f"{ART}/infantry/{model}.npz"))
     d = np.load(f"{ART}/infantry/{model}.npz")
     m.pos, m.nrm = d["poses_pos"][pose], d["poses_nrm"][pose]
     m.hull_centre = np.zeros(3)
@@ -179,16 +169,17 @@ def placed(path):
 
 
 def toned(frames, shadows):
-    """The frames with one linear map on their colour, taking the body pixels' luminance mean and spread over every
-    frame to the TS infantry's, each laid over its cast shadow."""
+    """The frames exposed by one factor that takes the body pixels' mean luminance over every frame to the TS
+    infantry's, so darks stay dark and colours keep their saturation; each laid over its cast shadow."""
     arrs = [np.asarray(f).astype(np.float32) for f in frames]
     body = np.concatenate([a[a[..., 3] > 250][:, :3] for a in arrs])
-    lum = body @ c3_render.LUMA
-    k = TS_LUM_STD / max(float(lum.std()), 1.0)
+    k = TS_LUM_MEAN / max(float((body @ c3_render.LUMA).mean()), 1.0)
     out = []
     for a, sh in zip(arrs, shadows):
         a = a.copy()
-        a[..., :3] = np.clip((a[..., :3] - float(lum.mean())) * k + TS_LUM_MEAN, 0, 255) * (a[..., 3:] > 0)
+        x = a[..., :3] * k
+        x = np.where(x > KNEE, KNEE + (255.0 - KNEE) * (1 - np.exp(-(x - KNEE) / (255.0 - KNEE))), x)
+        a[..., :3] = x * (a[..., 3:] > 0)
         under = np.zeros_like(a)
         under[..., 3] = np.asarray(sh)[..., 3].astype(np.float32) * SHADOW_ALPHA
         fr = Image.fromarray(under.astype(np.uint8), "RGBA")
