@@ -758,5 +758,33 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
       <entry> C3YGUN5.WAV </entry>
     </SampleNamesList>
   </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3NGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3NGUN1.WAV </entry>
+      <entry> C3NGUN2.WAV </entry>
+      <entry> C3NGUN3.WAV </entry>
+      <entry> C3NGUN4.WAV </entry>
+      <entry> C3NGUN5.WAV </entry>
+      <entry> C3NGUN6.WAV </entry>
+      <entry> C3NGUN7.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3NGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3NGUN1.WAV </entry>
+      <entry> C3NGUN2.WAV </entry>
+      <entry> C3NGUN3.WAV </entry>
+      <entry> C3NGUN4.WAV </entry>
+      <entry> C3NGUN5.WAV </entry>
+      <entry> C3NGUN6.WAV </entry>
+      <entry> C3NGUN7.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
   <!-- END C&C3 infantry sounds -->
 </SFXEvents>

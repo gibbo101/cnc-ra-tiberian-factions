@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Package C&C3 infantry, each as a single soldier and as a squad: GDI's Rifleman (C3RIFLE, C3RIFLESQ) from
-Tiberium Wars and Nod's Cyborg (C3CYBORG, C3CYBORGSQ) from Kane's Wrath, Marked of Kane's basic infantry.
+Tiberium Wars, and from Kane's Wrath Nod's Militant (C3MILIT, C3MILITSQ; Kane's Wrath's remade model) and Cyborg
+(C3CYBORG, C3CYBORGSQ).
 
 Tileset layout per unit (292 tiles): Tiberian Sun's light infantry (idata.cpp TsE1DoControls, TS art.ini
 [E1Sequence]), 8 facings CCW from north where a sequence turns with the soldier:
@@ -10,9 +11,9 @@ Idles and deaths face south, toward the camera. Frames sit on the TS infantry's 
 on its line (6 px below the centre), at the C&C3 tanks' scale (32 C&C3 units a cell), and carry EA's drop shadow.
 
 Inputs (set C3_ART_DIR): infantry/<unit>.npz and infantry/<unit>_squad.npz from tools/cnc3/c3_extract_infantry.py
-(workspace), cameo/C3RIFLE.png, cameo/C3CYBORG.png, and audio/<rifleman|cyborg>/<C&C3 name>.wav from
+(workspace), cameo/<NAME>.png for each single soldier, and audio/<model>/<C&C3 name>.wav from
 tools/cnc3/c3_extract_audio.py. Audio: each soldier's crew voices and gunfire, as the tanks' (c3_pack_tanks.py).
-Usage: c3_pack_infantry.py [NAME ...]; with no names, all four.
+Usage: c3_pack_infantry.py [NAME ...]; with no names, all of them.
 
 License: GPL v3.
 """
@@ -43,6 +44,8 @@ SOUTH = 4
 INFANTRY = (
     ("C3RIFLE", "rifleman", "C3RIFLE"),
     ("C3RIFLESQ", "rifleman_squad", None),
+    ("C3MILIT", "militant", "C3MILIT"),
+    ("C3MILITSQ", "militant_squad", None),
     ("C3CYBORG", "cyborg", "C3CYBORG"),
     ("C3CYBORGSQ", "cyborg_squad", None),
 )
@@ -69,6 +72,10 @@ SOUNDS = (
     + _takes("C3YMO", "cyborg", "NUCyInf_VoiMove", "ABCDEFGHI")
     + _takes("C3YAT", "cyborg", "NUCyInf_VoiAttack", "ABCDEFGHI")
     + [("C3YGUN", "cyborg", [f"NUAwake_gunFire{c}" for c in "abcde"])]
+    + _takes("C3NSE", "militant", "NUMilit_VoiSelect", "ABCDEFG")
+    + _takes("C3NMO", "militant", "NUMilit_VoiMove", "ABCDEFGHIJK")
+    + _takes("C3NAT", "militant", "NUMilit_VoiAttack", "ABCDEFG")
+    + [("C3NGUN", "militant", [f"NURifle_gunFire2{c}" for c in "abcdefg"])]
 )
 SFX_BEGIN = "  <!-- BEGIN C&C3 infantry sounds (scripts/c3_pack_infantry.py) -->"
 SFX_END = "  <!-- END C&C3 infantry sounds -->"

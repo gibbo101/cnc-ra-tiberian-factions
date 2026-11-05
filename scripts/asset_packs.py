@@ -69,7 +69,8 @@ WORKSHOP = {
                      "Mammoth Mk. I (TS4TNK), Mammoth Mk. II (TSHMEC), Limpet Drone (TSLIMP), Harvester (TSHARV), "
                      "MCV (TSMCV), Mobile War Factory (TSMWAR)",
                      "**Infantry** (Tiberian Sun's light-infantry layout), each as one soldier and as a squad of "
-                     "three: GDI Rifleman (C3RIFLE, C3RIFLESQ), Nod Cyborg from Kane's Wrath (C3CYBORG, C3CYBORGSQ)",
+                     "three (four Militants): GDI Rifleman (C3RIFLE, C3RIFLESQ); from Kane's Wrath, Nod Militant "
+                     "(C3MILIT, C3MILITSQ) and Cyborg (C3CYBORG, C3CYBORGSQ)",
                      "**GDI aircraft:** Orca Fighter (TSORCA), Orca Bomber (TSORCAB), Orca Transport (TSORCATRAN), "
                      "Carryall (TSCARRY), Hunter Seeker (TSHUNT), Dropship (TSDSHP)",
                      "**GDI buildings:** Construction Yard (TSFACT), Power Plant (TSPOWR) and Turbine (TSTURB), Barracks "
@@ -181,7 +182,7 @@ PACK_ONLY = ("C3MK3RAIL", "C3PREDRAIL", "C3SCORP", "C3SCORPLAS", "C3SCORPDZR", "
              "C3BMCHG", "C3BMGLOW", "C3BMMZ", "C3BMHIT", "C3PITB", "C3PITBMOR", "C3APC", "C3RIG", "C3PBMZ",
              "C3PBSHL", "C3MEDEXP", "C3ORCA", "C3ORCAPOD", "C3FHAWK", "C3OX", "C3VENOM", "C3VENOMSG", "C3VERT",
              "C3CARRY", "C3BBASE", "C3BBASET", "C3BBASEMAKE", "C3RIFLE", "C3RIFLESQ", "C3CYBORG",
-             "C3CYBORGSQ") + tuple(f"C3{fx}{d}" for fx in ("FLM", "APCMZ") for d in DIRECTIONS)
+             "C3CYBORGSQ", "C3MILIT", "C3MILITSQ") + tuple(f"C3{fx}{d}" for fx in ("FLM", "APCMZ") for d in DIRECTIONS)
 # Sound stems (sample names less their take number) only the packs carry, left out with their sound events.
 PACK_ONLY_SOUNDS = (tuple(f"C3{tank}{kind}{take}" for tank, takes in (("S", "ABCDEF"), ("F", "ABCDEFGHIJ"),
                                                                      ("T", "ABCDEFG"), ("B", "ABCDEF"),
@@ -199,10 +200,11 @@ PACK_ONLY_SOUNDS = (tuple(f"C3{tank}{kind}{take}" for tank, takes in (("S", "ABC
                         ("X", "SE", "ABCDEFG"), ("X", "MO", "ABCDEFG"), ("X", "PK", "ABCDEFGH"), ("X", "DO", "ABCDE"),
                         ("C", "SE", "ABCDE"), ("C", "MO", "ABCDEFG"), ("C", "PK", "ABCD"),
                         ("L", "SE", "ABCDEF"), ("L", "MO", "ABCDEFGHI"), ("L", "AT", "ABCDEFGH"),
-                        ("Y", "SE", "ABCDEFGHIJ"), ("Y", "MO", "ABCDEFGHI"), ("Y", "AT", "ABCDEFGHI"))
+                        ("Y", "SE", "ABCDEFGHIJ"), ("Y", "MO", "ABCDEFGHI"), ("Y", "AT", "ABCDEFGHI"),
+                        ("N", "SE", "ABCDEFG"), ("N", "MO", "ABCDEFGHIJK"), ("N", "AT", "ABCDEFG"))
                       for take in takes)
                     + ("C3OGUN", "C3OHIT", "C3HGUN", "C3HBMB", "C3VGUN", "C3VLAS", "C3WBMB", "C3WHIT", "C3LGUN",
-                       "C3YGUN"))
+                       "C3YGUN", "C3NGUN"))
 
 
 def drop_pack_only(text):
@@ -305,7 +307,7 @@ def sound_pack(sample):
     if s.startswith("R2V"):
         return "RA2-Voices-eng" if re.match(r"R2V(APO|PRI)(SE|MO|AT)[A-F]$", s) else "RA2-SFX-Pack"
     if s.startswith("C3"):
-        return "CNC3-Voices-eng" if re.match(r"C3[MPSFTBUAROHVWXCLY](SE|MO|AT|AM|PK|DO)[A-L]$", s) else "CNC3-SFX-Pack"
+        return "CNC3-Voices-eng" if re.match(r"C3[MPSFTBUAROHVWXCLYN](SE|MO|AT|AM|PK|DO)[A-L]$", s) else "CNC3-SFX-Pack"
     return None
 
 
