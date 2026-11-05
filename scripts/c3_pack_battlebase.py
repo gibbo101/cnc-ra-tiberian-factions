@@ -8,8 +8,9 @@ Tank (bdata.cpp Shape_Number: 32 facings x {idle, recoil, damaged idle, damaged 
 
 The base stands as the Rig left it, hull facing south (nose to the camera, the Tick's deploy facing), so both guns
 sit beside the tower. Each gun turns about its own yaw pivot (TURRET_L, TURRET_R). The canvas is centred on the
-Rig's ground point, at 128 px per cell (C&C3 units at 32 a cell, as the tanks), and its first deploy frame matches
-the mobile Rig's sprite. Body and deploy frames carry EA's drop shadow; gun frames none.
+Rig's ground point, at 128 px per cell (C&C3 units at 32 a cell, as the tanks), and moved down by the Rig's art drop,
+so its first deploy frame stands where the mobile Rig's sprite does. Body and deploy frames carry EA's drop shadow at
+the offsets the HD buildings use; gun frames none.
 
 Inputs (set C3_ART_DIR): rig_deploy/ and rig_deploy_whole/ (tools/cnc3/c3_extract_anim.py --all, without and with
 --whole), and cameo/C3BBASE.png.

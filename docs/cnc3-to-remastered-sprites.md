@@ -232,13 +232,14 @@ pivot by W3DHierarchy index (TRAP 2's name shift does not apply). Two encodings:
 vector then 16-frame blocks of 4- or 8-bit deltas scaled by W3D's filter table, low nibble first). Channels hold
 offsets from the bind pose: `world = parent * bind * T(anim) * R(anim)`, so frame 0 is the bind pose.
 
-> **TRAP 6: a dropped weapon stretches.** An infantryman's gun hangs on a `PROPS` pivot that falls away in the
-> death clips, but some of its vertices are bound to the hand, so its triangles stretch from the floor to the hand.
-> Bind each connected piece that is mostly on a `PROPS` pivot wholly to it (`c3_extract_infantry.py`).
-
 > **TRAP 5: a clip can hold several cycles.** The Rifleman's 73-frame run is three strides. Sampling six poses
 > across the clip lands on two poses that alternate; find the period (the first frame whose pose returns near
 > frame 0's) and sample that.
+
+> **TRAP 6: a dropped weapon stretches.** An infantryman's gun hangs on a `PROPS` pivot that falls away in the
+> death clips, but some of its vertices are bound to the hand, so its triangles stretch from the floor to the hand.
+> Bind each connected piece that is mostly on a `PROPS` pivot wholly to it (`tools/cnc3/c3_extract_infantry.py`,
+> workspace).
 
 ### House colour
 The `HC_*` texture's **alpha** is the recolour mask (about 5% of the sheet). Its RGB is not

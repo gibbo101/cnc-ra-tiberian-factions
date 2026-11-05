@@ -8,14 +8,16 @@ Tileset layout per unit (292 tiles): Tiberian Sun's light infantry (idata.cpp Ts
   0-7 ready, 8-55 walk (6 a facing), 56-70 idle1, 71-84 idle2 (85 repeats its last), 86-133 crawl (6),
   134-148 die1, 149-163 die2, 164-211 fire (6), 212-259 fire prone (6), 260-275 down (2), 276-291 up (2).
 Idles and deaths face south, toward the camera. Frames sit on the TS infantry's 267 x 208 canvas with the feet
-on TSE1's line, scaled to TF's TS infantry height, each over its own shadow cast along the
-render light onto the ground. Each soldier's team colour is raised to the TS infantry's (TEAM_BOOST), and his frames
-are exposed to their brightness (TS_LUM_MEAN).
+on TSE1's line, scaled to TF's TS infantry height, each over its own shadow cast along the render light onto the
+ground. Each soldier's team colour is raised to the TS infantry's (TEAM_BOOST), and his frames are exposed to their
+brightness (TS_LUM_MEAN).
 
 Inputs (set C3_ART_DIR): infantry/<unit>.npz and infantry/<unit>_squad.npz from tools/cnc3/c3_extract_infantry.py
 (workspace), cameo/<NAME>.png for each single soldier, and audio/<model>/<C&C3 name>.wav from
 tools/cnc3/c3_extract_audio.py. Audio: each soldier's crew voices and gunfire, as the tanks' (c3_pack_tanks.py).
-Usage: c3_pack_infantry.py [NAME ...]; with no names, all of them.
+Usage: c3_pack_infantry.py [NAME ...]; with no names, all of them. Renders cache in $C3_ART_DIR/renders/inf_<model>/,
+keyed by pose and facing only: delete them after changing the render settings, the light or the posed model. Run
+scripts/dedupe_tileset_frames.py afterwards, as for every packer: repeated poses become shared tiles.
 
 License: GPL v3.
 """
@@ -34,7 +36,8 @@ import c3_render  # noqa: E402
 
 ART = tanks.ART
 RENDER_PPU = 12.0
-# TF's TS infantry stand about 61 px tall, the C&C3 Rifleman 52 at the tanks' 4 px a C&C3 unit.
+# TF's TS infantry stand about 61 px tall, the C&C3 Rifleman 52 at 4 px a C&C3 unit (the tanks' scale at 128 px
+# a cell).
 PACK_PPU = 4.7
 RENDER_CANVAS = 900
 CANVAS = (267, 208)
