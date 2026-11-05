@@ -100,7 +100,7 @@ WORKSHOP = {
         "description": "Command & Conquer 3 units, effects, sounds and voices for {host}, in HD.",
         "contents": ["**GDI:** Mammoth Tank Mk. III (C3MK3), Predator Tank (C3PRED), and both with the railgun "
                      "upgrade (C3MK3RAIL, C3PREDRAIL); Pitbull (C3PITB) and with the Mortar upgrade (C3PITBMOR), "
-                     "Guardian APC (C3APC)",
+                     "Guardian APC (C3APC), Rig (C3RIG)",
                      "**Nod:** Scorpion Tank (C3SCORP), with Laser Capacitors (C3SCORPLAS), Dozer Blades "
                      "(C3SCORPDZR) and both (C3SCORPLASDZR); Flame Tank (C3FLAME), Stealth Tank (C3STNK), "
                      "Beam Cannon (C3BEAM)",
@@ -171,15 +171,17 @@ DIRECTIONS = ("N", "NE", "E", "SE", "S", "SW", "W", "NW")
 # out their ZIPs, tiles, cameos and sidebar entries (scripts/stage_asset_packs.py).
 PACK_ONLY = ("C3MK3RAIL", "C3PREDRAIL", "C3SCORP", "C3SCORPLAS", "C3SCORPDZR", "C3SCORPLASDZR",
              "C3FLAME", "C3STNK", "C3BEAM", "C3FLMHIT", "C3FLMPIL", "C3STMIS", "C3STTRL", "C3STMZ", "C3STHIT",
-             "C3BMCHG", "C3BMGLOW", "C3BMMZ", "C3BMHIT", "C3PITB", "C3PITBMOR", "C3APC", "C3PBMZ",
+             "C3BMCHG", "C3BMGLOW", "C3BMMZ", "C3BMHIT", "C3PITB", "C3PITBMOR", "C3APC", "C3RIG", "C3PBMZ",
              "C3PBSHL", "C3MEDEXP", "C3ORCA", "C3ORCAPOD", "C3FHAWK", "C3OX", "C3VENOM", "C3VENOMSG", "C3VERT",
-             "C3CARRY") + tuple(f"C3{fx}{d}" for fx in ("FLM", "APCMZ") for d in DIRECTIONS)
+             "C3CARRY", "C3BBASE", "C3BBASET", "C3BBASEMAKE") + tuple(f"C3{fx}{d}" for fx in ("FLM", "APCMZ")
+                                                                      for d in DIRECTIONS)
 # Sound stems (sample names less their take number) only the packs carry, left out with their sound events.
 PACK_ONLY_SOUNDS = (tuple(f"C3{tank}{kind}{take}" for tank, takes in (("S", "ABCDEF"), ("F", "ABCDEFGHIJ"),
                                                                      ("T", "ABCDEFG"), ("B", "ABCDEF"),
-                                                                     ("U", "ABCDEFGHIJ"), ("A", "ABCDEF"))
+                                                                     ("U", "ABCDEFGHIJ"), ("A", "ABCDEF"),
+                                                                     ("R", "ABCDEFG"))
                           for kind in ("SE", "MO", "AT") for take in takes)
-                    + tuple(f"C3UAM{take}" for take in "ABCD")
+                    + tuple(f"C3UAM{take}" for take in "ABCD") + ("C3RPKA",)
                     + ("C3SGUN", "C3SLAS", "C3FGUN", "C3TGUN", "C3THIT", "C3TCLK", "C3TUNC", "C3BGUN", "C3BCHG",
                        "C3UGUN", "C3UMOR", "C3UHIT", "C3AGUN")
                     + tuple(f"C3{craft}{kind}{take}" for craft, kind, takes in (
@@ -292,7 +294,7 @@ def sound_pack(sample):
     if s.startswith("R2V"):
         return "RA2-Voices-eng" if re.match(r"R2V(APO|PRI)(SE|MO|AT)[A-F]$", s) else "RA2-SFX-Pack"
     if s.startswith("C3"):
-        return "CNC3-Voices-eng" if re.match(r"C3[MPSFTBUAOHVWXC](SE|MO|AT|AM|PK|DO)[A-L]$", s) else "CNC3-SFX-Pack"
+        return "CNC3-Voices-eng" if re.match(r"C3[MPSFTBUAROHVWXC](SE|MO|AT|AM|PK|DO)[A-L]$", s) else "CNC3-SFX-Pack"
     return None
 
 

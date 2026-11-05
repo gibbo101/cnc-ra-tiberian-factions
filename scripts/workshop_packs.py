@@ -379,11 +379,11 @@ def layout(mod):
         return []
     lines = ["## Frame layout", "",
              "Every C&C3 tank and vehicle (C3MK3, C3PRED, C3SCORP and their upgrades, C3FLAME, C3STNK, C3BEAM, "
-             "C3PITB, C3PITBMOR, C3APC): frames 0-95 are "
+             "C3PITB, C3PITBMOR, C3APC, C3RIG): frames 0-95 are "
              "the hull, 32 facings counter-clockwise from "
              "north with 3 tread steps each (frame = 3 x facing + step; step the treads while the tank drives; "
              "C3BEAM, C3PITB and C3APC run on wheels, so their three steps are one frame), "
-             "and 96-127 the turret, 32 facings. "
+             "and 96-127 the turret, 32 facings (C3RIG has no turret, so its frames end at 95). "
              "The turret frames are centred on the canvas and look right drawn "
              "centred on the hull, except the Scorpions': C3SCORP's upper body sits up to 6 classic px off centre "
              "and C3SCORPLAS's laser on the tail mount, so both need their seats. For a "
