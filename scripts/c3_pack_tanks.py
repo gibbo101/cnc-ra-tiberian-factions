@@ -147,16 +147,16 @@ def patch_tileset(name, count, frames=None, kind="UNITS"):
     i."""
     import re
     sub = name.lower()
-    units_xml = asset_packs.tileset_xml(name, kind)
-    xml = open(units_xml, encoding="utf-8").read()
+    tileset_path = asset_packs.tileset_xml(name, kind)
+    xml = open(tileset_path, encoding="utf-8").read()
     xml = re.sub(r"\t*<Tile>\s*<Key>\s*<Name>" + re.escape(name) + r"</Name>.*?</Tile>\n?", "", xml, flags=re.S)
     block = ('\t<Tile>\n\t\t<Key>\n\t\t\t<Name>%s</Name>\n\t\t\t<Shape>%d</Shape>\n\t\t</Key>\n'
              '\t\t<Value>\n\t\t\t<Frames>\n\t\t\t\t<Frame>%s</Frame>\n\t\t\t</Frames>\n\t\t</Value>\n\t</Tile>\n')
     frames = frames or [f"{sub}\\{sub}-{i:04d}.tga" for i in range(count)]
     blocks = "".join(block % (name, i, frames[i]) for i in range(count))
     idx = xml.rindex("</Tiles>")
-    open(units_xml, "w", encoding="utf-8").write(xml[:idx] + blocks + xml[idx:])
-    print(f"patched {os.path.basename(units_xml)}: {name} -> {count} tiles")
+    open(tileset_path, "w", encoding="utf-8").write(xml[:idx] + blocks + xml[idx:])
+    print(f"patched {os.path.basename(tileset_path)}: {name} -> {count} tiles")
 
 
 # VOC stem -> (model, C&C3 sample names). TF's own tanks' stems (C3M, C3P) are VOCs in audio.cpp; the rest are
