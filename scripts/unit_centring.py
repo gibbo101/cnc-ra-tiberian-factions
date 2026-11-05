@@ -57,6 +57,8 @@ VOXEL_PREFIXES = ("TS", "R2", "C3")
 # name: (hull frames, hull frames per facing, first turret frame or None, turret seat, partners). Partners are
 # (ZIP name, kind, density) moved by the same classic distance; a UNITS partner records its leader's drop.
 SCORP_VARIANTS = tuple((n, "UNITS", UNIT_DENSITY) for n in ("C3SCORPLAS", "C3SCORPDZR", "C3SCORPLASDZR"))
+# The Rig's deployed form: its deploy starts from the Rig's sprite, so it moves with the Rig.
+BATTLE_BASE = tuple((n, "STRUCTURES", BUILDING_DENSITY) for n in ("C3BBASE", "C3BBASET", "C3BBASEMAKE"))
 UNITS = {
     "C3MK3": (96, 3, 96, "c3mk3", ()),
     "C3PRED": (96, 3, 96, "c3pred", ()),
@@ -66,7 +68,7 @@ UNITS = {
     "C3BEAM": (96, 3, 96, "c3beam", ()),
     "C3PITB": (96, 3, 96, "c3pitb", (("C3PITBMOR", "UNITS", UNIT_DENSITY),)),
     "C3APC": (96, 3, 96, "c3apc", ()),
-    "C3RIG": (96, 3, None, None, ()),
+    "C3RIG": (96, 3, None, None, BATTLE_BASE),
     "R2APOC": (32, 1, 32, None, ()),
     "R2PRIS": (32, 1, 32, None, ()),
     "TS4TNK": (32, 1, 32, None, ()),
