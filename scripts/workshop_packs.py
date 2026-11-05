@@ -36,12 +36,17 @@ TS_SEATS = os.path.join(A.REPO, "redalert", "udata.cpp")
 # Scorpions and the other Nod tanks, which TF has no stub for, share the Predator's 48 x 48, 128-frame layout
 SHAPE_LIKE = {"C3MK3RAIL": "C3MK3", "C3PREDRAIL": "C3PRED", "C3SCORP": "C3PRED", "C3SCORPLAS": "C3PRED",
               "C3SCORPDZR": "C3PRED", "C3SCORPLASDZR": "C3PRED", "C3FLAME": "C3PRED", "C3STNK": "C3PRED",
-              "C3BEAM": "C3PRED", "C3PITB": "C3PRED", "C3PITBMOR": "C3PRED", "C3APC": "C3PRED"}
+              "C3BEAM": "C3PRED", "C3PITB": "C3PRED", "C3PITBMOR": "C3PRED", "C3APC": "C3PRED", "C3RIG": "C3PRED",
+              "C3ORCA": "TSORCA", "C3ORCAPOD": "TSORCA", "C3FHAWK": "TSORCA", "C3VENOM": "TSORCA",
+              "C3VENOMSG": "TSORCA", "C3VERT": "TSORCA"}
 # Units with no classic stub that take a stock image's (idata.cpp, udata.cpp), and those images' classic sizes as
 # Red Alert's own MIX files hold them (E1.SHP in REDALERT.MIX/HIRES.MIX, MCV.SHP in MAIN.MIX/CONQUER.MIX)
 STOCK_IMAGE = {"TSE1": "E1", "TSE2": "E1", "TSE3": "E1", "TSENGINEER": "E1", "TSGHOST": "E1", "TSMEDIC": "E1",
-               "TSMCV": "MCV"}
+               "TSMCV": "MCV", "C3RIFLE": "E1", "C3RIFLESQ": "E1", "C3MILIT": "E1", "C3MILITSQ": "E1",
+               "C3CYBORG": "E1", "C3CYBORGSQ": "E1"}
 STOCK_SIZE = {"E1": (50, 39), "MCV": (48, 48)}
+# Objects with no stub to share, and the classic size their canvas maps to (units canvas / 8, buildings canvas x 3/16)
+OWN_SIZE = {"C3OX": (80, 80), "C3CARRY": (80, 80), "C3BBASE": (102, 78), "C3BBASEMAKE": (102, 78)}
 SHAPE_SECTION = {"UNITS": "Units", "STRUCTURES": "Structures", "VFX": "Animations"}
 
 # Launcher XML -> (folder under Data/XML, the file name for a pack)
@@ -419,7 +424,10 @@ def shape_data(mod):
             rows = out.setdefault(section, [])
             for name, frames in counts.items():
                 offset = stubs.get(mix_tools.ww_crc(SHAPE_LIKE.get(name, name) + ".SHP"))
-                if name in STOCK_IMAGE:
+                if name in OWN_SIZE:
+                    width, height = OWN_SIZE[name]
+                    row = f"{name} width={width} height={height} frames={frames}"
+                elif name in STOCK_IMAGE:
                     width, height = STOCK_SIZE[STOCK_IMAGE[name]]
                     row = f"{name} width={width} height={height} frames={frames} (stock {STOCK_IMAGE[name]} image)"
                 elif offset is None:
