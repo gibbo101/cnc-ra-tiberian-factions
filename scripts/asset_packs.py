@@ -100,10 +100,15 @@ WORKSHOP = {
         "description": "Command & Conquer 3 units, effects, sounds and voices for {host}, in HD.",
         "contents": ["**GDI:** Mammoth Tank Mk. III (C3MK3), Predator Tank (C3PRED), and both with the railgun "
                      "upgrade (C3MK3RAIL, C3PREDRAIL); Pitbull (C3PITB) and with the Mortar upgrade (C3PITBMOR), "
-                     "Guardian APC (C3APC), Rig (C3RIG)",
+                     "Guardian APC (C3APC); Rig (C3RIG) and the Battle Base it deploys into (C3BBASE, its guns "
+                     "C3BBASET and the deploy C3BBASEMAKE, played backwards to pack up)",
+                     "**GDI aircraft:** Orca (C3ORCA) and with its Sensor Pod (C3ORCAPOD), Firehawk (C3FHAWK), V-35 "
+                     "Ox transport (C3OX)",
                      "**Nod:** Scorpion Tank (C3SCORP), with Laser Capacitors (C3SCORPLAS), Dozer Blades "
                      "(C3SCORPDZR) and both (C3SCORPLASDZR); Flame Tank (C3FLAME), Stealth Tank (C3STNK), "
                      "Beam Cannon (C3BEAM)",
+                     "**Nod aircraft:** Venom (C3VENOM) and with its Signature Generator (C3VENOMSG), Vertigo bomber "
+                     "(C3VERT), Carryall transport (C3CARRY)",
                      "**Effects:** the railgun shot, in blue (C3RAILGLOW, C3RAILMZ, C3RAILHIT) and in orange "
                      "(C3RAILGLOWO, C3RAILMZO, C3RAILHITO)",
                      "**Flame Tank effects:** the flame stream in 8 directions (C3FLMN, C3FLMNE, C3FLME, C3FLMSE, "
@@ -117,7 +122,7 @@ WORKSHOP = {
                      "Tank's), the mortar shell (C3PBSHL) and its blast (C3MEDEXP)",
                      "**Guardian APC effects:** the autocannon's muzzle flash in 8 directions (C3APCMZN ... "
                      "C3APCMZNW)",
-                     "A sidebar cameo for each tank", "Each tank's voices and weapon sounds"],
+                     "A sidebar cameo for each unit", "Each unit's voices and weapon sounds"],
     },
     "TS-Music": {
         "packs": ("TS-Music",),
