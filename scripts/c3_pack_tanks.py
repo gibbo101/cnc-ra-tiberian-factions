@@ -131,11 +131,12 @@ def write_zip(path, name, frames, first=0, numbers=None):
     print(f"wrote {path} ({len(frames)} frames)")
 
 
-def patch_tileset(name, count, frames=None):
-    """The object's tiles in its UNITS tileset: shape i takes frames[i] (zip\\member), or its own ZIP's member i."""
+def patch_tileset(name, count, frames=None, kind="UNITS"):
+    """The object's tiles in its tileset of that kind: shape i takes frames[i] (zip\\member), or its own ZIP's member
+    i."""
     import re
     sub = name.lower()
-    units_xml = asset_packs.tileset_xml(name, "UNITS")
+    units_xml = asset_packs.tileset_xml(name, kind)
     xml = open(units_xml, encoding="utf-8").read()
     xml = re.sub(r"\t*<Tile>\s*<Key>\s*<Name>" + re.escape(name) + r"</Name>.*?</Tile>\n?", "", xml, flags=re.S)
     block = ('\t<Tile>\n\t\t<Key>\n\t\t\t<Name>%s</Name>\n\t\t\t<Shape>%d</Shape>\n\t\t</Key>\n'
