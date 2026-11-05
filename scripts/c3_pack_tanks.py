@@ -195,15 +195,15 @@ SFX_BEGIN = "  <!-- BEGIN C&C3 tank sounds (scripts/c3_pack_tanks.py) -->"
 SFX_END = "  <!-- END C&C3 tank sounds -->"
 
 
-def write_audio(models=None):
-    """Each event goes in the sound-event XML of the pack its takes belong to, one marked block
-    per file. Only the named models' takes are re-encoded (all when None)."""
+def write_audio(models=None, sounds=SOUNDS, begin=SFX_BEGIN, end=SFX_END):
+    """Each event goes in the sound-event XML of the pack its takes belong to, one block per file between the
+    begin and end markers. Only the named models' takes are re-encoded (all when None)."""
     import subprocess
-    unlisted = [s for s, _, _ in SOUNDS if s[:3] not in ("C3M", "C3P") and s not in asset_packs.PACK_ONLY_SOUNDS]
+    unlisted = [s for s, _, _ in sounds if s[:3] not in ("C3M", "C3P") and s not in asset_packs.PACK_ONLY_SOUNDS]
     if unlisted:
         raise SystemExit(f"pack-only stems missing from asset_packs.PACK_ONLY_SOUNDS: {', '.join(unlisted)}")
     events = {}
-    for stem, model, samples in SOUNDS:
+    for stem, model, samples in sounds:
         files = []
         for i, sample in enumerate(samples):
             wav = stem if len(samples) == 1 else f"{stem}{i + 1}"
@@ -223,16 +223,16 @@ def write_audio(models=None):
                 f"{entries}    </SampleNamesList>\n  </SFXEvent>\n")
     for sfx_xml, file_events in events.items():
         xml = open(sfx_xml, encoding="utf-8").read()
-        block = SFX_BEGIN + "\n" + "".join(file_events) + SFX_END + "\n"
-        if SFX_BEGIN in xml:
-            a = xml.index(SFX_BEGIN)
-            b = xml.index(SFX_END) + len(SFX_END) + 1
+        block = begin + "\n" + "".join(file_events) + end + "\n"
+        if begin in xml:
+            a = xml.index(begin)
+            b = xml.index(end) + len(end) + 1
             xml = xml[:a] + block + xml[b:]
         else:
             idx = xml.rindex("</")
             xml = xml[:idx] + block + xml[idx:]
         open(sfx_xml, "w", encoding="utf-8").write(xml)
-    print(f"wrote {len(SOUNDS)} sound events ({sum(len(x[2]) for x in SOUNDS)} samples) "
+    print(f"wrote {len(sounds)} sound events ({sum(len(x[2]) for x in sounds)} samples) "
           f"into {len(events)} files")
 
 
