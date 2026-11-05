@@ -9,6 +9,7 @@ Tileset layout per unit (292 tiles): Tiberian Sun's light infantry (idata.cpp Ts
   134-148 die1, 149-163 die2, 164-211 fire (6), 212-259 fire prone (6), 260-275 down (2), 276-291 up (2).
 Idles and deaths face south, toward the camera. Frames sit on the TS infantry's 267 x 208 canvas with the feet
 on its line (6 px below the centre), at the C&C3 tanks' scale (32 C&C3 units a cell), and carry EA's drop shadow.
+Each soldier's diffuse sheet is lifted to the tanks' brightness first (TARGET_LUM).
 
 Inputs (set C3_ART_DIR): infantry/<unit>.npz and infantry/<unit>_squad.npz from tools/cnc3/c3_extract_infantry.py
 (workspace), cameo/<NAME>.png for each single soldier, and audio/<model>/<C&C3 name>.wav from
@@ -39,6 +40,9 @@ CANVAS = (267, 208)
 FEET = (133.5, 110)
 SHADOW = (1, 4)  # EA's vehicle drop shadow, (2, 6) at 8 px a classic px, at the infantry's 16/3
 SOUTH = 4
+# Mean diffuse luminance the infantry sheets are lifted to: the C&C3 tanks' sheets sit at 85 to 103, the infantry's
+# at 35 to 50, which C&C3's own lighting brightens and the TS voxel ramp does not.
+TARGET_LUM = 85.0
 
 # name, model file, cameo (None: the squad keeps its single soldier's)
 INFANTRY = (
@@ -93,12 +97,26 @@ def shape_jobs(model):
     return jobs
 
 
+def lifted(m):
+    """The model with its diffuse sheet gamma-lifted to TARGET_LUM mean luminance (darks rise, highlights hold)."""
+    rgb = m.body[..., :3] / 255.0
+    mean = float((rgb @ c3_render.LUMA).mean())
+    if mean <= 0 or mean * 255.0 >= TARGET_LUM:
+        return m
+    g = np.log(TARGET_LUM / 255.0) / np.log(mean)
+    m.body = m.body.copy()
+    m.body[..., :3] = np.power(rgb, g) * 255.0
+    m.sheets[0] = (m.body, m.sheets[0][1], m.sheets[0][2])
+    m.team_means[0] = m._team_mean(m.body, m.sheets[0][1])
+    return m
+
+
 def render_shape(args):
     model, pose, facing = args
     path = f"{ART}/renders/inf_{model}/pose{pose:03d}-f{facing}.png"
     if os.path.exists(path):
         return path
-    m = c3_render.Model(f"{ART}/infantry/{model}.npz")
+    m = lifted(c3_render.Model(f"{ART}/infantry/{model}.npz"))
     d = np.load(f"{ART}/infantry/{model}.npz")
     m.pos, m.nrm = d["poses_pos"][pose], d["poses_nrm"][pose]
     m.hull_centre = np.zeros(3)
