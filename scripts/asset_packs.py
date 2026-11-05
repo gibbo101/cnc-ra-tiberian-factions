@@ -178,8 +178,8 @@ PACK_ONLY = ("C3MK3RAIL", "C3PREDRAIL", "C3SCORP", "C3SCORPLAS", "C3SCORPDZR", "
              "C3FLAME", "C3STNK", "C3BEAM", "C3FLMHIT", "C3FLMPIL", "C3STMIS", "C3STTRL", "C3STMZ", "C3STHIT",
              "C3BMCHG", "C3BMGLOW", "C3BMMZ", "C3BMHIT", "C3PITB", "C3PITBMOR", "C3APC", "C3RIG", "C3PBMZ",
              "C3PBSHL", "C3MEDEXP", "C3ORCA", "C3ORCAPOD", "C3FHAWK", "C3OX", "C3VENOM", "C3VENOMSG", "C3VERT",
-             "C3CARRY", "C3BBASE", "C3BBASET", "C3BBASEMAKE") + tuple(f"C3{fx}{d}" for fx in ("FLM", "APCMZ")
-                                                                      for d in DIRECTIONS)
+             "C3CARRY", "C3BBASE", "C3BBASET", "C3BBASEMAKE", "C3RIFLE", "C3RIFLESQ", "C3CYBORG",
+             "C3CYBORGSQ") + tuple(f"C3{fx}{d}" for fx in ("FLM", "APCMZ") for d in DIRECTIONS)
 # Sound stems (sample names less their take number) only the packs carry, left out with their sound events.
 PACK_ONLY_SOUNDS = (tuple(f"C3{tank}{kind}{take}" for tank, takes in (("S", "ABCDEF"), ("F", "ABCDEFGHIJ"),
                                                                      ("T", "ABCDEFG"), ("B", "ABCDEF"),
