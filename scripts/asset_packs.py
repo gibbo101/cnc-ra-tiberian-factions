@@ -68,9 +68,6 @@ WORKSHOP = {
                      "Mobile Sensor Array (TSLPST), Mobile EMP (TSMEMP), Juggernaut (TSJUGG), Disruptor (TSSONIC), "
                      "Mammoth Mk. I (TS4TNK), Mammoth Mk. II (TSHMEC), Limpet Drone (TSLIMP), Harvester (TSHARV), "
                      "MCV (TSMCV), Mobile War Factory (TSMWAR)",
-                     "**Infantry** (Tiberian Sun's light-infantry layout), each as one soldier and as a squad of "
-                     "three (four Militants): GDI Rifleman (C3RIFLE, C3RIFLESQ); from Kane's Wrath, Nod Militant "
-                     "(C3MILIT, C3MILITSQ) and Cyborg (C3CYBORG, C3CYBORGSQ)",
                      "**GDI aircraft:** Orca Fighter (TSORCA), Orca Bomber (TSORCAB), Orca Transport (TSORCATRAN), "
                      "Carryall (TSCARRY), Hunter Seeker (TSHUNT), Dropship (TSDSHP)",
                      "**GDI buildings:** Construction Yard (TSFACT), Power Plant (TSPOWR) and Turbine (TSTURB), Barracks "
@@ -105,6 +102,9 @@ WORKSHOP = {
                      "upgrade (C3MK3RAIL, C3PREDRAIL); Pitbull (C3PITB) and with the Mortar upgrade (C3PITBMOR), "
                      "Guardian APC (C3APC); Rig (C3RIG) and the Battle Base it deploys into (C3BBASE, its guns "
                      "C3BBASET and the deploy C3BBASEMAKE, played backwards to pack up)",
+                     "**Infantry** (Tiberian Sun's light-infantry layout), each as one soldier and as a squad of "
+                     "three (four Militants): GDI Rifleman (C3RIFLE, C3RIFLESQ); from Kane's Wrath, Nod Militant "
+                     "(C3MILIT, C3MILITSQ) and Cyborg (C3CYBORG, C3CYBORGSQ)",
                      "**GDI aircraft:** Orca (C3ORCA) and with its Sensor Pod (C3ORCAPOD), Firehawk (C3FHAWK), V-35 "
                      "Ox transport (C3OX)",
                      "**Nod:** Scorpion Tank (C3SCORP), with Laser Capacitors (C3SCORPLAS), Dozer Blades "
