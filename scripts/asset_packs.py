@@ -197,8 +197,12 @@ PACK_ONLY_SOUNDS = (tuple(f"C3{tank}{kind}{take}" for tank, takes in (("S", "ABC
                         ("V", "SE", "ABCDEF"), ("V", "MO", "ABCDEFGHI"), ("V", "AT", "ABCDEF"),
                         ("W", "SE", "ABCDEF"), ("W", "MO", "ABCDEF"), ("W", "AT", "ABCDEF"),
                         ("X", "SE", "ABCDEFG"), ("X", "MO", "ABCDEFG"), ("X", "PK", "ABCDEFGH"), ("X", "DO", "ABCDE"),
-                        ("C", "SE", "ABCDE"), ("C", "MO", "ABCDEFG"), ("C", "PK", "ABCD")) for take in takes)
-                    + ("C3OGUN", "C3OHIT", "C3HGUN", "C3HBMB", "C3VGUN", "C3VLAS", "C3WBMB", "C3WHIT"))
+                        ("C", "SE", "ABCDE"), ("C", "MO", "ABCDEFG"), ("C", "PK", "ABCD"),
+                        ("L", "SE", "ABCDEF"), ("L", "MO", "ABCDEFGHI"), ("L", "AT", "ABCDEFGH"),
+                        ("Y", "SE", "ABCDEFGHIJ"), ("Y", "MO", "ABCDEFGHI"), ("Y", "AT", "ABCDEFGHI"))
+                      for take in takes)
+                    + ("C3OGUN", "C3OHIT", "C3HGUN", "C3HBMB", "C3VGUN", "C3VLAS", "C3WBMB", "C3WHIT", "C3LGUN",
+                       "C3YGUN"))
 
 
 def drop_pack_only(text):
@@ -301,7 +305,7 @@ def sound_pack(sample):
     if s.startswith("R2V"):
         return "RA2-Voices-eng" if re.match(r"R2V(APO|PRI)(SE|MO|AT)[A-F]$", s) else "RA2-SFX-Pack"
     if s.startswith("C3"):
-        return "CNC3-Voices-eng" if re.match(r"C3[MPSFTBUAROHVWXC](SE|MO|AT|AM|PK|DO)[A-L]$", s) else "CNC3-SFX-Pack"
+        return "CNC3-Voices-eng" if re.match(r"C3[MPSFTBUAROHVWXCLY](SE|MO|AT|AM|PK|DO)[A-L]$", s) else "CNC3-SFX-Pack"
     return None
 
 

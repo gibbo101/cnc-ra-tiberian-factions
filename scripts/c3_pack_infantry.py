@@ -10,7 +10,8 @@ Idles and deaths face south, toward the camera. Frames sit on the TS infantry's 
 on its line (6 px below the centre), at the C&C3 tanks' scale (32 C&C3 units a cell), and carry EA's drop shadow.
 
 Inputs (set C3_ART_DIR): infantry/<unit>.npz and infantry/<unit>_squad.npz from tools/cnc3/c3_extract_infantry.py
-(workspace), and cameo/C3RIFLE.png, cameo/C3CYBORG.png.
+(workspace), cameo/C3RIFLE.png, cameo/C3CYBORG.png, and audio/<rifleman|cyborg>/<C&C3 name>.wav from
+tools/cnc3/c3_extract_audio.py. Audio: each soldier's crew voices and gunfire, as the tanks' (c3_pack_tanks.py).
 Usage: c3_pack_infantry.py [NAME ...]; with no names, all four.
 
 License: GPL v3.
@@ -50,6 +51,27 @@ LAYOUT = (("ready", 0, 1, True), ("walk", 8, 6, True), ("idle1", 56, 15, False),
           ("crawl", 86, 6, True), ("die1", 134, 15, False), ("die2", 149, 15, False), ("fire", 164, 6, True),
           ("fireprone", 212, 6, True), ("down", 260, 2, True), ("up", 276, 2, True))
 SHAPES = 292
+
+
+def _takes(stem, model, sample, letters):
+    """One sound event per take letter: C3<stem><LETTER> plays <sample><letter>."""
+    return [(f"{stem}{c}", model, [f"{sample}{c.lower()}"]) for c in letters]
+
+
+# VOC stem -> (model, C&C3 sample names), every stem listed in asset_packs.PACK_ONLY_SOUNDS. The squads speak and
+# fire with their soldier's sounds.
+SOUNDS = (
+    _takes("C3LSE", "rifleman", "GURifle_VoiSelect", "ABCDEF")
+    + _takes("C3LMO", "rifleman", "GURifle_VoiMove", "ABCDEFGHI")
+    + _takes("C3LAT", "rifleman", "GURifle_VoiAttack", "ABCDEFGH")
+    + [("C3LGUN", "rifleman", [f"GURifle_gun5Fire{c}" for c in "abcdefghij"])]
+    + _takes("C3YSE", "cyborg", "NUCyInf_VoiSelect", "ABCDEFGHIJ")
+    + _takes("C3YMO", "cyborg", "NUCyInf_VoiMove", "ABCDEFGHI")
+    + _takes("C3YAT", "cyborg", "NUCyInf_VoiAttack", "ABCDEFGHI")
+    + [("C3YGUN", "cyborg", [f"NUAwake_gunFire{c}" for c in "abcde"])]
+)
+SFX_BEGIN = "  <!-- BEGIN C&C3 infantry sounds (scripts/c3_pack_infantry.py) -->"
+SFX_END = "  <!-- END C&C3 infantry sounds -->"
 
 
 def shape_jobs(model):
@@ -113,6 +135,8 @@ def main(names):
     for name, model, cameo in INFANTRY:
         if not names or name in names:
             pack(name, model, cameo)
+    tanks.write_audio({m.split("_")[0] for n, m, _ in INFANTRY if n in names} if names else None, SOUNDS, SFX_BEGIN,
+                      SFX_END)
 
 
 if __name__ == "__main__":
