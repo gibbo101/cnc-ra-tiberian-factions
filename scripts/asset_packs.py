@@ -172,8 +172,8 @@ DIRECTIONS = ("N", "NE", "E", "SE", "S", "SW", "W", "NW")
 PACK_ONLY = ("C3MK3RAIL", "C3PREDRAIL", "C3SCORP", "C3SCORPLAS", "C3SCORPDZR", "C3SCORPLASDZR",
              "C3FLAME", "C3STNK", "C3BEAM", "C3FLMHIT", "C3FLMPIL", "C3STMIS", "C3STTRL", "C3STMZ", "C3STHIT",
              "C3BMCHG", "C3BMGLOW", "C3BMMZ", "C3BMHIT", "C3PITB", "C3PITBMOR", "C3APC", "C3PBMZ",
-             "C3PBSHL", "C3MEDEXP") + tuple(f"C3{fx}{d}" for fx in ("FLM", "APCMZ")
-                                            for d in DIRECTIONS)
+             "C3PBSHL", "C3MEDEXP", "C3ORCA", "C3ORCAPOD", "C3FHAWK", "C3OX", "C3VENOM", "C3VENOMSG", "C3VERT",
+             "C3CARRY") + tuple(f"C3{fx}{d}" for fx in ("FLM", "APCMZ") for d in DIRECTIONS)
 # Sound stems (sample names less their take number) only the packs carry, left out with their sound events.
 PACK_ONLY_SOUNDS = (tuple(f"C3{tank}{kind}{take}" for tank, takes in (("S", "ABCDEF"), ("F", "ABCDEFGHIJ"),
                                                                      ("T", "ABCDEFG"), ("B", "ABCDEF"),
@@ -181,7 +181,15 @@ PACK_ONLY_SOUNDS = (tuple(f"C3{tank}{kind}{take}" for tank, takes in (("S", "ABC
                           for kind in ("SE", "MO", "AT") for take in takes)
                     + tuple(f"C3UAM{take}" for take in "ABCD")
                     + ("C3SGUN", "C3SLAS", "C3FGUN", "C3TGUN", "C3THIT", "C3TCLK", "C3TUNC", "C3BGUN", "C3BCHG",
-                       "C3UGUN", "C3UMOR", "C3UHIT", "C3AGUN"))
+                       "C3UGUN", "C3UMOR", "C3UHIT", "C3AGUN")
+                    + tuple(f"C3{craft}{kind}{take}" for craft, kind, takes in (
+                        ("O", "SE", "ABCDEFGHI"), ("O", "MO", "ABCDEFGHIJKL"), ("O", "AT", "ABCDE"),
+                        ("H", "SE", "ABCDEF"), ("H", "MO", "ABCDEFG"), ("H", "AT", "ABCDEFGHI"),
+                        ("V", "SE", "ABCDEF"), ("V", "MO", "ABCDEFGHI"), ("V", "AT", "ABCDEF"),
+                        ("W", "SE", "ABCDEF"), ("W", "MO", "ABCDEF"), ("W", "AT", "ABCDEF"),
+                        ("X", "SE", "ABCDEFG"), ("X", "MO", "ABCDEFG"), ("X", "PK", "ABCDEFGH"), ("X", "DO", "ABCDE"),
+                        ("C", "SE", "ABCDE"), ("C", "MO", "ABCDEFG"), ("C", "PK", "ABCD")) for take in takes)
+                    + ("C3OGUN", "C3OHIT", "C3HGUN", "C3HBMB", "C3VGUN", "C3VLAS", "C3WBMB", "C3WHIT"))
 
 
 def drop_pack_only(text):
@@ -284,7 +292,7 @@ def sound_pack(sample):
     if s.startswith("R2V"):
         return "RA2-Voices-eng" if re.match(r"R2V(APO|PRI)(SE|MO|AT)[A-F]$", s) else "RA2-SFX-Pack"
     if s.startswith("C3"):
-        return "CNC3-Voices-eng" if re.match(r"C3[MPSFTBUA](SE|MO|AT|AM)[A-J]$", s) else "CNC3-SFX-Pack"
+        return "CNC3-Voices-eng" if re.match(r"C3[MPSFTBUAOHVWXC](SE|MO|AT|AM|PK|DO)[A-L]$", s) else "CNC3-SFX-Pack"
     return None
 
 
