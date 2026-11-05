@@ -1,8 +1,9 @@
 # C&C3 units to C&C Remastered sprites: a working recipe
 
 **Status:** Reference. Pulling a C&C3 unit into HD Remastered sprites, as done for GDI's Mammoth
-Mk. III, Predator, Pitbull and Guardian APC, and Nod's Scorpion, Flame Tank, Stealth Tank and Beam Cannon.
-**Open:** the Rig, which ships with its deploy sequence once C&C3's skeletal animations are decoded.
+Mk. III, Predator, Pitbull, Guardian APC, Rig (with its Battle Base and the deploy between them), Orca, Firehawk,
+V-35 Ox and Rifleman, and Nod's Scorpion, Flame Tank, Stealth Tank, Beam Cannon, Venom, Vertigo, Carryall and
+Kane's Wrath's Cyborg.
 
 How to pull a unit out of Command & Conquer 3: Tiberium Wars (models, textures, audio,
 stats) and turn it into HD sprites for a C&C Remastered Collection mod. Written for an AI
@@ -25,6 +26,10 @@ In the C&C3 install:
 | `Core/1.5/patch5.big`, `Core/1.6/patch6.big`, `Core/1.7/patch7.big`, `Core/1.9/patch9.big` | `static_common_5`, `_6`, `_7`, `_9`: patch overrides (see TRAP 1b) |
 | `Core/1.0/GlobalStream.big` | `global_common`: sound effect payloads |
 | `EnglishAudio/1.0/EnglishAudio.big` | `global_english`: unit voice payloads |
+
+Kane's Wrath is its own install (Steam app 24810) with the same layout: `Core/1.0/StaticStream.big` patched by
+`Core/1.1/patch1.big` and `Core/1.2/patch2.big` (`static_common_1`, `_2`), and its audio chained the same way.
+It repeats Tiberium Wars' units and adds its own (the Cyborg, `NUSILENT`, is one).
 
 There are no W3X or DDS files on disk. EA's asset builder compiled everything into binary
 "asset streams" packed inside the `.big` archives. (Audio has patch streams too, in
@@ -217,6 +222,19 @@ mesh and scroll its U coordinate yourself:
 > 14 px.) The code searches from lag 4 and takes the first local maximum above 0.8 x the
 > best peak.
 
+### Animations (W3DAnimation)
+`tools/cnc3/w3danim.py` (workspace) decodes them; its docstring holds the layout. Header: frame count at +0x08,
+frames per second at +0x0c, channel count at +0x10, pointer to the channel pointers at +0x14. Each channel is
+`{typeHash, kind, ...}`: kinds 0-2 translate X, Y, Z, 3 is a quaternion, 4 visibility, and the channel names its
+pivot by W3DHierarchy index (TRAP 2's name shift does not apply). Two encodings: time-coded keys (hash
+`0x60d8cf69`, floats then u16 frame times, interpolate linearly) and adaptive delta (hash `0x77f97305`, an initial
+vector then 16-frame blocks of 4- or 8-bit deltas scaled by W3D's filter table, low nibble first). Channels hold
+offsets from the bind pose: `world = parent * bind * T(anim) * R(anim)`, so frame 0 is the bind pose.
+
+> **TRAP 5: a clip can hold several cycles.** The Rifleman's 73-frame run is three strides. Sampling six poses
+> across the clip lands on two poses that alternate; find the period (the first frame whose pose returns near
+> frame 0's) and sample that.
+
 ### House colour
 The `HC_*` texture's **alpha** is the recolour mask (about 5% of the sheet). Its RGB is not
 the colour. See step 7 for how to paint it for Remastered.
@@ -394,6 +412,23 @@ rather than using Blender: you need exact control of camera, light and colour.
   rail tank's ZIP with only those 32 turret frames (`pack`). Its hull tiles (0-95) name the plain tank's
   ZIP members, which the launcher has open because the plain tank's own tiles are in the same pack. The glow
   on the blue conduit is ours: C&C3's spec map leaves the rails unlit. Only the C&C3 pack carries them.
+
+- **Aircraft:** one frame per facing, 32 facings, no baked shadow (the engine shadows aircraft in the air), centred
+  on the model's own middle rather than its ground point, at the tanks' scale (`scripts/c3_pack_air.py`). At that
+  one scale the Orca (35 C&C3 units long) is shorter than the Predator (44).
+- **Deploying vehicles:** the Rig deploys with `GURIGUPAK_AN` (101 frames at 30 fps) on its own skeleton
+  (`GURIGUPAK_SK`, meshes `GURIGUPAK_SN.*`); packing up plays it backwards, and the deployed base holds the last
+  frame. `scripts/c3_pack_battlebase.py` packs the Battle Base as a turret building in the dug-in Tick Tank's
+  layout (body, both guns in 32 facings turned about their own yaw pivots, 25 deploy frames), hull facing south,
+  on a canvas centred on the Rig's ground point at 128 px a cell. Its three sets move with the Rig's art drop
+  (`unit_centring.py` partners), so the deploy starts where the Rig's sprite stands. The pads start underground;
+  geometry below the ground plane is cut away, as C&C3's terrain hides it.
+- **Infantry:** `scripts/c3_pack_infantry.py` poses each soldier into Tiberian Sun's light-infantry layout (292
+  tiles) from its run, fire, idle and death clips, on the TS infantry's 267 x 208 canvas with the feet on its line.
+  C&C3 infantry never go prone: the Rifleman's suppressed clips (crawl, prone fire, dive) stand in, and units
+  without them stand. A squad is three soldiers in a wedge (the squads' first payload count), each a few poses
+  out of step. Upgrade weapons are separate meshes (the Cyborg's particle beam); the base weapon may be the body
+  itself (the Cyborg's minigun arm).
 
 ## 8. DLL side (needs a Vanilla Conquer based DLL)
 
