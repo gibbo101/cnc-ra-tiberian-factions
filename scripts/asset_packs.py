@@ -68,6 +68,8 @@ WORKSHOP = {
                      "Mobile Sensor Array (TSLPST), Mobile EMP (TSMEMP), Juggernaut (TSJUGG), Disruptor (TSSONIC), "
                      "Mammoth Mk. I (TS4TNK), Mammoth Mk. II (TSHMEC), Limpet Drone (TSLIMP), Harvester (TSHARV), "
                      "MCV (TSMCV), Mobile War Factory (TSMWAR)",
+                     "**Infantry** (Tiberian Sun's light-infantry layout), each as one soldier and as a squad of "
+                     "three: GDI Rifleman (C3RIFLE, C3RIFLESQ), Nod Cyborg from Kane's Wrath (C3CYBORG, C3CYBORGSQ)",
                      "**GDI aircraft:** Orca Fighter (TSORCA), Orca Bomber (TSORCAB), Orca Transport (TSORCATRAN), "
                      "Carryall (TSCARRY), Hunter Seeker (TSHUNT), Dropship (TSDSHP)",
                      "**GDI buildings:** Construction Yard (TSFACT), Power Plant (TSPOWR) and Turbine (TSTURB), Barracks "
