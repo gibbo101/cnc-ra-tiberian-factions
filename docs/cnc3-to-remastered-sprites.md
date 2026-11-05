@@ -3,7 +3,7 @@
 **Status:** Reference. Pulling a C&C3 unit into HD Remastered sprites, as done for GDI's Mammoth
 Mk. III, Predator, Pitbull, Guardian APC, Rig (with its Battle Base and the deploy between them), Orca, Firehawk,
 V-35 Ox and Rifleman, and Nod's Scorpion, Flame Tank, Stealth Tank, Beam Cannon, Venom, Vertigo, Carryall and
-Kane's Wrath's Cyborg.
+Kane's Wrath's Militant and Cyborg.
 
 How to pull a unit out of Command & Conquer 3: Tiberium Wars (models, textures, audio,
 stats) and turn it into HD sprites for a C&C Remastered Collection mod. Written for an AI
@@ -29,7 +29,8 @@ In the C&C3 install:
 
 Kane's Wrath is its own install (Steam app 24810) with the same layout: `Core/1.0/StaticStream.big` patched by
 `Core/1.1/patch1.big` and `Core/1.2/patch2.big` (`static_common_1`, `_2`), and its audio chained the same way.
-It repeats Tiberium Wars' units and adds its own (the Cyborg, `NUSILENT`, is one).
+It adds its own units (the Cyborg, `NUSILENT`) and remakes some of Tiberium Wars' under the same asset names: its
+Militant (`NUMILTNB_SKN`) has a new mesh and texture, so take a unit from the game whose version you want.
 
 There are no W3X or DDS files on disk. EA's asset builder compiled everything into binary
 "asset streams" packed inside the `.big` archives. (Audio has patch streams too, in
@@ -231,6 +232,10 @@ pivot by W3DHierarchy index (TRAP 2's name shift does not apply). Two encodings:
 vector then 16-frame blocks of 4- or 8-bit deltas scaled by W3D's filter table, low nibble first). Channels hold
 offsets from the bind pose: `world = parent * bind * T(anim) * R(anim)`, so frame 0 is the bind pose.
 
+> **TRAP 6: a dropped weapon stretches.** An infantryman's gun hangs on a `PROPS` pivot that falls away in the
+> death clips, but some of its vertices are bound to the hand, so its triangles stretch from the floor to the hand.
+> Bind each connected piece that is mostly on a `PROPS` pivot wholly to it (`c3_extract_infantry.py`).
+
 > **TRAP 5: a clip can hold several cycles.** The Rifleman's 73-frame run is three strides. Sampling six poses
 > across the clip lands on two poses that alternate; find the period (the first frame whose pose returns near
 > frame 0's) and sample that.
@@ -402,6 +407,9 @@ rather than using Blender: you need exact control of camera, light and colour.
   `FXFireball4x4`, `FXLenzFlare*`, `FXMuzzle` and others, in `resources/custom-art/c3-tank-fx/`). Particle-system
   layouts are not decoded, so the timing is by eye. Projectiles (`NPMISSILE`'s `PMHELLMIS`, the Mortar's
   `NBRDEFMIS`) render through `c3_render.py` like a hull, 32 facings, at the effects' 4 px per C&C3 unit.
+- **Packing one tank:** `c3_pack_tanks.py <NAME>` writes the tank's ZIP and tiles, then rebuilds `c3tanks.h`
+  from every tank's model, so `C3_ART_DIR` must hold `model/<model>.npz` for all of them; a folder holding only
+  the one tank's inputs stops with `FileNotFoundError` after the ZIP is written.
 - **Variants:** an upgrade that changes only one part packs only that part's frames; its other
   tiles name the base tank's ZIP members (`VARIANTS` in `c3_pack_tanks.py`). C3SCORPDZR owns turret
   frames only, C3SCORPLASDZR hull frames only. C3SCORPLAS owns both, as the laser changes the hull.
@@ -426,7 +434,8 @@ rather than using Blender: you need exact control of camera, light and colour.
 - **Infantry:** `scripts/c3_pack_infantry.py` poses each soldier into Tiberian Sun's light-infantry layout (292
   tiles) from its run, fire, idle and death clips, on the TS infantry's 267 x 208 canvas with the feet on its line.
   C&C3 infantry never go prone: the Rifleman's suppressed clips (crawl, prone fire, dive) stand in, and units
-  without them stand. A squad is three soldiers in a wedge (the squads' first payload count), each a few poses
+  without them stand. A squad is three or four soldiers in a wedge (the squad's first payload count: three
+  Riflemen or Cyborgs, four Militants), each a few poses
   out of step. Upgrade weapons are separate meshes (the Cyborg's particle beam); the base weapon may be the body
   itself (the Cyborg's minigun arm).
 
