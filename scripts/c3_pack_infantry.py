@@ -50,14 +50,14 @@ SOUTH = 4
 TS_LUM_MEAN = 63.9
 KNEE = 200.0
 
-# name, model file, cameo (None: the squad keeps its single soldier's)
+# name, model file, cameo (None: the squad keeps its single soldier's), sound model
 INFANTRY = (
-    ("C3RIFLE", "rifleman", "C3RIFLE"),
-    ("C3RIFLESQ", "rifleman_squad", None),
-    ("C3MILIT", "militant", "C3MILIT"),
-    ("C3MILITSQ", "militant_squad", None),
-    ("C3CYBORG", "cyborg", "C3CYBORG"),
-    ("C3CYBORGSQ", "cyborg_squad", None),
+    ("C3RIFLE", "rifleman", "C3RIFLE", "rifleman"),
+    ("C3RIFLESQ", "rifleman_squad", None, "rifleman"),
+    ("C3MILIT", "militant", "C3MILIT", "militant"),
+    ("C3MILITSQ", "militant_squad", None, "militant"),
+    ("C3CYBORG", "cyborg", "C3CYBORG", "cyborg"),
+    ("C3CYBORGSQ", "cyborg_squad", None, "cyborg"),
 )
 # (sequence, first shape, poses a facing, directional) in shape order
 LAYOUT = (("ready", 0, 1, True), ("walk", 8, 6, True), ("idle1", 56, 15, False), ("idle2", 71, 14, False),
@@ -66,25 +66,21 @@ LAYOUT = (("ready", 0, 1, True), ("walk", 8, 6, True), ("idle1", 56, 15, False),
 SHAPES = 292
 
 
-def _takes(stem, model, sample, letters):
-    """One sound event per take letter: C3<stem><LETTER> plays <sample><letter>."""
-    return [(f"{stem}{c}", model, [f"{sample}{c.lower()}"]) for c in letters]
-
 
 # VOC stem -> (model, C&C3 sample names), every stem listed in asset_packs.PACK_ONLY_SOUNDS. The squads speak and
 # fire with their soldier's sounds.
 SOUNDS = (
-    _takes("C3LSE", "rifleman", "GURifle_VoiSelect", "ABCDEF")
-    + _takes("C3LMO", "rifleman", "GURifle_VoiMove", "ABCDEFGHI")
-    + _takes("C3LAT", "rifleman", "GURifle_VoiAttack", "ABCDEFGH")
+    tanks.takes("C3LSE", "rifleman", "GURifle_VoiSelect", "ABCDEF")
+    + tanks.takes("C3LMO", "rifleman", "GURifle_VoiMove", "ABCDEFGHI")
+    + tanks.takes("C3LAT", "rifleman", "GURifle_VoiAttack", "ABCDEFGH")
     + [("C3LGUN", "rifleman", [f"GURifle_gun5Fire{c}" for c in "abcdefghij"])]
-    + _takes("C3YSE", "cyborg", "NUCyInf_VoiSelect", "ABCDEFGHIJ")
-    + _takes("C3YMO", "cyborg", "NUCyInf_VoiMove", "ABCDEFGHI")
-    + _takes("C3YAT", "cyborg", "NUCyInf_VoiAttack", "ABCDEFGHI")
+    + tanks.takes("C3YSE", "cyborg", "NUCyInf_VoiSelect", "ABCDEFGHIJ")
+    + tanks.takes("C3YMO", "cyborg", "NUCyInf_VoiMove", "ABCDEFGHI")
+    + tanks.takes("C3YAT", "cyborg", "NUCyInf_VoiAttack", "ABCDEFGHI")
     + [("C3YGUN", "cyborg", [f"NUAwake_gunFire{c}" for c in "abcde"])]
-    + _takes("C3NSE", "militant", "NUMilit_VoiSelect", "ABCDEFG")
-    + _takes("C3NMO", "militant", "NUMilit_VoiMove", "ABCDEFGHIJK")
-    + _takes("C3NAT", "militant", "NUMilit_VoiAttack", "ABCDEFG")
+    + tanks.takes("C3NSE", "militant", "NUMilit_VoiSelect", "ABCDEFG")
+    + tanks.takes("C3NMO", "militant", "NUMilit_VoiMove", "ABCDEFGHIJK")
+    + tanks.takes("C3NAT", "militant", "NUMilit_VoiAttack", "ABCDEFG")
     + [("C3NGUN", "militant", [f"NURifle_gunFire2{c}" for c in "abcdefg"])]
 )
 SFX_BEGIN = "  <!-- BEGIN C&C3 infantry sounds (scripts/c3_pack_infantry.py) -->"
@@ -124,9 +120,7 @@ def bled(body):
 
 def prepared(m):
     """The model with its diffuse sheet bled into its transparent texels and its team colour raised (TEAM_BOOST)."""
-    m.body = bled(m.body)
-    m.sheets[0] = (m.body, m.sheets[0][1], m.sheets[0][2])
-    m.team_means[0] = m._team_mean(m.body, m.sheets[0][1]) / TEAM_BOOST
+    m.set_body(bled(m.body), TEAM_BOOST)
     return m
 
 
@@ -143,13 +137,13 @@ def render_shape(args):
     m.hull_centre = np.zeros(3)
     yaw = 90.0 + facing * 45.0
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    c3_render.render(m, yaw, "hull", RENDER_PPU, RENDER_CANVAS, 32.0).save(path)
+    c3_render.render(m, yaw, "hull", RENDER_PPU, RENDER_CANVAS, tanks.ELEV_DEG).save(path)
     a = np.radians(yaw)
     light = np.array([[np.cos(a), np.sin(a), 0], [-np.sin(a), np.cos(a), 0], [0, 0, 1]]) @ c3_render.LIGHT
     pos = m.pos.copy()
     m.pos = pos - light[None, :] * (np.maximum(pos[:, 2], 0) / light[2])[:, None]
     m.pos[:, 2] = 0.0
-    c3_render.render(m, yaw, "hull", RENDER_PPU, RENDER_CANVAS, 32.0).getchannel("A").save(shadow)
+    c3_render.render(m, yaw, "hull", RENDER_PPU, RENDER_CANVAS, tanks.ELEV_DEG).getchannel("A").save(shadow)
     return path, shadow
 
 
@@ -157,8 +151,7 @@ def placed(path):
     """The render (or shadow mask) scaled to the pack and placed on the canvas with its feet on the line."""
     im = Image.open(path)
     im = im.convert("RGBA") if im.mode != "L" else Image.merge("RGBA", (im, im, im, im))
-    f = PACK_PPU / RENDER_PPU
-    im = im.resize((round(im.width * f), round(im.height * f)), Image.LANCZOS)
+    im = tanks.scaled(im, RENDER_PPU, PACK_PPU)
     x, y = round(FEET[0] - im.width / 2), round(FEET[1] - im.height / 2)
     b = im.getbbox()
     if b and (x + b[0] < 0 or y + b[1] < 0 or x + b[2] > CANVAS[0] or y + b[3] > CANVAS[1]):
@@ -190,7 +183,7 @@ def toned(frames, shadows):
 
 def pack(name, model, cameo):
     jobs = shape_jobs(model)
-    with multiprocessing.Pool(8) as pool:
+    with multiprocessing.Pool(tanks.RENDER_WORKERS) as pool:
         paths = pool.map(render_shape, [(model, p, f) for _, p, f in jobs])
     by_shape = dict(zip([s for s, _, _ in jobs], paths))
     numbers = sorted(by_shape)
@@ -209,11 +202,10 @@ def main(names):
     unknown = set(names) - {i[0] for i in INFANTRY}
     if unknown:
         raise SystemExit(f"unknown infantry: {', '.join(sorted(unknown))}")
-    for name, model, cameo in INFANTRY:
+    for name, model, cameo, _ in INFANTRY:
         if not names or name in names:
             pack(name, model, cameo)
-    tanks.write_audio({m.split("_")[0] for n, m, _ in INFANTRY if n in names} if names else None, SOUNDS, SFX_BEGIN,
-                      SFX_END)
+    tanks.write_audio({i[3] for i in INFANTRY if i[0] in names} if names else None, SOUNDS, SFX_BEGIN, SFX_END)
 
 
 if __name__ == "__main__":

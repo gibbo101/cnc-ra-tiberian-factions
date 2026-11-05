@@ -65,7 +65,9 @@ HEADER = os.path.join(HERE, "..", "redalert", "c3tanks.h")
 
 RENDER_PPU = 13.0
 PACK_PPU = 6.0
-ELEV = math.radians(32)
+ELEV_DEG = 32.0
+ELEV = math.radians(ELEV_DEG)
+RENDER_WORKERS = 8  # each 3x-supersampled render holds about 1 GB
 YAW0 = 90.0
 TREAD_STEPS = 3
 LEPTONS_PER_PX = 4 / 3
@@ -95,16 +97,25 @@ VARIANTS = (
 HULL_FRAMES = 32 * TREAD_STEPS
 
 
+def scaled(im, render_ppu=RENDER_PPU, pack_ppu=PACK_PPU):
+    """A render image, from render_ppu to pack_ppu pixels per C&C3 unit."""
+    f = pack_ppu / render_ppu
+    return im.resize((round(im.width * f), round(im.height * f)), Image.LANCZOS)
+
+
+def takes(stem, model, sample, letters):
+    """One sound event per take letter: C3<stem><LETTER> plays <sample><letter>."""
+    return [(f"{stem}{c}", model, [f"{sample}{c.lower()}"]) for c in letters]
+
+
 def packed(path, canvas, shadow):
-    im = Image.open(path).convert("RGBA")
-    f = PACK_PPU / RENDER_PPU
-    scaled = im.resize((round(im.width * f), round(im.height * f)), Image.LANCZOS)
+    scaled_im = scaled(Image.open(path).convert("RGBA"))
     fr = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
-    ox, oy = round(canvas / 2 - scaled.width / 2), round(canvas / 2 - scaled.height / 2)
-    b = scaled.getbbox()
+    ox, oy = round(canvas / 2 - scaled_im.width / 2), round(canvas / 2 - scaled_im.height / 2)
+    b = scaled_im.getbbox()
     if b and (ox + b[0] < 0 or oy + b[1] < 0 or ox + b[2] > canvas - EA_DX or oy + b[3] > canvas - EA_DY):
         raise SystemExit(f"{path}: content clipped -- grow ShapeSize")
-    fr.alpha_composite(scaled, (max(ox, 0), max(oy, 0)), (max(-ox, 0), max(-oy, 0)))
+    fr.alpha_composite(scaled_im, (max(ox, 0), max(oy, 0)), (max(-ox, 0), max(-oy, 0)))
     return drop_shadow(fr, EA_DX, EA_DY) if shadow else fr
 
 

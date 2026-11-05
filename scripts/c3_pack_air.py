@@ -28,49 +28,49 @@ import c3_pack_tanks as tanks  # noqa: E402
 
 FRAMES = 32
 
-# name, model, ShapeSize, cameo (None: an upgrade variant, which keeps its base aircraft's cameo)
+# name, model, ShapeSize, cameo (None: an upgrade variant, which keeps its base aircraft's cameo), sound model
 AIRCRAFT = (
-    ("C3ORCA", "orca", 48, "C3ORCA"),
-    ("C3ORCAPOD", "orca_probe", 48, None),
-    ("C3FHAWK", "firehawk", 48, "C3FHAWK"),
-    ("C3OX", "ox", 80, "C3OX"),
-    ("C3VENOM", "venom", 48, "C3VENOM"),
-    ("C3VENOMSG", "venom_siggen", 48, None),
-    ("C3VERT", "vertigo", 48, "C3VERT"),
-    ("C3CARRY", "carryall", 80, "C3CARRY"),
+    ("C3ORCA", "orca", 48, "C3ORCA", "orca"),
+    ("C3ORCAPOD", "orca_probe", 48, None, "orca"),
+    ("C3FHAWK", "firehawk", 48, "C3FHAWK", "firehawk"),
+    ("C3OX", "ox", 80, "C3OX", "ox"),
+    ("C3VENOM", "venom", 48, "C3VENOM", "venom"),
+    ("C3VENOMSG", "venom_siggen", 48, None, "venom"),
+    ("C3VERT", "vertigo", 48, "C3VERT", "vertigo"),
+    ("C3CARRY", "carryall", 80, "C3CARRY", "carryall"),
 )
 
-
-def _takes(stem, model, sample, letters):
-    """One sound event per take letter: C3<stem><LETTER> plays <sample><letter>."""
-    return [(f"{stem}{c}", model, [f"{sample}{c.lower()}"]) for c in letters]
 
 
 # VOC stem -> (model, C&C3 sample names). Every stem is pack-only, so it is listed in asset_packs.PACK_ONLY_SOUNDS.
 SOUNDS = (
-    _takes("C3OSE", "orca", "GUOrca_VoiSelect", "ABCDEFGHI") + _takes("C3OMO", "orca", "GUOrca_VoiMove", "ABCDEFGHIJKL")
-    + _takes("C3OAT", "orca", "GUOrca_VoiAttack", "ABCDE")
+    tanks.takes("C3OSE", "orca", "GUOrca_VoiSelect", "ABCDEFGHI")
+    + tanks.takes("C3OMO", "orca", "GUOrca_VoiMove", "ABCDEFGHIJKL")
+    + tanks.takes("C3OAT", "orca", "GUOrca_VoiAttack", "ABCDE")
     + [("C3OGUN", "orca", [f"GUOrca_rockFire{c}" for c in "abcdefghij"]),
        ("C3OHIT", "orca", [f"GUOrca_rockExpl{c}" for c in "abcdefghijk"])]
-    + _takes("C3HSE", "firehawk", "GUFireh_VoiSelect", "ABCDEF")
-    + _takes("C3HMO", "firehawk", "GUFireh_VoiMove", "ABCDEFG")
-    + _takes("C3HAT", "firehawk", "GUFireh_VoiAttack", "ABCDEFGHI")
+    + tanks.takes("C3HSE", "firehawk", "GUFireh_VoiSelect", "ABCDEF")
+    + tanks.takes("C3HMO", "firehawk", "GUFireh_VoiMove", "ABCDEFG")
+    + tanks.takes("C3HAT", "firehawk", "GUFireh_VoiAttack", "ABCDEFGHI")
     + [("C3HGUN", "firehawk", [f"GUFireH_wea1fire{c}" for c in "abc"]),
        ("C3HBMB", "firehawk", ["GUFireh_firebomb1a"])]
-    + _takes("C3VSE", "venom", "NUVenom_VoiSelect", "ABCDEF") + _takes("C3VMO", "venom", "NUVenom_VoiMove", "ABCDEFGHI")
-    + _takes("C3VAT", "venom", "NUVenom_VoiAttack", "ABCDEF")
+    + tanks.takes("C3VSE", "venom", "NUVenom_VoiSelect", "ABCDEF")
+    + tanks.takes("C3VMO", "venom", "NUVenom_VoiMove", "ABCDEFGHI")
+    + tanks.takes("C3VAT", "venom", "NUVenom_VoiAttack", "ABCDEF")
     + [("C3VGUN", "venom", [f"NUVenom_gunFire6{c}" for c in "abcdef"]),
        ("C3VLAS", "venom", [f"NUVenom_capaFire{c}" for c in "abcdefg"])]
-    + _takes("C3WSE", "vertigo", "NuVerti_VoiSelect", "ABCDEF")
-    + _takes("C3WMO", "vertigo", "NuVerti_VoiMove", "ABCDEF")
-    + _takes("C3WAT", "vertigo", "NuVerti_VoiMovAtt", "ABCDEF")
+    + tanks.takes("C3WSE", "vertigo", "NuVerti_VoiSelect", "ABCDEF")
+    + tanks.takes("C3WMO", "vertigo", "NuVerti_VoiMove", "ABCDEF")
+    + tanks.takes("C3WAT", "vertigo", "NuVerti_VoiMovAtt", "ABCDEF")
     + [("C3WBMB", "vertigo", [f"NUVertigo_bombDrop{c}" for c in "abcdef"]),
        ("C3WHIT", "vertigo", [f"NUVerti_bombExpl{c}" for c in "abcdef"])]
-    + _takes("C3XSE", "ox", "GUOxTra_VoiSelect", "ABCDEFG") + _takes("C3XMO", "ox", "GUOxTra_VoiMove", "ABCDEFG")
-    + _takes("C3XPK", "ox", "GUOxTra_VoiPickup", "ABCDEFGH") + _takes("C3XDO", "ox", "GUOxTra_VoiDropo", "ABCDE")
-    + _takes("C3CSE", "carryall", "NuCarry_VoiSelect", "ABCDE")
-    + _takes("C3CMO", "carryall", "NuCarry_VoiMove", "ABCDEFG")
-    + _takes("C3CPK", "carryall", "NUCarry_VoiPickup", "ABCD")
+    + tanks.takes("C3XSE", "ox", "GUOxTra_VoiSelect", "ABCDEFG")
+    + tanks.takes("C3XMO", "ox", "GUOxTra_VoiMove", "ABCDEFG")
+    + tanks.takes("C3XPK", "ox", "GUOxTra_VoiPickup", "ABCDEFGH")
+    + tanks.takes("C3XDO", "ox", "GUOxTra_VoiDropo", "ABCDE")
+    + tanks.takes("C3CSE", "carryall", "NuCarry_VoiSelect", "ABCDE")
+    + tanks.takes("C3CMO", "carryall", "NuCarry_VoiMove", "ABCDEFG")
+    + tanks.takes("C3CPK", "carryall", "NUCarry_VoiPickup", "ABCD")
 )
 SFX_BEGIN = "  <!-- BEGIN C&C3 aircraft sounds (scripts/c3_pack_air.py) -->"
 SFX_END = "  <!-- END C&C3 aircraft sounds -->"
@@ -86,7 +86,7 @@ def main(names):
     unknown = set(names) - {a[0] for a in AIRCRAFT}
     if unknown:
         raise SystemExit(f"unknown aircraft: {', '.join(sorted(unknown))}")
-    for name, model, shape, cameo in AIRCRAFT:
+    for name, model, shape, cameo, _ in AIRCRAFT:
         if names and name not in names:
             continue
         canvas = shape * 8
@@ -96,7 +96,7 @@ def main(names):
         tanks.patch_tileset(name, FRAMES)
         if cameo:
             tanks.write_cameo(cameo)
-    write_audio({a[1].split("_")[0] for a in AIRCRAFT if a[0] in names} if names else None)
+    write_audio({a[4] for a in AIRCRAFT if a[0] in names} if names else None)
 
 
 if __name__ == "__main__":

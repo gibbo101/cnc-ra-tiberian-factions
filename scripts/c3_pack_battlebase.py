@@ -88,7 +88,8 @@ def render_one(job):
         m, part, stock = c3_render.Model(npz(False, DEPLOY_FRAMES - 1), damaged=kind == "bodyd"), "hull", False
     else:
         m, part, stock = turned_guns(npz(False, DEPLOY_FRAMES - 1), i), "turret", True
-    img = c3_render.render(m, HULL_YAW, part, RENDER_PPU, RENDER_CANVAS, 32.0, turret_on_hull_origin=stock)
+    img = c3_render.render(m, HULL_YAW, part, RENDER_PPU, RENDER_CANVAS, tanks.ELEV_DEG,
+                           turret_on_hull_origin=stock)
     img.save(path)
 
 
@@ -97,15 +98,13 @@ def jobs():
 
 
 def render_all():
-    with multiprocessing.Pool(8) as pool:
+    with multiprocessing.Pool(tanks.RENDER_WORKERS) as pool:
         for n, _ in enumerate(pool.imap_unordered(render_one, jobs()), 1):
             print(f"rendered {n}/{len(jobs())}", flush=True)
 
 
 def scaled(kind, i):
-    im = Image.open(out(kind, i)).convert("RGBA")
-    f = PACK_PPU / RENDER_PPU
-    return im.resize((round(im.width * f), round(im.height * f)), Image.LANCZOS)
+    return tanks.scaled(Image.open(out(kind, i)).convert("RGBA"), RENDER_PPU, PACK_PPU)
 
 
 def rig_drop():

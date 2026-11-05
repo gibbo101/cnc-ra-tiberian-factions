@@ -115,6 +115,13 @@ class Model:
         self.link_pitch = self._link_pitch()
         self.team_means = [self._team_mean(b, h) for b, h, _ in self.sheets]
 
+    def set_body(self, body, team_boost=1.0):
+        """Replace the first sheet's diffuse texture, its house colour renormalised to it and raised by
+        team_boost."""
+        self.body = body
+        self.sheets[0] = (body, self.sheets[0][1], self.sheets[0][2])
+        self.team_means[0] = self._team_mean(body, self.sheets[0][1]) / team_boost
+
     @staticmethod
     def _team_mean(body, house):
         """Mean luminance of the diffuse texels under the house-colour mask (1 for a sheet without house colour)."""
