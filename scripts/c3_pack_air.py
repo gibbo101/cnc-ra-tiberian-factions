@@ -52,7 +52,8 @@ SOUNDS = (
     + _takes("C3OAT", "orca", "GUOrca_VoiAttack", "ABCDE")
     + [("C3OGUN", "orca", [f"GUOrca_rockFire{c}" for c in "abcdefghij"]),
        ("C3OHIT", "orca", [f"GUOrca_rockExpl{c}" for c in "abcdefghijk"])]
-    + _takes("C3HSE", "firehawk", "GUFireh_VoiSelect", "ABCDEF") + _takes("C3HMO", "firehawk", "GUFireh_VoiMove", "ABCDEFG")
+    + _takes("C3HSE", "firehawk", "GUFireh_VoiSelect", "ABCDEF")
+    + _takes("C3HMO", "firehawk", "GUFireh_VoiMove", "ABCDEFG")
     + _takes("C3HAT", "firehawk", "GUFireh_VoiAttack", "ABCDEFGHI")
     + [("C3HGUN", "firehawk", [f"GUFireH_wea1fire{c}" for c in "abc"]),
        ("C3HBMB", "firehawk", ["GUFireh_firebomb1a"])]
@@ -60,13 +61,15 @@ SOUNDS = (
     + _takes("C3VAT", "venom", "NUVenom_VoiAttack", "ABCDEF")
     + [("C3VGUN", "venom", [f"NUVenom_gunFire6{c}" for c in "abcdef"]),
        ("C3VLAS", "venom", [f"NUVenom_capaFire{c}" for c in "abcdefg"])]
-    + _takes("C3WSE", "vertigo", "NuVerti_VoiSelect", "ABCDEF") + _takes("C3WMO", "vertigo", "NuVerti_VoiMove", "ABCDEF")
+    + _takes("C3WSE", "vertigo", "NuVerti_VoiSelect", "ABCDEF")
+    + _takes("C3WMO", "vertigo", "NuVerti_VoiMove", "ABCDEF")
     + _takes("C3WAT", "vertigo", "NuVerti_VoiMovAtt", "ABCDEF")
     + [("C3WBMB", "vertigo", [f"NUVertigo_bombDrop{c}" for c in "abcdef"]),
        ("C3WHIT", "vertigo", [f"NUVerti_bombExpl{c}" for c in "abcdef"])]
     + _takes("C3XSE", "ox", "GUOxTra_VoiSelect", "ABCDEFG") + _takes("C3XMO", "ox", "GUOxTra_VoiMove", "ABCDEFG")
     + _takes("C3XPK", "ox", "GUOxTra_VoiPickup", "ABCDEFGH") + _takes("C3XDO", "ox", "GUOxTra_VoiDropo", "ABCDE")
-    + _takes("C3CSE", "carryall", "NuCarry_VoiSelect", "ABCDE") + _takes("C3CMO", "carryall", "NuCarry_VoiMove", "ABCDEFG")
+    + _takes("C3CSE", "carryall", "NuCarry_VoiSelect", "ABCDE")
+    + _takes("C3CMO", "carryall", "NuCarry_VoiMove", "ABCDEFG")
     + _takes("C3CPK", "carryall", "NUCarry_VoiPickup", "ABCD")
 )
 SFX_BEGIN = "  <!-- BEGIN C&C3 aircraft sounds (scripts/c3_pack_air.py) -->"
