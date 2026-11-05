@@ -26630,7 +26630,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3rifle\c3rifle-0276.tga</Frame>
+				<Frame>c3rifle\c3rifle-0260.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -26652,7 +26652,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3rifle\c3rifle-0278.tga</Frame>
+				<Frame>c3rifle\c3rifle-0262.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -26674,7 +26674,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3rifle\c3rifle-0280.tga</Frame>
+				<Frame>c3rifle\c3rifle-0264.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -26696,7 +26696,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3rifle\c3rifle-0282.tga</Frame>
+				<Frame>c3rifle\c3rifle-0266.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -26718,7 +26718,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3rifle\c3rifle-0284.tga</Frame>
+				<Frame>c3rifle\c3rifle-0268.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -26740,7 +26740,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3rifle\c3rifle-0286.tga</Frame>
+				<Frame>c3rifle\c3rifle-0270.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -26762,7 +26762,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3rifle\c3rifle-0288.tga</Frame>
+				<Frame>c3rifle\c3rifle-0272.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -26784,7 +26784,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3rifle\c3rifle-0290.tga</Frame>
+				<Frame>c3rifle\c3rifle-0274.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -29391,7 +29391,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3milit\c3milit-0235.tga</Frame>
+				<Frame>c3milit\c3milit-0233.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -29589,7 +29589,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3milit\c3milit-0253.tga</Frame>
+				<Frame>c3milit\c3milit-0251.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -29842,7 +29842,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3milit\c3milit-0276.tga</Frame>
+				<Frame>c3milit\c3milit-0260.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -29864,7 +29864,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3milit\c3milit-0278.tga</Frame>
+				<Frame>c3milit\c3milit-0262.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -29886,7 +29886,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3milit\c3milit-0280.tga</Frame>
+				<Frame>c3milit\c3milit-0264.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -29908,7 +29908,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3milit\c3milit-0282.tga</Frame>
+				<Frame>c3milit\c3milit-0266.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -29930,7 +29930,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3milit\c3milit-0284.tga</Frame>
+				<Frame>c3milit\c3milit-0268.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -29952,7 +29952,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3milit\c3milit-0286.tga</Frame>
+				<Frame>c3milit\c3milit-0270.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -29974,7 +29974,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3milit\c3milit-0288.tga</Frame>
+				<Frame>c3milit\c3milit-0272.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -29996,7 +29996,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3milit\c3milit-0290.tga</Frame>
+				<Frame>c3milit\c3milit-0274.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -33054,7 +33054,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3riflesq\c3riflesq-0276.tga</Frame>
+				<Frame>c3riflesq\c3riflesq-0260.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -33076,7 +33076,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3riflesq\c3riflesq-0278.tga</Frame>
+				<Frame>c3riflesq\c3riflesq-0262.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -33098,7 +33098,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3riflesq\c3riflesq-0280.tga</Frame>
+				<Frame>c3riflesq\c3riflesq-0264.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -33120,7 +33120,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3riflesq\c3riflesq-0282.tga</Frame>
+				<Frame>c3riflesq\c3riflesq-0266.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -33142,7 +33142,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3riflesq\c3riflesq-0284.tga</Frame>
+				<Frame>c3riflesq\c3riflesq-0268.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -33164,7 +33164,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3riflesq\c3riflesq-0286.tga</Frame>
+				<Frame>c3riflesq\c3riflesq-0270.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -33186,7 +33186,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3riflesq\c3riflesq-0288.tga</Frame>
+				<Frame>c3riflesq\c3riflesq-0272.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -33208,7 +33208,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3riflesq\c3riflesq-0290.tga</Frame>
+				<Frame>c3riflesq\c3riflesq-0274.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -36266,7 +36266,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3militsq\c3militsq-0276.tga</Frame>
+				<Frame>c3militsq\c3militsq-0260.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -36288,7 +36288,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3militsq\c3militsq-0278.tga</Frame>
+				<Frame>c3militsq\c3militsq-0262.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -36310,7 +36310,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3militsq\c3militsq-0280.tga</Frame>
+				<Frame>c3militsq\c3militsq-0264.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -36332,7 +36332,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3militsq\c3militsq-0282.tga</Frame>
+				<Frame>c3militsq\c3militsq-0266.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -36354,7 +36354,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3militsq\c3militsq-0284.tga</Frame>
+				<Frame>c3militsq\c3militsq-0268.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -36376,7 +36376,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3militsq\c3militsq-0286.tga</Frame>
+				<Frame>c3militsq\c3militsq-0270.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -36398,7 +36398,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3militsq\c3militsq-0288.tga</Frame>
+				<Frame>c3militsq\c3militsq-0272.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -36420,7 +36420,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3militsq\c3militsq-0290.tga</Frame>
+				<Frame>c3militsq\c3militsq-0274.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37388,7 +37388,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0086.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37399,7 +37399,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0087.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0009.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37410,7 +37410,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0088.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0010.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37421,7 +37421,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0089.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0011.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37432,7 +37432,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0090.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0012.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37443,7 +37443,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0091.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0013.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37454,7 +37454,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0092.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0014.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37465,7 +37465,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0093.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0015.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37476,7 +37476,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0094.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0016.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37487,7 +37487,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0095.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0017.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37498,7 +37498,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0096.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37509,7 +37509,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0097.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0019.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37520,7 +37520,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0098.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0020.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37531,7 +37531,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0099.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0021.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37542,7 +37542,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0100.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0022.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37553,7 +37553,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0101.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0023.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37564,7 +37564,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0102.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0024.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37575,7 +37575,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0103.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0025.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37586,7 +37586,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0104.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0026.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37597,7 +37597,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0105.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0027.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37608,7 +37608,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0106.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0028.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37619,7 +37619,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0107.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0029.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37630,7 +37630,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0108.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0030.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37641,7 +37641,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0109.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0031.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37652,7 +37652,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0110.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0032.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37663,7 +37663,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0111.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0033.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37674,7 +37674,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0112.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0034.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37685,7 +37685,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0113.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0035.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37696,7 +37696,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0114.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0036.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37707,7 +37707,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0115.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0037.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37718,7 +37718,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0116.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0038.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37729,7 +37729,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0117.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0039.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37740,7 +37740,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0118.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0040.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37751,7 +37751,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0119.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0041.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37762,7 +37762,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0120.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0042.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37773,7 +37773,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0121.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0043.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37784,7 +37784,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0122.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0044.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37795,7 +37795,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0123.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0045.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37806,7 +37806,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0124.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0046.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37817,7 +37817,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0125.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0047.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37828,7 +37828,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0126.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0048.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37839,7 +37839,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0127.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0049.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37850,7 +37850,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0128.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0050.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37861,7 +37861,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0129.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0051.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37872,7 +37872,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0130.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0052.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37883,7 +37883,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0131.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0053.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37894,7 +37894,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0132.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0054.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -37905,7 +37905,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0133.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0055.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38235,7 +38235,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0163.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0162.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38774,7 +38774,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0212.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0164.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38785,7 +38785,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0213.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0165.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38796,7 +38796,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0214.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0166.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38807,7 +38807,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0215.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0167.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38818,7 +38818,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0216.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0168.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38829,7 +38829,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0217.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0169.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38840,7 +38840,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0218.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0170.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38851,7 +38851,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0219.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0171.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38862,7 +38862,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0220.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0172.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38873,7 +38873,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0221.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0173.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38884,7 +38884,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0222.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0174.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38895,7 +38895,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0223.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0175.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38906,7 +38906,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0224.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0176.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38917,7 +38917,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0225.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0177.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38928,7 +38928,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0226.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0178.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38939,7 +38939,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0227.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0179.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38950,7 +38950,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0228.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0180.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38961,7 +38961,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0229.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0181.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38972,7 +38972,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0230.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0182.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38983,7 +38983,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0231.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0183.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -38994,7 +38994,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0232.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0184.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39005,7 +39005,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0233.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0185.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39016,7 +39016,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0234.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0186.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39027,7 +39027,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0235.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0187.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39038,7 +39038,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0236.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0188.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39049,7 +39049,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0237.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0189.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39060,7 +39060,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0238.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0190.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39071,7 +39071,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0239.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0191.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39082,7 +39082,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0240.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0192.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39093,7 +39093,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0241.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0193.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39104,7 +39104,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0242.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0194.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39115,7 +39115,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0243.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0195.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39126,7 +39126,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0244.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0196.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39137,7 +39137,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0245.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0197.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39148,7 +39148,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0246.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0198.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39159,7 +39159,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0247.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0199.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39170,7 +39170,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0248.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0200.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39181,7 +39181,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0249.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0201.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39192,7 +39192,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0250.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0202.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39203,7 +39203,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0251.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0203.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39214,7 +39214,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0252.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0204.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39225,7 +39225,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0253.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0205.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39236,7 +39236,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0254.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0206.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39247,7 +39247,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0255.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0207.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39258,7 +39258,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0256.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0208.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39269,7 +39269,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0257.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0209.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39280,7 +39280,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0258.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0210.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39291,7 +39291,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0259.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0211.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39302,7 +39302,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0260.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39313,7 +39313,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0261.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39324,7 +39324,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0262.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39335,7 +39335,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0263.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39346,7 +39346,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0264.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39357,7 +39357,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0265.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39368,7 +39368,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0266.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39379,7 +39379,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0267.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39390,7 +39390,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0268.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39401,7 +39401,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0269.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39412,7 +39412,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0270.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39423,7 +39423,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0271.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39434,7 +39434,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0272.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39445,7 +39445,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0273.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39456,7 +39456,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0274.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39467,7 +39467,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0275.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39478,7 +39478,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0276.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39489,7 +39489,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0277.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39500,7 +39500,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0278.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39511,7 +39511,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0279.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39522,7 +39522,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0280.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39533,7 +39533,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0281.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39544,7 +39544,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0282.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39555,7 +39555,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0283.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39566,7 +39566,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0284.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39577,7 +39577,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0285.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39588,7 +39588,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0286.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39599,7 +39599,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0287.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39610,7 +39610,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0288.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39621,7 +39621,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0289.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39632,7 +39632,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0290.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -39643,7 +39643,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborg\c3cyborg-0291.tga</Frame>
+				<Frame>c3cyborg\c3cyborg-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40600,7 +40600,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0086.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40611,7 +40611,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0087.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0009.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40622,7 +40622,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0088.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0010.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40633,7 +40633,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0089.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0011.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40644,7 +40644,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0090.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0012.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40655,7 +40655,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0091.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0013.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40666,7 +40666,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0092.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0014.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40677,7 +40677,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0093.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0015.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40688,7 +40688,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0094.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0016.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40699,7 +40699,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0095.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0017.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40710,7 +40710,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0096.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40721,7 +40721,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0097.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0019.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40732,7 +40732,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0098.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0020.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40743,7 +40743,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0099.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0021.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40754,7 +40754,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0100.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0022.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40765,7 +40765,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0101.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0023.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40776,7 +40776,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0102.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0024.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40787,7 +40787,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0103.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0025.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40798,7 +40798,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0104.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0026.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40809,7 +40809,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0105.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0027.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40820,7 +40820,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0106.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0028.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40831,7 +40831,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0107.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0029.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40842,7 +40842,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0108.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0030.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40853,7 +40853,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0109.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0031.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40864,7 +40864,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0110.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0032.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40875,7 +40875,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0111.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0033.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40886,7 +40886,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0112.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0034.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40897,7 +40897,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0113.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0035.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40908,7 +40908,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0114.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0036.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40919,7 +40919,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0115.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0037.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40930,7 +40930,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0116.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0038.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40941,7 +40941,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0117.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0039.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40952,7 +40952,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0118.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0040.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40963,7 +40963,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0119.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0041.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40974,7 +40974,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0120.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0042.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40985,7 +40985,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0121.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0043.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -40996,7 +40996,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0122.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0044.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41007,7 +41007,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0123.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0045.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41018,7 +41018,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0124.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0046.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41029,7 +41029,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0125.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0047.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41040,7 +41040,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0126.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0048.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41051,7 +41051,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0127.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0049.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41062,7 +41062,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0128.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0050.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41073,7 +41073,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0129.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0051.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41084,7 +41084,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0130.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0052.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41095,7 +41095,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0131.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0053.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41106,7 +41106,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0132.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0054.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41117,7 +41117,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0133.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0055.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41986,7 +41986,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0212.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0164.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41997,7 +41997,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0213.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0165.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42008,7 +42008,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0214.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0166.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42019,7 +42019,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0215.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0167.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42030,7 +42030,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0216.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0168.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42041,7 +42041,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0217.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0169.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42052,7 +42052,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0218.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0170.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42063,7 +42063,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0219.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0171.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42074,7 +42074,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0220.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0172.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42085,7 +42085,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0221.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0173.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42096,7 +42096,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0222.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0174.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42107,7 +42107,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0223.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0175.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42118,7 +42118,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0224.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0176.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42129,7 +42129,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0225.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0177.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42140,7 +42140,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0226.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0178.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42151,7 +42151,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0227.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0179.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42162,7 +42162,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0228.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0180.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42173,7 +42173,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0229.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0181.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42184,7 +42184,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0230.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0182.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42195,7 +42195,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0231.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0183.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42206,7 +42206,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0232.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0184.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42217,7 +42217,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0233.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0185.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42228,7 +42228,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0234.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0186.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42239,7 +42239,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0235.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0187.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42250,7 +42250,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0236.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0188.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42261,7 +42261,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0237.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0189.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42272,7 +42272,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0238.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0190.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42283,7 +42283,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0239.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0191.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42294,7 +42294,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0240.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0192.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42305,7 +42305,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0241.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0193.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42316,7 +42316,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0242.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0194.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42327,7 +42327,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0243.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0195.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42338,7 +42338,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0244.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0196.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42349,7 +42349,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0245.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0197.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42360,7 +42360,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0246.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0198.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42371,7 +42371,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0247.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0199.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42382,7 +42382,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0248.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0200.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42393,7 +42393,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0249.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0201.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42404,7 +42404,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0250.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0202.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42415,7 +42415,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0251.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0203.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42426,7 +42426,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0252.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0204.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42437,7 +42437,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0253.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0205.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42448,7 +42448,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0254.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0206.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42459,7 +42459,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0255.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0207.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42470,7 +42470,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0256.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0208.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42481,7 +42481,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0257.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0209.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42492,7 +42492,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0258.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0210.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42503,7 +42503,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0259.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0211.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42514,7 +42514,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0260.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42525,7 +42525,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0261.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42536,7 +42536,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0262.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42547,7 +42547,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0263.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42558,7 +42558,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0264.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42569,7 +42569,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0265.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42580,7 +42580,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0266.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42591,7 +42591,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0267.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42602,7 +42602,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0268.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42613,7 +42613,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0269.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42624,7 +42624,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0270.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42635,7 +42635,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0271.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42646,7 +42646,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0272.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42657,7 +42657,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0273.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42668,7 +42668,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0274.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42679,7 +42679,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0275.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42690,7 +42690,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0276.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42701,7 +42701,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0277.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42712,7 +42712,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0278.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42723,7 +42723,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0279.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42734,7 +42734,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0280.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42745,7 +42745,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0281.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42756,7 +42756,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0282.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42767,7 +42767,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0283.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42778,7 +42778,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0284.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42789,7 +42789,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0285.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42800,7 +42800,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0286.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42811,7 +42811,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0287.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42822,7 +42822,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0288.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42833,7 +42833,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0289.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42844,7 +42844,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0290.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -42855,7 +42855,7 @@
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>c3cyborgsq\c3cyborgsq-0291.tga</Frame>
+				<Frame>c3cyborgsq\c3cyborgsq-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
