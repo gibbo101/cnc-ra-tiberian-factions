@@ -17,6 +17,7 @@ Usage: c3_pack_battlebase.py [render | pack]; with neither, both. Renders cache 
 
 License: GPL v3.
 """
+import json
 import math
 import multiprocessing
 import os
@@ -30,6 +31,7 @@ sys.path.insert(0, HERE)
 import asset_packs  # noqa: E402
 import c3_pack_tanks as tanks  # noqa: E402
 import c3_render  # noqa: E402
+import unit_centring  # noqa: E402
 from ts_reshadow import drop_shadow, EA_DX, EA_DY  # noqa: E402
 
 ART = tanks.ART
@@ -106,20 +108,27 @@ def scaled(kind, i):
     return im.resize((round(im.width * f), round(im.height * f)), Image.LANCZOS)
 
 
-def canvas_size(images):
-    """The smallest canvas, in multiples of 32 px, that holds every frame and its shadow centred as rendered."""
+def rig_drop():
+    """The Rig's art drop (unit_art_drop.json), in this canvas's pixels: the base moves with the Rig's sprite."""
+    drops = json.load(open(unit_centring.DROPS_JSON))
+    return round(drops["C3RIG"] / unit_centring.UNIT_DENSITY * unit_centring.BUILDING_DENSITY)
+
+
+def canvas_size(images, drop):
+    """The smallest canvas, in multiples of 32 px, that holds every frame and its shadow centred as rendered and
+    moved down by the drop."""
     half_w = half_h = 0
     for im in images:
         x0, y0, x1, y1 = im.getbbox()
         cx, cy = im.width / 2, im.height / 2
         half_w = max(half_w, cx - x0, x1 + EA_DX - cx)
-        half_h = max(half_h, cy - y0, y1 + EA_DY - cy)
+        half_h = max(half_h, cy - y0 - drop, y1 + EA_DY + drop - cy)
     return 32 * math.ceil(2 * half_w / 32), 32 * math.ceil(2 * half_h / 32)
 
 
-def framed(im, size, shadow):
+def framed(im, size, shadow, drop):
     fr = Image.new("RGBA", size, (0, 0, 0, 0))
-    fr.alpha_composite(im, (round(size[0] / 2 - im.width / 2), round(size[1] / 2 - im.height / 2)))
+    fr.alpha_composite(im, (round(size[0] / 2 - im.width / 2), round(size[1] / 2 - im.height / 2) + drop))
     return drop_shadow(fr, EA_DX, EA_DY) if shadow else fr
 
 
@@ -127,13 +136,15 @@ def pack():
     body = [scaled("body", 0), scaled("bodyd", 0)]
     guns = [scaled("gun", i) for i in range(32)]
     make = [scaled("make", i) for i in range(len(MAKE))]
-    size = canvas_size(body + guns + make)
-    print(f"canvas {size[0]} x {size[1]}")
+    drop = rig_drop()
+    size = canvas_size(body + guns + make, drop)
+    print(f"canvas {size[0]} x {size[1]}, the Rig's drop {drop} px")
     for name, frames, shadow, tiles in (
             ("C3BBASE", body, True, [0] * 64 + [1] * 64),
             ("C3BBASET", guns, False, list(range(32)) * 4),
             ("C3BBASEMAKE", make, True, list(range(len(MAKE))))):
-        tanks.write_zip(asset_packs.art_zip(name, "STRUCTURES"), name.lower(), [framed(f, size, shadow) for f in frames])
+        tanks.write_zip(asset_packs.art_zip(name, "STRUCTURES"), name.lower(),
+                        [framed(f, size, shadow, drop) for f in frames])
         sub = name.lower()
         tanks.patch_tileset(name, len(tiles), [f"{sub}\\{sub}-{t:04d}.tga" for t in tiles], kind="STRUCTURES")
     tanks.write_cameo("C3BBASE")
