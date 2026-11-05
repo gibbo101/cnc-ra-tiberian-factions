@@ -437,8 +437,8 @@ rather than using Blender: you need exact control of camera, light and colour.
   C&C3 infantry never go prone: the Rifleman's suppressed clips (crawl, prone fire, dive) stand in, and units
   without them stand. A squad is three or four soldiers in a wedge (the squad's first payload count: three
   Riflemen or Cyborgs, four Militants), each a few poses
-  out of step. Upgrade weapons are separate meshes (the Cyborg's particle beam); the base weapon may be the body
-  itself (the Cyborg's minigun arm).
+  out of step. A weapon can be a limb: the Cyborg's body mesh has no left arm, and his two weapon meshes (the EMP
+  cannon and the particle-beam gauntlet) are his arms. Check a soldier against his portrait before leaving a mesh out.
 
 ## 8. DLL side (needs a Vanilla Conquer based DLL)
 
