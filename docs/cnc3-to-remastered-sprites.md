@@ -408,8 +408,8 @@ rather than using Blender: you need exact control of camera, light and colour.
   layouts are not decoded, so the timing is by eye. Projectiles (`NPMISSILE`'s `PMHELLMIS`, the Mortar's
   `NBRDEFMIS`) render through `c3_render.py` like a hull, 32 facings, at the effects' 4 px per C&C3 unit.
 - **Packing one tank:** `c3_pack_tanks.py <NAME>` writes the tank's ZIP and tiles, then rebuilds `c3tanks.h`
-  from every tank's model, so `C3_ART_DIR` must hold `model/<model>.npz` for all of them; a folder holding only
-  the one tank's inputs stops with `FileNotFoundError` after the ZIP is written.
+  from every tank's model, so `C3_ART_DIR` must hold `model/<model>.npz` for all of them; with one missing, the
+  packer names it and stops before writing anything.
 - **Variants:** an upgrade that changes only one part packs only that part's frames; its other
   tiles name the base tank's ZIP members (`VARIANTS` in `c3_pack_tanks.py`). C3SCORPDZR owns turret
   frames only, C3SCORPLASDZR hull frames only. C3SCORPLAS owns both, as the laser changes the hull.

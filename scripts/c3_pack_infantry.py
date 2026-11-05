@@ -206,6 +206,9 @@ def pack(name, model, cameo):
 def main(names):
     if not ART:
         raise SystemExit("set C3_ART_DIR (holding infantry/, cameo/)")
+    unknown = set(names) - {i[0] for i in INFANTRY}
+    if unknown:
+        raise SystemExit(f"unknown infantry: {', '.join(sorted(unknown))}")
     for name, model, cameo in INFANTRY:
         if not names or name in names:
             pack(name, model, cameo)

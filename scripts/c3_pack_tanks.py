@@ -370,6 +370,10 @@ def main(names):
     if not ART:
         raise SystemExit("set C3_ART_DIR (holding renders/, model/, cameo/)")
     names = family(names)
+    missing = sorted({f"model/{m}.npz" for n, m, _, _ in UNITS if n not in NO_TURRET
+                      and not os.path.exists(f"{ART}/model/{m}.npz")})
+    if missing:
+        raise SystemExit(f"c3tanks.h is rebuilt from every tank's model; {ART} lacks {', '.join(missing)}")
     for name, model, shape, _ in UNITS:
         if names and name not in names:
             continue
