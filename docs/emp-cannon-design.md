@@ -23,7 +23,10 @@ Sensor Array and the Mobile War Factory, built in the same arc. Pairs with
   `Try_To_Deploy` and `Process_Take_Off` refuse; radar goes off as at low power; gap and stealth
   generators go off; a stunned cannon can't be the launch site.
 - **TS rules kept:** a stunned power plant still produces power, a stunned yard still builds,
-  factories keep producing, only yards spark among buildings, and pad-parked aircraft are spared.
+  factories keep producing, and pad-parked aircraft are spared.
+- **Building sparks differ from TS:** TF sparks only construction yards (`Is_Construction_Yard`).
+  OpenTS sparks the buildings where `Is_Mobile_Deployer()` is true (deployed sensor array, tick
+  tank, artillery, mobile stealth, Juggernaut, ICBM launcher), never the construction yard.
 - **Hover units carry split shadows** (TSHVR shapes 64-95, TSLIMP 10-19, packed by
   `ts_pack_hd_buildings.py`). The shadow bobs with the hull; only a stun settles the hull 3 px
   onto a still shadow over ~0.8 s, lifting back over the stun's last ~0.8 s.
@@ -90,7 +93,8 @@ test `dx*dx+dy*dy <= spread*spread` on cell deltas:
 - Every object in `LAYER_UNDERGROUND` within the circle: locomotor `Power_Off`, `Stop_Moving`,
   `StunDuration = Duration`, sparkles attached. (Ours follows TS; see stage D.)
 - Buildings whose centre cell is in the circle: `Power_Off()`, `StunDuration = Duration`,
-  radar recalc; limpet mines die; core defenders immune.
+  radar recalc, sparkles only on a deployed mobile unit (`Is_Mobile_Deployer()`); limpet mines
+  die; core defenders immune.
 - Cell occupants: units and aircraft (any with a locomotor) except the source, plus cyborg
   infantry: locomotor `Power_Off`, `Stop_Moving`, `StunDuration = Duration`, sparkles
   (`EMP_FX01`, LoopCount -1, attached to the object). Visceroids immune. Plain infantry

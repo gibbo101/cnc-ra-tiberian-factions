@@ -38,10 +38,10 @@ frame from `LogicClass::AI`.
 | 11 | **Armed defensive buildings** (Obelisk/SAM/AGT/towers): **ambush** — cloak normally, but **uncloak when they acquire an in-range target**, fire, then re-cloak once the threat leaves | building-side uncloak-on-target hook (see below) |
 
 ### Detector set (resolved via `IsScanner`, no hardcoded list)
-- **All infantry** — already `IsScanner=true` (forced in `InfantryTypeClass` ctor, idata.cpp:1399). **No infantry changes.**
+- **All infantry** — already `IsScanner=true` (forced in the `InfantryTypeClass` ctor). **No infantry changes.**
 - **Attack Dog** — it's an `InfantryTypeClass` → already a scanner. No work.
-- **All vessels** — already `IsScanner=true` (vdata.cpp:403).
-- **Radar Jammer (MRJ)** — a vehicle; **add `Sensors=yes`** to its rules.ini entry (the `Sensors=` key sets `IsScanner`, techno.cpp:7837). One line, no code.
+- **All vessels** — already `IsScanner=true` (forced in the `VesselTypeClass` ctor).
+- **Radar Jammer (MRJ)** — a vehicle; **add `Sensors=yes`** to its rules.ini entry (the `Sensors=` key sets `IsScanner` in `TechnoTypeClass::Read_INI`). One line, no code.
 
 ---
 
@@ -52,19 +52,20 @@ frame from `LogicClass::AI`.
   missing line `IsCloakable = Class->IsCloakable;` in the `BuildingClass` ctor (already added in the
   WIP) makes a building drivable through the cloak system. **Keep it.**
 
-- **Detector flag = `IsScanner`.** `FootClass::Per_Cell_Process` (foot.cpp:1499-1515) shimmers a
+- **Detector flag = `IsScanner`.** `FootClass::Per_Cell_Process` shimmers a
   **cloaked object** when it arrives at a cell adjacent to an enemy techno whose type has
   `IsScanner`. **Direction matters:** vanilla only fires this from the *cloaked object's own move*.
   It does **nothing** for a stationary cloaked **building**, nor for an idle cloaked unit when a
   scanner walks up to *it*. Our field is mostly buildings + idle units, so we need the **reverse
   scan**: for each stealthed object, is any enemy `IsScanner` techno within reveal range → shimmer.
-  Same flag, added direction. `Sensors=` INI key → `IsScanner` (techno.cpp:7837).
+  Same flag, added direction. `Sensors=` INI key → `IsScanner` (`TechnoTypeClass::Read_INI`).
 
 - **Cloak state machine** (techno.cpp): `Cloak` ∈ {UNCLOAKED, CLOAKING, CLOAKED, UNCLOAKING}.
   - `Do_Cloak()` only acts if `IsCloakable && (Cloak==UNCLOAKED||UNCLOAKING)`; calls `Detach_All`.
   - `Do_Uncloak()` only acts if `IsCloakable && (Cloak==CLOAKED||CLOAKING)`.
   - `Cloaking_AI()` (called from each object's own AI) owns the transition + **auto-recloak** after
-    `CloakDelay` (`Rule.CloakDelay` minutes) once `Is_Ready_To_Cloak()`. It also fires
+    `CloakDelay` (`Rule.CloakDelay` minutes, read from `[General] SubmergeDelay` in
+    `RulesClass::General`; there is no `CloakDelay=` key) once `Is_Ready_To_Cloak()`. It also fires
     `Do_Cloak()` itself when idle.
   - **This is the key to the rewrite:** because we chose **no generic auto-reveal**, the driver must
     **NOT force `Do_Cloak` every frame**. Set `IsCloakable=true` and let `Cloaking_AI` cloak the
@@ -75,8 +76,8 @@ frame from `LogicClass::AI`.
     `IsCloakable`; (b) force-reveal (`Do_Shimmer`/`Do_Uncloak`) when a detector is in range or an
     armed building acquires a target.
 
-- **Owner vs enemy render** = `Visual_Character` (techno.cpp:5002). Settled `CLOAKED` returns
-  `VISUAL_SHADOWY` for the owner (line 5025) and `VISUAL_HIDDEN` for others. For the **warped
+- **Owner vs enemy render** = `TechnoClass::Visual_Character`. Settled `CLOAKED` returns
+  `VISUAL_SHADOWY` for the owner and `VISUAL_HIDDEN` for others. For the **warped
   owner look** (#7): return a distorted stage for owner-owned cloaked objects instead of the clean
   `VISUAL_SHADOWY` — candidates are `VISUAL_RIPPLE` or a **held mid-`UNCLOAKING` stage** (colour +
   distortion). Tune empirically via the screenshot loop; **this supersedes the old bug-#8 preference
@@ -99,7 +100,7 @@ frame from `LogicClass::AI`.
   such driver-cloaked object exists (don't one-shot via a single-frame latch), and if `Do_Uncloak`'s
   guard would miss, reset `Cloak=UNCLOAKED` + `CloakingDevice` stage directly.
 
-- **Built-in collision-shimmer** (`drive.cpp:2336`): a unit pathing *into* a cloaked cell shimmers
+- **Built-in collision-shimmer** (`DriveClass::Start_Of_Move` and `While_Moving`): a unit pathing *into* a cloaked cell shimmers
   it. Momentary, on-theme, harmless — NOT the detector reveal, and explains a screenshot where units
   "seemed to detect" the base by walking into it.
 
@@ -172,7 +173,7 @@ is still driver-cloaked, and `Process_Stealth_Generators` keeps the restore pass
 
 Removing the bib is harmful: a `TF_Sync_Bib` implementation that `Disown`ed the
 bib `SmudgeClass` was tried and **removed**: a bib smudge also blocks placement
-(`CellClass::Is_Clear_To_Build`, cell.cpp:494), so clearing it let the (blind) enemy build into a
+(`CellClass::Is_Clear_To_Build`), so clearing it let the (blind) enemy build into a
 cloaked base's bib strip. The correct mechanism already existed in the Remaster draw path
 (`dllinterface.cpp` `tf_hide_bib`, from the original commit `cd8bd17`): it **keeps the smudge**
 (placement stays blocked) and suppresses only the *draw* when the covering building is

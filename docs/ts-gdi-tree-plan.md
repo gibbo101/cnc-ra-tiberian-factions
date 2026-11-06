@@ -179,8 +179,9 @@ both the tower and the plug (`Refund_Amount`). Weapons
 under-door floor `TSWEAPUD` (TS's `UnderDoorAnim=GAWEAP_1`) draws over it. The near face, the whole
 hangar minus the opening at the idle phase (`TSWEAPNF`, or `TSWEAPNU` while unloading), stands in
 front of a vehicle in the bay, and the roll-up shutter `TSWEAPDR` (`DoorAnim=GAWEAP_D`,
-`DoorStages=9`, then the damaged run) draws over that. GTWEAP frames 0/1/2 are healthy / LIGHT /
-HEAVY, and `GTWEAP_D` frames 9-17 are magenta placeholders.
+`DoorStages=9`; the damaged run repeats the nine stages) draws over that. GTWEAP frames 0/1/2 are
+healthy / LIGHT / HEAVY, and `GTWEAP_D` frames 9-17 are TS's shadows of stages 0-8 (frame n +
+count/2), which decode as magenta silhouettes: TS ships no damaged door art.
 
 - **Exit seats** (`tsweap_exit_seats.inc`): on the door's centre line, `TSWEAP3_SEAT` for tracked
   and wheeled hulls (half a cell inside the threshold) and `TSWEAP3_SEAT_MECH` for walkers (deeper,
@@ -289,8 +290,11 @@ through 1.26 (neutral) to 1.70 (fully lit), from OpenTS `voxlib.cpp` and the shi
 old shading was 1.6-1.8x too dark. Team colour needs no extra lift in TS mode, and shaded RGB clips
 at 255. If units ever read too bright, the lever is one multiplier on `TS_VPL_SCALE`.
 
-**Shadows:** EA's throw is a fixed pixel distance, not a fraction of the sprite: `EA_DX = 2`,
-`EA_DY = 6`, alpha 191, for every unit (`scripts/ts_reshadow.py`). Never express it as a fraction:
+**Shadows:** EA's throw is a fixed pixel distance, not a fraction of the sprite: `EA_DX = 4`,
+`EA_DY = 22` canvas px (at 8 canvas px per classic px), alpha 191, Gaussian blur 3, for every unit
+(`scripts/ts_reshadow.py`). The script's docstring cites EA's Mammoths throwing about 4.8 classic px
+across and 3.8 down; that doesn't convert to (4, 22), so the constants in the script are authoritative.
+Never express it as a fraction:
 our TS sprites run to 301 px wide against RA's 228, and a fraction gave the Mk. II a 41 px overhang.
 The Hover MLRS keeps its own float.
 
@@ -434,9 +438,13 @@ A unit here is done: no open art, geometry or behaviour work.
 **TS art conventions:**
 - **Every TS anim SHP packs healthy frames then damaged frames** in its usable window; full-cycle
   exceptions exist (GTCNST_B's rotating light, NTREFN_B's plume), so check each.
-- **Base frames:** 0 healthy, 1 LIGHT, 2 HEAVY, 3-5 rubble. Frame 1 is never a free variant.
-- **Buildup SHPs carry empty and fragment frames past the real run,** which render as the purple
-  placeholder; the packer cuts them. Donor `Init_Anim` counts apply only when the building has no
+- **Base frames:** 0 healthy, 1 LIGHT, 2 HEAVY, 3-5 the shadows of 0-2. TS draws frame 1 below
+  the yellow health threshold, so frame 1 is the damaged look and never a free variant.
+- **The second half of a TS SHP is shadows:** OpenTS draws frame n's shadow from frame n + count/2
+  (`TechnoClass::Techno_Draw_Object`, called by `BuildingClass::Draw_It`; `AnimClass::Draw_It` for
+  the burning-infantry anim). Decoded as art they
+  are flat purple silhouettes; buildups carry one per stage (GTPOWRMK's 40 frames are 20 stages
+  and their shadows), and the packer cuts them. Donor `Init_Anim` counts apply only when the building has no
   MAKE stub of its own.
 - **The launcher maps the HD canvas onto the classic stub box centred on the BSIZE box centre;**
   stub height beyond the box splits into equal halos above and below, which is how apron and
@@ -512,9 +520,11 @@ A unit here is done: no open art, geometry or behaviour work.
   and below a quarter of flight level outside the destination cell. It flies along its turning
   facing except while firing or drifting onto its landing spot, and reserves the closest free
   landing spot in its cell, else in the nearest cell a soldier can stand in.
-- **`Good_Fire_Location`'s ring search starts a cell inside weapon range,** so it never runs for a
-  weapon under about 3 cells (the Orca Bomber's 1.5-cell bomb). Short weapons fly straight over
-  the target.
+- **`Good_Fire_Location`'s ring search starts a cell inside weapon range and stops at one cell,**
+  so for a weapon of 2 cells or less (the Orca Bomber's 1.5-cell bomb) it finds nothing, and stock
+  `Mission_Attack` sends the aircraft back to base. Only non-fixed-wing aircraft use it (fixed-wing
+  ones hunt instead). TF returns the target's own cell for any weapon under 3 cells, so short
+  weapons fire from above the target.
 - **RA's `::Distance()` is an approximation.** An arc flown on it landed about 290 leptons long
   (Juggernaut); ballistic shots use the true distance.
 - **TS barrel pitch 64 is level;** TS rests barrels level and raises them only while aiming.
@@ -529,8 +539,12 @@ A unit here is done: no open art, geometry or behaviour work.
 - **Decode TS cameos with `--no-remap`:** the house-colour remap turns palette 16-31 green.
 - **`ts_mk2_cooldown_cameos.py` rewrites its whole block** and wipes any hand-written entry inside
   it; keep hand entries outside.
-- **Firestorm assets are in `expand01.mix`:** SHPs in the inner `ECACHE01.MIX`, AUDs in
-  `SOUNDS01.MIX`, voxels at the top level.
+- **The Firestorm expansion's units are in `expand01.mix`:** voxels and build-up SHPs (`MWARMK`)
+  at the top level, other SHPs in the inner `ECACHE01.MIX` (the Mobile EMP's cameo `MEMPICON`
+  too), the Mobile War Factory's cameo in `E01SC01.MIX`, AUDs in `SOUNDS01.MIX`
+  (`scripts/ts_rebuild_art.sh`). The Firestorm Defense isn't: `GTFSDF`/`GTFIRE` are in
+  `TIBSUN.MIX`'s `TEMPERAT.MIX`, `FSIDLE` and the `FSPICON`/`FSDICON` cameos in `CONQUER.MIX`,
+  `FIRSTRM1` in `SOUNDS.MIX`.
 - **Railgun colours are TS's own:** the Ghost Stalker's `SmallRailgunSys` is orange (255,128,0), the
   Mk. II's `LargeRailgunSys` blue (25,20,255) (OpenTS `partsys.cpp` `Railgun_AI`), each drawn as one
   thin line in palette index 0x9F and 0x0A, under C&C3's railgun shot in the same colour

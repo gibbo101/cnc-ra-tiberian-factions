@@ -5,9 +5,9 @@ predate 5.0.0.
 **Fixed:** 1 (radar dome), 2 (naval), 4 (stuck harvesters), 5 (threat-aware ore), 6 (sticky
 refinery cache), 7 (`Greatest_Threat`), 10 (difficulty), 13 (repair bay and naval queues), 17's
 power-urgency test, fog cheats A-1 and A-2, the parabomb AI.
-**Open:** 3 (Iron Curtain and Chronosphere AI), 8 (Expert_AI stubs), 9 (`AI_Base_Defense`
-compiled out), 11 (`Computer_Paranoid` gated), 12 (threat map dead in skirmish), 14 (TeamType
-recruit gated), 15 (friendly fire on buildings only), 16 (enemy fixation), 17's `IsScanLimited`,
+**Open:** 3 (the AI never builds the Missile Silo, Iron Curtain or Chronosphere, and nothing
+fires the last two), 8 (Expert_AI stubs), 9 (`AI_Base_Defense` compiled out), 11 (`Computer_Paranoid` gated), 12 (threat map dead in skirmish), 14 (TeamType
+recruit gated), 15 (friendly fire on buildings only), 16 (enemy fixation),
 A-Cheat 3 (MCV deploy shoves own units), spy/thief/dog production.
 
 Every TD building is a first-class engine type with its own `Points=` (`td-building-separation-recipe.md`
@@ -42,8 +42,8 @@ below.
 
 ### Symptom
 Computer opponents skip the Radar Dome unless the human player builds an
-aircraft. No dome → tech center prereq fails → no Chronosphere, Iron Curtain,
-MSLO, GPS, MIG, Longbow.
+aircraft. No dome → tech center prereq fails → no GPS, MIG, Longbow. (The
+Chronosphere, Iron Curtain and MSLO aren't on its build list at all: Problem 3a.)
 
 ### Root cause
 In `HouseClass::AI_Building` (`house.cpp:5761`), `STRUCT_RADAR` is **only**
@@ -124,11 +124,12 @@ tech level and money.
 
 Compound problem with four sub-causes.
 
-### 3a — Downstream of Problem 1
-MSLO, Chronosphere, Iron Curtain, GPS all require the tech center → which
-requires the Radar Dome. Until Problem 1 is fixed, the AI literally cannot
-build any of these structures. **Fix Problem 1 first; this becomes mostly
-moot.**
+### 3a — The AI never queues the superweapon buildings
+Skirmish `AI_Building` has no entry for the Missile Silo, Iron Curtain or
+Chronosphere, so the AI never builds them whatever its tech. Only the GPS is
+downstream of Problem 1: it comes with the Allied tech center, which needs the
+Radar Dome, and the AI does queue the tech center. Fixing Problem 1 alone
+leaves the other three unbuilt.
 
 ### 3b — Half the supers have no AI fire dispatch
 In `HouseClass::Super_Weapon_Handler` (`house.cpp:1523`), only four supers
@@ -144,10 +145,10 @@ Sonar Pulse block (`1783-1807`) handle availability and removal but contain
 **no AI-fire call**. Even if the AI builds and charges these supers, nothing
 fires them.
 
-### 3c — Iron Curtain & Chronosphere targeting reads the mouse
+### 3c — Iron Curtain & Chronosphere pick the object by the mouse
 Even if you patched 3b in, the `Place_Special_Blast` cases at
 `house.cpp:2997-3030` (Iron Curtain) and `3032-3073` (Chronosphere) read
-`Keyboard->MouseQX` / `MouseQY` to pick targets:
+`Keyboard->MouseQX` / `MouseQY` to pick the object within the target cell:
 
 ```cpp
 // house.cpp:2999
@@ -159,12 +160,16 @@ case SPC_IRON_CURTAIN:
         ...
 ```
 
-For an AI fire there's no mouse — the AI would target whatever happens to be
-under the human's cursor, or nothing. These cases need an AI-aware code path
-that picks the unit/cell directly without consulting `Keyboard`.
+The cell comes from the caller; the mouse position only picks which object
+within that cell `Cell_Techno` returns. For an AI fire there's no mouse, so
+the pick within the cell follows the human's last cursor position. These cases
+need an AI-aware path that picks the object directly without consulting
+`Keyboard`, and a target choice of their own (the nuke's picker aims at enemy
+buildings).
 
-The nuke's AI target picker at `house.cpp:2787-2817` (random weighted by
-enemy building value, 90% chance) is the template the others should follow.
+`Special_Weapon_AI`'s target picker at `house.cpp:2787-2817` (shared by the
+nuke, spy plane and paratroopers: the enemy building of highest `Value`, each
+candidate considered with a 90% chance) is the template the others should follow.
 
 ### 3d — Parabomb gated to campaign
 `house.cpp:1918-1919` includes `&& Session.Type == GAME_NORMAL` on the enable
@@ -172,15 +177,16 @@ check. AI cannot acquire the parabomb super in skirmish at all, regardless of
 whether it has an airstrip. One-line fix.
 
 ### 3e — IQ floor (informational)
-All AI super-weapon acquisition checks include
-`(IsHuman || IQ >= Rule.IQSuperWeapons)`. Default is `IQSuperWeapons = 4`
+The GPS, Chronosphere, Iron Curtain and nuke acquisition checks include
+`(IsHuman || IQ >= Rule.IQSuperWeapons)`; the spy plane, paratroopers,
+parabombs and sonar pulse have no IQ gate. Default is `IQSuperWeapons = 4`
 (`rules.cpp:138`). `IQ` doesn't ramp: stock skirmish pins every AI house at
 `Rule.MaxIQ` from the start (EA `GlyphX_Assign_Houses`), so every IQ gate is open.
 TF sets it per AI from the lobby difficulty instead (`TF_AI_IQ_From_Difficulty`).
 Not a blocker but worth tuning for difficulty.
 
 ### Fix
-- 3a: fix Problem 1.
+- 3a: add the Missile Silo, Iron Curtain and Chronosphere to `AI_Building`'s list.
 - 3b: add `Special_Weapon_AI(SPC_IRON_CURTAIN)` and
   `Special_Weapon_AI(SPC_CHRONOSPHERE)` calls into their
   `Super_Weapon_Handler` blocks, mirroring the nuke pattern.
@@ -405,13 +411,13 @@ Pure DLL change.
 | INI key | Section | Default | Effect |
 |---|---|---|---|
 | `OreNearScan` | `[AI]` | 6 cells | Search radius when current patch depleted |
-| `OreFarScan` | `[AI]` | 32 cells | Search radius on initial search from refinery |
+| `OreFarScan` | `[AI]` | 48 cells | Search radius on initial search from refinery (the `RulesClass` ctor's fallback is 32) |
 | `BailCount` | `[General]` | 28 | Bails per full load |
-| `OreTruckRate` | `[General]` | 2 | Harvest/dump animation speed |
-| `GoldValue` | `[General]` | 35 | Credits per gold bail (also patch weight) |
-| `GemValue` | `[General]` | 110 | Credits per gem bail (×4 in patch weight) |
-| `IQHarvester` | `[IQ]` | (varies) | IQ floor for AI auto-replace harvesters |
-| `RefineryRatio` | `[AI]` | (varies) | AI refinery build ratio |
+| `OreTruckRate` | `[General]` | 1 | Harvest/dump speed; larger is slower |
+| `GoldValue` | `[General]` | 25 | Credits per gold bail (also patch weight; ctor fallback 35) |
+| `GemValue` | `[General]` | 50 | Credits per gem bail (×4 in patch weight; ctor fallback 110) |
+| `Harvester` (`IQHarvester`) | `[IQ]` | 2 | IQ floor for AI auto-replace harvesters |
+| `RefineryRatio` | `[AI]` | .16 | AI refinery build ratio |
 
 **No INI knob exists for**: threat-avoidance, latch reset, contention
 behaviour, or cache freshness. All harvester fixes are DLL changes.
@@ -943,16 +949,17 @@ later threats from other opponents even when the original enemy is much
 weaker.
 
 ### Root cause
-`Expert_AI` (`house.cpp:4965`) only re-picks `Enemy` if `Attack == 0`.
-`Attack` is reset every time the AI launches an attack
-(`Rule.AttackInterval * Random_Pick(...)` at line 5454), which is
-frequent — so `Attack == 0` rarely fires after game start. The clear
-condition at line 4955 (Enemy defeated / allied / vanished) handles
-total defeat but not "this other guy is now more dangerous."
+`Expert_AI` re-picks `Enemy` whenever the `Attack` timer reaches 0, before
+`AI_Attack` resets it (`Rule.AttackInterval * Random_Pick(...)`), so the
+enemy is re-picked every attack cycle. The pick scores each enemy house on
+the distance between base centres, in leptons and doubled, plus kills against
+this house, base-size difference and +100 for the last attacker; the distance
+term outweighs the rest by far, so the nearest base nearly always wins. The
+clear condition (Enemy defeated / allied / vanished) handles total defeat.
 
 ### Fix
-Pure DLL change. Drop the `Attack == 0` gate, or run an Enemy re-evaluation
-on a separate periodic timer.
+Pure DLL change. Reweight the pick so threat (kills, army size) can beat
+distance; the re-pick cadence is already every attack cycle.
 
 ---
 
@@ -963,9 +970,10 @@ These are small but worth fixing while in the area.
 - **Bitwise `|` instead of `&`** in power urgency check (`house.cpp:5255`):
   `if (BScan | (STRUCTF_CHRONOSPHERE))` is always true. Meant `&`. One-char
   fix.
-- **`IsScanLimited` is a dead flag** (`foot.cpp:2013, 2044`): read and
-  cleared, never set. The "constrain scan to weapon range" path is dead
-  code. Either implement the setter or remove the read.
+- **`IsScanLimited` is live:** `DriveClass::Start_Of_Move` sets it when a
+  unit has no path to a `TarCom` out of range, and `TeamClass::Scan_Limit`
+  sets it for the whole team. `Greatest_Threat` then scans weapon range only,
+  and clears the flag when that finds nothing.
 - **Sophisticated unused selection logic**: `Suggest_New_Object`
   (`house.cpp:3562`) and `Suggest_New_Building` (`house.cpp:4612`) are
   well-developed selection functions called only from legacy production
@@ -1056,11 +1064,11 @@ work on AI polish post-four-faction-core.
     adaptive refinery building when ore depletes.
 17. **Extend `Area_Modify` to scan allied units** (Problem 15) — ~15
     lines. AI artillery stops splashing its own troops.
-18. **Drop `Attack == 0` gate on Enemy re-evaluation** (Problem 16) — FFA
+18. **Reweight the Enemy pick toward threat over distance** (Problem 16) — FFA
     AIs adapt to current threats.
 19. **Add Iron Curtain + Chronosphere AI dispatch + rewrite their
-    `Place_Special_Blast` cases** (Problem 3b/c) — only meaningful after
-    Tier 1 #4 unlocks tech tree.
+    `Place_Special_Blast` cases** (Problem 3b/c) — only meaningful once
+    the AI builds those structures (Problem 3a).
 20. **Drop parabomb `GAME_NORMAL` gate** (Problem 3d) — one-line change.
 
 ## Tier 4 — Major rework (defer until everything above is done)
@@ -1146,11 +1154,11 @@ for (int index = 0; index < Buildings.Count(); index++) {
 }
 ```
 
-The loop iterates **every building on the map** with no `Is_Discovered_By_Player(this)` or `Map[..].Is_Mapped(this)` filter. The AI can nuke the most valuable enemy building it has never seen. A human player must scout the target first.
+The loop iterates **every building on the map** with no `Is_Discovered_By_Player(this)` or `Map[..].Is_Mapped(this)` filter. The AI aims at the most valuable enemy building whether or not it has seen it. A human player must scout the target first.
 
 Currently only fires for `SPC_NUCLEAR_BOMB`, `SPC_SPY_MISSION`, `SPC_PARA_BOMB`, `SPC_PARA_INFANTRY` (the four supers wired into `Super_Weapon_Handler` — see Problem 3b). Once Iron Curtain / Chronosphere dispatch is fixed (Problem 3b/c), this same fog-blind picker would extend to them.
 
-**Downstream of Problem 1** (AI rarely builds the tech to acquire nukes in the first place) — but the moment Problem 1 is fixed, this becomes a frequent, ugly experience. Fix: add a `Is_Discovered_By_Player(this) || Map[Coord_Cell(b->Center_Coord())].Is_Mapped(this)` gate inside the loop.
+**In practice the stock AI aims its spy plane and paratroopers with it** (both come with the airfield, which it builds); it never builds a Missile Silo (Problem 3a), and parabombs are enabled only in `GAME_NORMAL`. A mod that adds the silo to the AI's build list gets fog-blind nukes. Fix: add a `Is_Discovered_By_Player(this) || Map[Coord_Cell(b->Center_Coord())].Is_Mapped(this)` gate inside the loop.
 
 ### A-Cheat 3 — AI MCV deploy can shove its own units out of the way
 
@@ -1289,7 +1297,7 @@ Every deploy-mechanic unit (chrono tank, MAD tank, mine layer, demo truck for us
 
 ### Focus fire
 
-**No coordination.** `HouseClass::AI_Attack` (`house.cpp:5402-5455`) assigns `MISSION_HUNT` to every armed unit en masse. Each unit then independently calls `Target_Something_Nearby(THREAT_NORMAL)` → `Greatest_Threat` → picks the closest legal target. Two AI tanks side-by-side often pick different targets simply because their position differs by a cell.
+**No coordination.** `HouseClass::AI_Attack` attacks on one call in three (and on every call once it has no buildings left after the first minute): each armed unit and aircraft, plus engineers, gets `MISSION_HUNT` with a 75% chance (all of them when it has no buildings). The other two calls in three are guard shuffles, not attacks. Each unit then independently calls `Target_Something_Nearby(THREAT_NORMAL)` → `Greatest_Threat` → picks the closest legal target. Two AI tanks side-by-side often pick different targets simply because their position differs by a cell.
 
 **Greatest_Threat `bestval` bug** (Problem 7) compounds this — the AI's target picks are already arbitrary; adding coordination on top of broken picks would be premature.
 
@@ -1319,7 +1327,7 @@ Every deploy-mechanic unit (chrono tank, MAD tank, mine layer, demo truck for us
 
 ### Reinforcement / regrouping
 
-**No regrouping logic.** `AI_Attack` shuffles guards 20% of the time (`house.cpp:5430-5432`) but otherwise the rule is "everyone goes hunt." There's no "wait for N tanks before attacking" or "fall back if outnumbered" path.
+**No regrouping logic.** Two `AI_Attack` calls in three only shuffle guards (each guard-area unit in a zone has a 20% chance to be sent to another zone); the third is "everyone armed goes hunt." There's no "wait for N tanks before attacking" or "fall back if outnumbered" path.
 
 The `Attack` timer (`house.cpp:5454`, `Rule.AttackInterval * Random_Pick`) controls the *interval* between waves, not the *composition* — so an AI with one tank and an AI with twelve tanks both attack on the same cadence. Piecemeal pressure rather than waves.
 
@@ -1350,8 +1358,8 @@ Inserting into the existing Tier 1:
     fix in this entire document after Problem 7's `bestval` bug.
 12. **Add fog-of-war filter to `Special_Weapon_AI`** (A-Cheat 2) — ~3-line
     addition inside the `Buildings` loop at `house.cpp:2798-2811`. Stops
-    AI nuking buildings it has never scouted. Composes with Problem 1
-    (without which the AI rarely has nukes anyway).
+    the AI's spy plane and paratroopers (and any nuke a mod lets it build)
+    aiming at buildings it has never scouted.
 13. **Add `INFANTRY_SPY` / `INFANTRY_THIEF` / `INFANTRY_DOG` to
     `AI_Infantry` picker** (Topic B — Spy, Thief, Dog) — ~12 lines
     inserting three `case` entries at `house.cpp:6549`. Tiny effort,

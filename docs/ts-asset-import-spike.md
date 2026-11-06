@@ -45,8 +45,10 @@ hook (playbook §3.21) — TS Strength values are real HP.
    CCW** (verified against vanilla 2TNK HD frames: 0=N, 8=W).
 3. **Decode TS SHPs** — `scripts/ts_shp.py <shp> <pal> <outdir>` (TS-SHP format,
    RLE-zero scanlines, remap 16–31 → team-green). GTPOWR frames: 0=healthy,
-   2=damaged; 3–5 are palette-anim overlays (unused). GTPOWRMK: frames 0–19 real
-   buildup, 20–39 magenta anim overlays (unused).
+   1=damaged (TS draws it below the yellow health threshold), 2=more wrecked; 3–5 are
+   TS's shadow half (OpenTS draws frame n's shadow from frame n + count/2), which
+   decode as magenta silhouettes (unused). GTPOWRMK: frames 0–19 real buildup, 20–39
+   their shadows (unused).
 4. **Package** — `scripts/ts_pack_art.py` (set `TS_RENDER_DIR` to the render dir):
    TSHVR.ZIP (64 frames: body 0–31 + turret 32–63, 192px canvas, hull ≈140px,
    turret center-aligned to body canvas — model-space origins line up), TSPOWR.ZIP
@@ -120,8 +122,8 @@ RA now has a real amphibious hover locomotor, and TSHVR uses it (`Hover=yes`):
 4. **Audio:** the launcher resolves novel sample names from loose files; the rule is format, an
    MS-ADPCM WAV matching the channel's shape (`launcher-render-contracts.md`). A plain PCM WAV
    plays a few times, then crashes ClientG's mixer. XML comments must not contain `--`.
-5. **Unit drop shadows = the hull silhouette offset down-right** by a fixed 2,6 px
-   (`scripts/ts_reshadow.py`), never a fraction of the sprite, and never a squashed strip at
+5. **Unit drop shadows = the hull silhouette offset down-right** by a fixed 4,22 canvas px
+   (8 per classic px, `scripts/ts_reshadow.py`), never a fraction of the sprite, and never a squashed strip at
    the bbox bottom, which detaches on diagonal facings. Rocket origin: `Fire_Coord` gets the same aft-along-body
    offset as the draw seat (draw-side `Turret_Adjust` is cosmetic only).
 

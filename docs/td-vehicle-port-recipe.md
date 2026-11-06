@@ -209,8 +209,10 @@ play `VOC_CLOAK` = file **`TRANS1`**. To use TD's sound for TD units without dis
 base `TDC/TDR_SFX_TRANS1.WAV` (`SFXEVENTSNONLOCALIZED.XML`, BAZOOK1 pattern, no WAV bundling), and in
 `Do_Cloak`/`Do_Uncloak` branch on the **`TD` IniName prefix** → `VOC_TD_CLOAK` else the stock RA sound.
 
-**(e) Other STANK specifics.** Turret-less (all-zero weapon offsets, like the Bike); **invisible-to-radar**
-(ctor param `true` — doesn't show on the minimap); `ANIM_TDFRAG2` death; `Prerequisite=weap,dome` (Nod
+**(e) Other STANK specifics.** Turret-less (all-zero weapon offsets, like the Bike); the ctor's
+invisible-to-radar param is `true`, as in TD, but it changes nothing: the `is_stealthy` field
+(`ObjectTypeClass::IsStealthy`) is set and never read in either game's source. Whether the launcher's minimap
+shows a cloaked or `Invisible=` unit to an enemy is untested. `ANIM_TDFRAG2` death; `Prerequisite=weap,dome` (Nod
 airstrip + radar, matching TD's `STRUCTF_RADAR`); Speed 12 (`MPH_MEDIUM_FAST`, = Hum-vee/Buggy — TD-authentic, kept).
 
 **Compile traps hit:** `TXT_STANK` doesn't exist in RA → use the `TXT_LTANK` placeholder (real name from

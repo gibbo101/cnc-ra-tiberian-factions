@@ -198,7 +198,8 @@ player-facing surface nobody has used.
   arrays are not the launcher's wall: InstanceServerG copies them, and the `megamaps-spike` branch
   patches that copy to reach 253x253 (`megamaps-feasibility.md`).
 - **`CNCTDMaxPlayers` = 6** — "more than 6 players in skirmish/LAN for TD if a modded DLL supports
-  it". TD-only; RA already runs 8 (`CNCAllow8PlayersDefault`).
+  it". TD-only. RA's 8 players is a separate setting among the lobby defaults,
+  `CNCAllow8PlayersDefault`, and its stock value is false.
 - **`AISKIRMISHPERSONALITIES.XML`** defines one personality (`Balanced`) pointing at a CLIPS
   expert-system file (`BalancedPersonality.clp`) that is not in the archive. Petroglyph's generic
   AI, not C&C's — our DLL is the AI. Not a lever.

@@ -519,7 +519,8 @@ Research complete (agent report, §7). Two routes for staging-then-blob:
   (infantry.cpp:2659).
 - **AI Boost borrowings:** scatter-on-launch (unsticks waves), defence-gated send-percentage,
   target-variety rolls, special-unit handling in waves (medics guard, spies always go).
-- **Enemy re-evaluation** (P16, house.cpp:5472) so the brain retargets.
+- **Enemy re-pick weighting** (P16): the enemy is already re-picked every attack cycle, but
+  distance outweighs threat, so the brain rarely retargets.
 - Decision point: spike Route A first; fall back to B if campaign TeamTypes misbehave in
   skirmish soak.
 
@@ -600,8 +601,8 @@ Research complete (agent report, §7). Two routes for staging-then-blob:
      deploy, wait for a full game exit with `pgrep 'InstanceServerG[.]exe'` (a bare
      `pgrep -f InstanceServer` matches itself). Restarting a match does not end InstanceServerG.
 3. **Superweapons for RA factions:** Iron Curtain + Chronosphere AI dispatch + AI-aware
-   targeting (P3b/3c — currently reads the mouse; AI Boost has working IC/Chrono usage as
-   reference). Parabombs go to any house with an active real airfield (`STRUCT_AIRSTRIP`).
+   targeting (P3b/3c — the object in the target cell is currently picked by the mouse; AI Boost
+   has working IC/Chrono usage as reference). Parabombs go to any house with an active real airfield (`STRUCT_AIRSTRIP`).
    - **AI builds the Missile Silo (RA nuke host):** the firing path already exists and is
      fair-fog-aware (`Special_Weapon_AI(SPC_NUCLEAR_BOMB)`, gated on active MSLO +
      IQ >= Rule.IQSuperWeapons) — the AI just never queues the host, exactly the TDTMPL

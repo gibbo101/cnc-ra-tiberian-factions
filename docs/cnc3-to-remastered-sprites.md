@@ -388,8 +388,8 @@ rather than using Blender: you need exact control of camera, light and colour.
   <Shape>N</Shape></Key>`, frame `c3mk3\c3mk3-NNNN.tga`). Adding frames later does not add
   their tiles; missing tiles draw as white boxes.
 - **Shadow:** ground units get no engine shadow. Bake EA's: every pixel with any alpha
-  becomes a black silhouette at alpha 191, offset (2, 6) packed px (right, down), composited
-  under the frame. Turret frames get none. Leave that margin inside the canvas.
+  becomes a black silhouette at alpha 191, offset (4, 22) packed px (right, down), blurred by 3 and
+  composited under the frame (`ts_reshadow.py`'s `drop_shadow`, which `c3_pack_tanks.py` calls). Turret frames get none. Leave that margin inside the canvas.
 - **Cameo:** `ART/TEXTURES/SRGB/BuildIcon_<NAME>.tga`, 341x256 and **fully opaque** (noise
   shows through transparent pixels): composite the portrait onto opaque black. C&C3
   portraits are square: crop the centre 4:3 band, then resize.
