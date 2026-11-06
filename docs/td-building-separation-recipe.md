@@ -55,7 +55,7 @@ STRUCT_TDOBLI,
 STRUCT_TD<NEW>,   // <-- new entry, before STRUCT_COUNT
 ```
 
-Enum order must match the order in `Init_Heap()` (step 3) because the heap-allocation block index doubles as the type number.
+Keep the enum and `Init_Heap()` (step 3) in the same order: see the field manual's [Adding a unit](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/adding-a-unit.md#2-registration-keep-heap-order-and-enum-order-the-same), section 2.
 
 ### Step 2 — Define the static `Class<Name>` BuildingTypeClass instance
 
@@ -108,13 +108,7 @@ Refer to `tiberiandawn/bdata.cpp:3782-3805` (the TD `_anims[]` table) for author
 
 ### Step 5 — Audio (sounds tied to weapons or anim states)
 
-Per `docs/td-audio-routing-recipe.md`. For each new sound:
-1. Add `VOC_TD_*` enum to `redalert/defines.h` (before `VOC_COUNT`).
-2. Add `SoundEffectName[]` entry in `redalert/audio.cpp` with the TD asset's bare name.
-3. Ship no WAV: TD's `TDC_`/`TDR_` samples play from the base game's `SFX3D.MEG`.
-4. Only if the routed sound stays silent, extract them via `scripts/meg_extract.py` and ship them unchanged in `resources/.../Data/AUDIO/` (`td-audio-routing-recipe.md`).
-5. Append `<SFXEvent Name="RAC_SFX_X">` and `<SFXEvent Name="RAR_SFX_X">` alias entries to the merged `Vanilla_RA/Data/XML/AUDIO/SFXEVENTSNONLOCALIZED.XML`.
-6. Reference in rules.ini via `Report=X` on the weapon section.
+See the field manual's [TD sounds from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-sounds-from-the-base-game.md#the-method), The method. TF names them `VOC_TD_*` (`redalert/defines.h`, `SoundEffectName[]` in `redalert/audio.cpp`), and its merged file is `Vanilla_RA/Data/XML/AUDIO/SFXEVENTSNONLOCALIZED.XML`. If a routed sound stays silent, extract its samples with `scripts/meg_extract.py` and ship them in `resources/.../Data/AUDIO/` (`td-audio-routing-recipe.md`).
 
 For sounds tied to BSTATE transitions (e.g. OBELPOWR on charge-start): hook the `Sound_Effect` call in the appropriate engine path. TDOBLI uses `BuildingClass::Charging_AI` at building.cpp:6131 with a per-Type branch. Future: a per-weapon `ChargeSound=` field on `WeaponTypeClass` would eliminate the type check.
 
@@ -193,7 +187,7 @@ Full game restart on the Deck (DLL has new enum value → new save format).
 
 1. **`ImageData` / `BuildupData` must be non-NULL**: `BuildingClass::Draw_It` returns at once on a NULL `Get_Image_Data()`, so the building is invisible. Shipping an SHP via TFASSETS.MIX (step 7), a stub SHP, or a `_td_bdonors` donor in `bdata.cpp` populates them.
 
-2. **`_anims[]` overrides apply AFTER rules.ini parsing.** If rules.ini has `ActiveAnimStart=0 Count=4 Rate=15` and `_anims[]` has different values for the same `{Type, Stage}`, the `_anims[]` table wins (it runs in `One_Time()` after `Rule.Process()`).
+2. **`_anims[]` overrides apply AFTER rules.ini parsing.** See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#build-ups-overlays-and-loading-order), Build-ups, overlays and loading order.
 
 3. **Charges=yes on the weapon** wires the wielder into `BuildingClass::Charging_AI` (`building.cpp:6094`). This is the engine's "wind up then fire" state machine — same one Tesla Coil uses. Not a shortcut; it's the authentic mechanism (TD's source has the same `IsCharging/IsCharged` fields in `tiberiandawn/building.h:115-116` and resets them at `tiberiandawn/building.cpp:852-857` in the BULLET_LASER case).
 
@@ -203,19 +197,19 @@ Full game restart on the Deck (DLL has new enum value → new save format).
 
 6. **TD drives `IsCharging/IsCharged` from its own Obelisk block in `BuildingClass::AI`** (`tiberiandawn/building.cpp`, "Obelisk charging logic"): with a legal target and full power it charges at `OBELISK_ANIMATION_RATE` until stage 4, and resets when either is lost. TD has no separate `Charging_AI`; RA's `Charging_AI` drives the same flags for the Tesla Coil. Which one TF's Obelisk runs is in `td-obli-verification.md`.
 
-7. **Classic mode is unsupported and locked out** by `CNCDisableLegacyGraphicsOption` in `Data/XML/GameConstants_Mod.xml`; no classic art is ever drawn, but a new building still needs a non-NULL `ImageData` (gotcha 1; `launcher-vs-dll-ownership.md`).
+7. **Classic mode is locked out.** TF is HD-only (gotcha 1 for why the classic SHP still ships). See the field manual's [HD-only mods](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/hd-only-mods.md#the-switch), The switch.
 
-8. **Save format**: new STRUCT_TDxxxx enum values change `sizeof(BuildingTypeClass)` array indices. Mid-campaign saves from a previous build will not load. We're not shipping campaigns yet so blast radius is skirmish-only, but worth flagging for any future campaign work.
+8. **Save format:** new STRUCT_TDxxxx types change the save version. See the field manual's [Save versions](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/save-versions.md).
 
-9. **IniName collisions break an entry silently.** An IniName matching a vanilla building (HPAD, GUN, SAM, AFLD, WEAP, FIX, PROC, SILO, FACT) shares its rules.ini section with it. INI sections share one namespace across all object kinds: `NUKE` is a vanilla warhead, so a building named NUKE reads the warhead's fields and never builds. Prefix every TD IniName with `TD`; `Image=` and the ZIPs keep TD's own names.
-10. **The damaged shape is derived from the animation count.** At `ConditionYellow`, `Shape_Number()` shifts by the largest `Start + Count` across IDLE/ACTIVE/AUX1/AUX2: shape 1 for a static building, shape N for an N-frame idle. Lay frames out 0..N-1 healthy, N..2N-1 damaged.
-11. **`Points=` is mandatory, or the AI ignores the building.** `Read_INI` sets Risk = Reward = Points; without it `TechnoClass::Value()` is 0 and `Evaluate_Object` rejects the building, so enemies walk past it and the AI never targets it. Use TD's RISK/RWRD value (`catalogue.md`'s flag table).
+9. **IniName collisions break an entry silently.** An IniName matching a vanilla building (HPAD, GUN, SAM, AFLD, WEAP, FIX, PROC, SILO, FACT) shares its rules.ini section with it. Prefix every TD IniName with `TD`. See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#give-each-port-its-own-type), Give each port its own type ("The INI name shares one namespace").
+10. **The damaged shape is derived from the animation count.** See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#the-flags-that-decide-the-frames), The flags that decide the frames.
+11. **`Points=` is mandatory, or the AI ignores the building.** See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#placement-and-the-ai), Placement and the AI. TF's values: `catalogue.md`'s Points column.
 12. **A MAKE tileset's shape 0 must be `<Frame />`.** TD's MAKE ZIPs start at frame 0001; pointing shape 0 at a missing 0000 flashes the missing-asset placeholder for a frame on placement.
-13. **The launcher picks the ZIP from the frame path's first segment,** not the tileset `<Name>`: `<Frame>tdpyle\tdpyle-0000.tga</Frame>` opens `TDPYLE.ZIP` and looks for `tdpyle-0000.tga` inside. The ZIP name, the first segment and the internal filenames must all match.
+13. **The launcher picks the ZIP from the frame path's first segment.** See the field manual's [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#the-pieces-by-example), The pieces, by example.
 14. **`Owner=` needs `GoodGuy` / `BadGuy` explicitly.** HOUSE_GOOD and HOUSE_BAD are detached from `HOUSEF_ALLIES` / `HOUSEF_SOVIET`, so `Owner=allies` grants GDI nothing.
-15. **`aftrmath.ini` overrides `rules.ini`,** field by field, `Owner=` included; patch both (E3 once stayed unbuildable for GDI because aftrmath.ini's `[E3] Owner=allies` won).
+15. **`aftrmath.ini` overrides `rules.ini`;** patch both (E3 once stayed unbuildable for GDI because aftrmath.ini's `[E3] Owner=allies` won). See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#build-ups-overlays-and-loading-order), Build-ups, overlays and loading order.
 16. **`ShapeSize=` must match the footprint at 24 px a cell:** 1x1 `24,24`, 2x1 `48,24`, 1x2 `24,48`, 2x2 `48,48`, 3x2 `72,48`, 3x3 `72,72`, 4x2 `96,48`. The wrong ratio stretches the sprite into the wrong box (TDFACT shipped as `72,72` on a 3x2 and bulged off its pad). Count the cells in the `List**` array.
-17. **RA's `Track13` is overridden to pure south** (`drive.cpp`, the `#if (1)` block), against `TrackControl`'s declared `DIR_SW` final facing. TD-style vehicle factories exit on `Track14` (the SW variant, `OUT_OF_WEAPON_FACTORY_TD`), forced from `BuildingClass::Mission_Unload` with the destination at `Adjacent_Cell(Center_Coord(), FACING_SW)` so the track starts exactly at the spawn; a follow-up `Assign_Destination` keeps the unit moving after the track ends. `Exit_Object`'s `STRUCT_WEAP` case (spawn at `Exit_Coord()`, `RADIO_TETHER`, the building on `MISSION_UNLOAD`) is the model for any new vehicle factory.
+17. **RA's `Track13` drives pure south.** See the field manual's [Units leaving buildings: exits and rails](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/exits-and-rails.md#how-red-alert-does-it), How Red Alert does it. TD-style vehicle factories exit on `Track14` (the SW variant, `OUT_OF_WEAPON_FACTORY_TD`), forced from `BuildingClass::Mission_Unload` with the destination at `Adjacent_Cell(Center_Coord(), FACING_SW)` so the track starts exactly at the spawn; a follow-up `Assign_Destination` keeps the unit moving after the track ends.
 18. **Separating a shared RA production building:** never owner-open the RA one (`naval-and-air-units.md`). Copy its art into `TD*`-named files (`scripts/bundle_ra_building.py`), never share frames. The engine hardcodes `STRUCT_SHIP_YARD` / `SUB_PEN` / `AIRSTRIP` in about 30 sites (vessel exit, dock, repair, fixed-wing landing, the `STRUCTF_AIRSTRIP` BScan flag); add the new type to each that applies (`TDAFLD` is the airstrip precedent). Units keep the RA prerequisite token (`syrd`, `spen`, `afld`) plus a `Can_Build` equivalence, because `BuildingTypeClass::From_Name` resolves only below `STRUCT_COUNT`, so a `tdgyard` token silently fails.
 19. **`Occupy_List` must match the `BSIZE_*`.** It feeds the launcher's ghost placement grid,
     `Legal_Placement` and the placement proximity check. The placement preview also draws the bib

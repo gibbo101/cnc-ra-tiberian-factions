@@ -37,8 +37,8 @@ A Tiberian Dawn item's terrain ships as loose files, one folder per ZIP: TD's te
 | RA2-Graphics-Pack, RA2-SFX-Pack, RA2-Voices-eng | RA2 tanks, their weapon and engine sounds, their crews |
 | CNC3-Graphics-Pack, CNC3-SFX-Pack, CNC3-Voices-eng | C&C3 tanks, their weapon takes, their crews |
 
-The launcher never loads a pack's XML files: its tileset list (`TILESETS.XML` in CONFIG.MEG) names
-only the `RA_` files. A pack's XML files are what a modder copies, and what the build merges.
+A pack's XML files are never loaded; the build merges them into the mod's. See the field manual's
+[Asset packs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/structuring/asset-packs.md#a-packs-xml-is-never-loaded).
 
 ## What belongs where
 
@@ -63,10 +63,9 @@ only the `RA_` files. A pack's XML files are what a modder copies, and what the 
 - **Pack scripts** take every output and input path from `asset_packs` by name (`art_zip`,
   `tileset_xml`, `cameo_tga`, `buildables_xml`, `sound_wav`, `sfx_xml`). A new TS unit's art lands
   in TS-HD-Graphics-Pack with no other change; a new TS Nod object needs its name in `TS_NOD`.
-- **One copy of each frame:** in an object tileset (structures, units, effects), a shape whose image
-  matches an earlier one in its ZIP names that one in the tileset XML, and the copy leaves the ZIP.
-  TERRAIN tiles (bibs, smudges) stay one file per shape: the launcher draws a cell only from the frame
-  its own shape names, and shows its placeholder for a shared one. Run `scripts/dedupe_tileset_frames.py` after any
+- **One copy of each frame** in object tilesets; terrain tiles (bibs, smudges) keep one file per shape. See
+  the field manual's [Asset packs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/structuring/asset-packs.md#keeping-packs-small),
+  keeping packs small. Run `scripts/dedupe_tileset_frames.py` after any
   packer that writes a ZIP; the packager refuses a build that still holds duplicates.
 - **Shared copies:** a type whose ZIP copies another's (the tower plugs, the faction yards, gates and
   MCVs) keeps its own ZIP in the source tree, so a reskin touches one type. Staging draws its frames
@@ -100,8 +99,9 @@ The mod keeps only their XML entries; their art and audio ship in the item.
 - **Build and deploy:** staging builds each required item whole in the folder beside the mod
   (`build/remaster/TS-HD-Assets`), and `deploy.sh` mirrors both folders. `deploy.sh --mod-only` mirrors the mod
   alone, for testing the item subscribed from the Workshop.
-- **Detection:** the item carries `CCDATA/TSHDPACK.INI` with its version. The DLL reads it from each enabled mod's
-  CCDATA path (`tf_asset_pack.cpp`): without it, a TS GDI pick plays another side and crates skip TS units. The
+- **Detection:** the item carries `CCDATA/TSHDPACK.INI` with its version, found as the field manual's
+  [Asset packs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/structuring/asset-packs.md#telling-whether-a-pack-is-on)
+  describes (`tf_asset_pack.cpp`): without it, a TS GDI pick plays another side and crates skip TS units. The
   launcher finds the marker in its mod list for the main menu's add-ons notice and the lobby popup
   (`pack-panel.md`), and saves record whether the pack was on.
 - **TS Nod:** TS-Nod-Graphics-Pack holds TS Nod's HD art (`asset_packs.TS_NOD`). It is in no Workshop item yet:

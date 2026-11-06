@@ -16,19 +16,17 @@ scenes from `scripts/factions_build.py`, both built into the mod's `Data/CONFIG.
 ## The three levers
 
 ### 1. Picker ICON — `FACTIONS.XML` → `SmallIconName`
-Each faction's emblem is `EncyclopediaComponent/DefaultIcons/SmallIconName` = `UI_Multiplayer_PlayerSlot_Faction_NN.tga`. **Repoint** it to a *different* region.
-
-⚠️ **You may only point at a region the front-end PRELOADS.** That set is exactly the player-slot icons:
-- `_00` = GDI eagle, `_01` = Nod cobra, `_03`–`_10` = the 8 RA country flags. (`_02` doesn't exist.)
-- Pointing at **anything else** (`UI_SIDEBAR_FACTIONLOGO_*`, `RA_UI_MULTIPLAYER_*_LOGO`) → **hard crash at launcher startup.** Confirmed repeatedly.
-
-So CONFIG.MEG alone can only **re-use the existing emblems and flags**. Custom pixels come from repainting those preloaded regions in the loose atlas (`ui-atlas-modding.md`), which is how every picker row gets its crest.
+Each faction's emblem is `EncyclopediaComponent/DefaultIcons/SmallIconName`. It may point only at the preloaded
+player-slot icons, and their pixels are repainted in the loose atlas (`ui-atlas-modding.md`): see the field manual's
+[Adding a faction](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/adding-a-faction.md#the-launchers-data-for-the-row), The launcher's data for the row and Traps, and [The UI atlas](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/the-ui-atlas.md#pick-the-right-region), Pick the right region.
+TF crashed the launcher at startup pointing it at `UI_SIDEBAR_FACTIONLOGO_*` and `RA_UI_MULTIPLAYER_*_LOGO`.
 
 **Faction# → country → icon:** F1=GDI(`_00`), F2=Nod(`_01`), F3=Spain(`_03`), F4=Greece(`_04`), F5=USSR(`_05`), F6=UK(`_06`), F7=Ukraine(`_07`), F8=Germany(`_08`), F9=France(`_09`), F10=Turkey(`_10`).
 
 ### 2. Picker NAME + bonus-OVERLAY — `MASTERTEXTFILE_<lang>.LOC`
-The **visible overlay** when you hover/select a faction is the bonus string **`TEXT_FACTION_BONUS_<COUNTRY>`** (e.g. `..._SPAIN` = "Spain: 10% more armor, damage, and speed for infantry"). Collapse it to just the faction name to get "no bonus, just GDI".
-The faction display name is **`TEXT_FACTION_NAME_FACTION_NN`**, and the **in-game (in-match) sidebar** name is a *third* string — **`TEXT_FACTION_REDALERT_<COUNTRY>`**. Relabel all three to cover lobby-name + lobby-overlay + in-match sidebar. (PROVEN: the in-game sidebar read "Spain" until `REDALERT_SPAIN` was edited → "GDI"; the lobby uses `BONUS_`/`NAME_`, the in-match sidebar uses `REDALERT_`.)
+The three strings (lobby name, hover/select overlay, in-match name) are on the field manual's
+[Adding a faction](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/adding-a-faction.md#the-launchers-data-for-the-row), The launcher's data for the row. TF collapses each bonus overlay
+(`..._SPAIN` = "Spain: 10% more armor, damage, and speed for infantry") to just the faction name.
 
 Country→keys: SPAIN/GREECE/RUSSIA(=USSR)/TURKEY/ENGLAND/GERMANY/FRANCE/UKRAINE for `_BONUS_`; `_NAME_FACTION_3/4/5/6/7/8/9/10` for the names.
 
@@ -45,26 +43,15 @@ Per-language: there's a `MASTERTEXTFILE_<lang>.LOC` per language (EN-US, FR-FR, 
 
 ---
 
-## `MASTERTEXTFILE_<lang>.LOC` format (so we never re-RE it)
-```
-[u32 count]
-[count × 12-byte records]   record = [keyHash:u32][valLen:u32 (chars)][keyLen:u32 (bytes)]
-[value-blob]                UTF-16LE values, concatenated in record order, addressed by cumulative valLen
-[key-blob]                  ASCII keys,  concatenated in record order, addressed by cumulative keyLen
-```
-- No absolute offsets anywhere — everything is length-addressed (cumulative). Records are sorted ascending by `keyHash`.
-- Value-blob starts at `4 + 12*count`; key-blob right after the values; file ends exactly at end of key-blob.
-- **Same-length edit = overwrite value bytes in place** (keeps every offset valid): `scripts/loc_edit.py`. A byte-neutral regrow: `scripts/loc_relabel.py`.
+## `MASTERTEXTFILE_<lang>.LOC` format
+
+See the field manual's [New text strings](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/new-text-strings.md#relabel-strings-the-loc-table-at-its-exact-size), Relabel strings. `scripts/loc_edit.py` overwrites values in place;
+`scripts/loc_relabel.py` does the byte-neutral regrow.
 
 ## Crash log — what NOT to do
-| Action | Result |
-|---|---|
-| `SmallIconName` → a non-preloaded region (FACTIONLOGO / MP-LOGO) | startup crash |
-| `.LOC` rebuild inside `CONFIG.MEG` that CHANGES THE FILE SIZE | startup crash (the MEG same-size rule) |
-| `.LOC` **same-length** in-place edit | ✅ safe |
-| `.LOC` table rewrite, file size unchanged (a string grows, another gives bytes back) | ✅ safe, proven 2026-07-21 |
-| `FACTIONS.XML` `CampaignType` change | startup crash (genuine-faction route) |
-| loose `Data/ART/TEXTURES` override for the front-end | ✅ renders (atlas and standalone DDS, `ui-atlas-modding.md`) |
+
+The crashes (a non-preloaded `SmallIconName`, a resized `.LOC` inside `CONFIG.MEG`, a changed `CampaignType`) and
+the safe edits are on the field manual's [Adding a faction](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/adding-a-faction.md#traps), Traps, and [New text strings](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/new-text-strings.md#relabel-strings-the-loc-table-at-its-exact-size), Relabel strings.
 
 ## Picker layout: one crest per row, launcher order
 
@@ -100,11 +87,9 @@ in memory changed the lobby row and nothing on the loading screen.
 
 ## TD HUD scene per faction: the sidebar is data
 
-Every `FACTIONS.XML` entry carries two tactical scene lists: `TopLevelGUIList` naming TD's
-`Art/GUI/Tactical_UI.bui` and `TopLevelGUIListAlt` naming `Art/GUI/RA_Tactical_UI.bui`. The RA
-launcher reads the alternate list, so **swapping the two scene names inside the GDI, Nod and TS GDI
-entries** (`factions_build.py`, `TD_HUD`; same bytes, exchanged) makes those factions load TD's
-whole HUD scene: the wide sell/repair/map bar, TD's pip power meter, TD tab icons, green credits,
+The swap is on the field manual's [Adding a faction](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/adding-a-faction.md#the-launchers-data-for-the-row), The launcher's data for the row.
+`factions_build.py` (`TD_HUD`) swaps the two scene names inside the GDI, Nod and TS GDI entries, so those factions
+load TD's whole HUD scene: the wide sell/repair/map bar, TD's pip power meter, TD tab icons, green credits,
 no side label. Allies and Soviets keep RA's scene.
 
 Two consequences:
@@ -127,53 +112,23 @@ Two consequences:
 
 ## ⛔ Adding records to the `.LOC` crashes ClientG at boot
 
-The `.LOC` format is now fully reverse-engineered (`scripts/loc_edit.py`):
-`u32 count` → `count × [crc32(key):u32 sorted][valLen:u32 chars][keyLen:u32 bytes]`
-→ all values (UTF-16LE, record order) → all keys (ASCII, record order). No offsets/terminators;
-hash = `zlib.crc32(key)`. Serializer round-trips the base file **byte-identical**.
-
-**Spike result: adding records (resizing the .LOC) HARD-CRASHES the launcher at boot.** Added 6
-strings (count 6852→6858, +755 bytes), repacked, deployed → `ClientG.exe` `EXCEPTION_ACCESS_VIOLATION`
-@ `0x0056A539` (`AppData/Roaming/CnCRemastered/_Except_404.txt` + `.dmp`). **Ruled out a repacker bug:**
-diffed the resized MEG vs base — 3973/3974 files byte-identical, only the `.LOC` changed, no region
-overlap, no companion index file exists. The cause is the MEG rule, not the `.LOC` format: every member of
-a replacement `CONFIG.MEG` must keep its base size (`config-meg-mod-delivery.md`). Whether a loose `.LOC` with added
-records loads is untested; `ModText.csv` makes it unnecessary.
-
-**Therefore: master-text edits inside `CONFIG.MEG` keep the file's size** (in-place overwrites, or
-redistribution between strings as above). To give a custom building/unit a UNIQUE sidebar name you must hijack an
-existing **dead** key whose value is already ≥ the target length and overwrite it in place (pad with
-trailing spaces, which render invisibly). You cannot add a new key to the `.LOC` in the MEG — do NOT
-re-chase that route. New strings go in `Data/ModText.csv` instead (next section).
+See the field manual's [New text strings](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/new-text-strings.md#relabel-strings-the-loc-table-at-its-exact-size), Relabel strings, and
+[Crash triage](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/troubleshooting/crash-triage.md#4-a-clientg-crash-at-rva-0x56a539-is-an-assert), section 4. `scripts/loc_edit.py` round-trips the base file byte-identical. TF's test added 6
+records (6,852→6,858, +755 B) and crashed ClientG at `0x0056A539` (`_Except_404.txt`); 3,973 of 3,974 members
+were byte-identical, with no region overlap and no companion index file, so not a repacker bug. Inside the `.LOC`, a unique name can only take over a dead key whose
+value is already long enough; do NOT re-chase adding keys. New strings go in `Data/ModText.csv` (next section).
 
 ---
 
 ## Custom names: `Data/ModText.csv`
 
-The **official, supported way** to add custom text is a loose **`Data/ModText.csv`** — proven by DontCryJustDie's official "Nuke Tank Sample
-Mod" (Workshop 3497050142), which ships no DLL of its own: it is an add-on to his *Veterancy and more*,
-whose DLL reads it. The launcher MERGES this CSV into its string table at load.
-
-Format: UTF-16 CSV, columns = `TEXT ID, AUDIO TAG, CHARACTER, ENGLISH, UNITED_KINGDOM, GERMAN, …`
-(per-language). Comment rows put `//` in the TEXT ID field. Data row example:
-`TEXT_UNIT_NUKE_TANK,,,Nuke Tank,,,…`  →  resolves the sidebar name.
-
-Full data-only "add a buildable unit + name + cameo" recipe from that sample mod:
-1. `Data/XML/Objects/Units/<X>Buildables.xml` — ObjectTypeClass with ObjectNameTextID /
-   ObjectDescriptionTextID / `<BuildIcon>`.
-2. `Data/ModText.csv` — defines those TEXT IDs (custom names/descriptions, no .LOC).
-3. `Data/Art/Textures/SRGB/BuildIcon_<X>.tga` — LOOSE custom cameo, referenced by name.
-4. `Rules/rules_mod.ini` `[VehicleTypes] 1=<X>` + `[<X>]` stat block (read by the host mod's DLL,
-   *Veterancy and more*; the stock Remaster DLL has no INI route to new unit types).
-5. `Data/XML/Tilesets/UNITS.XML` + `Data/Art/.../Units/<X>.ZIP` — unit sprite.
+See the field manual's [New text strings](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/new-text-strings.md#add-strings-datamodtextcsv), Add strings, and
+[New units without a DLL of your own](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/structuring/units-without-a-dll.md) (DontCryJustDie's Nuke Tank sample, every file).
 
 The mod ships `resources/remaster_mods/Vanilla_RA/Data/ModText.csv` for its own unit and building
 names, with loose `BuildIcon_*.tga` cameos.
 
-**How a sidebar label resolves:** the launcher looks the entry's `ObjectNameTextID` up in the base
-`MASTERTEXTFILE` merged with `Data/ModText.csv`.
-- rules.ini `Name=` drives only the in-world hover tooltip, never the sidebar.
-- An ID found in neither renders raw (`TEXT_UNIT_TDGMCV`).
+**How a sidebar label resolves:** see the field manual's [New text strings](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/new-text-strings.md#traps), Traps.
 - Deleting the `ObjectTypeClass` entry empties the cameo slot: the entry carries the `BuildIcon`
   and is mandatory.
 - A mod-owned object class name does not hand naming to the DLL.
@@ -187,7 +142,7 @@ names, with loose `BuildIcon_*.tga` cameos.
 ---
 
 ## Deploy hazard
-The ~184 MB UI atlas `Data/ART/TEXTURES/SRGB/MT_COMMANDBAR_COMMON.TGA` holds the picker crests and
+The ~176 MiB (184.6 MB) UI atlas `Data/ART/TEXTURES/SRGB/MT_COMMANDBAR_COMMON.TGA` holds the picker crests and
 is gitignored. Main's copy is canonical (`ui-atlas-modding.md`, "What the shipped atlas holds");
 copy it into a worktree before an `rsync -a --delete` deploy, or the deploy wipes the front-end
 emblems.

@@ -80,27 +80,20 @@ TS-Music counts as present when `Data\AUDIO\MUSIC\TS_MUS_VALVES.WAV` exists unde
 
 ### The jukebox
 
-The jukebox list comes from `AUDIO_SYSTEM_CONSTANTS.XML`'s `<MusicJukeboxTracksList>`, parsed into a vector of
-0x5C-byte entries (begin and end at `0x2038734` / `0x2038738`). The jukebox manager's setup (`0xEA3530`, called
-at `0x15CF40E`) then builds its own records from it. Without TS-Music, `tf_music.cpp` drops the `TS_MUS_`
-entries from the parsed vector **before** that setup: the jukebox screen refuses to build unless the vector
-and the records are the same length, so removing records afterwards breaks it. The screen shows an entry when
-its `<Game>` and `<TrackType>` match the player's filter checkboxes, not their audio setting; an unknown
-`<Game>` is never shown. A playing jukebox playlist overrides the skirmish music.
+Without TS-Music, `tf_music.cpp` drops the `TS_MUS_` entries from the parsed vector before the jukebox
+manager's setup. How the list is parsed, the addresses and the filters are on the field manual's
+[Music by faction, and the jukebox](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/sound-and-music/music-by-faction-and-the-jukebox.md#the-jukebox), The jukebox.
 
 ## Traps
 
-- **One copy wins.** The launcher opens a loose file from the first mod folder that has it and never merges.
-  An add-on can't carry its own `MUSICEVENTS.XML` or jukebox list beside Tiberian Factions', so TF owns the
-  lists and TS-Music ships only the WAVs.
+One copy of each list wins and `RandomizePlayList` shuffles the first track: see the field manual's
+[Music by faction, and the jukebox](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/sound-and-music/music-by-faction-and-the-jukebox.md#traps), Traps. The unused `<MusicMap>` and the DLL's
+inert theme player are in its [How the launcher picks skirmish music](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/sound-and-music/music-by-faction-and-the-jukebox.md#how-the-launcher-picks-skirmish-music) section.
+
+- **TF owns the lists.** Only one copy is read, so TS-Music ships only the WAVs.
 - **Classic and Bonus playlists carry mod edits.** The skirmish builder's base is the `MUSICEVENTS.XML` already
   in the mod's CONFIG.MEG; rebasing on the stock file reverts them. The CONFIG.MEG copy keeps its exact byte
   length (`config-meg-mod-delivery.md`); the loose copy has no such limit.
-- **`RandomizePlayList=True` randomises the first track too**, so a fixed opener and a random remainder can't
-  be had together.
-- **The data route doesn't exist.** `AUDIO_FACTIONS.XML`'s `<MusicMap>` is never consulted for TD or RA, and the
-  DLL's `ThemeClass` is inert in the remaster build (`soundio_null.cpp`). Music by faction needs the launcher
-  hook.
 - **When testing a music change**, check the deployed files' md5s: another session's deploy can replace them.
 
 ## Cross-references

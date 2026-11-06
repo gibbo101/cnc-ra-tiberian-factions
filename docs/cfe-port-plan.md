@@ -8,14 +8,10 @@ as our own build.
 
 Plan for adopting QoL features and bugfixes from **CFE Patch Redux** by ChthonVII.
 
-- **Source of truth:** `reference/cfe-patch-redux/` — clone of
-  [ChthonVII/CnC_Remastered_Collection](https://github.com/ChthonVII/CnC_Remastered_Collection),
-  full history fetched. Last release is **1.8**; there is unreleased **v1.9 testbuild work
-  through 2025-04** (tags `v1.9-RA_testbuild0x` / `v1.9-TD_testbuild0x`), so the GitHub repo
-  supersedes the Workshop builds.
-- **Licence:** GPL v3 both sides. Copying their code is fine; we already publish source.
-  ChthonVII's README explicitly invites GPL-compliant reuse (and explicitly threatens DMCA
-  against non-compliant reuse, so keep attribution + source publication in order).
+- **Source and licence:** see the field manual's [Porting CFE Patch Redux into your DLL](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/cfe-patch-ports.md#cfe-patch-redux-in-brief),
+  CFE Patch Redux in brief. Local clone `reference/cfe-patch-redux/` (full history; RA and TD 1.9 test builds
+  through 2025-04). We already publish source; CFE's README threatens a DMCA complaint against non-compliant
+  reuse, so keep attribution and source publication in order (§6).
 - **Their RA changelog files:** `Documentation/Changelogs/1.7/RA_Changelog_1.7.txt` and
   `1.8/RA_Changelog_1.8.txt`. Pre-1.7 fixes are only in git history.
 - **Their feature toggles:** everything is INI-gated: defaults in `Mod Data RA/CCDATA/DEFAULT.CFEPATCHREDUX_RA.INI`
@@ -25,18 +21,13 @@ Plan for adopting QoL features and bugfixes from **CFE Patch Redux** by ChthonVI
 
 ## Porting ground rules
 
-1. **CFE diffs against EA's raw source; we are a Vanilla Conquer fork.** Same ancestry but
-   every port is a manual transplant, not a cherry-pick. Expect drift in exactly the files VC
-   refactored.
-2. **Many CFE "vanilla bugfixes" were lifted FROM vanilla-conquer** (commit messages say so)
-   — those are already in our base. §3.1 lists them so nobody re-ports them. Two exceptions
-   where ChthonVII claims VC's fix is *wrong* are audit items (§3.2).
-3. Per workspace rules: TD-authentic stats stay untouched. CFE's balance content (TD Balance
+1. **Method:** see the field manual's [Porting CFE Patch Redux into your DLL](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/cfe-patch-ports.md#how-to-port-a-change)
+   (transplant by hand, take the LAN-safe post-1.7 code, check what Vanilla Conquer already has). §3.1 lists
+   the fixes already in our base, §3.2 the two disputed ones.
+2. Per workspace rules: TD-authentic stats stay untouched. CFE's balance content (TD Balance
    Patch, veterancy, OpenRA supers, instant capture, etc.) is **out of scope** — see §5.
-4. Each ported feature gets its own commit citing the CFE source commit(s)/files, and a
+3. Each ported feature gets its own commit citing the CFE source commit(s)/files, and a
    CHANGELOG entry. Attack-Move and A* are big enough to be their own releases.
-5. Multiplayer note: CFE 1.7's headline was making all of this LAN-safe. When porting, take
-   their LAN-safe version (post-1.7 code), not the earlier SP-only logic.
 
 ---
 
@@ -44,7 +35,7 @@ Plan for adopting QoL features and bugfixes from **CFE Patch Redux** by ChthonVI
 
 | # | Feature | CFE INI key (locator) | Size | Notes for our port |
 |---|---|---|---|---|
-| 0 | **Pixel-Perfect Zoom** | none (static; data-only) | ✅ shipped | No DLL code: a `<CNCZoomFactors network="client" overwrite="true">` block — 11 factors 0.246875–1.975 (vanilla: 8 factors 1.0–2.0, so this also zooms OUT further). CFE commit `ea2dde5`, which ships a loose `GAMECONSTANTS.XML`. Ours sits in `Data/XML/GameConstants_Mod.xml`, which ClientG merges over the base GameConstants (`config-meg-lever-audit.md`). Bonus intel: same file carries `CNCTDTheaterTilesets` (theatre→tileset map, relevant to desert) + many other mod-reachable client constants. |
+| 0 | **Pixel-Perfect Zoom** | none (static; data-only) | ✅ shipped | No DLL code. Ours sits in `Data/XML/GameConstants_Mod.xml`, which ClientG merges over the base GameConstants (`config-meg-lever-audit.md`); CFE commit `ea2dde5`. See the field manual's [Pixel-perfect zoom](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/cfe-patch-ports.md#pixel-perfect-zoom). |
 | 1 | **A\* Pathing** | `ASTAR_PATHING` | LARGE | Replaces "crash and turn" pathfinder. **Stage 1 of the two-stage pathfinding plan — see §1.1.** Foundation for #6. 1.8 fixed a crash on paths >200 cells — take the fixed version. Touches core movement; needs the biggest playtest soak. |
 | 2 | **Attack-Move** (Shift+Click) | `ATTACK_MOVE` | ✅ shipped | Post-1.7 LAN-safe rework, hard-enabled, all special cases (aircraft RTB on empty ammo, boats brief-attack, minelayers, chronotanks). Hard-enabled q-attack-move rides VANILLA's queue (CFE's queue rewrite NOT taken — fallback if flaky: stop converting ATTACKMOVE→QATTACKMOVE). One build fix: `AircraftClass::IsLanding/IsTakingOff` made public. **One deliberate deviation from CFE — see §1.2 (passive-building targeting).** |
 | 3 | **Rally Points** | `RALLY_POINTS` | ✅ shipped | Desktop-verified all factions. Incl. v1.9 long-line crash fix + two improvements over CFE: rally to "unplaceable" cells (their Can_Enter_Cell placement-legality dead zones near cliffs/shore/ore) and DOTGDI/DOTNOD faction end-dots. Found + fixed our DLL_Draw_Intercept ShapeSize-override trap (building-attributed named draws inflate to building size for TD buildings). Repair-bay rally (FIX/TDFIX) deferred to #6 as CFE gates it on Smarter Repair Bay exit logic. |
@@ -202,7 +193,7 @@ porting rule is "document deviations."
 - **Suspend Building Repairs** — pause instead of cancel when broke.
 - **Smarter Chrono / Smarter Sonar / Building Capture Announcements** — RA-side polish.
 - **Smarter SAMs** (TD-only in CFE) — ✅ DONE 2026-06-16. Our TDSAM that loses its target part-way through a surfacing (volley not yet spent) now rescans for another airborne target and stays up to engage it before retracting, instead of wasting the rise/lower reload cycle. `BuildingClass::TDSAM_Try_Reacquire` (building.cpp) called from the four target-lost TDSAM states (READY/FIRING → re-rotate from READY; READY2/FIRING2 → READY2, 1 shot left). Hardwired 2-shot volley already equals CFE's default `SMARTER_SAM_AMMO=2`; CFE's INI knobs (ammo count, balance delay) not reproduced per our no-INI policy. NOTE: CFE's `SmarterSAMAmmo`/`SmarterSAMBalanceDelay` settings drive its TD SAM state machine (`TIBERIANDAWN/BUILDING.CPP` ~5120–5290 in the reference clone); ours is a from-scratch implementation against our own TDSAM state machine, not a port of that code.
-- **Harvester Self-Repair** (TD-only in CFE) — ✅ DONE 2026-06-16, **data-only**. RA's `[HARV]` already self-heals to 50% via the engine's `SelfHealing=yes` flag (`TechnoClass::AI`, techno.cpp:2800 — 1 HP per `Rule.RepairRate` minutes, capped at `ConditionYellow`); our `[TDHARV]` lacked it, so RA ore trucks healed and GDI/Nod harvesters didn't. Fix = add `SelfHealing=yes` to `[TDHARV]` in rules.ini — true parity via the existing battle-tested path, same rate + cap. (Initial attempt was a custom frame-based heal block in `UnitClass::AI`; **reverted** — it double-healed HARV and at a wildly faster rate than the engine flag. The CFE veterancy-entangled code was the wrong model; the RA-native `SelfHealing` flag is the right one.)
+- **Harvester Self-Repair** (TD-only in CFE) — ✅ DONE 2026-06-16, **data-only**. RA's `[HARV]` already self-heals to 50% via the engine's `SelfHealing=yes` flag (`TechnoClass::AI`, techno.cpp:2800; see the field manual's [Harvester self-repair](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/cfe-patch-ports.md#harvester-self-repair)); our `[TDHARV]` lacked it, so RA ore trucks healed and GDI/Nod harvesters didn't. Fix = add `SelfHealing=yes` to `[TDHARV]` in rules.ini — true parity via the existing battle-tested path, same rate + cap. (Initial attempt was a custom frame-based heal block in `UnitClass::AI`; **reverted** — it double-healed HARV and at a wildly faster rate than the engine flag. The CFE veterancy-entangled code was the wrong model; the RA-native `SelfHealing` flag is the right one.)
 - **Smarter Mammoths** (TD-only) — missiles vs infantry. AUDIT FIRST: our TD-ported Mammoth
   may already do this via RA's secondary-weapon convention.
 - **Better Tiberium/Ore Growth** — we have our own growth; compare algorithms. The

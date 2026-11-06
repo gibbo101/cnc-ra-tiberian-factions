@@ -87,19 +87,11 @@ TD's SAM SHP layout (verified against the 129-frame TGA tileset we already have,
 [128]   Optional bib/construction tail
 ```
 
-This is a fundamentally different frame layout from RA's SAM SHP (0-31 rotation, 32-63 damaged). Indexing TD assets with RA's `BodyShape[Dir_To_32(facing)]` will pull from the *rising* sub-sequence — partially-raised launcher pointing 5° off — which is what read in play as "looks like the RA SAM," but is actually frame 0-15 of a TD SHP confusingly indexed.
+RA's SAM indexes its facings from frame 0 (and adds 35 when damaged, EA RA `BUILDING.CPP` `Shape_Number`), which read in play as "looks like the RA SAM". See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#the-sam-site-rise-fire-twice-lower), The SAM site.
 
 ### 3. Rotation speed (TD `building.cpp:1281-1289`)
 
-```cpp
-if (*this == STRUCT_SAM) {
-    if (PrimaryFacing.Rotation_Adjust(15)) Mark(MARK_CHANGE);
-} else {
-    if (PrimaryFacing.Rotation_Adjust(12)) Mark(MARK_CHANGE);
-}
-```
-
-TD's SAM rotates at **15 units/tick**, regular turrets at 12. Don't omit this — combined with the state machine, it's what makes the SAM feel responsive.
+See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#the-sam-site-rise-fire-twice-lower), The SAM site.
 
 ### 4. State-keyed armor (TD `building.cpp:1492-1495`)
 
@@ -110,7 +102,7 @@ if (*this == STRUCT_SAM && Status == SAM_UNDERGROUND) {
 }
 ```
 
-Underground SAM takes half damage. This is the answer to the deep-dive doc's "suspected bug #6" — *yes*, TD has state-keyed armor, and it's a `Take_Damage` modifier (not an `Armor=` rules field). The RA pipeline supports it the same way (`BuildingClass::Take_Damage` exists and follows the same shape).
+A `Take_Damage` rule, not an `Armor=` field; TF ports it in M5. See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#the-sam-site-rise-fire-twice-lower), The SAM site.
 
 ### 5. The firing animation overlay (TD `building.cpp:828-836`)
 
@@ -130,19 +122,11 @@ When SAM fires, TD spawns a standalone `ANIM_SAM_<dir>` overlay at `Center_Coord
 
 ### 6. Muzzle position (TD `building.cpp:2804-2836`)
 
-```cpp
-case STRUCT_SAM:
-case STRUCT_TURRET:
-    coord = Coord_Move(coord, DIR_N, 0x0030);
-    coord = Coord_Move(coord, PrimaryFacing.Current(), 0x0080);
-    break;
-```
-
-0x30 N + 0x80 in `PrimaryFacing.Current()` direction. Matches the offsets we already have on `ClassTdSam` (`bdata.cpp:813-815`). **This is already correct — the deep-dive doc's "fires from the back" symptom (bug #1) is a render mismatch, not an offset mismatch.** Once the render uses frame 16+ (raised rotation) instead of frame 0-15 (rising), the launcher will point where `PrimaryFacing.Current()` says it does, and the muzzle will line up.
+See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#weapons-muzzle-flashes-and-offsets), Weapons, muzzle flashes and offsets ("Where shots leave"). It matches `ClassTdSam` (`bdata.cpp:813-815`). The "fires from the back" symptom (bug #1) was a render mismatch (frames 0-15 drawn instead of 16+), not an offset one.
 
 ### 7. Aiming tolerance (TD `building.cpp:Can_Fire`)
 
-RA already has this: `if (ABS(diff) > (*this == STRUCT_SAM ? 64 : 8))` (`Can_Fire`). SAM has a much wider firing arc (±64) than other turrets (±8) so it can fire mid-rotation. Needs `STRUCT_TDSAM`.
+RA's `Can_Fire` already gives `STRUCT_SAM` the wider arc; TF adds `STRUCT_TDSAM`. See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#the-sam-site-rise-fire-twice-lower), The SAM site.
 
 ### 8. Threat scanning (TD `building.cpp:Greatest_Threat`)
 
@@ -394,9 +378,7 @@ Primary=TDNike     ; was: Primary=Nike (RA's vanilla)
 
 `ROCKET2` audio routing is already in place: `audio.cpp:253` defines `VOC_TD_ROCKET2` and `SFXEVENTSNONLOCALIZED.XML:6047-6061` has `RAC_SFX_ROCKET2` / `RAR_SFX_ROCKET2` sourcing the TDC/TDR rocket2 WAVs. No new audio plumbing needed.
 
-**Two open verifications during implementation:**
-- RA's `Speed=` field semantics — TD uses `MPH_VERY_FAST` (an enum/constant). Check what cell-per-second value that maps to and pick the corresponding `Speed=` integer. RA `[Heat-Seeker]` or `[AAMissile]` is a reference for "what does Speed=X give you."
-- RA's `Homing=yes` — confirm that's the right rules.ini field name for "this projectile homes on target." If not, the equivalent is whatever maps to `BulletTypeClass::IsHoming`.
+`TDNike` is an `IsTDPort` weapon, so its `Speed=` is TD's raw value, and `Homing=` is TF's own key (`IsHoming`, `bbdata.cpp`). Stock RA's rules for both are in the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md): Speed, and Rate of fire, scatter and AI value (Homing).
 
 ### M8 — Manifest sync (`scripts/buildings_manifest.py:576-607`)
 

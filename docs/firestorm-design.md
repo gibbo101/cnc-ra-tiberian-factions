@@ -29,7 +29,7 @@ left. Engine reference: OpenTS (`reference/OpenTS/code/`); data: TS's own `RULES
   wall within 5 cells in a straight line of another of the house's walls of the same type fills the
   gap when every cell between is clear, charging each section; it stops when the money runs out.
   Sandbags, concrete, barbed wire, wood, chain link, fence, the TS wall and the Firestorm sections.
-  The launcher owns the placement ghost, so the line appears on placing the second end.
+  For the placement ghost, see the field manual's [Firestorm Defense](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/firestorm-defense.md#line-fill-for-every-wall), line fill.
 - **The superweapon** (`SPC_TS_FIRESTORM`, the targeted `SW_ION_CANNON` route, AssetName
   `SW_TSFire`, TS's FSTDICON cameo) runs on a charge-drain `SuperClass`: a full charge buys a minute
   of field; the sidebar clock runs back down while draining. The field drops when the drain runs out,
@@ -43,7 +43,8 @@ left. Engine reference: OpenTS (`reference/OpenTS/code/`); data: TS's own `RULES
   superweapon tab.
 - **The field** (`TF_Firestorm_Burn` in `house.cpp`, every frame): anything on the house's live
   sections dies (own units too, `WARHEAD_TSFLAMEHIT`, forced), and any aircraft over one, the Hunter
-  Seeker excepted. Airborne damage is doubled because `AircraftClass::Take_Damage` halves it. A live
+  Seeker excepted. Airborne damage is doubled (see the field manual's
+  [Firestorm Defense](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/firestorm-defense.md#traps), traps). A live
   section takes no damage; each hit drains damage/10 frames. Live sections block everyone
   (`Is_Open_Firestorm_Section`).
 - **Shots:** `BulletClass::AI` deletes any projectile in a hostile live cell with a spark; instant

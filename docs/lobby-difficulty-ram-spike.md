@@ -106,9 +106,8 @@ entire array and dropped every AI to the global tier whenever one player picked 
 faction. Gating team as `[0..7]` on a literal reading of "0-7 for valid teams" would do the
 same to a random team.
 
-The PoC lobby used default colours, which are handed out in slot order. That made
-`0x50`, `0x68` and the slot index numerically identical, so all three read as "the slot
-index" and any of them looked usable as a key. They are three different fields.
+The PoC lobby used default colours, so team, colour and slot index read alike: see the field manual's
+[Per-AI lobby difficulty](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md#the-record), The record.
 
 - **`0x68` is the lobby colour** (DontCryJustDie, 2026-07-21). Changing an AI's colour in
   the lobby breaks any `0x50 == 0x68` test immediately. It is a liveness key rather than
@@ -140,8 +139,8 @@ retries, verified with four AIs and with colours deliberately set to break slot 
 Re-read mid-match: array intact, values unchanged — readable at match time, when the
 DLL needs it. Addresses are per-run (heap); only the record SHAPE is stable.
 
-Other AIPLAYER hits in memory (log strings, render/debug copies, a TLV message block
-with per-slot tags) exist — the scanner must validate candidates, not take the first hit.
+Other `AIPLAYER` hits in memory are why the scanner validates every candidate: see the field manual's
+[Per-AI lobby difficulty](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md#the-method), The method, step 4.
 
 ## Reference tooling
 
@@ -157,31 +156,16 @@ reference the in-DLL phase-A read reimplements via ReadProcessMemory.
 At match start (`CNC_Set_Multiplayer_Data` gives us the AI slot names + order; the
 difficulty read can also run lazily on first AI tick — retro-apply already exists):
 
-1. Find ClientG.exe: `CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS)`, match exe name
-   (it is the parent chain of InstanceServerG; name match is sufficient — one instance).
-2. `OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION)`.
-3. Region walk via `VirtualQueryEx` (private, committed, RW), read with
-   `ReadProcessMemory`.
-4. **Signature scan**: find `AIPLAYERn\0` (ASCII) for the roster's lowest AI number.
-   Candidate validates iff, for each record at `+0xA8·k`:
-   - the name is exactly `AIPLAYER{n}` with n strictly ascending;
-   - `+0x64` int32 in [1..3];
-   - `+0x50` (team) int32 in [0..8] — **range only**, it is neither 1-based nor an identity;
-   - `+0x68` int32 in [0..7] **and equal to the colour `CNC_Set_Multiplayer_Data` gave us
-     for that AI**, which is the check that proves the array belongs to this match;
-   - `+0x54` (ActLike) **equal to that AI's country + 2**, skipped when it reads 42
-     (random) or falls outside 2-9.
-
-   A candidate must cover the whole AI roster. Equality tests against any field whose
-   meaning is merely assumed are what broke this twice (`slot == slot2` first, then the
-   1-based floor on `+0x50`); colour and country are corroborated from outside the scan,
-   which is what makes them safe to gate on. Candidates that pass but disagree go to the
+1. Scan and validate as the field manual's [Per-AI lobby difficulty](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md#the-method) describes
+   (steps 1–4 there), in `TF_Read_Lobby_AI_Difficulties`. ClientG is found by exe name: it is InstanceServerG's
+   parent and only one runs. Equality tests against any field whose meaning is merely assumed are what broke this
+   twice (`slot == slot2` first, then the 1-based floor on `+0x50`). Candidates that pass but disagree go to the
    ambiguity resolver; zero hits is a scan failure.
-5. Map `AIPLAYERn` → the n-th AI entry in the `CNC_Set_Multiplayer_Data` player list
+2. Map `AIPLAYERn` → the n-th AI entry in the `CNC_Set_Multiplayer_Data` player list
    (names match — we log both already), then per-house:
    Easy→IQ 3, Medium→IQ 4, Hard→`Rule.MaxIQ` (existing `TF_AI_IQ_From_Difficulty`,
    note the RAM enum is 1-based vs our DiffType 0-based).
-6. **Fallback chain: RAM scan → `tf_ai_difficulty.txt` (global) → default Hard.**
+3. **Fallback chain: RAM scan → `tf_ai_difficulty.txt` (global) → default Hard.**
    Log the outcome per house under TF_AI_DIAG.
 
 32/64-bit note: our DLL is 32-bit; all PoC addresses were < 4 GB. If ClientG turns out

@@ -24,12 +24,10 @@ live from the mod's rules. Addresses are ClientG.exe 1.153.745903.
 
 ## Live stats
 
-ClientG only ever calls the DLL's `CNC_Version`; the game side (type heaps, rules, mix files) starts in
-InstanceServerG. So `TF_Encyclopedia_Load` (`redalert/tf_encyclopedia.cpp`) builds the type heaps as `init.cpp`
-does, then processes the mod's own rules from `<mod>\CCDATA\` with a `RawFileClass`, as a skirmish does:
-`rules.ini` through `Rule.Process`, then `aftrmath.ini` and `mplayer.ini` as overrides (General, Recharge, AI,
-Powerups, Land_Types, Themes, IQ, Objects, Difficulty). A second `Rule.Process` would rebuild the weapon and
-warhead heaps under the types' pointers to them.
+Why the rules must load inside ClientG, and the one-`Rule.Process` trap: see the field manual's
+[A faction encyclopedia screen](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/faction-encyclopedia.md#live-stats-load-the-rules-inside-the-launcher). `TF_Encyclopedia_Load`
+(`redalert/tf_encyclopedia.cpp`) does it with a `RawFileClass` reading `<mod>\CCDATA\`; `aftrmath.ini` and
+`mplayer.ini` override the sections General, Recharge, AI, Powerups, Land_Types, Themes, IQ, Objects and Difficulty.
 
 `mplayer.ini` ships loose in `CCDATA`, where the game's skirmish load finds it before `EXPAND2.MIX`: the stock
 copy without its `[BRIK]` override, so walls cost `rules.ini`'s 100. The encyclopedia shows the same skirmish
@@ -50,7 +48,8 @@ The description is `TEXT_TF_ENC_<INI>`, else the game's one-liner (`ObjectDescri
 `TEXT_TF_ENC_ABOUT_<ALLIES|SOVIETS|GDI|NOD|TSGDI>`. Both come from `scripts/encyclopedia_work/descriptions.json`:
 the manuals' text verbatim (cut at whole sentences to 370 characters), or, for a unit no manual has, a short entry
 in their style (`"source": "tf"`). `scripts/encyclopedia_text.py` writes them between its markers in `ModText.csv`.
-Text there has no double quotes, and `&` is written `&&` (the font reads a single `&` as a shortcut marker).
+For the text's quoting rules see the field manual's
+[New text strings](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/new-text-strings.md#add-strings-datamodtextcsv), Add strings.
 
 The description wraps at spaces into 7 lines beside the picture and 3 under it (`DESC_RIGHT_CHARS`,
 `DESC_BELOW_CHARS` in `tf_launcher.cpp`).
@@ -88,22 +87,15 @@ in a folder of that name (`sprite-memory.md`): the packs', the mod's, else `TEXT
 `TEXTURES_COMMON_SRGB.MEG` (the rotors) or `TEXTURES_TD_SRGB.MEG`. Each is placed by its `.meta` crop, layers are
 seated at classic pixels x 128/24, and the house colour is applied before the result is fitted to 256x192.
 
-House colour is the client's own team-colour rule (`CNCRATEAMCOLORS.XML`, `CNCTDTEAMCOLORS.XML` in CONFIG.MEG; the
-maths is `TextureManager.cs` in the game's SOURCECODE map editor): in linear light, green with a hue between the
-house's bounds takes its hue, saturation and value shift. Each faction is drawn as its campaign draws it: Allies as
+House colour is the client's own team-colour rule (see the field manual's
+[A faction encyclopedia screen](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/faction-encyclopedia.md#pictures-draw-into-a-canvas-shipped-at-start-up), Pictures). Each faction is drawn as its campaign draws it: Allies as
 Greece, Soviets as the USSR, GDI as TD's GOOD, Nod's structures, harvesters and MCVs as BAD_STRUCTURE (red; ClientG
 names HARV and MCV beside the buildings) and its other units as BAD_UNIT (blue-grey).
 
-The launcher only loads textures it indexed at startup, before it loads the DLL: a file written later, or a full
-path, never loads. So the mod ships one blank canvas, `TF_ENC_LIVE.TGA` (256x192), and the DLL writes each picture
-into its GPU texture:
-
-| Step | Call |
-|---|---|
-| Point the picture at the canvas | `Quad_Set_Texture` `0xF604C0` |
-| The canvas's texture handle | GUIManager `0xF301F0` (thiscall, name), as `Quad_Set_Texture` resolves it |
-| The `ID3D11Texture2D` | the engine texture the handle points at, `+0x84` (`+0x80` is its shader view) |
-| Write the pixels | `UpdateSubresource` on the device's immediate context, on the launcher's UI thread |
+Pictures draw into a canvas shipped at start-up: see the field manual's
+[A faction encyclopedia screen](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/faction-encyclopedia.md#pictures-draw-into-a-canvas-shipped-at-start-up). TF's canvas is
+`TF_ENC_LIVE.TGA` (256x192); the DLL points the picture at it with `Quad_Set_Texture` (`0xF604C0`) and finds its
+texture handle through GUIManager `0xF301F0` (thiscall, by name).
 
 A picture that can't be drawn shows the cameo. The About row shows the faction's logo,
 `TF_ENC_ABOUT_<FACTION>.TGA`, written with the canvas by `scripts/encyclopedia_logos.py`.
@@ -139,6 +131,5 @@ The selected row's button is toggled on (`0xF80920`). A tab is the page's tab bu
 ## Menu
 
 `scripts/bui_mainmenu_pack_notice.py` puts FACTION ENCYCLOPEDIA (`TF_Encyclopedia`) under TIBERIAN FACTIONS ADD-ONS,
-REPLAY / OBSERVER in BONUS GALLERY's row, and shrinks the gallery's button and new-content badge to nothing in place:
-the launcher shows them again, so each piece of the badge is shrunk too, or the launcher stretches it back into view.
-Moved off screen instead, they stretch the whole menu and misplace its clicks on ultrawide screens.
+REPLAY / OBSERVER in BONUS GALLERY's row, and shrinks the gallery's button and each piece of its new-content badge
+to nothing in place (see the field manual's [A faction encyclopedia screen](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/faction-encyclopedia.md#traps), Hiding stock menu buttons).

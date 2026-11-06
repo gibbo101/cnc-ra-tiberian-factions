@@ -147,15 +147,7 @@ Note: our comment at line 641 says "Match TENT" — TENT is RA's Allied Soviet b
 
 **1. `Exit_Object` switch (`redalert/building.cpp:2297-2299`)**
 
-```cpp
-case STRUCT_BARRACKS:
-case STRUCT_TENT:
-case STRUCT_KENNEL:
-    cell = Find_Exit_Cell(base);
-    ...
-```
-
-`STRUCT_TDPYLE` is not in this list. Infantry produced by TDPYLE may unlimbo at `Exit_Coord()` but won't go through `Find_Exit_Cell` — they may spawn inside the footprint or fail to walk out cleanly. TD aliases `STRUCT_BARRACKS || STRUCT_HAND` at this site (TD `building.cpp:2288-2289`). Our port should add `STRUCT_TDPYLE`:
+RA's infantry-exit cases: see the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#silos-barracks-and-the-rest), Silos, barracks and the rest. `STRUCT_TDPYLE` is not in this list. Infantry produced by TDPYLE may unlimbo at `Exit_Coord()` but won't go through `Find_Exit_Cell` — they may spawn inside the footprint or fail to walk out cleanly. TD aliases `STRUCT_BARRACKS || STRUCT_HAND` at this site (TD `building.cpp:2288-2289`). Our port should add `STRUCT_TDPYLE`:
 
 ```cpp
 case STRUCT_BARRACKS:

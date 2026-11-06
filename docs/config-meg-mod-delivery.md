@@ -8,19 +8,11 @@ Workshop, with no edit to the base install.
 
 ---
 
-## TL;DR — the governing principle
+## The governing principle
 
-**A mod can ship its own `Data/CONFIG.MEG`, and the launcher loads it over the base copy.**
-
-So the real question for *any* launcher-locked feature becomes:
-
-> Is the lock enforced by **CONFIG.MEG data** (an XML/`.LOC`/table the launcher reads) —
-> or by **`ClientG.exe` code** (a hardcoded branch / hashed asset lookup)?
-
-- **CONFIG.MEG data → now moddable + shippable** via this mechanism.
-- **`ClientG.exe` code → not reachable by data**, but the DLL patches it at runtime, with no file on disk changed: ClientG loads the mod's DLL briefly at its own startup on every machine, and the patches ship on the Workshop. See `launcher-vs-dll-ownership.md` ("Launcher-resident patches") for the code-side boundary.
-
-This doc is the **data-delivery** lever. `launcher-vs-dll-ownership.md` is the **code-ownership** map. They are complementary: the launcher's *autonomous behaviour* isn't ours, but the *data it reads* is.
+See the field manual's [Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#a-replacement-configmeg), A replacement `CONFIG.MEG`, and
+[What the launcher owns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/what-the-launcher-owns.md#search-in-this-order), Search in this order.
+This doc is TF's data-delivery lever; `launcher-vs-dll-ownership.md` is TF's code-ownership map.
 
 ---
 
@@ -40,10 +32,9 @@ This doc is the **data-delivery** lever. `launcher-vs-dll-ownership.md` is the *
 # 1. extract the inner file you want to change
 python3 scripts/meg_extract.py extract <base CONFIG.MEG> <innerPathFragment> /tmp/out/
 
-# 2. edit it. For binary inner files (.LOC string tables) keep edits BYTE-LENGTH-IDENTICAL
-#    (pad with spaces / same-width chars) so the inner format's offsets stay valid. Plain
-#    XML inner files (FACTIONS.XML, INSTANCES.XML) can change length freely — meg_pack
-#    recomputes the OUTER offsets; only the inner file's own internal offsets matter.
+# 2. edit it, keeping every member at its exact base size (the same-size rule below).
+#    XML: pad back to size from comments. .LOC: the file total is fixed, but a string may
+#    grow if it takes bytes from another (byte-neutral redistribution, scripts/loc_relabel.py).
 
 # 3. repack (replaces the inner file whose stored path ENDS WITH the given suffix)
 python3 scripts/meg_pack.py repack <base CONFIG.MEG> /tmp/CONFIG.MEG \
@@ -60,11 +51,10 @@ cp /tmp/CONFIG.MEG build/remaster/Vanilla_RA/Data/CONFIG.MEG
 
 ## Facts & caveats
 
-- **No integrity check.** The MEG reader (`Megafile.cs`) validates nothing — looks files up by path string, returns raw bytes. A faithful repack always loads.
-- **Mod CONFIG.MEG SHADOWS the base** — it is *replaced*, not merged. So you ship the **full** repacked archive (~44 MB) with your one change, not a delta. Budget ~44 MB per release. (EA stopped patching the Collection, so base-drift/staleness is a non-issue.)
-- **Mod-scoped.** The override only applies while the mod is active — the player's vanilla TD/RA front-end is untouched. This removes the "editing shared FACTIONS.XML breaks the user's TD" worry: it only breaks nothing, because it's only live under the mod.
-- **Loose files reach front-end data too.** A file at its archive path under the mod's `Data/` (a `.BUI`, `MASTERTEXTFILE_*.LOC`, `INSTANCES.XML`, `GUITEXTURESETS.XML`) overrides the CONFIG.MEG member, at any size; the same-size rule binds only members inside a CONFIG.MEG (`campaigns-page.md` ships its screens this way).
-- **Safe to test.** Because you ship into the mod folder and never touch the base install, a bad repack at worst does nothing (launcher ignores it) — it can't corrupt the base or trip Steam "verify."
+See the field manual's [MEG and MIX archives](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/formats/meg-and-mix-archives.md#meg), MEG, and [Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#three-ways-in), Three ways in and Traps.
+TF ships the full ~44 MB archive in every release, and loose files beside it (`campaigns-page.md` ships its screens
+loose). A repack can't corrupt the base install or trip Steam's verify, but one that changes any member's size crashes the
+launcher at boot under the mod (the same-size rule below).
 
 ---
 
@@ -75,7 +65,9 @@ cp /tmp/CONFIG.MEG build/remaster/Vanilla_RA/Data/CONFIG.MEG
 - **Mission Select roster** — `INSTANCES.XML` (`ShowOnMissionSelect`, `IsUnlockedAtStart`, `ExternalGameID`) — see `campaign-tabs-research.md`.
 - **Any other CONFIG.MEG XML/table** — theatres/tilesets, audio-faction maps, GUI scene lists, etc. *If the data is in CONFIG.MEG, this mechanism reaches it.*
 
-**For a "launcher-locked" feature investigation (e.g. theatres):** first locate where the limit/enum lives — there are **three** buckets, not two: (a) a **CONFIG.MEG XML** → moddable by this recipe (`meg_extract.py list <CONFIG.MEG> | grep -i <feature>`); (b) a **texture-atlas image** (e.g. a region in `MT_COMMANDBAR_COMMON.TGA`) → moddable via the loose-atlas override, see **`ui-atlas-modding.md`**; (c) **hardcoded in `ClientG.exe`** (`strings ClientG.exe`) → not reachable by data; only a runtime code patch from the DLL reaches it (`launcher-vs-dll-ownership.md`). ⚠️ The in-game sidebar **emblem** was first mis-filed as (c) — it's actually (b): `UI_SIDEBAR_FACTIONLOGO_ALLIES`/`_SOVIET` in the atlas, **moddable** (proven 2026-05-29). So "not in CONFIG.MEG" ≠ "locked" — check the atlas before concluding code-lock.
+**For a "launcher-locked" feature investigation:** follow the field manual's [What the launcher owns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/what-the-launcher-owns.md#search-in-this-order), Search in this order.
+List the data with `meg_extract.py list <CONFIG.MEG> | grep -i <feature>`. Not in CONFIG.MEG isn't locked: check the UI
+atlas too (`ui-atlas-modding.md`), where the radar crest is `UI_SIDEBAR_FACTIONLOGO_ALLIES`/`_SOVIET`.
 
 ---
 
@@ -97,26 +89,19 @@ after it shifts → the launcher reads some *downstream* file at a stale offset 
 - Consequence: a mod CONFIG.MEG can only **override existing files at their exact size** —
   never grow, shrink, add, or remove members.
 
-## Scope limit: mod CONFIG.MEG feeds the ClientG FRONT-END only (2026-06-09)
+## Scope limit: mod CONFIG.MEG feeds the ClientG FRONT-END only
 
 `InstanceServerG` (the match-host process) resolves instance definitions, map files, and the
-lobby preview content from **base game data**, not the mod's CONFIG.MEG:
+lobby preview content from **base game data**, not the mod's CONFIG.MEG. Why a new entry lists but
+won't start, and the carrier that starts it, are on the field manual's
+[New maps in the skirmish Official list](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/new-maps-in-the-skirmish-list.md#why-a-listed-map-wont-start), Why a listed map won't start and Starting it
+(TF's tests: the assert at `serveripcmessagehandler.cpp(268)`; a hijacked `Community_2` still loaded `SCMC1EA`).
 
-- A renamed/new `<Instance>` **lists** in the skirmish lobby (display name, players, size all
-  come from the mod MEG) but **asserts at match start** — `serveripcmessagehandler.cpp(268)
-  "Creating instance <NAME>"` — because the server can't find the instance name in base data.
-- A same-size in-place edit of an existing instance's `<OverrideMapName>` changes nothing:
-  the map content still resolves base-side (hijacked `Community_2` loaded `SCMC1EA` regardless).
 - The launcher reads `Data/CNCDATA/...` map INIs via CWD-relative paths = **base install
   only**; a mod's `Data/CNCDATA/` is never searched.
 
-Net: **a new official-skirmish-list map needs more than CONFIG.MEG data.** The mod lists new
-entries from loose `INSTANCES.XML` and `CNCMAPPREVIEWDATA.XML`, and launches each through a carrier:
-ClientG sends it under an existing entry (Hastings' `D6`) that InstanceServerG already knows, and
-the DLL loads the entry's own map (`td-base-art.md`, "TD maps in the Official list"). Workshop
+TF launches its new entries through Hastings' `D6` (`td-base-art.md`, "TD maps in the Official list"). Workshop
 *map items* (custom-maps tab, native pipeline, previews from the shipped TGA) remain the plain route.
-`CNCMAPPREVIEWDATA.XML` (also in CONFIG.MEG) is the per-instance preview cache — `INIData` blocks
-keyed by UPPERCASE instance name with bounds/theater/waypoints.
 
 ---
 

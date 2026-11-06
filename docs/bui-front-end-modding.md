@@ -15,8 +15,11 @@ buttons and screens ship by pairing cloned widgets with launcher code from the D
 
 ## TL;DR — what this buys us (and what it doesn't)
 
-- **YES — cosmetic reshape of EXISTING widgets** on any front-end/HUD screen: reposition, resize, hide/show, retint, retexture and restyle text (strings may change length), plus nodes the launcher already reads (effects, font styles). Whole front-end screens can be swapped for TD's through `FACTIONS.XML` (2026-10-01 section). **Proven on both surfaces:** the front-end (main-menu reorder ships in production) **and** the in-game HUD (Deck-confirmed 2026-07-11 — a hide edit on `RA_TACTICAL_UI.BUI`'s Soviet faction-logo rect removed that logo live in a skirmish).
-- **NO — new options or behaviour from `.bui` data alone.** The things we'd *want* to add are code-populated from compiled C++ enums/type-managers in `ClientG.exe`, not from `.bui` data. (Payload growth itself is fine while it recompresses under the file's size.) **New buttons and screens do ship** with a code side: the main menu's ADD-ONS button is a cloned widget whose click the DLL's launcher layer binds, and it opens a `.bui` screen of the mod's own (`TF_ADDONS.BUI`) under ClientG's unused `SplashScreen` class (`pack-panel.md`).
+See the field manual's [BUI screens](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/bui-screens.md#what-you-can-do), What you can do, and [New screens and buttons](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/new-screens-and-buttons.md).
+
+- TF's main-menu reorder ships, and a hide edit on `RA_TACTICAL_UI.BUI`'s Soviet faction-logo rect removed that
+  logo live in a skirmish. The main menu's ADD-ONS button is a cloned widget whose click the DLL's launcher layer
+  binds; it opens `TF_ADDONS.BUI` under ClientG's unused `SplashScreen` class (`pack-panel.md`).
 - Treat this as a **polish / faction-identity** capability, not a feature unlock. Factions and campaigns came by other routes (`ts-gdi-faction.md`, `campaign-tabs-research.md`).
 
 ---
@@ -42,14 +45,11 @@ Do **not** confuse this file format with the network layer: `PG::ContainerClass:
 
 ### The decompressed payload = a tag-based scene graph
 
-Widgets carry ASCII names (`ButtonFactionComboBox`, `Combo_Listbox`, `Side_Bar_Group`), texture refs (`ui_multiplayer_playerslot_faction_00`, `ui_sidebar_factionlogo_allies`), text keys (`TEXT_PLAYER_SLOT_FACTION_CHOICE`), and typed property tags. Known tags (from the shipped main-menu work):
-
-- **`02 10` = rect/frame tag** — 16 bytes = 4 LE floats `x, y, w, h`, screen-normalized (0..1). Editing a widget's rect `Y` moves the whole widget (frame + label together).
-- **`03 10` = tint tag** — RGBA floats; alpha at tag `+12`. Set alpha 0 to hide.
-- **A widget's rect and tint tags come BEFORE its `26 10` header + name.** The tags that follow a
-  name belong to the NEXT widget. (2026-09-02: zeroing the tint after `Text_FactionSelected`
-  hid the Allied logo; the label's own tint is the `03 10` just before its header, alpha 0.58.)
-  Shipped hide: `scripts/bui_work/hud_label_hide_build.py` (the country name under the crest).
+The rect (`02 10`) and tint (`03 10`) tags, and the rule that they come before a widget's name, are on the field
+manual's [BUI screens](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/bui-screens.md#the-format), The format.
+The widget header tag is `26 10`. `scripts/bui_work/hud_label_hide_build.py` hides the country name under the crest
+(`Text_FactionSelected`): its own tint is the `03 10` just before its header, alpha 0.58. Zeroing the tint after
+`Text_FactionSelected` instead hid the Allied logo, the next widget.
 
 The broader property vocabulary seen in scene graphs (esp. `RA_TACTICAL_UI.BUI`): `POSITION SIZE TINT TEXTURE RENDER_MODE ROTATION HIDDEN ALPHA POSX POSY SIZEX SIZEY TELETYPE BRIGHTNESS LINE_WIDTH OFFSETV REPEATV TEXSIZEV`, plus groups (`AspectRatio_Group`) and animation states (`SlideIn`/`SlideOut`). The full per-widget grammar is only **partially** reversed — enough for rect/tint/same-length-string edits, not yet for confident structural insertion.
 
@@ -57,11 +57,10 @@ The broader property vocabulary seen in scene graphs (esp. `RA_TACTICAL_UI.BUI`)
 
 ## THE governing constraint — the same-size rule
 
-**Every member of a mod-shipped `CONFIG.MEG` must keep its EXACT original byte size, or ClientG crashes at boot.** The rule binds members packed in CONFIG.MEG; a loose copy in the mod's `Data/` may be any size (`campaigns-page.md`). The crash is twice-Deck-proven in `config-meg-mod-delivery.md`: an `ACCESS_VIOLATION` that misleadingly names an innocent *downstream* member, a stale-offset symptom. For `.bui` this means:
-
-1. Keep the **decompressed length constant** — edit floats/flags in place and swap strings for **equal-length** strings; never add/remove payload bytes.
-2. Recompress at **zlib level 9** (base files are ~level-6, so re-editing at level 6 routinely *grows* the stream; L9 buys headroom). Assert the new compressed stream is **≤ the original compressed size**.
-3. **Pad the file back to the exact original member size** with trailing `0x00`. The loader reads only `csize` bytes, so the pad is ignored (verified: our shipped 5274-byte `RA_MAIN_MENU.BUI` is base-size with trailing pad, over a same-length edited payload).
+The rule and how a `.bui` keeps it (zlib level 9, fit under the stock size, pad with zeros) are on the field manual's
+[BUI screens](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/bui-screens.md#editing-safely), Editing safely; a loose copy may be any size (`campaigns-page.md`).
+The crash is in `config-meg-mod-delivery.md`. The loader reads only `csize` bytes, so the pad is ignored: TF's shipped
+`RA_MAIN_MENU.BUI` is 5,274 bytes, base size, with a trailing pad.
 
 Consequences:
 - Big/compressible screens have generous pad budgets (map-select ~316 B, tactical HUD ~421 B). Tiny files have almost none (`BUTTONFACTIONCOMBOBOX.BUI` ~3 B, `UI_CUSTOM_MAP_FILE_ENTRY.BUI` 0 B): float edits and shorter strings still fit, and emptying placeholder text the launcher overwrites frees more (see the 2026-10-01 section).
@@ -95,11 +94,11 @@ Always edit from the **pristine base** member and re-derive offsets against expe
 
 | Wall | Verdict | Why |
 |---|---|---|
-| **W1 picker emblems** | **Solved, not by `.bui`** | `FACTIONS.XML` `SmallIconName` can point only at preloaded regions, and the loose atlas repaints their pixels (`faction-select-identity.md`, `ui-atlas-modding.md`). |
+| **W1 picker emblems** | **Solved, not by `.bui`** | The loose atlas repaints the preloaded slot icons ([The UI atlas](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/the-ui-atlas.md#pick-the-right-region); `faction-select-identity.md`, `ui-atlas-modding.md`). |
 | **W2 genuine new faction slot** | **DEAD** | `FactionType` is a compiled C++ enum in ClientG; the faction listbox is code-populated keyed by it. No data, `.bui` or script can mint an enum value. TS GDI is a fifth faction without one: it reuses the Germany country slot and decouples that house DLL-side (`ts-gdi-faction.md`). The 8 country slots are the ceiling. |
 | **W3 campaign / map-select UI** | **Cosmetic only** | `.bui` can restyle, reposition and retexture `CNC_MAPSELECT` / `RA_CAMPAIGN_SELECT`; the roster comes from compiled `TypeManager<CampaignMapSelectMapClass>` and `INSTANCES.XML`. Campaign missions are delivered by hijacking an existing Counterstrike or Aftermath slot (`campaign-tabs-research.md`). |
-| **W4 in-game tactical HUD** | **Solved by data** | `FACTIONS.XML` scene lists: GDI, Nod and TS GDI load TD's `Tactical_UI.bui`, RA sides keep `RA_Tactical_UI.bui` with the side label hidden (`hud_label_hide_build.py`, `faction-select-identity.md`). Cosmetic edits and structural widget insertion both work, but in RA's scene ClientG maps every Allied-side country to `SideBar_FactionLogo_Allies` and every Soviet-side one to `_Soviet`, so per-faction crests there need the RAM patch, not `.bui` (below). |
-| **W5 `a` / `/` select-all/deploy classification** | **Solved on the DLL side, not via `.bui`** | Hardcoded in ClientG (`RTSInputManagerClass`, registered-type identity); the DLL reads the keys and filters the select-all hand-over (`launcher-vs-dll-ownership.md`). |
+| **W4 in-game tactical HUD** | **Solved by data** | `FACTIONS.XML` scene lists: GDI, Nod and TS GDI load TD's `Tactical_UI.bui`, RA sides keep `RA_Tactical_UI.bui` with the side label hidden (`hud_label_hide_build.py`, `faction-select-identity.md`). Per-faction crests in RA's scene need the RAM patch, not `.bui` (below). |
+| **W5 `a` / `/` select-all/deploy classification** | **Solved on the DLL side, not via `.bui`** | Hardcoded in ClientG (`RTSInputManagerClass`); see [Launcher key commands and superweapon clicks](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/launcher-key-commands-and-clicks.md). The DLL reads the keys and filters the select-all hand-over (`launcher-vs-dll-ownership.md`). |
 
 **The line to remember:** reshaping, retexturing and recolouring existing widgets, and adding nodes the launcher already reads (effects, font styles), is reachable by data; new options or behaviour the launcher has no code for need launcher code patched in from the DLL (`pack-panel.md`).
 
@@ -109,7 +108,7 @@ ClientG embeds a ClickScript bytecode VM and a full Lua (pglua) VM, and there's 
 
 ## Front-end screens, text and motion (2026-10-01)
 
-- **Which screen opens is data.** The RA front end takes its screens from the Soviet entry (Faction5) `GUIFileNames` in `FACTIONS.XML` (lobbies, LAN, Workshop browser, loading screen, DialogBox…). Pointing a key at TD's screen name (no `RA/` prefix) swaps the whole screen. Proven for the skirmish lobby, LAN lobby, LAN match list and Workshop browser (`factions_build.py` FRONT_END).
+- **Which screen opens is data:** see the field manual's [BUI screens](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/bui-screens.md#where-screens-live-and-which-one-opens), Where screens live. `factions_build.py` FRONT_END points each key at TD's screen name (no `RA/` prefix), swapping the skirmish lobby, LAN lobby, LAN match list and Workshop browser for TD's.
 - **Text colour:** `FONTLIBRARY.BFD` is a flat list of named styles `[name, face, props]`, colour at `0b 10`. New styles can be appended (`fontlib_build.py`: G16/G18/G18R/G15R). The launcher recolours some text widgets it names (`Combo_Text`, `Map_Name_Text`), so a tint doesn't hold there. Use a coloured style.
 - **Bytes:** placeholder text the launcher overwrites (`Player_Name`, `A Path Beyond`, the dialog caption) can be emptied to free room in tiny files. Pure (0, 1, 0) tints compress best.
 - **Motion:** the loading spinner is a fixed 4×4 grid at 24 fps (0.67 s loop). Keyframe animations in `.bui` files only play when ClientG starts them by name, and no `.lua` ships. GUIEFFECTS sheens attach with an `id 0x16` leaf and loop by themselves. The fullscreen variant (Logo_Sheen) multiplies the widget's alpha by the texture's and adds its colour.
@@ -119,13 +118,11 @@ ClientG embeds a ClickScript bytecode VM and a full Lua (pglua) VM, and there's 
 
 ## Combo-box drop-downs: mouse area and row height (2026-10-02)
 
-A combo box's list answers the mouse only inside the group that holds the combo (in a lobby slot,
-`PlayerFactionGroup` and its siblings). A list stretched past that group draws fine but its lower
-rows close the list and take no clicks. The fix is to grow the group (and, if needed, the slot's
-`Slot_Content_Group`), scaling the other widgets' y and height so nothing moves on screen
-(`bui_lobby_build.py slot_room`). The list's row height is list-box micro-chunk `05` in the list's
-property leaf (id 4): a fraction of the **combo's** height (TD 0.1711, RA 0.0975). Grow the combo
-and the rows grow with it unless that value is scaled down to match. Property names come from
+The mouse area and the row height are on the field manual's
+[BUI screens](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/bui-screens.md#traps), Traps.
+`bui_lobby_build.py slot_room` grows a lobby slot's `PlayerFactionGroup` (and, if needed, its
+`Slot_Content_Group`). The row height is a fraction of the combo's height, so growing the combo grows
+the rows unless that value is scaled down to match. Property names come from
 Petroglyph's 9-Bit Armies GUI editor (`ModTools/GUIEditor` on the M.2:
 `GUI_LIST_BOX_ROW_HEIGHT_MICRO_CHUNK`, `GUI_COMBO_BOX_MAX_ITEMS_SHOWN_CHUNK`,
 `GUI_COMBO_BOX_OPEN_UP_MICRO_CHUNK`), which reads the same chunk format.
@@ -142,12 +139,10 @@ Petroglyph's 9-Bit Armies GUI editor (`ModTools/GUIEditor` on the M.2:
 
 ## Per-faction logos in RA's HUD scene: not reachable by `.bui`. Do not re-chase.
 
-**ClientG never queries `SideBar_FactionLogo_GDI` / `_NOD` in RA's scene.** Its compiled
-FactionType→logo-widget mapping collapses every RA country to the two side widgets:
-`SideBar_FactionLogo_Allies` for Allied-side countries (Spain, Greece and Germany included) and
-`_Soviet` for Soviet-side. The `_GDI`/`_NOD` names are looked up only for the TD FactionTypes
-(Faction1/Faction2), which the RA lobby can never produce (W2). Per-faction crests come from TD's
-scene plus the RAM patch instead (`radar-crest-ram-spike.md`).
+See the field manual's [BUI screens](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/bui-screens.md#what-you-can-do), What you can do.
+ClientG maps every RA country to `SideBar_FactionLogo_Allies` or `_Soviet` by side. The `_GDI`/`_NOD` names are
+looked up only for the TD FactionTypes (Faction1/Faction2), which the RA lobby can never produce (W2). Per-faction
+crests come from TD's scene plus the RAM patch instead (`radar-crest-ram-spike.md`).
 
 **Discriminator probe that proved it (Linux, 2026-07-12):** `_Allies` widget
 retextured to the GDI eagle; structurally-valid `_GDI`/`_NOD` widgets inserted

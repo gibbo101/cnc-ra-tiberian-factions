@@ -104,18 +104,15 @@ Instances cluster by `Variant` (campaign base): 22 `Mobius_Allied_Campaign_Base`
 
 ---
 
-## The engine wall (unchanged, and decisive)
+## The engine wall and new instances
 
-GDI/Nod **campaign missions are `ExternalGameID=TiberianDawn`** — TD-game instances on a TD-mode tab (`GuiLayer="TD_GDI"`). They will **not** appear in our RA mod's Mission Select. A *playable* GDI/Nod campaign in the RA mod needs **new RA-mode instances**, because the TD scenario format won't run in the RA engine.
-
-## New instances
-
-New `<Instance>` entries display, but `InstanceServerG` launches only instances it read at
-startup, so a new one needs the mission carrier (`campaigns-page.md`) or a hijacked slot.
+TD's GDI and Nod campaigns can't be borrowed, and a new instance displays but won't launch: see the field manual's
+[Custom campaigns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-campaigns.md#traps) (Traps, and Adding a mission). TF's way round is the mission carrier or a hijacked
+slot (`campaigns-page.md`).
 
 ---
 
 ## Notes
 
-1. **Distribution:** a mod **can** ship its own `Data/CONFIG.MEG` and the launcher loads it over the base (proven on the Deck: a `MASTERTEXTFILE` country relabel `Turkey`→`Nod` shipped in the *mod folder* showed in the skirmish lobby picker + the in-game sidebar). The base install is never touched (Steam-verify-proof, mod-scoped — only active under the mod). So front-end edits ARE Workshop-distributable: ship the full repacked CONFIG.MEG (~44 MB). Canonical: **`config-meg-mod-delivery.md`**. Loose files at their archive paths under the mod's `Data/` override the archive too, at any size.
-2. **The RA roster build.** ClientG files each mission into a tab in its tab sort (`0x633520`) by game, expansion and house; `campaigns-page.md` has the rules and the mod's hooks.
+1. **Distribution:** a mod's own `Data/CONFIG.MEG`, or loose files, override the base: see the field manual's [Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#three-ways-in). TF's proof: a `MASTERTEXTFILE` relabel `Turkey`→`Nod` showed in the skirmish lobby picker and the in-game sidebar. TF's delivery: `config-meg-mod-delivery.md`.
+2. **The RA roster build:** the tab sort is on the field manual's [Custom campaigns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-campaigns.md#tabs-and-houses), Tabs and houses; `campaigns-page.md` has TF's hooks.

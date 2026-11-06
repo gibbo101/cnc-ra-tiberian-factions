@@ -166,7 +166,7 @@ repack_zip_with_prefix(
 #    bundle_assets.py:215-241 as the model)
 ```
 
-**For all entities**, the registration XML must be in CONFIG.MEG-override format (full `<Tilesets><TilesetTypeClass name="RA_VFX">...</TilesetTypeClass></Tilesets>` envelope). Mod-additions format (`<Tiles>` only) **doesn't get loaded by the launcher** — confirmed empirically. Always patch the existing `RA_VFX.XML` / `RA_STRUCTURES.XML` / `RA_UNITS.XML` (extracted from CONFIG.MEG) rather than creating standalone XMLs.
+**For all entities**, patch the stock tileset XML rather than writing a standalone one. See the field manual's [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#registering-new-art), Registering new art.
 
 ### 2.7 — Apply the donor-ImageData pattern (CRITICAL for bullets/anims/aircraft)
 
@@ -237,9 +237,7 @@ Place the entity on our Deck. Run actual TD on the second Deck. Compare:
 
 ### 3.1 — `Speed=` parsing convention differs TD vs RA
 
-**Trap:** TD source has `MaxSpeed = MPH_ROCKET = 60` (raw 0-255 value). RA's `Get_MPHType` interprets `Speed=N` from rules.ini as a 0-100 *percentage* scaled to 0-256. Copying `Speed=60` from TD source into a vanilla RA-style weapon gives MaxSpeed=153 (= 60% × 255), **not** 60.
-
-**Symptom (moderate raw values like 60):** missiles 2.5× too fast, overshoot during arming, fail to hit close-range targets (Timer expires before proximity fuse triggers).
+**Trap:** RA reads a weapon's `Speed=` as a percentage, not TD's raw value. See the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md), Speed ("Projectile speed too").
 
 **Symptom (raw value of 100, intending MPH_VERY_FAST):** *Worse and very misleading.* `Speed=100` parses as 100% → MaxSpeed=255=MPH_LIGHT_SPEED. In `Unlimbo_TD` (bullet.cpp:1022-1023) this triggers `if (speed == MPH_LIGHT_SPEED) speed = MPH_IMMOBILE;` — bullet velocity becomes 0. Bullet sits at the launcher, fuse expires after a few frames, the AA-distance damage branch (bullet.cpp:1268, `Distance(TarCom) < 0x80`) is skipped because the bullet is nowhere near the aircraft, and the impact anim plays on top of the firer. Player sees: missile emerges from turret, vanishes immediately, 0 damage. Looks like a rendering or warhead bug; is actually this Speed= bug. TDSAM/TDNike hit this 2026-05-25.
 
@@ -264,7 +262,7 @@ Already implemented in `weapon.cpp:202-210`. Just flag your new TD weapon and wr
 
 ### 3.3 — Donor ImageData pattern for non-building entities
 
-**Trap:** Bullets / anims / aircraft with TGA-only assets (no `.SHP` in any MIX file) have `Class->ImageData == NULL` after `One_Time` runs. `Draw_It` bails at `if (!shapeptr) return;` and the entity is invisible.
+**Trap:** a bullet, anim or aircraft with no classic SHP has a NULL `ImageData`. See the field manual's [Adding a unit](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/adding-a-unit.md#4-a-classic-image-even-in-an-hd-only-mod), section 4, and [Air delivery, fleets and support powers](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#cargo-plane-delivery), Cargo-plane delivery step 2.
 
 **Symptom:** entity behaves correctly (audio, damage, animation trail), but its body sprite is invisible. For bullets specifically: smoke trail visible, missile body absent.
 
@@ -272,15 +270,12 @@ Already implemented in `weapon.cpp:202-210`. Just flag your new TD weapon and wr
 
 ### 3.4 — Tileset XML format and location
 
-**Trap:** Standalone `TDxxx.XML` files in `TILESETS/<KIND>/` subdirs **are not loaded** by the launcher. Mod-additions format (`<Tiles>...</Tiles>` without `<Tilesets><TilesetTypeClass>` envelope) **also not loaded** as standalone files.
-
-**Symptom:** asset registration appears correct but the entity's sprite/visual doesn't render.
-
-**Fix:** Always patch the CONFIG.MEG-extracted base XML (`RA_VFX.XML`, `RA_STRUCTURES.XML`, `RA_UNITS.XML`) and ship the patched copy in `resources/.../Data/XML/TILESETS/`. The launcher overrides the CONFIG.MEG version with the mod's. Full `<Tilesets><TilesetTypeClass name="RA_VFX"><RootTexturePath>Red_Alert\VFX</RootTexturePath><Tiles>...` envelope required.
+Symptom of a tileset the launcher doesn't load: asset registration appears correct but the entity's sprite doesn't
+render. TF ships its patched copies in `resources/.../Data/XML/TILESETS/`. See the field manual's [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#registering-new-art), Registering new art.
 
 ### 3.5 — Buildings don't have `IsTwoShooter` field
 
-**Trap:** TD's `STRUCT_ATOWER` has `IsTwoShooter=true` in its constructor. RA's `BuildingTypeClass` constructor has no such field. Naive ports leave salvo count as 1.
+**Trap:** TD's `STRUCT_ATOWER` is a two-shooter. See the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#special-cases-at-method-level), Special cases.
 
 **Fix:** Use `Burst=2` on the weapon (RA's mechanism — `WeaponTypeClass.Burst > 1` makes `Is_Two_Shooter()` return true, which triggers the `IsSecondShot` toggle in `Fire_At`). Engine path works correctly; just set the weapon flag instead of building flag.
 
@@ -288,7 +283,7 @@ Already implemented in `weapon.cpp:202-210`. Just flag your new TD weapon and wr
 
 ### 3.6 — `Rearm_Delay` timing TD-vs-RA
 
-**Trap:** TD's `Rearm_Delay` returns 9 (short, first-shot-in-salvo) and ROF+3 (long, between salvos). RA's returns 3 and ROF respectively. Naive ports get tighter salvo cadence than TD.
+**Trap:** TD and RA rearm at different delays. See the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#rate-of-fire-scatter-and-ai-value), Rate of fire, scatter and AI value.
 
 **Fix:** Already implemented in `techno.cpp:3096-3119` — `Rearm_Delay` branches on `weapon->IsTDPort` and uses TD's 9 / ROF+3 timing for TD-port weapons.
 
@@ -354,15 +349,9 @@ The exception is plumbing the launcher requires (e.g. `Map.Submit` for layer sys
 
 ### 3.11b — Audio override mechanics (mod XML vs WAV-file replacement)
 
-Two distinct override paths, validated 2026-05-26 during TD EVA + radar SFX work:
+See the field manual's [TD sounds from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-sounds-from-the-base-game.md) and [Credit tick and radar sounds by faction](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/sound-and-music/credit-tick-and-radar-by-faction.md) for alias events, replacing a stock sample (the Reilsss CnCinRA precedent) and the log test for who plays a sound.
 
-| Asset class | Override mechanism | Side-conditional? |
-|---|---|---|
-| **VOC sound effects** fired via DLL `Sound_Effect(VOC_TD_*)` | Mod-side `SFXEVENTSNONLOCALIZED.XML` adds new `RAC_SFX_<NAME>` / `RAR_SFX_<NAME>` entries pointing at TD assets. | **Yes** — DLL chooses which VOC enum to fire based on `PlayerPtr->ActLike`. |
-| **VOX EVA speech** fired via `Speak(VOX_*)` → `On_Speech` | Mod-side `SFXEVENTSLOCALIZED.XML` adds `LocalizedSFXEvent` entries (engine sends TD-prefixed name; launcher resolves). | **Yes** — `On_Speech` chooses Speech[]→SpeechTD[] based on `player_ptr->ActLike`. See §3.12 routing recipe below. |
-| **Launcher-owned SFX** (radar on/off, ambient UI) | Mod-side WAV with same filename as launcher's hardcoded sample (case-insensitive) in `DATA/AUDIO/`. Reillsss CnCinRA precedent. | **Not directly.** Launcher's state-driven SFX dispatch happens entirely client-side; DLL's `Radar_Activate()` isn't called in REMASTER_BUILD. A mod-side SFXEvent with the same name as a stock one does override it (TF's `SFXEVENTSNONLOCALIZED.XML` repoints `RAC_SFX_cashup1` / `RAR_SFX_cashup1` to `SILENTD.WAV`), but either swap is global (all sides). Side-conditional means silencing the stock event and firing a per-faction one from the DLL, where the DLL sees the trigger (the credit tick, `building-sound-routing.md`). |
-
-**Test sequence** to identify which class you're dealing with: drop a diagnostic `fprintf` into the DLL hook (Sound_Effect call site, Speak call site, or the state-change function). If the log fires → DLL-driven, side-conditional is achievable. If silent → launcher-driven: replacing the WAV or repointing the event is the mod-side lever, and it is global.
+TF: `Sound_Effect(VOC_TD_*)` and `On_Speech` (`Speech[]`→`SpeechTD[]`) choose by `ActLike`; the credit tick's stock events point at `SILENTD.WAV` and the DLL fires the faction's own (`building-sound-routing.md`).
 
 ### 3.12 — `Who_Can_Build_Me` evicts cameos right after `Can_Build` adds them
 
@@ -394,7 +383,7 @@ if (((*building == STRUCT_HELIPAD || *building == STRUCT_TDHPAD) && !air->IsFixe
 
 ### 3.13 — Donor BSIZE/footprint parity check (TDWEAP shortcut trap)
 
-**Trap:** §2.2 of the recipe says "copy the donor's constructor verbatim" with a table mapping TDxxx → RA donor (e.g., TDWEAP → ClassWeapon). The implicit assumption is donor footprint ≈ TD footprint. **For TDWEAP, that's false:** RA's WEAP is `BSIZE_32` (3×2, no overlap), but TD's WEAP is `BSIZE_33` (3×3 with row-0 overlap). Copying RA's `ClassWeapon` verbatim gave a building wearing the wrong-sized footprint — the Remastered TGA tileset is sized for 3×3 and renders partially / mispositioned against a 3×2 engine origin.
+**Trap:** the recipe's donor table (§2.2) assumes the donor's footprint; TDWEAP's differs. See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#read-tds-constructor-and-tds-per-type-code), Read TD's constructor and TD's per-type code.
 
 **Symptom:** Body sprite renders truncated, displaced, or with the top cut off. Bib draws at the smaller footprint but the launcher's sprite occupies a wider area.
 
@@ -408,7 +397,7 @@ if (((*building == STRUCT_HELIPAD || *building == STRUCT_TDHPAD) && !air->IsFixe
 
 ### 3.14 — Overlay SHP (WEAP2-style door layer) shipping gap
 
-**Trap:** §7 of the recipe lists body SHP + buildup SHP (`OBLI.SHP:TDOBLI.SHP` + `OBLIMAKE.SHP:TDOBLIMAKE.SHP`) but doesn't mention overlay SHPs like `WEAP2.SHP`. War-factory-style buildings render in two layers: body (foundation/ramp) + overlay (walls/roof with door animation). RA's engine has a single global `BuildingTypeClass::WarFactoryOverlay` static loaded from `"WEAP2.SHP"` and drawn on top of every STRUCT_WEAP/FAKEWEAP. After STRUCT_TDWEAP separation, that single static still pointed at RA's WEAP2 — drawing RA's hangar roof on top of TD's body in classic mode → looked like a hybrid building.
+**Trap:** §7 of the recipe lists body SHP + buildup SHP (`OBLI.SHP:TDOBLI.SHP` + `OBLIMAKE.SHP:TDOBLIMAKE.SHP`) but doesn't mention overlay SHPs like `WEAP2.SHP`; RA's war-factory door is one hardcoded overlay. See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#build-ups-overlays-and-loading-order), Build-ups, overlays and loading order. After STRUCT_TDWEAP separation, that overlay still pointed at RA's WEAP2, drawing RA's hangar roof on top of TD's body in classic mode, so it looked like a hybrid building.
 
 **Symptom:** Classic-mode rendering shows TD foundation + RA roof (or vice versa). In Remastered mode the launcher tileset XML can swap the asset name, but classic mode uses the raw SHP pointer.
 
@@ -432,11 +421,8 @@ if (((*building == STRUCT_HELIPAD || *building == STRUCT_TDHPAD) && !air->IsFixe
 
 ### 3.17 — rsync's size-and-mtime skip can swallow a changed file
 
-**Trap:** plain `rsync -a` skips a file whose size and mtime match the target's even when its bytes differ. The
-RA*_SFX_EVA_* seed WAVs hit this; an XML or MIX change can too.
-
-**Fix:** `./deploy.sh` mirrors with `rsync -ac` (checksums) and then checks that the target matches the build by
-checksum. Deploy by hand with `-c` too.
+See the field manual's [Testing under Proton and on the Steam Deck](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/testing-under-proton.md#sync-by-checksum), Sync by checksum. The
+RA*_SFX_EVA_* seed WAVs hit this. `./deploy.sh` mirrors with `rsync -ac` and checks the target by checksum.
 
 ### 3.18 — `#ifdef FIXIT_HELI_LANDING` is INACTIVE — check active branch
 
@@ -551,7 +537,7 @@ The TD flamethrower taught two distinct lessons. Both apply to **any** weapon wh
   **Use `Fire_Direction()`, not `PrimaryFacing.Current()`** — that's what TD does (`TECHNO.CPP:2378`); copying the SAM's `PrimaryFacing` points the jet wrong. The weapon's `Anim=` in rules.ini names only the base member (`Anim=TDFLAME-N`); the `+ Dir_Facing` math selects the rest.
 - The anim is **attached** to the firer (`anim->Attach_To(this)`, `TECHNO.CPP:2389`) — *not* spawned standalone at a fixed coord.
 
-**(b) HD-only anims with NULL `ImageData` render a GREEN PLACEHOLDER → donor-ImageData fix.** This is the §2.7 / §3.24 MFCD pattern, now proven to apply to **anims** too. The `TDFLAME-*` tiles exist only as HD launcher art (no classic SHP in any MIX), so `AnimTypeClass::One_Time` leaves `ImageData == NULL`. Unlike bullets/units (which go *invisible*), a NULL-ImageData **anim** draws a **green placeholder box**. Fix — copy a vanilla anim's `ImageData` under `#ifdef REMASTER_BUILD` (the built-in `ANIM_BEACON_VIRTUAL` does exactly this):
+**(b) HD-only anims with NULL `ImageData` render a GREEN PLACEHOLDER → donor-ImageData fix.** See the field manual's [How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#rules), Rules, and [Adding a unit](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/adding-a-unit.md#4-a-classic-image-even-in-an-hd-only-mod), section 4. The `TDFLAME-*` tiles are HD-only, so TF copies a vanilla anim's `ImageData` under `#ifdef REMASTER_BUILD` (the built-in `ANIM_BEACON_VIRTUAL` does exactly this):
 ```cpp
 #ifdef REMASTER_BUILD
     void const* flame_donor = As_Reference(ANIM_FBALL1).ImageData;
@@ -564,7 +550,7 @@ The TD flamethrower taught two distinct lessons. Both apply to **any** weapon wh
 ```
 The overlay then resolves the real `TDFLAME-<dir>` tile by IniName. **Generalises: any TD anim that is HD-tile-only needs a donor ImageData or it renders green.**
 
-**(c) TD-prefix the anim names** (`FLAME-*` → `TDFLAME-*`: ctor names, `RA_VFX.XML` tiles + frame paths, bundled ZIPs, rules.ini `Anim=`). The base game ships its **own** `FLAME-N` tiles (78 refs in CONFIG.MEG); an unprefixed name resolves to the *base* def, not yours — same trap as `TDIONSFX`/`TDDRAGON`.
+**(c) TD-prefix the anim names.** See the field manual's [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#traps), Traps ("Don't reuse a stock tile name"); `FLAME-*` has 78 refs in CONFIG.MEG. TF renames them `TDFLAME-*` everywhere: ctor names, `RA_VFX.XML` tiles and frame paths, bundled ZIPs, rules.ini `Anim=` (same trap as `TDIONSFX`/`TDDRAGON`).
 
 **Process note:** this took ~6 speculative deploy cycles before a one-line diagnostic log (`Anim(raw)`, `a(dir)`, `IniName`, spawned-pointer) proved the DLL side was perfect and isolated the bug to the render path — straight to (b). Ship logging in the *first* test of any new entity (see the infantry recipe).
 
@@ -641,7 +627,7 @@ test, or its reversed build-up runs past its last frame (a white box) and never 
 
 ### 3.33 — A weapon, projectile or warhead named like a unit shares its section
 
-**Trap:** INI section names ignore case, so a weapon `[C3Beam]` and the unit `[C3BEAM]` are one section.
+**Trap:** on TF's Vanilla Conquer base a weapon `[C3Beam]` and the unit `[C3BEAM]` are one section. See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#give-each-port-its-own-type), Give each port its own type ("The INI name shares one namespace").
 
 **Symptom:** the weapon reads none of its own keys; with no `Projectile=` its bullet stays NULL and the first threat
 scan crashes (`WeaponTypeClass::Allowed_Threats`).

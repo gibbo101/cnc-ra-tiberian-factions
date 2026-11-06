@@ -14,12 +14,9 @@ launcher build none of it installs.
 
 TIBERIAN FACTIONS ADD-ONS, between LAN MODE and FACTION ENCYCLOPEDIA on the main menu, opens a screen of the mod's
 own: `TF_ADDONS.BUI` (`scripts/bui_addons_build.py`), the CAMPAIGNS page's frame with its class set to ClientG's
-`SplashScreen`. A screen's `.BUI` names the C++ class that runs it; `SplashScreen` is registered, used by no stock
-screen and binds nothing, so the launcher layer binds every widget. Opening: `GUIManager()` (`0x5ED5D0`), then
-`Create_Scene_Instance` (`0xF2CB70`, the name `RA/TF_AddOns`), focus (`0xF0E1D0`), and the scene's behaviour object
-at `+0x330` owns the widgets and events. BACK closes the scene (vtable `+0x2CC`) and releases it (`0x55FE10`); the
-main menu stays alive under it. A click handler bound with data `n` is called with the behaviour object plus `n`
-in `ecx`, so one handler serves every row or tab.
+`SplashScreen`, so the launcher layer binds every widget. It opens as the scene `RA/TF_AddOns`, as the field manual's
+[New screens and buttons](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/new-screens-and-buttons.md#a-new-screen) describes; a click handler bound with data `n` gets the behaviour
+object plus `n` in `ecx`, so one handler serves every row or tab.
 
 - **Tabs** ASSETS, THEATRES and CAMPAIGNS (`PackInfo.Kind`), each a clone of BACK with a glow when open and a badge
   counting its changes. An empty tab shows COMING SOON.
@@ -40,15 +37,14 @@ in `ecx`, so one handler serves every row or tab.
 
 ## Pack states
 
-`Pack_State` reads, in order:
+`Pack_State` reads, in order (the launcher's lists and their addresses: the field manual's
+[New screens and buttons](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/new-screens-and-buttons.md#switching-mods-on-and-off-from-your-screen), Switching mods on and off from your screen):
 
-1. **Loaded:** one of this session's mod roots (`0x1FE4C28`) holds the marker.
-2. **Switched on for the next start** or **switched off:** a record in the mod manager's list (getter `0x5E8CB0`,
-   records of `0xBC` bytes: folder `+0x78`, ID `+0xA8`, on `+0xB9`) holds the marker.
+1. **Loaded:** one of this session's mod roots holds the marker.
+2. **Switched on for the next start** or **switched off:** a record in the mod manager's list holds the marker.
 3. **Downloaded:** the pack's Workshop item folder, beside the game's install, holds the marker and a
-   `ccmod.json`, but the mod list hasn't seen it (the list only rescans on Mods > Refresh or a restart). Only when
-   the signed-in account subscribes (`GetItemState`): every account on a machine shares the Workshop folder, but
-   the launcher lists only its own account's subscriptions, so another account's download reads as missing.
+   `ccmod.json`, but the mod list hasn't seen it yet. Only when the signed-in account subscribes
+   (`GetItemState`); another account's download reads as missing.
 4. **Downloading:** Steam reports the item subscribed and downloading (`SteamAPI_ISteamUGC_GetItemState`); the
    ADD-ONS screen shows `GetItemDownloadInfo`'s percentage.
 5. **Missing.**
@@ -73,13 +69,9 @@ whole session, so a 2-second `SetTimer` on its UI thread refreshes it while it s
 
 **ENABLE ADD-ONS** opens the ADD-ONS screen with the first such add-on selected.
 
-Switching on uses the Mods screen's own toggle (`0x7BB7A0`) for an installed pack and adds a downloaded pack's ID
-to the profile's enabled list (`0x20E0D88`; the ID is zlib's CRC-32 of `ccmod.json`'s name followed by
-`high.low`), saves the profile (`0x14D8420` with 1, 0, 1), and restarts by posting the launcher's
-`CL_CLIENT_RESTART` message, as the Mods screen's RESTART NOW does.
-
-A `ccmod.json` version bump changes the ID, and the launcher drops enabled IDs that match no installed mod at
-startup, so an update switches the pack off once; the notice then shows.
+Switching on, and why an update changes a pack's ID: see the field manual's
+[New screens and buttons](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/new-screens-and-buttons.md#switching-mods-on-and-off-from-your-screen). TF restarts by posting the launcher's
+`CL_CLIENT_RESTART` message; after a pack update the pack is off once, so the notice shows.
 
 ## Lobby popup
 
@@ -87,8 +79,8 @@ Picking TS GDI for any slot, or a slot taking it from the lobby's settings, rais
 pack isn't loaded. **GO TO ADD-ONS** leaves the lobby through its own Back handler (`0x71C790`, on the next UI
 tick) and opens the ADD-ONS screen with the pack selected. The box reports its first button as 2 and OK as 3.
 
-The launcher's own join check needs every player on the same enabled mods, add-ons included: a joiner with an
-add-on the host lacks gets MODS REQUIRED, "Must Disable", for it. An optional add-on is per player only alone.
+In multiplayer every player needs the same add-ons: see the field manual's
+[LAN games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/lan-games.md#every-player-needs-the-same-mods), Every player needs the same mods.
 
 ## Load Game check
 
@@ -97,6 +89,5 @@ and refuses any other save. The launcher reads the selected save through Steam's
 **Load** with a reason, through the load screen's stock missing-custom-map path, when the marker or version
 differs, or when the save needs a pack that isn't loaded.
 
-A `.sav` is ClientG's chunk file: a zlib stream (metadata, the screenshot) whose compressed size is at `0x10`,
-then a chunk index ending in a sync flush (`00 00 FF FF`), then the instance chunk: a 20-byte header with its size
-at `+8`, and raw deflate holding the DLL's save data. `puff.c` (zlib's reference inflater) inflates its start.
+The `.sav` layout and how to reach the DLL's data: see the field manual's
+[Save files (.sav)](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/formats/save-files.md#the-layout).

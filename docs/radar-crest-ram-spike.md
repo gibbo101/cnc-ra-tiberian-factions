@@ -42,36 +42,21 @@ The sim's DLL does it cross-process, the same way as the EVA patch (a launcher's
 any record holding a slot's stock rect or a TD rect → `WriteProcessMemory` of the wanted rect.
 Records must be computed as **double divide then cast to float** to byte-match ClientG's copies.
 
-**The scan skips every thread stack** (`TF_Thread_Stacks`: each thread's TEB `StackBase` via
-`NtQueryInformationThread`, down to its reservation base; a 64-bit TEB under WoW64 has the 32-bit
-one at `+0x2000`). A copy of the DLL also runs inside ClientG, so the scan found its own `slots`
-locals on the game thread's stack and wrote the wanted rect there milliseconds later, into
-whatever frame stood there by then: six such writes landed in the stack of the ClientG thread
-that crashed on 2026-10-04 (the crash itself was the EVA patch, `eva-ram-patch-spike.md` finding
-6). Never write on a needle match alone: confirm the bytes are the record, and keep stacks out.
+**The scan skips every thread stack** (`TF_Thread_Stacks`), as the field manual's
+[Re-pointing launcher UI art in memory](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/repointing-atlas-regions.md#the-method) describes (The method, step 2, and the fragility box).
+Six stray writes from an earlier scan were found in the stack of a ClientG thread that crashed (the crash itself
+was the EVA patch, `eva-ram-patch-spike.md` finding 6).
 
-## The three findings that shaped it (in the order they bit)
+## The three findings that shaped it
 
-1. **Pixels are GPU-only after launch.** A 1.7 GB read of every readable ClientG mapping found the
-   crest pixels in NO encoding (BGRA/RGBA/ARGB/ABGR/24-bit, even a 4-pixel run, and no TGA
-   header) while the atlas *metadata* (region names, atlas name) was resident. The pixel-overwrite
-   route from the original plan is dead. Corollary: the loose atlas is read **once per launch** —
-   a marker painted into the crest region on disk was invisible across a new match in the same
-   session and visible after exit-to-desktop + relaunch. A disk mailbox can only ever be
-   per-launch.
-2. **The record is created lazily, on the first radar draw, a few frames into the match.** A
-   match-start-only patch (frame 0) found nothing on a fresh launch. Fix: `TF_Crest_Tick`
-   requests full scans at frames 0, 6, 12, 24, 48, 96, 192 and 384 of each match, remembers every
-   record address found, and re-verifies the known addresses every fifth frame.
-   **The scan must not run on the game thread:** each one reads the launcher's whole heap
-   (hundreds of MB cross-process), and the first version, 75 scans on the game thread, stalled
-   matches for up to a minute at the start. It now runs on a worker thread (`TF_Crest_Scan_Thread`,
-   one at a time, from a private copy of the slot table); `TF_Open_ClientG` caches the pid.
-3. **Nod draws the ALLIES slot too.** With only the SOVIET record re-pointed, a Nod player kept
-   the ALLIES art. Which slot a faction draws is launcher-owned, so the DLL points **both** slots
-   at the faction rect for GDI/Nod and both back to stock otherwise; whichever the launcher draws
-   is right. (The 2026-07-20 "HOUSE_BAD → SOVIET region" claim was never testable: both regions
-   held the same C&C logo.)
+See the field manual's [Re-pointing launcher UI art in memory](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/repointing-atlas-regions.md#what-decides-the-timing), What decides the timing, Traps and
+the fragility box. The pixel search tried BGRA, RGBA, ARGB, ABGR and 24-bit, a 4-pixel run and a TGA header. In TF,
+`TF_Crest_Tick` requests the full scans, remembers every record address found and re-verifies them every fifth
+frame; `TF_Crest_Scan_Thread` runs one scan at a time from a private copy of the slot table; `TF_Open_ClientG`
+caches the pid. Nod draws the ALLIES slot too, so the DLL points both slots at the faction rect for GDI/Nod and
+both back to stock otherwise.
+
+The earlier claim that `HOUSE_BAD` draws the SOVIET region was never testable: both regions held the same C&C logo.
 
 ## The waypoint and rally markers
 
@@ -118,10 +103,9 @@ square (78x78) window of each TD button bar: icon on the grille with the top/bot
 14 states, no repaint. Live inventory method: scan ClientG for the record of every candidate
 region — only drawn regions have one.
 
-**Restore trap + fix:** two slots that share a target (blue and red build bar → one TD plate;
-ALLIES/SOVIET crest → one TD crest) were indistinguishable on the way back, so the first slot won
-(Allied got the red build bar, Soviet got the chevron). Every written rect now carries a per-slot
-sub-pixel nudge on u0 (`slot * 1e-6` UV ≈ 0.007 px), so each record restores to its own stock.
+**Restore trap:** two slots that share a target restored to the same stock rect (Allied got the red build bar,
+Soviet got the chevron). Every written rect carries the per-slot `u0` nudge from the field manual's
+[Re-pointing launcher UI art in memory](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/repointing-atlas-regions.md#traps), Traps.
 
 **Resize + position:** GDI's eagle is aspect-correct and sits clear of the launcher's "GDI"
 label — scaled to 396 high, centred horizontally and top-aligned in a 495x444 window (the
@@ -143,13 +127,10 @@ patch depends on (pristine RA crests + the DINO eagle) into a shipped atlas.
 
 ## Can the launcher HUD gain new buttons?
 
-Not by this patch, and not by data. This patch only changes which atlas pixels an EXISTING widget
-samples. The widget set — how many buttons, where they sit, their hit-tests and what they do — is
-compiled `ClientG.exe` code plus the `RA_TACTICAL_UI.BUI` scene graph, and data alone can only
-reshape/hide/retexture existing widgets (`bui-front-end-modding.md`). Open, untried: the main menu
-gained new buttons and a screen by cloned widgets plus launcher code patched in from the DLL
-(`pack-panel.md`); whether the in-match HUD takes the same route is unproven. Until then a future
-TS sidebar means re-skinning and re-arranging RA's widgets, not adding to them.
+Not by this patch, and not by data; whether the main menu's route (`pack-panel.md`) works on the in-match HUD is
+open. See the field manual's [Re-pointing launcher UI art in memory](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/repointing-atlas-regions.md#traps), Traps, and
+[What the launcher owns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/what-the-launcher-owns.md).
+Until that route is tried, a future TS sidebar means re-skinning and re-arranging RA's widgets, not adding to them.
 
 ## Open / follow-ups
 
@@ -158,12 +139,9 @@ TS sidebar means re-skinning and re-arranging RA's widgets, not adding to them.
 - TS GDI's eagle is painted over `UI_OBSERVER_MAP_BG` (TD-mode observer art an RA-mode match
   never draws), because the atlas had no free region (`scripts/crest_atlas_paint.py`). The atlas
   can grow instead (`ui-atlas-modding.md`, "Growing the atlas").
-- Live-testing tool: with the game running headless, `/proc/<ClientG pid>/mem` is read/write
-  from Bash (same uid), so a hypothesis costs one Python write + one screenshot, no DLL rebuild.
-  That is how findings 1 and 3 were established in minutes.
+- Live-testing tool: the field manual's [Re-pointing launcher UI art in memory](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/repointing-atlas-regions.md#a-quick-test-loop), A quick test loop.
 
-## Standing rule (reaffirmed)
+## Standing rule
 
-A wall proven dead on the data side is not proven dead on the RAM side. Before declaring a
-launcher behaviour impossible: (1) grep CONFIG.MEG, (2) scan ClientG memory for the *structure*
-that drives it (names, rects, UVs), not just the payload.
+See the field manual's [What the launcher owns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/what-the-launcher-owns.md#search-in-this-order), Search in this order. Scan ClientG for the
+*structure* that drives a behaviour (names, rects, UVs), not just its payload.

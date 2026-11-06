@@ -37,14 +37,7 @@ static BuildingTypeClass const ClassGTower(STRUCT_GTOWER,
     /* ... */);
 ```
 
-TD `building.cpp` dispatch for `STRUCT_GTOWER`:
-
-| Line | What |
-|---|---|
-| 2784-2787 | Fire_Data: `coord += DIR_N 0x0030; dist = 0x0040;` |
-| 2815-2821 | Fire_Coord: `coord += DIR_N 0x0030; if (target) coord += Direction(coord, target) 0x0040;` |
-
-That's the entire dispatch surface. No Mission_Attack, no Shape_Number, no AI, no Power_Fraction, no crew-spawn-offset. Simplest defensive building in TD.
+TD dispatches `STRUCT_GTOWER` only in `Fire_Data`/`Fire_Coord` (`building.cpp:2784-2787`, `2815-2821`); no Mission_Attack, Shape_Number, AI, Power_Fraction or crew-spawn-offset case. The muzzle values are in the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#weapons-muzzle-flashes-and-offsets), Weapons, muzzle flashes and offsets ("Where shots leave").
 
 ### TDGUN = TD's `STRUCT_TURRET` (TD `bdata.cpp:475-530`)
 
@@ -77,11 +70,11 @@ TD `building.cpp` dispatch for `STRUCT_TURRET`:
 | Line | What |
 |---|---|
 | 2784-2787 | Fire_Data (default case via fallthrough) |
-| 2795-2798 | Fire_Data SAM/TURRET branch: `coord += DIR_N 0x0030; dist = 0x0080;` |
-| 2829-2832 | Fire_Coord SAM/TURRET branch: `coord += DIR_N 0x0030; coord += PrimaryFacing.Current() 0x0080;` |
+| 2795-2798 | Fire_Data SAM/TURRET branch |
+| 2829-2832 | Fire_Coord SAM/TURRET branch |
 | 4553, 4580 | Version-1.07-pre-MP-quirks (not relevant to us — `GameToPlay != GAME_NORMAL` gate) |
 
-Also relies on the generic `AI` rotation block (TD `building.cpp:1281-1290`) which rotates at 12 units/tick for non-SAM turrets — `Rotation_Adjust(12)`.
+Also relies on the generic `AI` rotation block (TD `building.cpp:1281-1290`). The muzzle values and turn rate are in the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#weapons-muzzle-flashes-and-offsets): Weapons, muzzle flashes and offsets ("Where shots leave"), and The SAM site.
 
 ### TD `WEAPON_CHAIN_GUN` (TD `const.cpp:71`)
 
@@ -260,7 +253,7 @@ Damage=40              ; ✓ TD 40
 ROF=60                 ; ✓ TD 60
 Range=6                ; ✓ TD 0x0600 leptons = 6 cells
 Projectile=Cannon      ; ⚠ RA's vanilla [Cannon] (Image=120MM only, all other fields default)
-Speed=40               ; need to verify against TD MPH_VERY_FAST
+Speed=40               ; reads as 102; 39 matches TD MPH_VERY_FAST (T9)
 Warhead=AP             ; ✓ TD WARHEAD_AP
 Report=TNKFIRE6        ; ✓ TD VOC_TANK4
 Anim=GUNFIRE           ; ✓ TD ANIM_MUZZLE_FLASH
@@ -338,13 +331,11 @@ Projectile=TDSpreadfire
 Speed=100              ; TD's MPH_LIGHT_SPEED — verify exact integer
 Warhead=HE             ; TD WARHEAD_HE (RA's [Vulcan] = SA)
 Report=GUN8            ; TD VOC_MINI (RA's [Vulcan] = GUN13)
-Anim=GUNFIRE           ; ANIM_GUN_N would be the more authentic choice but
-                       ; RA's adata.cpp already maps GUNFIRE to ANIM_MUZZLE_FLASH;
-                       ; the 8-direction ANIM_GUN_N path resolves via the
-                       ; case-match at techno.cpp:3388 if we point Anim
-                       ; at one of the directional Gun_N animation names —
-                       ; verify in implementation. Either works visually.
+Anim=GUNFIRE           ; RA's adata.cpp maps GUNFIRE to ANIM_MUZZLE_FLASH;
+                       ; chosen over MINIGUN (the 8-direction ANIM_GUN_N)
 ```
+
+`Anim=MINIGUN` as TD's 8-direction gun flash (the directional-anim case in `TechnoClass::Fire_At`): see the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#weapons-muzzle-flashes-and-offsets), Weapons, muzzle flashes and offsets.
 
 **T5 — Update `[TDGTWR]` to bind the TD weapon**:
 
@@ -393,7 +384,7 @@ Update the comment at line 2555 (`; BULLET_APDS ≈ RA's Cannon visually; no new
 
 **T9 — Verify `Speed=40` matches TD's `MPH_VERY_FAST`**:
 
-TD's BULLET_APDS uses MPH_VERY_FAST. RA's `Speed=` integer for that enum needs verification — pick an existing RA weapon firing a fast-tank-shell projectile (e.g. RA's heavy tank `[90mm]`) and check what Speed value it uses. If 40 matches, we're good. If not, adjust.
+TD's BULLET_APDS uses MPH_VERY_FAST (100, TD `DEFINES.H`). `[TDTurretGun]` isn't an `IsTDPort` weapon (`rules.cpp:735`), so RA's percentage applies: `Speed=39` by the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md) formula (Speed): 40 reads as 102 and 39 as 99, the closest to TD's 100. The shipped rules.ini still has `Speed=40`.
 
 ---
 
@@ -425,7 +416,7 @@ TD's BULLET_APDS uses MPH_VERY_FAST. RA's `Speed=` integer for that enum needs v
 **TDGUN:**
 - [ ] `[TDAPDS]` projectile section in rules.ini.
 - [ ] `[TDTurretGun] Projectile=TDAPDS` (was `Projectile=Cannon`).
-- [ ] `Speed=40` verified against TD's `MPH_VERY_FAST` (adjust if needed).
+- [ ] `Speed=39` to match TD's `MPH_VERY_FAST` (T9; the shipped value is 40).
 - [ ] Firing audio is `TNKFIRE6` (already correct; regression check only).
 - [ ] Damage per shot vs medium tank: TD-authentic 40 damage with WARHEAD_AP (verify against vanilla TD if possible).
 
@@ -448,7 +439,7 @@ Three independent commit shapes:
 
 **Medium (TDGTWR weapon port):** T1 + T2 + T3 + T4 + T5 + T6 (offset fix + audio entry + weapon/projectile port + binding update + manifest). Will measurably change TDGTWR's combat output. Pair with a quick skirmish smoke test before push.
 
-**Optional (T9):** Speed verification for TDTurretGun. Probably no-op (40 is right) but worth confirming.
+**Optional (T9):** set TDTurretGun's `Speed=39` (the shipped 40 reads as 102, 39 as 99, closest to TD's 100).
 
 Both TDGTWR and TDGUN cargos are independent of the TDSAM and TDATWR work in the parallel deep-dive docs.
 

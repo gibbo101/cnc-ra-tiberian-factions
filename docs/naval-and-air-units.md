@@ -11,9 +11,8 @@ this is a deliberate step past TD-authentic. Live stats are in rules.ini.
 
 Each faction gets its own production building and units. The RA buildings and units stay with
 their RA owners: `[SYRD] Owner=allies`, `[SPEN] Owner=soviet`, `[AFLD] Owner=soviet`,
-`[SS] Owner=soviet`. Opening a shared RA building or unit to GDI or Nod leaks its whole roster and
-its superweapon grants (the first navy and A-10 builds did, and were reverted); give the faction
-its own type instead. The one shared piece is the RA transport, `[LST]`, owned by every side.
+`[SS] Owner=soviet`. TF shares only the RA transport, `[LST]`, with every side. See the field
+manual's [Air delivery, fleets and support powers](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#a-factions-own-fleet-and-air-force), A faction's own fleet and air force.
 
 ## Roster
 
@@ -61,6 +60,6 @@ All granted by a host building, the Ion Cannon pattern, in `HouseClass` (`house.
   launcher's brightness-preserving remap, capped at deck brightness (higher drew halos round the
   cabin). A shadow baked into a GLB texture is not a render shadow; re-render with a fill light
   rather than painting over it.
-- HD draw scales classic pixels by about 5.33 (128/24).
+- HD draw scale: see the field manual's [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#size-comes-from-the-classic-shape), Size comes from the classic shape.
 - `scripts/render_helideck.py` models and renders a helideck overlay (`TDCADECK`, not in the game) on
   the same rig.

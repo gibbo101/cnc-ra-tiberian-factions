@@ -58,9 +58,9 @@ A mission is an instance in `scripts/campaigns_work/missions.xml`, text keys in
 `resources/remaster_mods/Vanilla_RA/Data/ModText.csv`, and an entry in its tab's campaign files.
 
 1. **The instance.** Add it to `missions.xml`; `campaigns_instances.py` appends it to the loose
-   `INSTANCES.XML` after every stock instance, because ClientG reads that file in one pass and an
-   instance placed before its `Variant` inherits nothing (its start markers log as `(0,0)` and it
-   lists on no tab).
+   `INSTANCES.XML` after every stock instance (why: the field manual's
+   [Custom campaigns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-campaigns.md#adding-a-mission-data-shows-it-but-launching-is-the-hard-part), Put it after its
+   `Variant`). A misplaced instance's start markers log as `(0,0)`.
 
    ```xml
    <Instance Name="TF_GDI_1" Variant="Mobius_Aftermath_Allied_Map_Base">
@@ -87,14 +87,13 @@ A mission is an instance in `scripts/campaigns_work/missions.xml`, text keys in
    `IsUnlockedAtStart`; the rest unlock through the campaign chain.
 2. **The text.** Add the name and briefing keys to `ModText.csv` (`"KEY",,,"English text",...`,
    matching the existing rows).
-3. **The campaign.** Each tab's missions belong to one stock campaign: Allies `RA_ALLIES_CAMPAIGN`
-   (`RA_ALLIES.XML`), Soviets `RA_USSR_CAMPAIGN` (`RA_USSR.XML`), GDI `RA_Aftermath_Allied_CAMPAIGN`
-   and Nod `RA_Aftermath_USSR_CAMPAIGN` (both `RA_AFTERMATH.XML`), TS GDI `RA_Ant_CAMPAIGN`
-   (`ANT.XML`). Add a `<CampaignMissions>` `<Entry>` there, and a
-   `ProgressiveCampaignMissionTypeClass` in its `*_MISSIONS.XML` naming the instance, with
-   `MapStageUnlock` set to the next stage (`-1` ends the campaign). Allies and Soviets pick missions
-   on the campaign map, so they also need a stage in `RA_CAMPAIGNMAPS.XML`. The files ship loose in
-   `Data/XML/CAMPAIGNS/`, starting from the stock copies in `CONFIG.MEG`.
+3. **The campaign.** Add a `<CampaignMissions>` `<Entry>` to the tab's stock campaign (GDI on the Allied
+   expansions', Nod on the Soviet expansions', TS GDI on Ant's; the field manual's
+   [Custom campaigns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-campaigns.md#how-the-campaign-files-fit-together) table names each file), and a
+   `ProgressiveCampaignMissionTypeClass` naming the instance in its `*_MISSIONS.XML`, with `MapStageUnlock` set to
+   the next stage (`-1` ends it). Allies and Soviets pick missions on the campaign
+   map, so they also need a stage in `RA_CAMPAIGNMAPS.XML`. The files ship loose in `Data/XML/CAMPAIGNS/`,
+   starting from the stock copies in `CONFIG.MEG`.
 4. **Rebuild** with `scripts/campaigns_page_build.sh`.
 
 A list of 30 missions on one tab lists and scrolls as the stock lists do; there is no cap.
@@ -103,11 +102,11 @@ A list of 30 missions on one tab lists and scrolls as the stock lists do; there 
 
 The instance server only launches instances it knew at startup, so a new instance needs one of:
 
-- **A hijacked stock slot**: keep a stock instance and ship its scenario as `CCDATA/<file>.ini`
-  with `[Digest]` removed (`campaign-tabs-research.md`; proven for an unedited slot). The slot's
-  tab follows its base, so an Aftermath Allied slot given `<House>GDI</House>` would land on the
-  GDI tab; that edit is untested, and `campaigns_instances.py` hides every stock slot, so it would
-  need to show the hijacked ones.
+- **A hijacked stock slot**: the field manual's
+  [Custom campaigns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-campaigns.md#replacing-an-official-mission-shadow-its-scenario), Replacing an official mission
+  The slot's tab follows its base, so an Aftermath Allied slot given `<House>GDI</House>` would land on the GDI
+  tab; that edit is untested. `campaigns_instances.py` hides every stock slot, so it would need to show the
+  hijacked ones.
 - **The mission carrier** (dev builds): a `TF_` instance launches under the name of
   `MOBIUS_ALLIED_CAMPAIGN_1_MAP`, its own map is handed to the DLL through
   `tf_carrier_mission.txt`, and its progress and medal are recorded under its own name. A

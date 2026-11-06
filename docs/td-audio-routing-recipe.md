@@ -3,14 +3,12 @@
 **Status:** Reference. How a sound reaches the launcher from the DLL, with the Obelisk laser
 (`OBELRAY1`) as the worked example; every TD and TS sound in the mod ships this way.
 
-**TL;DR:**
-
-1. Add `VOC_TD_*` enum entry to `redalert/defines.h` (before `VOC_COUNT`).
-2. Add `SoundEffectName[]` entry in `redalert/audio.cpp` with the TD asset's bare name (e.g. `"OBELRAY1"`).
-3. Ship no WAV for a TD sample: `TDC_SFX_X.WAV` (classic mode) and `TDR_SFX_X.WAV` (remastered mode) already play from the base game's `Data/SFX3D.MEG`, and TD's EVA lines from `SFX2D_EN-US.MEG`.
-4. Only if a routed TD sound stays silent, extract both WAVs via `scripts/meg_extract.py` and place them **unchanged** in `resources/remaster_mods/Vanilla_RA/Data/AUDIO/` (the mod still ships copies of a few early samples, the Obelisk's laser among them). New sounds of your own ship there under their own names.
-5. Merge — **don't replace** — the base `SFXEVENTSNONLOCALIZED.XML` from `CONFIG.MEG` with alias `SFXEvent` entries, then ship the merged file at `Vanilla_RA/Data/XML/AUDIO/SFXEVENTSNONLOCALIZED.XML`.
-6. Reference the sound by its bare name in rules.ini (`Report=OBELRAY1`) — the DLL passes it via `SoundEffectName.Name` to the launcher; launcher prepends `RAR_SFX_` / `RAC_SFX_` and resolves the alias from our XML.
+See the field manual's [TD sounds from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-sounds-from-the-base-game.md#the-method), The method.
+TF's files: the `VOC_TD_*` entries in `redalert/defines.h`, the `SoundEffectName[]` entries in
+`redalert/audio.cpp`, and the merged `resources/remaster_mods/Vanilla_RA/Data/XML/AUDIO/SFXEVENTSNONLOCALIZED.XML`.
+Base files come out with `scripts/meg_extract.py`. TF ships no WAV for a routed TD sample, apart from copies of a
+few early ones (the Obelisk's laser among them); its own new sounds ship in
+`resources/remaster_mods/Vanilla_RA/Data/AUDIO/` under their own names.
 
 ---
 
@@ -27,37 +25,14 @@ new_event.SoundEffect.SoundEffectPriority = SoundEffectName[sound_effect_index].
 new_event.SoundEffect.SoundEffectContext  = SoundEffectName[sound_effect_index].Where;
 ```
 
-The DLL ships the `Name` field as a **string** (max 15 chars + null). The launcher then:
-
-1. Prepends `RAR_SFX_` (remastered audio mode) or `RAC_SFX_` (classic audio mode) to the Name.
-2. Looks up the resulting `RAR_SFX_X` / `RAC_SFX_X` as the `Name=` attribute of an `<SFXEvent>` in `Data/XML/AUDIO/SFXEVENTSNONLOCALIZED.XML`.
-3. Reads the matched SFXEvent's `<SampleNamesList>` to find the actual `.WAV` file to play from `Data/AUDIO/`.
-
-The crucial insight: the `<SFXEvent>`'s `Name=` attribute is what the launcher matches, but the `<SampleNamesList>` can point at ANY `.WAV` file. So we create **alias SFXEvents** that look like RA entries (RAR_/RAC_ prefix) but route to TD `.WAV` files (TDR_/TDC_).
-
-The DLL stays clean — it knows nothing about which game the audio originated from. It just passes the bare name like `"OBELRAY1"`.
+What the launcher does with the name: see the field manual's [TD sounds from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-sounds-from-the-base-game.md#how-a-sound-gets-from-the-dll-to-the-speakers), How a sound gets from the DLL to the speakers.
 
 ---
 
-## Concrete walkthrough — adding Obelisk laser sound (the worked example)
+## The worked example: the Obelisk laser
 
-### 1. DLL enum + sound table entry
-
-`redalert/defines.h` — add before `VOC_COUNT`:
-
-```cpp
-VOC_TD_LASER, // Obelisk humming laser beam
-```
-
-`redalert/audio.cpp` — add to `SoundEffectName[]` array:
-
-```cpp
-{"OBELRAY1", 1, IN_NOVAR}, // VOC_TD_LASER (Obelisk humming laser beam)
-```
-
-### 2. Extract the .WAV files (only if the routed sound is silent)
-
-The base game's samples normally play as they are, and the mod ships no copy (step 3 of the TL;DR). One routed TD sound stayed silent until its samples were copied in, and the cause was never found; copying them in is the workaround.
+The manual's worked example is TF's Obelisk laser (`VOC_TD_LASER`, `{"OBELRAY1", 1, IN_NOVAR}`). TF ships copies of
+its two samples, extracted unchanged from the base game:
 
 ```bash
 python3 scripts/meg_extract.py extract \
@@ -66,129 +41,23 @@ python3 scripts/meg_extract.py extract \
   /tmp/extract/
 ```
 
-Yields:
-
-- `TDC_SFX_OBELRAY1.WAV` (classic mode — DOS-era AUD-source recording, ~14KB)
-- `TDR_SFX_OBELRAY1.WAV` (remastered mode — modern HD recording, ~36KB)
-
-### 3. Ship the .WAV files (only with step 2)
-
-Place verbatim (no rename) at (the mod ships the Obelisk's this way):
-
-```
-resources/remaster_mods/Vanilla_RA/Data/AUDIO/TDC_SFX_OBELRAY1.WAV
-resources/remaster_mods/Vanilla_RA/Data/AUDIO/TDR_SFX_OBELRAY1.WAV
-```
-
-### 4. Merge base XML + alias SFXEvents
-
-Extract the base XML from `CONFIG.MEG`:
-
-```bash
-python3 scripts/meg_extract.py extract \
-  "$(python3 scripts/steam_library.py path common/CnCRemastered)/Data/CONFIG.MEG" \
-  SFXEVENTSNONLOCALIZED \
-  /tmp/sfx_extract/
-```
-
-Then inject alias entries before the closing `</SFXEvents>` tag:
-
-```xml
-  <SFXEvent Name="RAC_SFX_OBELRAY1" Preset="_PRESET_MD_MOBIUS_2D">
-    <IsPreset> False </IsPreset>
-    <MinPitch>100</MinPitch>
-    <MaxPitch>100</MaxPitch>
-    <SampleNamesList>
-      <entry> TDC_SFX_OBELRAY1.WAV </entry>
-    </SampleNamesList>
-  </SFXEvent>
-
-  <SFXEvent Name="RAR_SFX_OBELRAY1" Preset="_PRESET_MD_MOBIUS_2D">
-    <IsPreset> False </IsPreset>
-    <MinPitch>100</MinPitch>
-    <MaxPitch>100</MaxPitch>
-    <SampleNamesList>
-      <entry> TDR_SFX_OBELRAY1.WAV </entry>
-    </SampleNamesList>
-  </SFXEvent>
-```
-
-Save merged file as:
-
-```
-resources/remaster_mods/Vanilla_RA/Data/XML/AUDIO/SFXEVENTSNONLOCALIZED.XML
-```
-
-### 5. Reference from rules.ini
+This yields `TDC_SFX_OBELRAY1.WAV` (classic, about 14 KB) and `TDR_SFX_OBELRAY1.WAV` (remastered, about 36 KB),
+shipped as `resources/remaster_mods/Vanilla_RA/Data/AUDIO/TD?_SFX_OBELRAY1.WAV`. The base
+`SFXEVENTSNONLOCALIZED.XML` comes out of `Data/CONFIG.MEG` the same way. The weapon names the sound:
 
 ```ini
 [TDOblsLaser]
-Damage=200
-ROF=90
-Range=7.5
-Projectile=TDLaser
-Speed=255
-Warhead=TDLaser
-Report=OBELRAY1     ; ← resolves to VOC_TD_LASER → RAR_SFX_OBELRAY1 alias → TDR_SFX_OBELRAY1.WAV
+Report=OBELRAY1     ; ← VOC_TD_LASER → RAR_SFX_OBELRAY1 alias → TDR_SFX_OBELRAY1.WAV
 ```
 
 ---
 
 ## Critical gotchas
 
-### Must MERGE, not REPLACE, the base XML
-
-Shipping only our 5 entries (instead of base 578 + our 4 = 582) causes the launcher to crash because every base sound reference becomes a dangling lookup. Always extract from `CONFIG.MEG` first, append ours, ship the merged file.
-
-### XML must be well-formed — no `--` inside comments
-
-XML 1.0 spec forbids `--` inside comment blocks. Easy mistake when writing comments like `<!-- foo -- bar -->`. The launcher's XML parser will choke and crash the launcher between game-select and main-menu. Use `:` or em-dashes (`—`) instead.
-
-Validate with:
-
-```bash
-python3 -c "import xml.etree.ElementTree as ET; ET.parse('path/to/SFXEVENTSNONLOCALIZED.XML')"
-```
-
-### Both RAC_ and RAR_ aliases needed
-
-The launcher uses different prefixes per audio mode:
-
-- `RAC_SFX_X` — classic audio mode
-- `RAR_SFX_X` — remastered audio mode
-
-User can toggle at runtime via Options → Audio. Without both aliases, one mode plays the right sound and the other is silent.
-
-### File format hygiene
-
-- **UTF-8 BOM**: keep the `ef bb bf` byte sequence at the file head. The base XML has it; preserve it through any merge tooling.
-- **Line endings**: base XML is CRLF, but a file that is LF throughout loads fine (the mod's `SFXEVENTSNONLOCALIZED.XML` and `SFXEVENTSLOCALIZED.XML` are). Don't mix the two: whether a mixed file loads is untested.
-
-### Preset definitions
-
-`_PRESET_MD_MOBIUS_2D` and other presets are defined in the base XML. When you merge base + additions, the references resolve. If you ever ship a standalone (non-merged) XML, you must include the preset definition block too — otherwise the launcher crashes resolving the reference.
-
-### Whitespace inside `<entry>` tags
-
-Reilsss's reference mod uses `<entry> TDC_SFX_OBELRAY1.WAV </entry>` with spaces inside. We've replicated this pattern for safety, though unclear if the launcher is whitespace-strict.
-
-### An inaudible sound: check the event's preset and mixer before the sample
-
-When a routed sound plays silent, walk the chain after the sample first: event → preset → mixer.
-The TS credit tick's preset pinned its volume at 5 of 100, and eight rounds went on the sample
-before anyone looked.
-
-### The VOC enum and `SoundEffectName[]` are order-coupled
-
-`VocType` in `defines.h` indexes `SoundEffectName[]` in `audio.cpp` by position. Append a new
-sound to both, in the same order; an entry out of step plays its neighbour's sound.
-
-### Never repoint the silenced radar events
-
-The launcher fires `RA?_SFX_RADARON2` / `RADARDN1` itself, so those events point at 44-byte
-header-only PCM WAVs with no samples, which play silence, and the DLL plays the faction's pair (`building-sound-routing.md`). Repointing the
-stubbed events un-silences the launcher's copy and the sound plays twice. A new era gets its own
-event pair and a route in the DLL.
+See the field manual's [TD sounds from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-sounds-from-the-base-game.md#traps), Traps, and [Credit tick and radar sounds by faction](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/sound-and-music/credit-tick-and-radar-by-faction.md#traps), Traps.
+Check a merged XML with `python3 -c "import xml.etree.ElementTree as ET; ET.parse('path/to/SFXEVENTSNONLOCALIZED.XML')"`.
+The player switches classic and remastered sound at runtime in Options → Audio. TF's silenced radar events point at
+44-byte header-only WAVs, and the DLL plays the faction's pair (`building-sound-routing.md`).
 
 ---
 
@@ -241,20 +110,13 @@ the localized channel, and a weapon report on the non-localized one. The rules a
 3. **A bad format fails silently or crashes.** Check a new file's md5 and fmt chunk against a base
    sample on the same channel.
 
-Never probe audio through the launcher-fired credit tick: any loose override silences it.
+Never probe audio through the launcher-fired credit tick: any loose override silences it. When a routed sound plays
+silent, check the event's preset and mixer before the sample: the TS credit tick's preset pinned its volume at 5 of
+100, and eight rounds went on the sample first.
 
 Every sound ships under its own new name, which loads on both channels: no sound rides a base TD
 sample's name. A loose file named after a base sample replaces that sample everywhere it plays, GUI
 events included (`SFX_GUI_Generic_Bad_Sound` plays SCOLD1).
-
-With the audio routing pipeline proven, every future TD asset port follows the same recipe:
-
-- **Weapon sounds**: TowTwo (ROCKET2), TdTurretGun (TNKFIRE6), and all future weapon ports
-- **Building construction loops**: TD's distinct construction "grinding" sound, building-complete chime, etc.
-- **Unit responses**: TD voice acting for infantry/vehicles ("Reporting", "Yes sir", etc.) — uses `VoxType` table (different from `VocType`) but same overlay-and-alias mechanism via a different XML
-- **EVA voice**: faction-aware ("New Construction Options", "Cannot Deploy Here", etc.) — also `VoxType`, faction routing decided in the DLL based on player house
-
-The audio identity of TD becomes available in RA mode without launcher modification.
 
 ---
 

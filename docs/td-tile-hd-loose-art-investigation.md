@@ -5,11 +5,10 @@ add. TD's own templates draw from TD's tilesets on the TD theatres (`td-base-art
 
 ## The wall: no loose art for a new template name
 
-The launcher renders terrain templates only from its preloaded base-MEG atlas. A new template
-AssetName with loose art crashes ClientG (`0xC0000005`, a NULL write at RVA `0x56A539`) the moment a
-placed tile renders; the tileset XML alone loads fine. Ruled out as causes: the DDS format (a
-known-good DXT5 from another mod still crashed), the mod's CONFIG.MEG (removed, still crashed), and
-the load path. EMC has no terrain or template mechanism: its `CDATA.CPP` and `TDATA.CPP` are
+The launcher renders terrain templates only from its preloaded base-MEG atlas, so a new template AssetName with
+loose art crashes ClientG: see the field manual's
+[Adding a theatre of your own](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-theatres.md#the-wall-no-new-terrain-template-names),
+the wall. A known-good DXT5 from another mod still crashed, and so did the mod with its CONFIG.MEG removed. EMC has no terrain or template mechanism: its `CDATA.CPP` and `TDATA.CPP` are
 unchanged from EA's. Mods that seem to reskin terrain with loose art are overriding civilian
 buildings (`V20`–`V37`), which are objects.
 
@@ -18,15 +17,9 @@ atlas is ClientG's. The DLL's template heap grows with `TEMPLATE_COUNT`, so ther
 
 ## Loose overrides that do work
 
-- **Existing template names take loose DDS overrides:**
-  `DATA/ART/TEXTURES/SRGB/RED_ALERT/TERRAIN/<THEATRE>/<NAME>.<SNO|TEM>/...DDS` shadows the same-path
-  MEG entry, no EMC needed (the Desert Biome mod, item 2833233740, is pure data). This changes the
-  pixels of known names only and cannot add names; a new name needs a base tileset that draws it,
-  which is how TD's templates draw on the TD theatres. The radar samples the overridden textures, so a theatre reskin gets a matching
-  radar.
-- **TILEPATCHES:** `DATA/XML/TILEPATCHES/` holds per-map cell placements
-  (`MAPS/<game>/<MAP>_MAPPATCHES.XML`) and animated multi-cell texture blocks
-  (`PATCHES/<name>_PATCH.XML`, with an FPS field). Loose copies override with no same-size lock.
+- **Existing template names take loose DDS overrides, and TILEPATCHES:** see the field manual's
+  [Adding a theatre of your own](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-theatres.md#what-works-new-art-under-existing-names),
+  what works.
 - **New HD asset names render** as loose VFX or tile ZIPs plus XML registration (TDFLAME, TDCHEM,
   the SAM and gun flashes). Adding a new name to an already-installed mod mid-iteration can fall back
   to the donor sprite: the launcher appears to cache the name set at install. Check new-name art with

@@ -9,16 +9,8 @@ Tooling lives in `scripts/` (Python) and `tools/mixtool/` (C++, from Vanilla Con
 
 ## 1. The formats at a glance
 
-| | Classic MIX | Extended MIX | MEG |
-|---|---|---|---|
-| Used by | Tiberian Dawn; inner (nested) RA mixes | Red Alert outer mixes | Remastered Collection bundles |
-| Keys files by | CRC of filename | CRC of filename | **real filename** (string table) |
-| Encryption | none | optional (Blowfish + RSA key) | none |
-| Checksum | none | optional (20-byte SHA1 trailer) | none |
-| Our reader | `mix_tools.py` (R+W) | `ra_mix_extract.py` (R) | `meg_extract.py` (R) |
-| Example | `CONQUER.MIX` | `REDALERT.MIX`, `MAIN.MIX`, `EXPAND2.MIX` | `CONFIG.MEG`, `SFX3D.MEG` |
-
-The defining difference between MIX and MEG: **MIX entries are keyed by a hash of the filename** (the name itself is not stored), whereas **MEG stores real paths**. That single fact is why MIX listings need the name database in §5 to be human-readable, and MEG listings don't.
+See the field manual's [MEG and MIX archives](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/formats/meg-and-mix-archives.md#when-you-need-this) for the three formats side by side.
+MIX entries are keyed by a hash of the filename, which is why MIX listings need the name database in §5.
 
 ---
 
@@ -26,21 +18,9 @@ The defining difference between MIX and MEG: **MIX entries are keyed by a hash o
 
 Authoritative structs: `tools/mixtool/mixcreate.h` (`FileHeader`, `SubBlock`); reader `scripts/mix_tools.py:read_mix`.
 
-```
-offset  size  field
-0       2     int16  count        # number of files
-2       4     int32  size         # total bytes of the data section
-6       12*N  SubBlock[count]     # the index, sorted ascending by signed CRC
-6+12N   ...   data section        # raw file bytes, concatenated
-
-SubBlock (12 bytes):
-  int32 CRC      # ww_crc(UPPERCASE filename)  — see §4
-  int32 Offset   # from start of data section
-  int32 Size
-```
-
-- The index is **sorted by signed CRC** because the engine binary-searches it. Our `pack` honors this (`mix_tools.py:cmd_pack`).
-- No header magic — a classic mix is identified positionally (and, in our extended-format detector, by `first != 0`; see §3).
+The layout, the signed-CRC order and the missing magic are in the field manual's
+[MEG and MIX archives](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/formats/meg-and-mix-archives.md#classic-mix), classic MIX. Our `pack` honours the order
+(`mix_tools.py:cmd_pack`), and our extended-format detector tells the two apart by `first != 0` (§3).
 
 ---
 
@@ -48,37 +28,9 @@ SubBlock (12 bytes):
 
 Red Alert wraps the classic layout with a flags header and optional encryption. Reader: `scripts/ra_mix_extract.py`. Crypto chain mirrors VC's `common/mixfile.h` + `pk.cpp` + `blowfish.cpp`.
 
-### 3.1 The 4-byte flags header
-
-Read as two `int16` little-endian: `(first, second)`.
-- **`first == 0` signals the extended format.** (A classic mix's first 2 bytes are a nonzero file count.)
-- `second` holds the flag bits. The full 32-bit flag word (`mixcreate.h:MixFlags`):
-
-```
-HAS_CHECKSUM = 0x00010000   # 20-byte SHA1 appended at end of file
-IS_ENCRYPTED = 0x00020000   # header (index) is Blowfish-encrypted
-```
-
-So a `second` of `0x0002` ⇒ `IS_ENCRYPTED`. **Most RA archives shipped with the Remastered Collection are encrypted, not all.** Under `Data/CNCDATA/RED_ALERT/`, `REDALERT`, `EXPAND`, `EXPAND2.MIX` and `CD1/MAIN.MIX` read `0x0002`; `HIRES1`/`LORES1.MIX` read `0x0003` (encrypted, with a checksum); `AFTERMATH/MAIN.MIX` and `COUNTERSTRIKE/MAIN.MIX` read `0x0000`, the alt header in plaintext (§8.1).
-
-### 3.2 PK (RSA) block → Blowfish key
-
-If encrypted, the next **80 bytes** are an RSA-style block encrypted with Westwood's public key:
-- Public exponent `65537`; 320-bit modulus from `redalert/const.cpp Keys[]`.
-- Block sizes: `Crypt_Block_Size = 40`, `Plain_Block_Size = 39` ⇒ 2 blocks ⇒ 78 plaintext bytes.
-- **First 56 plaintext bytes = the Blowfish key.**
-
-### 3.3 Blowfish index header
-
-Blowfish-ECB (standard, big-endian words) decrypt of the index, which is the classic layout minus the count's int16/int32 split:
-```
-u16 count + u32 datasize + count * SubBlock(12)
-```
-The encrypted span is `roundup8(6 + count*12)` (Blowfish works on whole 8-byte blocks). Decrypt one block first to learn `count`, then the full span.
-
-### 3.4 Data section
-
-Plaintext, starting immediately after the (padded) encrypted header — i.e. at `4 + 80 + span`. **Only the index is encrypted; file bytes are not.**
+The flags header, the flags each archive carries, the key block and the encrypted index are in the field manual's
+[MEG and MIX archives](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/formats/meg-and-mix-archives.md#red-alerts-outer-mix), Red Alert's outer MIX. The flag words are
+`mixcreate.h:MixFlags`, and the index cipher is standard Blowfish-ECB with big-endian words.
 
 > **Tooling split:** `ra_mix_extract.py` handles *encrypted* extended mixes and *classic* mixes, but not the *extended-but-unencrypted* variant (flags header, no Blowfish). The Aftermath and Counterstrike `MAIN.MIX` use that combination; `mix_plain_alt.py` reads them (§8.1).
 
@@ -86,16 +38,9 @@ Plaintext, starting immediately after the (padded) encrypted header — i.e. at 
 
 ## 4. The filename hash (`ww_crc` / CRCEngine)
 
-The `SubBlock.CRC` is Westwood's `CRCEngine` hash of the **uppercased ASCII** filename. Implemented and validated in `scripts/mix_tools.py:ww_crc`:
-
-```
-crc = 0
-for each 4-byte chunk of UPPER(name):     # final partial chunk zero-padded
-    crc = lrotl32(crc, 1) + le32(chunk)   # 32-bit wrap, kept signed
-```
-
-- TD **and** RA (and the Remastered repacks of both) use this same hash — what the name DB calls `HASH_RACRC`. Validated: `ww_crc("00-0000.aud") == 0x1D597662`, the DB's `ra_crc`, and 266/266 of `CONQUER.MIX` resolve.
-- Tiberian Sun / RA2 use a *different* finalization (`ts_crc` in the DB) — not relevant to this mod, but it's why the DB carries two CRC columns per file.
+The `SubBlock.CRC` is Westwood's `CRCEngine` hash, in the field manual's
+[MEG and MIX archives](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/formats/meg-and-mix-archives.md#the-filename-hash). Ours is `scripts/mix_tools.py:ww_crc`; the name DB calls it
+`HASH_RACRC`, and carries a second column, `ts_crc`, for Tiberian Sun and RA2's different hash.
 
 ---
 
@@ -103,7 +48,7 @@ for each 4-byte chunk of UPPER(name):     # final partial chunk zero-padded
 
 Because MIX stores hashes, a raw listing is opaque. `tools/mixtool/mixnamedb_data.cpp` is a **29,075-entry** table — `{file_name, file_desc, ra_crc, ts_crc}`, derived from the XCC mix database (+ tomsons26). Its `ra_crc` column is exactly our `ww_crc`.
 
-`scripts/mix_namedb.py` (added 2026-05-28) parses that table into `{crc → (name, desc)}` and exposes `resolve(crc)`. After dropping zero-CRC rows it yields **11,798 RA names / 17,436 TS names**. Both `mix_tools.py list` and `ra_mix_extract.py list` now print resolved filenames automatically (soft import — they degrade to raw CRCs if the DB is unavailable).
+`scripts/mix_namedb.py` parses that table into `{crc → (name, desc)}` and exposes `resolve(crc)`. After dropping zero-CRC rows it yields **11,798 RA names / 17,436 TS names**. Both `mix_tools.py list` and `ra_mix_extract.py list` now print resolved filenames automatically (soft import — they degrade to raw CRCs if the DB is unavailable).
 
 ```
 scripts/mix_namedb.py --stats          # entry counts
@@ -114,9 +59,9 @@ scripts/mix_namedb.py 0x1D597662       # -> 00-0000.aud
 
 ## 6. Nesting (mix-in-mix)
 
-An outer mix can contain inner mixes as ordinary entries. The Remastered RA bundles use this heavily — the encrypted outer mix holds (usually classic, unencrypted) inner mixes:
-- `MAIN.MIX` → **12 nested `.mix`** (~454 MB: theater + movie bundles).
-- `REDALERT.MIX` → **6 nested `.mix`** (~25 MB).
+Outer mixes hold inner mixes as ordinary entries: see the field manual's
+[MEG and MIX archives](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/formats/meg-and-mix-archives.md#where-red-alerts-files-are) for what each holds. `REDALERT.MIX`'s 6 nested mixes total
+about 25 MB.
 
 `ra_mix_extract.py:find_in_mix` recurses automatically on extract (anything >64 bytes is a recursion candidate); `/tmp`-style inventory walks recurse into entries whose resolved name ends in `.mix`.
 
@@ -124,9 +69,12 @@ An outer mix can contain inner mixes as ordinary entries. The Remastered RA bund
 
 ## 7. MEG (Remastered bundles) — brief
 
-Different lineage, name-based. Reader `scripts/meg_extract.py` (format from `SOURCECODE/CnCTDRAMapEditor/Utility/Megafile.cs`): optional 8-byte magic (`0xFFFFFFFF`/`0x8FFFFFFF` + version), then `num_files / num_strings / string_table_size`, a uint16-length-prefixed string table, a fixed 20-byte-per-entry file table, then blobs at absolute offsets. `CONFIG.MEG` holds the launcher's XML (e.g. `RABUILDABLES.XML`, `SFXEVENTSNONLOCALIZED.XML`, `INSTANCES.XML`); `SFX3D.MEG` holds the remastered WAVs we route TD audio through.
-
-**Repacking — `scripts/meg_pack.py` (added 2026-05-28).** Mirrors EA's `MegafileBuilder.cs` exactly: a no-change round-trip of the 44 MB `CONFIG.MEG` is **byte-identical** (proven), and the reader validates **nothing** — no checksum, signature, or encryption — so the game loads a repacked MEG without complaint. This is what makes editing *front-end* data possible at all: e.g. the Mission Select campaign roster lives in `CONFIG.MEG`'s `INSTANCES.XML` and is reachable by repacking the MEG, or by a loose copy under the mod's `Data/XML/`, which overrides the member at any size (the mod ships its `INSTANCES.XML` that way; `campaigns-page.md`). Verified end-to-end on the Deck (a broken mission def killed that mission's launch; `ShowOnMissionSelect=false` hid a completed mission). Full model: `campaign-tabs-research.md`. Caveat: this edits the **base** archive (Steam "verify" reverts it). A mod can also *ship* a replacement `CONFIG.MEG`, which the launcher loads over the base (`config-meg-mod-delivery.md`).
+Reader `scripts/meg_extract.py`, repacker `scripts/meg_pack.py`. The 8-byte magic (`0xFFFFFFFF`/`0x8FFFFFFF` +
+version) is optional: EA's reader accepts its absence. The layout, and why a repack loads (nothing is
+checked, and a no-change repack is byte-identical), are in the field manual's [MEG and MIX archives](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/formats/meg-and-mix-archives.md#meg).
+Editing the base archive is reverted by Steam's verify. TF ships its `INSTANCES.XML` loose (`campaigns-page.md`);
+on the Deck, a broken mission def killed that mission's launch. The campaign model is `campaign-tabs-research.md`,
+and a shipped `CONFIG.MEG` is `config-meg-mod-delivery.md`.
 
 ---
 
@@ -144,10 +92,7 @@ Different lineage, name-based. Reader `scripts/meg_extract.py` (format from `SOU
 
 **We ship our own mixes (e.g. `TFASSETS.MIX`) as *classic / unencrypted*** — the engine reads them fine and `mix_tools.py` can write them. Authoring an *encrypted* mix would require the C++ `tools/mixtool` path; we have no reason to.
 
-### 8.1 The third flavour: alt header with the encryption bit CLEAR (found 2026-07-19)
-
-There are **three** shapes in the wild, not two, and the middle one had no reader until the
-campaign spike needed it:
+### 8.1 The third flavour: alt header with the encryption bit clear
 
 | Shape | Header | Reader |
 |---|---|---|
@@ -155,16 +100,12 @@ campaign spike needed it:
 | **alt header, plaintext** | `first=0`, flags **without** `0x02` | **`mix_plain_alt.py`** |
 | alt header, encrypted | `first=0`, flags **with** `0x02` | `ra_mix_extract.py` |
 
-The Remastered RA expansion campaign archives are the middle shape:
-`Data/CNCDATA/RED_ALERT/{AFTERMATH,COUNTERSTRIKE}/MAIN.MIX` (flags `0x0000`). `CD1/MAIN.MIX` is
-encrypted (`0x0002`) and reads with `ra_mix_extract.py`. Both existing readers fail
-on them and the failure is *misleading* — the classic reader reports `0 files` (it reads the
-zero `first` field as a count) and `ra_mix_extract.py` says "could not parse as a mix
-(encrypted or classic)". Neither means the archive is broken.
+The Aftermath and Counterstrike `MAIN.MIX` are the middle shape (field manual,
+[MEG and MIX archives](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/formats/meg-and-mix-archives.md#traps), traps). On them `mix_tools.py` reports `0 files` and `ra_mix_extract.py` says
+"could not parse as a mix (encrypted or classic)"; neither means the archive is broken.
 
-**Campaign scenario INIs live two levels down:** `MAIN.MIX` → `general.mix` → `scg43ea.ini`.
-That is the extraction path for hijacking a Counterstrike/Aftermath slot
-(`campaign-tabs-research.md`), so this tool is a campaign-work dependency, not a one-off.
+Campaign scenario INIs come out of those archives this way, the extraction path for hijacking a
+Counterstrike/Aftermath slot (`campaign-tabs-research.md`), so this tool is a campaign-work dependency.
 
 ---
 
@@ -189,7 +130,7 @@ scripts/mix_namedb.py 0xe6e4fbb4        # -> ctnk.shp
 
 ---
 
-## 10. Asset inventories (the four deep dives, 2026-05-28)
+## 10. Asset inventories (the four deep dives)
 
 Names/sizes only — we do **not** bulk-commit extracted EA bytes (see §11).
 

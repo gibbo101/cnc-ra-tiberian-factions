@@ -42,36 +42,24 @@ static ctor in `aadata.cpp` mirroring TD's `CargoPlane`. RA's 18-param
 strength / armor / weapons / ownable — those come from rules.ini
 instead.
 
-Heap auto-sizes via `init.cpp:229 AircraftTypes.Set_Heap(AIRCRAFT_COUNT)`
-— no `MAX_AIRCRAFT_TYPES` headroom needed since we're adding a hardcoded
-entry, not a rules.ini `[NewAircraft]`.
+The heap grows with the enum: see the field manual's [Raising the limits](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/raising-the-limits.md#the-limits).
 
 ### 2. `[TDC17]` rules.ini section
 
-`resources/remaster_mods/Vanilla_RA/CCDATA/rules.ini`. Without a rules.ini
-section the cargo plane's `MaxSpeed` defaults to `MPH_IMMOBILE` (0) per
-`techno.cpp:6697` and the plane spawns frozen at the map edge. `Speed=16`
+`resources/remaster_mods/Vanilla_RA/CCDATA/rules.ini`. Without it the
+plane spawns frozen (`TechnoTypeClass`'s constructor defaults `MaxSpeed` to `MPH_IMMOBILE`; see the field manual's
+[Air delivery, fleets and support powers](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#traps), Traps). `Speed=16`
 maps to `MPH_FAST=40` internally via `_Scale_To_256`. Also `Strength`,
 `Armor`, `TechLevel=-1` (never appears in sidebar), `Owner=allies,soviet,
 GoodGuy,BadGuy`, `Cost=10`, `Points=1`, `ROT=5`, `Passengers=1`.
 
 ### 3. ImageData fallback in `AircraftTypeClass::One_Time`
 
-`redalert/aadata.cpp`. Mod-entry aircraft have no legacy SHP for
-`MFCD::Retrieve` to find — only the TGA pack in
-`resources/.../UNITS/TDC17.ZIP`. With `ImageData == NULL`,
-`AircraftClass::Draw_It` bails at its
-`if (!shapefile) return;` guard (`aircraft.cpp:416-418`) and the
-plane is invisible.
-
-Copy `BadgerPlane.ImageData` into `TDCargoPlane`.
-The launcher's `Techno_Draw_Object` overlay then resolves the actual
-sprite by IniName via `RA_UNITS.XML`'s `TDC17` tileset, regardless of
-which pointer was supplied.
-
-Also copy `CameoData` from Badger as the cargo plane isn't sidebar-
-buildable but we still want a non-NULL value to satisfy any downstream
-NULL guard.
+`redalert/aadata.cpp` copies `BadgerPlane`'s `ImageData` and `CameoData`
+into `TDCargoPlane` (the `if (!shapefile)` guard in `AircraftClass::Draw_It`; the plane isn't
+buildable, so the cameo only keeps the pointer non-NULL); the art itself is
+`resources/.../UNITS/TDC17.ZIP`. See the field manual's
+[Air delivery, fleets and support powers](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#cargo-plane-delivery), Cargo-plane delivery step 2.
 
 ### 4. `Dimensions()` branch for AIRCRAFT_TDCARGO
 

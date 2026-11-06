@@ -10,14 +10,12 @@ The canonical tool is our own Linux-native uploader at `tools/workshop-uploader/
 
 ## Step 0 — RESTART STEAM (don't skip)
 
-**This is the rule that took 4 hours to find.** If Steam has been running for a while, the standalone-uploader path silently hangs at "preparing config" — Steam logs `Upload starting` but never progresses. A fresh Steam process clears whatever stale per-app UGC cache causes it.
+A Steam client that has been running a while hangs the upload silently at "preparing config" (Steam logs `Upload starting`, then nothing): see the field manual's [Publishing to the Workshop from Linux](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/publishing-to-the-workshop-from-linux.md#traps), Traps.
 
 1. In Steam's menu bar: `Steam → Exit` (full exit, not just close window).
 2. Wait ~10 seconds for background helpers to die.
 3. Relaunch Steam, log in if prompted.
 4. Confirm Steam is up before continuing.
-
-Don't try to skip this. The symptom is silent — no error, just an indefinite hang.
 
 ---
 
@@ -76,7 +74,7 @@ main checkout is guaranteed to hold the current ones.
 
 ### 2. Build and stage the release: `./package-for-workshop.sh`
 
-The Workshop scanner for App 1213210 requires the mod to live in a NAMED SUBFOLDER inside the uploaded content (i.e. `<workshop-item>/Vanilla_RA/ccmod.json`, not `<workshop-item>/ccmod.json`). Subscribers who pull a mod with `ccmod.json` at the root will never see it in the in-game mod list, even though the content downloads correctly.
+The upload needs the mod in a named subfolder, `<workshop-item>/Vanilla_RA/ccmod.json`: see the field manual's [Publishing to the Workshop from Linux](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/publishing-to-the-workshop-from-linux.md#traps), Upload a named subfolder.
 
 ```bash
 ./package-for-workshop.sh
@@ -85,8 +83,8 @@ The Workshop scanner for App 1213210 requires the mod to live in a NAMED SUBFOLD
 It makes the release build itself (`TF_DEV_BUILD=0`: dev cheats compiled out; the fifth
 faction ships), stages the mod folder from scratch (the mod's own tree, the asset packs, the DLL)
 so files left in `build/` by earlier work cannot ship, mirrors it into
-`dist/workshop-content/Vanilla_RA` as a **real folder** (a symlink there broke installs on
-2026-05-20: SteamUGC uploads symlinks as symlinks), checks the intro and strips the DLL.
+`dist/workshop-content/Vanilla_RA` as a **real folder** (why: the field manual's Traps, Upload real files),
+checks the intro and strips the DLL.
 
 Check the staged package before going further:
 
@@ -120,10 +118,8 @@ Change note is NOT persisted in JSON — passed on the command line per submissi
 `[b][u]Version 4.0.0[/u][/b]` for a major, `[b]Version 4.1.0[/b]` for a minor or patch. Getting
 this wrong makes a point release read as a milestone in the listing.
 
-**⚠️ The `description` field has a hard 8000-character limit.** Exceed it and the submission
-uploads content and preview normally, then fails at the commit step with
-`EResult.k_EResultInvalidParam (8)` — the error names no field, so it reads like a content
-problem. Steam rejects the whole update rather than truncating. Check before publishing:
+**⚠️ The `description` field is capped at 8000 characters** (the field manual's
+[Publishing to the Workshop from Linux](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/publishing-to-the-workshop-from-linux.md#traps), Traps). Check before publishing:
 
 ```bash
 python3 -c "import json;print(len(json.load(open('tools/workshop-uploader/workshop.json'))['description']))"
@@ -240,23 +236,19 @@ Managed/native ABI mismatch. Make sure `tools/workshop-uploader/lib/Steamworks.N
 
 ### `m_bUserNeedsToAcceptWorkshopLegalAgreement` flag set on result
 
-Visit the item URL in a browser (logged in), accept the Workshop Contributor Agreement banner, retry the upload.
+Accept the Workshop agreement: see the field manual's [Publishing to the Workshop from Linux](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/publishing-to-the-workshop-from-linux.md#traps), Traps.
 
 ---
 
 ## Player crash reports
 
-- **Ask for `<game install>/log/CrashLog.txt`.** It has one line per crash naming the faulting
-  process and address, which separates the renderer (`ClientG.exe`) from the sim
-  (`InstanceServerG.exe`).
+- **Triage as the field manual's [Crash triage](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/troubleshooting/crash-triage.md)
+  describes:** ask for `<game install>/log/CrashLog.txt`.
 - **A sim crash with a minidump:** `tools/dumpwalk.py <dmp> <RedAlert.dll>` prints the exception and
   the DLL return addresses on the faulting thread's stack.
-- **A ClientG crash can still be ours.** The DLL imports no d3d11, dxgi or gdi32, so it cannot
-  reach the GPU, but it patches ClientG's memory and code, and mod data has crashed ClientG
-  before: a wrong-size CONFIG.MEG member, an unreadable WAV, and the EVA cache patch writing over
-  heap headers on skirmish load (fixed in 5.0.0). "Video Card Driver Crash Detected!" and
-  `DXGI_ERROR_DEVICE_REMOVED` are EA's own dialog text, so a player quoting them has lost the
-  D3D11 device; that alone does not clear the mod.
+- **A ClientG crash can still be ours** (the manual's Traps list the causes). The DLL imports no d3d11,
+  dxgi or gdi32, so it cannot reach the GPU, but it patches ClientG's memory and code; TF's own EVA cache
+  patch once wrote over heap headers on skirmish load (fixed in 5.0.0).
 - **There is no graphics or VRAM setting to offer.** `GAMECONSTANTS.XML` has none, and the
   mod's UI atlas is the same size as EA's (about 184 MB).
 - **Workshop comments are capped at 1,000 characters.** Draft replies to fit.

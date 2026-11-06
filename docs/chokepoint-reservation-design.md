@@ -29,16 +29,12 @@ same time. Vehicles are one-per-cell and the engine's head-on rule makes them un
 threshold escalation, so they jam nose-to-nose. (Infantry are exempt — `InfantryClass::Can_Enter_Cell`
 has no head-on rule and they stack 5 sub-cell, so they slip past; this is **vehicles only**.)
 
-### The engine mechanism (root, verified by the `HEADON` diagnostic, 1000s of hits)
-`UnitClass::Can_Enter_Cell` (`unit.cpp:~3649-3678`): for an allied blocker,
-- **moving** ally → `MOVE_MOVING_BLOCK` (enum 2) — A\* routes through it (it'll clear).
-- **stationary** ally → `MOVE_TEMP` (enum 4).
-- **moving ally facing exactly opposite, within `0x1FF` (~1.25 cells)** → `MOVE_NO` (enum 5) — the
-  head-on rule (`face == techface && Distance <= 0x1FF`). `MOVE_NO` is the one threshold A\* can
-  **never** escalate past, so on a 1-wide pinch with no way around → A\* fails → legacy crash-and-turn
-  → can't get around either → permanent oscillation at the pinch.
-
-> ⚠️ `MOVE_TEMP` is a **stationary** friendly; the **moving** one is `MOVE_MOVING_BLOCK`.
+### The engine mechanism
+The head-on `MOVE_NO` rule and the `MoveType` ratings: see the field manual's [Pathfinding](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/pathfinding.md#vehicles-jam-head-on), Vehicles jam head-on.
+In TF the rule sits at `unit.cpp:~3649-3678` (verified by the `HEADON` diagnostic, 1000s of hits). A moving ally
+rates `MOVE_MOVING_BLOCK` (2), which TF's A\* routes through; a stationary one `MOVE_TEMP` (4); the head-on case
+`MOVE_NO` (5). On a 1-wide pinch the head-on `MOVE_NO` makes A\* fail and the legacy crash-and-turn oscillate for
+good. `HEADON:` lines in `tf_astar.log` record it.
 
 ---
 
@@ -119,10 +115,8 @@ ownership explicit and atomic at the moment of commitment, the one thing per-tic
 the give-way HOLD machinery reads it.
 
 ### MP sync is NOT the blocker (the key realisation)
-In the Remastered Collection only the host runs the sim; a LAN joiner's launcher draws what the
-host's sim exports. The **occupation bits are sim state every player already sees** — a reservation
-is just more of that. Put it in the sim and it reaches every player for free (no separate "sync the
-table" step). The original game ran every client's sim in lockstep, and desynced only from a short,
+Only the host simulates, so a reservation in the sim reaches every player with no sync step: see the field
+manual's [LAN games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/lan-games.md#one-simulation-on-the-host). The original game ran every client's sim in lockstep, and desynced only from a short,
 auditable foot-gun list; the code keeps to it, so it stays deterministic:
 
 1. **No RNG** in the reservation/decision path (`Random_Pick` with unsynced seed). (Already avoided.)
@@ -145,6 +139,4 @@ destination, `Find_Path` returns an empty path, so the unit waits in the patient
 the cliff or lake. It is shared by infantry, harvesters and vehicles, and a clear route never trips
 it, because the claim ages out and A\* succeeds on the next pass.
 
-`ASTAR_MAX_EXPANSIONS` (4096) stops a search for an unreachable destination flooding the whole
-component (up to about 16K cells); a capped miss falls to the edge-follower. Raise it, don't remove
-it.
+The A\* budget, `ASTAR_MAX_EXPANSIONS` (`findpath.cpp`): see the field manual's [Pathfinding](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/pathfinding.md#a-first-the-edge-follower-as-fallback), A\* first, the edge-follower as fallback.

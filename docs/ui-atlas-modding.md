@@ -26,9 +26,10 @@ or stale, so copy main's in before a whole-build deploy (workspace `CLAUDE.md`).
 
 ## TL;DR
 
-The Remastered launcher draws almost all 2D UI from one giant texture atlas — **`MT_COMMANDBAR_COMMON.TGA`** (6871×6716, 32-bit, in `TEXTURES_SRGB.MEG`) — with a sibling **`.MTD`** mapping `region-name → (x,y,w,h)`. **A mod ships a byte-edited copy of that atlas loose in `Data/ART/TEXTURES/SRGB/` and the launcher loads it over the base**, as the `.TGA` or as a `.DDS` of the same name (the mod edits the TGA and ships a DXT5 DDS, `scripts/sprite_dds.py`). Vanilla. No EMC. No `.MTD`/`.MTM` companions needed — and none honored: a loose `.MTD` with altered region coords is IGNORED (probed live 2026-08-30, coord-swapped picker flags unchanged in the lobby). Region GEOMETRY is launcher-owned; only region PIXELS are moddable, and art must fit the stock region boxes.
-
-> **The in-game renderer and the front-end shell both draw the loose atlas**, and the shell also draws standalone loose DDS screens (first shown with Reilsss CnCinRA's picker icons and menu). For the lobby picker two levers combine: `FACTIONS.XML` `SmallIconName` (CONFIG.MEG) picks WHICH region, and only the preloaded `UI_Multiplayer_PlayerSlot_Faction_NN` regions work (any other crashes ClientG at startup); the atlas repaint sets that region's PIXELS, `_ON` / `_OVER` variants included (`faction-select-identity.md`).
+See the field manual's [The UI atlas](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/the-ui-atlas.md) (the atlas and its region table, shipping a repainted
+atlas, geometry) and [Adding a faction](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/adding-a-faction.md#the-launchers-data-for-the-row) (the picker's preloaded icons). TF edits
+the TGA and ships a DXT5 DDS of the same name (`scripts/sprite_dds.py`); the picker's emblems are in
+`faction-select-identity.md`.
 
 ---
 
@@ -72,14 +73,10 @@ graphics imports and does nothing in ClientG.
 
 ## Two red herrings (cleared)
 
-- **Format was forgiving — the region was the bug.** Reilsss's *working* atlas is `desc=0x08` + a TGA footer (PIL-style); our byte-exact `desc=0x00` also works. Both load. The repeated failures were entirely the **wrong region** (lobby logos), not the format.
+- **Format was forgiving — the region was the bug:** see the field manual's [The UI atlas](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/the-ui-atlas.md#shipping-a-repainted-atlas), Shipping a repainted atlas and Pick the right region.
 - **EMC is NOT required.** Reilsss's mod requires EMC for his *units/INI* content; the loose-atlas texture override itself is **vanilla** — proven by our non-EMC mod.
 
 ---
-
-## Why our TD sprites already worked (context)
-
-Our building and unit sprites (`Data/ART/TEXTURES/SRGB/RED_ALERT/.../*.ZIP`) render through the tileset XML pipeline (`td-port-playbook.md`), a different mechanism. The UI atlas is launcher-internal and is reached only by the loose `.TGA` override.
 
 ## Growing the atlas (proven 2026-09-11, not adopted)
 

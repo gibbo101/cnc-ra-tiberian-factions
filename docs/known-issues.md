@@ -90,8 +90,8 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
   `CreditClass::AI`) fires on the host. `TF_Fire_Credit_Tick` addresses it to the house whose
   credits moved (`DLLExportClass::On_Sound_Effect(house, ...)`), as EA's beacon does.
 - One LAN match settles it: either joiners hear their own faction's tick (done), or the host hears
-  everyone's, which means the id is a local filter and the data-side route in
-  `building-sound-routing.md` §2 is needed.
+  everyone's, which means the id is only a local filter and joiners need a route other than
+  `TF_Fire_Credit_Tick` (the current route is `building-sound-routing.md`, rule 2).
 
 ### First solo skirmish after a LAN session spawned the LAN lobby's AIs (seen once)
 - **Severity:** minor, unreproduced.

@@ -242,7 +242,7 @@ Warhead=HE      ; TD's BULLET_SSM has WARHEAD_HE
 Report=ROCKET2  ; TD VOC_ROCKET2
 ```
 
-Missing: `Anim=GUNFIRE` (binds `ANIM_MUZZLE_FLASH` in RA per `adata.cpp:1075`). TD's source-level `ANIM_NONE` in the weapon table is a *fallback*; the general `Fire_At` branch in TD spawns `ANIM_MUZZLE_FLASH` automatically for `BULLET_SSM`. RA's `Fire_At` (techno.cpp:3386-3411) doesn't have that fallback. Add the `Anim=` explicitly:
+Missing: `Anim=GUNFIRE` (binds `ANIM_MUZZLE_FLASH` in RA per `adata.cpp:1075`), because the anim switch in RA's `TechnoClass::Fire_At` has no fallback flash. See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#weapons-muzzle-flashes-and-offsets), Weapons, muzzle flashes and offsets. Add the `Anim=` explicitly:
 
 ```ini
 Anim=GUNFIRE   ; ANIM_MUZZLE_FLASH — TD's Fire_At general-branch default for BULLET_SSM
@@ -425,7 +425,7 @@ The 2026-05-22 session expanded scope from the M1-M7 polish into a **complete TD
 
 **Symptom:** TDATWR fired missiles that overshot every target — could not hit walls 1 cell away, even with 4-cell separation.
 
-**Root cause:** RA's `Get_MPHType` interprets `Speed=N` as a 0-100 *percentage* and scales via `_Scale_To_256` (val * 256 / 100). TD's source stores `MaxSpeed = MPH_ROCKET` etc. as raw `MPHType` (0-255). We copied TD's source values directly: `[TDTowTwo] Speed=60` → RA parsed as `60% of 255 = raw 153`. Missile moved 2.5× too fast, overshot during the 7-frame arming window, never triggered proximity fuse, detonated harmlessly past target on timer timeout.
+**Root cause:** RA reads `Speed=` as a percentage, so TD's raw `[TDTowTwo] Speed=60` flew at 153; the missile overshot during its 7-frame arming window and detonated past the target on fuel timeout. See the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md), Speed ("Projectile speed too").
 
 **Diagnosed via** `tf_tdport_bullet.log` (per-frame TDSSM flight trace) showing `MaxSpeed=153` at SPAWN and bullets reaching `dist=82` from target at frame 6 while still arming. Fix: `IsTDPort` flag on WeaponTypeClass + raw-int Speed parse → `Speed=60` stays as raw 60 → missile flies at TD-authentic speed → proximity fuse triggers near target (24-89 lepton scatter, all hits).
 
@@ -433,7 +433,7 @@ This conversion is trap 3.1 in `td-port-playbook.md`.
 
 ### TDDRAGON asset port
 
-**Issue:** `[TDSSM] Image=DRAGON` was resolving to RA's vanilla `DRAGON.ZIP` (a different visual than TD's actual `DRAGON.SHP`).
+**Issue:** `[TDSSM] Image=DRAGON` drew RA's own `DRAGON.ZIP`. See the field manual's [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#traps), Traps ("Don't reuse a stock tile name").
 
 **Fix (asset side):** Extracted vanilla TD's `DRAGON.ZIP` from `~/.steam/.../Data/TEXTURES_TD_SRGB.MEG` via `scripts/meg_extract.py`, repacked with TD-prefixed internal TGAs via `scripts/bundle_assets.py:repack_zip_with_prefix(dragon → tddragon)`. Outputs:
 - `resources/.../Data/ART/TEXTURES/SRGB/RED_ALERT/VFX/TDDRAGON.ZIP` (32 frames, TD-prefixed internally)
@@ -442,9 +442,9 @@ This conversion is trap 3.1 in `td-port-playbook.md`.
 
 This is the vanilla-MEG pipeline pattern used for buildings, applied to bullets. **Did NOT use the TD-Assets workshop content** — our mod is self-contained.
 
-**The hidden trap (engine side):** The asset port above is necessary but NOT sufficient. Bullets / anims / aircraft in RA's gameplay DLL use the legacy `MFCD::Retrieve("<GraphicName>.SHP")` path in `<Type>Class::One_Time` to populate `ImageData`. For a TGA-only TD entity (no `.SHP` in any MIX file), `MFCD::Retrieve` returns `NULL`, and `Draw_It` bails at `if (!shapeptr) return;` — even though the tileset XML is correctly registered. **Symptom**: smoke trail visible (anim spawn happens before render), audio works, damage works, but the missile body is invisible.
+**The hidden trap (engine side):** a bullet with no classic SHP has a NULL `ImageData` and isn't drawn. See the field manual's [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#size-comes-from-the-classic-shape), Size comes from the classic shape, and [Adding a unit](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/adding-a-unit.md#4-a-classic-image-even-in-an-hd-only-mod), section 4. **Symptom**: smoke trail visible (anim spawn happens before render), audio works, damage works, but the missile body is invisible.
 
-**Fix (engine side):** copy a vanilla donor's `ImageData` pointer to the TD entity's `ImageData` slot. The pointer is just a non-NULL placeholder so `Draw_It` proceeds; the launcher's `CC_Draw_Shape` overlay then resolves the actual sprite by name via the tileset XML. Same pattern already in place for `AIRCRAFT_TDCARGO` (TDC17) at `aadata.cpp:442-459`; mirrored for bullets in `bbdata.cpp::BulletTypeClass::One_Time` post-loop:
+**Fix (engine side):** a donor `ImageData`, as for `AIRCRAFT_TDCARGO` (TDC17) at `aadata.cpp:442-459`; mirrored for bullets in `bbdata.cpp::BulletTypeClass::One_Time` post-loop:
 
 ```cpp
 BulletTypeClass const& donor = As_Reference(BULLET_HEAT_SEEKER);

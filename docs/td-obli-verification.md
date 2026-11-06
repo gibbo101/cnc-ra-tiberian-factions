@@ -135,7 +135,7 @@ Hitscan laser with `WARHEAD_LASER`.
 
 **Two minor mismatches:**
 - `VerticalOffset=0x00C8` (200 leptons) vs TD's `0x00A8` (168 leptons). 32 leptons higher than TD. Probably a Remaster TGA-frame-height tweak from the M5 vertical-slice session; verify whether the laser beam origin renders at the correct crystal-tip in-game. If yes, leave; if no, drop to 0x00A8.
-- TD's `0x0018 W` horizontal shift has no equivalent in `BuildingTypeClass`'s constructor — would need a per-building hardcode in `Fire_Coord` or a `HorizontalOffset` set in rules.ini. Since the Obelisk is hitscan with a fixed crystal-tip visual, this offset only matters for the beam-start coordinate. The M5 laser-line render uses its own coords (see `building.cpp` Charging_AI / Fire_At BULLET_LASER branch), so this is probably not user-visible.
+- TD's `0x0018 W` horizontal shift needs a `Fire_Coord` case: see the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#weapons-muzzle-flashes-and-offsets), Weapons, muzzle flashes and offsets. Since the Obelisk is hitscan with a fixed crystal-tip visual, this offset only matters for the beam-start coordinate. The M5 laser-line render uses its own coords (see `building.cpp` Charging_AI / Fire_At BULLET_LASER branch), so this is probably not user-visible.
 
 **Class naming:** our class is `ClassObelisk` (TD's name). Every other TD-separated building uses `ClassTd<Name>` (`ClassTdGtwr`, `ClassTdAtwr`, `ClassTdGun`, `ClassTdSam`). For consistency you could rename to `ClassTdObli` — pure cosmetic but the inconsistency stands out when scanning the file.
 
@@ -239,19 +239,7 @@ Both wired correctly. Used by `building.cpp:6134` for charge-start sound.
 
 ## The one balance-relevant issue: charge timing
 
-Stock RA's `Charging_AI` starts every charge with a hardcoded rate:
-
-```cpp
-} else if (!Arm) {
-    IsCharged = false;
-    IsCharging = true;
-    Set_Stage(0);
-    Set_Rate(3);              // ← stock RA: 3 ticks per stage, for every charging building
-    ...
-}
-```
-
-and completes it at a fixed `Fetch_Stage() >= 9`. TD's Obelisk uses `Set_Rate(OBELISK_ANIMATION_RATE)` = `Set_Rate(15)` (TD `building.cpp:1082`) and completes at `Fetch_Stage() >= 4`. At C&C's 15 ticks per second baseline:
+Stock RA's `Charging_AI` charges every building at the Tesla's hardcoded rate and last stage; TD's Obelisk has its own (TD `building.cpp:1082`). See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#the-obelisk-charge-then-a-laser), The Obelisk: charge, then a laser. At C&C's 15 ticks per second baseline:
 
 | | Set_Rate | Complete at stage | Total ticks | Real time |
 |---|---|---|---|---|

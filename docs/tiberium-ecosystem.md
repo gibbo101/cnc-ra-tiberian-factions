@@ -5,16 +5,14 @@ damage it does to infantry, and Visceroids.
 
 ## The overlay
 
-Tiberium is its own overlay, `OVERLAY_TIB01`, after the vanilla overlays and before the TS walls (`defines.h`, `odata.cpp`). Every rule
-below keys on that overlay, never on `Land_Type() == LAND_TIBERIUM`: RA's Ore and Gems share that
-land type and are harmless. Spreading runs on `Rule.GrowthRate`, in multiplayer only when the
+Tiberium is its own overlay, `OVERLAY_TIB01`, after the vanilla overlays and before the TS walls (`defines.h`, `odata.cpp`), and
+every rule below keys on it. Spreading runs on `Rule.GrowthRate`, in multiplayer only when the
 lobby's Tiberium option is on. Tiberium and Ore never convert each other where their fields meet
 (`CellClass::Spread_Tiberium`); the official-map hybrids rely on that (`official-map-hybrids.md`).
 
-The launcher's minimap keys resource pips off the vanilla resource range, so TIB01 is exported as
-`OVERLAY_GEMS3` for the overlay model and radar, with AssetName `TIB01` so the map still draws
-Tiberium. `Get_Map_Cell`'s `IsResource` check names TIB01, so a new resource overlay has to be added
-there too.
+TF exports TIB01 as `OVERLAY_GEMS3` with AssetName `TIB01`, and `Get_Map_Cell`'s `IsResource` names
+TIB01. See the field manual's [The Tiberium ecosystem](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/tiberium-ecosystem.md#a-new-resource-is-its-own-overlay)
+for why a new resource needs its own overlay and both launcher fixes.
 
 ## Blossom trees
 
@@ -35,9 +33,7 @@ to full past green, and spills Tiberium into its cell and the four beside it whe
 
 ## Visceroids
 
-About 1% of infantry killed by Tiberium become a Visceroid (`UNIT_TDVICE`), owned by `HOUSE_JP`.
-RA skirmish creates only the playing houses, so `HOUSE_JP` is created on the first spawn, allied
-with itself and made a mutual enemy of every house. `HOUSE_NEUTRAL` would not work: every house
-allies it, so nothing would target the Visceroid. The dying soldier still occupies its cell, so the
-Visceroid is placed with `Scan_Place_Object`, and it needs an explicit `MISSION_HUNT` or it idles.
+About 1% of infantry killed by Tiberium become a Visceroid (`UNIT_TDVICE`). TF uses `HOUSE_JP`,
+`Scan_Place_Object` and `MISSION_HUNT`; see the field manual's
+[The Tiberium ecosystem](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/tiberium-ecosystem.md#visceroids) for why each is needed.
 Visceroids are immune to the EMP.

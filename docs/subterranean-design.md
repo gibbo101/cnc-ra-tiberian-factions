@@ -40,22 +40,16 @@ anywhere it self-destructs; a stop order underground heads for the nearest surfa
   state 14 and dies five states later. A dead target falls back to `TFDwell`: `As_Coord` on a dead
   target returns the map origin, which gave flames a map-wide lifetime. The jet seats are still `PrimaryOffset` 0x80 forward and 0x30 lateral
   (`udata.cpp`) and want measuring off the side nozzles of the packed N frame.
-- **Detection:** the Mobile Sensor Array shows buried enemies in range to its owner only, as
-  ghost copies that can be seen but not attacked (`emp-cannon-design.md`).
-- **The E.M. Pulse** stuns a digger and reroutes it to the nearest emerge cell, exploding it only
-  if there is none (`Tunnel_Explode`).
+- **Detection and the EMP:** the Mobile Sensor Array's ghosts are as in `emp-cannon-design.md`; the
+  E.M. Pulse surfaces a digger through `Tunnel_Explode`. See the field manual's
+  [Subterranean units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/subterranean-units.md#detection-and-the-emp), detection and the EMP.
 
 ## Design
 
-- **A first-class subsystem, not clones:** its own state machine, underground tracking, damage gate
-  and detection state; nothing shared with the cloak, limbo or submarine systems.
-- **A live object while under, not limbo** (a limbo'd object has no world presence, which breaks
-  the EMP and detection): a real `Coord`, ticked straight-line movement with no A* and no zones,
-  out of surface occupancy and target scans.
-- **Terrain:** underground travel ignores all terrain, water included; the only rule is where it
-  may emerge (no water, rock, occupied cell or building). A dig ordered onto water emerges at the
-  nearest legal cell.
-- **Detected means seen, not attackable,** as in TS.
+Nothing is shared with the cloak, limbo or submarine systems. See the field manual's
+[Subterranean units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/subterranean-units.md#the-method-in-red-alerts-dll)
+for the method TF follows: a live object rather than limbo, straight-line travel through any terrain,
+and legal surfacing cells.
 
 ## TS source data (extracted from Steam TS `TIBSUN.MIX` LOCAL.MIX RULES.INI)
 
@@ -87,8 +81,8 @@ TD Flame Tank weapon chain rather than porting the particle system.
 - `DIG.SHP` (37 frames): mound erupts → churns → collapses to a settling ring.
   ⚠ Decode anims with **remap=None** — `ts_shp.py`'s CLI hardcodes remap 16–31
   team paint, which turned the thrown-dirt highlights fake green.
-  In ANIM.PAL, 16–31 are real tan/ochre dirt tones; the anim is ALL earth (no
-  baked grass), so it sits fine on any theater. Packed by `scripts/ts_pack_dig.py` as
+  (Why: the field manual's [Subterranean units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/subterranean-units.md#traps), traps.)
+  The anim is ALL earth (no baked grass), so it sits fine on any theater. Packed by `scripts/ts_pack_dig.py` as
   `ANIM_TS_DIG` (TSDIG.ZIP, 37 tiles, x4 on a 512 canvas, 64x64 stub).
 - **Dive/emerge is NOT an asset — TS did it as an engine transform** (voxel
   pitched nose-down and sunk under the DIG mound; proof: the complete 282-entry

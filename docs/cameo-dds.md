@@ -11,20 +11,16 @@ opaque. Written as DXT1 DDS with mips they take 59 KB each, about 33 MB in all.
 
 The DLL picks a cameo only by `AssetName` (`TF_Apply_Cameo_Badge` appends the owner mask), so a
 badge exists only inside a baked image. The sidebar entry's other data is fixed-meaning fields:
-cost, power, progress and four state flags. The cameo widget (`UI_SIDEBAR_CONSTRUCTIONENTRY.BUI`)
-has overlay quads, but each is drawn by the launcher with fixed art: `FakeLoc_Quad` shows
-`BuildIcon_RA_FakeText_<language>` when `Fake` is set, one texture for every entry. No overlay
-can carry a per-entry badge.
+cost, power, progress and six state flags (`CNCSidebarEntryStruct`'s `Completed`, `Constructing`,
+`ConstructionOnHold`, `Busy`, `BuildableViaCapture`, `Fake`). No overlay quad of the cameo widget can carry a
+per-entry badge: see the field manual's [Sidebar cameos](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/sidebar-cameos.md#cameos-that-change-at-runtime).
 
 ## How the launcher loads a cameo
 
-- A `<BuildIcon>` name that exists only as a loose file loads `<name>.dds` (sidebar and
-  encyclopedia both shown working).
-- A name that is also a region of the base atlas (`MT_COMMANDBAR_COMMON`) is overridden by a
-  loose `.tga`, but not by a loose `.dds`: the atlas art shows. `BuildIcon_TD_A10` is the only
-  such cameo the mod ships, so it stays a TGA.
-- Every compressed DDS in the base game has sides that are multiples of 4, so a cameo is resized
-  to 344x256; the sidebar quad stretches it as before.
+See the field manual's [Sidebar cameos](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/sidebar-cameos.md#a-new-cameo),
+a new cameo and replacing a stock cameo: a new name loads a loose 344x256 DDS, and a stock region
+takes only a loose TGA, so `BuildIcon_TD_A10` stays a TGA. Every compressed DDS in the base game
+has sides that are multiples of 4.
 
 ## Quality
 

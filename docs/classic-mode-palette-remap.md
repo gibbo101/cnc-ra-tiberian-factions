@@ -8,11 +8,10 @@ the HD beam and must stay.
 
 ## The problem
 
-TD-sourced SHPs ship in `TFASSETS.MIX` for classic-graphics-mode rendering. In
-classic mode the engine draws them through **RA's** palette, but the pixels carry
-**TD's** palette indices — so colours were wrong, and worst of all the TD
-house-colour pixels never followed the player (they sit in TD's remap range,
-which RA's engine doesn't recolour).
+TF ships its TD-sourced SHPs in `TFASSETS.MIX`. Drawn as they are, their colours are wrong and their house
+colours never follow the player: see the field manual's
+[HD-only mods](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/hd-only-mods.md#porting-tds-classic-art-why-not-support-classic-mode-as-well),
+porting TD's classic art.
 
 Reilsss's CnCinRA mod and EMC never solved this — their own changelog lists it as
 a permanent known bug. We can, because we own both the DLL and an offline

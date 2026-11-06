@@ -17,33 +17,19 @@ override an official map's preview.
 
 ### The map: replace it by name from CCDATA
 
-- The official maps are `scmNNea.ini` / `scmNNNea.ini` (230 files) inside
-  `Data/CNCDATA/RED_ALERT/AFTERMATH/MAIN.MIX`, in the nested `general.mix`.
-- A file of the same name in the mod's `CCDATA/` folder loads instead of the stock one. This is
-  the same shadow-by-name the campaign hijack uses (`campaign-tabs-research.md`).
-- The file must have no `[Digest]` section: a wrong digest aborts the load, and a missing one
-  skips the check.
+Each converted map ships in the mod's `CCDATA/` under its stock name, with no `[Digest]`: see the field manual's
+[A new resource on the official skirmish maps](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/official-maps-with-tiberium.md#where-the-maps-are), Where the maps are.
 
 ### The lobby thumbnail: a loose DDS of the same name
 
-- The lobby does not draw the thumbnail from the map file, so the CCDATA map leaves it showing
-  the stock layout. Each official map's thumbnail is a pre-rendered
-  `DATA\ART\TEXTURES\SRGB\MOBIUS_RED_ALERT_MULTIPLAYER_<N>_MAP.DDS` in `TEXTURES_SRGB.MEG`
-  (512x512 DXT5, 10 mips, no trees or mines drawn). The playable area is scaled by its longer
-  side and centred, so a non-square map is letterboxed with black bars (Docklands, 126x64,
-  fills rows 126-385).
-- The key comes from the `CNCMapPreviewData` XML in `CONFIG.MEG`: one
-  `<INIData Name="MOBIUS_RED_ALERT_MULTIPLAYER_<N>_MAP">` per map, holding only its bounds and
-  start waypoints. It names no file, so the builder finds a map's key by matching its bounds and
-  starts (Keep off the Grass = `_5_`, Docklands = `_111_`).
-- A DDS of the same name loose under the mod's `Data/ART/TEXTURES/SRGB/` overrides the stock one;
-  the front end reads loose overrides (`ui-atlas-modding.md`).
+The thumbnail's texture, its key in the preview data, its letterboxing and the loose override: see the field
+manual's [A new resource on the official skirmish maps](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/official-maps-with-tiberium.md#the-lobby-thumbnail), The lobby thumbnail. The
+builder finds each map's key by matching its bounds and starts.
 
 ### Snow maps need snow Tiberium art
 
-The launcher draws TIB01 by looking its name up in the current theatre's tileset XML.
-`OVERLAY_TIB01` is not theatre-specific in the DLL, so a Tiberium cell on any map asks for
-`TIB01`, and a theatre whose tileset lacks it has no art to draw. The temperate and interior
+A theatre whose tileset lacks `TIB01` draws no Tiberium: see the field manual's
+[A new resource on the official skirmish maps](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/official-maps-with-tiberium.md#every-theatre-needs-the-resources-art). The temperate and interior
 tilesets have carried TIB01 since the Tiberium ecosystem; RA's snow tileset gained it for these
 hybrids (`scripts/build_tiberium_hd.py SNOW`): TD's winter Tiberium frames (`TI1.WIN`) packed into
 `Data/ART/TEXTURES/SRGB/RED_ALERT/TERRAIN/SNOW/TIB01.ZIP`, and 12 TIB01 tiles spliced into the
@@ -205,7 +191,7 @@ python3 scripts/official_map_hybrid.py        # build the plan plus HYBRIDS
   `scripts/editor_manifest.py` would fix it.
 - **`MAIN.MIX` is an extended, unencrypted MIX.** `mix_tools.read_mix` and `ra_mix_extract.py` do
   not parse it; the builder has its own reader.
-- **Maps can hide extra mines.** Keep off the Grass has three: the survey lists them all.
+- **Maps can hide extra mines** ([field manual](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/official-maps-with-tiberium.md#what-to-change-in-the-map)). Keep off the Grass has three; the survey lists them all.
 - **Docklands' thumbnail keeps the gem speckle of its converted mixed fields.** The repaint only
   picks up tan Ore speckle, while the map itself turns those Gem cells to Tiberium
   (`take_gems`). Every other map converts pure-Ore fields only, so its thumbnail matches.
