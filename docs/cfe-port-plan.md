@@ -18,7 +18,8 @@ Plan for adopting QoL features and bugfixes from **CFE Patch Redux** by ChthonVI
   against non-compliant reuse, so keep attribution + source publication in order).
 - **Their RA changelog files:** `Documentation/Changelogs/1.7/RA_Changelog_1.7.txt` and
   `1.8/RA_Changelog_1.8.txt`. Pre-1.7 fixes are only in git history.
-- **Their feature toggles:** everything is INI-gated via `CFEPATCHREDUX_RA.INI` — useful for
+- **Their feature toggles:** everything is INI-gated: defaults in `Mod Data RA/CCDATA/DEFAULT.CFEPATCHREDUX_RA.INI`
+  (TD: `DEFAULT.CFEPATCHREDUX.INI`), overridden by the player's `CFEPATCHREDUX_RA.INI` — useful for
   locating each feature's code (grep the INI key name). We will generally hard-enable rather
   than reproduce their settings system, unless a feature is gameplay-affecting (see §4).
 
@@ -43,14 +44,14 @@ Plan for adopting QoL features and bugfixes from **CFE Patch Redux** by ChthonVI
 
 | # | Feature | CFE INI key (locator) | Size | Notes for our port |
 |---|---|---|---|---|
-| 0 | **Pixel-Perfect Zoom** | none (static; data-only) | TINY | No DLL code: loose `Data/XML/GAMECONSTANTS.XML` in the mod folder, `<CNCZoomFactors network="client" overwrite="true">` block — 11 factors 0.246875–1.975 (vanilla: 8 factors 1.0–2.0, so this also zooms OUT further). CFE commit `ea2dde5`. Port = extract BASE GAMECONSTANTS.XML from our install, swap in the zoom block only, ship in our `Data/XML/`. Bonus intel: same file carries `CNCTDTheaterTilesets` (theatre→tileset map, relevant to desert) + many other mod-reachable client constants. |
+| 0 | **Pixel-Perfect Zoom** | none (static; data-only) | ✅ shipped | No DLL code: a `<CNCZoomFactors network="client" overwrite="true">` block — 11 factors 0.246875–1.975 (vanilla: 8 factors 1.0–2.0, so this also zooms OUT further). CFE commit `ea2dde5`, which ships a loose `GAMECONSTANTS.XML`. Ours sits in `Data/XML/GameConstants_Mod.xml`, which ClientG merges over the base GameConstants (`config-meg-lever-audit.md`). Bonus intel: same file carries `CNCTDTheaterTilesets` (theatre→tileset map, relevant to desert) + many other mod-reachable client constants. |
 | 1 | **A\* Pathing** | `ASTAR_PATHING` | LARGE | Replaces "crash and turn" pathfinder. **Stage 1 of the two-stage pathfinding plan — see §1.1.** Foundation for #6. 1.8 fixed a crash on paths >200 cells — take the fixed version. Touches core movement; needs the biggest playtest soak. |
 | 2 | **Attack-Move** (Shift+Click) | `ATTACK_MOVE` | ✅ shipped | Post-1.7 LAN-safe rework, hard-enabled, all special cases (aircraft RTB on empty ammo, boats brief-attack, minelayers, chronotanks). Hard-enabled q-attack-move rides VANILLA's queue (CFE's queue rewrite NOT taken — fallback if flaky: stop converting ATTACKMOVE→QATTACKMOVE). One build fix: `AircraftClass::IsLanding/IsTakingOff` made public. **One deliberate deviation from CFE — see §1.2 (passive-building targeting).** |
 | 3 | **Rally Points** | `RALLY_POINTS` | ✅ shipped | Desktop-verified all factions. Incl. v1.9 long-line crash fix + two improvements over CFE: rally to "unplaceable" cells (their Can_Enter_Cell placement-legality dead zones near cliffs/shore/ore) and DOTGDI/DOTNOD faction end-dots. Found + fixed our DLL_Draw_Intercept ShapeSize-override trap (building-attributed named draws inflate to building size for TD buildings). Repair-bay rally (FIX/TDFIX) deferred to #6 as CFE gates it on Smarter Repair Bay exit logic. |
-| 4 | **Harvester Queue Jumping** | `HARV_QUEUE_JUMP` | SMALL | Independent toggle in CFE; works with #5. Verify against our TDPROC/TDHARV Limbo+Attach dock plumbing — our harvester counting bug (docked harvesters leave UQuantity) is exactly the kind of state this code reads. |
-| 5 | **Harvester Optimization** | `HARV_OPTIMIZATION` | SMALL | Nearest-refinery with per-inbound-harvester distance penalty. CFE's recommended choice over the older Load Balancing (which auto-disables when both are on — we just don't port Load Balancing). Same TDPROC caveat as #4. |
-| 6 | **Smarter Repair Bay** | `SMARTER_REPAIR_BAY` | MEDIUM | Queue for occupied bay + fixed RA bay rally + exit logic. Includes their fix for units ignoring collision on the bay. Must cover STRUCT_TDFIX alongside RA's FIX. |
-| 7 | **Infantry Tiberium Aversion** | `TIB_AVERSION` (TD side) | ✅ shipped | Ported into our A* (`FootClass::Find_Path_AStar`, findpath.cpp): +`TIB_AVERSION_COST`=2 cells per Tiberium cell, gated on `What_Am_I()==RTTI_INFANTRY`. **Two deliberate RA deviations from CFE:** (1) keyed on `Overlay==OVERLAY_TIB01` NOT `Land_Type()==LAND_TIBERIUM` — in RA, Ore/Gems share LAND_TIBERIUM but are harmless, so the land-type test would repel infantry from ore (same lesson as the infantry.cpp damage hook); (2) NO chem-warrior (E5) exemption — unlike TD/CFE, OUR Tiberium damages ALL infantry, so all infantry avoid it (aversion tracks damage). Finite penalty = infantry still cross a wide field with no detour. **This completes the CFE first wave.** |
+| 4 | **Harvester Queue Jumping** | `HARVY_QUEUE_JUMP` | SMALL | Independent toggle in CFE; works with #5. Verify against our TDPROC/TDHARV Limbo+Attach dock plumbing — our harvester counting bug (docked harvesters leave UQuantity) is exactly the kind of state this code reads. |
+| 5 | **Harvester Optimization** | `HARVY_OPTIMIZE` | SMALL | Nearest-refinery with per-inbound-harvester distance penalty. CFE's recommended choice over the older Load Balancing (which auto-disables when both are on — we just don't port Load Balancing). Same TDPROC caveat as #4. |
+| 6 | **Smarter Repair Bay** | `SMARTER_REPAIRBAY` | MEDIUM | Queue for occupied bay + fixed RA bay rally + exit logic. Includes their fix for units ignoring collision on the bay. Must cover STRUCT_TDFIX alongside RA's FIX. |
+| 7 | **Infantry Tiberium Aversion** | `INFANTRY_TIBERIUM_AVERSION` under `[SETTINGS]` (TD side) | ✅ shipped | Ported into our A* (`FootClass::Find_Path_AStar`, findpath.cpp): +`TIB_AVERSION_COST`=2 cells per Tiberium cell, gated on `What_Am_I()==RTTI_INFANTRY`. **Two deliberate RA deviations from CFE:** (1) keyed on `Overlay==OVERLAY_TIB01` NOT `Land_Type()==LAND_TIBERIUM` — in RA, Ore/Gems share LAND_TIBERIUM but are harmless, so the land-type test would repel infantry from ore (same lesson as the infantry.cpp damage hook); (2) NO chem-warrior (E5) exemption — unlike TD/CFE, OUR Tiberium damages ALL infantry, so all infantry avoid it (aversion tracks damage). Finite penalty = infantry still cross a wide field with no detour. **This completes the CFE first wave.** |
 
 ### 1.1 Pathfinding strategy (DECIDED 2026-06-11: A* first, refine later)
 
@@ -200,8 +201,7 @@ porting rule is "document deviations."
 - **Safe Sabotage** — no survivors from C4. CFE demoted default to SP-only (MP-overpowered).
 - **Suspend Building Repairs** — pause instead of cancel when broke.
 - **Smarter Chrono / Smarter Sonar / Building Capture Announcements** — RA-side polish.
-- **Pixel-Perfect Zoom** — static feature, pure client-side feel.
-- **Smarter SAMs** (TD-only in CFE) — ✅ DONE 2026-06-16. Our TDSAM that loses its target part-way through a surfacing (volley not yet spent) now rescans for another airborne target and stays up to engage it before retracting, instead of wasting the rise/lower reload cycle. `BuildingClass::TDSAM_Try_Reacquire` (building.cpp) called from the four target-lost TDSAM states (READY/FIRING → re-rotate from READY; READY2/FIRING2 → READY2, 1 shot left). Hardwired 2-shot volley already equals CFE's default `SMARTER_SAM_AMMO=2`; CFE's INI knobs (ammo count, balance delay) not reproduced per our no-INI policy. NOTE: CFE's `SmarterSAMAmmo`/`SmarterSAMBalanceDelay` settings are read+clamped but **unconsumed** in the reference clone — no portable behaviour code existed, so this is a from-scratch implementation against our own TDSAM state machine.
+- **Smarter SAMs** (TD-only in CFE) — ✅ DONE 2026-06-16. Our TDSAM that loses its target part-way through a surfacing (volley not yet spent) now rescans for another airborne target and stays up to engage it before retracting, instead of wasting the rise/lower reload cycle. `BuildingClass::TDSAM_Try_Reacquire` (building.cpp) called from the four target-lost TDSAM states (READY/FIRING → re-rotate from READY; READY2/FIRING2 → READY2, 1 shot left). Hardwired 2-shot volley already equals CFE's default `SMARTER_SAM_AMMO=2`; CFE's INI knobs (ammo count, balance delay) not reproduced per our no-INI policy. NOTE: CFE's `SmarterSAMAmmo`/`SmarterSAMBalanceDelay` settings drive its TD SAM state machine (`TIBERIANDAWN/BUILDING.CPP` ~5120–5290 in the reference clone); ours is a from-scratch implementation against our own TDSAM state machine, not a port of that code.
 - **Harvester Self-Repair** (TD-only in CFE) — ✅ DONE 2026-06-16, **data-only**. RA's `[HARV]` already self-heals to 50% via the engine's `SelfHealing=yes` flag (`TechnoClass::AI`, techno.cpp:2800 — 1 HP per `Rule.RepairRate` minutes, capped at `ConditionYellow`); our `[TDHARV]` lacked it, so RA ore trucks healed and GDI/Nod harvesters didn't. Fix = add `SelfHealing=yes` to `[TDHARV]` in rules.ini — true parity via the existing battle-tested path, same rate + cap. (Initial attempt was a custom frame-based heal block in `UnitClass::AI`; **reverted** — it double-healed HARV and at a wildly faster rate than the engine flag. The CFE veterancy-entangled code was the wrong model; the RA-native `SelfHealing` flag is the right one.)
 - **Smarter Mammoths** (TD-only) — missiles vs infantry. AUDIT FIRST: our TD-ported Mammoth
   may already do this via RA's secondary-weapon convention.
@@ -219,7 +219,9 @@ Ukraine general using Stavros voice, mobile gap generator not updating in motion
 waypoint error, Monster Tank Madness mission-critical units invisible, infinite "new
 construction options" announcement (captured-MCV aircraft buildings), building off stale
 proximity of a destroyed building, MIG pip display, building occupy-list OOB read, MIX-file
-open failure leak, savegame Nod radar colour (legacy-only).
+open failure leak, savegame Nod radar colour (legacy-only), helipads counted toward the fixed-wing
+aircraft limit (`362b2a52a`), reshroud hiding allies despite `IsAllyReveal` (`2bfee4fd6`), and the
+reveal crate blocked after a reveal→darkness sequence (`e57652a54`).
 
 ### 3.2 Audits — ChthonVII says VC's fix is WRONG (check our copies vs his)
 
@@ -252,15 +254,12 @@ Multiplayer correctness (matters for LAN play with the kids, and any future MP s
       crew spawns
 
 Gameplay logic:
-- [ ] Helipads counted toward RA fixed-wing aircraft limit
 - [ ] Fixed-wing planes fire 1 extra shot after expending ammo (pair with optional MIG Ammo
       Fudge if we care about preserving 4-shot MIG feel)
 - [ ] MISSION_AMBUSH did nothing
 - [ ] Gunboats not firing when spawned off-map
 - [ ] Units ignoring collision detection on the repair bay (folds into first-wave #6)
 - [ ] Custom missions using wrong AI building-repair threshold (matters for our campaign arc)
-- [ ] Darkness crate hides allied units despite IsAllyReveal; reveal crate blocked after
-      reveal→darkness sequence
 - [ ] Ore-growth fixes: mine head spawns ore around wrong cell / ore on top of mine head /
       new ore flashes wrong growth stage / `GOLD01.SNO-0000.DDS` is mistakenly a copy of the
       max-growth texture (HD asset fix)
@@ -298,11 +297,12 @@ Gameplay logic:
 
 ## 4. Settings policy
 
-CFE gates everything behind `CFEPATCHREDUX_RA.INI`. Our policy:
+CFE gates everything behind its INI (`DEFAULT.CFEPATCHREDUX_RA.INI`, overridden by `CFEPATCHREDUX_RA.INI`). Our policy:
 
 - **Pure QoL / pure bugfix:** hard-enable, no toggle. Fewer codepaths, less drift.
 - **Gameplay-affecting fixes (§3.4):** decide per item; if adopted, they're just ON
-  and documented in the CHANGELOG (we don't ship a user-facing settings file).
+  and documented in the CHANGELOG. The mod's own switches for its behaviour changes live in
+  `tf_settings.ini` (`player-settings.md`), not in a CFE-style INI.
 - Dev-time toggles, if needed during bring-up, sit behind `TF_DEV_BUILD` or `#if 0` and are never
   flipped without a deliberate decision.
 
@@ -323,4 +323,4 @@ pass (veterancy) or the campaign arc (mission-side fixes).
 When we ship ported features, credit in README/Workshop description per GPL + courtesy:
 **cfehunter** (original CFE Patch), **Root-Core** (RA port), **ChthonVII** (CFE Patch Redux —
 the bulk of what we're porting), plus feature-specific credits they carry (screaming_chicken
-for several fixes, bleid for Pixel-Perfect Zoom if we take it).
+for several fixes, bleid for Pixel-Perfect Zoom).

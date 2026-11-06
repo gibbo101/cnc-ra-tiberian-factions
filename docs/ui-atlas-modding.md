@@ -26,7 +26,7 @@ or stale, so copy main's in before a whole-build deploy (workspace `CLAUDE.md`).
 
 ## TL;DR
 
-The Remastered launcher draws almost all 2D UI from one giant texture atlas — **`MT_COMMANDBAR_COMMON.TGA`** (6871×6716, 32-bit, in `TEXTURES_SRGB.MEG`) — with a sibling **`.MTD`** mapping `region-name → (x,y,w,h)`. **A mod ships a byte-edited copy of that `.TGA` loose in `Data/ART/TEXTURES/SRGB/` and the launcher loads it over the base.** Vanilla. No EMC. No `.MTD`/`.MTM` companions needed — and none honored: a loose `.MTD` with altered region coords is IGNORED (probed live 2026-08-30, coord-swapped picker flags unchanged in the lobby). Region GEOMETRY is launcher-owned; only region PIXELS are moddable, and art must fit the stock region boxes.
+The Remastered launcher draws almost all 2D UI from one giant texture atlas — **`MT_COMMANDBAR_COMMON.TGA`** (6871×6716, 32-bit, in `TEXTURES_SRGB.MEG`) — with a sibling **`.MTD`** mapping `region-name → (x,y,w,h)`. **A mod ships a byte-edited copy of that atlas loose in `Data/ART/TEXTURES/SRGB/` and the launcher loads it over the base**, as the `.TGA` or as a `.DDS` of the same name (the mod edits the TGA and ships a DXT5 DDS, `scripts/sprite_dds.py`). Vanilla. No EMC. No `.MTD`/`.MTM` companions needed — and none honored: a loose `.MTD` with altered region coords is IGNORED (probed live 2026-08-30, coord-swapped picker flags unchanged in the lobby). Region GEOMETRY is launcher-owned; only region PIXELS are moddable, and art must fit the stock region boxes.
 
 > **The in-game renderer and the front-end shell both draw the loose atlas**, and the shell also draws standalone loose DDS screens (first shown with Reilsss CnCinRA's picker icons and menu). For the lobby picker two levers combine: `FACTIONS.XML` `SmallIconName` (CONFIG.MEG) picks WHICH region, and only the preloaded `UI_Multiplayer_PlayerSlot_Faction_NN` regions work (any other crashes ClientG at startup); the atlas repaint sets that region's PIXELS, `_ON` / `_OVER` variants included (`faction-select-identity.md`).
 
@@ -35,7 +35,7 @@ The Remastered launcher draws almost all 2D UI from one giant texture atlas — 
 ## The recipe
 
 1. Extract base `MT_COMMANDBAR_COMMON.TGA` + `.MTD` from `TEXTURES_SRGB.MEG` (streaming lister — see `mix-file-format.md`).
-2. Find your region in the `.MTD`: locate the `NAME.TGA` bytes, **skip trailing null padding** (1–2 bytes, varies), read 4× little-endian `int32` = `x, y, w, h` (top-left origin).
+2. Find your region in the `.MTD`: locate the `NAME.TGA` bytes, **skip trailing null padding** (1–4 bytes: the name's length field, a u32 before it, rounds the name up to a multiple of 4), read 4× little-endian `int32` = `x, y, w, h` (top-left origin).
 3. **Byte-edit the `.TGA` pixels in place.** The atlas is 32-bit **BGRA**, **bottom-origin** (`desc=0x00`), 18-byte header, **no footer**. For image pixel `(x,y)` (top-left), the file offset is `18 + (H-1-y)*W*4 + x*4`; write bytes `B,G,R,A`. Preserve the header/footer exactly — don't round-trip through PIL's TGA writer (it appends a footer / flips the descriptor; harmless per the red-herring below, but byte-editing keeps the file format-identical and the rsync delta tiny).
 4. Ship the edited `MT_COMMANDBAR_COMMON.TGA` **loose** at `<mod>/Data/ART/TEXTURES/SRGB/`. `.TGA` only. Deploy.
 
@@ -102,7 +102,7 @@ emblem painted at 7000,100 drew as the live radar crest.
 
 ## Payload
 
-The atlas is ~176 MB uncompressed (one loose `.TGA`). A **single** ship covers *all* UI-image edits (crest + flags + buttons + menus). Byte-editing keeps each iteration's rsync delta tiny.
+The edited atlas is a ~176 MiB `.TGA` (184,582,562 bytes). Staging converts it to a DXT5 DDS with every mip level (`scripts/sprite_dds.py`), about 62 MB, and that is what ships (`deploy.sh` and `package-for-workshop.sh` refuse a build without it; `sprite-memory.md`). A **single** ship covers *all* UI-image edits (crest + flags + buttons + menus). Byte-editing keeps each iteration's rsync delta tiny.
 
 ## Related
 - `config-meg-mod-delivery.md` — front-end **data** lever (factions/missions/master-text).

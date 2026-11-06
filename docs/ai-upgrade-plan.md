@@ -630,12 +630,12 @@ queue.cpp:3273, scenario.cpp:3016, saveload.cpp:1587); do NOT route through Assi
 (stat biases). **Critical prerequisite: lower Rule.IQProduction below 5** or sub-max AIs stop
 base-building entirely (house.cpp:1262). Tier map: Easy=IQ3 (no supers/aircraft-AI/roam),
 Medium=IQ4 (+supers, aircraft, guard-area, content-scan), Hard=IQ5 + the new smart behaviours.
-New behaviours get their own IQ thresholds. IQSellBack quirk: it's actually a TechLevel gate
-(building.cpp:7949) — don't treat as IQ tier.
+New behaviours get their own IQ thresholds. IQSellBack quirk: it's actually a TechLevel gate,
+`House->Control.TechLevel >= Rule.IQSellBack` (`BuildingClass::Repair_AI`) — don't treat as IQ tier.
 
 ### W8 — Combat mechanics
 Directional armour per §2.3 (research complete: hook techno.cpp:4576 after ArmorBias, before
-Modify_Damage; ~70-110 lines, 3 files, no per-object state, lockstep-PASS; directionless
+Modify_Damage; ~70-110 lines, 3 files, no per-object state, deterministic; directionless
 damage auto-excluded via source==NULL/forced gates + warhead opt-outs). Reverse move:
 decision-gated (§2.3).
 

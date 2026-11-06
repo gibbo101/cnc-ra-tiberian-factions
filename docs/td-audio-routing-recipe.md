@@ -7,8 +7,8 @@
 
 1. Add `VOC_TD_*` enum entry to `redalert/defines.h` (before `VOC_COUNT`).
 2. Add `SoundEffectName[]` entry in `redalert/audio.cpp` with the TD asset's bare name (e.g. `"OBELRAY1"`).
-3. Extract `.WAV` from `~/.steam/.../Data/SFX3D.MEG` via `scripts/meg_extract.py`. Both `TDC_SFX_X.WAV` (classic mode) and `TDR_SFX_X.WAV` (remastered mode) need to ship.
-4. Place the extracted WAVs **unchanged** in `resources/remaster_mods/Vanilla_RA/Data/AUDIO/`.
+3. Ship no WAV for a TD sample: `TDC_SFX_X.WAV` (classic mode) and `TDR_SFX_X.WAV` (remastered mode) already play from the base game's `Data/SFX3D.MEG`, and TD's EVA lines from `SFX2D_EN-US.MEG`.
+4. Only if a routed TD sound stays silent, extract both WAVs via `scripts/meg_extract.py` and place them **unchanged** in `resources/remaster_mods/Vanilla_RA/Data/AUDIO/` (the mod still ships copies of a few early samples, the Obelisk's laser among them). New sounds of your own ship there under their own names.
 5. Merge — **don't replace** — the base `SFXEVENTSNONLOCALIZED.XML` from `CONFIG.MEG` with alias `SFXEvent` entries, then ship the merged file at `Vanilla_RA/Data/XML/AUDIO/SFXEVENTSNONLOCALIZED.XML`.
 6. Reference the sound by its bare name in rules.ini (`Report=OBELRAY1`) — the DLL passes it via `SoundEffectName.Name` to the launcher; launcher prepends `RAR_SFX_` / `RAC_SFX_` and resolves the alias from our XML.
 
@@ -55,7 +55,9 @@ VOC_TD_LASER, // Obelisk humming laser beam
 {"OBELRAY1", 1, IN_NOVAR}, // VOC_TD_LASER (Obelisk humming laser beam)
 ```
 
-### 2. Extract the .WAV files
+### 2. Extract the .WAV files (only if the routed sound is silent)
+
+The base game's samples normally play as they are, and the mod ships no copy (step 3 of the TL;DR). One routed TD sound stayed silent until its samples were copied in, and the cause was never found; copying them in is the workaround.
 
 ```bash
 python3 scripts/meg_extract.py extract \
@@ -69,9 +71,9 @@ Yields:
 - `TDC_SFX_OBELRAY1.WAV` (classic mode — DOS-era AUD-source recording, ~14KB)
 - `TDR_SFX_OBELRAY1.WAV` (remastered mode — modern HD recording, ~36KB)
 
-### 3. Ship the .WAV files
+### 3. Ship the .WAV files (only with step 2)
 
-Place verbatim (no rename) at:
+Place verbatim (no rename) at (the mod ships the Obelisk's this way):
 
 ```
 resources/remaster_mods/Vanilla_RA/Data/AUDIO/TDC_SFX_OBELRAY1.WAV
@@ -160,7 +162,7 @@ User can toggle at runtime via Options → Audio. Without both aliases, one mode
 ### File format hygiene
 
 - **UTF-8 BOM**: keep the `ef bb bf` byte sequence at the file head. The base XML has it; preserve it through any merge tooling.
-- **CRLF line endings**: base XML is CRLF. If you append with `\n` you get mixed line endings, which the launcher's XML parser may handle inconsistently. Use `\r\n` explicitly.
+- **Line endings**: base XML is CRLF, but a file that is LF throughout loads fine (the mod's `SFXEVENTSNONLOCALIZED.XML` and `SFXEVENTSLOCALIZED.XML` are). Don't mix the two: whether a mixed file loads is untested.
 
 ### Preset definitions
 
@@ -184,7 +186,7 @@ sound to both, in the same order; an entry out of step plays its neighbour's sou
 ### Never repoint the silenced radar events
 
 The launcher fires `RA?_SFX_RADARON2` / `RADARDN1` itself, so those events point at 44-byte
-silent WAVs and the DLL plays the faction's pair (`building-sound-routing.md`). Repointing the
+header-only PCM WAVs with no samples, which play silence, and the DLL plays the faction's pair (`building-sound-routing.md`). Repointing the
 stubbed events un-silences the launcher's copy and the sound plays twice. A new era gets its own
 event pair and a route in the DLL.
 
@@ -231,8 +233,9 @@ under its own names; the alias recipe above routes it. Proven on both channels: 
 the localized channel, and a weapon report on the non-localized one. The rules are about format:
 1. **MS-ADPCM WAV only** (fmt tag 2). Plain PCM (tag 1) crashes ClientG with an integer
    divide-by-zero in its ADPCM block math (ClientG+0xAB5E69). Encode SFX with
-   `ffmpeg -c:a adpcm_ms -ar 22050 -ac 1`; EVA lines are stereo at 44077 Hz
-   (`ffmpeg -ac 2 -ar 44077 -c:a adpcm_ms`, the default 1024 block align is accepted).
+   `ffmpeg -c:a adpcm_ms -ar 22050 -ac 1`. TD's remastered EVA lines are stereo at about 44 kHz
+   (`ffmpeg -ac 2 -ar 44077 -c:a adpcm_ms`, the default 1024 block align is accepted); classic EVA
+   and RA's remastered EVA are mono.
 2. **Localized samples live under a locale folder** (`Data/AUDIO/EN-US/`), and the XML's `.MP3`
    extension maps to a `.WAV` member: the localized "MP3" entries are ADPCM WAVs.
 3. **A bad format fails silently or crashes.** Check a new file's md5 and fmt chunk against a base

@@ -53,10 +53,10 @@ scripts/bundle_unit.py E1 TDE1 \
   --text-name  TEXT_UNIT_TITLE_GDI_MINIGUNNER \
   --text-desc  TEXT_UNIT_DESC_GDI_MINIGUNNER
 ```
-Extracts `<ASSET>.ZIP` from `TEXTURES_TD_SRGB.MEG`, repacks TD-prefixed → `UNITS/<ININAME>.ZIP`; clones the `<ASSET>` tile run in `RA_UNITS.XML` → `<ININAME>` (verbatim format, frame paths re-pointed); wires the `RABUILDABLES.XML` cameo via the documented `patch_rabuildables_xml`. (Find the build-icon name + text IDs in CONFIG.MEG's `CNCBUILDABLES.XML`.)
+Extracts `<ASSET>.ZIP` from `TEXTURES_TD_SRGB.MEG`, repacks TD-prefixed → `UNITS/<ININAME>.ZIP`; clones the `<ASSET>` tile run in `RA_UNITS.XML` → `<ININAME>` (verbatim format, frame paths re-pointed); wires the `RABUILDABLES.XML` cameo via the documented `patch_rabuildables_xml`. (Find the build-icon name + text IDs in CONFIG.MEG's `CNCBUILDABLES.XML`.) The repacked ZIP stays in the source tree only: staging's `scripts/td_base_art.py` points an unchanged TD tile at the base game's ZIP through an opener tile and leaves the copy out of the build (`td-base-art.md`).
 
 ### 8. ⚠️ THE DONOR-IMAGEDATA FIX — do this or the unit is INVISIBLE
-`InfantryTypeClass::One_Time` (idata.cpp) loads each SHP via `MFCD::Retrieve`. TD-prefixed infantry have **no SHP in any MIX** (only the TGA tileset), so `ImageData` stays `NULL` → `InfantryClass::Draw_It` bails at its NULL-shape guard → the unit **builds, is selectable, plays voices, but renders nothing**. Unlike buildings (which bypass the SHP path in Remaster), infantry need the same donor fallback as **aircraft (`aadata.cpp`) and units (`udata.cpp`)** — but `idata.cpp` shipped without one. Add after the load loop:
+`InfantryTypeClass::One_Time` (idata.cpp) loads each SHP via `MFCD::Retrieve`. TD-prefixed infantry have **no SHP in any MIX** (only the TGA tileset), so `ImageData` stays `NULL` → `InfantryClass::Draw_It` bails at its NULL-shape guard → the unit **builds, is selectable, plays voices, but renders nothing**. Infantry need the same donor fallback as **buildings (`bdata.cpp`'s `_td_bdonors`), aircraft (`aadata.cpp`) and units (`udata.cpp`)** — but `idata.cpp` shipped without one. Add after the load loop:
 ```cpp
 InfantryTypeClass& tdxx = As_Reference(INFANTRY_TDxx);
 if (tdxx.ImageData == NULL) ((void const*&)tdxx.ImageData) = As_Reference(INFANTRY_E1).ImageData;

@@ -139,17 +139,20 @@ from the shadows… We estimated the Brotherhood would tire of the USSR by the e
   `scg43ea.ini`). TRAP: strip the `[Digest]` section** — `RELEASE_VERSION` makes a wrong
   digest abort the load, a missing one skips validation. Recipe + evidence:
   `campaign-tabs-research.md`.
-- **CONFIG.MEG same-size rule** for every inner-file edit; compensate bytes via XML
-  comments. Mission Select display names = master-text same-length in-place — choose
-  titles **no longer than the original mission's name** and pad with spaces. Map each
-  title to its slot at implementation time and check lengths then.
+- **No same-size limit on the mission data:** the instances ship in a loose `INSTANCES.XML`,
+  which overrides CONFIG.MEG at any size, and each mission's name and select-screen briefing
+  are new keys in `Data/ModText.csv`, any length (`campaigns-page.md`). The same-size rule
+  binds only members packed inside a CONFIG.MEG.
 - **In-game briefings are free:** the engine reads campaign scenario INIs and the mod's CCDATA
   shadows them by name (`campaign-tabs-research.md`), so all story text above fits in
-  `[Briefing]` with no size constraint. Note the *select-screen* briefing
-  panel is a separate, master-text path and still obeys the same-size rule.
+  `[Briefing]` with no size constraint. The *select-screen* briefing panel is a separate
+  text path: its `MissionBriefingTextID` names a `ModText.csv` key.
 - **Theatres:** all six, RA's three and TD's desert, temperate and winter (`td-base-art.md`), so
   Nod's canon strongholds in Africa can be desert missions.
-- **Win/lose/briefing gates:** the four DLL gates in `coop-missions-design.md` §5.
+- **Win/lose/briefing gates:** the four DLL gates in `coop-missions-design.md` §5 open only when
+  `Session.Type == GAME_NORMAL`, so they block co-op and skirmish sessions. A campaign mission
+  launched from Mission Select should run as `GAME_NORMAL` and pass them (inferred from the gates'
+  tests, untested).
 - Authoring: the native `cnc-map-editor` or the Mobius fork, RA-format `.mpr`/INI scenarios.
 
 ## 7. Open questions

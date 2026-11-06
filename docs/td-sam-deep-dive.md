@@ -350,14 +350,14 @@ Two rules.ini additions (replacing nothing; both are new TD-prefixed sections):
 ; TD Nike — dedicated TDSAM anti-air missile launcher weapon.
 ; Source: tiberiandawn/const.cpp WEAPON_NIKE
 ;   {BULLET_SAM, 50, 50, 0x0780, VOC_ROCKET2, ANIM_NONE}
-; NOT aliased to RA's [Nike] — RA's has ROF=20, this has TD-authentic ROF=50.
+; NOT aliased to RA's [Nike]: its own section, on its own Patriot missile.
 [TDNike]
 Damage=50
-ROF=50            ; TD-authentic (RA's [Nike] uses 20)
+ROF=20            ; RA's Nike rate of fire since 4.0.0 (TD: 50; balance-deep-dive.md F7)
 Range=7.5         ; TD 0x0780 leptons = 7.5 cells (RA's [Nike] also 7.5)
 Projectile=TDPatriot
-Speed=60          ; MPH_VERY_FAST per TD's ClassPatriot — verify exact MPH→Speed mapping in RA
-Warhead=AP        ; TD WARHEAD_AP
+Speed=100         ; MPH_VERY_FAST, TD's Patriot speed
+Warhead=TDAP      ; TD WARHEAD_AP
 Report=ROCKET2    ; TD VOC_ROCKET2
 Anim=SAMFIRE      ; Resolves to ANIM_SAM_N — RA's techno.cpp:3392 spawns directional SAMFIRE overlay
 ```

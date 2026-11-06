@@ -6,7 +6,7 @@ Census of CONFIG.MEG's 230 XML members for launcher levers. In use: `GameConstan
 (classic lockout, mod hotkeys, zoom), `FACTIONS.XML`, `MASTERTEXTFILE`, `MUSICEVENTS`,
 `GUITEXTURESETS` and the `.bui` screens. Untried: campaign files, team colours, cursors, lobby
 value lists, the bonus gallery, slash commands. The sweep started when the classic-graphics
-lockout, after four DLL-side attempts, turned out to be one constant EA shipped for mods.
+lockout, after three DLL-side routes and a RAM probe, turned out to be one constant EA shipped for mods.
 
 **Standing rule this establishes:** a wall proven on the *code* side is not proven on the *data*
 side. Before declaring a launcher behaviour impossible, grep CONFIG.MEG.
@@ -39,8 +39,8 @@ Fewer moving parts, and one less member that a rebuild can silently clobber — 
 that cost the faction names earlier the same day.
 
 **It is the only `_Mod` overlay.** No `InputTranslatorConfigurations_Mod.xml` exists in the
-binary, which is the independent confirmation that mod hotkey *bindings* cannot be shipped and
-must be bound by the player (Tier 1 item 1 below).
+binary, which is the independent confirmation that mod hotkey *bindings* cannot be shipped as
+data (Tier 1 item 1 below); the mod sends its commands from the launcher's own keys instead.
 
 ## Tier 1 — actionable levers
 
@@ -62,14 +62,16 @@ EA built a mod hotkey path and left the hook in our own source:
 So the launcher delivers four modder-defined keypresses **with a map cell**.
 
 **What ships:** `CNCEnableModHotKeyGameCommands` is on in `GameConstants_Mod.xml`, and the handler
-in `dllinterface.cpp` (`INPUT_REQUEST_MOD_GAME_COMMAND_1..4_AT_POSITION`) uses two of them. Mod
-Command 1 runs each selected object's self-action (MCVs deploy, transports unload), as an
-optional player-bound alias: the deploy key itself is read straight from the keyboard
-(`launcher-vs-dll-ownership.md`). Mod Command 2 is sent by the patched launcher key code just
-before its own select-all (`TF_Patch_Launcher_Keys_In`), so the DLL can filter harvesters and
-MCVs out of the selection.
+in `dllinterface.cpp` (`INPUT_REQUEST_MOD_GAME_COMMAND_1..4_AT_POSITION`) uses all four. The
+patched launcher key code (`TF_Patch_Launcher_Keys_In`, `launcher-vs-dll-ownership.md`) sends
+them from the launcher's own keys, so every player's press reaches the host with no binding:
+Mod Command 1 is the deploy key and runs each selected object's self-action (MCVs deploy,
+transports unload); Mod Command 2 comes just before the launcher's own select-all, so the DLL can
+filter harvesters and MCVs out of the selection; Mod Command 3 is camera-to-yard (H). Mod Command 4
+carries a launcher's sidebar switches for its own house (`TF_SIDEBAR_CHOICE_MARK`). A player can
+still bind Mod Command 1 to a key of their own.
 
-**A mod cannot ship a default binding (2026-07-21 to 07-23).** Four attempts all left Mod
+**A mod cannot ship a binding as data.** Four attempts all left Mod
 Command 1 unbound: the binding in `INPUTTRANSLATORCONFIGURATIONS.XML` inside the mod's
 CONFIG.MEG; the same file loose in `Data/XML/`; Options > Controls "Restore Defaults"; and a
 freshly created profile. Our unbind of the launcher's own deploy command was ignored too, so
@@ -121,8 +123,9 @@ compiled in (`CoopCampaignMenuImplementationClass`, `Button_CoopCampaign`,
 `Host_Coop_Campaign_Lobby(...)` with match-settings/ready/launch RPCs, per-mission star counts)
 — but **no co-op data ships in either archive**: `UI_CampaignMenu_CoOp` is absent from our
 CONFIG.MEG and from the pristine base, and no co-op campaign is defined. Since a mod cannot add
-a member, the screen can never exist; and the hosting path runs through EA's online coordinator
-while mods load in LAN only. Recorded in full in `coop-missions-design.md`.
+a member, the screen could only come as a loose `.bui`, and whether ClientG opens a screen with no
+archive member is untested; the hosting path also runs through EA's online coordinator while mods
+load in LAN only. Recorded in full in `coop-missions-design.md`.
 
 **Why it matters:** our campaign plan hijacks Counterstrike/Aftermath *mission slots*
 (`campaign-tabs-research.md`). This is the layer above. We cannot add a campaign file, but
@@ -191,8 +194,9 @@ player-facing surface nobody has used.
   hook instead (`skirmish-music.md`).
 - **`CNCTDSupportMegamaps` = false** looks like it unlocks big maps; it does not. TD-scoped, and
   it enables TD's 128×128 megamaps — the cap RA already runs at. It explains why TD's 64×64 build
-  carries the same `MAX_EXPORT_CELLS (128*128)`, which is the evidence `megamaps-feasibility.md`
-  uses to prove the buffer belongs to the launcher. That negative stands.
+  carries the same `MAX_EXPORT_CELLS (128*128)`. That negative stands, but the 128x128 export
+  arrays are not the launcher's wall: InstanceServerG copies them, and the `megamaps-spike` branch
+  patches that copy to reach 253x253 (`megamaps-feasibility.md`).
 - **`CNCTDMaxPlayers` = 6** — "more than 6 players in skirmish/LAN for TD if a modded DLL supports
   it". TD-only; RA already runs 8 (`CNCAllow8PlayersDefault`).
 - **`AISKIRMISHPERSONALITIES.XML`** defines one personality (`Balanced`) pointing at a CLIPS

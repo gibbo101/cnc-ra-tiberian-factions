@@ -23,8 +23,9 @@ You can:
 - add your own text styles and button texture sets.
 
 You can't:
-- add a button that does something new. What each button does is compiled into the launcher
-  (`ClientG.exe`).
+- add a button that does something new with data alone. What each stock button does is compiled
+  into the launcher (`ClientG.exe`); a new button needs launcher code patched in from your DLL,
+  as the mod's ADD-ONS button does (`pack-panel.md`).
 - change the splash card shown before the intro. It is a bitmap compiled into `ClientG.exe`.
 - change the layout of the UI atlas. Its region boxes are fixed; only the pixels inside them are
   yours.
@@ -357,8 +358,9 @@ The same levers reach the rest of the front end. What we did with them:
 
 ## Shipping it
 
-- `CONFIG.MEG` adds about 44 MB to your Workshop item and the atlas about 184 MB, however little
-  you change in them.
+- `CONFIG.MEG` adds about 44 MB to your Workshop item and the atlas about 184 MB as a TGA, however
+  little you change in them. Shipped as a DXT5 DDS with its mips, as this mod's staging does
+  (`scripts/sprite_dds.py`), the atlas is about 62 MB.
 - Only one mod's `CONFIG.MEG` and one mod's atlas can be in use at a time, so a player running
   your mod beside another that ships either file will see a clash.
 - The scripts in this repo are GPL v3.

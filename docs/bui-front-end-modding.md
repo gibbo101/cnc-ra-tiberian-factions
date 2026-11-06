@@ -6,7 +6,8 @@ The launcher's screens are `.bui` ChunkFile scene graphs in the mod's CONFIG.MEG
 edits to the main menu, dialog, loading screen, lobbies, faction combo box, tactical HUD and font
 library, built by `scripts/build_config_meg.sh` through `scripts/bui_tree.py` and the
 `scripts/bui_*_build.py` builders. Edits reshape, retint, retexture or extend existing widgets
-within the member's size; they cannot add options or behaviour ClientG has no code for.
+within the member's size. Data alone cannot add options or behaviour ClientG has no code for; new
+buttons and screens ship by pairing cloned widgets with launcher code from the DLL (`pack-panel.md`).
 
 **One-line:** `.bui` = a Petroglyph **ChunkFile** container (`CH` magic + zlib) wrapping a tag-based UI scene graph. It is **data**, delivered through the `CONFIG.MEG` shadow and read by `ClientG.exe` at load, so the sim never touches it (`launcher-vs-dll-ownership.md`).
 
@@ -15,7 +16,7 @@ within the member's size; they cannot add options or behaviour ClientG has no co
 ## TL;DR — what this buys us (and what it doesn't)
 
 - **YES — cosmetic reshape of EXISTING widgets** on any front-end/HUD screen: reposition, resize, hide/show, retint, retexture and restyle text (strings may change length), plus nodes the launcher already reads (effects, font styles). Whole front-end screens can be swapped for TD's through `FACTIONS.XML` (2026-10-01 section). **Proven on both surfaces:** the front-end (main-menu reorder ships in production) **and** the in-game HUD (Deck-confirmed 2026-07-11 — a hide edit on `RA_TACTICAL_UI.BUI`'s Soviet faction-logo rect removed that logo live in a skirmish).
-- **NO — adding new options or behaviour.** The things we'd *want* to add are code-populated from compiled C++ enums/type-managers in `ClientG.exe`, not from `.bui` data. (Payload growth itself is fine while it recompresses under the file's size.)
+- **NO — new options or behaviour from `.bui` data alone.** The things we'd *want* to add are code-populated from compiled C++ enums/type-managers in `ClientG.exe`, not from `.bui` data. (Payload growth itself is fine while it recompresses under the file's size.) **New buttons and screens do ship** with a code side: the main menu's ADD-ONS button is a cloned widget whose click the DLL's launcher layer binds, and it opens a `.bui` screen of the mod's own (`TF_ADDONS.BUI`) under ClientG's unused `SplashScreen` class (`pack-panel.md`).
 - Treat this as a **polish / faction-identity** capability, not a feature unlock. Factions and campaigns came by other routes (`ts-gdi-faction.md`, `campaign-tabs-research.md`).
 
 ---
@@ -100,7 +101,7 @@ Always edit from the **pristine base** member and re-derive offsets against expe
 | **W4 in-game tactical HUD** | **Solved by data** | `FACTIONS.XML` scene lists: GDI, Nod and TS GDI load TD's `Tactical_UI.bui`, RA sides keep `RA_Tactical_UI.bui` with the side label hidden (`hud_label_hide_build.py`, `faction-select-identity.md`). Cosmetic edits and structural widget insertion both work, but in RA's scene ClientG maps every Allied-side country to `SideBar_FactionLogo_Allies` and every Soviet-side one to `_Soviet`, so per-faction crests there need the RAM patch, not `.bui` (below). |
 | **W5 `a` / `/` select-all/deploy classification** | **Solved on the DLL side, not via `.bui`** | Hardcoded in ClientG (`RTSInputManagerClass`, registered-type identity); the DLL reads the keys and filters the select-all hand-over (`launcher-vs-dll-ownership.md`). |
 
-**The line to remember:** reshaping, retexturing and recolouring existing widgets, and adding nodes the launcher already reads (effects, font styles), is reachable; new options or behaviour the launcher has no code for is not.
+**The line to remember:** reshaping, retexturing and recolouring existing widgets, and adding nodes the launcher already reads (effects, font styles), is reachable by data; new options or behaviour the launcher has no code for need launcher code patched in from the DLL (`pack-panel.md`).
 
 ### ClickScript / Lua
 

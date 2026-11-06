@@ -73,7 +73,7 @@ gated to single-player. Removing those gates (for co-op maps only) is "Path B".
 The lobby picker's country slots carry the factions (`faction-select-identity.md`):
 
 - **Spain → `HOUSE_GOOD` (GDI)** and **Greece → `HOUSE_BAD` (Nod)**, remapped on receipt in
-  `CNC_Start_Instance`;
+  `CNC_Set_Multiplayer_Data`;
 - **Germany = TS GDI** (`Is_TS_GDI`, no remap: the country house is the faction).
 
 Then in `GlyphX_Assign_Houses` (`dllinterface.cpp`), **every MP player — human or AI — gets a
@@ -103,7 +103,7 @@ Each map = a **triplet**:
 Two naming families coexist: local-authored short names (`RDS06.mpr`) and Workshop-synced
 (`UGC_<itemid>_<hash>_MAPDATA.MPR`; RA's meta suffix is `MAPDATA`, per editor source
 `GameInfoRedAlert.cs:364`). `Custom_Maps/` + `Custom_Map_Previews/` also exist (Workshop
-cache). The dev-machine prefix has the dirs but they're empty (game never ran there).
+cache). The dev-machine prefix has the same dirs.
 
 **The `.json` has no "co-op"/category field** — the lobby list is built from geometry +
 `Waypoints[]` (= start positions / max players; RDS01=8, a sample UGC map=4). So co-op-ness is

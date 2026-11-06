@@ -37,7 +37,8 @@ hook (playbook §3.21) — TS Strength values are real HP.
    SHPs in the theater mixes (`TEMPERAT.MIX` — NewTheater 'T' names, `GTPOWR`);
    buildups in `ISOTEMP.MIX`; palettes in `CACHE.MIX`.
 2. **Render voxels** — `scripts/vxl_render.py <vxl> <outdir> --frames 32 --yaw0 90`,
-   orthographic, with geometry-derived normals (no VXL normal tables) and the remap range
+   orthographic, with the model's own VXL normals through TS's normal tables (the default
+   `--normals vxl`; `--normals geo` derives them from geometry) and the remap range
    painted as the launcher's team green. The fleet renders at the 32° camera with TS's own
    lighting (`--shade ts`); per-model settings are in `ts-gdi-tree-plan.md` and the skills.
    **Voxel +X = nose = east at yaw 0; `--yaw0 90` puts frame 0 north; frames advance
@@ -135,6 +136,6 @@ RA now has a real amphibious hover locomotor, and TSHVR uses it (`Hover=yes`):
 ## Legal note
 
 TS assets are EA copyright (2010 freeware ≠ redistribution license; TS was never
-GPL'd). Same tolerated category as the extracted TD-Remastered art the mod already
-ships; CCHyper's TS/RA2 soundtrack mods are long-standing Workshop precedent. The mod
-ships it.
+GPL'd). EA's C&C modding guidelines license other C&C games' art, sounds and voices to
+mods, revocably, but no music file from any C&C game (`ea-modding-guidelines.md`). The
+mod ships TS art and sounds on that licence.

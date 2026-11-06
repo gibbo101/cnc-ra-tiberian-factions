@@ -13,21 +13,21 @@ aliases an RA donor.
 
 Per-building flags extracted from `tiberiandawn/bdata.cpp`. These are the values `add_building.py` reads. **IniName** is the catalogue IniName (TD-prefixed); **Image/Footprint/sprite ZIPs** keep the unprefixed TD asset names.
 
-| IniName | Faction | Donor | Cost | Power | HP | Sight | Adj | Armor | Bib | Cap | Crew | Repair | Idle:Start/Count/Rate | Points | Notes |
+| IniName | Faction | Donor | Cost | Power | STRNTH | Sight | Adj | Armor | Bib | Cap | Crew | Repair | Idle:Start/Count/Rate | Points | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | TDNUKE | both  | POWR | 300  | +100 | 200  | 2 | 1 | wood     | yes | yes | yes | yes | 0/4/15  | 50  | TD lvl 0 |
 | TDNUK2 | both  | APWR | 700  | +200 | 300  | 2 | 1 | wood     | yes | yes | yes | yes | 0/4/15  | 75  | TD lvl 5, prereq TDNUKE |
-| TDPROC | both  | PROC | 2000 | -40  | 900  | 4 | 1 | wood     | yes | yes | yes | yes | 0/6/4   | 55  | TD lvl 1, has dock/siphon cycles — keep RA donor behaviour |
-| TDSILO | both  | SILO | 150  | -10  | 300  | 2 | 1 | wood     | yes | yes | no  | yes | —       | 16  | TD lvl 1 — capacity-based shape, not a cycle |
-| TDPYLE | GDI   | TENT | 300  | -20  | 800  | 3 | 1 | wood     | yes | yes | yes | yes | 0/10/3  | 60  | TD lvl 0 |
-| TDHAND | Nod   | BARR | 300  | -20  | 800  | 3 | 1 | wood     | yes | yes | yes | yes | 0/10/3  | 61  | TD lvl 0, 2×3 footprint |
-| TDWEAP | GDI   | WEAP | 2000 | -30  | 1000 | 3 | 1 | aluminum | yes | yes | yes | yes | 0/1/0   | 86  | TD lvl 2, static idle |
-| TDAFLD | Nod   | WEAP | 2000 | -30  | 1000 | 5 | 1 | steel    | yes | yes | yes | yes | 0/16/3  | 86  | TD lvl 2, 4×2, AIRSTRIP anim spec |
-| TDHQ   | both  | DOME | 1000 | -40  | 1000 | 10| 1 | wood     | yes | yes | yes | yes | 0/16/4  | 20  | TD lvl 2, radar |
+| TDPROC | both  | PROC | 2000 | -40  | 450  | 4 | 1 | wood     | yes | yes | yes | yes | 0/6/4   | 55  | TD lvl 1, has dock/siphon cycles — keep RA donor behaviour |
+| TDSILO | both  | SILO | 150  | -10  | 150  | 2 | 1 | wood     | yes | yes | no  | yes | —       | 16  | TD lvl 1 — capacity-based shape, not a cycle |
+| TDPYLE | GDI   | TENT | 300  | -20  | 400  | 3 | 1 | wood     | yes | yes | yes | yes | 0/10/3  | 60  | TD lvl 0 |
+| TDHAND | Nod   | BARR | 300  | -20  | 400  | 3 | 1 | wood     | yes | yes | yes | yes | 0/10/3  | 61  | TD lvl 0, 2×3 footprint |
+| TDWEAP | GDI   | WEAP | 2000 | -30  | 500  | 3 | 1 | aluminum | yes | yes | yes | yes | 0/1/0   | 86  | TD lvl 2, static idle |
+| TDAFLD | Nod   | WEAP | 2000 | -30  | 500  | 5 | 1 | steel    | yes | yes | yes | yes | 0/16/3  | 86  | TD lvl 2, 4×2, AIRSTRIP anim spec |
+| TDHQ   | both  | DOME | 1000 | -40  | 500  | 10| 1 | wood     | yes | yes | yes | yes | 0/16/4  | 20  | TD lvl 2, radar |
 | TDEYE  | GDI   | MSLO | 2800 | -200 | 500  | 10| 1 | wood     | yes | **no** | yes | yes | 0/16/4 | 100 | TD lvl 7, GDI superweapon host |
 | TDTMPL | Nod   | MSLO | 3000 | -150 | 1000 | 4 | 1 | aluminum | yes | **no** | yes | yes | 0/1/0  | 20  | TD lvl 7, Nod superweapon host |
-| TDFIX  | both  | FIX  | 1200 | -30  | 800  | 3 | 1 | wood     | yes | yes | yes | yes | 0/1/0   | 46  | TD lvl 5, ACTIVE 0/7/2 |
-| TDHPAD | both  | HPAD | 1500 | -10  | 800  | 3 | 1 | wood     | yes | yes | **no** | yes | 0/0/0 | 65  | TD lvl 6, no idle anim |
+| TDFIX  | both  | FIX  | 1200 | -30  | 400  | 3 | 1 | wood     | yes | yes | yes | yes | 0/1/0   | 46  | TD lvl 5, ACTIVE 0/7/2 |
+| TDHPAD | both  | HPAD | 1500 | -10  | 400  | 3 | 1 | wood     | yes | yes | **no** | yes | 0/0/0 | 65  | TD lvl 6, no idle anim |
 | TDGTWR | GDI   | PBOX | 500  | -10  | 200  | 3 | 1 | wood     | no  | **no** | yes | yes | —     | 25  | TD lvl 2, 1×1 |
 | TDATWR | GDI   | AGUN | 1000 | -20  | 300  | 4 | 1 | aluminum | no  | **no** | yes | yes | —     | 30  | TD lvl 4, 1×2 |
 | TDOBLI | Nod   | TSLA | 1500 | -150 | 200  | 5 | 1 | aluminum | no  | **no** | yes | yes | —     | 35  | TD lvl 4, 1×2, ACTIVE 0/4/RATE |
@@ -36,6 +36,7 @@ Per-building flags extracted from `tiberiandawn/bdata.cpp`. These are the values
 | TDFACT | both  | FACT | 5000 | **0** | 400  | 3 | 1 | wood     | yes | yes | yes | yes | 0/4/3   | 70  | TD lvl 99, ✅ shipped v0.3.0-phase5e — Power=0 per vanilla RA [FACT] |
 
 **Reading the table:**
+- `STRNTH` is TD's raw `bdata.cpp` value, which is what rules.ini `Strength=` holds. TD's `BuildingTypeClass` constructor passes `strength*2`, and `redalert/bdata.cpp`'s `Read_INI` doubles every `TD*` building's `MaxStrength` to match, so in-game HP is twice the column (`td-port-playbook.md` §3.21).
 - Empty `Idle` column = no idle animation (engine renders shape 0 statically). Damaged state = shape 1 in that case (the engine's `largest = max(Anims[*].Start + Count) = 1` auto-shift).
 - `Crew=no` means selling/destroying spawns zero infantry (TD canon for SILO/HPAD/SAM).
 - `Cap=no` (bold) marks entries where TD authentic differs from the original catalogue spec — defensive structures and superweapon hosts can't be captured. **TMPL and EYE are NOT capturable per TD.**

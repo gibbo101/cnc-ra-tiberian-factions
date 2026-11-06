@@ -68,11 +68,13 @@ The sim runs in InstanceServerG, which loads the DLL on the hosting machine only
 
 ## The interface contract
 
-### Launcher → DLL: 30 `extern "C"` exports (`dllinterface.cpp:118-218`)
+### Launcher → DLL: 33 `extern "C"` exports (`dllinterface.cpp:118-218`)
+
+The game's 33 exports below, plus 11 `CNC_Editor_*` map-editor exports in `dllinterfaceeditor.cpp`: 44 in all, as in EA's DLL. There is no shutdown export.
 
 | Group | Exports |
 |---|---|
-| Lifecycle | `CNC_Version`, `CNC_Init` *(registers the one callback)*, `CNC_Config`, `CNC_Add_Mod_Path`, `CNC_Shutdown` |
+| Lifecycle | `CNC_Version`, `CNC_Init` *(registers the one callback)*, `CNC_Config`, `CNC_Add_Mod_Path` |
 | Game start | `CNC_Start_Instance` / `_Variation` / `_Custom_Instance`, `CNC_Set_Multiplayer_Data`, `CNC_Read_INI`, `CNC_Set_Difficulty`, `CNC_Restore_Carryover_Objects`, `CNC_Get_Start_Game_Info` |
 | Per-frame | `CNC_Advance_Instance` *(the tick)*, `CNC_Get_Game_State` *(pull state)*, `CNC_Get_Visible_Page` *(classic framebuffer)*, `CNC_Get_Palette` |
 | Input / commands | `CNC_Handle_Input`, `CNC_Handle_Sidebar_Request`, `CNC_Handle_Structure_Request`, `CNC_Handle_Unit_Request`, `CNC_Handle_SuperWeapon_Request`, `CNC_Handle_ControlGroup_Request`, `CNC_Handle_Beacon_Request`, `CNC_Handle_Game_Request`, `CNC_Handle_Game_Settings_Request`, `CNC_Handle_Debug_Request`, `CNC_Set_Home_Cell`, `CNC_Clear_Object_Selection`, `CNC_Select_Object` |
@@ -148,7 +150,7 @@ for the name family before touching records.**
 
 `strings ClientG.exe` revealed a **real per-faction audio system** in pgaudio: a `FactionType` enum and a family of `Faction_Event_GUI_SFX_*` events (`Credits_Start_Gain`, `ConstructionComplete`, `Low_Power`, `HQUnderAttack`, `InsufficientFunds`, …) parsed from XML via `XMLTypeConverterClass::Convert<enum FactionTableAudioTypeEnum, SFXEventClass>`. At first glance this looks like a launcher-side faction hook we could exploit. **It is not usable for GDI/Nod**, for three independent reasons:
 
-1. **No GDI/Nod faction exists in the launcher.** The only C&C faction tokens are `ALLIED` / `SOVIET`. The `GDI` string hits are Windows **G**raphics **D**evice **I**nterface — *"render target is not compatible with GDI"* — false positives; there is **no `NOD` token at all.**
+1. **No GDI/Nod faction exists in the launcher.** The faction tokens beside the audio events are `ALLIED` / `SOVIET`. The `GDI` string hits are Windows **G**raphics **D**evice **I**nterface — *"render target is not compatible with GDI"* — false positives. `NOD` does appear, bare and in TD's own campaign front end (`_MUS_TD_NOD_MAP_THEME`, `CampaignSelect_NOD_Button`, `TEXT_NOD_CAMPAIGN`); which table the bare token belongs to is unchecked.
 2. **Much of `FactionType` is dormant cross-title engine code.** Sibling events like `Currency_Wood_Stolen`, `Animal_Stolen`, `EpicConstructed`, Metagame-AI build orders, `Coordinator_Quick_Match` are from Petroglyph's *other* Mobius-engine titles — present in the shared lib, not wired up for RA.
 3. **Our factions are ActLike-hijacked**, so even where the launcher *is* faction-aware it sees Allied/Soviet, not GDI/Nod. And the launcher's credit **tick** (`RAR_SFX_CASHUP1`) is a single global event; the mod silences it and the DLL fires its own.
 
@@ -285,14 +287,14 @@ edge-detect on the radar scan bit; count the Buildings heap + `Power_Fraction()`
 The launcher suppresses the "Cost: $N" line only for AssetNames on its internal RA-context whitelist
 ("SW_Nuke","SW_Chrono","SW_GPS","SW_SonarPulse"...). `SW_ION_CANNON` (a TD-side DllSuperweaponTypeEnum
 value) isn't whitelisted -> the Ion Cannon cameo shows $0. Engine-side `CNCSidebarEntryStruct.Cost` is
-IGNORED for supers. Cosmetic, unfixable mod-side (closed ClientG binary). Accept the $0.
+IGNORED for supers. Cosmetic. No data lever reaches it; a runtime code patch of ClientG (see "Launcher-resident patches") hasn't been tried. The $0 stands until one is.
 
 ### Roster-scaling launcher CTD — NameOverride[25] table exhaustion
 Adding the ~30th unit TYPE crashed the launcher (std::string(NULL) in InstanceServerG) on refinery
 placement/MCV deploy. Root cause: every techno with a rules.ini `Name=` HD override registers into
 `NameOverride[25]`, rules are read TWICE (rules.ini + aftrmath.ini) with no dedup -> the 25-slot table
 exhausts; plus `Text_String` off-by-one rejected the last slot -> NULL -> CTD. Fix (all DLL): tables
-25->128; dedup by id in TechnoTypeClass::Read_INI; inline.h `<`->`<=`; NULL-guard OverrideDisplayName in
+25->256; dedup by id in TechnoTypeClass::Read_INI; inline.h `<`->`<=`; NULL-guard OverrideDisplayName in
 dllinterface.cpp. Only after this could the roster keep growing.
 
 ### Classic-mode toggle: locked out by launcher DATA

@@ -41,8 +41,9 @@ The TD attack-heli behavior is: fly to target → strafe (fire pairs) → when `
 a helipad (`MISSION_ENTER`) → reload → repeat. **RA's `AircraftClass` already implements all of this and
 it is essentially type-agnostic** (`redalert/aircraft.cpp`): `Ammo`/`MaxAmmo` (init 254), `MISSION_ATTACK`,
 `MISSION_ENTER` reload-at-helipad (lines 2022/2260/2374), `Good_Fire_Location` (strafe positioning),
-`Pip_Count` (ammo pips). The **only** type-gate in the whole file is one cosmetic `AIRCRAFT_HIND` speed
-check (line 436). So we get the attack-heli AI **for free** by setting the unit up like RA's HIND —
+`Pip_Count` (ammo pips). The file's live type checks are all for other aircraft: the Badger, the Chinook
+(`AIRCRAFT_TRANSPORT`) and the cargo plane; its one `AIRCRAFT_HIND` speed
+check sits inside `#ifdef TOFIX` and never compiles. So we get the attack-heli AI **for free** by setting the unit up like RA's HIND —
 no `_TD()` port needed (unlike the ground units' missions).
 
 **RA's HIND is the template** (`aadata.cpp` `OrcaHeli`=AIRCRAFT_HIND): `is_rotor=true`, not custom-rotor,

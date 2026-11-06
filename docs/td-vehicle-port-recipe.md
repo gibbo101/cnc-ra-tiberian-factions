@@ -15,7 +15,7 @@
 3. **`Speed` in rules.ini = `round(MPHType × 100 / 256)`**, NOT RA's tank's value and **NOT `MPHType ÷ 2`** (the ÷2 form was wrong — see ⚠️ below). TD gives an `MPHType` constant; the rules.ini `Speed=` is a **1–100 percentage** that the engine scales back to the 0–255 `MaxSpeed` via `_Scale_To_256` (`MaxSpeed = Speed × 256 / 100`). So invert it: `MPH_MEDIUM = 18` → `round(18 × 100 / 256)` = **`Speed=7`**; the shipped `[TDMCV]` (`MPH_MEDIUM_SLOW` = 12) → `round(12 × 100 / 256)` = `Speed=5`; the harvester (`MPH_MEDIUM` raw 18, but capped) ships `Speed=5`. **Do NOT copy RA's same-role tank `Speed=8`** — derive from the TD `MPH_*` constant, every time.
 
    > ⚠️ **The ÷2 convention this doc originally taught was wrong** (corrected commit `187fd66`, 2026-05-31). `Speed = MPHType / 2` ran **every one of the 13 TD ground units ~28% too fast**. A Light-vs-Flame playtest race exposed it. All units were recomputed to `round(MPHType × 100 / 256)` (e.g. `MPH_MEDIUM` tanks `9 → 7`, harvester `10 → 5`) and the `// Speed=N` comments in `defines.h` were corrected to match. Use the ×100/256 form.
-4. **Rendering = classic SHP (TFASSETS.MIX) + HD tileset (RA_UNITS.XML)** — both, unlike infantry (which use a donor-ImageData). `UnitTypeClass::One_Time` loads `<Image>.SHP` for `ImageData`; a TD-prefixed unit needs `TD<NAME>.SHP` packed into `TFASSETS.MIX` (add to `build_tfassets.sh`, source `<NAME>.SHP` from `CONQUER.MIX`). `ShapeSize=48,48` in rules.ini sets `MaxSize`. The HD tileset (`bundle_unit.py`) renders the Remaster.
+4. **Rendering = classic SHP (TFASSETS.MIX) + HD tileset (RA_UNITS.XML)** — both, unlike infantry (which use a donor-ImageData). `UnitTypeClass::One_Time` loads `<Image>.SHP` for `ImageData`; a TD-prefixed unit needs `TD<NAME>.SHP` packed into `TFASSETS.MIX` (add to `build_tfassets.sh`, source `<NAME>.SHP` from `CONQUER.MIX`). `ShapeSize=48,48` in rules.ini sets `MaxSize`. Classic mode is locked out, so the SHP is never drawn: it gives `ImageData` and the selection box. The HD tileset (`bundle_unit.py`) renders the Remaster; staging (`scripts/td_base_art.py`) points every unchanged TD tile at the base game's ZIP, so the copy `bundle_unit.py` makes doesn't ship (`td-base-art.md`).
 5. **Tileset donor = a same-frame-count turreted RA tank.** A turreted tank is 64 frames (32 body + 32 turret). RA's `2TNK` is exactly 64 → `bundle_unit.py MTNK TDMTNK --tileset-donor 2TNK`. (The `frame_count` slicer handles mismatches.)
 6. **Cameo/text:** `<BuildIcon>` references a vanilla `BuildIcon_TD_*` region (in `CNCBUILDABLES.XML`); `--text-name TEXT_UNIT_TITLE_GDI_<X>` / `--text-desc` likewise. Nothing shipped.
 
@@ -42,7 +42,7 @@
 | **Tracked vehicle left wheeled** | TD tank moves too slow off-road (defaults to `SPEED_WHEEL` 60%/40% vs `SPEED_TRACK` 80%/70%) | Set `Tracked=yes` for TD `SPEED_TRACK` units (all four TD tanks). Genuinely wheeled TD units (`SPEED_WHEEL` — e.g. Recon Bike, Buggy) stay un-tracked. Exposed by a Light-vs-Flame race, commit `187fd66` |
 | **Generic effect not in RA** | Compile error (e.g. `ANIM_FRAG2` undeclared) | RA lacks some TD anims/sounds. If it's a distinctive death visual, **port it** (see §FRAG); muzzle flash (`GUNFIRE`) + impact (`VEH-HIT3`) are generic and reused per the Nod Turret precedent |
 | **Crew survivor is RA rifle** | Killed TD vehicle pops an `E1` rifleman | `UnitClass::Crew_Type` — add the `IniName[0..1]=="TD"` → `INFANTRY_TDE1` check **before** the unarmed-civilian branch (so MCV/Harvester are covered too). Mirrors `BuildingClass::Crew_Type` |
-| **Sidebar name ≠ in-game name** | Hover shows "GDI Medium Tank", sidebar shows "Medium Tank" | rules.ini `Name=` drives the in-game/hover name; the sidebar cameo uses the master-text `TEXT_UNIT_TITLE_*` (`.LOC`, **same-length-in-place only** — a longer name needs the launcher-crashing resize). Accept the short sidebar name, or use a same-length abbreviation |
+| **Sidebar name ≠ in-game name** | Hover shows "GDI Medium Tank", sidebar shows "Medium Tank" | rules.ini `Name=` drives the in-game/hover name; the sidebar cameo uses the text ID in the object's `ObjectNameTextID`. Add a new ID of any length to the loose `Data/ModText.csv` and point `ObjectNameTextID` at it (the faction yards and war factories do). Editing the `.LOC` itself is same-size only |
 | **Muzzle-flash mis-positioned** | Flash floats off the gun | The weapon-offset geometry is RA-only; tune `verticaloffset`/`primaryoffset` against the TD sprite by screenshot |
 
 ---
@@ -98,7 +98,7 @@ weapon + one ctor + assets.
   PAK; nothing shipped).
 - **Assets:** classic `FTNK.SHP:TDFTNK.SHP` in `build_tfassets.sh`; HD via
   `bundle_unit.py FTNK TDFTNK --tileset-donor APC ...` — a turret-less hull is **32 frames** (half a
-  turreted tank's 64), so the donor is the 32-frame **APC**, not 2TNK.
+  turreted tank's 64), so the donor is RA's **APC** (38 tiles: 32 body + 6 door) sliced to 32, not 2TNK.
 
 ## §BIKE — a pure-reuse wheeled rocket unit (Recon Bike)
 

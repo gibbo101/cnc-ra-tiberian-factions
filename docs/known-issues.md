@@ -66,6 +66,13 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
   every player's localized voices. Fix: trim it to the events the mod changes. The EVA mailbox
   relies on the `RA*_SFX_EVA_*` names, so check those before cutting any RA event.
 
+### Build hotkeys miss the mod's own buildings and units
+- The launcher's build commands (`COMMAND_RA_ALLIED_BUILD_STRUCTURE_CONSTRUCTION_YARD` and the rest) each name a
+  stock object, as its camera-to-yard command names `FACT`. The faction yards and every TD and TS type have none, so
+  their build hotkeys do nothing; H is answered by the DLL instead (`launcher-vs-dll-ownership.md`).
+- Open, untried: the launcher's deploy, select-all and H commands are rerouted by a code patch
+  (`TF_Patch_Launcher_Keys_In`), and the build commands have not been tried that way.
+
 ---
 
 ## Multiplayer
@@ -174,11 +181,6 @@ to a full entry above or delete. One line each: where, what, severity.
 - The launcher discards speech dispatched during or after `On_Multiplayer_Game_Over`
   (`TDACCOM1`, `TDFAIL1` and `RAOLOST1` all went out through valid chains and stayed silent),
   so the endgame lines ride the EVA mailbox. Mid-game stub-and-refire is unaffected.
-
-### Build hotkeys miss the mod's own buildings and units
-- The launcher's build commands (`COMMAND_RA_ALLIED_BUILD_STRUCTURE_CONSTRUCTION_YARD` and the rest) each name a
-  stock object, as its camera-to-yard command names `FACT`. The faction yards and every TD and TS type have none, so
-  their build hotkeys do nothing; H is answered by the DLL instead (`launcher-vs-dll-ownership.md`).
 
 ### Classic graphics mode is unsupported
 - The mod's terrain and units have no classic art, so the mod is HD-only.

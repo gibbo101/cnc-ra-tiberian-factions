@@ -59,7 +59,7 @@ HAS_CHECKSUM = 0x00010000   # 20-byte SHA1 appended at end of file
 IS_ENCRYPTED = 0x00020000   # header (index) is Blowfish-encrypted
 ```
 
-So a `second` of `0x0002` ⇒ `IS_ENCRYPTED`. **Every RA archive shipped with the Remastered Collection is encrypted** (`REDALERT/MAIN/EXPAND/EXPAND2.MIX` all read `0x0002`).
+So a `second` of `0x0002` ⇒ `IS_ENCRYPTED`. **Most RA archives shipped with the Remastered Collection are encrypted, not all.** Under `Data/CNCDATA/RED_ALERT/`, `REDALERT`, `EXPAND`, `EXPAND2.MIX` and `CD1/MAIN.MIX` read `0x0002`; `HIRES1`/`LORES1.MIX` read `0x0003` (encrypted, with a checksum); `AFTERMATH/MAIN.MIX` and `COUNTERSTRIKE/MAIN.MIX` read `0x0000`, the alt header in plaintext (§8.1).
 
 ### 3.2 PK (RSA) block → Blowfish key
 
@@ -80,7 +80,7 @@ The encrypted span is `roundup8(6 + count*12)` (Blowfish works on whole 8-byte b
 
 Plaintext, starting immediately after the (padded) encrypted header — i.e. at `4 + 80 + span`. **Only the index is encrypted; file bytes are not.**
 
-> **Known tooling gap (benign):** `ra_mix_extract.py` handles *encrypted* extended mixes and *classic* mixes, but not the rare *extended-but-unencrypted* variant (flags header, no Blowfish). No Remastered RA archive uses that combination, so this has never bitten us. Fix if a future archive needs it.
+> **Tooling split:** `ra_mix_extract.py` handles *encrypted* extended mixes and *classic* mixes, but not the *extended-but-unencrypted* variant (flags header, no Blowfish). The Aftermath and Counterstrike `MAIN.MIX` use that combination; `mix_plain_alt.py` reads them (§8.1).
 
 ---
 
@@ -126,7 +126,7 @@ An outer mix can contain inner mixes as ordinary entries. The Remastered RA bund
 
 Different lineage, name-based. Reader `scripts/meg_extract.py` (format from `SOURCECODE/CnCTDRAMapEditor/Utility/Megafile.cs`): optional 8-byte magic (`0xFFFFFFFF`/`0x8FFFFFFF` + version), then `num_files / num_strings / string_table_size`, a uint16-length-prefixed string table, a fixed 20-byte-per-entry file table, then blobs at absolute offsets. `CONFIG.MEG` holds the launcher's XML (e.g. `RABUILDABLES.XML`, `SFXEVENTSNONLOCALIZED.XML`, `INSTANCES.XML`); `SFX3D.MEG` holds the remastered WAVs we route TD audio through.
 
-**Repacking — `scripts/meg_pack.py` (added 2026-05-28).** Mirrors EA's `MegafileBuilder.cs` exactly: a no-change round-trip of the 44 MB `CONFIG.MEG` is **byte-identical** (proven), and the reader validates **nothing** — no checksum, signature, or encryption — so the game loads a repacked MEG without complaint. This is what makes editing *front-end* data possible at all: e.g. the Mission Select campaign roster lives in `CONFIG.MEG`'s `INSTANCES.XML` and is **only** reachable by repacking the MEG (the mod `Data/` overlay does **not** reach front-end campaign data). Verified end-to-end on the Deck (a broken mission def killed that mission's launch; `ShowOnMissionSelect=false` hid a completed mission). Full model: `campaign-tabs-research.md`. Caveat: this edits the **base** archive (Steam "verify" reverts it); whether a mod can *ship* a replacement `CONFIG.MEG` is untested.
+**Repacking — `scripts/meg_pack.py` (added 2026-05-28).** Mirrors EA's `MegafileBuilder.cs` exactly: a no-change round-trip of the 44 MB `CONFIG.MEG` is **byte-identical** (proven), and the reader validates **nothing** — no checksum, signature, or encryption — so the game loads a repacked MEG without complaint. This is what makes editing *front-end* data possible at all: e.g. the Mission Select campaign roster lives in `CONFIG.MEG`'s `INSTANCES.XML` and is reachable by repacking the MEG, or by a loose copy under the mod's `Data/XML/`, which overrides the member at any size (the mod ships its `INSTANCES.XML` that way; `campaigns-page.md`). Verified end-to-end on the Deck (a broken mission def killed that mission's launch; `ShowOnMissionSelect=false` hid a completed mission). Full model: `campaign-tabs-research.md`. Caveat: this edits the **base** archive (Steam "verify" reverts it). A mod can also *ship* a replacement `CONFIG.MEG`, which the launcher loads over the base (`config-meg-mod-delivery.md`).
 
 ---
 
@@ -155,8 +155,9 @@ campaign spike needed it:
 | **alt header, plaintext** | `first=0`, flags **without** `0x02` | **`mix_plain_alt.py`** |
 | alt header, encrypted | `first=0`, flags **with** `0x02` | `ra_mix_extract.py` |
 
-The Remastered RA campaign archives are the middle shape:
-`Data/CNCDATA/RED_ALERT/{CD1,AFTERMATH,COUNTERSTRIKE}/MAIN.MIX`. Both existing readers fail
+The Remastered RA expansion campaign archives are the middle shape:
+`Data/CNCDATA/RED_ALERT/{AFTERMATH,COUNTERSTRIKE}/MAIN.MIX` (flags `0x0000`). `CD1/MAIN.MIX` is
+encrypted (`0x0002`) and reads with `ra_mix_extract.py`. Both existing readers fail
 on them and the failure is *misleading* — the classic reader reports `0 files` (it reads the
 zero `first` field as a count) and `ra_mix_extract.py` says "could not parse as a mix
 (encrypted or classic)". Neither means the archive is broken.
@@ -212,7 +213,7 @@ Names/sizes only — we do **not** bulk-commit extracted EA bytes (see §11).
 
 ### 10.3 Scenario / mission INIs (co-op data side)
 
-- **RA campaign** lives in `MAIN.MIX`: 68 INIs — `scg01ea…scg14ea` (Allied) and `scm01ea…scm17ea` (Soviet), plus `mission.ini`. Naming: `sc` + side (`g`=Allied, `m`=Soviet) + mission## + variant.
+- **RA campaign** lives in `MAIN.MIX` → `general.mix`: `scg01ea…` (Allied) and `scu01ea…scu14ea` (Soviet), beside the `scm01ea…scm24ea` multiplayer maps, plus `mission.ini`. Naming: `sc` + the house prefix (`g`=Allied, `u`=Soviet, as `SCU31EA` in EA's `EXPAND.CPP`; `m`=multiplayer) + mission## + direction + variant.
 - **TD campaign** lives in `GENERAL.MIX`: `scg*` (GDI) / `scb*` (Nod).
 - These single-player `.ini` scenarios are the adaptation source for the post-v1 co-op arc (`CNC_Start_Custom_Instance` + `.mpr`); `EXPAND2.MIX:mplayer.ini` is the multiplayer config reference.
 

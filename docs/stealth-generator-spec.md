@@ -28,7 +28,7 @@ frame from `LogicClass::AI`.
 | 1 | Cloak friendly **buildings + units** inside the coverage radius | free — drive the existing `TechnoClass` cloak system |
 | 2 | **Generator itself stays visible** (never cloaks); native cloakers (Stealth Tank) keep vanilla rules | 2 guards in the driver |
 | 3 | Hidden from **everyone incl. the AI** | free (`Is_Cloaked` hides from non-allies) |
-| 4 | **No generic auto-reveal.** Reveal on **fire** and on **taking damage** | free (`FIRE_CLOAKED` for units; `Take_Damage`→`Do_Shimmer`) |
+| 4 | **No generic auto-reveal.** Reveal on **fire** and on **taking damage** | free (`FIRE_CLOAKED`, units and buildings alike; `Take_Damage`→`Do_Shimmer`) |
 | 5 | **Detector reveal**: any enemy techno with `IsScanner` within reveal range of a stealthed object → `Do_Shimmer` it | small custom scan (see Engine facts) + 1 INI line for the Jammer |
 | 6 | **Building bibs hide with their building** (enemy sees no telltale bib) | custom cell-redraw (bibs are stamped into cells, not the sprite) |
 | 7 | **Owner** sees the warped **"un-stealthing"** look (transparent→colour, distorted), not the clean ghost | one branch in `Visual_Character`, exact stage tuned in-game |
@@ -86,9 +86,10 @@ frame from `LogicClass::AI`.
   sprite — so the cloak render does **not** hide them. Hiding the bib (#6) = suppress/redraw the
   bib cells while the building is cloaked, restore on uncloak. Its own task.
 
-- **Buildings have no uncloak-before-fire.** The `FIRE_CLOAKED` "uncloak then fire" path is
-  unit/infantry only (unit.cpp:989, infantry.cpp:4022). A cloaked Obelisk charges and **fails** to
-  fire. Hence the **ambush hook** (#11): when a stealthed armed building has a legal in-range target
+- **Buildings uncloak to fire only from `Mission_Attack`.** `TechnoClass::Can_Fire` returns
+  `FIRE_CLOAKED` for anything not `UNCLOAKED`, and `BuildingClass::Mission_Attack` answers it with
+  `Do_Uncloak()` as units and infantry do (EA `BUILDING.CPP`, `case FIRE_CLOAKED`). That waits for the
+  first shot and depends on `Do_Uncloak`'s guard. The **ambush hook** (#11) reveals earlier: when a stealthed armed building has a legal in-range target
   (`Target_Legal(TarCom) && In_Range(TarCom)`, or on target acquisition), `Do_Uncloak()` it; it
   re-cloaks via `Cloaking_AI` after `CloakDelay` once the threat is gone.
 

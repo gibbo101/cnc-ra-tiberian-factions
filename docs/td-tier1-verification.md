@@ -174,9 +174,9 @@ case STRUCT_BARRACKS:
     return (INFANTRY_E1);
 ```
 
-Returns the basic GDI rifleman as the infantry that spawns when the barracks is sold or destroyed. `STRUCT_TDPYLE` not in case — currently falls through to `default: break;` which leaves the return at `TechnoClass::Crew_Type()` (probably INFANTRY_NONE or a random one).
+Returns the basic GDI rifleman as the infantry that spawns when the barracks is sold or destroyed. `STRUCT_TDPYLE` not in case — currently falls through to `default: break;` and returns `TechnoClass::Crew_Type()`: `INFANTRY_E1`, except that a building with no primary weapon gives a civilian (`C1` or `C7`) 15% of the time.
 
-With `[TDPYLE] Crewed=true`, the building tries to spawn a crew infantry on death, but `Crew_Type()` returns nothing meaningful. Need to add:
+With `[TDPYLE] Crewed=true`, the building does spawn a crew infantry on death, but 15% of the time it is a civilian, where TD's barracks always gives a rifleman. Need to add:
 
 ```cpp
 case STRUCT_TENT:
@@ -266,7 +266,7 @@ This is a positive-dispatch alias of two buildings with **identical** behavior (
 | Silo takes 2× longer to destroy than TD-authentic | TDSILO | rules.ini Strength=300 vs TD's 150 | rules.ini |
 | Silo always renders empty (frame 0) regardless of player's tiberium fill | TDSILO | Shape_Number STRUCT_STORAGE branch doesn't include STRUCT_TDSILO | engine |
 | Barracks-produced infantry may spawn inside footprint / fail to exit cleanly | TDPYLE | Exit_Object switch missing STRUCT_TDPYLE case | engine |
-| Barracks on-death doesn't spawn a crew infantry | TDPYLE | Crew_Type switch missing STRUCT_TDPYLE (Crewed=true but Crew_Type returns NONE) | engine |
+| Barracks on-death sometimes spawns a civilian instead of a rifleman | TDPYLE | Crew_Type switch missing STRUCT_TDPYLE (falls through to `TechnoClass::Crew_Type`'s 15% civilian roll for an unarmed building) | engine |
 
 ---
 

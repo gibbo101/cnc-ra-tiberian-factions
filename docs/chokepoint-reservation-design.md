@@ -5,7 +5,7 @@
 re-paths straight back (`known-issues.md`).
 
 Vehicles crossing a 1-wide pinch in opposite directions no longer deadlock. Three layers, all in
-`DriveClass` and lockstep-safe:
+`DriveClass` and deterministic:
 - **Give-way** (`Give_Way_Decision`, `Find_Give_Way_Cell`): a vehicle that would meet an opposing
   ally in a corridor holds on open ground, or backs out to a free cell if caught inside.
 - **Corridor claims** on `CellClass` (`ChokeClaimFrame`, `ChokeClaimDir`): the first column to
@@ -44,7 +44,7 @@ has no head-on rule and they stack 5 sub-cell, so they slip past; this is **vehi
 
 ## The give-way layer (`redalert/drive.cpp`)
 
-All in `DriveClass`. Vehicles only. Lockstep-safe (synced `As_Target()` ids, no `Random_Pick`).
+All in `DriveClass`. Vehicles only. Deterministic (`As_Target()` ids, no `Random_Pick`).
 
 - **`Give_Way_Decision(TechnoClass** winner_out)`** → `0` proceed / `1` hold / `2` retreat. The core
   predictive scan:
@@ -118,11 +118,12 @@ untangled). OpenRA itself is occupancy plus local avoidance plus repath. The cla
 ownership explicit and atomic at the moment of commitment, the one thing per-tick inference lacked, and
 the give-way HOLD machinery reads it.
 
-### MP-determinism is NOT the blocker (the key realisation)
-This engine is lockstep: every client runs the identical sim from identical orders. The **occupation
-bits are already deterministic shared cell state across all clients** — a reservation is just more of
-that. Put it in the sim, update it deterministically, and it's synced for free (no separate "sync the
-table" step). Desyncs come only from a short, auditable foot-gun list:
+### MP sync is NOT the blocker (the key realisation)
+In the Remastered Collection only the host runs the sim; a LAN joiner's launcher draws what the
+host's sim exports. The **occupation bits are sim state every player already sees** — a reservation
+is just more of that. Put it in the sim and it reaches every player for free (no separate "sync the
+table" step). The original game ran every client's sim in lockstep, and desynced only from a short,
+auditable foot-gun list; the code keeps to it, so it stays deterministic:
 
 1. **No RNG** in the reservation/decision path (`Random_Pick` with unsynced seed). (Already avoided.)
 2. **Prefer int over float.** Our A\* uses `float` costs — fine on the identical 32-bit Windows DLL all

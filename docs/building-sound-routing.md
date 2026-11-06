@@ -38,15 +38,15 @@ pointing at the TD WAVs (which already ship in the base MEGs).
 
 ## Two hard-won rules (2026-05-28)
 
-**1. Every routed TD sound MUST have its WAV bundled in the mod's `Data/AUDIO/`.**
-The Remastered launcher in RA mode loads only RA's asset set — it cannot read
-the TD MEGs. A `RAC_SFX_<NAME>`/`RAR_SFX_<NAME>` SFXEvent whose `SampleNamesList`
-names `TDC_SFX_X.WAV`/`TDR_SFX_X.WAV` is **silent** unless those WAVs are
-extracted (from `SFX3D.MEG`) into `resources/remaster_mods/Vanilla_RA/Data/AUDIO/`.
-Symptom of a missing WAV: the routed sound goes silent rather than erroring — which
-can masquerade as "fixed" (e.g. the placement double vanished only because the new
-`HVYDOOR1` had no sample). **Checklist:** when adding a routed TD VOC, always also
-extract its WAV(s) into `Data/AUDIO/`.
+**1. A routed TD sound plays from the base game's MEGs; check that it is heard.**
+The launcher in RA mode reads TD's samples from the base game: the credit tick's
+`TDC_`/`TDR_SFX_TONE15`/`16` and the TD EVA lines play with no WAV in the mod.
+One routed sound stayed silent until its WAVs were extracted (from `SFX3D.MEG`)
+into `resources/remaster_mods/Vanilla_RA/Data/AUDIO/`, and the cause was never
+found. A silent route doesn't error, which can masquerade as "fixed" (e.g. the
+placement double vanished only because the new `HVYDOOR1` was silent).
+**Checklist:** when adding a routed TD VOC, hear it in game; if it is silent,
+ship its two WAVs as the workaround (`td-audio-routing-recipe.md`).
 
 **2. The credit tick — faction-routed via the silence-and-refire flank (verified in
 play: GDI/Nod get the TD tick, RA factions unchanged).** The 2026-05-28 findings stand and are the

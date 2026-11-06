@@ -76,10 +76,6 @@ Order: TS Nod, the match warm-up (`sprite-memory.md`), maps past 128x128, TS the
 - **TS Service Depot seat:** the drive-on to the pad's centre catches only some approaches. When
   the HD depot's pad ring is centred on the middle cell, `TS_DEPOT_SEAT_EAST_PX`/`SOUTH_PX` go to
   0 and the drive-on rail comes out (`firestorm-design.md`).
-- **Shared rail table:** `DriveClass::Track21` (ROLL_OFF_DOCK_SEAT) is one static table used by
-  the war factory exit, the TS refinery dock and the depot. Two rails running at once make one
-  unit follow the other's offsets and jump (it still ends on its own destination). Per-unit rail
-  data would fix it.
 - **Wall line-fill placement preview:** can the DLL see the cursor cell while a wall is placed?
   `INPUT_REQUEST_MOUSE_MOVE` returns early without legacy rendering.
 - **EMP Cannon layer pops on** about a second after the build-up ends: it is gated on
@@ -241,7 +237,7 @@ Order: TS Nod, the match warm-up (`sprite-memory.md`), maps past 128x128, TS the
   two reset sites) would allow cargo-coloured dock smoke: green for Tiberium, grey for Ore, maybe
   blue for gems. New HD anim names ship as loose VFX ZIPs registered in `RA_VFX.XML`.
 - **Chimney smoke** on power plants and refineries: `ANIM_SMOKE_M` spawned from `BuildingClass::AI` at a per-type
-  stack offset, off while building, selling or unpowered, deterministic for lockstep.
+  stack offset, off while building, selling or unpowered, deterministic.
 
 ## AI milestone (plan: `ai-upgrade-plan.md`)
 
@@ -281,8 +277,8 @@ Order: TS Nod, the match warm-up (`sprite-memory.md`), maps past 128x128, TS the
   a hijacked Aftermath slot given `<House>GDI</House>`, then GDI mission 1 for real on the GDI tab, with a map,
   briefing and win/lose conditions, before committing to all nine. With it, flatten the difficulty stat
   multipliers: `CCDATA/rules.ini` `[Easy]`/`[Difficult]` still carry the stock spread (Easy Firepower 1.2 / Armor
-  1.2 / ROF .8 / Cost .8), and difficulty is meant to be behavioural only. Check whether `Scen.CDifficulty` feeds
-  `Rule.Diff[]` in skirmish.
+  1.2 / ROF .8 / Cost .8), and difficulty is meant to be behavioural only. Skirmish never reads them: every house
+  gets `Assign_Handicap(Scen.Difficulty)`, Normal, and `CNC_Set_Difficulty` acts only in `GAME_NORMAL`.
 - **Co-op missions** (`coop-missions-design.md`).
 - **Maps past 128x128,** up to 253x253: branch `megamaps-spike`, worktree `../worktrees/tf-megamaps`, its doc
   megamaps.md. After 5.6.0: rebase onto main, a 253x253 stress run of its sector routing, LAN with a joiner,

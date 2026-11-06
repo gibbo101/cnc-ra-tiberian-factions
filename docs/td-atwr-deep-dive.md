@@ -144,13 +144,13 @@ Two visual effects per shot: the sound + the muzzle flash at `Fire_Coord`. The a
 |---|---|---|---|
 | `VerticalOffset` | `0x0000` | `0x0030` | Missile spawns at building's base, not at the rack top |
 | `PrimaryOffset` | `0x0000` | `0x0040` | Missile spawns at center, not extended out from rack |
-| `IsSimpleDamage` | `false` | `true` | Damaged-frame indexing falls through to broken math |
+| `IsSimpleDamage` | `false` | `true` | None: RA's constructor stores it (`BDATA.CPP`) but no code reads it. Set to match TD |
 | `IsTurretEquipped` | `true` | `false` | **The load-bearing bug** — every downstream issue |
 
 The `IsTurretEquipped` cascade:
 
 - **Shape_Number** (`building.cpp:669-693`) does `shapenum = BodyShape[Dir_To_32(PrimaryFacing.Current())]` then adds 32 (recoil) or 64 (damaged) offsets. That assumes a 32-frame rotation set. TDATWR has **3 frames** (healthy / damaged / extra) per `RA_STRUCTURES.XML:24300-24322` and `TDATWR.ZIP`. So the engine looks up frame indices that don't exist.
-- **Can_Fire** (our `building.cpp:3358-3368`) gates on `PrimaryFacing` being within ±8° of target. With nothing visually rotating but the flag set true, the building rotates an invisible PrimaryFacing through 256 directions while looking frozen.
+- **Can_Fire** (our `building.cpp:3358-3368`) gates on `PrimaryFacing` being within 8 facing steps (about 11°) of target. With nothing visually rotating but the flag set true, the building rotates an invisible PrimaryFacing through 256 directions while looking frozen.
 - **Turret_Facing** (`building.cpp:2790-2793`) returns `PrimaryFacing.Current()` instead of `Direction(TarCom)`. `Fire_Coord` then uses that for the muzzle direction.
 - **Fire_Direction** (`building.cpp:5105-5114`) same logic — returns `PrimaryFacing.Current()` not `Direction(TarCom)`.
 
@@ -165,11 +165,11 @@ Every observable issue traces to either the four-field flag mismatch (M1) or to 
 | Symptom | Root cause | Step |
 |---|---|---|
 | Tower visual stuck on frame 0 (no rotation, no damage flip) | `IsTurretEquipped=true` + only 3 SHP frames; engine queries shapes 0-127 that don't exist | M1 |
-| Delay before firing on target | `Can_Fire` gates on `PrimaryFacing` ±8° match | M1 |
+| Delay before firing on target | `Can_Fire` gates on `PrimaryFacing` within 8 facing steps (about 11°) | M1 |
 | Missile spawns from middle of foundation | `VerticalOffset=0, PrimaryOffset=0` and Fire_Coord uses (wrong) PrimaryFacing direction | M1 |
-| Damaged building stays on healthy frame | `IsSimpleDamage=false` → wrong damaged-shape math | M1 |
+| Damaged building stays on healthy frame | `IsTurretEquipped=true` → `Shape_Number`'s turret math adds offsets for frames that don't exist (`IsSimpleDamage` is never read) | M1 |
 | No muzzle flash | RA's `Fire_At` doesn't fall back to `ANIM_MUZZLE_FLASH` like TD's does; `[TDTowTwo]` has no `Anim=` field | M4 |
-| Fires while owning house is power-starved | No `STRUCT_TDATWR` `FIRE_BUSY` check in `Can_Fire` | M3 |
+| Fires while owning house is power-starved | `[TDATWR]` lacks `Powered=true`, so `Can_Fire`'s `Class->IsPowered` gate skips it | M3 |
 | Crew infantry on death spawns inside foundation (or fails to spawn) | No `STRUCT_TDATWR` south-offset branch in death-spawn site | M5 |
 
 ---
@@ -221,20 +221,12 @@ Update the comment block at `bdata.cpp:694-704` to drop the "Modeled on ClassAAG
 // each ClassTd<Name>. See docs/td-atwr-deep-dive.md / td-sam-deep-dive.md.
 ```
 
-### M3 — Port TD's `STRUCT_ATOWER` power-fraction gate
+### M3 — TD's `STRUCT_ATOWER` power gate, through `Powered=true`
 
-`redalert/building.cpp` `Can_Fire`. Find where other building-specific Can_Fire branches live (the same place RA gates AAGUN's `if (Class->IsPowered && House->Power_Fraction() < 1)`). Add a dedicated `STRUCT_TDATWR` branch with TD's exact logic from `building.cpp:3520-3524`:
-
-```cpp
-// Direct port from tiberiandawn/building.cpp:3522.
-// "Advanced guard towers need power to fire." Not aliased to STRUCT_ATOWER
-// (RA's vanilla heap has no ATOWER) and not aliased to RA's AAGUN (RA's
-// AAGUN gates on Class->IsPowered which is rules-ini-driven; TD's is
-// hard-coded for the building).
-if (*this == STRUCT_TDATWR && House->Power_Fraction() < 1) {
-    return (FIRE_BUSY);
-}
-```
+TD hard-codes it in `Can_Fire` (`building.cpp:3520-3524`): "Advanced guard towers need power to fire", returning
+`FIRE_BUSY` below full power. RA's `Can_Fire` already has the same test for any building whose class sets
+`IsPowered` (`if (Class->IsPowered && House->Power_Fraction() < 1) return (FIRE_BUSY);`), so the port is data, not
+code: `[TDATWR]` in `rules.ini` sets `Powered=true`. No `STRUCT_TDATWR` branch exists in `Can_Fire`.
 
 ### M4 — Verify `[TDTowTwo]` matches TD's `WEAPON_TOW_TWO` field-for-field
 

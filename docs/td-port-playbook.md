@@ -137,7 +137,7 @@ Speed=60
 
 ### 2.6 — Bundle the assets via the vanilla MEG pipeline
 
-Don't use TD-Assets workshop content as the source — our mod must be self-contained. Use vanilla MEG extraction:
+Don't use TD-Assets workshop content as the source — our mod must be self-contained. Use vanilla MEG extraction to put a TD-prefixed copy in the source tree. The copy doesn't ship: staging (`scripts/td_base_art.py`, run by `deploy.sh` and `package-for-workshop.sh`) turns every tile whose frames all match the base game's byte for byte into an opener tile that reads `TEXTURES_TD_SRGB.MEG` directly, and leaves the ZIP out of the build. Only repainted frames ship (`td-base-art.md`).
 
 **For buildings** (use `scripts/bundle_assets.py`):
 ```bash
@@ -185,7 +185,7 @@ if (tdxxx.ImageData == NULL) {
 
 Same for `aadata.cpp` (aircraft, donor `AIRCRAFT_BADGER`), `adata.cpp` (anims, donor `ANIM_FBALL1`).
 
-**Buildings DON'T need this** — they bypass the SHP path entirely in Remastered mode.
+**Buildings need it too.** `BuildingClass::Draw_It` returns at once when `Get_Image_Data()` is NULL, so an HD-only building with no classic SHP draws nothing; `bdata.cpp`'s `_td_bdonors` table lends each one a counterpart's `ImageData`, `BuildupData` and `CameoData`.
 
 ### 2.8 — Port TD's verbatim function bodies
 
@@ -360,9 +360,9 @@ Two distinct override paths, validated 2026-05-26 during TD EVA + radar SFX work
 |---|---|---|
 | **VOC sound effects** fired via DLL `Sound_Effect(VOC_TD_*)` | Mod-side `SFXEVENTSNONLOCALIZED.XML` adds new `RAC_SFX_<NAME>` / `RAR_SFX_<NAME>` entries pointing at TD assets. | **Yes** — DLL chooses which VOC enum to fire based on `PlayerPtr->ActLike`. |
 | **VOX EVA speech** fired via `Speak(VOX_*)` → `On_Speech` | Mod-side `SFXEVENTSLOCALIZED.XML` adds `LocalizedSFXEvent` entries (engine sends TD-prefixed name; launcher resolves). | **Yes** — `On_Speech` chooses Speech[]→SpeechTD[] based on `player_ptr->ActLike`. See §3.12 routing recipe below. |
-| **Launcher-owned SFX** (radar on/off, ambient UI) | Mod-side WAV with same filename as launcher's hardcoded sample (case-insensitive) in `DATA/AUDIO/`. Reillsss CnCinRA precedent. | **No.** Launcher's state-driven SFX dispatch happens entirely client-side; DLL's `Radar_Activate()` isn't called in REMASTER_BUILD. SFXEvent XML override of existing same-named entries doesn't load either — mod XML is additive-only for SFXEvents. The WAV-file swap is global (all sides). Side-conditional requires launcher source modification. |
+| **Launcher-owned SFX** (radar on/off, ambient UI) | Mod-side WAV with same filename as launcher's hardcoded sample (case-insensitive) in `DATA/AUDIO/`. Reillsss CnCinRA precedent. | **Not directly.** Launcher's state-driven SFX dispatch happens entirely client-side; DLL's `Radar_Activate()` isn't called in REMASTER_BUILD. A mod-side SFXEvent with the same name as a stock one does override it (TF's `SFXEVENTSNONLOCALIZED.XML` repoints `RAC_SFX_cashup1` / `RAR_SFX_cashup1` to `SILENTD.WAV`), but either swap is global (all sides). Side-conditional means silencing the stock event and firing a per-faction one from the DLL, where the DLL sees the trigger (the credit tick, `building-sound-routing.md`). |
 
-**Test sequence** to identify which class you're dealing with: drop a diagnostic `fprintf` into the DLL hook (Sound_Effect call site, Speak call site, or the state-change function). If the log fires → DLL-driven, side-conditional is achievable. If silent → launcher-driven, WAV-file replacement is your only mod-side lever.
+**Test sequence** to identify which class you're dealing with: drop a diagnostic `fprintf` into the DLL hook (Sound_Effect call site, Speak call site, or the state-change function). If the log fires → DLL-driven, side-conditional is achievable. If silent → launcher-driven: replacing the WAV or repointing the event is the mod-side lever, and it is global.
 
 ### 3.12 — `Who_Can_Build_Me` evicts cameos right after `Can_Build` adds them
 
@@ -522,7 +522,7 @@ rules.ini now holds the **verbatim TD-source STRNTH** and the engine doubles it 
 
 **Trap:** §3.3 applies to **infantry too**, but `InfantryTypeClass::One_Time` (idata.cpp) shipped WITHOUT a donor fallback — unlike `aadata.cpp` (aircraft) and `udata.cpp` (units), which both have one. A TD-prefixed infantry's SHP isn't in any MIX → `MFCD::Retrieve` returns NULL → `ImageData == NULL` → `InfantryClass::Draw_It` bails at its NULL-shape guard.
 
-**Symptom:** the unit **builds, is selectable, plays TD voices, and shows its sidebar cameo — but renders nothing on the map.** (Buildings don't hit this; they bypass the SHP path in Remaster. Caught on TDE1 Minigunner, 2026-05-29 — invisible until the fallback was added.)
+**Symptom:** the unit **builds, is selectable, plays TD voices, and shows its sidebar cameo — but renders nothing on the map.** (Buildings hit the same NULL return in `BuildingClass::Draw_It`; `bdata.cpp`'s `_td_bdonors` table covers them. Caught on TDE1 Minigunner, 2026-05-29 — invisible until the fallback was added.)
 
 **Fix:** in `InfantryTypeClass::One_Time` after the load loop, copy a vanilla infantry donor's `ImageData`/`CameoData` (`INFANTRY_E1` for any minigunner-sized unit). The launcher's `Techno_Draw_Object` overlay then renders the real sprite by IniName from `RA_UNITS.XML`. **The donor also supplies correct render dimensions → no `ShapeSize=` is needed for infantry** (vehicles differ — they set their own). Full recipe: `docs/td-infantry-port-recipe.md`.
 

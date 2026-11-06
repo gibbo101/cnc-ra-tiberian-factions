@@ -60,7 +60,7 @@ Per-language: there's a `MASTERTEXTFILE_<lang>.LOC` per language (EN-US, FR-FR, 
 | Action | Result |
 |---|---|
 | `SmallIconName` → a non-preloaded region (FACTIONLOGO / MP-LOGO) | startup crash |
-| `.LOC` rebuild that CHANGES THE FILE SIZE | startup crash |
+| `.LOC` rebuild inside `CONFIG.MEG` that CHANGES THE FILE SIZE | startup crash (the MEG same-size rule) |
 | `.LOC` **same-length** in-place edit | ✅ safe |
 | `.LOC` table rewrite, file size unchanged (a string grows, another gives bytes back) | ✅ safe, proven 2026-07-21 |
 | `FACTIONS.XML` `CampaignType` change | startup crash (genuine-faction route) |
@@ -136,21 +136,23 @@ hash = `zlib.crc32(key)`. Serializer round-trips the base file **byte-identical*
 strings (count 6852→6858, +755 bytes), repacked, deployed → `ClientG.exe` `EXCEPTION_ACCESS_VIOLATION`
 @ `0x0056A539` (`AppData/Roaming/CnCRemastered/_Except_404.txt` + `.dmp`). **Ruled out a repacker bug:**
 diffed the resized MEG vs base — 3973/3974 files byte-identical, only the `.LOC` changed, no region
-overlap, no companion index file exists. So the launcher itself pins the `.LOC` byte-size/layout.
+overlap, no companion index file exists. The cause is the MEG rule, not the `.LOC` format: every member of
+a replacement `CONFIG.MEG` must keep its base size (`config-meg-mod-delivery.md`). Whether a loose `.LOC` with added
+records loads is untested; `ModText.csv` makes it unnecessary.
 
-**Therefore: master-text edits are SAME-LENGTH IN-PLACE VALUE OVERWRITES ONLY** (size + record count
-must stay byte-identical). To give a custom building/unit a UNIQUE sidebar name you must hijack an
+**Therefore: master-text edits inside `CONFIG.MEG` keep the file's size** (in-place overwrites, or
+redistribution between strings as above). To give a custom building/unit a UNIQUE sidebar name you must hijack an
 existing **dead** key whose value is already ≥ the target length and overwrite it in place (pad with
-trailing spaces, which render invisibly). You cannot add a new key. Fixing this for real would need
-Ghidra on `ClientG.exe` (closed launcher, un-shippable) — do NOT re-chase the add-a-string route.
-New strings go in `Data/ModText.csv` instead (next section).
+trailing spaces, which render invisibly). You cannot add a new key to the `.LOC` in the MEG — do NOT
+re-chase that route. New strings go in `Data/ModText.csv` instead (next section).
 
 ---
 
 ## Custom names: `Data/ModText.csv`
 
 The **official, supported way** to add custom text is a loose **`Data/ModText.csv`** — proven by DontCryJustDie's official "Nuke Tank Sample
-Mod" (Workshop 3497050142, NO DLL). The launcher MERGES this CSV into its string table at load.
+Mod" (Workshop 3497050142), which ships no DLL of its own: it is an add-on to his *Veterancy and more*,
+whose DLL reads it. The launcher MERGES this CSV into its string table at load.
 
 Format: UTF-16 CSV, columns = `TEXT ID, AUDIO TAG, CHARACTER, ENGLISH, UNITED_KINGDOM, GERMAN, …`
 (per-language). Comment rows put `//` in the TEXT ID field. Data row example:
@@ -161,8 +163,8 @@ Full data-only "add a buildable unit + name + cameo" recipe from that sample mod
    ObjectDescriptionTextID / `<BuildIcon>`.
 2. `Data/ModText.csv` — defines those TEXT IDs (custom names/descriptions, no .LOC).
 3. `Data/Art/Textures/SRGB/BuildIcon_<X>.tga` — LOOSE custom cameo, referenced by name.
-4. `Rules/rules_mod.ini` `[VehicleTypes] 1=<X>` + `[<X>]` stat block (the stock Remaster DLL parses
-   INI-defined vehicles — this sample ships no DLL).
+4. `Rules/rules_mod.ini` `[VehicleTypes] 1=<X>` + `[<X>]` stat block (read by the host mod's DLL,
+   *Veterancy and more*; the stock Remaster DLL has no INI route to new unit types).
 5. `Data/XML/Tilesets/UNITS.XML` + `Data/Art/.../Units/<X>.ZIP` — unit sprite.
 
 The mod ships `resources/remaster_mods/Vanilla_RA/Data/ModText.csv` for its own unit and building

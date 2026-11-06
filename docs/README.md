@@ -97,7 +97,7 @@ sections, and `package-for-workshop.sh` runs it.
 - `main-menu-restyle-guide.md` — the main-menu restyle, written for other modders.
 - `lobby-difficulty-ram-spike.md` — reading lobby difficulty from ClientG.
 - `lobby-ambiguity-findings.md` — telling a stale lobby copy from the live one.
-- `megamaps-feasibility.md` — why maps can't grow past 128x128.
+- `megamaps-feasibility.md` — why a DLL-only change can't grow maps past 128x128, and the branch that does.
 - `mix-file-format.md` — the MIX and MEG formats and tools.
 
 ### AI, pathfinding and economy

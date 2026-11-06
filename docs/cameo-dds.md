@@ -4,7 +4,7 @@
 encyclopedia on the desktop, and Nod's sidebar.
 **Open:** a Deck check.
 
-The mod ships 553 cameos (`BuildIcon_*.tga`, about 176 MB): 341x256 RLE TGAs, every one fully
+The mod ships 553 cameos (`BuildIcon_*.tga`, about 176 MB): 341x256 uncompressed 32-bit TGAs (image type 2), every one fully
 opaque. Written as DXT1 DDS with mips they take 59 KB each, about 33 MB in all.
 
 ## Why the badges stay baked
@@ -37,5 +37,5 @@ The cameo sources stay TGA, so every script that draws them is unchanged. Stagin
 (`asset_packs.copy_newer`, which `stage_asset_packs.py` and `workshop_packs.py` both use) writes each
 `BuildIcon_*.tga` as `BuildIcon_*.DDS` (`scripts/cameo_dds.py`) and removes a staged TGA of the same
 name, except a name in the launcher's atlas (`MT_COMMANDBAR_COMMON.MTD`, today only
-`BuildIcon_TD_A10`), which stays RLE TGA. An encoded DDS carries its source's time and is rewritten
+`BuildIcon_TD_A10`), which stays a TGA. An encoded DDS carries its source's time and is rewritten
 only when the source changes. The mod's 553 cameos stage as 552 DDS files, about 33 MB, and that one TGA.

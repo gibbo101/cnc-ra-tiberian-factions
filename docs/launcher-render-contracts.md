@@ -63,12 +63,15 @@ as the anim has stages (have the generator patch the XML, as
 mask)` onto a transparent canvas darkens the RGB toward black and the launcher
 draws the darkened sprite faithfully (read as grey/gold before it was caught).
 
-## 5. Hull-fixed direct-fire units need `IsLockTurret = true`
+## 5. Untracked hull-fixed direct-fire units need `IsLockTurret = true`
 
-`unit.cpp`'s FIRE_FACING handler only rotates the BODY toward the target when
-`IsLockTurret` is set (the ARTY/V2 convention — the flag doubles as "turn the
-hull to aim"). Without it, a turretless unit aims its nonexistent turret
-forever and never fires ("won't turn to shoot", the Mk. II).
+`UnitClass::Rotation_AI` turns a turretless unit's hull to its target only when
+it is tracked (`SPEED_TRACK`); a wheeled or walking one never turns. `unit.cpp`'s
+FIRE_FACING handler rotates the BODY toward the target when `IsLockTurret` is
+set, so the flag doubles as "turn the hull to aim" for those. Stock RA sets it
+on no unit (EA `UDATA.CPP` has it false for ARTY and V2 too). Without it, an
+untracked turretless unit aims its nonexistent turret forever and never fires
+("won't turn to shoot", the Mk. II).
 
 ## 6. Pillow `paste` with an RGBA mask corrupts at negative offsets
 

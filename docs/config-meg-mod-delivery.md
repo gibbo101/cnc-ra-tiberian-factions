@@ -18,7 +18,7 @@ So the real question for *any* launcher-locked feature becomes:
 > or by **`ClientG.exe` code** (a hardcoded branch / hashed asset lookup)?
 
 - **CONFIG.MEG data → now moddable + shippable** via this mechanism.
-- **`ClientG.exe` code → still not mod-controllable** (would need binary patching; not Workshop-clean, breaks EAC/online). See `launcher-vs-dll-ownership.md` for the code-side boundary.
+- **`ClientG.exe` code → not reachable by data**, but the DLL patches it at runtime, with no file on disk changed: ClientG loads the mod's DLL briefly at its own startup on every machine, and the patches ship on the Workshop. See `launcher-vs-dll-ownership.md` ("Launcher-resident patches") for the code-side boundary.
 
 This doc is the **data-delivery** lever. `launcher-vs-dll-ownership.md` is the **code-ownership** map. They are complementary: the launcher's *autonomous behaviour* isn't ours, but the *data it reads* is.
 
@@ -75,7 +75,7 @@ cp /tmp/CONFIG.MEG build/remaster/Vanilla_RA/Data/CONFIG.MEG
 - **Mission Select roster** — `INSTANCES.XML` (`ShowOnMissionSelect`, `IsUnlockedAtStart`, `ExternalGameID`) — see `campaign-tabs-research.md`.
 - **Any other CONFIG.MEG XML/table** — theatres/tilesets, audio-faction maps, GUI scene lists, etc. *If the data is in CONFIG.MEG, this mechanism reaches it.*
 
-**For a "launcher-locked" feature investigation (e.g. theatres):** first locate where the limit/enum lives — there are **three** buckets, not two: (a) a **CONFIG.MEG XML** → moddable by this recipe (`meg_extract.py list <CONFIG.MEG> | grep -i <feature>`); (b) a **texture-atlas image** (e.g. a region in `MT_COMMANDBAR_COMMON.TGA`) → moddable via the loose-atlas override, see **`ui-atlas-modding.md`**; (c) **hardcoded in `ClientG.exe`** (`strings ClientG.exe`) → a true code lock, not reachable. ⚠️ The in-game sidebar **emblem** was first mis-filed as (c) — it's actually (b): `UI_SIDEBAR_FACTIONLOGO_ALLIES`/`_SOVIET` in the atlas, **moddable** (proven 2026-05-29). So "not in CONFIG.MEG" ≠ "locked" — check the atlas before concluding code-lock.
+**For a "launcher-locked" feature investigation (e.g. theatres):** first locate where the limit/enum lives — there are **three** buckets, not two: (a) a **CONFIG.MEG XML** → moddable by this recipe (`meg_extract.py list <CONFIG.MEG> | grep -i <feature>`); (b) a **texture-atlas image** (e.g. a region in `MT_COMMANDBAR_COMMON.TGA`) → moddable via the loose-atlas override, see **`ui-atlas-modding.md`**; (c) **hardcoded in `ClientG.exe`** (`strings ClientG.exe`) → not reachable by data; only a runtime code patch from the DLL reaches it (`launcher-vs-dll-ownership.md`). ⚠️ The in-game sidebar **emblem** was first mis-filed as (c) — it's actually (b): `UI_SIDEBAR_FACTIONLOGO_ALLIES`/`_SOVIET` in the atlas, **moddable** (proven 2026-05-29). So "not in CONFIG.MEG" ≠ "locked" — check the atlas before concluding code-lock.
 
 ---
 
@@ -110,11 +110,13 @@ lobby preview content from **base game data**, not the mod's CONFIG.MEG:
 - The launcher reads `Data/CNCDATA/...` map INIs via CWD-relative paths = **base install
   only**; a mod's `Data/CNCDATA/` is never searched.
 
-Net: **a Workshop mod cannot add new official-skirmish-list maps.** Converted-map delivery
-options are Workshop *map items* (custom-maps tab, native pipeline, previews from the shipped
-TGA) or a DLL-side content swap (hacky, preview stays wrong). `CNCMAPPREVIEWDATA.XML` (also in
-CONFIG.MEG) is the per-instance preview cache — `INIData` blocks keyed by UPPERCASE instance
-name with bounds/theater/waypoints.
+Net: **a new official-skirmish-list map needs more than CONFIG.MEG data.** The mod lists new
+entries from loose `INSTANCES.XML` and `CNCMAPPREVIEWDATA.XML`, and launches each through a carrier:
+ClientG sends it under an existing entry (Hastings' `D6`) that InstanceServerG already knows, and
+the DLL loads the entry's own map (`td-base-art.md`, "TD maps in the Official list"). Workshop
+*map items* (custom-maps tab, native pipeline, previews from the shipped TGA) remain the plain route.
+`CNCMAPPREVIEWDATA.XML` (also in CONFIG.MEG) is the per-instance preview cache — `INIData` blocks
+keyed by UPPERCASE instance name with bounds/theater/waypoints.
 
 ---
 

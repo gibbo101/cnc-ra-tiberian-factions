@@ -239,46 +239,31 @@ Both wired correctly. Used by `building.cpp:6134` for charge-start sound.
 
 ## The one balance-relevant issue: charge timing
 
-**`building.cpp:6128` in `Charging_AI`:**
+Stock RA's `Charging_AI` starts every charge with a hardcoded rate:
 
 ```cpp
 } else if (!Arm) {
     IsCharged = false;
     IsCharging = true;
     Set_Stage(0);
-    Set_Rate(3);              // ← hardcoded 3 ticks per stage
+    Set_Rate(3);              // ← stock RA: 3 ticks per stage, for every charging building
     ...
 }
 ```
 
-`Set_Rate(3)` is hardcoded for both Tesla and TDOBLI. TD's Obelisk uses `Set_Rate(OBELISK_ANIMATION_RATE)` = `Set_Rate(15)` (TD `building.cpp:1082`). At C&C's 15 ticks per second baseline:
+and completes it at a fixed `Fetch_Stage() >= 9`. TD's Obelisk uses `Set_Rate(OBELISK_ANIMATION_RATE)` = `Set_Rate(15)` (TD `building.cpp:1082`) and completes at `Fetch_Stage() >= 4`. At C&C's 15 ticks per second baseline:
 
-| | Set_Rate | Stages | Total ticks | Real time |
+| | Set_Rate | Complete at stage | Total ticks | Real time |
 |---|---|---|---|---|
-| RA Tesla Coil (vanilla) | 3 | 9 | 27 | ~1.8 sec |
-| Our TDOBLI (current) | 3 | 4 | 12 | ~0.8 sec |
-| **TD Obelisk (authentic)** | **15** | **4** | **60** | **~4 sec** |
+| RA Tesla Coil (stock `Charging_AI`) | 3 | 9 | 27 | ~1.8 sec |
+| TDOBLI on RA's rate, completing on its last frame (`Count - 1`) | 3 | 3 | 9 | ~0.6 sec |
+| **TD Obelisk, and TF's TDOBLI** | **15** | **4** | **60** | **~4 sec** |
 
-**Our Obelisk charges 5× faster than TD's.** That's significant for balance — Obelisk's slow charge is part of what makes it a counter-attackable defense rather than an instant-kill turret.
+**On RA's rate the Obelisk would charge several times faster than TD's.** That's significant for balance — Obelisk's slow charge is part of what makes it a counter-attackable defense rather than an instant-kill turret.
 
-Plus a subtle off-by-one at `building.cpp:6116-6118`:
+The threshold needs its own case too. A fixed stage 9 would run the Obelisk's 4-frame charge into its damaged frames, so TF's `Charging_AI` completes on the ACTIVE animation's last frame (`Count - 1`, stage 9 for the Tesla Coil's 10 frames, as stock) for every other charging building. TD fires at Fetch_Stage >= 4 (TD `building.cpp:1072`), one stage past the Obelisk's last frame, so TDOBLI completes at `Count`.
 
-```cpp
-int charge_complete_stage = Class->Anims[BSTATE_ACTIVE].Count - 1;
-if (charge_complete_stage < 1) charge_complete_stage = 9;  // safety fallback
-if (Fetch_Stage() >= charge_complete_stage) {
-    IsCharged = true;
-    ...
-}
-```
-
-For TDOBLI with Count=4: `charge_complete_stage = 3`, fires at Fetch_Stage 3.
-
-TD fires at Fetch_Stage >= 4 (TD `building.cpp:1072`). One stage later. Functionally minor (~1 stage worth of charge time, ~15 ticks at the TD rate, or 3 ticks at ours), but TD-authentic and explicit.
-
-The M5 commit comment at `building.cpp:6109-6115` notes the fix was about preventing damaged-frame walking, not about TD-authentic timing — the off-by-one is incidental and the rate=3 was the original RA-Tesla rate that just got reused.
-
-**Fix:** make `Set_Rate` and the complete-stage threshold TDOBLI-aware:
+**The fix, as `Charging_AI` in `redalert/building.cpp` ships it:** `Set_Rate` and the complete-stage threshold are TDOBLI-aware:
 
 ```cpp
 } else if (!Arm) {
@@ -302,7 +287,7 @@ And the complete-stage threshold:
 ```cpp
 // TD's STRUCT_OBELISK at building.cpp:1072 checks "Fetch_Stage() >= 4"
 // (one past the last frame), not "Count - 1" (last frame). The
-// difference is one stage of charge time. For Tesla (Count=9) the
+// difference is one stage of charge time. For Tesla (Count=10, so stage 9, as stock) the
 // existing -1 is preserved; for TDOBLI use Count.
 int charge_complete_stage = (*this == STRUCT_TDOBLI)
                               ? Class->Anims[BSTATE_ACTIVE].Count
@@ -412,7 +397,7 @@ Look for: `WARHEAD_LASER` entry in TD's Warheads table at `const.cpp` (after WAR
 
 ## Acceptance criteria
 
-- [ ] TDOBLI charge time ≈ 4 seconds (was ~0.8 sec) — measure in-game
+- [ ] TDOBLI charge time ≈ 4 seconds — measure in-game
 - [ ] TDOBLI completes charge at Fetch_Stage 4, not 3
 - [ ] RA's Tesla Coil charge time unchanged — regression smoke
 - [ ] Laser visual origin lines up with crystal tip (verify via in-game inspection or screenshot)

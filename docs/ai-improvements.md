@@ -174,8 +174,10 @@ whether it has an airstrip. One-line fix.
 ### 3e — IQ floor (informational)
 All AI super-weapon acquisition checks include
 `(IsHuman || IQ >= Rule.IQSuperWeapons)`. Default is `IQSuperWeapons = 4`
-(`rules.cpp:138`), with `IQ` ramping over time. Not a blocker but worth
-tuning for difficulty.
+(`rules.cpp:138`). `IQ` doesn't ramp: stock skirmish pins every AI house at
+`Rule.MaxIQ` from the start (EA `GlyphX_Assign_Houses`), so every IQ gate is open.
+TF sets it per AI from the lobby difficulty instead (`TF_AI_IQ_From_Difficulty`).
+Not a blocker but worth tuning for difficulty.
 
 ### Fix
 - 3a: fix Problem 1.

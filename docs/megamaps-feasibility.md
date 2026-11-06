@@ -1,10 +1,11 @@
 # SPIKE: maps larger than 128x128 ("mega maps") in Red Alert
 
-**Status:** Reference; a dead end. Maps bigger than 128x128 (126x126 playable) are blocked by
-`ClientG.exe`, not by the DLL; only the standalone `VanillaRA` build, which bypasses the launcher
-and is not what ships, could have them.
+**Status:** Reference; the analysis behind the 128x128 limit on `main`, where maps stay at 126x126
+playable. The ceiling was lifted on branch `megamaps-spike`, not in a release: it patches InstanceServerG,
+which copies the fixed 128x128 export arrays, and makes `CELL` a 32-bit `long`, reaching 253x253 playable
+(the mega-maps doc on that branch). The struct-growing routes below stay dead.
 
-**One-line:** Can we raise `MAP_CELL_W`/`MAP_CELL_H` above 128 to ship bigger skirmish maps? No: terrain rendering is launcher-owned, and the launcher's map export buffer is a fixed 128x128 that our DLL fills but does not allocate.
+**One-line:** Can we raise `MAP_CELL_W`/`MAP_CELL_H` above 128 to ship bigger skirmish maps? Not by the DLL alone: the map export buffers are a fixed 128x128 that our DLL fills but does not allocate. Patching InstanceServerG's copy of them (the `megamaps-spike` branch) gets past it.
 
 This doc is self-contained. It records both the wall and the engine-side survey, so neither has to be redone.
 
@@ -101,7 +102,7 @@ typedef union {
 } CELL_COMPOSITE;
 ```
 
-1. **`CELL` is `signed short`.** 256x256 = 65536 cells needs 8+8 bits and overflows 32767. `CELL` must become `int`.
+1. **`CELL` is `signed short`.** 256x256 = 65536 cells needs 8+8 bits and overflows 32767. `CELL` must widen to 32 bits: the `megamaps-spike` branch uses `typedef long CELL`, since `TARGET` is an `int` and the engine overloads on the two.
 2. **`COORDINATE` caps at 256 cells/axis.** `defines.h:489-518` — `LEPTON` is `unsigned short` split `{ unsigned char Lepton; unsigned char Cell; }`. Widening past 256 makes `COORDINATE` 64-bit, which touches the network protocol and every `TARGET` pack. **256 is therefore the natural and only sane target.**
 
 ### What is genuinely clean
@@ -117,7 +118,7 @@ The codebase is unusually disciplined — **zero** hardcoded `128`/`127`/`0x7F`/
 
 ### What actually has to change
 
-1. `defines.h:474-539` — `MAP_CELL_W/H` to 256, `CELL` to `int`, bitfields to `X:8, Y:8`, and **delete the big-endian `sluff:2`** or the fields shift. Easy to miss.
+1. `defines.h:474-539` — `MAP_CELL_W/H` to 256, `CELL` to `long`, bitfields to `X:8, Y:8`, and **delete the big-endian `sluff:2`** or the fields shift. Easy to miss.
 2. `cell.h:63` — `short ID` → `int ID`. Set from `Map.ID(this)` (an `int`) at `cell.cpp:105`. At 65536 cells every index >= 32768 goes **negative**, propagating into `Cell_Number()`, `As_Target()` and `xTargetClass::As_Cell()` (`target.cpp:96`) → out-of-bounds read across the bottom half of the map.
 3. `globals.cpp:139` — `_staging_buffer[32000]` must grow to ~256 KB and gain an overflow guard. It is the only buffer for MapPack/OverlayPack encode (`display.cpp:4884,4996`, `map.cpp:1217`, `overlay.cpp:261,353`).
 4. `map.cpp:1910` — `Zone_Span` is a **recursive** scanline flood fill; depth scales with map area and runs once per `MZONE_*` (5x). Stack overflow risk at 65K cells. Convert to an explicit stack.
@@ -163,4 +164,4 @@ Both are live on the current 128x128 build.
 
 ## Bottom line
 
-126x126 is the ceiling for anything running under the Remastered launcher, and it is not a soft limit we can engineer around from the DLL. The decision rule for future work in this area: **if it grows a struct in `dllinterface.h`, it is dead.**
+126x126 is the ceiling for a DLL-only change under the Remastered launcher. The decision rule for future work in this area: **if it grows a struct in `dllinterface.h`, it is dead.** The `megamaps-spike` branch keeps the structs and patches InstanceServerG's copy instead, for 253x253.

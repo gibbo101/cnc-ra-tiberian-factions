@@ -216,8 +216,9 @@ HEAVY, and `GTWEAP_D` frames 9-17 are magenta placeholders.
 - **Dock geometry, dialled live and final:** line-up on the SE plate cell centre, a dead-straight
   reverse at facing 92 (TSHARV) / 94 (TDHARV), park at pad + (40,74) / pad + (3,23), a settling
   pivot to true SE, and a motionless unload. Do not re-derive these from reference PNGs. The
-  roll-off seats ride `ROLL_OFF_DOCK_SEAT` (`DriveClass::Track21`), one static table shared with the
-  war factory exit and the depot (`todo.md`). Pairings and dock time:
+  roll-off seats ride `ROLL_OFF_DOCK_SEAT` (`DriveClass::Track21`), as do the war factory exit and the
+  depot; each unit steps its own rail (`DriveClass::Rail_Step`, `drive.cpp`), so rails running at once
+  never share waypoints. Pairings and dock time:
   `harvester-docking-rework-plan.md`.
 - **TSHARV.ZIP has 64 frames** (`scripts/ts_pack_hd_buildings.py`): 0-31 the harvester, 32-63 TS's
   unloading truck with its bed lowered, not drawn.

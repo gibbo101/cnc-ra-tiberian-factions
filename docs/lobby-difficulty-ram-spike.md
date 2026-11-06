@@ -190,18 +190,21 @@ Check `IsWow64Process` on ClientG during implementation.
 
 ## RAM reconnaissance — what else is extractable
 
-Question posed: is reading ClientG RAM a general "launcher unblocker"? **No — it is a
-lobby-SELECTION extraction channel, not a capability unlocker.** The distinction is
-read vs write:
+Question posed: is reading ClientG RAM a general "launcher unblocker"? **Reading alone is not —
+it is a lobby-SELECTION extraction channel. Writing is**, and it has since moved several launcher
+walls. The distinction is read vs write:
 
 - **Reading** ClientG surfaces values the client computed but won't pass the DLL
   (difficulty is the proven case). Good for "the client knows X, the DLL needs X, no
   official pipe."
 - The launcher WALLS (5th faction, playable campaign, hotkey classes, front-end
   textures — see `bui-front-end-modding.md`, `ui-atlas-modding.md`) are
-  limits of the client's COMPILED BEHAVIOUR, not hidden data. Reading can't change them;
-  writing (`WriteProcessMemory`) can't add code paths that don't exist and is the
-  fragile/AV-triggering/crash-prone route we deliberately avoid. RAM does NOT move these.
+  limits of the client's COMPILED BEHAVIOUR, not hidden data. Reading can't change them.
+  Writing can: the per-faction radar crest re-points atlas region records
+  (`radar-crest-ram-spike.md`), the TD tab icons rewrite a launcher string, the EVA mailbox
+  overwrites cached samples (`eva-ram-patch-spike.md`), and code hooks patched in from the DLL
+  that ClientG loads at startup carry the hotkeys, click specials and the ADD-ONS screen
+  (`launcher-vs-dll-ownership.md`, `pack-panel.md`). Each is fragile against a new ClientG build.
 
 Token survey of a live in-match ClientG (3-AI skirmish):
 

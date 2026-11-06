@@ -111,8 +111,8 @@ Refer to `tiberiandawn/bdata.cpp:3782-3805` (the TD `_anims[]` table) for author
 Per `docs/td-audio-routing-recipe.md`. For each new sound:
 1. Add `VOC_TD_*` enum to `redalert/defines.h` (before `VOC_COUNT`).
 2. Add `SoundEffectName[]` entry in `redalert/audio.cpp` with the TD asset's bare name.
-3. Extract `.WAV` from `SFX3D.MEG` via `scripts/meg_extract.py`.
-4. Ship TDC_/TDR_ WAVs unchanged in `resources/.../Data/AUDIO/`.
+3. Ship no WAV: TD's `TDC_`/`TDR_` samples play from the base game's `SFX3D.MEG`.
+4. Only if the routed sound stays silent, extract them via `scripts/meg_extract.py` and ship them unchanged in `resources/.../Data/AUDIO/` (`td-audio-routing-recipe.md`).
 5. Append `<SFXEvent Name="RAC_SFX_X">` and `<SFXEvent Name="RAR_SFX_X">` alias entries to the merged `Vanilla_RA/Data/XML/AUDIO/SFXEVENTSNONLOCALIZED.XML`.
 6. Reference in rules.ini via `Report=X` on the weapon section.
 
@@ -151,7 +151,7 @@ python3 scripts/mix_tools.py pack \
 
 `MFCD::Retrieve` finds the new SHPs via `Init_Heap()`'s standard load loop (`bdata.cpp:3185-3187`). No engine changes per-building.
 
-**Classic mode is DROPPED (do NOT do classic SHP work for new buildings).** Since the TD tilesets were added there is no classic art path for the mod's content — classic renders broken and is unsupported (HD-only). Skip the `build_tfassets.sh` palette-remap / classic-SHP step entirely; ship only the HD TGA tileset. (Historical technique record: `classic-mode-palette-remap.md`.)
+**Classic mode is locked out, but the classic SHP is still needed.** Nobody sees it drawn: it gives the building a non-NULL `ImageData` and `BuildupData` and the dimensions of its box (gotcha 1). Add it as one line in `scripts/build_tfassets.sh` rather than packing by hand. A building with no TD SHP takes a stub (`scripts/gen_stub_shp.py`, as `build_tfassets.sh` does for the TS walkers) or a donor in `bdata.cpp`'s `_td_bdonors` table, which lends a counterpart's `ImageData`, `BuildupData` and `CameoData`. (Palette-remap technique record: `classic-mode-palette-remap.md`.)
 
 **Overlay SHPs (war-factory-style door layers):** if the building renders in two layers (body + animated overlay like WEAP+WEAP2), ship BOTH SHPs into TFASSETS.MIX (e.g. `WEAP2.SHP:TDWEAP2.SHP`) **and** add a TD-specific static pointer (`BuildingTypeClass::WarFactoryOverlayTd` or similar) loaded in `One_Time`. RA's existing `WarFactoryOverlay` static is hardcoded to load `WEAP2.SHP` and is drawn for every STRUCT_WEAP-style building — without a per-type dispatch in `Draw_It`, RA's overlay renders on top of TD's body. Plus: the TGA tileset XML for the overlay must have shape entries matching TD's `Open_Door(rate, stages)` call (see playbook §3.15). Worked example: TDWEAP2 in `5c0c17e`.
 
@@ -191,7 +191,7 @@ Full game restart on the Deck (DLL has new enum value → new save format).
 
 ## Common gotchas (learned from TDOBLI)
 
-1. **`ImageData` / `BuildupData` must be non-NULL** or the engine bails on Draw_It with width=height=0. Shipping SHPs via TFASSETS.MIX (step 7) is what populates these — without that the engine falls back to invisible.
+1. **`ImageData` / `BuildupData` must be non-NULL**: `BuildingClass::Draw_It` returns at once on a NULL `Get_Image_Data()`, so the building is invisible. Shipping an SHP via TFASSETS.MIX (step 7), a stub SHP, or a `_td_bdonors` donor in `bdata.cpp` populates them.
 
 2. **`_anims[]` overrides apply AFTER rules.ini parsing.** If rules.ini has `ActiveAnimStart=0 Count=4 Rate=15` and `_anims[]` has different values for the same `{Type, Stage}`, the `_anims[]` table wins (it runs in `One_Time()` after `Rule.Process()`).
 
@@ -201,9 +201,9 @@ Full game restart on the Deck (DLL has new enum value → new save format).
 
 5. **`Electric_Zap` suppression** for laser-type weapons is bullet-type-keyed (`techno.cpp:3414-3433`): `if (weapon->Bullet->Type == BULLET_LASER)` → skip lightning, the laser-line beam renders instead. Future TD weapons firing BULLET_LASER auto-inherit this; no per-building code needed.
 
-6. **TD's `IsCharging/IsCharged` flags exist in `tiberiandawn/building.h` but aren't driven by TD's source** (no Charging_AI in TD). The flags are vestigial in TD; RA's Charging_AI drives them. We use RA's mechanism because it works correctly with the BSTATE_ACTIVE animation, same outcome as TD-source behavior would produce if implemented.
+6. **TD drives `IsCharging/IsCharged` from its own Obelisk block in `BuildingClass::AI`** (`tiberiandawn/building.cpp`, "Obelisk charging logic"): with a legal target and full power it charges at `OBELISK_ANIMATION_RATE` until stage 4, and resets when either is lost. TD has no separate `Charging_AI`; RA's `Charging_AI` drives the same flags for the Tesla Coil. Which one TF's Obelisk runs is in `td-obli-verification.md`.
 
-7. **Classic mode is unsupported and locked out** by `CNCDisableLegacyGraphicsOption` in `Data/XML/GameConstants_Mod.xml`; new entities need no classic art (`launcher-vs-dll-ownership.md`).
+7. **Classic mode is unsupported and locked out** by `CNCDisableLegacyGraphicsOption` in `Data/XML/GameConstants_Mod.xml`; no classic art is ever drawn, but a new building still needs a non-NULL `ImageData` (gotcha 1; `launcher-vs-dll-ownership.md`).
 
 8. **Save format**: new STRUCT_TDxxxx enum values change `sizeof(BuildingTypeClass)` array indices. Mid-campaign saves from a previous build will not load. We're not shipping campaigns yet so blast radius is skirmish-only, but worth flagging for any future campaign work.
 

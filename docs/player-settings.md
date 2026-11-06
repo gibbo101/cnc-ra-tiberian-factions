@@ -1,6 +1,6 @@
 # Player settings
 
-**Status:** Design. Built, unreleased: `tf_settings.ini`, the GENERAL page (AUDIO and SIDEBAR) with sidebar sorting
+**Status:** Design; shipped in 5.7.0: `tf_settings.ini`, the GENERAL page (AUDIO and SIDEBAR) with sidebar sorting
 and faction badges, and the GAMEPLAY page's Classic AI, TF AI and UNITS switches. The remaining switch sites come
 from reading the source, unproven in play.
 **Open:** the LAN lobby line; the remaining units switches and the controls switches; the decisions at the end.

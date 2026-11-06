@@ -143,11 +143,13 @@ patch depends on (pristine RA crests + the DINO eagle) into a shipped atlas.
 
 ## Can the launcher HUD gain new buttons?
 
-No. This patch only changes which atlas pixels an EXISTING widget samples. The widget set — how
-many buttons, where they sit, their hit-tests and what they do — is compiled `ClientG.exe` code
-plus the `RA_TACTICAL_UI.BUI` scene graph, and the BUI can only reshape/hide/retexture existing
-widgets under the same-size rule (`bui-front-end-modding.md`). A future TS sidebar therefore
-means re-skinning and re-arranging RA's widgets, not adding to them.
+Not by this patch, and not by data. This patch only changes which atlas pixels an EXISTING widget
+samples. The widget set — how many buttons, where they sit, their hit-tests and what they do — is
+compiled `ClientG.exe` code plus the `RA_TACTICAL_UI.BUI` scene graph, and data alone can only
+reshape/hide/retexture existing widgets (`bui-front-end-modding.md`). Open, untried: the main menu
+gained new buttons and a screen by cloned widgets plus launcher code patched in from the DLL
+(`pack-panel.md`); whether the in-match HUD takes the same route is unproven. Until then a future
+TS sidebar means re-skinning and re-arranging RA's widgets, not adding to them.
 
 ## Open / follow-ups
 
