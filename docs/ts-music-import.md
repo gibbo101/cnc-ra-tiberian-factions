@@ -27,8 +27,10 @@ A C++ port of `scripts/ts_music_build.py`, run by the DLL inside the launcher:
 
 - read `THEME.INI` from `LOCAL.MIX` inside `TIBSUN.MIX` (and `THEME01.INI` from `expand01.mix`) for the themes a
   player hears in game, their titles and sides;
-- read each theme's `.AUD` from the scores archive and decode Westwood's IMA ADPCM;
-- write it as the Remastered music WAV the pack shipped (44.1 kHz stereo), under the pack's names
+- read each theme's `.AUD` (`<section>.AUD`) from the scores archive and decode Westwood's IMA ADPCM
+  (AUD compression 99, `SCOMP_SOS`; 22,050 Hz mono; ffmpeg reads it as `adpcm_ima_ws`);
+- write it as the Remastered music WAV the pack shipped (MS-ADPCM, WAV format tag 2, 44.1 kHz stereo;
+  `ffmpeg ... -c:a adpcm_ms -ar 44100 -ac 2`), under the pack's names
   (`TS_MUS_<TITLE>.WAV`), with the pack's `ccmod.json`, `CCDATA` marker and music XML beside them, into
   `Mods/Red_Alert/TS-Music/` in the player's Documents.
 

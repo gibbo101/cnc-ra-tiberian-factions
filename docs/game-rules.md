@@ -25,6 +25,8 @@ options ship hand-edited INIs in `CCDATA`, which a Workshop update overwrites.
 - **Where:** in `Read_Scenario` (`redalert/scenario.cpp`), after the `MPLAYER.INI` pass and before
   `Fill_In_Data`. The order of a skirmish load is `rules.ini`, `aftrmath.ini`, the map INI, then
   `MPLAYER.INI`; a pass before `MPLAYER.INI` would lose the keys it sets (`[BRIK]` among them).
+  `MPLAYER.INI` is read only with the lobby's Aftermath units on (`bAftermathMultiplayer`); a
+  network load reads it whenever Aftermath is installed.
 - **How:** the same `Rule.General` ... `Rule.Difficulty` passes the map INI gets, on a `CCINIClass`
   loaded with a `RawFileClass` on the full path (the `tf_ai_difficulty.txt` pattern).
 - **Heaps:** every weapon, warhead and bullet object is created once at startup
@@ -50,7 +52,7 @@ each key defaults to its current value, so a file changes only the keys it names
 
 | Kind | Keys | Limits |
 |---|---|---|
-| All | `Cost`, `Strength`, `Armor` (a picker), `Sight` | Strength 10 to 32767 (repair cost divides by it; object strength is a `short`); Sight 1 to 10 (`Sight_From` reveals nothing above 10) |
+| All | `Cost`, `Strength`, `Armor` (a picker), `Sight` | Strength 10 to 32767 (`Repair_Cost` divides `MaxStrength` by `RepairStep`, 7 for buildings, or `URepairStep`, 10 for units, and a result of 0 divides by zero; object strength is a `short`); Sight 1 to 10 (`Sight_From` reveals nothing above 10) |
 | Moving | `Speed`, `ROT` | |
 | Aircraft | `Ammo` | |
 | Buildings | `Power` | the sign stays: a drain edited positive keeps the old drain |
@@ -63,6 +65,10 @@ keys, and the movement-type flags.
 
 ## Traps
 
+- **`Verses` resets to 100% when a section omits it.** `WarheadTypeClass::Read_INI` reads `Verses`
+  with a default of five 100% values, not the warhead's current ones (EA and `redalert/warhead.cpp`).
+  A player pass that names a warhead to change `Spread` alone resets it to 100% against every armour,
+  so the editor always writes all five `Verses` values. A 0% against steel also sets `IsOrganic`.
 - **TD buildings double on every pass.** `BuildingTypeClass::Read_INI` doubles `Strength` and adds
   3 to `Sight` for every `TD*` section it reads. A player `Strength=800` gives 1600, and a section
   with no `Strength` key doubles the already-doubled value. The doubling moves to the `rules.ini`

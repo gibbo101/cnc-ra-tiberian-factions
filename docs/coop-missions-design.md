@@ -157,16 +157,16 @@ Relevant capabilities (from its source + MANUAL):
 
 ## 5. Path B — the win/lose-in-MP patch (the 4 gates)
 
-The four gates, with line numbers as of 5.0.0:
+The four gates, by function (line numbers drift):
 
-**Win/lose (the essential pair) — `house.cpp`:**
-- `HouseClass::AI`, `house.cpp:2283` — `if (Session.Type == GAME_NORMAL && IsToWin && BorrowedTime == 0 && Blockage <= 0)` → sets `PlayerWins`/`PlayerLoses`
-- `HouseClass::AI`, `house.cpp:2295` — `if (Session.Type == GAME_NORMAL && IsToLose && BorrowedTime == 0)` → sets `PlayerLoses`/`PlayerWins`
+**Win/lose (the essential pair), `HouseClass::AI` in `redalert/house.cpp`:** both are EA's.
+- `if (Session.Type == GAME_NORMAL && IsToWin && BorrowedTime == 0 && Blockage <= 0)` sets `PlayerWins`/`PlayerLoses`.
+- `if (Session.Type == GAME_NORMAL && IsToLose && BorrowedTime == 0)` sets `PlayerLoses`/`PlayerWins`.
 
-**Briefing (nice-to-have) — `scenario.cpp`:**
-- `Start_Scenario`, `scenario.cpp:522` — `if (Session.Type != GAME_NORMAL) briefing = false;`
-- `Start_Scenario`, `scenario.cpp:592` — `if (Session.Type == GAME_NORMAL && Scen.BriefMovie == VQ_NONE) Display_Briefing_Text_GlyphX();`
-- `Start_Scenario`, `scenario.cpp:600` — text/movie availability fallback, same SP gate
+**Briefing (nice-to-have), `Start_Scenario` in `redalert/scenario.cpp`:**
+- `if (Session.Type != GAME_NORMAL) briefing = false;` is Vanilla Conquer's addition; EA's `SCENARIO.CPP` has no such line.
+- `if (Session.Type == GAME_NORMAL && Scen.BriefMovie == VQ_NONE) Display_Briefing_Text_GlyphX();` is EA's.
+- The text/movie availability fallback after it carries the same single-player gate.
 
 **Key observation:** each gate is **already self-gating on map content.** Win/lose only fire
 if the map carries `TACTION_WIN`/`LOSE` triggers (`IsToWin` stays false otherwise); the
@@ -240,9 +240,14 @@ data-driven, and a clean stepping stone to Option 3 if co-op ever outgrows these
    win trigger (e.g. timed or destroy-target), apply the chosen discriminator + win/lose
    patch, host a 2-human LAN game on the Deck, confirm the scripted win fires (vs falling back
    to last-team-standing). Two humans needed.
-3. **First milestone proposal:** Option-1 flag + the two `house.cpp` win/lose gates + a trivial
+3. **Who wins.** `TACTION_WIN`/`TACTION_LOSE` (`taction.cpp`) compare the house they name with
+   `PlayerPtr`, and `HouseClass::AI` sets `PlayerWins` for `PlayerPtr`. In a LAN game `PlayerPtr` switches
+   between players as the host's simulation works, so a scripted win likely needs per-house handling to reach
+   both humans. Mods only play over LAN: the base game turns online multiplayer off while a mod is enabled
+   (Remastered Modding Field Manual, `engine/lan-games.md`).
+4. **First milestone proposal:** Option-1 flag + the two `house.cpp` win/lose gates + a trivial
    test `.mpr` → smoke test. Defer briefing gates + real mission design until that proves out.
-4. **TD story NPCs available for mission scripting.** TD's `InfantryType` enum includes three
+5. **TD story NPCs available for mission scripting.** TD's `InfantryType` enum includes three
    scripted story characters — **Dr. Moebius** (`INFANTRY_MOEBIUS`), **Agent "Delphi"**
    (`INFANTRY_DELPHI`), **Dr. Chan** (`INFANTRY_CHAN`) — deliberately out of scope for the
    buildable faction roster (not faction-buildable, no sidebar entry), but they're ready-made
