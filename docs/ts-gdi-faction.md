@@ -195,11 +195,13 @@ Why it could not stay a pair, and what that cost:
   a power-of-two block size; "battle control terminated" needs `block_align = 70`, which is why
   that line used to be byte-padded instead of re-encoded. `scripts/msadpcm.py` encodes at any
   alignment (35 dB SNR against the source), so every era's payload can now be produced properly.
-- ⚠ **The shipped runtime seeds ARE the RA payloads, byte for byte.** ClientG caches whatever
-  sits at the launcher's sample name when it starts, so on a fresh install the cached blob is the
-  seed — and the overwrite can only find it if the seed is a current-length era payload. The
-  builder rewrites the seeds for that reason; let them drift and a new install silently keeps
-  RA's voice for its first session.
+- ⚠ **The shipped runtime seeds ARE the RA payloads, byte for byte.** ClientG picks the loose
+  file over the base MEG once, at launch, so the seeds must exist then. It reads and caches a
+  line's bytes the first time the line plays (`eva-ram-patch-spike.md` findings 4 and 5), by
+  which point the match-start copy has already put an era payload over the seed. The builder
+  still rewrites the seeds as current-length RA payloads, so that a line ever cached from the
+  seed itself (a failed copy) stays one the overwrite can find. Untested: whether a drifted seed
+  is ever cached in practice.
 - ⚠ **The originals were never kept.** Only the padded outputs were in the repo, so RA's and TD's
   content is recovered by decoding those and trimming the pad — one extra ADPCM generation on
   those two eras. The frozen sources now live in `scripts/eva_work/src/` so the builder never

@@ -289,8 +289,9 @@ The launcher suppresses the "Cost: $N" line only for AssetNames on its internal 
 value) isn't whitelisted -> the Ion Cannon cameo shows $0. Engine-side `CNCSidebarEntryStruct.Cost` is
 IGNORED for supers. Cosmetic. No data lever reaches it; a runtime code patch of ClientG (see "Launcher-resident patches") hasn't been tried. The $0 stands until one is.
 
-### Roster-scaling launcher CTD — NameOverride[25] table exhaustion
-Adding the ~30th unit TYPE crashed the launcher (std::string(NULL) in InstanceServerG) on refinery
+### Roster-scaling CTD — NameOverride[25] table exhaustion
+Adding the ~30th unit TYPE crashed the game in InstanceServerG, not ClientG: `std::string(NULL)` built from
+the export's `const char* OverrideDisplayName`, which only the DLL's own process can read, on refinery
 placement/MCV deploy. Root cause: every techno with a rules.ini `Name=` HD override registers into
 `NameOverride[25]`, rules are read TWICE (rules.ini + aftrmath.ini) with no dedup -> the 25-slot table
 exhausts; plus `Text_String` off-by-one rejected the last slot -> NULL -> CTD. Fix (all DLL): tables

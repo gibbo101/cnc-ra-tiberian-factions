@@ -103,8 +103,11 @@ from the base game.
   data and palette (`TF_Base_Theater` and the TD rows of `Theaters[]`).
 - **Desert terrain.** TD's desert trees and rocks (`T04`, `T09`, `T18`, `ROCK1` to `ROCK7`) are
   RA terrain types with TD's footprints, loaded on desert from TD's shapes (`<name>.DES`).
-- **Memory.** A theatre's tiles cost video memory only on a map that draws them. A TD map in a
-  match uses 5,052 MiB on the desktop whether TD's unit art comes from the base game or the mod.
+- **Memory.** Video memory on the desktop, one match each: Docklands used 4,796 MiB with the stock
+  interior tileset and 4,812 MiB with 163 desert tiles added to it, which that map never draws.
+  One reading each settles nothing, so whether a tileset costs memory whole or per tile drawn is
+  untested. A TD map in a match uses 5,052 MiB on the desktop whether TD's unit art comes from the
+  base game or the mod.
 
 `scripts/td_catalogue_maps.py` writes one map per theatre with every template the DLL has
 for it placed once; all six draw every template, and units spawn. Two dark cells are EA's data: RA

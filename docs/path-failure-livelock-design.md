@@ -133,7 +133,8 @@ Why that gate is wrong in practice:
   *never* satisfy the mismatch test. Self-cell livelock is guaranteed by construction, not bad
   luck. It is a subtype of the general bug, not a separate one.
 
-Vehicles have the same disease in a different spot — `drive.cpp:2180`:
+Stock vehicles give up after `PATH_RETRY` (10) tries and set `IsScanLimited` (EA `DRIVE.CPP`).
+TF's own traffic wait brings the same disease back to them — `drive.cpp`, the `traffic_blocked` branch:
 
 ```cpp
 if (traffic_blocked) {

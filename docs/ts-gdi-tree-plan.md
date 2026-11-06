@@ -389,7 +389,7 @@ A unit here is done: no open art, geometry or behaviour work.
   the chrono vortex (the launcher ignores its width and height and draws the whole whirlpool).
   Launcher levers on the discs: `Cloak` on an anim or a unit-typed disc is ignored,
   `SHAPE_PREDATOR` makes it invisible, `FlashingFlags` strobes, and
-  `Rotation` is honoured but clipped to the unrotated frame. Overlapping discs can't give a hard
+  `Rotation` is ignored (`launcher-render-contracts.md` §8). Overlapping discs can't give a hard
   edge or keep a mottle. Whether `SHAPE_GHOST` (`IsTranslucent`) darkens the discs is unsettled: check
   it in game before either this doc or the code claims it.
 - **A tower with N/E/S/W connectors:** voxel splats, two procedural Blender towers, an image-model
@@ -446,9 +446,12 @@ A unit here is done: no open art, geometry or behaviour work.
   are flat purple silhouettes; buildups carry one per stage (GTPOWRMK's 40 frames are 20 stages
   and their shadows), and the packer cuts them. Donor `Init_Anim` counts apply only when the building has no
   MAKE stub of its own.
-- **The launcher maps the HD canvas onto the classic stub box centred on the BSIZE box centre;**
-  stub height beyond the box splits into equal halos above and below, which is how apron and
-  overhang rows work.
+- **The packers' working model: the launcher maps the HD canvas onto the classic stub box centred
+  on the BSIZE box centre,** stub height beyond the box splitting into equal halos above and below,
+  which is how apron and overhang rows are placed. The stub setting the drawn size is proven
+  (`ts-asset-import-spike.md`), and pads sliced through the same geometry meet their buildings in
+  game to within a pixel. Untested: whether stub and canvas geometry explain the selection boxes
+  that sit a tile off (`launcher-render-contracts.md` §7).
 - **More detail at the same size:** `scripts/ts_import_hires_frames.py` swaps redrawn frames into a
   packed zip at an integer multiple of the canvas, framed the same, so the stub stays as it is.
 - **Canvas and classic stub move together:** `ts_pack_tree.py` writes `scripts/ts_stub_dims.json`

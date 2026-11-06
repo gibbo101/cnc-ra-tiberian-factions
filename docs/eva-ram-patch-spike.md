@@ -49,7 +49,8 @@ write replaces header + data and the sample plays in the new voice.
      grows to a common length so the cache write stays same-size). ClientG caches the whole
      padded file, so the same-size write holds.
 4. **ClientG resolves the loose sample at LAUNCH — loose file if present, else base MEG — and
-   caches it once.** Per-match disk writes do NOT refresh an already-cached sample in-session.
+   caches its bytes once, the first time the line plays (finding 5).** Per-match disk writes do
+   NOT refresh an already-cached sample in-session.
    A deploy that `rsync --delete`d the loose runtime files left them absent at launch, so ClientG
    cached the BASE MEG bytes; our needles (from our files) then could not match. **Fix: the loose
    runtime files (`RA{C,R}_SFX_EVA_{NODEPLY1,BCT1,MISNWON1,MISNLST1}_EN-US.WAV`) must exist at

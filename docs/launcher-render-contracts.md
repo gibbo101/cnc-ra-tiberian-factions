@@ -120,8 +120,8 @@ Measured offline against the TS Disruptor footage before the strip attempt: a ch
 discs overlapping 6-7 deep (a) ramps its alpha at the strip edge whatever the disc edge
 does, because chord coverage falls off toward the edge (35-75 px ramps for every variant),
 and (b) smears any per-disc mottle along the chain (best interior std 7 vs TS's 19.5). If
-a hard edge or a preserved texture is the requirement, the primitive must be a single
-rotated sprite per span (§8), not a chain.
+a hard edge or a preserved texture is the requirement, a chain can't give it, and a single
+sprite per span can't either, since the launcher draws exports unrotated (§8).
 
 ## 10. The chronal vortex is a launcher-drawn screen warp the DLL can position — but nothing else
 
@@ -179,9 +179,10 @@ bbox-centred paste **moves the sprite** even when every body pixel is in the sam
 ## 12. A new stub line does nothing until TFASSETS.MIX is rebuilt and committed
 
 Adding a stub line to `scripts/build_tfassets.sh` does nothing until the script is run and
-`CCDATA/TFASSETS.MIX` is committed. A new HD bullet with no classic stub draws at a fallback
-size, as a large blocky square: the Disc Thrower's TSDISCUS flew as a ~70x80 px block of its own
-colours until the rebuild. The rebuilt archive lists new entries by CRC, not name, so check the
+`CCDATA/TFASSETS.MIX` is committed. A new HD bullet with no classic stub of its own draws at its
+`bbdata.cpp` donor's size (the Heat Seeker's `ImageData`): the Disc Thrower's TSDISCUS flew at
+~70x80 px in its own colours until the rebuild. With no classic shape at all it isn't drawn, since
+`BulletClass::Draw_It` returns on a NULL `ImageData`. The rebuilt archive lists new entries by CRC, not name, so check the
 entry count against the committed copy (`mix_tools.py list`) rather than grepping for the name.
 
 ## 13. Art px to leptons is canvas px x 4/3
