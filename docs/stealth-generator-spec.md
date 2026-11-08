@@ -76,8 +76,9 @@ frame from `LogicClass::AI`.
     `IsCloakable`; (b) force-reveal (`Do_Shimmer`/`Do_Uncloak`) when a detector is in range or an
     armed building acquires a target.
 
-- **Owner vs enemy render** = `TechnoClass::Visual_Character`. Settled `CLOAKED` returns
-  `VISUAL_SHADOWY` for the owner and `VISUAL_HIDDEN` for others. For the **warped
+- **Owner vs enemy render:** the export sends the raw `Cloak` state, not
+  `TechnoClass::Visual_Character`, so whether `Visual_Character` shapes the launcher's render is
+  unproven. Settled `CLOAKED` returns `VISUAL_SHADOWY` for the owner and `VISUAL_HIDDEN` for others. For the **warped
   owner look** (#7): return a distorted stage for owner-owned cloaked objects instead of the clean
   `VISUAL_SHADOWY` — candidates are `VISUAL_RIPPLE` or a **held mid-`UNCLOAKING` stage** (colour +
   distortion). Tune empirically via the screenshot loop; **this supersedes the old bug-#8 preference

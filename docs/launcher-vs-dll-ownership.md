@@ -120,8 +120,8 @@ Everything the DLL tells the launcher flows through the single `CNC_Event_Callba
 
 ### Sidebar build-tab icons: named in ClientG CODE, fixed by rewriting the prefix string (2026-09-04)
 
-GDI/Nod on TD's HUD scene still drew RA's gold 130x64 tab icons squashed into TD's 100x60
-tab widgets, in every state (off/on/bright/placement), while repair/sell/map/plates were TD.
+GDI/Nod on TD's HUD scene still drew RA's gold 130x64 tab icons squashed into TD's smaller
+tab widgets (the vehicle tabs are 122x60 and 127x60), in every state (off/on/bright/placement), while repair/sell/map/plates were TD.
 **Why these four only:** every other sidebar element is named in the scene file, so the
 TD scene swap fixed them. The tab icons are the one element the launcher names in code: it
 appends the state to a per-game prefix baked into `ClientG.exe` (`strings` shows both sets:
@@ -284,9 +284,9 @@ STRUCTF_RADAR` / `Map.IsRadarActive` oscillate 1/0 every frame (Recalc_Attribute
 edge-detect on the radar scan bit; count the Buildings heap + `Power_Fraction()` and debounce.
 
 ### Superweapon $cost line: keyed on AssetName string, not the SW_ enum
-The launcher suppresses the "Cost: $N" line only for AssetNames on its internal RA-context whitelist
-("SW_Nuke","SW_Chrono","SW_GPS","SW_SonarPulse"...). `SW_ION_CANNON` (a TD-side DllSuperweaponTypeEnum
-value) isn't whitelisted -> the Ion Cannon cameo shows $0. Engine-side `CNCSidebarEntryStruct.Cost` is
+The launcher suppresses the "Cost: $N" line for the stock supers' AssetNames ("SW_Nuke","SW_Chrono",
+"SW_GPS","SW_SonarPulse"...), which ClientG lists in its build-command and hotkey tables. TF sends the Ion
+Cannon as `SW_IonCannon` (enum value `SW_ION_CANNON`), which no table lists -> the Ion Cannon cameo shows $0. Engine-side `CNCSidebarEntryStruct.Cost` is
 IGNORED for supers. Cosmetic. No data lever reaches it; a runtime code patch of ClientG (see "Launcher-resident patches") hasn't been tried. The $0 stands until one is.
 
 ### Roster-scaling CTD — NameOverride[25] table exhaustion

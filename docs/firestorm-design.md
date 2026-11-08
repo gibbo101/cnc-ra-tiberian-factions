@@ -76,7 +76,7 @@ left. Engine reference: OpenTS (`reference/OpenTS/code/`); data: TS's own `RULES
 - **TS Service Depot pad seat** (built in this arc): the depot's 3x3 is solid, so a vehicle on it may
   cross its cells to leave; the gantry cells (west column, top two: `TF_Depot_Is_Gantry`) stay
   closed to every vehicle; exits are two cells out. The pad glow is `TSDEPTRP` (GTDEPT_D frames
-  0-13, drawn while BSTATE_ACTIVE; GADEPT_C1-C3 exist in no TS mix). The pad ring's centre is 6 px
+  0-13, drawn while BSTATE_ACTIVE; GADEPT_C1-C3 are ART.INI sections that draw the one `GADEPT_C` SHP). The pad ring's centre is 6 px
   east and 9 px south of the middle cell, and `DriveClass::Start_Of_Move` drives the last step onto
   it (`Rail_To`), but only some approaches get there. Once the HD depot's ring is centred on the
   middle cell, `TS_DEPOT_SEAT_EAST_PX` / `_SOUTH_PX` (`building.h`) go to 0 and the drive-on rail
@@ -117,7 +117,7 @@ to the generator, no range).
   Inactive = passable to everyone (unit.cpp:3881, infantry.cpp:1695, cell.cpp:4516).
 - On activation: anything standing on a section dies (full-Strength FirestormWarhead, forced, no
   friend/foe test), except `IgnoresFirestorm`. Anything moving INTO a section in the 5x5 around it
-  dies too (C4 warhead).
+  dies too (`C4Warhead`, which TS's RULES.INI sets to `HE`).
 - Aircraft (and jumpjets) whose cell is a live section die, at any altitude (fly.cpp:767).
 - Projectiles entering a live cell are deleted with a flare unless fired by the wall's owner or
   `IgnoresFirestorm` (bullet.cpp:800-813; allies' shots are eaten too); instant weapons stop at

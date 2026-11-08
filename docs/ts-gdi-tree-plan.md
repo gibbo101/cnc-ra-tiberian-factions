@@ -142,8 +142,7 @@ Resource plugs stack by design (`Can_Upgrade`): the power plant takes two turbin
   5 loops, by choice. Each pod's strafe does `TF_POD_STRAFE_DAMAGE` (25), half its first value, because
   five pods' strafes one-shot power plants and barracks. The
   5-minute recharge was chosen to sit between the paratroops and the Ion Cannon (not a TS value).
-- **The Hunter Seeker** (`SPC_TS_HUNTSEEK`) flies as an `AircraftClass`, not a bullet, because the
-  launcher draws bullets tiny. One left click launches it (`launcher-vs-dll-ownership.md`); only the
+- **The Hunter Seeker** (`SPC_TS_HUNTSEEK`) flies as an `AircraftClass`, not a bullet. One left click launches it (`launcher-vs-dll-ownership.md`); only the
   AI fires it on ready.
 
 ### Walls and component towers

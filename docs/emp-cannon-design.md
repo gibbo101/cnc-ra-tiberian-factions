@@ -23,7 +23,8 @@ Sensor Array and the Mobile War Factory, built in the same arc. Pairs with
   `Try_To_Deploy` and `Process_Take_Off` refuse; radar goes off as at low power; gap and stealth
   generators go off; a stunned cannon can't be the launch site.
 - **TS rules kept:** a stunned power plant still produces power, a stunned yard still builds,
-  factories keep producing, and pad-parked aircraft are spared.
+  and factories keep producing. Pad-parked aircraft are spared because a building's cell skips the
+  occupant pass; OpenTS's aircraft pass has no building test, so that is not a TS rule.
 - **Building sparks differ from TS:** TF sparks only construction yards (`Is_Construction_Yard`).
   OpenTS sparks the buildings where `Is_Mobile_Deployer()` is true (deployed sensor array, tick
   tank, artillery, mobile stealth, Juggernaut, ICBM launcher), never the construction yard.

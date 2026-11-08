@@ -63,7 +63,7 @@ static BuildingTypeClass const ClassObelisk(STRUCT_OBELISK,
 | 1066-1095 | `AI` (Charging logic) | Full charge state machine: powered + target → start charging via `Set_Stage(0); Set_Rate(OBELISK_ANIMATION_RATE)` + play `VOC_LASER_POWER`. `Fetch_Stage() >= 4` → IsCharged. Target lost or power lost → reset |
 | 2789-2792 | `Fire_Data` | Muzzle data: `coord += DIR_N 0x00A8; coord += DIR_W 0x0018;` (vertical lift + horizontal lateral) |
 | 2822-2826 | `Fire_Coord` | Muzzle coord: same offsets |
-| 4132 | Crew-on-death | `STRUCT_ATOWER || STRUCT_OBELISK` south-offset spawn (BSIZE_12 footprint adjustment) |
+| 4132 | Crew-on-death | `STRUCT_ATOWER || STRUCT_OBELISK` south-offset spawn (BSIZE_12 footprint adjustment), Vanilla Conquer's addition, absent from EA's TD |
 
 Plus TD `defines.h:323`: `#define OBELISK_ANIMATION_RATE 15`. This is *ticks per frame*, used by both `Init_Anim` for BSTATE_ACTIVE and by the runtime `Set_Rate` in Charging_AI.
 
@@ -230,7 +230,7 @@ Both wired correctly. Used by `building.cpp:6134` for charge-start sound.
 |---|---|---|
 | 652 | `Shape_Number`: `*this == STRUCT_TESLA || *this == STRUCT_TDOBLI` charge-state render (IsCharged → shape 3; IsCharging → Fetch_Stage; else 0) | ✓ matches TD's STRUCT_OBELISK branch at TD `building.cpp:531` |
 | 3948 | `MISSION_CONSTRUCTION` plays `VOC_TD_CONSTRUCTION` for any `STRUCT_TDxxxx` (range check) | ✓ TD-port-specific sound routing |
-| 4090 | Crew-on-death south-offset for `STRUCT_TESLA || STRUCT_TDOBLI` | ✓ aliases TESLA because TESLA's BSIZE_12 needs the same offset; TD's STRUCT_OBELISK pairs with STRUCT_ATOWER but the rule is "BSIZE_12 needs south-offset" so the alias-to-TESLA on the RA side is correct |
+| 4090 | Crew-on-death south-offset for `STRUCT_TESLA || STRUCT_TDOBLI` | ✓ aliases TESLA because TESLA's BSIZE_12 needs the same offset; Vanilla Conquer's TD pairs STRUCT_OBELISK with STRUCT_ATOWER and its RA steps STRUCT_TESLA; the rule is "BSIZE_12 needs south-offset" so the alias-to-TESLA on the RA side is correct |
 | 6133-6137 | `Charging_AI` charge-start sound: `STRUCT_TDOBLI` plays `VOC_TD_LASER_POWER`; else `VOC_TESLA_POWER_UP` | ✓ TD-authentic OBELPOWR routing |
 | 6250 | `Animation_AI` exclusion for `STRUCT_TESLA || STRUCT_TDOBLI` | ✓ TDOBLI uses charge state machine, not BSTATE_ACTIVE auto-cycle |
 | (bdata.cpp:3399) | `Init_Anim`: `{STRUCT_TDOBLI, BSTATE_ACTIVE, 0, 4, 15}` — 4 charge frames at rate 15 | ✓ TD-authentic Init_Anim values (matches TD's `STRUCT_OBELISK, BSTATE_ACTIVE, 0, 4, OBELISK_ANIMATION_RATE`) |

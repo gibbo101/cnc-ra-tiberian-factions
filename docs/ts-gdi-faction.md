@@ -102,8 +102,8 @@ writes, the scan log's `want=` is wrong, and the crest flickers for the first se
 onto its TS building, defences are the tower two-step, and the turbine rides the power role. It
 builds no transports or navy and never uses the Firestorm or the EMP Cannon (`todo.md`).
 
-⚠ **TS keys unit voices to numbered sets, not named events** (set 15 = GDI rifleman, set 25 = GDI
-vehicle crew, both in `SOUNDS.MIX`). RA fires a named `VOC_` event and picks the extension from
+⚠ **TS keys unit voices to numbered sets, not named events** (set 15 = most infantry of both sides,
+E1, E2, E3, the jump jet and others; set 25 = every vehicle of both sides; both in `SOUNDS.MIX`). RA fires a named `VOC_` event and picks the extension from
 the response variation, so each RA event needs four TS recordings: two infantry (`.V01`/`.V03`),
 two vehicle (`.V00`/`.V02`).
 

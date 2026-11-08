@@ -39,7 +39,7 @@ single-shot (GTWR's TDChainGun, E3/Bike's TDDragon have no Burst), so each attac
 
 The TD attack-heli behavior is: fly to target → strafe (fire pairs) → when `Ammo` runs out, fly back to
 a helipad (`MISSION_ENTER`) → reload → repeat. **RA's `AircraftClass` already implements all of this and
-it is essentially type-agnostic** (`redalert/aircraft.cpp`): `Ammo`/`MaxAmmo` (init 254), `MISSION_ATTACK`,
+it is essentially type-agnostic** (`redalert/aircraft.cpp`): `Ammo`/`MaxAmmo` (default -1, unlimited), `MISSION_ATTACK`,
 `MISSION_ENTER` reload-at-helipad (lines 2022/2260/2374), `Good_Fire_Location` (strafe positioning),
 `Pip_Count` (ammo pips). The file's live type checks are all for other aircraft: the Badger, the Chinook
 (`AIRCRAFT_TRANSPORT`) and the cargo plane; its one `AIRCRAFT_HIND` speed

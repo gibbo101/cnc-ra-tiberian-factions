@@ -107,11 +107,11 @@ region — only drawn regions have one.
 Soviet got the chevron). Every written rect carries the per-slot `u0` nudge from the field manual's
 [Re-pointing launcher UI art in memory](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/repointing-atlas-regions.md#traps), Traps.
 
-**Resize + position:** GDI's eagle is aspect-correct and sits clear of the launcher's "GDI"
-label — scaled to 396 high, centred horizontally and top-aligned in a 495x444 window (the
-slot's 794:713; the bottom ~11% stays transparent) painted into the unused DINO region; NOD
-samples a 660x593 window of its own region. `scripts/crest_atlas_paint.py` paints everything the
-patch depends on (pristine RA crests + the DINO eagle) into a shipped atlas.
+**Resize + position:** GDI and NOD point at the full stock TD rects, `UI_SIDEBAR_FACTIONLOGO_GDI`
+(718x706) and `UI_SIDEBAR_FACTIONLOGO_NOD` (660x660). TS GDI's emblem is scaled to 380 high and
+top-aligned in a 434x400 window over `UI_OBSERVER_MAP_BG`, clear of the label the launcher draws
+across the foot of the crest. `scripts/crest_atlas_paint.py` paints everything the patch depends
+on (pristine RA crests + the TS GDI emblem) into a shipped atlas.
 
 ## Tooling (the method, reusable)
 

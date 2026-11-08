@@ -21,7 +21,7 @@ player-slot icons, and their pixels are repainted in the loose atlas (`ui-atlas-
 [Adding a faction](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/adding-a-faction.md#the-launchers-data-for-the-row), The launcher's data for the row and Traps, and [The UI atlas](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/the-ui-atlas.md#pick-the-right-region), Pick the right region.
 TF crashed the launcher at startup pointing it at `UI_SIDEBAR_FACTIONLOGO_*` and `RA_UI_MULTIPLAYER_*_LOGO`.
 
-**Faction# → country → icon:** F1=GDI(`_00`), F2=Nod(`_01`), F3=Spain(`_03`), F4=Greece(`_04`), F5=USSR(`_05`), F6=UK(`_06`), F7=Ukraine(`_07`), F8=Germany(`_08`), F9=France(`_09`), F10=Turkey(`_10`).
+**Faction# → country → icon:** F1=GDI(`_00`), F2=Nod(`_01`), F3=Spain(`_03`), F4=Greece(`_04`), F5=USSR(`_05`), F6=England(`_06`), F7=Ukraine(`_07`), F8=Germany(`_08`), F9=France(`_09`), F10=Turkey(`_10`).
 
 ### 2. Picker NAME + bonus-OVERLAY — `MASTERTEXTFILE_<lang>.LOC`
 The three strings (lobby name, hover/select overlay, in-match name) are on the field manual's

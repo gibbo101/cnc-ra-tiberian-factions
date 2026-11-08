@@ -16,8 +16,8 @@ objectives.
 - `FACTIONS.XML` carries the matching data field, `<CoopCampaignType>`, as a sibling of
   `<CampaignType>` — **empty on all 11 factions.**
 - **No co-op data ships.** `UI_CampaignMenu_CoOp` (the screen the menu class would load) is
-  absent from our CONFIG.MEG *and* from the pristine base archive — zero members match "coop" in
-  either. No co-op campaign is defined in `PROGRESSIVECAMPAIGNFILES.XML`.
+  named in the scene list, but no member of our CONFIG.MEG *or* the pristine base archive holds
+  it. No co-op campaign is defined in `PROGRESSIVECAMPAIGNFILES.XML`.
 
 So it is a cut feature: code without content.
 
@@ -100,10 +100,10 @@ Each map = a **triplet**:
 - `<name>.tga` — preview thumbnail
 - `<name>.json` — launcher discovery manifest: `{MapTileX/Y/Width/Height, Theater, Waypoints[]}`
 
-Two naming families coexist: local-authored short names (`RDS06.mpr`) and Workshop-synced
-(`UGC_<itemid>_<hash>_MAPDATA.MPR`; RA's meta suffix is `MAPDATA`, per editor source
-`GameInfoRedAlert.cs:364`). `Custom_Maps/` + `Custom_Map_Previews/` also exist (Workshop
-cache). The dev-machine prefix has the same dirs.
+Two naming families sit side by side in `Local_Custom_Maps/Red_Alert/`: local-authored short names
+(`RDS06.mpr`) and Workshop-synced `UGC_<a>_<b>_MAPDATA.MPR`, whose second hex field is the Workshop item
+ID (RA's meta suffix is `MAPDATA`, per editor source `GameInfoRedAlert.cs:364`). `Custom_Map_Previews/`
+holds the Workshop maps' radar previews; `Custom_Maps/` also exists. The dev-machine prefix has the same dirs.
 
 **The `.json` has no "co-op"/category field** — the lobby list is built from geometry +
 `Waypoints[]` (= start positions / max players; RDS01=8, a sample UGC map=4). So co-op-ness is

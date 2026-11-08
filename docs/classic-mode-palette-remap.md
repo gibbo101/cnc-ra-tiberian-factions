@@ -19,7 +19,7 @@ asset-build pipeline.
 
 ## The remap rule
 
-Verified against TD `CONST.CPP` (rows 306/420, `DISPLAY.CPP:248`) and RA's
+Verified against TD `CONST.CPP` (`RemapRed`, its 176..191 row at line 325; `DISPLAY.CPP:248`) and RA's
 `PALETTE.CPS` row 0 (`init.cpp` `Init_Color_Remaps`):
 
 | | House-colour "unity" range | Action |

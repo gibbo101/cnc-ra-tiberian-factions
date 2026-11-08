@@ -8,9 +8,10 @@ add. TD's own templates draw from TD's tilesets on the TD theatres (`td-base-art
 The launcher renders terrain templates only from its preloaded base-MEG atlas, so a new template AssetName with
 loose art crashes ClientG: see the field manual's
 [Adding a theatre of your own](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-theatres.md#the-wall-no-new-terrain-template-names),
-the wall. A known-good DXT5 from another mod still crashed, and so did the mod with its CONFIG.MEG removed. EMC has no terrain or template mechanism: its `CDATA.CPP` and `TDATA.CPP` are
-unchanged from EA's. Mods that seem to reskin terrain with loose art are overriding civilian
-buildings (`V20`–`V37`), which are objects.
+the wall. A known-good DXT5 from another mod, put on an existing template's frame (`S02`), crashed the same way, so that test doesn't pin the wall on new names alone; the mod with its CONFIG.MEG removed crashed too. EMC has no terrain or template mechanism: its `CDATA.CPP` and `TDATA.CPP` are
+unchanged from EA's. Reilsss's CnCinRA seems to reskin terrain with loose art but overrides civilian
+buildings (`V20`–`V37`), which are objects; his Snow to Desert does ship loose terrain, 8,304 DDS
+frames at stock template paths.
 
 The DLL can't fix it: it hands each cell over by template name (`Get_Template_Info`), and the HD
 atlas is ClientG's. The DLL's template heap grows with `TEMPLATE_COUNT`, so there is no cap to raise.

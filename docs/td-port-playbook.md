@@ -550,7 +550,7 @@ The TD flamethrower taught two distinct lessons. Both apply to **any** weapon wh
 ```
 The overlay then resolves the real `TDFLAME-<dir>` tile by IniName. **Generalises: any TD anim that is HD-tile-only needs a donor ImageData or it renders green.**
 
-**(c) TD-prefix the anim names.** See the field manual's [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#traps), Traps ("Don't reuse a stock tile name"); `FLAME-*` has 78 refs in CONFIG.MEG. TF renames them `TDFLAME-*` everywhere: ctor names, `RA_VFX.XML` tiles and frame paths, bundled ZIPs, rules.ini `Anim=` (same trap as `TDIONSFX`/`TDDRAGON`).
+**(c) TD-prefix the anim names.** See the field manual's [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#traps), Traps ("Don't reuse a stock tile name"); `FLAME-*` has 208 refs in CONFIG.MEG. TF renames them `TDFLAME-*` everywhere: ctor names, `RA_VFX.XML` tiles and frame paths, bundled ZIPs, rules.ini `Anim=` (same trap as `TDIONSFX`/`TDDRAGON`).
 
 **Process note:** this took ~6 speculative deploy cycles before a one-line diagnostic log (`Anim(raw)`, `a(dir)`, `IniName`, spawned-pointer) proved the DLL side was perfect and isolated the bug to the render path — straight to (b). Ship logging in the *first* test of any new entity (see the infantry recipe).
 
@@ -775,14 +775,14 @@ Living document — keep it ahead of the implementation, not behind.
 ## More traps
 
 ### Trap — boarding a transport excludes only ACTION_ATTACK
-`FootClass::What_Action` returns `ACTION_NONE`, not `ACTION_SELECT`, for an allied object another
+`TechnoClass::What_Action` returns `ACTION_NONE`, not `ACTION_SELECT`, for an allied object another
 house owns. A transport-entry check that requires `ACTION_SELECT` stops Tanya boarding an allied
 campaign evac transport, so `InfantryClass::What_Action` excludes only `ACTION_ATTACK`; `unit.cpp`
 and `aircraft.cpp` use the same exclusion.
 
 ### Trap — diagnostic fopen paths MUST use %USERPROFILE%, never hardcoded
-Resolve DLL-side log paths via `getenv("USERPROFILE")`, not `C:/Users/steamuser/...` (that only
-resolves on the Deck's Proton prefix; on real Windows / other Wine prefixes the fopen silently fails
+Resolve DLL-side log paths via `getenv("USERPROFILE")`, not `C:/Users/steamuser/...` (that
+resolves in any Proton prefix, but on real Windows / other Wine prefixes the fopen silently fails
 and the log never appears). `Documents/CnCRemastered/` exists on every platform (the game's own save
 dir); fall back to CWD if the env var is empty.
 

@@ -55,7 +55,7 @@ Every other route to the lobby's per-slot AI difficulty is measured dead (2026-0
 |---|---|
 | `CNC_Set_Difficulty` | Client sends `1` unconditionally in skirmish (5 lobbies measured: mixed, all-Easy ×2, all-Hard, campaign-option-Hard) and `-1` in LAN MP. Either way it is disconnected from the picker. |
 | Interface structs | No per-slot difficulty field anywhere; AI `Name` = bare `AIPLAYER1..4` (hex-verified). |
-| Persisted settings (`userdata/<id>/1213210/remote/Player_RA_settings_1.bin`) | ChunkFile+zlib TLV; holds map/faction/mode but NO difficulty. The byte that moves at launches (tag 0x31) is a match-start counter. |
+| Persisted settings (`userdata/<id>/1213210/remote/Player_RA_settings_1.bin`) | ChunkFile+zlib TLV; holds map/faction/mode and a `CASUAL` label, but NO per-AI difficulty. The byte that moves at launches (tag 0x31) is a match-start counter. |
 | Wine registry / exit-time writes | Nothing difficulty-related. |
 | Cross-restart lobby memory | Doesn't exist — lobby resets to one default MEDIUM AI after full game restart. |
 

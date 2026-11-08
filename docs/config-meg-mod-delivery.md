@@ -61,7 +61,7 @@ launcher at boot under the mod (the same-size rule below).
 ## What this unlocks (CONFIG.MEG-resident, therefore now moddable)
 
 - **Faction display names** — `MASTERTEXTFILE` `TEXT_FACTION_NAME_FACTION_*` (proven: Turkey→Nod).
-- **Faction colours / lobby icons / buildable grid** — `FACTIONS.XML` (`Faction1=GDI`, `Faction2=Nod`, `Faction3–10`=RA countries; per-faction `UIColor`, `DefaultIcons`, `FactionObjects`, and the TD/RA gate `CampaignType`).
+- **Faction colours / lobby icons** — `FACTIONS.XML` (`Faction1=GDI`, `Faction2=Nod`, `Faction3–10`=RA countries; per-faction `UIColor`, `DefaultIcons`, `FactionObjects` (empty in every entry; EA ties it to the structure breakdown screen), and the TD/RA gate `CampaignType`).
 - **Mission Select roster** — `INSTANCES.XML` (`ShowOnMissionSelect`, `IsUnlockedAtStart`, `ExternalGameID`) — see `campaign-tabs-research.md`.
 - **Any other CONFIG.MEG XML/table** — theatres/tilesets, audio-faction maps, GUI scene lists, etc. *If the data is in CONFIG.MEG, this mechanism reaches it.*
 
@@ -98,7 +98,8 @@ won't start, and the carrier that starts it, are on the field manual's
 (TF's tests: the assert at `serveripcmessagehandler.cpp(268)`; a hijacked `Community_2` still loaded `SCMC1EA`).
 
 - The launcher reads `Data/CNCDATA/...` map INIs via CWD-relative paths = **base install
-  only**; a mod's `Data/CNCDATA/` is never searched.
+  only**; a mod's `Data/CNCDATA/` is never searched. The game does read a mod's map INIs, from its
+  `CCDATA\` (`campaign-tabs-research.md`).
 
 TF launches its new entries through Hastings' `D6` (`td-base-art.md`, "TD maps in the Official list"). Workshop
 *map items* (custom-maps tab, native pipeline, previews from the shipped TGA) remain the plain route.

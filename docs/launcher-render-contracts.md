@@ -39,7 +39,8 @@ must keep those indexes ≤ 127. The Titan ships 8 facings × 12 walk frames
 
 ## 3. The line renderer supports animation frames 0–4 only
 
-`CC_Draw_Line`'s Frame param (fed from `TechnoClass::LineFrame`) indexes a
+`CC_Draw_Line`'s Frame param (fed from `TechnoClass::LineFrame`, TD's, which TF ports; EA's RA exports
+no lines) indexes a
 5-entry launcher table. Frames ≥ 5 render as GIANT squares at the line's two
 endpoints, in the line's own color — the railgun "white boxes" saga (they
 turned red when the beam did, which was the giveaway). The Obelisk never hit
@@ -54,8 +55,8 @@ A DLL-added `AnimType` with mod-shipped art and a tileset entry renders like any
 `TDIONSFX.ZIP`, the C&C3 railgun shot. The launcher draws its white placeholder box for any anim stage
 that has no tile in the tileset XML, wherever the anim sits. The export loop draws every layer object,
 anims included, as its own root (`dllinterface.cpp`, `CurrentDrawCount = 0` per object), so a free anim
-never becomes a sub-object by position. Avoid the `AnimClass` ctor's `timedelay` param: vanilla never
-uses it, and delayed anims export in a pre-start state.
+never becomes a sub-object by position. Avoid the `AnimClass` ctor's `timedelay` param: vanilla uses it
+only for a few fades and fires (`bullet.cpp`, `terrain.cpp`), and delayed anims export in a pre-start state.
 
 **Rule:** custom-art anims are viable anywhere. Declare exactly as many tiles
 as the anim has stages (have the generator patch the XML, as

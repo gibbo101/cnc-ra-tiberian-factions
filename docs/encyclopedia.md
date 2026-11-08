@@ -26,8 +26,10 @@ live from the mod's rules. Addresses are ClientG.exe 1.153.745903.
 
 Why the rules must load inside ClientG, and the one-`Rule.Process` trap: see the field manual's
 [A faction encyclopedia screen](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/faction-encyclopedia.md#live-stats-load-the-rules-inside-the-launcher). `TF_Encyclopedia_Load`
-(`redalert/tf_encyclopedia.cpp`) does it with a `RawFileClass` reading `<mod>\CCDATA\`; `aftrmath.ini` and
-`mplayer.ini` override the sections General, Recharge, AI, Powerups, Land_Types, Themes, IQ, Objects and Difficulty.
+(`redalert/tf_encyclopedia.cpp`) does it with a `RawFileClass` reading `<mod>\CCDATA\`; `mplayer.ini`
+overrides the sections General, Recharge, AI, Powerups, Land_Types, Themes, IQ, Objects and Difficulty, as a
+skirmish applies it. The game puts `aftrmath.ini` through a full `Rule.Process`; a second one would rebuild the
+heaps, so the encyclopedia applies the same nine sections from it, plus `Rule.MPlayer`.
 
 `mplayer.ini` ships loose in `CCDATA`, where the game's skirmish load finds it before `EXPAND2.MIX`: the stock
 copy without its `[BRIK]` override, so walls cost `rules.ini`'s 100. The encyclopedia shows the same skirmish

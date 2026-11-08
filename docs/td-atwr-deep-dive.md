@@ -11,7 +11,7 @@ The body is the TD-source analysis and the port plan that was carried out; live 
 
 ## What TD's ATOWER actually is
 
-A 1×2 GDI defensive tower with a *fixed* missile rack on top. The rack does not rotate — the launched missiles (BULLET_SSM, the "DRAGON" sprite) do the tracking after launch. Powered building: stops firing under power outage. Crew=true: spawns an infantry one cell south on death.
+A 1×2 GDI defensive tower with a *fixed* missile rack on top. The rack does not rotate — the launched missiles (BULLET_SSM, the "DRAGON" sprite) do the tracking after launch. Powered building: stops firing under power outage. Crew=true: spawns an infantry on death, one cell south in Vanilla Conquer's TD (EA's TD has no south step).
 
 Mechanically there is **no state machine and no special render path** — it's the simplest possible defensive building. The pile of "issues" comes entirely from `ClassTdAtwr` having the wrong flags (because it was shaped after RA's AGUN, a different beast).
 
@@ -69,7 +69,7 @@ static BuildingTypeClass const ClassATower(STRUCT_ATOWER,
 | 2784-2785 | `Fire_Data` | Muzzle data: `coord = Coord_Move(coord, DIR_N, 0x0030); dist = 0x0040;` |
 | 2815-2816 | `Fire_Coord` | Muzzle coord: `coord = Coord_Move(coord, DIR_N, 0x0030); if (Target_Legal(TarCom)) coord = Coord_Move(coord, ::Direction(coord, As_Coord(TarCom)), 0x0040);` |
 | 3522 | `Can_Fire` | `if (*this == STRUCT_ATOWER && House->Power_Fraction() < 1) return (FIRE_BUSY);` |
-| 4132 | Crew-on-death spawn | If ATOWER or OBELISK, spawn the surviving infantry one cell SOUTH of foundation center. |
+| 4132 | Crew-on-death spawn | Vanilla Conquer's addition, absent from EA's TD: if ATOWER or OBELISK, spawn the surviving infantry one cell SOUTH of foundation center. |
 
 That's it. No `Mission_Attack` branch, no `Shape_Number` branch, no `AI` branch.
 
@@ -312,7 +312,7 @@ if (*this == STRUCT_TDATWR || *this == STRUCT_TDOBLI) {
 }
 ```
 
-(The TD source aliases `STRUCT_ATOWER || STRUCT_OBELISK` because both buildings share the south-offset rule. Our port aliases `STRUCT_TDATWR || STRUCT_TDOBLI` for the same reason. This is a *positive-dispatch* alias that's identical behavior for two TD buildings — acceptable per the M6 rule in `td-sam-deep-dive.md`: identical behavior across two TD entities can share a comment-tagged branch.)
+(Vanilla Conquer's TD aliases `STRUCT_ATOWER || STRUCT_OBELISK` because both buildings share the south-offset rule; EA's TD has no south step, and Vanilla Conquer's RA has the same step for `STRUCT_TESLA`. Our port aliases `STRUCT_TDATWR || STRUCT_TDOBLI` for the same reason. This is a *positive-dispatch* alias that's identical behavior for two TD buildings — acceptable per the M6 rule in `td-sam-deep-dive.md`: identical behavior across two TD entities can share a comment-tagged branch.)
 
 If RA's `Drop_Debris` already has the south-offset adjustment for some vanilla buildings, slot ours into that same place. If not, add the check before the `Unlimbo` call for the crew infantry.
 
@@ -379,7 +379,7 @@ MP smoke (deferred — pair with SAM testing on 2-Deck setup): Longbow approach 
 - **No donor.** `ClassTdAtwr` constructor args are set from TD source values, not copied from RA's AGUN/PBOX/anything.
 - **`[TDTowTwo]` stays the TD weapon port.** Not aliased to RA's vanilla `[TowTwo]` (which doesn't exist; RA's TOW equivalents are different).
 - **`[TDSSM]` stays the TD projectile port.** Not aliased to RA's `[AAMissile]` (TD's BULLET_SAM uses MPH_VERY_FAST + ROT=10, BULLET_SSM uses MPH_ROCKET + ROT=5 — different missiles).
-- **Crew-spawn south-offset aliased between TDATWR and TDOBLI.** Both TD buildings need the same south-offset rule. The alias here is two TD entities sharing identical behavior, not TD borrowing from RA — the legitimate aliasing pattern.
+- **Crew-spawn south-offset aliased between TDATWR and TDOBLI.** Both TD buildings take Vanilla Conquer's south-offset rule. The alias here is two TD entities sharing identical behavior, not TD borrowing from RA — the legitimate aliasing pattern.
 
 ---
 

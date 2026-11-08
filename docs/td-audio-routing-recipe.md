@@ -102,9 +102,10 @@ under its own names; the alias recipe above routes it. Proven on both channels: 
 the localized channel, and a weapon report on the non-localized one. The rules are about format:
 1. **MS-ADPCM WAV only** (fmt tag 2). Plain PCM (tag 1) crashes ClientG with an integer
    divide-by-zero in its ADPCM block math (ClientG+0xAB5E69). Encode SFX with
-   `ffmpeg -c:a adpcm_ms -ar 22050 -ac 1`. TD's remastered EVA lines are stereo at about 44 kHz
-   (`ffmpeg -ac 2 -ar 44077 -c:a adpcm_ms`, the default 1024 block align is accepted); classic EVA
-   and RA's remastered EVA are mono.
+   `ffmpeg -c:a adpcm_ms -ar 22050 -ac 1`. TD's remastered EVA lines are stereo, at rates that vary
+   per file from about 44,030 to 44,150 Hz; TF encodes at 44077 (`ffmpeg -ac 2 -ar 44077 -c:a adpcm_ms`,
+   the default 1024 block align is accepted). Classic EVA and RA's remastered EVA are mono, RA's at
+   rates that vary per file.
 2. **Localized samples live under a locale folder** (`Data/AUDIO/EN-US/`), and the XML's `.MP3`
    extension maps to a `.WAV` member: the localized "MP3" entries are ADPCM WAVs.
 3. **A bad format fails silently or crashes.** Check a new file's md5 and fmt chunk against a base

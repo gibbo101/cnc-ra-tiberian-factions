@@ -188,13 +188,13 @@ own Phase Transport (`UNIT_PHASE`, Aftermath, `Cloakable=yes`) is the cloaking-*
 (`IsScanner`, `techno.cpp` Read_INI). Mechanism: when a CLOAKED unit *moves adjacent* to an enemy
 `Sensors=yes` techno, `FootClass::Per_Cell_Process` calls `Do_Shimmer()` (brief reveal) — an
 adjacency *tripwire on movement*, not a persistent radar reveal. **TD-canon: detectors are base DEFENSES
-only.** In TD source `is_scanner` is a `BuildingTypeClass`-only ctor param ("detect adjacent cloaked
-objects?") — infantry/unit ctors hardcode it false, so **TD infantry do NOT reveal stealth tanks** (a
-common misconception; only defenses + decloak-on-fire do). The TD `true` buildings map to ours:
+and every infantry.** In TD source `is_scanner` is a `BuildingTypeClass` ctor param ("detect adjacent cloaked
+objects?"); the infantry ctor hardcodes it true and the unit ctor false, so **TD infantry DO reveal stealth
+tanks** they walk next to, and vehicles never do. The TD `true` buildings map to ours:
 GDI **TDGTWR/TDATWR**, Nod **TDGUN/TDOBLI** — all now carry `Sensors=yes`. Allied (`PBOX/HBOX/GUN/DOME`)
 and Soviet (`TSLA/FTUR/DOME`) defenses already had it from vanilla RA, so the 4-faction web is symmetric.
-RA *can* flag infantry/units as scanners (it does for one infantry type) if you ever want active
-stealth-hunting — just not TD-canon. Detection is **pure rules.ini**, no DLL rebuild.
+RA's infantry and ship ctors force `IsScanner = true`, so every RA infantry and ship detects too. RA *can*
+flag units as scanners if you ever want active stealth-hunting — just not TD-canon. Detection is **pure rules.ini**, no DLL rebuild.
 
 **(c) The 2-shooter needs its OWN weapon when the base weapon is shared.** TD STANK is
 `is_twoshooter=true` → RA `Burst=2` (the §3.5/§DUAL mapping — no unit-level flag). But it fires

@@ -247,7 +247,8 @@ Accept the Workshop agreement: see the field manual's [Publishing to the Worksho
 - **A sim crash with a minidump:** `tools/dumpwalk.py <dmp> <RedAlert.dll>` prints the exception and
   the DLL return addresses on the faulting thread's stack.
 - **A ClientG crash can still be ours** (the manual's Traps list the causes). The DLL imports no d3d11,
-  dxgi or gdi32, so it cannot reach the GPU, but it patches ClientG's memory and code; TF's own EVA cache
+  dxgi or gdi32, but it calls D3D11 through ClientG's own texture (`tf_launcher.cpp`: `GetDevice`,
+  `UpdateSubresource`), and it patches ClientG's memory and code; TF's own EVA cache
   patch once wrote over heap headers on skirmish load (fixed in 5.0.0).
 - **There is no graphics or VRAM setting to offer.** `GAMECONSTANTS.XML` has none, and the
   mod's UI atlas is the same size as EA's (about 184 MB).
@@ -258,11 +259,11 @@ Accept the Workshop agreement: see the field manual's [Publishing to the Worksho
 ## Don't-dos
 
 - Don't re-create the item shell for an existing release — `publishedfileid` is allocated once per item.
-- Don't pursue EA's `Uploader.exe` — confirmed bitrotted on Linux (Wine/Proton) AND on Windows. Same hang as our tool was hitting pre-restart, but our tool is now easier to diagnose.
+- Don't pursue EA's `Uploader.exe` — it hung on Linux (Wine/Proton) AND on Windows, the same hang our tool hit before a Steam restart, and it was never retried after one. Our tool is easier to diagnose.
 - Don't commit `tools/workshop-uploader/preview.jpg` or per-release `workshop.json` if they contain machine-absolute paths or release-specific descriptions; prefer relative paths so the JSON is portable.
 
 ---
 
 ## Historical context
 
-- 2026-05-20: First Workshop publish for this mod (v0.3.0). EA's `Uploader.exe` ruled out as bitrotted across Windows / Wine / Proton. Built our own C# uploader using `Steamworks.NET`, mirroring the SteamUGC sequence in `<Steam library>/steamapps/common/CnCRemastered/SOURCECODE/CnCTDRAMapEditor/Utility/SteamworksUGC.cs` (EA's MapEditor — the only working official Workshop publisher for this app). The uploader hung on the same "preparing config" symptom EA's tool produces until a Steam restart cleared it, hence Step 0.
+- 2026-05-20: First Workshop publish for this mod (v0.3.0). EA's `Uploader.exe` ruled out after it hung across Windows / Wine / Proton (never retried after a Steam restart). Built our own C# uploader using `Steamworks.NET`, mirroring the SteamUGC sequence in `<Steam library>/steamapps/common/CnCRemastered/SOURCECODE/CnCTDRAMapEditor/Utility/SteamworksUGC.cs` (EA's MapEditor — the only working official Workshop publisher for this app). The uploader hung on the same "preparing config" symptom EA's tool produces until a Steam restart cleared it, hence Step 0.

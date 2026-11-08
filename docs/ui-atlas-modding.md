@@ -36,7 +36,7 @@ the TGA and ships a DXT5 DDS of the same name (`scripts/sprite_dds.py`); the pic
 ## The recipe
 
 1. Extract base `MT_COMMANDBAR_COMMON.TGA` + `.MTD` from `TEXTURES_SRGB.MEG` (streaming lister — see `mix-file-format.md`).
-2. Find your region in the `.MTD`: locate the `NAME.TGA` bytes, **skip trailing null padding** (1–4 bytes: the name's length field, a u32 before it, rounds the name up to a multiple of 4), read 4× little-endian `int32` = `x, y, w, h` (top-left origin).
+2. Find your region in the `.MTD`: locate the `NAME.TGA` bytes, **skip exactly the length in the u32 before the name** (it counts the 1–4 bytes of NUL padding that round the name up to a multiple of 4), read 4× little-endian `int32` = `x, y, w, h` (top-left origin). Don't skip NULs instead: an `x` whose low byte is zero gets eaten (`RA_UI_RED_SEARCH_BTN_NORMAL_MIDDLE`, x = 3584).
 3. **Byte-edit the `.TGA` pixels in place.** The atlas is 32-bit **BGRA**, **bottom-origin** (`desc=0x00`), 18-byte header, **no footer**. For image pixel `(x,y)` (top-left), the file offset is `18 + (H-1-y)*W*4 + x*4`; write bytes `B,G,R,A`. Preserve the header/footer exactly — don't round-trip through PIL's TGA writer (it appends a footer / flips the descriptor; harmless per the red-herring below, but byte-editing keeps the file format-identical and the rsync delta tiny).
 4. Ship the edited `MT_COMMANDBAR_COMMON.TGA` **loose** at `<mod>/Data/ART/TEXTURES/SRGB/`. `.TGA` only. Deploy.
 

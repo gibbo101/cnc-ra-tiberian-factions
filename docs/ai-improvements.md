@@ -42,7 +42,8 @@ below.
 
 ### Symptom
 Computer opponents skip the Radar Dome unless the human player builds an
-aircraft. No dome → tech center prereq fails → no GPS, MIG, Longbow. (The
+aircraft. No dome → tech center prereq fails → no GPS, MIG, Longbow. The dome
+also gates the SAM, AA gun, helipad and airfield, so the AI gets no aircraft. (The
 Chronosphere, Iron Curtain and MSLO aren't on its build list at all: Problem 3a.)
 
 ### Root cause

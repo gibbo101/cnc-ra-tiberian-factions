@@ -596,8 +596,8 @@ Research complete (agent report, §7). Two routes for staging-then-blob:
      max(3/4 of the cap, `TF_NAVAL_WAVE_MIN`) and the rally clears.
    - **The naval yard isn't gated on finding an enemy shore:** such a gate gives factions with
      recon specials (spy plane, recon flight) a standing naval head start.
-   - **Testing:** `MOD_DEBUG_AI.txt` is written to `USERPROFILE`, which some runs resolve to
-     `pfx/drive_c/users/steamuser/` rather than `Documents/CnCRemastered/`; check both. Before a
+   - **Testing:** `MOD_DEBUG_AI.txt` is written to `%USERPROFILE%`, which under Proton is
+     `pfx/drive_c/users/steamuser/`, not `Documents/CnCRemastered/`. Before a
      deploy, wait for a full game exit with `pgrep 'InstanceServerG[.]exe'` (a bare
      `pgrep -f InstanceServer` matches itself). Restarting a match does not end InstanceServerG.
 3. **Superweapons for RA factions:** Iron Curtain + Chronosphere AI dispatch + AI-aware
