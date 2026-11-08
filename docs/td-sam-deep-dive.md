@@ -53,7 +53,7 @@ underground) delivered about a quarter of the Soviet SAM's damage per tick; stay
 it. The site still turns north and lowers once nothing is left to shoot, and still takes half
 damage while underground, so it stays hard to kill shut and vulnerable in a fight.
 
-Note: TD's `Status` is a `char` field on `MissionClass` (TD `mission.h:62`). Default-init is `0` = `SAM_UNDERGROUND` — no explicit init in `Grand_Opening` needed.
+The state is the building's `Status`, a `char` on `MissionClass` (TD `mission.h:62`), so a new SAM starts underground with no set-up; the one-second wait, the `FIRE_FACING` retry, the air-only threats and the missing `_anims` entry are in the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#the-sam-site-rise-fire-twice-lower), The SAM site.
 
 ### 2. The render path (TD `building.cpp:548-571`)
 
@@ -90,11 +90,11 @@ RA's `Can_Fire` already gives `STRUCT_SAM` the wider arc; TF adds `STRUCT_TDSAM`
 
 ### 8. Threat scanning (TD `building.cpp:Greatest_Threat`)
 
-TD's SAM only adds `THREAT_AREA` and `THREAT_AIR` (via `IsAntiAircraft` bullet check) — never ground, infantry, or buildings. RA's vanilla SAM dispatch already does this. Needs `STRUCT_TDSAM`.
+See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#the-sam-site-rise-fire-twice-lower), The SAM site ("Air only"; TD adds `THREAT_AIR` through the `IsAntiAircraft` bullet test, `building.cpp:2838`). RA's vanilla SAM dispatch already does this. Needs `STRUCT_TDSAM`.
 
 ### 9. Anims[BSTATE_*] is NOT used for rise/lower (TD `bdata.cpp:3786-3816`)
 
-`STRUCT_SAM` is **not** in TD's `_anims[]` table. All Anims default to `(Start=0, Count=1, Rate=0)`. The rise/lower is driven directly by `Set_Rate(2) + Set_Stage(0 or 48) + Fetch_Stage` calls inside `Mission_Attack`, **not** via `Begin_Mode(BSTATE_ACTIVE)`. Don't set TDSAM's `ActiveAnim*` in `rules.ini` to anything but `(0,1,0)`.
+See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#the-sam-site-rise-fire-twice-lower), The SAM site ("No building animation"): `Mission_Attack` drives the rise and lower itself, not `Begin_Mode(BSTATE_ACTIVE)`. Don't set TDSAM's `ActiveAnim*` in `rules.ini` to anything but `(0,1,0)`.
 
 ---
 

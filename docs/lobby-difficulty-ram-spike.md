@@ -47,11 +47,9 @@ role; do not derive MP constraints from transport code.
 ## Why RAM
 
 Every other route is measured dead: see the field manual's [Per-AI lobby difficulty](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md#why-memory-is-the-only-source),
-Why memory is the only source. Measured beyond it: the settings file
-(`userdata/<id>/1213210/remote/Player_RA_settings_1.bin`) is a ChunkFile+zlib TLV holding a `CASUAL` label, and
-the byte that moves at each launch (tag 0x31) is a match-start counter; the Wine registry and exit-time writes
-hold nothing difficulty-related. That the picks persist in ClientG's memory shows in the launcher reverting to the
-last-launched settings. DontCryJustDie suggested reading RAM ("if you know the offsets"); TF's read uses
+Why memory is the only source, which also covers what the settings file
+(`userdata/<id>/1213210/remote/Player_RA_settings_1.bin`), the Wine registry and the exit-time writes hold.
+DontCryJustDie suggested reading RAM ("if you know the offsets"); TF's read uses
 no hardcoded offset (the signature scan below).
 
 ## PoC (proven live)

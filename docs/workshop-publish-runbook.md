@@ -109,7 +109,7 @@ Schema (matches EA's original `.workshop.json` format so existing tutorials rema
 | `visibility` | `0`=Public, `1`=Friends Only, `2`=Private, `3`=Unlisted. The mod's item is Public, so updates keep `0`. A **new** item (an asset pack) is created at `2` and promoted after a self-test. |
 | `title` | Display title — keep consistent across versions. |
 | `description` | Steam BBCode supported: `[b]…[/b]`, `[h2]…[/h2]`, `[list][*]…[/list]`, `[url=…]…[/url]`. |
-| `tags` | Array. Valid for App 1213210: `RA`, `RedAlertMod`, `TD`, `TiberianDawnMod`, `FFA`, `1v1`, `2v2`. |
+| `tags` | Array. TF's are `RA`, `RedAlertMod`; the tags mods and maps use: the field manual's [Publishing to the Workshop from Linux](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/publishing-to-the-workshop-from-linux.md#the-manifest), The manifest. |
 | `metadata` | Leave `""`. |
 
 Change note is NOT persisted in JSON — passed on the command line per submission.

@@ -40,10 +40,8 @@ item 1 below).
 ### 1. Mod hotkey commands (in use)
 
 EA's mod hotkey path (the constant, four commands with empty keys, and the DLL input event that stops at EA's
-placeholder) is on the field manual's [Mod hotkey commands](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/mod-hotkey-commands.md#what-ea-left-in), What EA left in. Two details
-it lacks: the constant's comment reads *"Community-requested Mod option so that players can have customized mod
-hotkey commands"*, and a key is written `<Key>VIRTUAL_KEY_F3</Key>`, as the bookmark commands above them use. TF's
-handler is the `INPUT_REQUEST_MOD_GAME_COMMAND_1..4_AT_POSITION` cases of `CNC_Handle_Input` in
+placeholder) is on the field manual's [Mod hotkey commands](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/mod-hotkey-commands.md#what-ea-left-in), What EA left in (the
+constant's comment and how a key is written included; the bookmark commands above them bind F1–F4 that way). TF's handler is the `INPUT_REQUEST_MOD_GAME_COMMAND_1..4_AT_POSITION` cases of `CNC_Handle_Input` in
 `redalert/dllinterface.cpp`.
 
 **What ships:** `CNCEnableModHotKeyGameCommands` is on in `GameConstants_Mod.xml`, and the handler

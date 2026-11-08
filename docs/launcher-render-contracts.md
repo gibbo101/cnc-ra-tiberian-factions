@@ -78,15 +78,12 @@ mottle was std 7 against TS's 19.5.
 
 ## 10. The chronal vortex is a launcher-drawn screen warp the DLL can position — but nothing else
 
-Proven 2026-08-27 (Disruptor ripple spike): `Get_Dynamic_Map_State` exports
-`VortexActive/X/Y/Width/Height` every frame, and the launcher will render its vortex
-distortion wherever the DLL points it — the ONLY true per-pixel warp the Remastered renderer
-offers a mod. The catches, all observed in play: the launcher IGNORES the exported
-Width/Height (our 64 px request drew a ~350 px whirlpool), anchors the effect at the
-coordinate's top-left rather than its centre, always draws the full chrono whirlpool styling
-(heavy swirl, not a subtle haze), and keeps churning for as long as the flag stays true.
-Useless for a beam ripple; potentially useful for a deliberate large one-off screen warp.
-The real `ChronalVortex` always owns the slot when active.
+What the vortex does when the DLL places it (whole whirlpool, top-left anchor, churns while on, the real
+`ChronalVortex` owns the fields) is in the field manual's
+[How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#worked-example-a-beam-the-launcher-cant-draw),
+the worked example. TF's Disruptor ripple spike placed it through `Get_Dynamic_Map_State`; our 64 px request drew
+a ~350 px whirlpool, so we treat the size as ignored. Useless for a beam ripple; potentially useful for a deliberate
+large one-off screen warp.
 
 ## 11. Voxel units are lit the way Tiberian Sun lights them, and a relight never re-places a sprite
 
@@ -176,14 +173,14 @@ says for the ground line. For reference, TS's 1x1 buildings sit about +10 to
 
 ## 15. Vehicle hulls are centred on the unit
 
-EA's HD vehicles centre the hull's opaque pixels on the unit to within 1.5 classic px (21 RA and
-TD vehicles measured; the Mammoths sit 2.6 high). Turrets and barrels stick up past it, and art
-bottoms vary from +6 to +14 classic px with size. The launcher centres the box on the unit, so a
-centred hull gets a box that hugs it. Our voxel packers put the model's ground point at the canvas
+EA's HD vehicles centre their hulls on the unit, the Mammoths a little high, as measured in the field manual's
+[How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#the-frame-and-its-meta);
+the launcher centres the box on the unit, so a centred hull gets a box that hugs it. TF's own count (21 vehicles,
+the Mammoths 2.6 px high) gave the same picture. Our voxel packers put the model's ground point at the canvas
 centre, which drew hulls 3 to 7 px high: above EA's vehicles in the same row, with the box's slack
 below. `scripts/unit_centring.py` centres them after packing and records the drop for
 `Fire_Coord`. Size boxes from its printout (width = art width, height = 2 × the art's reach from
-centre). Measuring only the two Mammoths gives a misleading ground-line rule. The
+centre). The
 `unit-art-placement` skill (`.claude/skills/`) walks through a new or re-packed unit.
 
 The launcher places a unit's box at the unit's centre and ignores

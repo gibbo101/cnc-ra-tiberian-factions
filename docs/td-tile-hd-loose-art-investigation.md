@@ -24,10 +24,9 @@ at stock template paths).
 
 ## Engine facts
 
-- RA `[MapPack]` = base64 (UUBlock) of LCW-block-framed `16384 × TType (u16 LE)` followed by
-  `16384 × TIcon (u8)`; `[OverlayPack]` is the same over 16384 signed-char overlays. A clear template
-  is `0xFFFF`. An LCW block frame is `[CompCount u16 LE][UncompCount u16 LE][data]` in 8192-byte
-  blocks; UUBlock is base64 in 70-character numbered lines, CRLF.
+- RA's `[MapPack]` and `[OverlayPack]` layout (clear template `0xFFFF`, LCW block frame, 70-character CRLF lines):
+  the field manual's [Bigger maps](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/bigger-maps.md#map-files),
+  map files.
 - Where new templates go (401 up, registered in enum order) and how their classic iconsets set their size: the
   field manual's [Adding a theatre of your own](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-theatres.md#the-theatre-itself),
   the theatre itself (`Get_IconSet_MapWidth(NULL)` = 0 is why missing art gives a 0 by 0 template).

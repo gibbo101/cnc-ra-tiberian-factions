@@ -100,18 +100,17 @@ left. Engine reference: OpenTS (`reference/OpenTS/code/`); data: TS's own `RULES
 
 See the field manual's [Firestorm Defense](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/firestorm-defense.md#how-tiberian-sun-does-it)
 for TS's model: the four charge-drain states, computer houses, the live field and the 5x5 kill, jumpjets, eaten
-shots, the drain on hits, the spark bursts, the frames and `FSIDLE`, the EVA lines and the free line fill. Beyond it:
+shots, the drain on hits, the spark bursts, the frames, `GAFSDF_A` and `FSIDLE`, the sounds, the EVA lines, the free
+line fill, switching generators off, and selling sections. Beyond it:
 
 - READY -> ON calls `House->Activate_Firestorm()`; TS's rules set `ChargeToDrainRatio` to .333, overriding
   OpenTS's default of 3 (`rules.cpp`).
-- A generator switched off suspends the field as low power does; capturing one does nothing special.
+- Capturing a generator does nothing special.
 - The field is the house flag `FirestormDefenseActivated`. A live section is `PASSABLE_NO` plus a zone reset. The
   standing kill is a full-strength `FirestormWarhead`, forced, with no friend-or-foe test.
 - An eaten shot is deleted with a flare (`Crossing_Firestorm`, then `Delete_Me`), and `FSGRND` / `FSAIR` play on
   every crossing, not only on a death. A projectile whose own type has `IgnoresFirestorm` passes (the test is
   `Class_Of()->IsIgnoresFirestorm`, the bullet's type, not the firer's).
-- `GAFSDF_A` has 8 frames. TS hardcodes no Firestorm sounds; the anims' `Report=` carry any. A section sells only
-  while the field is down, with no refund.
 
 Line refs, by claim:
 

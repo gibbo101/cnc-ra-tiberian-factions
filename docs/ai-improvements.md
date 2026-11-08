@@ -354,7 +354,6 @@ Pure DLL change.
 
 The keys, their stock values and the code's fallbacks are on the field manual's
 [Harvesters](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/harvesters.md#the-rulesini-knobs), The rules.ini knobs.
-The ore search weighs an ore cell at `GoldValue` and a gem cell at four times `GemValue` (`Tiberium_Check`).
 None of the keys touches the problems above, so every harvester fix is a DLL change.
 
 ---

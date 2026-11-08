@@ -84,7 +84,7 @@ TD Flame Tank weapon chain rather than porting the particle system.
   `ANIM_TS_DIG` (TSDIG.ZIP, 37 tiles, x4 on a 512 canvas, 64x64 stub).
 - **Dive/emerge is not an asset:** TS tilts the voxel at run time (the field manual's
   [Subterranean units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/subterranean-units.md#the-dive-is-made-in-the-engine)
-  has the proof; SAPC.HVA is also one static frame). TF bakes the pitched renders: dive
+  has the proof; SAPC.HVA's single frame is on its [Porting art from other C&C games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#tiberian-sun)). TF bakes the pitched renders: dive
   `0/-8/-16/-24/-32/-40`, emerge `+40/+32/+24/+16/+8/0`, 8 facings, ~112 shapes. The DLL adds the sink
   offset and plays DIG over the top during DIGGING_IN/EMERGING.
   ⚠ `vxl_render.py --pitch` was once parsed but never forwarded to `render_frame`, so every CLI

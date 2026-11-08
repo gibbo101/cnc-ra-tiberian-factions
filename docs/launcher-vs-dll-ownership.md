@@ -167,8 +167,8 @@ Firestorm's on/off, the Hunter Seeker's launch)? **Yes, on the host, by patching
 click handler in memory, in every player's launcher. No data lever exists.**
 
 **The launcher's cameo click handler, the input-mode global and the patch** are on the field manual's
-[Launcher key commands and superweapon clicks](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/launcher-key-commands-and-clicks.md#superweapon-cameos-one-click-no-cursor), Superweapon cameos. One detail it lacks: the build path can send
-`START_CONSTRUCTION_MULTI` as well as `START_CONSTRUCTION`.
+[Launcher key commands and superweapon clicks](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/launcher-key-commands-and-clicks.md#superweapon-cameos-one-click-no-cursor), Superweapon cameos (a click arriving as
+`START_CONSTRUCTION_MULTI` included).
 
 **TF's patch** is `TF_Patch_ClientG_Click_Specials` (dllinterface.cpp), applied at every match start, idempotent,
 living as long as the launcher process. Its cave is at `0x1BE91A0`, and it sends the entries listed in

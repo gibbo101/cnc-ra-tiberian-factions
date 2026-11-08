@@ -47,8 +47,8 @@ TF extracts the base TGA and `.MTD` with the streaming lister (`mix-file-format.
 
 Which region draws what (the radar crest, the lobby logos, flags, markers, picker emblems), and why per side versus
 per country decides what data can do, are on the field manual's
-[The UI atlas](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/the-ui-atlas.md#pick-the-right-region), Pick the right region. Two details it lacks: the
-big lobby logos are 309 × 254 (Allied) and 311 × 280 (Soviet), the in-match crest region is the metallic-backed one, and the `_DINO` crest region is unused. Per-faction
+[The UI atlas](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/the-ui-atlas.md#pick-the-right-region), Pick the right region, sizes included. Two details it lacks: the
+in-match crest region is the metallic-backed one, and the `_DINO` crest region is unused. Per-faction
 crests come from the RAM patch (`radar-crest-ram-spike.md`); the lobby identity is in `faction-select-identity.md`.
 
 ---

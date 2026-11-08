@@ -78,7 +78,9 @@ Switching on, and why an update changes a pack's ID: see the field manual's
 
 Picking TS GDI for any slot, or a slot taking it from the lobby's settings, raises ClientG's message box when the
 pack isn't loaded. **GO TO ADD-ONS** leaves the lobby through its own Back handler (`0x71C790`, on the next UI
-tick) and opens the ADD-ONS screen with the pack selected. The box reports its first button as 2 and OK as 3.
+tick) and opens the ADD-ONS screen with the pack selected. The box and its button numbers: the field manual's
+[New screens and buttons](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/new-screens-and-buttons.md#addresses-in-this-client), A message box of the
+launcher's own.
 
 In multiplayer every player needs the same add-ons: see the field manual's
 [LAN games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/lan-games.md#every-player-needs-the-same-mods), Every player needs the same mods.

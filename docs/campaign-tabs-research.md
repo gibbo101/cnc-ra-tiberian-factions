@@ -22,12 +22,10 @@ are separate, Replacing an official mission, Traps, How it was verified); `CONFI
 on [Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#a-replacement-configmeg).
 Beyond the manual:
 
-- The expansion missions are `IsUnlockedAtStart` true, so they always show.
 - The truncation experiment cut all three structure files (`RA_ALLIES.XML`, `RA_ALLIES_MISSIONS.XML`,
   `RA_CAMPAIGNMAPS.XML`) to two missions: all 14 still showed, and mission 14 no longer launched.
-- The progress record isn't in `Player_RA_settings_1.bin`, which holds no campaign strings.
 - The probe won itself because, with no enemies left, its "destroy all" win trigger fired at the start.
-- The probe's `scg43ea.ini` came from `CNCDATA/RED_ALERT/AFTERMATH/MAIN.MIX` → `general.mix`, and ran on a dev
+- The probe ran on a dev
   build whose fresh `tf_astar.log` writes showed the DLL was current, with no crash on either machine.
 - The digest abort and skip in TF's tree: `RELEASE_VERSION` at `defines.h:72`, the abort at `scenario.cpp:2282`
   (result 2 → return false), the skip in `ccini.cpp` `Load` (`if (len > 0)`).

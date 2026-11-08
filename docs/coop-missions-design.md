@@ -93,10 +93,9 @@ it's scripting + a small win/lose-in-MP patch on top of the existing faction plu
 The other route. The `.mpr` is the whole scenario (briefing, triggers, teams, houses, win/lose). On the Deck the
 folder held 73 maps.
 
-Two naming families sit side by side in `Local_Custom_Maps/Red_Alert/`: local-authored short names
-(`RDS06.mpr`) and Workshop-synced `UGC_<a>_<b>_MAPDATA.MPR`, whose second hex field is the Workshop item
-ID (RA's meta suffix is `MAPDATA`, per editor source `GameInfoRedAlert.cs:364`). `Custom_Map_Previews/`
-holds the Workshop maps' radar previews; `Custom_Maps/` also exists. The dev-machine prefix has the same dirs.
+Local-authored maps keep short names (`RDS06.mpr`); Workshop maps and their previews are named as the same
+manual section describes (RA's meta suffix `MAPDATA` is per editor source `GameInfoRedAlert.cs:364`).
+`Custom_Maps/` also exists, and the dev-machine prefix has the same folders.
 
 **The `.json` has no "co-op"/category field** — the lobby list is built from geometry +
 `Waypoints[]` (= start positions / max players; RDS01=8, a sample UGC map=4). So co-op-ness is

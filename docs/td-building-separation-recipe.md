@@ -185,7 +185,7 @@ Full game restart on the Deck (DLL has new enum value → new save format).
 
 ## Common gotchas (learned from TDOBLI)
 
-1. **`ImageData` / `BuildupData` must be non-NULL**: `BuildingClass::Draw_It` returns at once on a NULL `Get_Image_Data()`, so the building is invisible. Shipping an SHP via TFASSETS.MIX (step 7), a stub SHP, or a `_td_bdonors` donor in `bdata.cpp` populates them.
+1. **`ImageData` / `BuildupData` must be non-NULL**, or the building is invisible: see the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#build-ups-overlays-and-loading-order), Build-ups, overlays and loading order ("A building with no classic image is invisible"). Shipping an SHP via TFASSETS.MIX (step 7), a stub SHP, or a `_td_bdonors` donor in `bdata.cpp` populates them.
 
 2. **`_anims[]` overrides apply AFTER rules.ini parsing.** See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#build-ups-overlays-and-loading-order), Build-ups, overlays and loading order.
 

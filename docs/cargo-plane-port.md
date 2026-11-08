@@ -37,8 +37,8 @@ or commented out, and what we did to activate it.
 `redalert/defines.h`, `redalert/aadata.cpp`. RA's aircraft heap had no
 cargo-plane slot. Added `AIRCRAFT_TDCARGO` to the enum (post-HIND, pre-
 COUNT) with matching `AIRCRAFTF_TDCARGO` bitmask, and a `TDCargoPlane`
-static ctor in `aadata.cpp` mirroring TD's `CargoPlane`. RA's 18-param
-`AircraftTypeClass` ctor (vs TD's 27-param) elides build_level / cost /
+static ctor in `aadata.cpp` mirroring TD's `CargoPlane`. RA's 19-param
+`AircraftTypeClass` ctor (vs TD's 36-param) elides build_level / cost /
 strength / armor / weapons / ownable — those come from rules.ini
 instead.
 
@@ -85,8 +85,8 @@ short-circuit:
   `Height` down from `FLIGHT_LEVEL` via `Fixed_To_Cardinal(FLIGHT_LEVEL,
   Cardinal_To_Fixed(0x0600, navdist))` when within 0x0600 leptons. Drop
   cargo at navdist < 0x0200 via `Detach_Object` + `Unlimbo` onto
-  `Contact_With_Whom()->Find_Exit_Cell(unit)`. Not TD's 0x0080: at RA speed (Speed=40, about 8
-  leptons a tick) the plane overshoots half a cell, turns back and orbits. The delivered vehicle
+  `Contact_With_Whom()->Find_Exit_Cell(unit)`. Not TD's 0x0080 (the field manual's [Air delivery, fleets and support powers](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#cargo-plane-delivery), step 5): at RA's
+  Speed=40, about 8 leptons a tick, the plane overshoots it. The delivered vehicle
   never passes the factory's `RADIO_UNLOADED` exit hook, so the airstrip's rally point is applied
   here, with a scatter if that fails. Transition to `BUG_OUT`.
 - `BUG_OUT`: `Assign_Mission(MISSION_RETREAT)`, plane heads off-map.
@@ -112,12 +112,10 @@ falls through to the existing logic and the plane gets MISSION_RETREAT.
 
 ### 7. Vestigial AIRCRAFT_CARGO clause in `Edge_Of_World_AI`
 
-`redalert/aircraft.cpp:4283`. EA's RA port left a commented-out
-`/*|| (*this == AIRCRAFT_CARGO && !Is_Something_Attached())*/` clause in
-the off-map despawn check. Activated with our AIRCRAFT_TDCARGO enum so
-empty TDC17s exiting west after delivery despawn cleanly. Without this
-the plane would loop back to hunt (and re-enter the map) instead of
-retiring at the edge.
+`redalert/aircraft.cpp:4283`. The commented-out cargo clause in the off-map despawn check: see the
+field manual's [Air delivery, fleets and support powers](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#traps), Traps ("An empty cargo plane doesn't leave by itself"). Activated with our
+AIRCRAFT_TDCARGO enum so empty TDC17s exiting west after delivery despawn cleanly instead of looping
+back to hunt.
 
 ### 8. `Find_Docking_Bay` recognises TDAFLD-as-airstrip
 
@@ -132,12 +130,9 @@ visual middle-front of the 4x2 strip instead of the building's geometric centre.
 
 ### 10. `What_Action` force-attack guard
 
-`redalert/techno.cpp`. `IsLegalTarget=false` on `TDCargoPlane` gates
-the standard target-validity check, but `What_Action`'s `Height==0`
-shortcut bypasses it — a landed TDC17 on the airstrip becomes ctrl-
-clickable for attack. Added explicit guard mirroring TD's
-`*aircraft != AIRCRAFT_CARGO` exclusion at
-`tiberiandawn/techno.cpp:2646`.
+`redalert/techno.cpp`. A landed TDC17 on the airstrip was ctrl-clickable for attack: see the field
+manual's [Air delivery, fleets and support powers](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#traps), Traps ("`IsLegalTarget=no` doesn't stop a forced attack on a landed aircraft").
+Added the guard mirroring TD's `*aircraft != AIRCRAFT_CARGO` exclusion at `tiberiandawn/techno.cpp:2646`.
 
 ## Spawn dispatch (`BuildingClass::Exit_Object` STRUCT_WEAP case)
 

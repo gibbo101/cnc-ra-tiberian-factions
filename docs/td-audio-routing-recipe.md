@@ -16,9 +16,8 @@ few early ones (the Obelisk's laser among them); its own new sounds ship in
 ## How the launcher resolves audio
 
 What the launcher does with the name the DLL sends, and the variant suffix a unit response gets, are on the field
-manual's [TD sounds from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-sounds-from-the-base-game.md#how-a-sound-gets-from-the-dll-to-the-speakers), How a sound gets from the DLL to the speakers.
-TF's copy is `On_Sound_Effect` in `redalert/dllinterface.cpp`; besides the name, the event carries
-`SoundEffectPriority` and `SoundEffectContext`, copied from the table entry's `Priority` and `Where`.
+manual's [TD sounds from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-sounds-from-the-base-game.md#how-a-sound-gets-from-the-dll-to-the-speakers), How a sound gets from the DLL to the speakers (the
+event's priority and context fields included). TF's copy is `On_Sound_Effect` in `redalert/dllinterface.cpp`.
 
 ---
 
@@ -125,8 +124,8 @@ per recording, the whole-recording compare before each write) and its traps are 
 [EVA voice lines the launcher plays](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/sound-and-music/launcher-eva-lines-by-faction.md#part-two-overwrite-the-cached-copy), Part one, Part two and Traps. The cross-process
 calls are on its [Re-pointing launcher UI art in memory](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/repointing-atlas-regions.md#the-method), The method.
 In TF, `TF_Replace_File_In_Process` does the compare and the write, the same cross-process shape as the
-lobby resolver (`lobby-ambiguity-findings.md`). Linux's `ptrace_scope` doesn't apply: these
-are Wine-internal calls between the two game processes.
+lobby resolver (`lobby-ambiguity-findings.md`). Why Linux's `ptrace_scope` doesn't block it is on the same
+method section.
 
 #### The findings, as TF applies them
 
@@ -141,8 +140,8 @@ are Wine-internal calls between the two game processes.
    structure-sold (`STRUSLD1`), which the DLL routes, so a fresh install
    caches TF's bytes. A deploy must never `--delete` them.
 5. **A line is cacheable only after it has played.** `BCT` is fixed at the next match start.
-6. **Never write on a needle alone.** The stale copies come from Wine's `CopyFile` and the patch's own file reads,
-   which work through heap buffers; the patch zeroes its own buffers before freeing them. The crash this fixed:
+6. **Never write on a needle alone.** Where the stale copies come from is on the EVA page's Traps; the patch
+   zeroes its own buffers before freeing them. The crash this fixed:
    after a TS GDI match then a TD match, the TD write of `TF_MBX_TD_NODEPLY_R.WAV` at `0x378b9468` spanned the
    heap block at `+976`, and ClientG's heap tripped over it on the next skirmish load.
 

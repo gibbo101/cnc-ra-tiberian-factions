@@ -234,8 +234,8 @@ count/2), which decode as magenta silhouettes: TS ships no damaged door art.
 - `Is_Clear_To_Build` refuses to build over any bib; aprons are exempt (`Is_TS_Apron_Cell` vetoes
   the plot and leaves the 5th column free, where the concrete tapers past the plot). The whole apron
   row is vetoed because the placement preview claims the full bottom row of the 4x3 refinery.
-- **The hazard stripes are baked gold:** the launcher house-remaps building sprites, never ground
-  art.
+- **The hazard stripes are baked gold:** ground art gets no house colour (the field manual's
+  [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#traps)).
 - **A third apron moves five things together:** `SmudgeType` in `defines.h` and its class in
   `sdata.cpp`, the `Bib_And_Offset` branch in `bdata.cpp`, `Is_TS_Apron_Smudge` in `building.cpp`,
   `Is_TS_Apron_Cell`'s offset table, and `aprons` in `ts_pack_tree.py` (which fails the build if
@@ -403,16 +403,16 @@ save versions, the NULL `shape_file_name`, `Find_Exit_Cell` and `Tracked=` are g
   vanish instead of greying, and a bay rebuilt during a pause re-offered its cargo through it, so
   cameos never came back. Order refusal lives in `TF_Delivery_Order_Refused` (`Begin_Production` and
   both click handlers), and the sidebar fill paints the locked dress.
-- **`CNCSidebarEntryStruct::Busy` draws nothing.** Show unavailability with an AssetName swap (the
-  locked cameo). A fake `Constructing` + `Progress` reads as a build and
-  miscounts queue clicks.
+- **The locked cameo is an AssetName swap,** since `Busy` draws nothing (the field manual's
+  [Sidebar cameos](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/sidebar-cameos.md#cameos-that-change-at-runtime)). A fake `Constructing` +
+  `Progress` reads as a build and miscounts queue clicks.
 - **The plug install bypasses `MISSION_CONSTRUCTION`,** so `tf_plug_swap` (`building.cpp`) frees the
   builder and runs `Grand_Opening` itself; without it every later placement built then cancelled.
 - **Every literal `STRUCT_X || Y` role chain must include new TS types;** a missed chain shows as a
   behaviour bug, not a crash.
 - **Append new types at the marked `Init_Heap` tail** (heap order is enum order).
-- **`Set_Stage(n)` then the first `Graphic_Logic` advances to n+1** before stage n is drawn, so a
-  hit keyed to stage n never fires for an anim started at n.
+- **A hit keyed to an anim's start stage never fires** (the field manual's
+  [first-stage trap](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/troubleshooting/known-engine-traps.md#an-animations-first-stage-runs-none-of-its-stage-work)).
 - **The rich start lever is `tf_cheap.flag`** (1,000,000 credits at skirmish start), not a $1 price,
   which loses the free harvester.
 - **Grep a new vehicle's rules for `Tracked=`** before its first drive.
@@ -493,8 +493,8 @@ save versions, the NULL `shape_file_name`, `Find_Exit_Cell` and `Tracked=` are g
   `VerticalOffset`. Launch speed is sqrt(range × gravity × 1.2), capped at half the distance; a flat
   answer pointing down is caught by solving again one lepton further out. A collision near the target
   is moved onto the target, as TS does.
-- **TS infantry facings port with no reorder:** TS draws them anticlockwise from north, the order
-  `HumanShape` indexes (`idata.cpp`).
+- **TS infantry facings port with no reorder** (the field manual's [Porting art](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#tiberian-sun); TF's
+  `HumanShape` is in `infantry.cpp`).
 - **The jumpjet flight model (`Jumpjet_AI`)** follows TS. It eases to half speed inside two cells of
   its destination and 3/10 inside one; with no target its flight level drops to 3/4 over the last
   cell. It bobs on a sine of `JUMPJET_WOBBLE` over `JUMPJET_WOBBLE_TICKS`, reset outside hover and
@@ -507,7 +507,8 @@ save versions, the NULL `shape_file_name`, `Find_Exit_Cell` and `Tracked=` are g
   TF returns the target's own cell for any weapon under 3 cells, so short weapons fire from above the
   target.
 - **Ballistic shots use the true distance,** not `::Distance()` (the Juggernaut's arc landed long).
-- **TS barrel pitch 64 is level;** TS rests barrels level and raises them only while aiming.
+- **TS rests barrels level** (pitch 64, the field manual's [Porting art](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#tiberian-sun)) and raises them
+  only while aiming.
 - **The landing-zone rewrite clears the Carryall's NavCom,** so the vehicle it was sent for is
   remembered separately.
 - **The Carryall's set-down (`TF_Carryall_Exchange`)** places the load at the carrier's exact
@@ -525,8 +526,7 @@ save versions, the NULL `shape_file_name`, `Find_Exit_Cell` and `Tracked=` are g
   (`scripts/ts_rebuild_art.sh`). The Firestorm Defense isn't: `GTFSDF`/`GTFIRE` are in
   `TIBSUN.MIX`'s `TEMPERAT.MIX`, `FSIDLE` and the `FSPICON`/`FSDICON` cameos in `CONQUER.MIX`,
   `FIRSTRM1` in `SOUNDS.MIX`.
-- **Railgun colours are TS's own:** the Ghost Stalker's `SmallRailgunSys` is orange (255,128,0), the
-  Mk. II's `LargeRailgunSys` blue (25,20,255) (OpenTS `partsys.cpp` `Railgun_AI`), each drawn as one
+- **Railgun colours are TS's own** (the field manual's [Porting art](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#tiberian-sun)), each drawn as one
   thin line in palette index 0x9F and 0x0A, under C&C3's railgun shot in the same colour
   (`cnc3-railgun-beam.md`). The Disruptor draws no `Lines[]` beam: the launcher's
   endpoint bursts made it read as a laser with stars on it.

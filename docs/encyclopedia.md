@@ -116,8 +116,8 @@ runs them with `encyclopedia_logos.py` and `encyclopedia_text.py`.
 
 The list is the page's own `MissionList_Box`; the sample entry names `TF_Enc_Row.bui`. Each row is filled with
 the calls on the field manual's [A faction encyclopedia screen](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/faction-encyclopedia.md#filling-the-list),
-Filling the list, then row 0 is selected. Two details beyond it: the clone names `MissionColumn` because `Column0`
-gives no layout, and the row's widgets are found in the cell's scene with a `{0, scene}` owner. A tab is the
+Filling the list, then row 0 is selected. TF's wrapper finds the row's widgets in the cell's scene with a
+`{0, scene}` owner. A tab is the
 page's tab button, bound with its index as data.
 
 ## Menu

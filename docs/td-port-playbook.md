@@ -400,7 +400,7 @@ if (((*building == STRUCT_HELIPAD || *building == STRUCT_TDHPAD) && !air->IsFixe
 
 ### 3.15 — TGA tileset shape count must match TD's `Open_Door(rate, stages)`
 
-**Trap:** RA's `WEAP2.SHP` is sized for `Open_Door(8, 5)` → 4 stages (Door_Stage returns 0..3) + 4 damaged. Eight XML shape entries total. TD's `WEAP2.SHP` has 20 frames sized for `Open_Door(2, 11)` → 10 stages (Door_Stage 0..9) + 10 damaged. If the XML uses RA's 8-shape mapping but the code calls TD's `Open_Door(2, 11)`, shapes 8/9 + 10..19 fall outside the XML mapping → **launcher renders white squares for those frames**.
+**Trap:** a door overlay's frames follow its `Open_Door(rate, stages)` call, and TD's `WEAP2` has 20 against RA's 8. See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#build-ups-overlays-and-loading-order), Build-ups, overlays and loading order ("A door's frames follow its `Open_Door(rate, stages)` call").
 
 **Symptom:** Door animation works for the first few frames, then the top half goes white/transparent during the second half of the open animation and damaged states. Body renders fine — only the overlay breaks.
 
@@ -431,7 +431,7 @@ Porting TD's BSTATE_ACTIVE → AUX1 → AUX2 refinery cycle requires more than t
 
 2. **`Per_Cell_Process` RADIO_ATTACH case is empty** (`unit.cpp:1742`; the same manual section). For UNIT_TDHARV docking at STRUCT_TDPROC the building's RADIO_IM_IN returns RADIO_ATTACH (TD-verbatim), so this stub keeps the harvester visible at the dock pad with Attached_Object() returning NULL → MIDDLE state has nothing to siphon. Port TD's verbatim `Mark(MARK_UP); Limbo(); whom->Attach(this);` body.
 
-3. **`Cell_Building()` returns NULL for OVERLAP-only cells.** Building registration splits into `Occupy_Down()` (occupier chain — `Cell_Find_Object` walks this) vs `Overlap_Down()` (separate `Overlapper[]` array). RA's IM_IN trigger at `unit.cpp:1737` checks `Map[CELL(cell - MAP_CELL_W)].Cell_Building()` (cell NORTH of harvester) — for the BSIZE_33 TDPROC footprint with row-0 corners as OVERLAP-only, that N-cell hits the Overlapper array and returns NULL. Fix: extend the check for UNIT_TDHARV to use TD's own-cell test (`Map[cell].Cell_Building() == whom`, mirroring `tiberiandawn/unit.cpp:1766`).
+3. **`Cell_Building()` returns NULL for OVERLAP-only cells:** see the field manual's [Known engine traps](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/troubleshooting/known-engine-traps.md#cell_building-doesnt-see-a-buildings-overlap-cells), `Cell_Building()` doesn't see a building's overlap cells. RA's IM_IN trigger at `unit.cpp:1737` checks `Map[CELL(cell - MAP_CELL_W)].Cell_Building()` (the cell NORTH of the harvester); for the BSIZE_33 TDPROC footprint, with row-0 corners overlap-only, that returns NULL. Fix: extend the check for UNIT_TDHARV to use TD's own-cell test (`Map[cell].Cell_Building() == whom`, mirroring `tiberiandawn/unit.cpp:1766`).
 
 4. **`if (Tiberium_Load())` rounds to 0 when ≤13 of 28 bails remain** (`common/fixed.h` line 114): see the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#traps), Traps. Same root cause as §3.16. Fix: explicit `> 0` comparison (`if (techno->Tiberium_Load() > 0)`).
 
