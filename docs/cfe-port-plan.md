@@ -220,6 +220,9 @@ CFE's own words on both: the field manual's [Already in Vanilla Conquer](https:/
 
 - [ ] `Base_Is_Attacked()` defender selection by strength (VC `c608b48`).
 - [ ] `MISSION_NONE` used as an array index, OOB reads (VC `624e391`), and its one memcpy→memmove.
+- [ ] The overlapping copy in the sidebar the Remastered DLL runs: `StripClass::Recalc` in `sidebarglyphx.cpp`
+      (~L543) still closes the gap with `memcpy` over overlapping ranges, undefined behaviour; `sidebar.cpp` already
+      has the `memmove` CFE and VC made, which neither applied here. Make it a `memmove`.
 
 ### 3.3 CFE-original engine fixes, RA-relevant (port candidates)
 

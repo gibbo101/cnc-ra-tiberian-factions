@@ -185,7 +185,7 @@ Why it could not stay a pair, and what that cost (the rules are the manual's, pa
   any alignment (35 dB SNR against the source) and every era's payload is produced properly.
 - ⚠ **The shipped runtime seeds ARE the RA payloads, byte for byte.** ClientG picks the loose
   file over the base MEG once, at launch, so the seeds must exist then. It reads and caches a
-  line's bytes the first time the line plays (`eva-ram-patch-spike.md` findings 4 and 5), by
+  line's bytes the first time the line plays (`td-audio-routing-recipe.md`, "EVA lines the launcher plays", findings 4 and 5), by
   which point the match-start copy has already put an era payload over the seed. The builder
   still rewrites the seeds as current-length RA payloads, so that a line ever cached from the
   seed itself (a failed copy) stays one the overwrite can find. Untested: whether a drifted seed

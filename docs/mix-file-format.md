@@ -153,7 +153,7 @@ Names/sizes only — we do **not** bulk-commit extracted EA bytes (see §11).
 
 ### 10.3 Scenario / mission INIs (co-op data side)
 
-- **RA campaign** lives in `MAIN.MIX` → `general.mix`: `scg01ea…` (Allied) and `scu01ea…scu14ea` (Soviet), beside the `scm01ea…scm24ea` multiplayer maps, plus `mission.ini`. Naming: `sc` + the house prefix (`g`=Allied, `u`=Soviet, as `SCU31EA` in EA's `EXPAND.CPP`; `m`=multiplayer) + mission## + direction + variant.
+- **RA campaign** lives in `CD1/MAIN.MIX` → `general.mix`: `scg01ea…scg14ea` (Allied) and `scu01ea…scu14ea` (Soviet), beside the 24 multiplayer maps `scm01ea…scm24ea`, plus `mission.ini`. `AFTERMATH/MAIN.MIX`'s own `general.mix` holds Aftermath's missions and many more `scm` maps. Naming: `sc` + the house prefix (`g`=Allied, `u`=Soviet, as `SCU31EA` in EA's `EXPAND.CPP`; `m`=multiplayer) + mission## + direction + variant.
 - **TD campaign** lives in `GENERAL.MIX`: `scg*` (GDI) / `scb*` (Nod).
 - These single-player `.ini` scenarios are the adaptation source for the post-v1 co-op arc (`CNC_Start_Custom_Instance` + `.mpr`); `EXPAND2.MIX:mplayer.ini` is the multiplayer config reference.
 

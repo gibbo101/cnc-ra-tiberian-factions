@@ -92,7 +92,7 @@ Every other line is carried over byte for byte. The script reads the pristine ma
 **The thumbnail.** The script then:
 
 1. finds the preview key in `CONFIG.MEG` (bounds and starts must match exactly one entry);
-2. reads the stock DDS from `TEXTURES_SRGB.MEG` by seeking through its index (the MEG is 2.4 GB);
+2. reads the stock DDS from `TEXTURES_SRGB.MEG` by seeking through its index (the MEG is 2.57 GB, 2.40 GiB);
 3. maps each converted cell to its pixels with the letterbox rule, and grows that mask by half a
    cell to catch sprites that overhang their cell;
 4. recolours only the tan Ore speckle inside the mask. A pixel counts as speckle when its red
@@ -201,7 +201,7 @@ python3 scripts/official_map_hybrid.py        # build the plan plus HYBRIDS
   test is relative to the ground under the field; if it still finds none, the map builds and
   its thumbnail stays stock, and the builder says so.
 - **`meg_extract.py` reads the whole MEG into memory.** Fine for `CONFIG.MEG`, slow for the
-  2.4 GB `TEXTURES_SRGB.MEG`; the builder seeks instead.
+  2.57 GB (2.40 GiB) `TEXTURES_SRGB.MEG`; the builder seeks instead.
 
 ## Maps picked by hand
 

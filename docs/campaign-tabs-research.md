@@ -49,10 +49,12 @@ DATA/XML/CAMPAIGNS/RA_ALLIES.XML  + RA_ALLIES_MISSIONS.XML    progression + defs
 DATA/XML/CAMPAIGNS/RA_USSR.XML    + RA_USSR_MISSIONS.XML
 DATA/XML/CAMPAIGNS/RA_AFTERMATH.XML + RA_AFTERMATH_MISSIONS.XML  (Counterstrike + Aftermath)
 DATA/XML/CAMPAIGNS/GDI.XML  NOD.XML  CONSOLE.XML  FUNPARK.XML  ANT.XML  (+ *_MISSIONS.XML)
-DATA/XML/CAMPAIGNS/CAMPAIGNMAPS.XML + RA_CAMPAIGNMAPS.XML   CampaignMapSelectMapClass per tab (GuiLayer)
-DATA/ART/GUI/.../*_CAMPAIGN_SELECT.BUI, UI_MISSIONSELECT.BUI  UI layout (Unity binary; not edited)
+DATA/XML/CAMPAIGNS/CAMPAIGNMAPS.XML + RA_CAMPAIGNMAPS.XML   CampaignMapSelectMapClass per campaign map (GuiLayer)
+DATA/ART/GUI/RA/RA_CAMPAIGN_SELECT.BUI, RA_MISSIONSELECT.BUI; GUI/CNC/CNC_CAMPAIGN_SELECT.BUI, UI_MISSIONSELECT.BUI
+                                  screen layouts, ChunkFile .BUI (TF ships an edited RA_MISSIONSELECT.BUI)
 ```
-Instances cluster by `Variant` (campaign base): 22 `Mobius_Allied_Campaign_Base`, 20 USSR, 8 Allied-Counterstrike, 9 Aftermath-Allied, etc. `Variant` is the **map base** (House, Faction, music), not a clean tab tag. Tabs themselves = `CampaignMapSelectMapClass` `GuiLayer` (`RA_ALLIES`, `RA_USSR`, `TD_GDI`, …).
+Instances cluster by `Variant` (campaign base): 22 `Mobius_Allied_Campaign_Base`, 20 USSR, 8 Allied-Counterstrike, 9 Aftermath-Allied, etc. `Variant` is the **map base** (House, Faction, music), not a clean tab tag. A `GuiLayer` (`RA_ALLIES`, `RA_USSR`, `TD_GDI`, …) names a campaign map's layer, not a tab: Mission Select's tabs
+come from ClientG's tab sort by game, expansion and house (`campaigns-page.md`).
 
 ---
 

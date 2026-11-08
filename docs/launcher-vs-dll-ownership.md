@@ -22,7 +22,7 @@ TF keys every such choice on `ActLike` before it crosses: the radar, EVA, unit-v
 
 **The image lever.** A loose atlas or texture overrides the launcher's 2D UI images, in the menus and in the match: see the field manual's [The UI atlas](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/the-ui-atlas.md#shipping-a-repainted-atlas), Shipping a repainted atlas. TF's: `ui-atlas-modding.md`.
 
-**The RAM lever.** On the host, the sim's DLL opens ClientG (`TF_Open_ClientG`, `OpenProcess` + `ReadProcessMemory`/`WriteProcessMemory`) and rewrites its runtime state: the cached EVA sample blobs (`eva-ram-patch-spike.md`) and the cached per-region UV records behind the radar crest and sidebar (`radar-crest-ram-spike.md`). It changes what an existing launcher-drawn element samples or plays, never layout. Probe with `scripts/clientg_region_probe.py`.
+**The RAM lever.** On the host, the sim's DLL opens ClientG (`TF_Open_ClientG`, `OpenProcess` + `ReadProcessMemory`/`WriteProcessMemory`) and rewrites its runtime state: the cached EVA sample blobs (`td-audio-routing-recipe.md`, "EVA lines the launcher plays") and the cached per-region UV records behind the radar crest and sidebar (`radar-crest-ram-spike.md`). It changes what an existing launcher-drawn element samples or plays, never layout. Probe with `scripts/clientg_region_probe.py`.
 
 **The code-patch lever.** ClientG loads our DLL at its own startup on every machine, and `DllMain` patches ClientG's code in-process: the superweapon click specials, the key dispatcher and the plugin-event hook. The same copy applies the RAM lever for its own player in LAN games. See "Launcher-resident patches" below.
 
@@ -39,7 +39,7 @@ ClientLauncherG.exe   — outer bootstrap/menu shell; spawns the other two
         │                          Loads our RedAlert.dll at startup for a version handshake
         │                          (CNC_Version); our DllMain patches ClientG's code and pins
         │                          the DLL so it stays loaded.
-        │        │  loopback TCP :16000 — encrypted + HMAC'd + CRC'd (CryptoPP), fixed message set
+        │        │  loopback TCP :16000 — encrypted + HMAC'd (CryptoPP), fixed message set
         │        ▼
         └── InstanceServerG.exe   — the SIM server. On the hosting machine it loads our DLL
                                    (.../Mods/Red_Alert/Vanilla_RA/Data/RedAlert.dll) and runs the
@@ -113,7 +113,7 @@ Everything the DLL tells the launcher flows through the single `CNC_Event_Callba
 | HUD credit/power/timer **values** | DLL supplies values; launcher renders | Values yes, rendering no | `CNCSidebarStruct` |
 | Superweapon `$cost` line suppression | Launcher (its test is not found) | Not by data; a code patch is untried | see "Superweapon $cost line" below |
 | **Superweapon targeted-vs-instant firing** | **Launcher** (compiled: the cameo left-click handler forks on the entry being a superweapon) | **Yes, by a runtime code patch of ClientG** (every player; see "Launcher-resident patches"). Data levers are dead; see below | `TF_Patch_ClientG_Click_Specials`; see below |
-| Launcher-played EVA lines (mission won/lost, select target, low power, cannot deploy, battle control terminated, repairing, mission saved, building in progress) | Launcher (`Faction_Event_GUI_SFX_*`) | **Yes (shipped)**, by overwriting the cached samples at match start | `eva-ram-patch-spike.md` |
+| Launcher-played EVA lines (mission won/lost, select target, low power, cannot deploy, battle control terminated, repairing, mission saved, building in progress) | Launcher (`Faction_Event_GUI_SFX_*`) | **Yes (shipped)**, by overwriting the cached samples at match start | `td-audio-routing-recipe.md`, "EVA lines the launcher plays" |
 | Other launcher GUI stings | Launcher | No (Allied/Soviet only, see below) | strings |
 
 ---

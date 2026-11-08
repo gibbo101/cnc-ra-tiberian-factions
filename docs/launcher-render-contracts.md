@@ -109,8 +109,9 @@ The real `ChronalVortex` always owns the slot when active.
 **The placement rule (the part that "butchered the turrets"):** the pack scripts **do not reproduce
 where the shipped zips put things** — the Disruptor hull and the MLRS rack were moved at zip level in
 later sessions, and a re-render's crop can grow (the rack's antenna pole no longer cut by the pack
-canvas, a shadow one pass taller). The launcher anchors on the crop centre, so a grown crop or a
-bbox-centred paste **moves the sprite** even when every body pixel is in the same place. So:
+canvas, a shadow one pass taller). The launcher anchors on the canvas centre (§1), so a grown crop re-cut
+asymmetrically, or a bbox-centred paste, moves the pixels on the canvas and **moves the sprite** even when every
+body pixel is in the same place. So:
 - **A relight goes through `scripts/ts_recrop_to_shipped.py <rev> NAME…`** after packing and
   reshadowing: it slides each new canvas onto the shipped frame's alpha mask (FFT cross-correlation)
   and cuts the shipped crop rect. Verify: overlap ≈ old pixel count, 0 residual shift.

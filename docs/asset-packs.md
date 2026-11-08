@@ -73,8 +73,8 @@ A pack's XML files are never loaded; the build merges them into the mod's. See t
   run it alone to list what it would leave out).
 - **Pack-only objects:** `asset_packs.PACK_ONLY` names art only the Workshop pack carries (the C&C3
   railgun tanks): staging leaves out their ZIPs and tiles, so the mod ships no art it never draws.
-- **Cameos** stay uncompressed in the source; staging writes each `BuildIcon_*` TGA run-length
-  encoded, the same pixels at about four fifths the size.
+- **Cameos** stay uncompressed in the source; staging writes each `BuildIcon_*` TGA as a DXT1 DDS,
+  except a name in the launcher's atlas, which stays a run-length encoded TGA (`cameo-dds.md`).
 - **Build:** the CMake post-build step copies `resources/remaster_mods/Vanilla_RA`, then
   `scripts/stage_asset_packs.py` copies every pack's art and audio and writes the merged XML: each
   pack's entries replace the `<!-- asset-pack: <Pack> -->` marker in the mod's file. Staging always

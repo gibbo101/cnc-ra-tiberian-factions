@@ -210,29 +210,27 @@ TD hard-codes it in `Can_Fire` (`building.cpp:3520-3524`): "Advanced guard tower
 `IsPowered` (`if (Class->IsPowered && House->Power_Fraction() < 1) return (FIRE_BUSY);`), so the port is data, not
 code: `[TDATWR]` in `rules.ini` sets `Powered=true`. No `STRUCT_TDATWR` branch exists in `Can_Fire`.
 
-### M4 — Verify `[TDTowTwo]` matches TD's `WEAPON_TOW_TWO` field-for-field
+### M4 — `[TDTowTwo]` against TD's `WEAPON_TOW_TWO`, field for field
 
-Current `[TDTowTwo]`:
+Shipped `[TDTowTwo]`:
 ```ini
 [TDTowTwo]
-Damage=60       ; TD Attack
-ROF=40          ; TD ROF
-Range=6.5       ; TD Range 0x0680 leptons = 6.5 cells
+Damage=60          ; TD Attack
+ROF=40             ; TD ROF
+Range=6.5          ; TD Range 0x0680 leptons = 6.5 cells
 Projectile=TDSSM
-Speed=30
-Warhead=HE      ; TD's BULLET_SSM has WARHEAD_HE
-Report=ROCKET2  ; TD VOC_ROCKET2
+Speed=60           ; IsTDPort: TD's raw MPH_ROCKET, not RA's percentage
+Warhead=TDAGT      ; the tower's own copy of TDHE, to tune apart
+Report=ROCKET2     ; TD VOC_ROCKET2
+Anim=GUNFIRE       ; ANIM_MUZZLE_FLASH, TD's Fire_At general-branch default for BULLET_SSM
+Burst=2            ; TD's two-shooter
 ```
 
-Missing: `Anim=GUNFIRE` (binds `ANIM_MUZZLE_FLASH` in RA per `adata.cpp:1075`), because the anim switch in RA's `TechnoClass::Fire_At` has no fallback flash. See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#weapons-muzzle-flashes-and-offsets), Weapons, muzzle flashes and offsets. Add the `Anim=` explicitly:
+`Anim=GUNFIRE` (`ANIM_MUZZLE_FLASH` in RA per `adata.cpp:1075`) is there because RA's `TechnoClass::Fire_At` has no fallback flash. See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#weapons-muzzle-flashes-and-offsets), Weapons, muzzle flashes and offsets.
 
-```ini
-Anim=GUNFIRE   ; ANIM_MUZZLE_FLASH — TD's Fire_At general-branch default for BULLET_SSM
-```
+### M5 — `[TDSSM]` against TD's `BULLET_SSM`, field for field
 
-### M5 — Verify `[TDSSM]` matches TD's `BULLET_SSM` field-for-field
-
-Current `[TDSSM]`:
+Shipped `[TDSSM]`:
 ```ini
 [TDSSM]
 Arm=7
@@ -243,36 +241,38 @@ Animates=yes
 Ranged=yes
 AA=yes
 AG=yes
-Image=DRAGON
+Image=TDDRAGON
 ROT=5
 Rotates=yes
-Inaccurate=yes
+Inaccurate=no
+Translucent=yes
+Homing=yes
+Warhead=TDHE
+ImpactAnim=FRAG1
 ```
 
-Cross-check against TD's `ClassMissile` (`bbdata.cpp:153`):
+Cross-check against TD's `ClassMissile` (`bbdata.cpp:153`). RA's projectile keys are in the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#projectiles-and-their-impacts), Projectiles and their impacts.
 
 | TD field | TD value | Our [TDSSM] | Status |
 |---|---|---|---|
-| Image (NAME) | "DRAGON" | `Image=DRAGON` | match |
+| Image (NAME) | "DRAGON" | `Image=TDDRAGON` | match: TD's own DRAGON art, since RA's `DRAGON` draws differently |
 | High (over walls) | true | `High=yes` | match |
-| Homes | **true** | (no field) | **need to verify RA equivalent — likely `Homing=yes`?** |
+| Homes | true | `Homing=yes` | match: TF's own key (`IsHoming`, `bbdata.cpp:381`), read by `AI_TD`; stock RA homes on any `ROT=` other than 0 |
 | Arcs | false | (not set, default no) | OK |
 | Drops | false | (n/a) | OK |
 | Invisible | false | (n/a) | OK |
 | Proximity arm | true | `Proximity=yes` | match |
 | Animates flame | true | `Animates=yes` | match |
-| Has fuel | true | `Ranged=yes`? | **possibly match — verify** |
-| No facing variation | false | (not set) | OK |
-| Inaccurate | true | `Inaccurate=yes` | match |
-| Translucent | true | (no field) | **may need `Translucent=yes` if RA supports** |
-| AA-capable | true | `AA=yes` | match (but TD also fires this against ground via TOW_TWO's HE warhead — we also have `AG=yes` which is correct intent) |
+| Has fuel | true | `Ranged=yes` | match: RA's fuel key |
+| No facing variation | false | `Rotates=yes` | match (RA's flag is the inverse) |
+| Inaccurate | true | `Inaccurate=no` | TF's choice: accurate, as RA plays it |
+| Translucent | true | `Translucent=yes` | match |
+| AA-capable | true | `AA=yes` | match (TD also fires it at ground targets; `AG=yes` carries that) |
 | Arming time | 7 | `Arm=7` | match |
-| Speed | MPH_ROCKET | `Speed=` (not set, falls back to default — need explicit) | **needs explicit Speed** |
+| Speed | MPH_ROCKET | the weapon's `Speed=60` (`[TDTowTwo]`) | match: RA's projectiles have no speed key |
 | ROT | 5 | `ROT=5` | match |
-| Warhead | WARHEAD_HE | (controlled by weapon, not projectile) | OK |
-| Impact anim | ANIM_FRAG1 | (default per RA explosion table) | check |
-
-Action: add `Homing=yes` (or RA's equivalent — verify against an existing RA homing-missile projectile like `[Heat-Seeker]`), explicit `Speed=`, and check if RA supports `Translucent=yes`.
+| Warhead | WARHEAD_HE | `Warhead=TDHE` (a TD-port key for `AI_TD`); the weapon's `TDAGT` | match |
+| Impact anim | ANIM_FRAG1 | `ImpactAnim=FRAG1` | match |
 
 ### M6 — Port TD's `STRUCT_ATOWER` crew-spawn-spot adjustment
 

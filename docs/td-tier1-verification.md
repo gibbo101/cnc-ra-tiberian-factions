@@ -37,7 +37,8 @@ TD `STRUCT_BARRACKS` engine dispatch sites:
 |---|---|---|
 | 1882 | Constructor `ActLike` reassignment | Force-houses `STRUCT_BARRACKS` to act like `HOUSE_GOOD` if owner isn't GDI |
 | 2288-2289 | `Exit_Object` switch `case STRUCT_BARRACKS: case STRUCT_HAND:` | Find_Exit_Cell + dir + Coord_Add(Coord, ExitPoint) for infantry exit |
-| 3807 | Place-on-road check | `if (*this == STRUCT_BARRACKS)` allows road placement |
+| 3807 | `Sort_Y` | `if (*this == STRUCT_BARRACKS)` sorts the barracks by its centre |
+| `bdata.cpp:4284-4293` | `Occupy_List` | with `Special.IsRoad`, the barracks always counts a bib (`SMUDGE_BIB3`) for placement |
 
 `STRUCT_POWER` and `STRUCT_ADVANCED_POWER` have no special dispatch in TD beyond the standard building lifecycle.
 
@@ -181,7 +182,7 @@ case STRUCT_TDPYLE:     // ← add
 
 | Field | Our | TD | Status |
 |---|---|---|---|
-| **Strength** | **300** | **150** | ⚠ DIVERGES (our silo is 2× tougher than TD's) |
+| Strength | 150 (doubled to 300 in `BuildingTypeClass::Read_INI`, `bdata.cpp:6265`) | 150 (TD's constructor doubles it to 300) | match |
 | Sight | 2 | 2 | match |
 | Cost | 150 | 150 | match |
 | Storage | 1500 | 1500 | match |
@@ -223,7 +224,7 @@ This is a positive-dispatch alias of two buildings with **identical** behavior (
 |---|---|---|---|
 | Power Plant has unnaturally large sight radius (~5 cells) | TDNUKE, TDNUK2 | rules.ini Sight=5 vs TD's 2 | rules.ini |
 | Barracks has 1 cell more sight than TD | TDPYLE | rules.ini Sight=4 vs TD's 3 | rules.ini |
-| Silo takes 2× longer to destroy than TD-authentic | TDSILO | rules.ini Strength=300 vs TD's 150 | rules.ini |
+| Silo takes 2× longer to destroy than TD-authentic | TDSILO | rules.ini Strength=300, doubled in code to 600 against TD's 300 | rules.ini |
 | Silo always renders empty (frame 0) regardless of player's tiberium fill | TDSILO | Shape_Number STRUCT_STORAGE branch doesn't include STRUCT_TDSILO | engine |
 | Barracks-produced infantry may spawn inside footprint / fail to exit cleanly | TDPYLE | Exit_Object switch missing STRUCT_TDPYLE case | engine |
 | Barracks on-death sometimes spawns a civilian instead of a rifleman | TDPYLE | Crew_Type switch missing STRUCT_TDPYLE (falls through to `TechnoClass::Crew_Type`'s 15% civilian roll for an unarmed building) | engine |
@@ -245,10 +246,10 @@ Sight=2          ; was 5 — TD ADVANCED_POWER Sight=2
 Sight=3          ; was 4 — TD BARRACKS Sight=3
 
 [TDSILO]
-Strength=150     ; was 300 — TD STORAGE Strength=150
+Strength=150     ; was 300 — TD STORAGE lists 150; TD's ctor and bdata.cpp both double it to 300
 ```
 
-Pure data. Smallest possible diff. **TDSILO Strength=150 is balance-affecting** — silos become twice as fragile, which means a single shot from a heavy tank can kill them. This is TD-authentic but plays differently than current. Worth a playtest.
+Pure data. Smallest possible diff. **TDSILO Strength=150 is balance-affecting**: with the doubling the silo has TD's 300 in play, half its old 600. This is TD-authentic but plays differently than before. Worth a playtest.
 
 ### Engine fixes — STRUCT_TDPYLE production (`redalert/building.cpp`)
 
@@ -308,14 +309,14 @@ Update the four dict `"notes"` fields to reference this doc. No structural chang
 - [ ] Sell a TDPYLE → INFANTRY_E1 (GDI minigunner) emerges
 - [ ] Fill TDPROC, watch TDSILO frame progression: 0 (empty) → 1 → 2 → 3 → 4 (full)
 - [ ] Damage TDSILO below 50% with a full storage → renders frame 4+5 = 9 (damaged full)
-- [ ] TDSILO at 150 HP dies to one 75mm hit — verify the balance feels TD-correct or revert to 300
+- [ ] TDSILO has 300 HP in play (150 doubled), as TD's silo — verify the balance feels TD-correct
 
 ---
 
 ## Decisions
 
 - **No donor.** All TD-source-grounded. The aliased dispatches (STRUCT_TDPYLE with STRUCT_BARRACKS; STRUCT_TDSILO with STRUCT_STORAGE) are *identical-behavior positive-dispatch aliases* between TD and RA buildings that conceive of barracks/silo the same way. This is the legitimate aliasing pattern (`td-sam-deep-dive.md` M6) — not "modeling on" RA.
-- **TDSILO Strength=150 is the only balance-affecting change.** TD-authentic value. If playtest reveals silos die too easily, balance via warhead Verses table or armor type, never by reverting to a non-TD strength.
+- **TDSILO Strength=150 is the only balance-affecting change.** TD-authentic value: 300 in play, as in TD. If playtest reveals silos die too easily, balance via warhead Verses table or armor type, never by reverting to a non-TD strength.
 - **Sight value corrections are pure data.** No code change, no risk to other buildings.
 - **TDPYLE exit-point `XYP_COORD(24, 47)` left alone for now.** TD uses `(30, 33)`. Difference is cosmetic in practice — Find_Exit_Cell handles the actual cell pathfinding. Worth fixing for full TD parity, but lower priority than the engine dispatch gaps.
 

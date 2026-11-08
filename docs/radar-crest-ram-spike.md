@@ -17,7 +17,7 @@ on a worker thread (`TF_Crest_Scan_Thread`) at widening gaps over the first ~15 
 Logging is `TF_DEV_BUILD`-only.
 
 The crest is side-keyed in ClientG's data, a wall that held on the data side and fell on the RAM
-side, as the EVA lines did (`eva-ram-patch-spike.md`).
+side, as the EVA lines did (`td-audio-routing-recipe.md`, "EVA lines the launcher plays").
 
 ## The mechanism
 
@@ -33,7 +33,7 @@ as the EVA patch does, and each launcher's own copy of the DLL runs the same sca
 **The scan skips every thread stack** (`TF_Thread_Stacks`), as the field manual's
 [Re-pointing launcher UI art in memory](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/repointing-atlas-regions.md#the-method) describes (The method, step 2, and the fragility box).
 Six stray writes from an earlier scan were found in the stack of a ClientG thread that crashed (the crash itself
-was the EVA patch, `eva-ram-patch-spike.md` finding 6).
+was the EVA patch, `td-audio-routing-recipe.md`, "EVA lines the launcher plays", finding 6).
 
 ## The three findings that shaped it
 

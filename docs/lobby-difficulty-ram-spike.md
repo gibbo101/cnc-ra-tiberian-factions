@@ -149,7 +149,7 @@ walls. The distinction is read vs write:
   limits of the client's COMPILED BEHAVIOUR, not hidden data. Reading can't change them.
   Writing can: the per-faction radar crest re-points atlas region records
   (`radar-crest-ram-spike.md`), the TD tab icons rewrite a launcher string, the EVA mailbox
-  overwrites cached samples (`eva-ram-patch-spike.md`), and code hooks patched in from the DLL
+  overwrites cached samples (`td-audio-routing-recipe.md`, "EVA lines the launcher plays"), and code hooks patched in from the DLL
   that ClientG loads at startup carry the hotkeys, click specials and the ADD-ONS screen
   (`launcher-vs-dll-ownership.md`, `pack-panel.md`). Each is fragile against a new ClientG build.
 

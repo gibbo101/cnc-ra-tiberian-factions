@@ -186,9 +186,7 @@ Naming convention: faction-prefix any TD unit whose name collides with an RA one
 SSM Launcher followed with their own weapon ports (`td-mlrs-deep-dive.md`), and the aircraft on the helipad
 and the TDCARGO plumbing.
 
-> **deploy.sh gotcha:** `deploy.sh` `rm -rf`s `build/remaster/Vanilla_RA/` then runs the
-> workflow, but the repackage is a **RedAlert POST_BUILD step** (`redalert/CMakeLists.txt:213`) that only
-> fires when the DLL *relinks*. If ninja sees the DLL up-to-date (e.g. you already built manually),
-> POST_BUILD is skipped and `Vanilla_RA/` is never recreated → deploy aborts "RedAlert.dll not found".
-> Fix: touch a source file to force a relink, OR manually run the 3 POST_BUILD `cmake -E` copies (note the
-> linked DLL is at `build/remaster/RelWithDebInfo/RedAlert.dll`) then `deploy.sh --no-build`.
+> **deploy.sh and `POST_BUILD`:** the build's repackage is a **RedAlert POST_BUILD step**
+> (`redalert/CMakeLists.txt:213`) that only fires when the DLL relinks, so `deploy.sh` restages
+> `build/remaster/Vanilla_RA/` from scratch after every build and copies the linked DLL in from
+> `build/remaster/RelWithDebInfo/RedAlert.dll` (playbook §3.9). Only `--no-build` ships `build/` as it stands.

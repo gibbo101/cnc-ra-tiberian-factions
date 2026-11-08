@@ -95,9 +95,11 @@ Each `LAYER_UNDERGROUND` object and each cell occupant gets locomotor `Power_Off
 
 **Stun consumers (OpenTS)** -- `TechnoClass::StunDuration` counts down in `TechnoClass::AI`;
 at 0 a building `Power_On`s and radar recalcs. Gates: every locomotor's `Move_To`/`Process`
-(no movement), `Is_Immobilized()`, `BuildingClass::Can_Player_Move`, the building's fire /
-production / repair gates (building.cpp 7931/9218/3837), the DEPLOY event, `house.cpp` base
-AI skips stunned buildings.
+(no movement), `Is_Immobilized()`, `BuildingClass::Can_Player_Move`, `BuildingClass::Turn_On`
+(refuses while stunned, building.cpp 7931), `Is_Powered_On` (false while stunned, 9218), `What_Action`'s
+set-primary-factory branch (refused while stunned, 3837), the DEPLOY event, `house.cpp` base
+AI skips stunned buildings. Production isn't gated: a stunned factory keeps producing, since the factory
+tests read `IsOn`, which the pulse leaves set, and never `Is_Powered_On`.
 
 ## How it was built
 
@@ -152,7 +154,7 @@ See "What ships" above.
 - PLSECAN2 (cannon fire) and 00-I158 (EVA) extracted from TS and shipped under their own names
   (`td-audio-routing-recipe.md`, `scripts/ts_eva_build.py`).
 
-## Art inventory (extracted 2026-08-28, scratch `subterranean/emp/`)
+## Art inventory (scratch `subterranean/emp/`)
 NAPULS.SHP 6f 96x96, NAPULS_A.SHP 122f, NAPULSMK.SHP 40f (ISOSNOW), PULSCAN.VXL/HVA (LOCAL),
 EMPICON.SHP (SIDEC01/02), PULSEFX1.SHP 21f 302x175, PULSEFX2.SHP 15f, EMP_FX01.SHP 27f
 36x35, PULSBALL.SHP 23f 14x14, UNITSNO.PAL, PLSECAN2.AUD, 00-I158.AUD. No PULSCANBARL voxel

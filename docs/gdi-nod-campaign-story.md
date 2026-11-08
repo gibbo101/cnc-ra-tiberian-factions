@@ -3,8 +3,9 @@
 **Status:** Design, not built. Not authored yet; campaign work waits behind the AI milestone
 (`todo.md`).
 
-Narrative design for the two hijacked-tab campaigns: **GDI = Aftermath tab** (9 missions,
-Allied-variant slots), **Nod = Counterstrike tab** (8 missions, Allied-CS-variant slots).
+Narrative design for the two hijacked-tab campaigns: **GDI = the Allied expansions tab** (9 missions,
+the Allied Aftermath slots), **Nod = the Soviet expansions tab** (8 missions, the Soviet Counterstrike slots).
+The CAMPAIGNS page shows those two tabs as GDI and Nod (`campaigns-page.md`).
 Mechanics live in `coop-missions-design.md` (gates, ActLike houses) and
 `campaign-tabs-research.md` (hijack delivery).
 Lore researched against the EVA Database (cnc.fandom.com), 2026-06-10.
@@ -78,7 +79,7 @@ media-op missions. **Mobius** appears in both campaigns.
 
 ---
 
-## 3. GDI campaign — "FIRST LIGHT" (Aftermath tab, 9 missions)
+## 3. GDI campaign — "FIRST LIGHT" (Allied expansions tab, 9 missions)
 
 Player: an unnamed founding GDI field commander. Arc: GDI is born underfunded and
 unwanted, fights all three of the old world's ghosts, and earns the standing it holds
@@ -96,7 +97,7 @@ at TD's open — while every victory quietly feeds Kane's design.
 | 8 | **Hippocratic Oath** | 1997, Albania | temperate | Nod | Defense: hold Mobius's Tiberium research hospital against waves — creeping Tiberium growth, visceroids from casualties, civilians to keep alive. Sets up TD's hospital arc. |
 | 9 | **The Foundation** | 1997, Sarajevo | temperate | Nod | Finale: raze the fortress Nod is raising on the Sarajevo site — the future Temple's foundation — before its earthworks complete. Scripted one-shot **Ion Cannon prototype** unlock. Kane escapes. Stinger: the Vienna Grain Trade Center bombing newscast → TD intro. |
 
-## 4. Nod campaign — "OUT OF THE SHADOWS" (Counterstrike tab, 8 missions)
+## 4. Nod campaign — "OUT OF THE SHADOWS" (Soviet expansions tab, 8 missions)
 
 Player: a rising Nod commander being groomed by Kane (Seth, your superior, takes the
 credit — his TD characterisation, earned here). Arc: the Brotherhood liquidates its
@@ -132,7 +133,8 @@ from the shadows… We estimated the Brotherhood would tire of the USSR by the e
 - **Hijack only (proven on the desktop and the Deck).** Re-style
   existing CS/AM instances; new instances list but cannot launch (InstanceServerG resolves
   from BASE). GDI uses the 9 `Mobius_Aftermath_Allied_Map_Base` slots; Nod the 8
-  `Mobius_Allied_Counterstrike_Map_Base` slots. The USSR-variant groups (9 + 8) stay in
+  `Mobius_USSR_Counterstrike_Map_Base` slots, since a slot's tab follows its side and TF's tab sort files Nod
+  with the Soviets. The Allied Counterstrike (8) and Soviet Aftermath (9) slots stay in
   reserve — bonus missions, interludes, or a second act. **The delivery is confirmed in game:** a
   `CCDATA` scenario shadowing the slot's by name, with `[Digest]` stripped (the field manual's
   [Custom campaigns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-campaigns.md#replacing-an-official-mission-shadow-its-scenario),

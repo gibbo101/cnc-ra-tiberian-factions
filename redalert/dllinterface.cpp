@@ -3884,7 +3884,7 @@ static int TF_Eva_Era(HousesType act_like)
 }
 
 // Copies the local side's era recordings over the launcher-fired EVA samples in <mod>\Data\AUDIO\EN-US and
-// over ClientG's cached copies, so the launcher speaks the picked side's voice (docs/eva-ram-patch-spike.md).
+// over ClientG's cached copies, so the launcher speaks the picked side's voice.
 static void TF_Mailbox_Write_EVA_Voice(void)
 {
     if (TF_ModRootPath[0] == 0) {

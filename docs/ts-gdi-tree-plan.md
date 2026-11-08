@@ -416,9 +416,11 @@ save versions, the NULL `shape_file_name`, `Find_Exit_Cell` and `Tracked=` are g
 - **The rich start lever is `tf_cheap.flag`** (1,000,000 credits at skirmish start), not a $1 price,
   which loses the free harvester.
 - **Grep a new vehicle's rules for `Tracked=`** before its first drive.
-- Where a helipad-built aircraft actually exits is unknown: `Exit_Object`'s `RTTI_AIRCRAFT` branch
-  never runs and `HouseClass::Place_Object` is never reached (`FIXIT_HELI_LANDING` is off), yet
-  `sidebarglyphx.cpp` queues `EventClass::PLACE` for aircraft.
+- **A helipad-built aircraft exits by the stock path:** `sidebarglyphx.cpp` queues `EventClass::PLACE`,
+  `HouseClass::Place_Object` runs the `#else` of `FIXIT_HELI_LANDING` (which is off) and asks
+  `Who_Can_Build_Me` in theory, and that builder's `Exit_Object` `RTTI_AIRCRAFT` branch places it. Code in the
+  `#ifdef` half never compiles (the field manual's
+  [A fix in an `#ifdef` that never compiles](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/troubleshooting/known-engine-traps.md#a-fix-in-an-ifdef-that-never-compiles)).
 
 **TS art conventions:**
 - **Every TS anim SHP packs healthy frames then damaged frames** in its usable window; full-cycle

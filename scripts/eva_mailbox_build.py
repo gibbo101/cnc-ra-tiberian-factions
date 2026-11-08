@@ -6,7 +6,7 @@ deploy here", "battle control terminated", mission won, mission lost, "select
 target", "insufficient power", "repairing", "mission saved" and "unable to comply, building in progress". The mod speaks them in the picked side's voice
 by writing the era-correct recording over the launcher's own sample names at match
 start, and by overwriting ClientG's already-cached copy so an in-session faction
-switch is corrected too (docs/eva-ram-patch-spike.md).
+switch is corrected too.
 
 The cache overwrite hunts the WRONG era's distinctive bytes in ClientG's heap and
 writes the RIGHT era's file over the blob it found, so **every era's payload for a
