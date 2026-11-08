@@ -124,14 +124,11 @@ if ((!IsZoneCheat || Can_Enter_Cell(Coord_Cell(Coord)) != MOVE_NO) && IsLocked
 the unit re-enters the pathfinder with the identical request indefinitely. The original
 authors anticipated the failure mode in the comment, then gated the cure too narrowly.
 
-Why that gate is wrong in practice:
-
-- **Movement zones ignore buildings by design** (established in `harvester-recovery-design.md`).
-  A destination walled off by structures is therefore "same zone" but genuinely unreachable —
-  permanent livelock. This is the walled-field problem wearing different clothes.
-- **A cell is always in its own zone**, so a destination equal to the unit's own cell can
-  *never* satisfy the mismatch test. Self-cell livelock is guaranteed by construction, not bad
-  luck. It is a subtype of the general bug, not a separate one.
+Why that gate is wrong in practice: zones ignore buildings, and a unit's own cell is in its own zone, so a
+walled-off destination and a self-cell one both pass as same-zone (the field manual's
+[Pathfinding](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/pathfinding.md#units-that-never-give-up), Units that never give up). The walled
+destination is the walled-field problem (`harvester-recovery-design.md`) in other clothes; the self-cell case is
+guaranteed by construction, a subtype of the same bug.
 
 Stock vehicles give up after `PATH_RETRY` (10) tries and set `IsScanLimited` (EA `DRIVE.CPP`).
 TF's own traffic wait brings the same disease back to them — `drive.cpp`, the `traffic_blocked` branch:

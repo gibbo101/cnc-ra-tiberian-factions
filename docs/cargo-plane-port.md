@@ -63,10 +63,9 @@ buildable, so the cameo only keeps the pointer non-NULL); the art itself is
 
 ### 4. `Dimensions()` branch for AIRCRAFT_TDCARGO
 
-`redalert/aadata.cpp`. Vanilla `Dimensions()` returns `21x20` for non-
-Badger aircraft — way too small for the C-17 sprite (peaks at 245x156
-across facings). Map-refresh bounding rect leaves ghost trails on
-screen scroll. Added a third branch: `256x160`.
+`redalert/aadata.cpp`. Vanilla `Dimensions()` is far too small for the C-17 sprite (peaks at 245x156
+across facings): see the field manual's [Air delivery, fleets and support powers](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#cargo-plane-delivery), Cargo-plane delivery step 3. Added a third
+branch: `256x160`.
 
 ### 5. Fixed-wing `Mission_Unload` state machine
 
@@ -94,12 +93,9 @@ short-circuit:
 
 ### 6. `Enter_Idle_Mode` in-air cargo branch
 
-`redalert/aircraft.cpp`. TD's `Enter_Idle_Mode`
-(`tiberiandawn/aircraft.cpp:1869-1876`) sets `mission = MISSION_UNLOAD`
-for in-air + cargo + IsALoaner + no team — the trigger that makes a
-spawned cargo plane actually enter the unload state machine. RA never
-ported it; fixed-wing IsALoaner defaulted to `MISSION_GUARD`. Without
-this hook the engine resets our MISSION_UNLOAD assignment on the next
+`redalert/aircraft.cpp`. TD's `Enter_Idle_Mode` (`tiberiandawn/aircraft.cpp:1869-1876`) is what
+starts the unload; RA's lacks the branch, so a fixed-wing loaner fell back to `MISSION_GUARD`: see the field manual's [Air delivery, fleets and support powers](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#cargo-plane-delivery), Cargo-plane delivery
+step 5. Without this hook the engine resets our MISSION_UNLOAD assignment on the next
 AI tick and the state machine never runs.
 
 Added the missing branch as the first check inside the in-air case of

@@ -26,10 +26,9 @@ live from the mod's rules. Addresses are ClientG.exe 1.153.745903.
 
 Why the rules must load inside ClientG, and the one-`Rule.Process` trap: see the field manual's
 [A faction encyclopedia screen](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/faction-encyclopedia.md#live-stats-load-the-rules-inside-the-launcher). `TF_Encyclopedia_Load`
-(`redalert/tf_encyclopedia.cpp`) does it with a `RawFileClass` reading `<mod>\CCDATA\`; `mplayer.ini`
-overrides the sections General, Recharge, AI, Powerups, Land_Types, Themes, IQ, Objects and Difficulty, as a
-skirmish applies it. The game puts `aftrmath.ini` through a full `Rule.Process`; a second one would rebuild the
-heaps, so the encyclopedia applies the same nine sections from it, plus `Rule.MPlayer`.
+(`redalert/tf_encyclopedia.cpp`) does it with a `RawFileClass` reading `<mod>\CCDATA\`, applying `mplayer.ini`
+through the nine skirmish sections and `aftrmath.ini` through the same nine plus `Rule.MPlayer`, as the manual's
+step 2 lists them.
 
 `mplayer.ini` ships loose in `CCDATA`, where the game's skirmish load finds it before `EXPAND2.MIX`: the stock
 copy without its `[BRIK]` override, so walls cost `rules.ini`'s 100. The encyclopedia shows the same skirmish
@@ -115,20 +114,11 @@ paints the detail box, `TF_UI_ENC_STATS.DDS`, from the list box's rim and scanli
 briefing box and the slot under it. `scripts/encyclopedia_build.sh`
 runs them with `encyclopedia_logos.py` and `encyclopedia_text.py`.
 
-The list is the page's own `MissionList_Box`; the sample entry names `TF_Enc_Row.bui`. Per row:
-
-| Step | Call |
-|---|---|
-| Clear | `0xF6AF60` |
-| Add a row, clear its `+0x71` | `0xF6A620` |
-| Clone the sample into column `MissionColumn` (the list's only column; `Column0` gives no layout) | `0xF73CB0` |
-| Show the cell, then its virtual `+0x6C` with 1 | vtable `+0x78`, `+0x6C` |
-| Row widgets | the cell's own scene at `+0x1F4`, found with a `{0, scene}` owner |
-| The row button takes no input, so the list gets the click | `0xF80BC0` |
-| Click | event 4 on the cell, the row as the event's data |
-| Select row 0 after filling | `0xF74EA0` |
-
-The selected row's button is toggled on (`0xF80920`). A tab is the page's tab button, bound with its index as data.
+The list is the page's own `MissionList_Box`; the sample entry names `TF_Enc_Row.bui`. Each row is filled with
+the calls on the field manual's [A faction encyclopedia screen](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/faction-encyclopedia.md#filling-the-list),
+Filling the list, then row 0 is selected. Two details beyond it: the clone names `MissionColumn` because `Column0`
+gives no layout, and the row's widgets are found in the cell's scene with a `{0, scene}` owner. A tab is the
+page's tab button, bound with its index as data.
 
 ## Menu
 

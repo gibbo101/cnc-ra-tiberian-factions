@@ -11,9 +11,9 @@ this way.
 
 ## What's different about infantry (vs buildings / vehicles)
 
-1. **Infantry live in the UNITS tileset (`RA_UNITS.XML`).** There is **no** separate infantry tileset XML — CONFIG.MEG ships `RA_UNITS`/`TD_UNITS`, `RA_STRUCTURES`/`TD_STRUCTURES`, `RA_VFX`/`TD_VFX`, terrain/radar/UI, and infantry are `<Tile>` entries inside `*_UNITS.XML` alongside vehicles. Sprite bundling targets `RA_UNITS.XML`.
+1. **Infantry live in the UNITS tileset (`RA_UNITS.XML`).** See the field manual's [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#registering-new-art), Registering new art. CONFIG.MEG's tilesets come in RA/TD pairs (`*_UNITS`, `*_STRUCTURES`, `*_VFX`) plus terrain, radar and UI, and infantry are `<Tile>` entries in `*_UNITS.XML` beside vehicles. Sprite bundling targets `RA_UNITS.XML`.
 2. **`InfantryTypeClass` ctor is the short form** (18 params; `type, name, ininame, verticaloffset, primaryoffset, is_female, is_crawling, is_civilian, is_remap_override, is_nominal, is_theater, pip, controls, virtual_controls, firelaunch, pronelaunch, override_remap`). Cost/strength/weapon/owner/techlevel come from rules.ini `[section]` — same as vehicles. **Clone RA's `E1` ctor** for a rifleman-class unit.
-3. **DO animation table.** `InfantryTypeClass` takes two `DoInfoStruct const*` tables — `DoControls` (classic) and `DoControlsVirtual` (GlyphX HD). `DoInfoStruct = {Frame, Count, Jump}`, same 3 ints as TD's `int[DO_COUNT][3]`. **But RA's `DoType` enum has only 21 actions; TD's had 34.** TD has 14 actions RA lacks (RA adds one, `DO_DOG_MAUL`): the hand-to-hand set (`DO_ON_GUARD`/`DO_FIGHT_READY`/`DO_PUNCH`/`DO_KICK`/the hits and deaths/`DO_READY_WEAPON`) and the civilian `DO_PULL_GUN`/`DO_PLEAD`/`DO_PLEAD_DEATH`. TD gave them sprite frames but **never plays them**: every hand-to-hand call in TD's `INFANTRY.CPP` sits under `#ifdef BOXING`, which is never defined, and nothing starts the pulling or pleading actions. So use **RA's 21-action order with TD's frame offsets** — which is exactly what RA's own `E1DoControlsVirtual` already is, because RA's E1 *is* the TD minigunner. Pass the same table for both `controls` and `virtual` (TD's HD assets share the layout).
+3. **DO animation table.** See the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#infantry), Infantry. RA's `DoInfoStruct` `{Frame, Count, Jump}` is the same three ints as a row of TD's `int[DO_COUNT][3]`; build the table in RA's 21-action order from TD's frame numbers, which is what RA's own `E1DoControlsVirtual` already is. Pass the same table for both `controls` and `virtual` (TD's HD assets share the layout).
 4. **THE KEY TRAP — donor ImageData (or the unit is invisible).** See §8. This is the one that bit TDE1.
 5. **Cameo is a reference, not a bundle.** `<BuildIcon>` points at a vanilla TD `BuildIcon_TD_*` region already in the launcher PAK (defined in `CNCBUILDABLES.XML`). Nothing is shipped. All TD infantry/vehicle icons exist: `BuildIcon_TD_Minigunner/Grenadier/RocketSoldier/Flamethrower/ChemWarrior/Engineer/Commando/FlameTank/RocketLauncher`.
 6. **Crew:** TD buildings spawn the minigunner as survivors (`BuildingClass::Crew_Type`, TD IniName → `INFANTRY_TDE1`).
@@ -35,16 +35,16 @@ this way.
 - `defines.h`: `INFANTRY_TDxx` before `INFANTRY_COUNT`; plus `WEAPON_`/`BULLET_`/`WARHEAD_`/`VOC_` entries as the chain needs.
 - `idata.cpp`: `static InfantryTypeClass const TdXx(...)` (clone RA's E1) + the DO-table + `new InfantryTypeClass(TdXx)` in `Init_Heap` **last** (heap order = enum order).
 - `rules.cpp` / `bbdata.cpp` / `audio.cpp`: register the weapon/warhead/bullet/VOC (enum order).
-- **Heap sizing:** `InfantryTypes.Set_Heap(INFANTRY_COUNT)` (init.cpp) auto-grows with the enum — no `MAX_` bump. Weapons/warheads use rules.ini `[Maximums]` (already `Weapon=100`, `Warhead=100`); bullets use `BULLET_COUNT` (auto). All have headroom.
+- **Heap sizing:** nothing to bump; see the field manual's [Raising the limits](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/raising-the-limits.md#the-limits). TF's `[Maximums]` give `Weapon=100`, `Warhead=100`.
 
 ### 4. `IsTDPort` on the weapon (fire cadence)
 `Fire_At` never toggles `IsSecondShot` for a single-shot weapon (it stays `true`), so `Rearm_Delay(true)` runs every shot. With `IsTDPort` that returns **ROF+3** (TD's single-shooter cadence) vs RA's flat **ROF**. Flag the weapon in `rules.cpp` (also makes `Speed=` parse as raw MPHType). The invisible bullet stays **non-`IsTDPort`** (no divergent flight to port; avoids the `MPH_LIGHT_SPEED`→`MPH_IMMOBILE` `Unlimbo_TD` trap, playbook §3.1).
 
 ### 5. rules.ini chain (TD-authentic values)
-`[TDxx]` unit (`Strength`/`Cost`/`Sight`/`Speed`/`Owner=GoodGuy,BadGuy`/`Points`/`Primary`) + `[weapon]` + `[warhead]` + `[bullet]`. TD infantry **`Sight` is small** (E1 = 1 vs RA's 4) — TD-authentic, same as the TD buildings. `0x90`→`56%` per the existing TDHE verses rounding convention.
+`[TDxx]` unit (`Strength`/`Cost`/`Sight`/`Speed`/`Owner=GoodGuy,BadGuy`/`Points`/`Primary`) + `[weapon]` + `[warhead]` + `[bullet]`. TD infantry keep TD's small `Sight` (the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#infantry), Infantry), as the TD buildings do. `0x90`→`56%` per the existing TDHE verses rounding convention.
 
 ### 6. Audio route
-Add `RAC_SFX_<ASSET>` + `RAR_SFX_<ASSET>` SFXEvents to `SFXEVENTSNONLOCALIZED.XML` (MERGE, no `--` in comments), pointing at the base-game `TDC_/TDR_SFX_<ASSET>.WAV` (the launcher resolves engine VOCs via the `RAC_`/`RAR_` prefix; TD WAVs ship in SFX3D.MEG — nothing to bundle).
+Route the weapon's sound as alias events in `SFXEVENTSNONLOCALIZED.XML`: see the field manual's [TD sounds from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-sounds-from-the-base-game.md#the-method), The method. Nothing to bundle.
 
 ### 7. Bundle sprite + cameo — `scripts/bundle_unit.py`
 ```
@@ -79,7 +79,7 @@ The launcher's `Techno_Draw_Object` overlay then renders the real `TDxx` sprite 
 | Trap | Symptom | Fix |
 |---|---|---|
 | **No donor ImageData** | Builds, selectable, voiced — but **invisible** | §8: copy `E1`'s `ImageData`/`CameoData` in `One_Time` |
-| **DO_COUNT mismatch** | Compile error / mis-mapped animations | RA's `DoType` = 21 actions, not TD's 34 (TD's hand-to-hand is compiled out under `BOXING`, its pleading never started); use RA's order + TD frames |
+| **DO_COUNT mismatch** | Compile error / mis-mapped animations | RA's order + TD's frames: the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#infantry), Infantry |
 | **Borrowed RA weapon** | Wrong range / sound / armor curve | Chain-audit from TD source; port `TDxx` weapon+warhead+bullet+sound |
 | **Visible custom bullet** | Projectile renders as a **white box** | 32-frame rotating missiles port as own bullets; tumbling/arcing bombs reuse RA's `Projectile=Lobbed` (playbook §3.25) |
 | **Muzzle-anim weapon (flame)** | Green placeholder box where the jet should be | HD-only anims have NULL `ImageData` → donor-ImageData in `AnimTypeClass::One_Time`; dispatch directional anim via `Fire_Direction()`; TD-prefix the names (playbook §3.26) |
@@ -97,12 +97,12 @@ quoted from EA's source, with the ranges checked, for fitting new infantry art a
 
 **Commando (`INFANTRY_TDRMBO`) — key facts:**
 - Weapon is **`WEAPON_RIFLE`** (125-dmg `BULLET_SNIPER`), **NOT M16** — our own roster doc had it wrong (playbook §2.1). Reuses the invisible `BULLET_TD50cal`; new `WARHEAD_TDHollow` (`{1.0,0.03,0.03,0.03,0.03}`) one-shots infantry / ~nil vs armor. Sound `RAMGUN2` (base asset, `RAC/RAR_SFX_RAMGUN2`).
-- **C4 building-destroy = `C4=yes` → `IsBomber`.** TD hardcodes C4 to `INFANTRY_RAMBO`; RA generalised it to the flag — same mechanic, **zero runtime code**. (`IsBomber` also implies `IsCapture`, but `What_Action` routes a bomber to ACTION_SABOTAGE, so it never hits the engineer-capture path.)
+- **C4 building-destroy = `C4=yes`**, with no runtime code: see the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#infantry), Infantry ("C4 is a flag").
 - **Both factions build it** via `Prerequisite=atek` — the existing Eye(GDI)/Temple(Nod) `STRUCT_ADVANCED_TECH` remap (house.cpp), same idiom as TDMCV and RA's Tanya. RA's `Prerequisite=` is an AND-list, so this is the only way to OR two faction tech-centres.
 - **RAMBO one-liners already ship in the base `SFX2D_EN-US.MEG`** (`TDC/TDR_SFX_CMD_<NAME>_EN-US`). Wired as `RAC/RAR_SFX_TD<NAME>` localized SFXEvents (IN_NOVAR → no `.V0x` suffix, name passes through clean) + a `*this == INFANTRY_TDRMBO` case in `Response_Select/Move/Attack` **before** the GDI/Nod intercept. `PIP_COMMANDO`. No new asset bundling for voices.
 - **468-frame sprite has no exact-count RA donor** → `bundle_unit.py` now slices a larger donor (E1, 532) down to the ZIP frame count (new `frame_count` param). Generalises to any future unit without a matching donor.
 
 **Engineer (`INFANTRY_TDE6`) — key facts:**
-- No weapon; `Infiltrate=yes` → `IsCapture`. **BUT capture is `INFANTRY_RENOVATOR`-gated** across ~15 sites — a new engine type must be added at the **execution** (`infantry.cpp` Per_Cell_Process), the **cursor** (`What_Action`), and **AI capture-targeting** (`foot.cpp`) or it does not capture *at all*. See §3.27.
+- No weapon; `Infiltrate=yes`. Capture is keyed on `INFANTRY_RENOVATOR` (the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#infantry), Infantry), so TDE6 joins the **execution** (`infantry.cpp` Per_Cell_Process), **cursor** (`What_Action`) and **AI capture-targeting** (`foot.cpp`) tests. See §3.27.
 - **Faction-conditional capture:** GDI/Nod (`House->ActLike` GOOD/BAD) capture **single** (one engineer, any building health = TD); Allied/Soviet keep RA's Aftermath **multi**-engineer (damage to ConditionRed, then take). Gate is on the engineer's owner.
 - **Capture-only** — the RA engineer's friendly mega-repair is gated to RENOVATOR, so TDE6 has no repair action (TD-authentic).

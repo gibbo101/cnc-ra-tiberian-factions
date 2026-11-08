@@ -13,17 +13,15 @@ them up at the nearest ground. Dev builds start the player with a Subterranean A
 ## What ships
 
 **The port.** `reference/OpenTS/code/tunnel.cpp` is TS's `TunnelLocomotionClass`, and OpenTS
-`unit.cpp` ~5220-5360 is TS's drive-vs-dig decision. TS digs on every move order unless a short
-unbroken surface route exists (`Is_Route_Broken`: same zone, Chebyshev < 12, trial walk ≤ 15
-steps); underground travel is a straight line at 19 leptons a tick through any terrain; arrival on a
-blocked cell retargets with `Nearby_Location` (same zone first, then any); with no legal cell
-anywhere it self-destructs; a stop order underground heads for the nearest surfaceable ground.
+`unit.cpp` ~5220-5360 (`Is_Route_Broken`) is TS's drive-vs-dig decision. The field manual's
+[Subterranean units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/subterranean-units.md#how-tiberian-sun-does-it)
+has what they do: the dig test's numbers, the straight 19-lepton line, the surfacing search and the self-destruct.
 
 - **State machine** (`UnitClass::Tunnel_AI`, `unit.cpp`): `TUNNEL_IDLE / TURNING / DIGGING_IN /
   TUNNELING / EMERGING / ABORTING`. `Assign_Destination` runs `Should_Dig_To` (another zone, or a
   distance of at least `[General] TunnelDigThreshold=6`; never an adjacent cell).
-- **The earth marker is the underground sprite itself** (frame 112, `Draw_It` / `Shape_Number`):
-  the launcher draws an owner's cloaked unit see-through, a faint shimmer, so the owner sees the marker, not the tank.
+- **The earth marker is the underground sprite itself** (frame 112, `Draw_It` / `Shape_Number`), so the owner
+  sees the earth, not the tank (why: the field manual's [Subterranean units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/subterranean-units.md#the-method-in-red-alerts-dll)).
 - **While underground:** `UnitClass::Mark` keeps `IsDown` without cell occupancy;
   `TechnoClass::Is_Tunneling()` folds into `Is_Cloaked` for every non-ally query; the launcher
   export is `Cloak=CLOAKED` with `VisibleFlags` cleared for non-allies; `Take_Damage` is immune
@@ -37,8 +35,8 @@ anywhere it self-destructs; a stop order underground heads for the nearest surfa
   / 10, the SpreadFactor scale at x1 for TS's 48 px cells, clamped to 16, MinDamage only inside 4.
   It is delivered unscaled through `WARHEAD_TSFLAMEHIT`, because RA's 24 px cells would scale the
   same formula by 400 instead of 80. A particle's state advance is sized so it reaches its target at
-  state 14 and dies five states later. A dead target falls back to `TFDwell`: `As_Coord` on a dead
-  target returns the map origin, which gave flames a map-wide lifetime. The jet seats are still `PrimaryOffset` 0x80 forward and 0x30 lateral
+  state 14 and dies five states later. A dead target falls back to `TFDwell` (the field manual's
+  [dead-target trap](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/troubleshooting/known-engine-traps.md#a-dead-targets-coordinate-is-the-maps-origin)). The jet seats are still `PrimaryOffset` 0x80 forward and 0x30 lateral
   (`udata.cpp`) and want measuring off the side nozzles of the packed N frame.
 - **Detection and the EMP:** the Mobile Sensor Array's ghosts are as in `emp-cannon-design.md`; the
   E.M. Pulse surfaces a digger through `Tunnel_Explode`. See the field manual's
@@ -84,14 +82,11 @@ TD Flame Tank weapon chain rather than porting the particle system.
   (Why: the field manual's [Subterranean units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/subterranean-units.md#traps), traps.)
   The anim is ALL earth (no baked grass), so it sits fine on any theater. Packed by `scripts/ts_pack_dig.py` as
   `ANIM_TS_DIG` (TSDIG.ZIP, 37 tiles, x4 on a 512 canvas, 64x64 stub).
-- **Dive/emerge is NOT an asset — TS did it as an engine transform** (voxel
-  pitched nose-down and sunk under the DIG mound; proof: the complete 282-entry
-  `[Animations]` registry has only DIG + DIRTEXPL, SAPC.HVA = 1 static frame,
-  and both units carry `IsTilter=yes` runtime-tilt flags). Recreated by baking
-  pitched renders, 8 directions. The ladder: dive `0/-8/-16/-24/-32/-40`,
-  emerge `+40/+32/+24/+16/+8/0`, 8 main facings (DLL snaps facing at dig start),
-  ~112 total shapes — under the 128 sub-object cap. DLL adds the sink offset and
-  plays DIG over the top during DIGGING_IN/EMERGING.
+- **Dive/emerge is not an asset:** TS tilts the voxel at run time (the field manual's
+  [Subterranean units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/subterranean-units.md#the-dive-is-made-in-the-engine)
+  has the proof; SAPC.HVA is also one static frame). TF bakes the pitched renders: dive
+  `0/-8/-16/-24/-32/-40`, emerge `+40/+32/+24/+16/+8/0`, 8 facings, ~112 shapes. The DLL adds the sink
+  offset and plays DIG over the top during DIGGING_IN/EMERGING.
   ⚠ `vxl_render.py --pitch` was once parsed but never forwarded to `render_frame`, so every CLI
   pitch render was flat; fixed.
 - `DIRTEXPL.SHP` is extracted but unused. Cameos `SUBTICON.SHP` / `SAPCICON.SHP`. SUBDRIL1 (dig)

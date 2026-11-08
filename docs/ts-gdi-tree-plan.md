@@ -112,10 +112,9 @@ superweapon payload, or dormant.
 
 ### Footprints and boxes
 
-- **The launcher centres a building's selection box on its BSIZE plot** and takes only
-  DimensionX/Y from the DLL (contract 7 in `launcher-render-contracts.md`). A box that reads wrong
-  means the plot is wrong for the art. TSFACT and TSDROP went from 3x3 to 3x2 for this: the empty
-  top row held their boxes off the art.
+- **The selection box is centred on the BSIZE plot** (the field manual's
+  [Building selection boxes](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/building-selection-boxes.md#the-rule)), so TSFACT and TSDROP went
+  from 3x3 to 3x2: the empty top row held their boxes off the art.
 - **TSPOWR (2x2 box) and TSRADR (2x4 box) use a south-row footprint**: the rows behind it are art
   that units walk behind and buildings may stand on. The ghost is the south row and the bib
   (`Placement_Ghost_Rows_Above`), and the rows behind need only be on the map.
@@ -132,9 +131,10 @@ Nine Upgrade Center art blocks cover every state (`BuildingClass::Shape_Number`)
 one-of-each rule bars two superweapon plugs of one type, so no other combination can occur.
 Resource plugs stack by design (`Can_Upgrade`): the power plant takes two turbines.
 
-- **Drop pods** (`SPC_TS_DROPPODS`): altitude draws as a northward screen shift, so only east and
-  west approaches read as a 45° fall; from the south a pod would draw two drop-heights off-screen
-  and pop in late. The spawn sits one drop-height back along the approach so the slide lands on the
+- **Drop pods** (`SPC_TS_DROPPODS`): altitude draws as a northward screen shift (the field manual's
+  [How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#height-is-a-shift-north)),
+  so only east and west approaches read as a 45° fall; from the south a pod would draw two
+  drop-heights off-screen and pop in late. The spawn sits one drop-height back along the approach so the slide lands on the
   target cell, and PODRING flashes at the shifted entry point, as TS's AtmosphereEntry does. Each
   pod (`TSPODDROP`, `bullet.cpp`) spawns one drop-height to the side of the landing zone and falls
   at equal horizontal and vertical speed, so it arrives as it grounds. It trails SMOKEY every 6
@@ -228,9 +228,9 @@ count/2), which decode as magenta silhouettes: TS ships no damaged door art.
 
 **Aprons** (`SMUDGE_TSWEAPBB`, `SMUDGE_TSPROCBB`, 5 wide x 3 tall over each 4x3 plot):
 - They draw as terrain: the TD-template ground entry (`IsOverlay`, `IsTheaterShape`,
-  `Type=OVERLAY_V12`, `SHAPE_CENTER|SHAPE_WIN_REL|SHAPE_GHOST`). A theatre shape resolves from
-  `RA_TERRAIN_<theatre>`, not `RA_STRUCTURES`, and a mod tileset replaces the base file, so the mod
-  ships a full `RA_TERRAIN_SNOW.XML`.
+  `Type=OVERLAY_V12`, `SHAPE_CENTER|SHAPE_WIN_REL|SHAPE_GHOST`), so their tiles live in the terrain
+  tileset (the field manual's [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#traps)). A mod
+  tileset replaces the base file, so the mod ships a full `RA_TERRAIN_SNOW.XML`.
 - `Is_Clear_To_Build` refuses to build over any bib; aprons are exempt (`Is_TS_Apron_Cell` vetoes
   the plot and leaves the 5th column free, where the concrete tapers past the plot). The whole apron
   row is vetoed because the placement preview claims the full bottom row of the 4x3 refinery.
@@ -265,17 +265,15 @@ the plot is the deck's 3x2 and the canvas is padded to centre on it.
   cooldown runs out with a bay standing, the player gets a "Dropship Bay ready" message.
 - **`TFDropBayTimer` must be initialised in the HouseClass constructor;** uninitialised it reads as
   a live cooldown and looks like a broken binding.
-- **The one-bay cap counts standing bays** (`Has_Building_Active(STRUCT_TSDROP)`), never
-  `Get_Quantity`, which counts from production start.
-- **The sidebar must never evict an entry with `Factory != -1`:** placement and cancel resolve
-  through the entry, so evicting a mid-production one strands `BuildingFactory` and locks the
-  sidebar. A trunk merge dropped this guard once; after any merge, `git log -S` the known one-line
-  guards.
+- **The one-bay cap counts standing bays** (`Has_Building_Active(STRUCT_TSDROP)`), and the sidebar
+  never evicts an entry with `Factory != -1`: both are the field manual's
+  [production contracts](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/troubleshooting/known-engine-traps.md#production-contracts-that-catch-new-code-out).
+  A trunk merge dropped the eviction guard once; after any merge, `git log -S` the known one-line guards.
 - **Deliberately not a helipad:** outside `Is_Helipad` (a free helicopter on build, a general
   rearm target) and `STRUCTF_HELIPAD` (prerequisites). Its rim takes house colour; the emblem has
   no remap pixels and stays GDI gold.
-- **Bay WAVs must be MS-ADPCM:** plain PCM crashed ClientG on takeoff (a divide by zero in its ADPCM
-  block maths).
+- **Bay WAVs are MS-ADPCM:** plain PCM crashed ClientG on takeoff (the field manual's
+  [TD sounds from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-sounds-from-the-base-game.md#samples-of-your-own)).
 - Art: the HD rebuild's four frames (TSDSHP, VFX), packed by `ts_pack_hd_buildings.py`. The canvas
   stays 656 so the classic stub (123) and drawn scale never move.
 
@@ -316,11 +314,10 @@ apron, which the sweep never finds. The Disruptor's aimed target rides its last 
 
 **Disruptor (TSSONIC).** TS's wave is a screen-space pixel displacement (OpenTS `wave.cpp`), which
 the launcher can't do, and TS ships no sonic-wave art.
-- **The band is a chain of discs** (a spawned anim draws unrotated, so a band sprite would line up
-  at one angle only), `SHAPE_FADING` plus a stage-keyed scale throb (12%, period 6,
-  in `dllinterface.cpp`'s draw intercept), 25 stages x 5 ticks, discs 32 leptons apart (at 64 the band
-  showed beads). Discs carry no owner: the launcher tints an owned anim in the house colour, which
-  turned the green band gold.
+- **The band is a chain of ownerless discs** 32 leptons apart, `SHAPE_FADING` plus a stage-keyed scale
+  throb (12%, period 6, in `dllinterface.cpp`'s draw intercept), 25 stages x 5 ticks: the field manual's
+  [worked example](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#worked-example-a-beam-the-launcher-cant-draw)
+  has why each.
 - **The band is the weapon:** per-cell anchor discs (`AnimClass::SonicDamage`) hit every techno in
   their cell nine times within ~1 s of the crest, every second stage (`SONIC_DAMAGE_PERIOD` = 2: at 4
   a tank could drive into its own wave). The firer is exempt (`SonicFirer`), and so are the firing
@@ -368,28 +365,23 @@ A unit here is done: no open art, geometry or behaviour work.
 
 - **The TS attach-dock** (harvester limbo'd and baked into the refinery's frames): a baked duplicate
   is a permanent sync surface. Deleted.
-- `BACKUP_INTO_REFINERY` at any facing but SW snaps (teleports); a real SE reverse needs its own
-  mirrored track entry. Detour approach cells oscillate (the RADIO_DOCKING loop re-orders the truck
+- `BACKUP_INTO_REFINERY` at any facing but SW snaps (the field manual's
+  [Exits and rails](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/exits-and-rails.md)). Detour approach cells oscillate (the RADIO_DOCKING loop re-orders the truck
   to its MOVE_HERE cell every tick). Any post-turn coordinate seat, a single nudge or a 1 px/tick
   creep, reads as a slide; trucks park at cell centre.
 - **Sort-based hiding at TSPROC:** even a half hide reads as full, because the bay mouth's dark art
   covers the whole truck. The truck backs up to the entrance and stays fully visible.
 - **Apron rectangle-clip to the plot:** slices the stripes.
-- **Selection box probes:** `CenterCoordX`, `CenterCoordY`, dims anchoring, `CellY`, a doctored
-  OccupyList and `PositionY` (which moved the sprite) were all ignored or wrong; art-sized dims make
-  the brackets float. Fix the plot instead. A 4x5 refinery height trick was built, played and
-  reverted.
+- **Selection box probes:** the export fields in the field manual's
+  [Building selection boxes](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/building-selection-boxes.md#what-the-dll-exports) table, and dims
+  anchoring, were all ignored or wrong; art-sized dims make the brackets float. Fix the plot instead.
+  A 4x5 refinery height trick was built, played and reverted.
 - **Hover MLRS rack shapes rejected:** a hull-locked draw, an instant snap, a rack-keyed seat, a raw
   two-part seat. At the 32° camera: canvas-centred pods (they flew), content-centred pods (they
   towered: cos32 draws heights 1.44x cos54), a squashed rack, and a 54-pods-on-32-hull hybrid.
-- **Disruptor ripple, four mechanisms falsified:** a lit-window sprite pulse (the TS patch is 2-4%
-  of the band, smaller than a disc), a rotated thin bar (drew unrotated in play), TS's exact
-  amplitude ladder as a pale overlay (it can't read like TS's multiplicative tint), and hijacking
-  the chrono vortex (the launcher ignores its width and height and draws the whole whirlpool).
-  Launcher levers on the discs: `Cloak` on an anim or a unit-typed disc is ignored,
-  `SHAPE_PREDATOR` makes it invisible, `FlashingFlags` strobes, and
-  `Rotation` is ignored (`launcher-render-contracts.md` §8). Overlapping discs can't give a hard
-  edge or keep a mottle. Whether `SHAPE_GHOST` (`IsTranslucent`) darkens the discs is unsettled: check
+- **Disruptor ripple:** every mechanism and launcher lever tried on the discs is in the field manual's
+  [worked example](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#worked-example-a-beam-the-launcher-cant-draw);
+  TS's lit patch is 2-4% of the band. Whether `SHAPE_GHOST` (`IsTranslucent`) darkens the discs is unsettled: check
   it in game before either this doc or the code claims it.
 - **A tower with N/E/S/W connectors:** voxel splats, two procedural Blender towers, an image-model
   redraw and a third-party STL were all rejected; the tower is TS's own sprite. Running TRELLIS
@@ -397,39 +389,33 @@ A unit here is done: no open art, geometry or behaviour work.
 
 ## Engine facts, traps, lessons
 
-**Engine:**
-- **A fuse arms with at most 0xFF frames of flight** (`fuse.cpp Arm_Fuse`): a projectile slower
-  than its distance budget "arrives" mid-flight.
+**Engine:** the fuse cap, the production contracts (`Can_Build` never asked on order, `Get_Quantity`, the eviction
+guard, a builder freed after a skipped `MISSION_CONSTRUCTION`, the free harvester's `Raw_Cost` test), heap order,
+save versions, the NULL `shape_file_name`, `Find_Exit_Cell` and `Tracked=` are game-level and on the field manual
+([Known engine traps](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/troubleshooting/known-engine-traps.md#production-contracts-that-catch-new-code-out),
+[Adding a unit](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/adding-a-unit.md#2-registration-keep-heap-order-and-enum-order-the-same),
+[Save versions](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/save-versions.md#every-class-size-is-the-version),
+[Exits and rails](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/exits-and-rails.md),
+[Jumpjets, deployers, mines and bouncing discs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/jumpjets-deployers-and-more.md#a-bouncing-disc)). TF's side:
 - **A unit set down on building-occupied cells can't be rescued:** it renders under the building and
   can't path off. Set cargo down outside the occupy list.
-- **`Begin_Production` never consults `Can_Build`:** a visible cameo is orderable, so a cap or
-  cooldown that keeps its cameo must refuse inside `Begin_Production`.
-- **`Can_Build` is the sidebar's offer test** (`Update_Buildables`); a pause expressed there makes the
-  cameo vanish instead of greying, and a bay rebuilt during a pause re-offered its cargo through it,
-  so cameos never came back. Order refusal lives in `TF_Delivery_Order_Refused` (`Begin_Production`
-  and both click handlers), and the sidebar fill paints the locked dress.
+- **Caps and cooldowns refuse in `Begin_Production`.** A pause expressed in `Can_Build` makes the cameo
+  vanish instead of greying, and a bay rebuilt during a pause re-offered its cargo through it, so
+  cameos never came back. Order refusal lives in `TF_Delivery_Order_Refused` (`Begin_Production` and
+  both click handlers), and the sidebar fill paints the locked dress.
 - **`CNCSidebarEntryStruct::Busy` draws nothing.** Show unavailability with an AssetName swap (the
   locked cameo). A fake `Constructing` + `Progress` reads as a build and
   miscounts queue clicks.
-- **Any divert that bypasses `MISSION_CONSTRUCTION` must free the builder itself** and run
-  `Grand_Opening`: the plug install skipped it, the yard stayed in radio contact, and every later
-  placement built then cancelled (`tf_plug_swap` in `building.cpp`).
+- **The plug install bypasses `MISSION_CONSTRUCTION`,** so `tf_plug_swap` (`building.cpp`) frees the
+  builder and runs `Grand_Opening` itself; without it every later placement built then cancelled.
 - **Every literal `STRUCT_X || Y` role chain must include new TS types;** a missed chain shows as a
   behaviour bug, not a crash.
-- **Heap registration must be strictly enum-ordered** (slot index = Type); append at the marked
-  `Init_Heap` tail. Out of order once gave AI MCVs that deployed helipads.
-- **Old saves die on any class growth:** `saveload.cpp` derives the save version from `sizeof()` of
-  every game class, and a mismatched save crashes rather than refusing.
+- **Append new types at the marked `Init_Heap` tail** (heap order is enum order).
 - **`Set_Stage(n)` then the first `Graphic_Logic` advances to n+1** before stage n is drawn, so a
   hit keyed to stage n never fires for an anim started at n.
-- **Units reach the object export with a NULL `shape_file_name`;** per-unit render biases key on the
-  final `AssetName`.
-- `Find_Exit_Cell` dereferences its argument; guard it in any state that runs after radio contact
-  drops.
-- **A $1 `PurchasePrice` fails EA's free-harvester gate** (it compares against `Raw_Cost`); the rich
-  start lever is `tf_cheap.flag` (1,000,000 credits at skirmish start).
-- **Grep a new vehicle's rules for `Tracked=`** before its first drive: the wheels-vs-tracks terrain
-  table bit three times.
+- **The rich start lever is `tf_cheap.flag`** (1,000,000 credits at skirmish start), not a $1 price,
+  which loses the free harvester.
+- **Grep a new vehicle's rules for `Tracked=`** before its first drive.
 - Where a helipad-built aircraft actually exits is unknown: `Exit_Object`'s `RTTI_AIRCRAFT` branch
   never runs and `HouseClass::Place_Object` is never reached (`FIXIT_HELI_LANDING` is off), yet
   `sidebarglyphx.cpp` queues `EventClass::PLACE` for aircraft.
@@ -437,14 +423,12 @@ A unit here is done: no open art, geometry or behaviour work.
 **TS art conventions:**
 - **Every TS anim SHP packs healthy frames then damaged frames** in its usable window; full-cycle
   exceptions exist (GTCNST_B's rotating light, NTREFN_B's plume), so check each.
-- **Base frames:** 0 healthy, 1 LIGHT, 2 HEAVY, 3-5 the shadows of 0-2. TS draws frame 1 below
-  the yellow health threshold, so frame 1 is the damaged look and never a free variant.
-- **The second half of a TS SHP is shadows:** OpenTS draws frame n's shadow from frame n + count/2
-  (`TechnoClass::Techno_Draw_Object`, called by `BuildingClass::Draw_It`; `AnimClass::Draw_It` for
-  the burning-infantry anim). Decoded as art they
-  are flat purple silhouettes; buildups carry one per stage (GTPOWRMK's 40 frames are 20 stages
-  and their shadows), and the packer cuts them. Donor `Init_Anim` counts apply only when the building has no
-  MAKE stub of its own.
+- **Base frames:** 0 healthy, 1 LIGHT, 2 HEAVY, 3-5 the shadows of 0-2. Frame 1 is the damaged look
+  and never a free variant, and the second half of an SHP is shadows (the field manual's
+  [Porting art from other C&C games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#tiberian-sun); OpenTS's
+  `TechnoClass::Techno_Draw_Object` via `BuildingClass::Draw_It`, and `AnimClass::Draw_It` for the
+  burning-infantry anim). The packer cuts the shadows. Donor `Init_Anim` counts apply only when the
+  building has no MAKE stub of its own.
 - **The packers' working model: the launcher maps the HD canvas onto the classic stub box centred
   on the BSIZE box centre,** stub height beyond the box splitting into equal halos above and below,
   which is how apron and overhang rows are placed. The stub setting the drawn size is proven
@@ -458,8 +442,8 @@ A unit here is done: no open art, geometry or behaviour work.
   the packed subset; a full run drops the entries other packers own (towers, walls, the Hunter
   Seeker), reorders `RA_STRUCTURES.XML` and rewrites every ZIP's timestamps. Restore from HEAD
   unless a frame count changed, and compare ZIP member bytes, not file hashes.
-- **An overlay's shape pointer supplies its render box,** so every overlay needs its own stub in
-  TFASSETS.MIX.
+- **Every overlay has its own stub in TFASSETS.MIX** (the field manual's
+  [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#size-comes-from-the-classic-shape)).
 - **Voxel renders start east and run counter-clockwise;** RA frame 0 is north, so the vehicle
   packers rotate by 8. Aircraft renders already start north (no rotation).
 - Verify packed art by the meta crop, not the TGA bbox (packed TGAs are content-cropped), and leave
@@ -476,9 +460,8 @@ A unit here is done: no open art, geometry or behaviour work.
   degenerate geometry that also renders black.
 
 **Pipeline:**
-- `scripts/ts_rebuild_art.sh` regenerates `$TS_ART_DIR` from the Steam TS install. TS building
-  cameos are in SIDEC01.MIX (GDI), not CONQUER.MIX. The chain is TIBSUN.MIX → `tools/ts_extract.py`
-  → `ts_shp.py`.
+- `scripts/ts_rebuild_art.sh` regenerates `$TS_ART_DIR` from the Steam TS install. The chain is
+  TIBSUN.MIX → `tools/ts_extract.py` → `ts_shp.py`.
 - Diagnostics land in `MOD_DEBUG_TSUNITS.txt`, sometimes under
   `pfx/drive_c/users/steamuser/` instead of `Documents/CnCRemastered/`; check both.
 - The gitignored UI atlas differs per checkout; main's is canonical (`ui-atlas-modding.md`).
@@ -497,22 +480,17 @@ A unit here is done: no open art, geometry or behaviour work.
 **TS infantry, Firestorm units and aircraft:**
 - **Aircraft art** (`scripts/ts_pack_aircraft.py`): the Orca Fighter, Orca Bomber and Carryall pack
   as 32 facings with no baked shadow (the engine draws the air shadow), plus cameos, XML and ModText.
-- **The launcher places the selection box and health bar from the first shape an object draws,
-  plus its exported centre.** The export Type and Altitude do nothing for them. An airborne jumpjet
-  draws its body before its shadow and lifts `CenterCoordY` by Height.
-- **Engine checks that assume only aircraft fly**, each exempting jumpjets now: `MissionClass::AI`
-  returns early for infantry, units and vessels with Height > 0, so no mission runs in flight;
-  `TechnoClass`'s target maintenance (and the attack-move check) drops a non-aircraft's target that
-  is out of range in another zone; a move click is pulled back into the unit's own zone
-  (`Nearby_Location`); the SAM state machines take only aircraft (a jumpjet goes through the
-  airborne test at `building.cpp:191`).
-- **The Disc Thrower's disc (`TS_Disc_Launch`, `TS_Disc_AI` in `bullet.cpp`).** The fire coordinate
-  carries the thrower's hand height (`VerticalOffset`) as a northward shift, so the launch moves the
-  start south by that much and launches from that height. Launch speed is
-  sqrt(range × gravity × 1.2), capped at half the distance. The lobbed solution is used only when
-  the aim point is higher than it is far; a flat answer pointing down is caught by solving again one
-  lepton further out. A first throw clears cliffs; only a disc that has already bounced is set off by
-  flying low over one. A collision near the target is moved onto the target, as TS does.
+- **The selection box, the health bar and the checks that assume only aircraft fly** are in the field
+  manual's [Jumpjets, deployers, mines and bouncing discs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/jumpjets-deployers-and-more.md#jumpjet-infantry).
+  The export Type and Altitude do nothing for the box. An airborne jumpjet draws its body before its
+  shadow and lifts `CenterCoordY` by Height. TF exempts jumpjets in each check: `MissionClass::AI`,
+  target maintenance (and the attack-move check), the move click's pull into the zone
+  (`Nearby_Location`), and the SAM state machines (the airborne test at `building.cpp:191`).
+- **The Disc Thrower's disc (`TS_Disc_Launch`, `TS_Disc_AI` in `bullet.cpp`)** follows the manual's
+  [bouncing disc](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/jumpjets-deployers-and-more.md#a-bouncing-disc). The hand height is
+  `VerticalOffset`. Launch speed is sqrt(range × gravity × 1.2), capped at half the distance; a flat
+  answer pointing down is caught by solving again one lepton further out. A collision near the target
+  is moved onto the target, as TS does.
 - **TS infantry facings port with no reorder:** TS draws them anticlockwise from north, the order
   `HumanShape` indexes (`idata.cpp`).
 - **The jumpjet flight model (`Jumpjet_AI`)** follows TS. It eases to half speed inside two cells of
@@ -522,28 +500,26 @@ A unit here is done: no open art, geometry or behaviour work.
   and below a quarter of flight level outside the destination cell. It flies along its turning
   facing except while firing or drifting onto its landing spot, and reserves the closest free
   landing spot in its cell, else in the nearest cell a soldier can stand in.
-- **`Good_Fire_Location`'s ring search starts a cell inside weapon range and stops at one cell,**
-  so for a weapon of 2 cells or less (the Orca Bomber's 1.5-cell bomb) it finds nothing, and stock
-  `Mission_Attack` sends the aircraft back to base. Only non-fixed-wing aircraft use it (fixed-wing
-  ones hunt instead). TF returns the target's own cell for any weapon under 3 cells, so short
-  weapons fire from above the target.
-- **RA's `::Distance()` is an approximation.** An arc flown on it landed about 290 leptons long
-  (Juggernaut); ballistic shots use the true distance.
+- **`Good_Fire_Location` finds nothing for a weapon of 2 cells or less** (the Orca Bomber's 1.5-cell
+  bomb; the field manual's [Air delivery and fleets](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#traps)).
+  TF returns the target's own cell for any weapon under 3 cells, so short weapons fire from above the
+  target.
+- **Ballistic shots use the true distance,** not `::Distance()` (the Juggernaut's arc landed long).
 - **TS barrel pitch 64 is level;** TS rests barrels level and raises them only while aiming.
 - **The landing-zone rewrite clears the Carryall's NavCom,** so the vehicle it was sent for is
   remembered separately.
 - **The Carryall's set-down (`TF_Carryall_Exchange`)** places the load at the carrier's exact
-  coordinate: snapping to the cell centre slid it most of a cell in one frame. The landed carrier is
-  lifted off the map (`MARK_UP` / `MARK_DOWN`) while the load is placed, or its own occupancy fails
-  the load's legality check and pushes the load into the next cell.
-- **A new barracks needs its own exit pixel and exit list.** TSPILE reused the RA tent's (24,47) on
-  a 2x1 plot and spawned infantry a cell below the door (`ExitTsPile`).
+  coordinate with the carrier lifted off the map, as the field manual's
+  [Air delivery and fleets](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#traps) says.
+- **TSPILE has its own exit pixel and list (`ExitTsPile`):** the RA tent's spawned infantry a cell below
+  the door (the field manual's [Exits and rails](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/exits-and-rails.md)).
 - **Decode TS cameos with `--no-remap`:** the house-colour remap turns palette 16-31 green.
 - **`ts_mk2_cooldown_cameos.py` rewrites its whole block** and wipes any hand-written entry inside
   it; keep hand entries outside.
-- **The Firestorm expansion's units are in `expand01.mix`:** voxels and build-up SHPs (`MWARMK`)
-  at the top level, other SHPs in the inner `ECACHE01.MIX` (the Mobile EMP's cameo `MEMPICON`
-  too), the Mobile War Factory's cameo in `E01SC01.MIX`, AUDs in `SOUNDS01.MIX`
+- **The Firestorm expansion's units are in `expand01.mix`,** laid out as the field manual's
+  [Porting art](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#tiberian-sun) says: here the build-up `MWARMK`
+  at the top level, the Mobile EMP's cameo `MEMPICON` in `ECACHE01.MIX`, the Mobile War Factory's in
+  `E01SC01.MIX`, AUDs in `SOUNDS01.MIX`
   (`scripts/ts_rebuild_art.sh`). The Firestorm Defense isn't: `GTFSDF`/`GTFIRE` are in
   `TIBSUN.MIX`'s `TEMPERAT.MIX`, `FSIDLE` and the `FSPICON`/`FSDICON` cameos in `CONQUER.MIX`,
   `FIRSTRM1` in `SOUNDS.MIX`.
@@ -562,16 +538,17 @@ TD counterpart. Baseline: the Nod Stealth Generator. Per building:
 
 1. **Extract** (temperate `T` names): base `GT<X>.SHP`, active anims `GT<X>_A/_B/_C.SHP` (art.ini
    `ActiveAnim*=`; damaged variants are usually the second half of the same SHP, or empty, as
-   GAFIRE's, in which case the damaged run is the damaged base with the anims stopped). An anim's
-   `Rate=` is frames per minute (OpenTS `animtype.cpp`: delay = TICKS_PER_MINUTE / Rate), so a
-   higher Rate is faster. Buildup `GT<X>MK.SHP` (ISOTEMP.MIX); cameo per art.ini `Cameo=`
+   GAFIRE's, in which case the damaged run is the damaged base with the anims stopped). `Rate=` as
+   the field manual's [Porting art](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#tiberian-sun) says
+   (OpenTS `animtype.cpp`). Buildup `GT<X>MK.SHP` (ISOTEMP.MIX); cameo per art.ini `Cameo=`
    (SIDEC01.MIX, CAMEO.PAL). Bases and anims decode with UNITTEM.PAL.
 2. **Compose:** N healthy frames = healthy base + anim frame i (shorter anims loop), then N damaged
    frames = damaged base + the anim's damaged half. Ship real buildup frames only, resampled to the
    donor's construction-anim count.
 3. **One affine for every frame** of a building (base, anims, MK), content-anchored: scale so the
    healthy composite matches the TD counterpart's proportions, centred. Canvas = classic donor dims
-   x 5.33. Never full-canvas scale.
+   x 5.33 (the manual's [size rule](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#size-comes-from-the-classic-shape)).
+   Never full-canvas scale.
 4. **Donor** (`_td_bdonors` in `bdata.cpp`, matching footprint and construction-anim count):
    TSPOWR → RA POWER, TSFACT → TDFACT, TSPILE → TDPYLE, TSPROC → TDPROC, TSWEAP → TDWEAP,
    TSRADR → TDHQ, TSHPAD → TDHPAD, TSTECH → TDEYE, TSDEPT → TDFIX, TSSILO → TDSILO; towers →

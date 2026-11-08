@@ -96,50 +96,45 @@ left. Engine reference: OpenTS (`reference/OpenTS/code/`); data: TS's own `RULES
 | `[AudioVisual]` | FirestormActiveAnim=GAFSDF_A, FirestormIdleAnim=FSIDLE, FirestormGroundAnim=FSGRND, FirestormAirAnim=FSAIR |
 | `IgnoresFirestorm=yes` | the two hunter seekers |
 
-### Mechanics (OpenTS; file:line in `reference/OpenTS/code/`)
+### Mechanics (OpenTS, `reference/OpenTS/code/`)
 
-**Charge-drain superweapon** (super.cpp, super.h:119-125). States SUSPENDED / CHARGING / READY /
-FIRESTORM_ON; placeable in any state but CHARGING (super.cpp:582).
-- READY -> ON: drain time = current charge x ChargeToDrainRatio (:335); TS's rules set it to .333, so a full 3-minute charge buys 1 minute of field (OpenTS's default of 3 is overridden); `House->Activate_Firestorm()`.
-- ON -> off early (click again): leftover drain turns back into charge (:328-330).
-- READY keeps charging, so a partial charge can be used (:389).
-- Drain runs out: wall drops, state CHARGING from zero (:397-401).
-- Low power or generator switched off: SUSPENDED, wall drops; power back = charge from zero
-  (house.cpp:8688-8750, super.cpp:168-186).
-- Generator destroyed/sold/limbo'd with no other generator standing: wall drops
-  (house.cpp:6586-6603). Capture: nothing special.
-- Computer houses toggle without drain (only map triggers raise it; the AI never does).
+See the field manual's [Firestorm Defense](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/firestorm-defense.md#how-tiberian-sun-does-it)
+for TS's model: the four charge-drain states, computer houses, the live field and the 5x5 kill, jumpjets, eaten
+shots, the drain on hits, the spark bursts, the frames and `FSIDLE`, the EVA lines and the free line fill. Beyond it:
 
-**The field** (house.cpp:6535-6577; building.cpp:9336-9433). House flag
-`FirestormDefenseActivated`. Every section the house owns goes live, anywhere on the map (no link
-to the generator, no range).
-- Active section = impassable to everyone, own units included (PASSABLE_NO + zone reset).
-  Inactive = passable to everyone (unit.cpp:3881, infantry.cpp:1695, cell.cpp:4516).
-- On activation: anything standing on a section dies (full-Strength FirestormWarhead, forced, no
-  friend/foe test), except `IgnoresFirestorm`. Anything moving INTO a section in the 5x5 around it
-  dies too (`C4Warhead`, which TS's RULES.INI sets to `HE`).
-- Aircraft (and jumpjets) whose cell is a live section die, at any altitude (fly.cpp:767).
-- Projectiles entering a live cell are deleted with a flare unless fired by the wall's owner or
-  `IgnoresFirestorm` (bullet.cpp:800-813; allies' shots are eaten too); instant weapons stop at
-  the first hostile live cell (map.cpp:12335).
-- A live section takes no damage; each hit drains the field instead: charge -= damage x 0.1
-  (building.cpp:2261-2268).
-- Firestorm deaths spawn 7-9 FirestormSparkSys bursts instead of the normal explosion.
+- READY -> ON calls `House->Activate_Firestorm()`; TS's rules set `ChargeToDrainRatio` to .333, overriding
+  OpenTS's default of 3 (`rules.cpp`).
+- A generator switched off suspends the field as low power does; capturing one does nothing special.
+- The field is the house flag `FirestormDefenseActivated`. A live section is `PASSABLE_NO` plus a zone reset. The
+  standing kill is a full-strength `FirestormWarhead`, forced, with no friend-or-foe test.
+- An eaten shot is deleted with a flare (`Crossing_Firestorm`, then `Delete_Me`), and `FSGRND` / `FSAIR` play on
+  every crossing, not only on a death. A projectile whose own type has `IgnoresFirestorm` passes (the test is
+  `Class_Of()->IsIgnoresFirestorm`, the bullet's type, not the firer's).
+- `GAFSDF_A` has 8 frames. TS hardcodes no Firestorm sounds; the anims' `Report=` carry any. A section sells only
+  while the field is down, with no refund.
 
-**Visuals.** Section frame = neighbour bits N1 E2 S4 W8, +32 while live (building.cpp:9314-9346).
-GAFSDF_A (8 frames) plays on live non-straight sections. FSIDLE: every 8 frames each live
-non-straight section with no column showing has a 1-in-16 chance to spawn one, a one-shot,
-50% translucent (building.cpp:1756-1762) -- the field is flickering columns, not a steady wall.
-FSGRND at the wall / FSAIR at the victim (height > 100) on every crossing.
+Line refs, by claim:
 
-**Audio/EVA.** 00-I162 "Firestorm defense ready" (RechargeVoice), 00-I170 "Firestorm defense
-offline" on deactivation. No hardcoded sounds; the anims' Report= carry any.
-
-**Sections as buildings.** Placed like a building; TS also fills the gap to another own section
-up to 5 cells away in a straight line if every cell between is clear (map.cpp:12419-12446), fill
-sections free. Neighbours refresh on Unlimbo/Limbo. Sell only while inactive, no refund.
-Power up/down ignores sections. OpenTS hardcodes the section's cost to 250 (techtype.cpp:553)
-against the rules' 50; ours charges 250.
+| Claim | OpenTS |
+|---|---|
+| The four states | `super.h` 119-125 |
+| Placeable in any state but CHARGING | `super.cpp` 582 |
+| Drain time = charge x ratio | `super.cpp` 335 |
+| Off early: leftover drain back to charge | `super.cpp` 328-330 |
+| READY keeps charging | `super.cpp` 389 |
+| Drain runs out: CHARGING from zero | `super.cpp` 397-401 |
+| Low power or switched off: SUSPENDED | `house.cpp` 8688-8750, `super.cpp` 168-186 |
+| Last generator gone: field drops | `house.cpp` 6586-6603 |
+| The field going live | `house.cpp` 6535-6577, `building.cpp` 9336-9433 |
+| Passable while inactive | `unit.cpp` 3881, `infantry.cpp` 1695, `cell.cpp` 4516 |
+| Aircraft and jumpjets die at any altitude | `fly.cpp` 767 |
+| Shots eaten | `bullet.cpp` 800-813 |
+| Instant weapons stop at the first hostile live cell | `map.cpp` 12335 |
+| Hits drain damage x 0.1 | `building.cpp` 2261-2268 |
+| Frame = neighbour bits, +32 live | `building.cpp` 9314-9346 |
+| `FSIDLE` spawn rule | `building.cpp` 1756-1762 |
+| Free line fill | `map.cpp` 12419-12446 |
+| The $250 section | `techtype.cpp` 553 |
 
 **Not in TS:** subterranean units ignore the field; EMP has no special case (it can knock power
 out, which suspends the field and resets its charge).

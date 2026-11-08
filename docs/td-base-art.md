@@ -7,43 +7,13 @@ The mod copies TD's unit, building and effect ZIPs out of `TEXTURES_TD_SRGB.MEG`
 `Data/ART/TEXTURES/SRGB/RED_ALERT/`, renamed with a `TD` prefix. Every player already has those
 files. This doc is how a Red Alert tileset reads them from the base game instead.
 
-## How the launcher finds a tile's art
+## How it works
 
-- `Data/MEGAFILES.XML` mounts every texture MEG at start-up, `TEXTURES_TD_SRGB.MEG` included,
-  whichever game is played.
-- `CNCRendererClass::Recreate_Tile_Maps` builds the tile maps from a fixed list. With Red Alert
-  running that list is `RA_Units`, `RA_Structures`, `RA_VFX`, `RA_RadarMap`, `RA_Terrain_Shroud`,
-  `Common_VFX`, `Common_UI` and `Common_Misc`. `TD_Units` and the other TD tilesets never load in RA.
-- An object's tile is found by name in any of the world tilesets: a unit's tiles in
-  `RA_Structures` draw normally.
-- A tile opens `<RootTexturePath>\<tile name>.zip`. A tile name may hold a path (`SUB\TDAPC` opens
-  `UNITS\SUB\TDAPC.ZIP`), and a frame `<folder>\<file>.tga` reads from the ZIP opened as `<folder>`.
-- Paths are never normalised: a frame or tile name containing `..\` finds nothing.
-- `Common_UI` and `RA_RadarMap` are not world tilesets: a unit tile placed in them draws as a white
-  square, whatever ZIP it reads.
-
-## The mechanism
-
-A world tileset with an empty `RootTexturePath` reaches both trees:
-
-```xml
-<TilesetTypeClass name="RA_VFX">
-    <RootTexturePath></RootTexturePath>
-    <Tiles>
-        <Tile><Key><Name>Tiberian_Dawn\Units\MTNK</Name><Shape>0</Shape></Key>
-              <Value><Frames><Frame>Tiberian_Dawn\Units\mtnk\mtnk-0000.tga</Frame></Frames></Value></Tile>
-        <Tile><Key><Name>TDMTNK</Name><Shape>0</Shape></Key>
-              <Value><Frames><Frame>Tiberian_Dawn\Units\mtnk\mtnk-0000.tga</Frame></Frames></Value></Tile>
-        ...
-```
-
-- The first tile is an opener: its name makes the launcher open the base game's `MTNK.ZIP`. It is
-  never drawn.
-- `TDMTNK`, the name the DLL asks for, keeps its own tiles. Their frames point into the opened ZIP
-  by the base game's frame names (`mtnk-0000.tga`), not ours (`tdmtnk-0000.tga`).
-- The tileset's own art moves with it: every frame gains the old root (`Red_Alert\VFX\120mm\...`),
-  and each ZIP folder it names gets an opener (`Red_Alert\VFX\120MM`).
-- House colours, shading and turrets draw as they do from our copies (GDI Medium Tank, GDI MCV).
+How the launcher finds a tile's art, and the opener tile that makes a Red Alert tileset read the base game's
+ZIP, are in the field manual's
+[TD art from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-art-from-the-base-game.md#the-mechanism-an-opener-tile).
+Our tiles keep the names the DLL asks for (`TDMTNK`) and point at the base game's frame names (`mtnk-0000.tga`,
+not our `tdmtnk-0000.tga`); the GDI Medium Tank and MCV were the house-colour and turret check.
 
 Staging applies this to the build (`scripts/td_base_art.py`).
 
@@ -82,11 +52,9 @@ explosions) still draw.
 Red Alert runs six theatres: its own three and TD's three, each drawing its own terrain tileset
 from the base game.
 
-- **The launcher's slots.** `GameConstants.xml`'s `CNCRATheaterTilesets` names the terrain tileset
-  for each theatre number the DLL reports (an empty entry is `RA_Terrain_Temperate`). The mod's
-  `GameConstants_Mod.xml` replaces it with `overwrite="true"`: slots 0 to 2 are RA's, 3 to 5
-  `TD_Terrain_Desert`, `TD_Terrain_Temperate` and `TD_Terrain_Winter`. TD's terrain tilesets are
-  loaded in RA too.
+- **The launcher's slots.** The mod's `GameConstants_Mod.xml` gives `CNCRATheaterTilesets` six slots, TD's three
+  in 3 to 5 (an empty slot is `RA_Terrain_Temperate`), as in the field manual's
+  [TD theatres in Red Alert](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-theatres-in-red-alert.md#the-launcher-side-more-slots).
 - **The DLL's theatres.** `TheaterType` carries `THEATER_DESERT`, `THEATER_TDTEMPERATE` and
   `THEATER_WINTER` (3 to 5, the slot numbers), and a map names them `Theater=Desert`, `TDTemperate`
   or `Winter`. TD's 210 drawn templates are DLL templates `TD<name>` (ids 401 to 610, written by
@@ -101,13 +69,14 @@ from the base game.
   packed in `TFASSETS.MIX` as `TD<name>.DES`, `.TEM` or `.WIN`; a river template's water is
   `LAND_RIVER`. RA's objects on a TD theatre (trees, bibs, smudges) use RA temperate's classic
   data and palette (`TF_Base_Theater` and the TD rows of `Theaters[]`).
-- **Desert terrain.** TD's desert trees and rocks (`T04`, `T09`, `T18`, `ROCK1` to `ROCK7`) are
-  RA terrain types with TD's footprints, loaded on desert from TD's shapes (`<name>.DES`).
-- **Memory.** Video memory on the desktop, one match each: Docklands used 4,796 MiB with the stock
-  interior tileset and 4,812 MiB with 163 desert tiles added to it, which that map never draws.
-  One reading each settles nothing, so whether a tileset costs memory whole or per tile drawn is
-  untested. A TD map in a match uses 5,052 MiB on the desktop whether TD's unit art comes from the
-  base game or the mod.
+- **Desert terrain.** TD's desert trees and rocks are RA terrain types loaded from TD's shapes
+  (`<name>.DES`), as in the field manual's
+  [TD theatres in Red Alert](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-theatres-in-red-alert.md#the-dll-side-matching-theatres),
+  step 6.
+- **Memory.** The readings (Docklands, with and without 163 unused desert tiles; a TD map with TD's art from either
+  source) and the open question of whole-or-per-tile cost are in the field manual's
+  [Adding a theatre of your own](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-theatres.md#whats-open-video-memory)
+  and [TD art from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-art-from-the-base-game.md#how-it-was-verified).
 
 `scripts/td_catalogue_maps.py` writes one map per theatre with every template the DLL has
 for it placed once; all six draw every template, and units spawn. Two dark cells are EA's data: RA
@@ -115,37 +84,26 @@ interior's `ARRO0003` is a dark tile, and RA temperate's `SH42` icon 3 points at
 frame outside the shore's shape.
 
 Terrain tilesets open no ZIP through an opener tile, so the mod's own terrain art (`TIB01`) stays a
-ZIP under its RA root.
+ZIP under its RA root (the field manual's
+[TD art from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-art-from-the-base-game.md#traps),
+traps).
 
 ## TD maps in the Official list
 
-The skirmish lobby's Official list shows every `INSTANCES.XML` entry on RA's multiplayer base
-variant, whatever its name; a TD entry set to Red Alert is not listed. New entries are named like
-RA's own (`Mobius_Red_Alert_Multiplayer_<n>_Map`). One needs its text, a `Mission` number, a
-`CNCMAPPREVIEWDATA.XML` entry on RA's 128-cell grid with one waypoint per player, and a thumbnail
-named after the entry (`MOBIUS_RED_ALERT_MULTIPLAYER_<n>_MAP.DDS`); `PreviewLoadingTextureName` on
-the entry sets neither the lobby's thumbnail nor the loading screen's. For the mod's TD entries the
-carrier's hook on ClientG's set-texture call (`0xF604C0`) asks for the base game's own thumbnail
-instead: TD map *n*'s for 9*nn*, TD community map *k*'s for 979+*k*, Hastings' D6 for 999, so no
-thumbnail ships. Loose copies of both XMLs override CONFIG.MEG's.
+Listing a map is data, and starting one needs a carrier entry the instance server knows: see the field manual's
+[New maps in the skirmish Official list](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/new-maps-in-the-skirmish-list.md#starting-it-launch-under-an-entry-the-server-knows),
+which has the entries, preview data, thumbnails, hooks and addresses. Each entry also needs its own `Mission`
+number. `PreviewLoadingTextureName` on an entry set neither the lobby's thumbnail nor the loading screen's.
 
-InstanceServerG builds its instance list from the base `Instances.xml` before the DLL loads, so a
-new entry launches through the carrier (`tf_launcher.cpp`): ClientG sends any entry from 900 up under
-Hastings' `D6` entry, whose client entry is removed so it isn't listed, and hands its map file over in
-`tf_carrier_mission.txt`; the DLL takes it ahead of `OverrideMapName` on a launch of D6 only, and
-the carrier's key reads as the launched entry's, so the loading screen names it.
+Entry numbers: TD multiplayer map *n* is 9*nn* (Sand Trap, TD's 2, is 902), TD's community maps 1 to 7 are 980 to
+986, and Hastings is 999. The set-texture hook asks for the base game's own thumbnail by that number: TD map *n*'s
+for 9*nn*, TD community map *k*'s for 979+*k*, Hastings' D6 for 999, so no thumbnail ships.
 
-A skirmish launches through `SkirmishGameManagerClass::Host_Game`, which the carrier hooks by its
-callers. A LAN or Steam matchmaking lobby builds its own launch message (`IPCLaunchInstanceMessage`,
-its instance name the string at `+0x30`) and sends it straight to the server, so the carrier also
-hooks those two sends and renames a 9*nn* entry to D6 in place. The server then tells every client
-to load D6; a joiner launched nothing, so D6 reads on every client as the entry its lobby last showed
-(the thumbnail hook records it) or it last launched, whichever came later.
-
-Hastings itself is
-listed through its own entry, keeping `SCMD6EA.INI`. A placeholder instance can't carry: the server
-never starts it. Entry numbers: TD multiplayer map *n* is 9*nn* (Sand Trap, TD's 2, is 902), TD's
-community maps 1 to 7 are 980 to 986, and Hastings is 999; a TD map's file is `TFTD<number>.INI`.
+TF's carrier is in `tf_launcher.cpp`. InstanceServerG reads the base `Instances.xml` before the DLL loads.
+ClientG sends any entry from 900 up under Hastings' `D6`, whose own client entry is removed so it isn't listed
+twice; the map file goes over in `tf_carrier_mission.txt`. The LAN and Steam lobby hooks rename only a 9*nn*
+entry to D6. The thumbnail hook also records the entry the lobby last showed, which is how a joiner reads D6.
+Hastings is listed again as 999, keeping `SCMD6EA.INI`, and a TD map's file is `TFTD<number>.INI`.
 
 `scripts/td_official_maps.py` writes all 34 of TD's skirmish maps into the mod from TD's own
 instances, preview data and map files: the entries in `INSTANCES.XML`, the preview data in a loose

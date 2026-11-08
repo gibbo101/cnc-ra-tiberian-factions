@@ -26,9 +26,9 @@ four Allied/Soviet duplicates, the slot set aside for the first new faction
 (`faction-select-identity.md`), and because the launcher already knows it natively (colour, flag, start
 markers, loading screens), which is what makes a fifth faction free of launcher work.
 
-**No DLL remap is needed.** GDI and Nod are remapped on receipt in `CNC_Set_Multiplayer_Data`
-(Spain→`HOUSE_GOOD`, Greece→`HOUSE_BAD`); TS GDI needs nothing, because the picker row the
-player clicks *is* the house they play.
+**No DLL remap is needed** (route 2 in the field manual's
+[Adding a faction](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/adding-a-faction.md#how-a-pick-becomes-a-house)), unlike GDI and Nod,
+which `CNC_Set_Multiplayer_Data` remaps on receipt (Spain→`HOUSE_GOOD`, Greece→`HOUSE_BAD`).
 
 ---
 
@@ -102,27 +102,22 @@ writes, the scan log's `want=` is wrong, and the crest flickers for the first se
 onto its TS building, defences are the tower two-step, and the turbine rides the power role. It
 builds no transports or navy and never uses the Firestorm or the EMP Cannon (`todo.md`).
 
-⚠ **TS keys unit voices to numbered sets, not named events** (set 15 = most infantry of both sides,
-E1, E2, E3, the jump jet and others; set 25 = every vehicle of both sides; both in `SOUNDS.MIX`). RA fires a named `VOC_` event and picks the extension from
-the response variation, so each RA event needs four TS recordings: two infantry (`.V01`/`.V03`),
-two vehicle (`.V00`/`.V02`).
+⚠ **TS keys unit voices to numbered sets, not named events,** and each RA response event needs four
+TS recordings, two infantry and two vehicle (the field manual's
+[Porting art from other C&C games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#tiberian-sun), sound and music).
+Set 15 includes the jump jet.
 
 ---
 
 ## How it was verified (no human at the machine)
 
 The whole arc was driven headless — Xvfb + Steam under `systemd-run --user`, xdotool/scrot on
-`DISPLAY=:2`. Findings worth keeping:
-
-- **Absolute pointer warps do not reach the placement cursor.** `xdotool mousemove` works for
-  the HUD and for issuing orders, but the building-placement grid tracks *relative* motion only;
-  steer it with `mousemove_relative` and screenshot to confirm the grid is white before clicking.
-- **Tiberium blocks building placement**, so a match left running long enough to let the field
-  spread has no legal cell left near the yard. Place early or restart.
-- **Audio can be verified without ears.** Capture the sink monitor (`pw-record --target
-  auto_null.monitor`) and matched-filter the capture against the shipped WAVs. Lines that
-  actually played score 0.5–0.9 normalised; lines that never fired sit at 0.24 and below. This is
-  how the EVA and unit voices below were confirmed as *played*, not merely dispatched.
+`DISPLAY=:2` — with the placement-grid and audio methods in the field manual's
+[Testing under Proton](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/testing-under-proton.md#testing-with-no-one-at-the-screen)
+(the grid shows white when it's ready to click). Tiberium blocks placement, so a long match can leave no legal
+cell near the yard ([The Tiberium ecosystem](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/tiberium-ecosystem.md#a-new-resource-is-its-own-overlay)).
+The sink monitor was recorded with `pw-record --target auto_null.monitor`, which is how the EVA and unit voices
+below were confirmed as *played*, not merely dispatched.
 
 **Confirmed in a live skirmish (TS GDI vs a Soviet AI, Docklands):**
 
@@ -156,9 +151,9 @@ shape. Building with 0 restores the four-faction mod exactly:
 `Is_TS_GDI()` going constant-false retires the starting roster, the EVA, the unit voices, the side
 name and the crest: each branch simply never fires.
 
-⚠ **`Yard_Factions()` must contribute `HOUSEF_TSGDI`, never `HOUSEF_GERMANY` directly:** with the
-faction off, Germany is an Allied country again, so a Germany bit there would let a TS yard unlock
-the entire Allied tree.
+⚠ **`Yard_Factions()` must contribute `HOUSEF_TSGDI`, never `HOUSEF_GERMANY` directly,** or with the
+faction off a TS yard unlocks the Allied tree (the field manual's
+[Adding a faction](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/adding-a-faction.md#traps), traps).
 
 The data side follows `TF_TS_GDI_FACTION` in the environment: `build_config_meg.sh` (master-text
 overrides), `factions_build.py` (Faction8 in the TD-HUD scene swap) and `picker_emblems_paint.py`
@@ -170,31 +165,24 @@ ship either way; with the faction off nothing routes to them.
 
 ## The era mailbox, N eras wide
 
-Nine lines are fired by the launcher itself and never reach `On_Speech`: cannot deploy here,
-battle control terminated, mission won, mission lost, select target, insufficient power, repairing,
-mission saved and unable to comply, building in progress (an era that never recorded a line gets inaudible noise, `SILENT` in the
-builder). The
-mailbox writes the era-correct recording over the launcher's own sample names at match start,
-and overwrites ClientG's cached copy so an in-session switch is corrected too.
+The launcher fires nine EVA lines itself; the mailbox is the two-part method in the field manual's
+[EVA voice lines the launcher plays, by faction](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/sound-and-music/launcher-eva-lines-by-faction.md):
+the era-correct recording over each seed at match start, then over ClientG's cached copy. An era that never
+recorded a line gets inaudible noise (`SILENT` in the builder).
 
 It was a TD/RA **pair**. It is now a table with one payload per era per line, generated whole by
 `scripts/eva_mailbox_build.py` into `redalert/tf_eva_mailbox.h`. **Adding TS Nod's CABAL or RA2's
 announcers is one entry in that script's `ERAS` plus its recordings** — no new branch in the DLL,
 which asks `TF_Eva_Era()` for an index and looks the row up.
 
-Why it could not stay a pair, and what that cost:
+Why it could not stay a pair, and what that cost (the rules are the manual's, part two and traps):
 
-- **Every era's payload for a line must be the same byte length**, because the cache overwrite
-  finds a blob by hunting the *wrong* era's needle and subtracting that era's file offset. So a
-  new era re-pads every line and invalidates every needle — which is why the table is generated
-  rather than pasted in by hand.
-- ⚠ **The scan is now bucketed by first needle byte.** It used to re-scan each chunk of ClientG's
-  heap once per row; at two eras that was 12 passes, at six it would be 60 over hundreds of MB.
-  Bucketing keeps the per-byte cost flat however many eras exist.
-- ⚠ **ffmpeg cannot encode the alignment the teardown line needs.** Its MS-ADPCM encoder demands
-  a power-of-two block size; "battle control terminated" needs `block_align = 70`, which is why
-  that line used to be byte-padded instead of re-encoded. `scripts/msadpcm.py` encodes at any
-  alignment (35 dB SNR against the source), so every era's payload can now be produced properly.
+- **Every era's payload for a line is the same byte length,** so a new era re-pads every line and
+  invalidates every needle — which is why the table is generated rather than pasted in by hand.
+- ⚠ **The scan is bucketed by first needle byte.** One pass per row would be 12 passes over
+  ClientG's heap at two eras and 60 at six.
+- ⚠ **ffmpeg can't write the teardown line's `block_align` 70,** so `scripts/msadpcm.py` encodes at
+  any alignment (35 dB SNR against the source) and every era's payload is produced properly.
 - ⚠ **The shipped runtime seeds ARE the RA payloads, byte for byte.** ClientG picks the loose
   file over the base MEG once, at launch, so the seeds must exist then. It reads and caches a
   line's bytes the first time the line plays (`eva-ram-patch-spike.md` findings 4 and 5), by

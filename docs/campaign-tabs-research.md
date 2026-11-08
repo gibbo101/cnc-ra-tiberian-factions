@@ -12,73 +12,25 @@ Tools: `scripts/meg_extract.py` (read), **`scripts/meg_pack.py`** (repack — by
 
 ---
 
-## TL;DR — the corrected model
+## Display, launch and the hijack
 
-**The Mission Select display is built from `DATA/XML/INSTANCES.XML`, not the campaign-structure files.** Each mission is an `<Instance>` carrying:
+What Mission Select shows comes from `INSTANCES.XML`; what launches comes from the campaign files; a stock slot
+plays a scenario INI of its name shadowed from the mod's `CCDATA/`, with `[Digest]` removed. All of it, with the
+experiments and the probe that proved it, is on the field manual's
+[Custom campaigns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-campaigns.md#display-and-launch-are-separate) (Display and launch
+are separate, Replacing an official mission, Traps, How it was verified); `CONFIG.MEG`'s missing integrity check is
+on [Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#a-replacement-configmeg).
+Beyond the manual:
 
-- `<LocationNameTextID>` (name) + `<MissionBriefingTextID>` (briefing) → localized strings
-- **`<ShowOnMissionSelect>`** — visibility gate; `false` **hides the mission even if you've completed it** (proven)
-- **`<IsUnlockedAtStart>`** — `true` ⇒ always shown; otherwise gated by player progress
-- `<House>`, `<Mission>N</Mission>`, **`<ExternalGameID>`** (`RedAlert` | `TiberianDawn`), brief/action/win movies, `MissionSelectMapTexture`
-
-The **structure files** — `RA_ALLIES.XML` (progression), `RA_ALLIES_MISSIONS.XML` (mission defs + `MapStageUnlock` chain), `RA_CAMPAIGNMAPS.XML`/`CAMPAIGNMAPS.XML` (`CampaignMapSelectMapClass` per tab + the territory-map-select flow) — control **progression and launch, NOT the displayed roster.** Editing them changes what *launches*, not what *shows*.
-
-`CONFIG.MEG` has **no integrity check**, so a repacked archive with edited XML loads fine, and the game *does* read it (proven: breaking a mission def killed that mission's launch).
-
----
-
-## What controls what (each row proven on the Deck)
-
-| To change… | Edit | Evidence |
-|---|---|---|
-| Whether a mission **shows** | `INSTANCES.XML` `ShowOnMissionSelect` | set Allied 5A/5B/5C `false` → "Tanya's Tale" vanished despite being completed |
-| Mission **name / briefing** | `INSTANCES.XML` `LocationNameTextID` / `MissionBriefingTextID` | data-confirmed (TextIDs → localized strings) |
-| **Always visible** vs progress-gated | `IsUnlockedAtStart` | expansion missions are `true` → always show (never hide) |
-| Whether a mission **launches** | `RA_*_MISSIONS.XML` def + `MapStageUnlock` | removed `RA_ALLIES_14` def → its "Start" did nothing; mission 1 still launched |
-| Which **game's front-end** lists it | `ExternalGameID` | GDI instances are `TiberianDawn` ⇒ don't appear in RA mode |
-| **Add / place** a mission in a tab | new `<Instance>` (target name + `Variant`, `ShowOnMissionSelect=true`, `IsUnlockedAtStart=true`) | ✅ injected `Mobius_Allied_Campaign_99_Map` → "Allies 99" appeared in the Allied tab (no def/`<Stages>` needed; name needs an RA-mode TextID; *launch* untested) |
-
-### The experiments (base-CONFIG.MEG swap)
-- Truncate all three structure files to 2 missions → **display still showed 14**; mission 14 un-launchable. ⇒ structure = launch, not display.
-- Append expansion missions to `RA_ALLIES` `<Stages>` → **did not appear** under Allied. ⇒ roster isn't built from `<Stages>`.
-- `ShowOnMissionSelect=false` on 3 completed Allied missions → **vanished**. ⇒ `INSTANCES.XML` is the display source, flag overrides progress.
-- Ant tab shows **2 of 4** though all 4 are `ShowOnMissionSelect=true` ⇒ display is **progress-gated** (only unlocked missions show). A per-player completion/unlock record exists — *not* in `Player_RA_settings_1.bin` (no campaign strings); likely Steam cloud/stats.
-- Inject a brand-new instance (`Mobius_Allied_Campaign_99_Map`, Allied variant, `ShowOnMissionSelect=true`, `IsUnlockedAtStart=true`, a deliberately-foreign GDI name TextID) → **a new "Allies 99" row appeared** in the Allied tab (name fell back to a placeholder because the TD TextID doesn't resolve in RA). ⇒ **placement is data-controllable.** So the "move" you want = **add-under-target-tab + hide-original** — both halves now proven. Caveats: name needs an RA-mode string; the *bare* instance displays but its launch isn't wired (no real scenario). For the launch half of the HIJACK path (existing slot, custom scenario), see the next section.
-
-### Launch through a hijacked slot (proven on the desktop and the Deck)
-
-**A CS/AM mission slot launches OUR scenario INI via plain CCDATA shadow-by-name**, proven end to
-end on a 4.0.1 dev build.
-
-**The probe:** stock `scg43ea.ini` (Aftermath Allied M1 "ITALY: Harbor Reclamation" —
-instance `Mobius_Allied_Aftermath_Campaign_43_Map`, `<Mission>43</Mission>` → filename
-`scg43ea.ini`) extracted from `CNCDATA/RED_ALERT/AFTERMATH/MAIN.MIX` → `general.mix`,
-edited to wipe all 90 enemy entities (USSR + BadGuy across UNITS/SHIPS/INFANTRY/
-STRUCTURES, indices renumbered), **`[Digest]` section REMOVED**, dropped as
-`<mod>/CCDATA/scg43ea.ini` in the local Vanilla_RA mod. No CONFIG.MEG change at all.
-
-**Result, reproduced twice:** mission launches from the Aftermath tab, loads our INI, and
-**self-wins in ~30 s** (zero enemies → "destroy all" win trigger fires at start; DPTHCHRG
-win movie plays, campaign advances to "In the Nick of Time", completion shield appears on
-the roster). Dev-DLL freshness confirmed via live `tf_astar.log` writes; the probe INI
-existed only in the local mod's CCDATA, so no other copy could have supplied the content.
-Stock mission cannot be won unattended in seconds → the engine read our file. No crash on
-either surface.
-
-**Confirmed on both playtest surfaces:** the Linux desktop and the Steam Deck gave the same
-instant win. The Deck result is the one that counts (vanilla Proton on the real play hardware), and
-delivery there was an `scp` of the INI into the mod's `CCDATA/`, read at scenario load with no
-relaunch.
-
-**Traps for the campaign implementation:**
-- **`[Digest]`: strip it, don't leave it stale.** `RELEASE_VERSION` is defined
-  (defines.h:72), so a WRONG digest aborts campaign scenario load (scenario.cpp:2282
-  result==2 → return false). A MISSING digest skips validation entirely
-  (ccini.cpp Load: `if (len > 0)`); community maps rely on the same hole.
-- Scenario filename derives from the instance's `<Mission>` number + house letter
-  (43 + Allied → `scg43ea.ini`); the display name lives in master-text, not the INI.
-- In-engine briefing text comes from the launcher TextID path, not the INI `[Briefing]`,
-  for the select-screen panel; the INI `[Briefing]` feeds the in-game briefing screen.
+- The expansion missions are `IsUnlockedAtStart` true, so they always show.
+- The truncation experiment cut all three structure files (`RA_ALLIES.XML`, `RA_ALLIES_MISSIONS.XML`,
+  `RA_CAMPAIGNMAPS.XML`) to two missions: all 14 still showed, and mission 14 no longer launched.
+- The progress record isn't in `Player_RA_settings_1.bin`, which holds no campaign strings.
+- The probe won itself because, with no enemies left, its "destroy all" win trigger fired at the start.
+- The probe's `scg43ea.ini` came from `CNCDATA/RED_ALERT/AFTERMATH/MAIN.MIX` → `general.mix`, and ran on a dev
+  build whose fresh `tf_astar.log` writes showed the DLL was current, with no crash on either machine.
+- The digest abort and skip in TF's tree: `RELEASE_VERSION` at `defines.h:72`, the abort at `scenario.cpp:2282`
+  (result 2 → return false), the skip in `ccini.cpp` `Load` (`if (len > 0)`).
 
 **Consequence for the campaign arc:** the hijack delivery = per-slot scenario INIs in
 CCDATA (mod-shippable, no same-size rule) + cosmetic restyle (titles/briefings) via

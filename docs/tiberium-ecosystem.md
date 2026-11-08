@@ -6,13 +6,14 @@ damage it does to infantry, and Visceroids.
 ## The overlay
 
 Tiberium is its own overlay, `OVERLAY_TIB01`, after the vanilla overlays and before the TS walls (`defines.h`, `odata.cpp`), and
-every rule below keys on it. Spreading runs on `Rule.GrowthRate`, in multiplayer only when the
-lobby's Tiberium option is on. Tiberium and Ore never convert each other where their fields meet
+every rule below keys on it. `Can_Tiberium_Grow` and `Can_Tiberium_Spread` (`cell.cpp`) list TIB01 beside
+the ore, so it grows and spreads as ore does. Tiberium and Ore never convert each other where their fields meet
 (`CellClass::Spread_Tiberium`); the official-map hybrids rely on that (`official-map-hybrids.md`).
 
 TF exports TIB01 as `OVERLAY_GEMS3` with AssetName `TIB01`, and `Get_Map_Cell`'s `IsResource` names
 TIB01. See the field manual's [The Tiberium ecosystem](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/tiberium-ecosystem.md#a-new-resource-is-its-own-overlay)
-for why a new resource needs its own overlay and both launcher fixes.
+for why a new resource needs its own overlay, both launcher fixes, and how growth follows `GrowthRate` and the
+lobby's Tiberium option.
 
 ## Blossom trees
 

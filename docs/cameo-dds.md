@@ -9,18 +9,15 @@ opaque. Written as DXT1 DDS with mips they take 59 KB each, about 33 MB in all.
 
 ## Why the badges stay baked
 
-The DLL picks a cameo only by `AssetName` (`TF_Apply_Cameo_Badge` appends the owner mask), so a
-badge exists only inside a baked image. The sidebar entry's other data is fixed-meaning fields:
-cost, power, progress and six state flags (`CNCSidebarEntryStruct`'s `Completed`, `Constructing`,
-`ConstructionOnHold`, `Busy`, `BuildableViaCapture`, `Fake`). No overlay quad of the cameo widget can carry a
-per-entry badge: see the field manual's [Sidebar cameos](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/sidebar-cameos.md#cameos-that-change-at-runtime).
+Neither the cameo widget nor the sidebar entry's other fields can carry a per-entry badge, so a badge exists only
+inside a baked image, picked by `AssetName` (`TF_Apply_Cameo_Badge` appends the owner mask): see the field manual's
+[Sidebar cameos](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/sidebar-cameos.md#cameos-that-change-at-runtime).
 
 ## How the launcher loads a cameo
 
 See the field manual's [Sidebar cameos](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/sidebar-cameos.md#a-new-cameo),
 a new cameo and replacing a stock cameo: a new name loads a loose 344x256 DDS, and a stock region
-takes only a loose TGA, so `BuildIcon_TD_A10` stays a TGA. Every compressed DDS in the base game
-has sides that are multiples of 4.
+takes only a loose TGA, so `BuildIcon_TD_A10` stays a TGA.
 
 ## Quality
 

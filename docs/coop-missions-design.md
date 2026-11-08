@@ -7,19 +7,13 @@ single-player win/lose and briefing gates for that map only. For example Player 
 = Allies, CPU = Soviets, with a pre-placed enemy base, triggered attack waves, a briefing and real
 objectives.
 
-**The launcher's own co-op campaign feature exists as code only and is not usable.** Worth knowing before anyone finds the traces and gets hopeful:
-
-- `ClientG.exe` contains a compiled co-op campaign implementation — `CoopCampaignMenuImplementationClass`,
-  `Button_CoopCampaign`, `CoOp_MissionDetails_Group`, `Faction5CoOpCampaign1Star..3Star`, and a
-  hosting path `CoordinatorMultiplayerManagerClass::Host_Coop_Campaign_Lobby(ClientProgressiveCampaignMissionTypeClass*, ProgressiveCampaignDifficultyTypeEnum, ...)`
-  with match-settings / player-ready / launch RPCs.
-- `FACTIONS.XML` carries the matching data field, `<CoopCampaignType>`, as a sibling of
-  `<CampaignType>` — **empty on all 11 factions.**
-- **No co-op data ships.** `UI_CampaignMenu_CoOp` (the screen the menu class would load) is
-  named in the scene list, but no member of our CONFIG.MEG *or* the pristine base archive holds
-  it. No co-op campaign is defined in `PROGRESSIVECAMPAIGNFILES.XML`.
-
-So it is a cut feature: code without content.
+**The launcher's own co-op campaign feature exists as code only and is not usable**: a cut feature, code without
+content (the field manual's [What the launcher owns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/what-the-launcher-owns.md#the-walls-and-the-way-through),
+the co-op campaign row). Worth knowing before anyone finds the traces and gets hopeful. Beyond the manual:
+`ClientG.exe` also names `CoOp_MissionDetails_Group` and `Faction5CoOpCampaign1Star..3Star`; the hosting call is
+`Host_Coop_Campaign_Lobby(ClientProgressiveCampaignMissionTypeClass*, ProgressiveCampaignDifficultyTypeEnum, ...)`;
+`<CoopCampaignType>` sits beside `<CampaignType>`; neither TF's CONFIG.MEG nor the base one holds
+`UI_CampaignMenu_CoOp`; and `PROGRESSIVECAMPAIGNFILES.XML` defines no co-op campaign.
 
 **Can we finish it? No — three independent walls, and two are things already proven impossible:**
 
@@ -92,13 +86,12 @@ it's scripting + a small win/lose-in-MP patch on top of the existing faction plu
 
 ## 3. Map discovery (RESOLVED — disk + editor-source evidence)
 
-**Discovery directory (confirmed on the Deck):**
-`Documents/CnCRemastered/Local_Custom_Maps/Red_Alert/` — holds 73 real `.mpr` maps.
-
-Each map = a **triplet**:
-- `<name>.mpr` — the full scenario INI (briefing, triggers, teams, houses, win/lose)
-- `<name>.tga` — preview thumbnail
-- `<name>.json` — launcher discovery manifest: `{MapTileX/Y/Width/Height, Theater, Waypoints[]}`
+**Discovery and the entry point:** the launcher lists custom maps from
+`Documents/CnCRemastered/Local_Custom_Maps/Red_Alert/` as `.mpr`/`.tga`/`.json` triplets and starts one through
+`CNC_Start_Custom_Instance`, which loads the `.mpr` as an INI: see the field manual's
+[New maps in the skirmish Official list](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/new-maps-in-the-skirmish-list.md#the-other-route-the-players-custom-maps),
+The other route. The `.mpr` is the whole scenario (briefing, triggers, teams, houses, win/lose). On the Deck the
+folder held 73 maps.
 
 Two naming families sit side by side in `Local_Custom_Maps/Red_Alert/`: local-authored short names
 (`RDS06.mpr`) and Workshop-synced `UGC_<a>_<b>_MAPDATA.MPR`, whose second hex field is the Workshop item
@@ -109,11 +102,8 @@ holds the Workshop maps' radar previews; `Custom_Maps/` also exists. The dev-mac
 `Waypoints[]` (= start positions / max players; RDS01=8, a sample UGC map=4). So co-op-ness is
 NOT discovery metadata; it lives in the `.mpr` content + our gate-patch.
 
-**DLL entry point:** `CNC_Start_Custom_Instance` (`dllinterface.cpp`) receives
-`directory_path` + `scenario_name` from the launcher, does `snprintf("%s%s.mpr", …)`, loads
-via `CCFileClass`, and **already parses the file as an INI** (`ini.Load`, reads `[Basic]
-Name` + `[Digest]`). The directory choice is launcher-owned (closed `ClientG.exe`), but the
-on-disk evidence pins it to `Local_Custom_Maps/Red_Alert/`.
+In TF's tree `CNC_Start_Custom_Instance` (`dllinterface.cpp`) builds the path with `snprintf("%s%s.mpr", …)` and
+reads it through `CCFileClass`, so the DLL already parses the map.
 
 **Distribution:** a co-op map that ships inside the mod goes in the Official list as an entry
 launched through the carrier (`td-base-art.md`), and an official map can be replaced by name from

@@ -195,9 +195,8 @@ python3 scripts/official_map_hybrid.py        # build the plan plus HYBRIDS
 - **Docklands' thumbnail keeps the gem speckle of its converted mixed fields.** The repaint only
   picks up tan Ore speckle, while the map itself turns those Gem cells to Tiberium
   (`take_gems`). Every other map converts pure-Ore fields only, so its thumbnail matches.
-- **Some map files name the same start twice** (`scmd2ea` lists `4773, 11846, 6234, 11558, 6234,
-  11846, 11558`); the preview entry lists each start once, in first-seen order. The key lookup
-  drops the repeats before matching.
+- **Some map files name the same start twice** ([field manual](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/official-maps-with-tiberium.md#the-lobby-thumbnail),
+  Find the key). The key lookup drops the repeats before matching.
 - **A thumbnail can show too little Ore speckle to repaint** (pale speckle on snow). The speckle
   test is relative to the ground under the field; if it still finds none, the map builds and
   its thumbnail stays stock, and the builder says so.

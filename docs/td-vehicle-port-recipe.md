@@ -11,10 +11,8 @@
 ## What's different about vehicles (vs infantry)
 
 1. **Source files:** `tiberiandawn/udata.cpp` (the `UnitTypeClass` ctor — speed/armor/strength/turret/squash/explosion), `const.cpp` `Weapons[]`/`Warheads[]`, `bbdata.cpp` the bullet. **The catalogue/our docs are NOT the spec** (playbook §2.1): the Medium Tank fires `WEAPON_105MM`, not 90mm.
-2. **RA's `UnitTypeClass` ctor has RA-only geometry fields TD lacks** (the legitimate "schema bridge" exception): `RemapType`, `verticaloffset`, `primaryoffset`/`primarylateral`, `secondaryoffset`/`secondarylateral`, `rotation` (32), `is_jammer`/`is_gapper`. Map TD's flags by **meaning** (turret/crusher/gigundo/goodie); for the **weapon-offset geometry** (where the muzzle flash draws on the turret) there is **no TD value** — start from a same-size RA tank (`2TNK` for a medium tank: vert `0x0030`, primary `0x00C0`) and **tune by screenshot** until the flash sits on the TD gun barrel. `toffset` (turret-center) IS a TD field — use TD's value (0).
-3. **`Speed` in rules.ini = `round(MPHType × 100 / 256)`**, NOT RA's tank's value and **NOT `MPHType ÷ 2`** (the ÷2 form was wrong — see ⚠️ below). TD gives an `MPHType` constant; the rules.ini `Speed=` is a **1–100 percentage** that the engine scales back to the 0–255 `MaxSpeed` via `_Scale_To_256` (`MaxSpeed = Speed × 256 / 100`). So invert it: `MPH_MEDIUM = 18` → `round(18 × 100 / 256)` = **`Speed=7`**; the shipped `[TDMCV]` (`MPH_MEDIUM_SLOW` = 12) → `round(12 × 100 / 256)` = `Speed=5`; the harvester (`MPH_MEDIUM` raw 18, but capped) ships `Speed=5`. **Do NOT copy RA's same-role tank `Speed=8`** — derive from the TD `MPH_*` constant, every time.
-
-   > ⚠️ **The ÷2 convention this doc originally taught was wrong** (corrected commit `187fd66`, 2026-05-31). `Speed = MPHType / 2` ran **every one of the 13 TD ground units ~28% too fast**. A Light-vs-Flame playtest race exposed it. All units were recomputed to `round(MPHType × 100 / 256)` (e.g. `MPH_MEDIUM` tanks `9 → 7`, harvester `10 → 5`) and the `// Speed=N` comments in `defines.h` were corrected to match. Use the ×100/256 form.
+2. **RA's `UnitTypeClass` ctor has geometry TD lacks** (the legitimate "schema bridge" exception): see the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#fill-in-what-red-alert-needs-and-td-never-had), Fill in what Red Alert needs and TD never had, and [Adding a unit](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/adding-a-unit.md#1-the-enum-and-the-constructor), section 1. TD's constructor (TD `UDATA.CPP:1406-1452`) also has no `RemapType`, no rotation-stage count (RA's 32) and no `is_jammer`/`is_gapper`: fill them from RA's, as that listing shows. Map TD's flags by **meaning** (turret/crusher/gigundo/goodie); start the weapon offsets from a same-size RA tank (`2TNK` for a medium tank) and tune by screenshot until the flash sits on the TD barrel; keep TD's `toffset` (0).
+3. **`Speed` in rules.ini = `round(MPHType × 100 / 256)`**, from TD's `MPH_*` constant every time, never RA's same-role tank (`2TNK`'s `Speed=8`): see the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md), Speed. TF's values: `[TDMTNK]` 7 (`MPH_MEDIUM` 18), `[TDMCV]` 5 (`MPH_MEDIUM_SLOW` 12). The harvester is the exception: TD's is `MPH_MEDIUM_SLOW` (5), but `[TDHARV]` ships `Speed=6`, RA `[HARV]`'s, so no faction's trucks run slower than another's. The `// Speed=N` legend on `MPHType` in `defines.h` gives each MPH's value.
 4. **Rendering = classic SHP (TFASSETS.MIX) + HD tileset (RA_UNITS.XML)** — both, unlike infantry (which use a donor-ImageData). `UnitTypeClass::One_Time` loads `<Image>.SHP` for `ImageData`; a TD-prefixed unit needs `TD<NAME>.SHP` packed into `TFASSETS.MIX` (add to `build_tfassets.sh`, source `<NAME>.SHP` from `CONQUER.MIX`). `ShapeSize=48,48` in rules.ini sets `MaxSize`. Classic mode is locked out, so the SHP is never drawn: it gives `ImageData` and the selection box. The HD tileset (`bundle_unit.py`) renders the Remaster; staging (`scripts/td_base_art.py`) points every unchanged TD tile at the base game's ZIP, so the copy `bundle_unit.py` makes doesn't ship (`td-base-art.md`).
 5. **Tileset donor = a same-frame-count turreted RA tank.** A turreted tank is 64 frames (32 body + 32 turret). RA's `2TNK` is exactly 64 → `bundle_unit.py MTNK TDMTNK --tileset-donor 2TNK`. (The `frame_count` slicer handles mismatches.)
 6. **Cameo/text:** `<BuildIcon>` references a vanilla `BuildIcon_TD_*` region (in `CNCBUILDABLES.XML`); `--text-name TEXT_UNIT_TITLE_GDI_<X>` / `--text-desc` likewise. Nothing shipped.
@@ -36,14 +34,11 @@
 
 ## Vehicle-specific traps
 
-| Trap | Symptom | Fix |
-|---|---|---|
-| **`Speed` copied from RA's tank, or halved** | Tank too slow/fast (TD-inauthentic); the ÷2 form runs ~28% too fast | `Speed = round(MPHType × 100 / 256)` (it's a 1–100 % that `_Scale_To_256` expands to `MaxSpeed`); derive from TD's `MPH_*` constant, never RA's same-role unit, never ÷2. See §3 ⚠️ |
-| **Tracked vehicle left wheeled** | TD tank moves too slow off-road (defaults to `SPEED_WHEEL` 60%/40% vs `SPEED_TRACK` 80%/70%) | Set `Tracked=yes` for TD `SPEED_TRACK` units (all four TD tanks). Genuinely wheeled TD units (`SPEED_WHEEL` — e.g. Recon Bike, Buggy) stay un-tracked. Exposed by a Light-vs-Flame race, commit `187fd66` |
-| **Generic effect not in RA** | Compile error (e.g. `ANIM_FRAG2` undeclared) | RA lacks some TD anims/sounds. If it's a distinctive death visual, **port it** (see §FRAG); muzzle flash (`GUNFIRE`) + impact (`VEH-HIT3`) are generic and reused per the Nod Turret precedent |
-| **Crew survivor is RA rifle** | Killed TD vehicle pops an `E1` rifleman | `UnitClass::Crew_Type` — add the `IniName[0..1]=="TD"` → `INFANTRY_TDE1` check **before** the unarmed-civilian branch (so MCV/Harvester are covered too). Mirrors `BuildingClass::Crew_Type` |
-| **Sidebar name ≠ in-game name** | Hover shows "GDI Medium Tank", sidebar shows "Medium Tank" | rules.ini `Name=` drives the in-game/hover name; the sidebar cameo uses the text ID in the object's `ObjectNameTextID`. Add a new ID of any length to the loose `Data/ModText.csv` and point `ObjectNameTextID` at it (the faction yards and war factories do). Editing the `.LOC` itself is same-size only |
-| **Muzzle-flash mis-positioned** | Flash floats off the gun | The weapon-offset geometry is RA-only; tune `verticaloffset`/`primaryoffset` against the TD sprite by screenshot |
+Speed, tracks and wheels, effects RA lacks, the crew and the muzzle flash are in the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md) (Speed, Fill in, Traps); the sidebar name is in [New text strings](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/new-text-strings.md#traps), Traps. TF's side:
+- `Tracked=yes` on all four TD tanks; the wheeled Recon Bike and Buggy stay un-tracked.
+- `GUNFIRE` (muzzle) and `VEH-HIT3` (impact) are reused, as on the Nod Turret; FRAG2 is ported (§FRAG).
+- `UnitClass::Crew_Type` sends a `TD` IniName to `INFANTRY_TDE1` before the unarmed-civilian branch, so the MCV and harvester are covered too. It mirrors `BuildingClass::Crew_Type`.
+- The faction yards and war factories point `ObjectNameTextID` at IDs of their own in the loose `Data/ModText.csv`.
 
 ---
 
@@ -62,11 +57,11 @@ TD's vehicle death uses `ANIM_FRAG2`; **RA only has `ANIM_FRAG1`**. Port it as i
 
 ## §DUAL — a dual-weapon vehicle with an anti-air secondary (Mammoth)
 
-The Mammoth Tank carries TWO weapons (cannon + AA tusk missiles). Mapping:
-- **rules.ini:** `Primary=<cannon>` + `Secondary=<AA weapon>`. The RA `UnitTypeClass` ctor has separate primary + secondary weapon offsets (the lateral barrels) — reference RA's own dual-weapon Mammoth `4TNK` (primary `0x00C0/0x0028`, secondary `0x0008/0x0040`).
-- **Anti-air is automatic** when the secondary weapon's bullet is AA-capable: the Mammoth Tusk fires `TDSSM` (`AA=yes,AG=yes`, already ported for the Guard Tower), so the unit engages aircraft with the secondary — RA's secondary-weapon-AA convention. No unit-level AA flag needed.
-- **Multi-shot / double-tap = the weapon `Burst=N` field.** TD's "fires multiple shots in quick succession" (the Mammoth's dual-barrel double-tap) has **no RA unit-level flag** — set `Burst=2` on the weapon instead (like `[TDTowTwo]`). The Mammoth uses `Burst=2` on both cannon and tusks.
-- **Repair-bay prereq:** TD's Mammoth needs `STRUCTF_REPAIR`. Add a `STRUCT_REPAIR → TDFIX` remap in `house.cpp::Can_Build` (the per-type prereq remap, like the existing STRUCT_WEAP/REFINERY/ADVANCED_TECH ones) so `Prerequisite=fix` is satisfied by the GDI service depot.
+The Mammoth Tank carries TWO weapons (cannon + AA tusk missiles). See the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#special-cases-at-method-level), Special cases (two weapons and the `4TNK` offsets, anti-air from the secondary, `Burst=2`, a per-type prerequisite remap). TF's mapping:
+- `Primary=<cannon>` + `Secondary=<AA weapon>`, offsets from `4TNK`.
+- The Mammoth Tusk fires `TDSSM` (`AA=yes,AG=yes`, already ported for the Guard Tower), so the unit engages aircraft with the secondary.
+- `Burst=2` on both cannon and tusks (like `[TDTowTwo]`).
+- TD's Mammoth needs `STRUCTF_REPAIR`: a `STRUCT_REPAIR → TDFIX` remap in `house.cpp::Can_Build` (like the existing STRUCT_WEAP/REFINERY/ADVANCED_TECH ones) lets the GDI service depot satisfy `Prerequisite=fix`.
 
 ---
 
@@ -87,8 +82,7 @@ weapon + one ctor + assets.
   screenshot-tune (the §traps "muzzle-flash mis-positioned" trap doesn't apply). The jet draws from
   the body's `Fire_Coord`; the body rotates to face target (TD tracked-vehicle rule, the non-turret
   branch of `UnitClass::Rotation_AI`).
-- **`Burst=2`** = TD FTANK's `is_twoshooter` "fires two shots in quick succession" (twin flame jets) —
-  same RA mapping as the Mammoth double-tap (§DUAL); RA has no unit-level two-shooter flag.
+- **`Burst=2`** = TD FTANK's two-shooter (twin flame jets), as for the Mammoth (§DUAL).
 - **New weapon `WEAPON_TDFLAMETONGUE` / `[TDFlameTongue]`** (Dmg50, ROF50, Range2, Projectile=TDFlame,
   Speed=40, Warhead=TDFire, Report=FLAMER2, Anim=TDFLAME-N, Burst=2); `IsTDPort=true` in rules.cpp
   (identical treatment to `TDFlamethrower`).
@@ -122,11 +116,7 @@ already shipped before assuming new work** — the Bike fires `WEAPON_DRAGON`, w
   twin flame nozzles forward; a single-rocket bike doesn't need them.)
 - **NOT a crusher, NOT gigundo** (`is_crusher=false`, `is_gigundo=false`) — a light scout bike can't
   squash and isn't a big unit. (The V2 Launcher template has *both* true; flip them.)
-- **Strength 160** — TD BIKE has `#ifdef ADVANCED 90 #else 160`; `ADVANCED` is **`//#define`d out**
-  (`tiberiandawn/defines.h:44`), so the retail value is the **`#else` (160)** branch. `Points=45` =
-  the **reward** field (the *second* of the two-value `risk, reward` ctor pair — `80, 45`; same as the
-  Medium Tank `80, 62` → `Points=62`).
-- **Speed=16** — `MPH_FAST=40` → `round(40×100/256)` (the corrected formula, see §3). NOT ÷2.
+- **Strength 160, `Points=45`, `Speed=16`:** TD's retail branch (`ADVANCED` is off, `tiberiandawn/defines.h:44`), the reward half of TD's `80, 45` (the Medium Tank's `80, 62` gives `Points=62`), and `MPH_FAST` 40. See the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#read-tds-own-source-first), Read TD's own source first, Rate of fire, scatter and AI value, and Speed.
 - **Nod-only** (`HOUSEF_BAD`) → `Owner=BadGuy`, `Prerequisite=weap` (TDAFLD airstrip satisfies it via
   the house.cpp `STRUCT_WEAP` remap, same as Light/Flame Tank). `TechLevel=2` (TD build level 2 — the
   earliest TD vehicle).
@@ -146,17 +136,8 @@ The GDI APC (`UNIT_TDAPC`, TD `UnitAPC` udata.cpp:907) is the first **transport*
   permissive TD-multiplayer quirk — unlike `LTANK`[BAD-only]/`MTANK`[GOOD-only], which are clean). The APC
   is iconically GDI in gameplay (Nod's mobility = Buggy/Bike/Stealth Tank), so `Owner=GoodGuy`. **Check the
   ownable bits against faction-canon, not just the raw flags.**
-- **No transporter flag — `Passengers=N` is the whole switch.** RA has no `IsTransporter`; `Max_Passengers() > 0`
-  (set by rules.ini `Passengers=5`) is the sole gate. The passenger *loading* logic, *entry cursor*, and
-  *player-unload trigger* (`ACTION_SELF` → `MISSION_UNLOAD`, unit.cpp:3805) are all **generic** off that.
-- **But four behaviors are hardcoded to `UNIT_APC`** and a new type is inert until added (playbook §3.27 in
-  vehicle form): `Mission_Unload`'s `case UNIT_APC:` state machine (**the critical one** — without it the APC
-  can't eject passengers), the door open/close on load (both `#ifdef FIXIT_PHASETRANSPORT`/`#else` branches),
-  the AI auto-load-empty-APC, and the mechanic force-move cursor. `grep -n UNIT_APC redalert/*.cpp` and add
-  `UNIT_TDAPC` at each (the `case UNIT_MCV:`/`case UNIT_TDMCV:` precedent shows the pattern).
-- **No turret (`is_turret_equipped=false`)** — the M60 is hull-mounted, body rotates to aim (vs the Hum-vee's
-  turret). The 38-frame sprite (32 body + 6 door, **no** turret frames) confirms it; flagging it turreted would
-  draw the door frames as a "turret." Tileset donor = the APC's own 38-frame block (no slicing).
+- **`Passengers=N` is the whole switch, but four behaviours are keyed on `UNIT_APC`:** see the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#special-cases-at-method-level), Special cases ("Transports"). TF adds `UNIT_TDAPC` at each (`grep -n UNIT_APC redalert/*.cpp`; the `case UNIT_MCV:`/`case UNIT_TDMCV:` precedent shows the pattern), in both the `#ifdef FIXIT_PHASETRANSPORT` and `#else` door branches. The player's unload is the generic `ACTION_SELF` → `MISSION_UNLOAD` (unit.cpp:3805).
+- **No turret (`is_turret_equipped=false`):** the M60 is hull-mounted and the body turns to aim. Tileset donor = the APC's own 38-frame block (no slicing).
 - **`Crewed=no`** (TD source "crew inside? false") — the 5 passengers spill on death, no extra survivor; the
   §traps Crew_Type trap doesn't apply.
 - **Deploy/unload key:** works for any unit whose self-click deploys or unloads (playbook §3.23); the
@@ -174,38 +155,15 @@ The GDI APC (`UNIT_TDAPC`, TD `UnitAPC` udata.cpp:907) is the first **transport*
 
 The Nod Stealth Tank (`UNIT_TDSTNK`, TD `UnitSTank`, IniName **`STNK`**) is the **lowest-engine-effort
 combat vehicle yet** — cloaking is *free*. The whole port = enum + ctor + one new weapon + assets + a
-small audio dispatch. Shipped 2026-06-01 (`000ccc4` unit, `1572b09` detection).
+small audio dispatch.
 
-**(a) Cloak is pure data — RA inherited TD's entire cloak system verbatim.** Identical `CloakType` enum
-(`UNCLOAKED→CLOAKING→CLOAKED→UNCLOAKING`), identical `TechnoClass::Cloaking_AI`/`Do_Cloak`/`Do_Uncloak`.
-So a TD cloaker is just rules.ini **`Cloakable=yes`** (parsed `techno.cpp` Read_INI) — **no `_TD()` port,
-no engine code.** Behavior comes for free: auto-cloak when idle (after `Rule.CloakDelay`/`SubmergeDelay`),
-decloak on firing (`FIRE_CLOAKED`→`Do_Uncloak`), shimmer when hit or near a detector, can't fully cloak
-below `ConditionRed`. The launcher renders it (`CNCObjectStruct.Cloak` exported, `dllinterface.cpp`). RA's
-own Phase Transport (`UNIT_PHASE`, Aftermath, `Cloakable=yes`) is the cloaking-*vehicle* precedent.
+**(a) Cloak is pure data.** A TD cloaker is rules.ini **`Cloakable=yes`** alone (parsed in `techno.cpp` `Read_INI`; firing uncloaks it through `FIRE_CLOAKED` → `Do_Uncloak`): no `_TD()` port, no engine code. See the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#cloak-and-stealth-detection-one-system-in-both-games), Cloak and stealth detection, and [A stealth generator](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/stealth-generator.md#what-the-engine-gives-you) (the export carries the raw `Cloak` state). RA's own Phase Transport (`UNIT_PHASE`, Aftermath, `Cloakable=yes`) is the cloaking-*vehicle* precedent.
 
-**(b) Stealth detection — TD and RA are the SAME system.** Driven by rules.ini **`Sensors=yes`**
-(`IsScanner`, `techno.cpp` Read_INI). Mechanism: when a CLOAKED unit *moves adjacent* to an enemy
-`Sensors=yes` techno, `FootClass::Per_Cell_Process` calls `Do_Shimmer()` (brief reveal) — an
-adjacency *tripwire on movement*, not a persistent radar reveal. **TD-canon: detectors are base DEFENSES
-and every infantry.** In TD source `is_scanner` is a `BuildingTypeClass` ctor param ("detect adjacent cloaked
-objects?"); the infantry ctor hardcodes it true and the unit ctor false, so **TD infantry DO reveal stealth
-tanks** they walk next to, and vehicles never do. The TD `true` buildings map to ours:
-GDI **TDGTWR/TDATWR**, Nod **TDGUN/TDOBLI** — all now carry `Sensors=yes`. Allied (`PBOX/HBOX/GUN/DOME`)
-and Soviet (`TSLA/FTUR/DOME`) defenses already had it from vanilla RA, so the 4-faction web is symmetric.
-RA's infantry and ship ctors force `IsScanner = true`, so every RA infantry and ship detects too. RA *can*
-flag units as scanners if you ever want active stealth-hunting — just not TD-canon. Detection is **pure rules.ini**, no DLL rebuild.
+**(b) Stealth detection is the same system in TD and RA,** pure rules.ini `Sensors=`, no DLL rebuild: see the same section, and [A stealth generator](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/stealth-generator.md#the-engine-gaps-you-have-to-fill) ("Detection only runs one way"). TD's detecting defences map to ours: GDI **TDGTWR/TDATWR**, Nod **TDGUN/TDOBLI**, all with `Sensors=yes`. Allied (`PBOX/HBOX/GUN/DOME`) and Soviet (`TSLA/FTUR/DOME`) defences already had it from vanilla RA, so the 4-faction web is symmetric.
 
-**(c) The 2-shooter needs its OWN weapon when the base weapon is shared.** TD STANK is
-`is_twoshooter=true` → RA `Burst=2` (the §3.5/§DUAL mapping — no unit-level flag). But it fires
-`WEAPON_DRAGON`, *shared* with the single-shot E3 Rocket Soldier + Recon Bike. Adding `Burst=2` to
-`[TDDragon]` would wrongly double-fire them — so make a **separate weapon** (`TDStnkDragon` = TDDragon's
-stats/bullet/warhead + `Burst=2`), new `WEAPON_` enum + `rules.cpp` registration + `IsTDPort`. General
-rule: clone-with-tweak any shared weapon rather than mutate the shared one.
+**(c) The 2-shooter needs its OWN weapon when the base weapon is shared** (the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#special-cases-at-method-level), Special cases). TD STANK fires `WEAPON_DRAGON`, *shared* with the single-shot E3 Rocket Soldier + Recon Bike, so `TDStnkDragon` = TDDragon's stats/bullet/warhead + `Burst=2`, with its own `WEAPON_` enum, `rules.cpp` registration and `IsTDPort`. General rule: clone-with-tweak any shared weapon rather than mutate the shared one.
 
-**(d) TD cloak audio.** RA's `Do_Cloak`/`Do_Uncloak` play `VOC_IRON1` (Iron Curtain) for non-vessels; TD's
-play `VOC_CLOAK` = file **`TRANS1`**. To use TD's sound for TD units without disturbing RA cloakers
-(Phase Transport/Submarine): add `VOC_TD_CLOAK`→`"TRANS1"` (`audio.cpp`), route `RAC/RAR_SFX_TRANS1` →
+**(d) TD cloak audio.** TD and RA cloak with different sounds (the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#cloak-and-stealth-detection-one-system-in-both-games), Cloak and stealth detection). To use TD's for TD units without disturbing RA cloakers (Phase Transport/Submarine): add `VOC_TD_CLOAK`→`"TRANS1"` (`audio.cpp`), route `RAC/RAR_SFX_TRANS1` →
 base `TDC/TDR_SFX_TRANS1.WAV` (`SFXEVENTSNONLOCALIZED.XML`, BAZOOK1 pattern, no WAV bundling), and in
 `Do_Cloak`/`Do_Uncloak` branch on the **`TD` IniName prefix** → `VOC_TD_CLOAK` else the stock RA sound.
 
@@ -215,8 +173,7 @@ invisible-to-radar param is `true`, as in TD, but it changes nothing: the `is_st
 shows a cloaked or `Invisible=` unit to an enemy is untested. `ANIM_TDFRAG2` death; `Prerequisite=weap,dome` (Nod
 airstrip + radar, matching TD's `STRUCTF_RADAR`); Speed 12 (`MPH_MEDIUM_FAST`, = Hum-vee/Buggy — TD-authentic, kept).
 
-**Compile traps hit:** `TXT_STANK` doesn't exist in RA → use the `TXT_LTANK` placeholder (real name from
-rules.ini `Name=`); `Techno_Type_Class()` returns a **pointer** not a reference → `->IniName`.
+**Compile traps hit:** `TXT_STANK` (the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#traps), Traps) → TF uses the `TXT_LTANK` placeholder; `Techno_Type_Class()` returns a **pointer** not a reference → `->IniName`.
 
 ## The roster
 

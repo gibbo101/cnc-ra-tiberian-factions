@@ -133,12 +133,10 @@ from the shadows… We estimated the Brotherhood would tire of the USSR by the e
   existing CS/AM instances; new instances list but cannot launch (InstanceServerG resolves
   from BASE). GDI uses the 9 `Mobius_Aftermath_Allied_Map_Base` slots; Nod the 8
   `Mobius_Allied_Counterstrike_Map_Base` slots. The USSR-variant groups (9 + 8) stay in
-  reserve — bonus missions, interludes, or a second act. **Mechanics confirmed in-game:
-  drop the mission as `<mod>/CCDATA/<scenario>.ini` and the engine loads ours over the
-  stock one; filename = the instance's `<Mission>` number + house letter (43+Allied →
-  `scg43ea.ini`). TRAP: strip the `[Digest]` section** — `RELEASE_VERSION` makes a wrong
-  digest abort the load, a missing one skips validation. Recipe + evidence:
-  `campaign-tabs-research.md`.
+  reserve — bonus missions, interludes, or a second act. **The delivery is confirmed in game:** a
+  `CCDATA` scenario shadowing the slot's by name, with `[Digest]` stripped (the field manual's
+  [Custom campaigns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-campaigns.md#replacing-an-official-mission-shadow-its-scenario),
+  Replacing an official mission). TF's evidence: `campaign-tabs-research.md`.
 - **No same-size limit on the mission data:** the instances ship in a loose `INSTANCES.XML`,
   which overrides CONFIG.MEG at any size, and each mission's name and select-screen briefing
   are new keys in `Data/ModText.csv`, any length (`campaigns-page.md`). The same-size rule

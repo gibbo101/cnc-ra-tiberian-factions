@@ -9,14 +9,12 @@ Companion to `lobby-difficulty-ram-spike.md`
 (the subsystem). Everything below was measured under Proton on the desktop prefix, dev DLL,
 read-only against ClientG.exe. Raw logs + analysis scripts in the session scratchpad.
 
-**Ruled out, do not re-attempt:**
-- **A content-based tiebreak**, such as "discard the candidate equal to the difficulty vector
-  applied at the previous launch". It fixes DCJD's scenario but inverts on edit-away-then-edit-back
-  (launch Hard, quit, set Easy, set back to Hard, launch: the stale copy is Easy, the live one
-  matches the last launch's Hard, so the rule picks the stale one).
-- **More corroboration fields from the roster.** Team, colour and country are the only lobby fields
-  the DLL is handed, and DCJD's scenario holds all of them constant. A complete fix has to identify
-  which copy the client is using, which is what the resolver does.
+**Ruled out, do not re-attempt:** a tiebreak against the last launch's picks (it settles the plain change-only
+case, and fails only when a pick is changed and changed back), and more corroboration fields from the roster. Why
+each fails: the field manual's
+[Per-AI lobby difficulty](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md#stale-copies-of-the-lobby),
+Stale copies of the lobby, What doesn't work. A complete fix has to identify which copy the client is using,
+which is what the resolver does.
 
 ## The problem (DontCryJustDie was right)
 
@@ -48,10 +46,8 @@ and country with the live one, so both pass corroboration and the read is ambigu
 
 ## Route A — a discriminator byte inside the record: REJECTED
 
-Dumped all 168 record bytes + 32 preceding. Stale vs live differ at ~55 offsets, all heap
-pointers or uninitialised tail bytes — no generation counter, no stable semantic field. And
-in DCJD's scenario the ONLY thing that legitimately differs between stale and live IS the
-difficulty, so there is nothing to key on that we also independently know. Dead.
+Dumped all 168 record bytes and the 32 before them: nothing to key on (the field manual's What doesn't work,
+as above). Dead.
 
 ## Route B — referrer pointers: the useful signal (two variants)
 

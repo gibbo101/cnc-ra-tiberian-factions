@@ -4,8 +4,8 @@
 
 The EMP Cannon (`STRUCT_TSPULS`, superweapon `SPC_TS_EMP`) and the Mobile EMP stun for 30 s and
 10 s within 3 cells under TS rules, and a stunned digger surfaces at the nearest ground or is
-destroyed if there is none. The out-of-range targeting cursor is launcher-owned: the DLL is told
-nothing while a player aims (`launcher-vs-dll-ownership.md`). This doc also records the Mobile
+destroyed if there is none. The out-of-range targeting cursor can't be shown from the DLL (the field manual's
+[EMP and stun](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/emp-and-stun.md#traps), traps). This doc also records the Mobile
 Sensor Array and the Mobile War Factory, built in the same arc. Pairs with
 `subterranean-design.md`.
 
@@ -22,19 +22,19 @@ Sensor Array and the Mobile War Factory, built in the same arc. Pairs with
   FIRE_CANT; `Can_Player_Move` is false; `DriveClass::AI` finishes the current cell, then holds;
   `Try_To_Deploy` and `Process_Take_Off` refuse; radar goes off as at low power; gap and stealth
   generators go off; a stunned cannon can't be the launch site.
-- **TS rules kept:** a stunned power plant still produces power, a stunned yard still builds,
-  and factories keep producing. Pad-parked aircraft are spared because a building's cell skips the
-  occupant pass; OpenTS's aircraft pass has no building test, so that is not a TS rule.
-- **Building sparks differ from TS:** TF sparks only construction yards (`Is_Construction_Yard`).
-  OpenTS sparks the buildings where `Is_Mobile_Deployer()` is true (deployed sensor array, tick
-  tank, artillery, mobile stealth, Juggernaut, ICBM launcher), never the construction yard.
+- **TS rules kept:** a stunned power plant, yard and factory keep working (the field manual's
+  [EMP and stun](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/emp-and-stun.md#the-method-in-red-alerts-dll), item 4).
+  Pad-parked aircraft are spared because a building's cell skips the occupant pass: a TF rule, since
+  OpenTS's aircraft pass has no building test.
+- **Building sparks differ from TS:** TF sparks only construction yards (`Is_Construction_Yard`);
+  TS sparks only deployed mobile units, never the yard (the manual's TS section lists them).
 - **Hover units carry split shadows** (TSHVR shapes 64-95, TSLIMP 10-19, packed by
   `ts_pack_hd_buildings.py`). The shadow bobs with the hull; only a stun settles the hull 3 px
   onto a still shadow over ~0.8 s, lifting back over the stun's last ~0.8 s.
 - **Diggers (stage D):** a stunned digger reroutes to `Find_Emerge_Cell` (OpenTS `empulse.cpp` +
   `tunnel.cpp` Stop_Moving), explodes if there is none, and carries on if it is within a cell's
-  diagonal of its destination; it keeps moving but ignores new dig orders. Sparks start on
-  surfacing.
+  diagonal of its destination; it keeps moving (TS's tunnel `Process` ignores power) but ignores
+  new dig orders. Sparks start on surfacing.
 - **Audio:** PLSECAN2 on fire; EVA "E.M. pulse cannon ready" (`00-I158`) only, as in TS. Dev
   builds recharge superweapons in 5 s (`SuperClass::Cap_Recharge`); the Mobile EMP stays on its
   real timer.
@@ -52,10 +52,9 @@ after play), charge **87 s** = TS's real time (FS MaxCharge 1800 at TS Medium sp
 kept. No pre-charged variant. The AI doesn't build it until it has discharge logic.
 
 **Mobile Sensor Array (`UNIT_TSLPST` -> `STRUCT_TSDPSA`):** radius 25 (TS, may need tuning like
-the EMP). Cloaked and buried enemies in range are shown to the sensor's owner only, **never
-decloaked**: a ghost copy of their draw entries, enemy-owned (their colour and
-radar dot), see-through, unselectable. Cloaked ones can be attacked (the cell carries the attack
-action); buried ones only seen, as in TS. EVA "cloaked unit detected" / "subterranean unit
+the EMP). Cloaked and buried enemies in range are shown to the sensor's owner as ghost copies,
+**never decloaked**, by the method in the field manual's
+[EMP and stun](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/emp-and-stun.md#showing-hidden-enemies-without-decloaking-them). EVA "cloaked unit detected" / "subterranean unit
 detected" with a radar ping, 15 s apart per line. Deployed: not repairable, drag-selectable,
 box 35x36, PLACE2 on deploy and pack-up. Fallback if ghosts ever misbehave: decloak everything
 in range, buildings too.
@@ -87,22 +86,12 @@ Range 40, Lobber, Projectile `PulsPr` (High, Image PULSBALL), Warhead `EMPuls` (
 radius in cells, `EMEffect=yes`, AnimList PULSEFX1,PULSEFX2), Report PLSECAN2.
 `[AudioVisual] EMPulseSparkles=EMP_FX01`.
 
-**The pulse (OpenTS `empulse.cpp` `EMPulseClass::Create`)**, radius = Spread cells, circle
-test `dx*dx+dy*dy <= spread*spread` on cell deltas:
-- Aircraft on the ground (IsDown, !In_Air) within `Spread*CELL_LEPTON` of the centre:
-  `Crash()`.
-- Every object in `LAYER_UNDERGROUND` within the circle: locomotor `Power_Off`, `Stop_Moving`,
-  `StunDuration = Duration`, sparkles attached. (Ours follows TS; see stage D.)
-- Buildings whose centre cell is in the circle: `Power_Off()`, `StunDuration = Duration`,
-  radar recalc, sparkles only on a deployed mobile unit (`Is_Mobile_Deployer()`); limpet mines
-  die; core defenders immune.
-- Cell occupants: units and aircraft (any with a locomotor) except the source, plus cyborg
-  infantry: locomotor `Power_Off`, `Stop_Moving`, `StunDuration = Duration`, sparkles
-  (`EMP_FX01`, LoopCount -1, attached to the object). Visceroids immune. Plain infantry
-  UNAFFECTED.
-- The cannon itself is `source`, so it is exempt from its own pulse.
-- `Update_All`: the pulse object dies after Duration frames (it only marks cells
-  `IsAffectedByEMP`; nothing reads that flag in OpenTS -- no lingering field effect).
+**The pulse** is OpenTS `empulse.cpp` `EMPulseClass::Create`; the field manual's
+[EMP and stun](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/emp-and-stun.md#how-tiberian-sun-does-it) has what it does
+(the circle, the aircraft pass, underground units, buildings, occupants, the exempt firer, no lingering field).
+Each `LAYER_UNDERGROUND` object and each cell occupant gets locomotor `Power_Off`, `Stop_Moving` and
+`StunDuration = Duration`; a stunned building also recalculates radar; the pulse object dies after Duration frames
+(`Update_All`). Ours follows it except where What ships says otherwise.
 
 **Stun consumers (OpenTS)** -- `TechnoClass::StunDuration` counts down in `TechnoClass::AI`;
 at 0 a building `Power_On`s and radar recalcs. Gates: every locomotor's `Move_To`/`Process`
@@ -141,10 +130,10 @@ AI skips stunned buildings.
   line, `00-I158`.
 - House AI: enable when a TSPULS is active (Ion pattern house.cpp 2481-2520), remove when
   gone, `Special_Weapon_AI` picks the densest enemy vehicle/base cluster.
-- Launcher routing (`dllinterface.cpp` Convert_Special_Weapon_Type): `dll_weapon_type =
-  SW_ION_CANNON` (targeting cursor); `AssetName "SW_TSEmp"` -> RABUILDABLES `RA_SW_TSEMP`
-  with BuildIcon_TS_EMP (PulsIcon art) and TS text "E.M. Pulse". Cost-suppression caveat
-  as the Ion Cannon.
+- Launcher routing (`dllinterface.cpp` Convert_Special_Weapon_Type, as in the field manual's
+  [Air delivery and fleets](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#support-powers)):
+  `SW_ION_CANNON`; `AssetName "SW_TSEmp"` -> RABUILDABLES `RA_SW_TSEMP` with BuildIcon_TS_EMP
+  (PulsIcon art) and TS text "E.M. Pulse".
 - Discharge (`house.cpp` Place_Special_Blast case): find the house's TSPULS in range
   (Range 40 cells ~ map-wide; TS picks the nearest powered cannon), set its `EMPDest`,
   building turns its turret to the target and fires `WEAPON_TSEMP` -> `BULLET_TSPULSBALL`
@@ -156,10 +145,8 @@ AI skips stunned buildings.
 See "What ships" above.
 
 ### Stage D -- diggers
-- `TF_EMPulse` stuns every tunnelling unit in the spread and calls `Tunnel_Stop` (OpenTS
-  empulse.cpp + tunnel.cpp Stop_Moving): reroute to `Find_Emerge_Cell`, `Tunnel_Explode` if
-  none, carry on if within a cell's diagonal of the destination. A stunned digger keeps moving
-  (TS tunnel Process ignores power) but ignores new dig orders.
+- `TF_EMPulse` stuns every tunnelling unit in the spread and calls `Tunnel_Stop`, which does what
+  What ships describes (diggers).
 
 ### Stage E -- audio
 - PLSECAN2 (cannon fire) and 00-I158 (EVA) extracted from TS and shipped under their own names

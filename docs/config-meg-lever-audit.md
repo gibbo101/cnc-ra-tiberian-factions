@@ -18,48 +18,33 @@ their profile, and that dismissal is itself a finding — see "Dismissed by clas
 `config-meg-mod-delivery.md` (how a mod ships its own CONFIG.MEG), `mix-file-format.md`
 (`meg_pack.py`, the same-size rule).
 
-**The constraint on everything below:** a mod can replace a member's *contents* at its exact
-byte length. It cannot add a member, remove one, or change any size — offsets resolve against
-the base archive. So every lever here is "rewrite in place, byte-for-byte", and growth must be
-paid for from padding or comment text inside the same file.
+**How each lever ships:** a loose copy of the file, at any size, or the member inside a replacement CONFIG.MEG at
+its exact byte length, with no member added or removed: see the field manual's
+[Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#three-ways-in), Three ways in.
 
 ---
 
 ## Delivery: `GameConstants_Mod.xml` beats editing the member
 
-`ClientG.exe` contains the literal `\XML\GameConstants_Mod.xml` and merges that file over the
-base GameConstants. It is **additive**, so it needs no same-size juggling and no CONFIG.MEG
-repack at all — a mod ships a dozen lines in `Data/XML/`. `overwrite="true"` on an element
-replaces a list rather than appending to it. Documented by Kushan (ppmforums.com/topic-54809,
-2020) and used by Vanilla Conquer's TD sample to switch on megamaps.
+The overlay (merged over the base constants, `overwrite="true"` for a list, the only `_Mod` overlay, no input
+overlay) is on the field manual's [Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#gameconstants_modxml), `GameConstants_Mod.xml`.
+Kushan documented it (ppmforums.com/topic-54809), and Vanilla Conquer's TD sample uses it to switch on megamaps.
 
-**Our constants moved to it** (classic-graphics lockout, mod hotkeys, the Unholy Alliance
-default, CFE's zoom factors), retiring a 128KB same-size rewrite plus a repack of that member.
-Fewer moving parts, and one less member that a rebuild can silently clobber — the failure mode
-that cost the faction names earlier the same day.
-
-**It is the only `_Mod` overlay.** No `InputTranslatorConfigurations_Mod.xml` exists in the
-binary, which is the independent confirmation that mod hotkey *bindings* cannot be shipped as
-data (Tier 1 item 1 below); the mod sends its commands from the launcher's own keys instead.
+**TF's constants ship in it** (classic-graphics lockout, mod hotkeys, the Unholy Alliance default, CFE's zoom
+factors), so the 128 KB `GAMECONSTANTS.XML` member needs no same-size rewrite and no repack, and a rebuild has
+one less member to clobber. With no input overlay, the mod sends its commands from the launcher's own keys instead (Tier 1
+item 1 below).
 
 ## Tier 1 — actionable levers
 
 ### 1. Mod hotkey commands (in use)
 
-EA built a mod hotkey path and left the hook in our own source:
-
-1. **`GAMECONSTANTS.XML`** — `CNCEnableModHotKeyGameCommands`, commented *"Community-requested
-   Mod option so that players can have customized mod hotkey commands"*.
-2. **`INPUTTRANSLATORCONFIGURATIONS.XML`** — four prepared bindings
-   `GAME_COMMAND_CNC_MOD_COMMAND_1..4` in the `TACTICAL_CNC` context, each with an empty
-   `<Key></Key> <!-- TBD -->`. Format is `<Key>VIRTUAL_KEY_F3</Key>`, as the bookmark commands
-   directly above them use.
-3. **`redalert/dllinterface.cpp` ~5374** — `INPUT_REQUEST_MOD_GAME_COMMAND_1..4_AT_POSITION`
-   cases already exist, resolve the mouse position to a `CELL`, and hit EA's placeholder:
-   `// TBD: For our ever-awesome Community Modders!` with a suggested
-   `PlayerPtr->Handle_Mod_Game_Command(cell, index)`.
-
-So the launcher delivers four modder-defined keypresses **with a map cell**.
+EA's mod hotkey path (the constant, four commands with empty keys, and the DLL input event that stops at EA's
+placeholder) is on the field manual's [Mod hotkey commands](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/mod-hotkey-commands.md#what-ea-left-in), What EA left in. Two details
+it lacks: the constant's comment reads *"Community-requested Mod option so that players can have customized mod
+hotkey commands"*, and a key is written `<Key>VIRTUAL_KEY_F3</Key>`, as the bookmark commands above them use. TF's
+handler is the `INPUT_REQUEST_MOD_GAME_COMMAND_1..4_AT_POSITION` cases of `CNC_Handle_Input` in
+`redalert/dllinterface.cpp`.
 
 **What ships:** `CNCEnableModHotKeyGameCommands` is on in `GameConstants_Mod.xml`, and the handler
 in `dllinterface.cpp` (`INPUT_REQUEST_MOD_GAME_COMMAND_1..4_AT_POSITION`) uses all four. The
@@ -71,23 +56,15 @@ filter harvesters and MCVs out of the selection; Mod Command 3 is camera-to-yard
 carries a launcher's sidebar switches for its own house (`TF_SIDEBAR_CHOICE_MARK`). A player can
 still bind Mod Command 1 to a key of their own.
 
-**A mod cannot ship a binding as data.** Four attempts all left Mod
-Command 1 unbound: the binding in `INPUTTRANSLATORCONFIGURATIONS.XML` inside the mod's
-CONFIG.MEG; the same file loose in `Data/XML/`; Options > Controls "Restore Defaults"; and a
-freshly created profile. Our unbind of the launcher's own deploy command was ignored too, so
-the client reads none of that file. Kushan's PPM guide (2020) describes player-bound mod
-commands as the intended flow. The settings-file route is not worth taking either:
-`userdata/<id>/1213210/remote/Player_RA_settings_1.bin` is a ChunkFile with a nested `CH`+zlib
-chunk inside, each layer with a header hash that matches no standard algorithm; a first binding
-inserts 64 bytes, so the same-size trick does not apply; and the file is global RA settings,
-Steam Cloud synced and kept after unsubscribe, so it is the wrong file for a mod to write.
+**A mod cannot ship a binding as data**: the four routes tried, and the player's settings file, are on the field
+manual's [Mod hotkey commands](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/mod-hotkey-commands.md#why-a-mod-cant-ship-the-bindings), Why a mod can't ship the bindings, and
+[Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#what-none-of-them-reach), What none of them reach. One detail they lack: a
+first binding inserts 64 bytes into the settings file, so the same-size trick doesn't apply to it either.
 
 ### 2. Campaigns are a faction-bound data layer
 
-`PROGRESSIVECAMPAIGNFILES.XML` is the live campaign registry (the similarly-named `CAMPAIGNS.XML`
-is empty). It lists `Campaigns/GDI.xml`, `NOD.xml`, `RA_Allies.xml`, `RA_USSR.xml`,
-`RA_Aftermath.xml`, `Ant.xml`, `Funpark.xml`, `Console.xml` — **and a commented-out
-`RA_Counterstrike.xml`**, so EA folded a campaign out of this list by editing data.
+The campaign registry and its files are on the field manual's
+[Custom campaigns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-campaigns.md#how-the-campaign-files-fit-together), How the campaign files fit together.
 
 Each campaign file is small and declarative:
 
@@ -104,9 +81,8 @@ Campaigns are **faction-bound**, carry their own intro movie, and list mission m
 as client-side entry points.
 
 **The ants are not a faction of their own** — worth stating because `<Faction>Faction6</Faction>`
-reads like one. `FACTIONS.XML` defines exactly 11 faction objects: `Faction1` = TD GDI (icon
-`_00`), `Faction2` = TD Nod (`_01`), `Faction3`–`Faction10` = the eight RA countries (flag icons
-`_03`–`_10`), plus `Faction_Funpark`. So `Faction6` is an ordinary RA country slot that the Ant
+reads like one. `FACTIONS.XML`'s 11 faction objects are on the field manual's
+[Adding a faction](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/adding-a-faction.md#the-launchers-data-for-the-row), The launcher's data for the row. `Faction6` is an ordinary RA country slot that the Ant
 campaign declares itself against, the same mechanism our factions use: GDI rides `Faction3`
 (Spain), Nod `Faction4` (Greece) and TS GDI `Faction8` (Germany). The binding is one-directional
 (campaign names a faction), and none of the faction entries carry buildable structure or unit
@@ -117,30 +93,22 @@ so a GDI or Nod campaign sits on that faction's slot instead of a leftover count
 `Faction_Funpark` is an eleventh entry with a **non-numeric name**, so the launcher's faction
 table is a data list rather than a fixed `Faction1..10` enum. New factions did not need it: TS GDI
 rides an existing country slot (`ts-gdi-faction.md`).
-**`<CoopCampaignType>` is a cut feature, not a lever.** Every faction carries the field, empty,
-as a sibling of `<CampaignType>`. `ClientG.exe` has the whole co-op campaign implementation
-compiled in (`CoopCampaignMenuImplementationClass`, `Button_CoopCampaign`,
-`Host_Coop_Campaign_Lobby(...)` with match-settings/ready/launch RPCs, per-mission star counts)
-— but **no co-op data ships in either archive**: `UI_CampaignMenu_CoOp` is absent from our
-CONFIG.MEG and from the pristine base, and no co-op campaign is defined. Since a mod cannot add
-a member, the screen could only come as a loose `.bui`, and whether ClientG opens a screen with no
-archive member is untested; the hosting path also runs through EA's online coordinator while mods
-load in LAN only. Recorded in full in `coop-missions-design.md`.
+**`<CoopCampaignType>` is a cut feature, not a lever**: see the field manual's
+[What the launcher owns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/what-the-launcher-owns.md#the-walls-and-the-way-through) (the co-op campaign row). The field sits beside `<CampaignType>` in every faction, and
+ClientG's compiled co-op code also tracks per-mission star counts. Whether ClientG would open the co-op screen from a loose `.bui` alone is
+untested; TF's verdict is in `coop-missions-design.md`.
 
 **Why it matters:** our campaign plan hijacks Counterstrike/Aftermath *mission slots*
 (`campaign-tabs-research.md`). This is the layer above. We cannot add a campaign file, but
 `ANT.XML` is 461 bytes and `FUNPARK.XML` 553 — **repointing a low-value campaign may be a
 cleaner hijack than borrowing Aftermath slots**, and it comes with its own faction binding.
-Unknown: whether ClientG enumerates campaigns from this data at runtime or from a compiled list,
-and whether campaign-select can surface the result (`bui-front-end-modding.md` says screen
-*structure* is fixed). One test settles it: rewrite `ANT.XML`'s mission list, see if the Ant
-campaign changes.
+What Mission Select shows comes from `INSTANCES.XML`, and the campaign files decide what launches: see the field
+manual's [Custom campaigns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-campaigns.md#display-and-launch-are-separate), Display and launch are separate.
 
 ### 3. Team colours are data
 
-`CNCRATEAMCOLORS.XML` (14.9 KB) and `CNCTDTEAMCOLORS.XML` define per-country colour transforms
-(`LowerBounds`/`UpperBounds`/`HSVShift`/`InputLevels` against `TeamColorLarge.tga`), keyed by
-country name — `SPAIN`, etc. Since GDI/Nod ride country slots, **their in-game colour identity is
+The team-colour files are on the field manual's [Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#example-team-colours), Example: team colours
+(`CNCRATEAMCOLORS.XML` is 14.9 KB; its transforms work against `TeamColorLarge.tga`). Since GDI/Nod ride country slots, **their in-game colour identity is
 data-editable** without touching the DLL. Not something we have wanted yet, but it is the answer
 if faction colour ever comes up.
 
@@ -187,11 +155,11 @@ player-facing surface nobody has used.
 
 ## Tier 3 — confirmed dead, do not re-chase
 
-- **`AUDIO_FACTIONS.XML`'s `<MusicMap>` is not a route to music by faction.** It defines
-  `<SFXMap>`, `<MusicMap>`, `<SpeechMap>` per faction and carries EA's own comment: *"We are not
-  using these for C&C TD / RA, since we need to account for each game and SFX asset mode (Classic
-  or Remastered)"*. Only `Faction1` exists and it is empty. Music by faction ships through a launcher
-  hook instead (`skirmish-music.md`).
+- **`AUDIO_FACTIONS.XML`'s `<MusicMap>` is not a route to music by faction**: see the field manual's
+  [Music by faction, and the jukebox](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/sound-and-music/music-by-faction-and-the-jukebox.md#how-the-launcher-picks-skirmish-music), How the launcher picks skirmish music. EA's
+  comment there continues "since we need to account for each game and SFX asset mode (Classic or Remastered)". The
+  file also defines `<SFXMap>` and `<SpeechMap>`, and only `Faction1` exists, empty. Music by faction ships through a
+  launcher hook instead (`skirmish-music.md`).
 - **`CNCTDSupportMegamaps` = false** looks like it unlocks big maps; it does not. TD-scoped, and
   it enables TD's 128×128 megamaps — the cap RA already runs at. It explains why TD's 64×64 build
   carries the same `MAX_EXPORT_CELLS (128*128)`. That negative stands, but the 128x128 export

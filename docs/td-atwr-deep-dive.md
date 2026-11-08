@@ -114,25 +114,7 @@ static BulletTypeClass const ClassMissile(BULLET_SSM,
 
 ### 5. The firing render path (TD `building.cpp:Fire_At` general branch)
 
-ATOWER is not in TD's SAM-specific branch. It takes the generic non-SAM path:
-
-```cpp
-Sound_Effect(weapon->Sound, Coord);                              // VOC_ROCKET2
-AnimClass* anim = NULL;
-if (weapon->Fires == BULLET_BULLET) {
-    anim = new AnimClass(ANIM_GUN_N + Dir_Facing(PrimaryFacing.Current()), Fire_Coord(which));
-} else {
-    switch (weapon->Fires) {
-    case BULLET_SPREADFIRE: case BULLET_LASER:
-        break;
-    default:
-        anim = new AnimClass(ANIM_MUZZLE_FLASH, Fire_Coord(which));   // BULLET_SSM lands here
-        break;
-    }
-}
-```
-
-Two visual effects per shot: the sound + the muzzle flash at `Fire_Coord`. The actual missile is the `BULLET_SSM` projectile that homes after launch.
+ATOWER takes TD's generic building `Fire_At` branch, not the SAM's: see the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#weapons-muzzle-flashes-and-offsets), Weapons, muzzle flashes and offsets. So a shot is `VOC_ROCKET2` at `Coord` and `ANIM_MUZZLE_FLASH` at `Fire_Coord(which)`; the missile is the `BULLET_SSM` (§4) that homes after launch.
 
 ---
 
@@ -442,7 +424,7 @@ This conversion is trap 3.1 in `td-port-playbook.md`.
 
 This is the vanilla-MEG pipeline pattern used for buildings, applied to bullets. **Did NOT use the TD-Assets workshop content** — our mod is self-contained.
 
-**The hidden trap (engine side):** a bullet with no classic SHP has a NULL `ImageData` and isn't drawn. See the field manual's [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#size-comes-from-the-classic-shape), Size comes from the classic shape, and [Adding a unit](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/adding-a-unit.md#4-a-classic-image-even-in-an-hd-only-mod), section 4. **Symptom**: smoke trail visible (anim spawn happens before render), audio works, damage works, but the missile body is invisible.
+**The hidden trap (engine side):** a bullet with no classic SHP has a NULL `ImageData` and isn't drawn. See the field manual's [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#size-comes-from-the-classic-shape), Size comes from the classic shape, and [Adding a unit](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/adding-a-unit.md#4-a-classic-image-even-in-an-hd-only-mod), section 4.
 
 **Fix (engine side):** a donor `ImageData`, as for `AIRCRAFT_TDCARGO` (TDC17) at `aadata.cpp:442-459`; mirrored for bullets in `bbdata.cpp::BulletTypeClass::One_Time` post-loop:
 

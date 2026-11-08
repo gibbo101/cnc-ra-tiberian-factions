@@ -29,20 +29,7 @@ TD `_anims[]` table entries (TD `bdata.cpp:3786-3816`):
 // STRUCT_STORAGE — NOT in _anims, uses default (0, 1, 0)
 ```
 
-TD `STRUCT_STORAGE` render path (TD `building.cpp:594` — in Shape_Number, non-turret branch):
-
-```cpp
-if (*this == STRUCT_STORAGE) {
-    int level = 0;
-    if (House->Capacity) {
-        level = (House->Tiberium * 5) / House->Capacity;
-    }
-    shapenum += Bound(level, 0, 4);    // 5 fill levels (0-4)
-    if (Health_Ratio() < 0x0080) {
-        shapenum += 5;                  // damaged variants at frames 5-9
-    }
-}
-```
+TD's silo fill render (TD `building.cpp:594`, `Shape_Number`'s non-turret branch): see the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#silos-barracks-and-the-rest), Silos, barracks and the rest ("A silo's fill"), and The flags that decide the frames ("TD's damaged test is below half").
 
 TD `STRUCT_BARRACKS` engine dispatch sites:
 
@@ -160,13 +147,7 @@ case STRUCT_TDPYLE:     // ← add
 
 **2. `Crew_Type` switch (`redalert/building.cpp:5423-5425`)**
 
-```cpp
-case STRUCT_TENT:
-case STRUCT_BARRACKS:
-    return (INFANTRY_E1);
-```
-
-Returns the basic GDI rifleman as the infantry that spawns when the barracks is sold or destroyed. `STRUCT_TDPYLE` not in case — currently falls through to `default: break;` and returns `TechnoClass::Crew_Type()`: `INFANTRY_E1`, except that a building with no primary weapon gives a civilian (`C1` or `C7`) 15% of the time.
+RA's cases (the tent and barracks a rifleman; a type with no case of its own `TechnoClass::Crew_Type`, where a building with no weapon gives a civilian 15% of the time): see the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#silos-barracks-and-the-rest), Silos, barracks and the rest ("The crew"). `STRUCT_TDPYLE` isn't in the case and falls through.
 
 With `[TDPYLE] Crewed=true`, the building does spawn a crew infantry on death, but 15% of the time it is a civilian, where TD's barracks always gives a rifleman. Need to add:
 
@@ -213,20 +194,7 @@ case STRUCT_TDPYLE:     // ← add
 
 **`Shape_Number` STRUCT_STORAGE branch (`redalert/building.cpp:712`)**
 
-TD's STRUCT_STORAGE silo renders different frames based on how full the player's overall tiberium storage is — 5 fill levels (0-4) with 5 damaged variants (5-9). Our `Shape_Number`:
-
-```cpp
-if (*this == STRUCT_STORAGE) {
-    int level = 0;
-    if (House->Capacity) {
-        level = (House->Tiberium * 5) / House->Capacity;
-    }
-    shapenum += Bound(level, 0, 4);
-    if (Health_Ratio() <= Rule.ConditionYellow) {
-        shapenum += 5;
-    }
-}
-```
+RA's branch, the same fill formula with its own damaged test, runs only for `STRUCT_STORAGE`: see the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#silos-barracks-and-the-rest), Silos, barracks and the rest ("A silo's fill").
 
 `STRUCT_TDSILO` doesn't hit this branch. **TDSILO.ZIP has 11 frames** (`tdsilo-0000.tga` through `tdsilo-0010.tga`) — exactly the layout the fill-render logic expects (5 healthy fill levels + 5 damaged + 1 spare). Currently TDSILO renders frame 0 only.
 

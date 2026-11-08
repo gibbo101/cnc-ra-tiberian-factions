@@ -239,7 +239,7 @@ Place the entity on our Deck. Run actual TD on the second Deck. Compare:
 
 **Trap:** RA reads a weapon's `Speed=` as a percentage, not TD's raw value. See the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md), Speed ("Projectile speed too").
 
-**Symptom (raw value of 100, intending MPH_VERY_FAST):** *Worse and very misleading.* `Speed=100` parses as 100% → MaxSpeed=255=MPH_LIGHT_SPEED. In `Unlimbo_TD` (bullet.cpp:1022-1023) this triggers `if (speed == MPH_LIGHT_SPEED) speed = MPH_IMMOBILE;` — bullet velocity becomes 0. Bullet sits at the launcher, fuse expires after a few frames, the AA-distance damage branch (bullet.cpp:1268, `Distance(TarCom) < 0x80`) is skipped because the bullet is nowhere near the aircraft, and the impact anim plays on top of the firer. Player sees: missile emerges from turret, vanishes immediately, 0 damage. Looks like a rendering or warhead bug; is actually this Speed= bug. TDSAM/TDNike hit this 2026-05-25.
+**Symptom (raw value of 100, intending MPH_VERY_FAST):** *Worse and very misleading.* `Speed=100` stops a visible shot dead: see the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md), Speed ("`Speed=100` stops a visible projectile dead"). TF's `Unlimbo_TD` (bullet.cpp:1022-1023) has the same `MPH_LIGHT_SPEED` → `MPH_IMMOBILE` test, and the AA-distance damage branch (bullet.cpp:1268, `Distance(TarCom) < 0x80`) is skipped because the bullet is nowhere near the aircraft. Player sees: missile emerges from turret, vanishes immediately, impact anim on the firer, 0 damage. Looks like a rendering or warhead bug. TDSAM/TDNike hit it.
 
 **Fix:** add `IsTDPort` flag on `WeaponTypeClass`. In `Read_INI`, branch:
 ```cpp
@@ -264,7 +264,7 @@ Already implemented in `weapon.cpp:202-210`. Just flag your new TD weapon and wr
 
 **Trap:** a bullet, anim or aircraft with no classic SHP has a NULL `ImageData`. See the field manual's [Adding a unit](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/adding-a-unit.md#4-a-classic-image-even-in-an-hd-only-mod), section 4, and [Air delivery, fleets and support powers](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#cargo-plane-delivery), Cargo-plane delivery step 2.
 
-**Symptom:** entity behaves correctly (audio, damage, animation trail), but its body sprite is invisible. For bullets specifically: smoke trail visible, missile body absent.
+**Symptom:** entity behaves correctly (audio, damage), but its body sprite is invisible; a bullet's smoke trail still shows (§3.7).
 
 **Fix:** Copy a vanilla donor's `ImageData` pointer in `One_Time` after the loop (§2.7).
 
@@ -289,9 +289,7 @@ render. TF ships its patched copies in `resources/.../Data/XML/TILESETS/`. See t
 
 ### 3.7 — Smoke trail vs missile sprite
 
-**Trap:** TD bullets with `Animates=yes` spawn `ANIM_SMOKE_PUFF` as the trail. This happens in `BulletClass::AI` regardless of whether `ImageData` is set. So the trail can be visible while the sprite is invisible (per §3.3).
-
-**Don't confuse:** trail visible ≠ sprite visible. Test both independently.
+A visible smoke trail (`ANIM_SMOKE_PUFF`, spawned in `BulletClass::AI`) doesn't mean the sprite draws: see the field manual's [Adding a unit](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/adding-a-unit.md#4-a-classic-image-even-in-an-hd-only-mod), section 4 ("A smoke trail doesn't prove the projectile draws"). Test both independently.
 
 ### 3.8 — RA-only enum values in TD-port code
 
@@ -304,8 +302,7 @@ render. TF ships its patched copies in `resources/.../Data/XML/TILESETS/`. See t
 
 ### 3.9 — Build pipeline: POST_BUILD copy skipped on incremental builds
 
-**Trap:** the CMake `POST_BUILD` copy of `resources/` and the asset packs into `build/` runs only when the DLL
-relinks, and never deletes. A data-only change after a build doesn't reach `build/` by itself.
+**Trap:** the `build/` copy goes stale. See the field manual's [Building the DLL on Linux](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/building-the-dll-on-linux.md#traps), Traps ("The mod folder in `build/` goes stale").
 
 **Fix:** `./deploy.sh` (without `--no-build`) restages `build/remaster/Vanilla_RA/` from scratch after the build. By
 hand: `python3 scripts/stage_asset_packs.py <mod dir> --full`. `--no-build` deploys `build/` exactly as it stands.
@@ -355,9 +352,7 @@ TF: `Sound_Effect(VOC_TD_*)` and `On_Speech` (`Speech[]`→`SpeechTD[]`) choose 
 
 ### 3.12 — `Who_Can_Build_Me` evicts cameos right after `Can_Build` adds them
 
-**Trap:** §3.11's prereq equivalence makes `Can_Build` return true and `Update_Buildables` calls `Sidebar_Glyphx_Add` successfully — but the cameo still doesn't appear (or appears for one frame then vanishes). The next `Sidebar_Glyphx_Recalc` tick (called every `Glyphx_Queue_AI` from `dllinterface.cpp:1990`) runs `StripClass::Recalc` → `tech->Who_Can_Build_Me(true, false, house) != NULL`. If that returns NULL, the entry is evicted.
-
-`ObjectTypeClass::Who_Can_Build_Me` (`object.cpp:2403+`) iterates buildings and checks `building->Class->ToBuild == RTTI`. That check passes for TD-separated factories. **But** the function then has a "HACK ALERT" branch at `object.cpp:2436-2443` that hardcodes `STRUCT_HELIPAD` and `STRUCT_AIRSTRIP` to restrict aircraft to the matching factory kind:
+**Trap:** §3.11's prereq equivalence makes `Can_Build` return true and `Update_Buildables` calls `Sidebar_Glyphx_Add` successfully — but the cameo still doesn't appear (or appears for one frame then vanishes). `StripClass::Recalc` evicts a cameo whose `Who_Can_Build_Me` is NULL, and `Who_Can_Build_Me`'s "HACK ALERT" lets only `STRUCT_HELIPAD` build helicopters: see the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#give-each-port-its-own-type), Give each port its own type ("Factory roles are hardcoded too"). `Who_Can_Build_Me`'s generic loop (`building->Class->ToBuild == RTTI`) passes for a separated TD factory, so only the HACK ALERT blocks it; `Recalc` calls it as `Who_Can_Build_Me(true, false, house)`. In TF, `Sidebar_Glyphx_Recalc` runs every `Glyphx_Queue_AI` (`dllinterface.cpp:1990`); `Who_Can_Build_Me` is `object.cpp:2403+`, its HACK ALERT at `object.cpp:2436-2443`:
 
 ```cpp
 if (What_Am_I() == RTTI_AIRCRAFTTYPE) {
@@ -413,7 +408,7 @@ if (((*building == STRUCT_HELIPAD || *building == STRUCT_TDHPAD) && !air->IsFixe
 
 ### 3.16 — `Health_Ratio() < 0x0080` is broken on RA's `fixed` type
 
-**Trap:** TD source uses `if (Health_Ratio() < 0x0080) shapenum += N;` (or similar) for damaged-state shape offsets. TD's `Health_Ratio()` returns `int` in 0..0xFF range, so `< 0x80` literally means "below 50%". Copying that line verbatim into RA breaks: RA's `Health_Ratio()` returns `fixed`, and `fixed::operator<(int)` (`common/fixed.h:247`) multiplies the int by `PRECISION = 65536`. So `Health_Ratio() < 0x0080` becomes `Data.Raw < (128 * 65536)` — **always true** for any health ratio between 0 and 1.
+**Trap:** TD's `if (Health_Ratio() < 0x0080) shapenum += N;` is always true on RA's `fixed`. See the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#traps), Traps ("TD's integer ratios and Red Alert's `fixed`"), and [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#the-flags-that-decide-the-frames), The flags that decide the frames ("TD's damaged test"). On TF's VC base the comparison is `common/fixed.h:247` (`PRECISION = 65536`).
 
 **Symptom:** Building always renders as if damaged. Body might still look OK because Door_Stage()=0 + offset=N falls within the SHP range, but you'll see the damaged-variant sprite at full health. Easy to spot in side-by-side TD-vs-our-port comparison.
 
@@ -426,21 +421,19 @@ RA*_SFX_EVA_* seed WAVs hit this. `./deploy.sh` mirrors with `rsync -ac` and che
 
 ### 3.18 — `#ifdef FIXIT_HELI_LANDING` is INACTIVE — check active branch
 
-**Trap:** `defines.h:106` has `//#define FIXIT_HELI_LANDING` (commented out). Code wrapped in `#ifdef FIXIT_HELI_LANDING` is **dead**. The active branch is `#else`. If you add a fix to the `#ifdef` block and it doesn't take effect, you've patched the wrong branch. Originally caught while debugging the multi-plane TDAFLD convoy: an `intheory=true` retry was added to `Place_Object`'s helicopter fallback under `#ifdef` and the queue stayed blocked until the fix moved to the `#else`.
-
-**Fix:** When editing `HouseClass::Place_Object` or any other code with this guard, **always check whether the `#ifdef` macro is active in defines.h before patching**. For helicopter/aircraft-related Place_Object work, the active branch is currently `#else`.
+**Trap:** `defines.h:106` has `//#define FIXIT_HELI_LANDING`, so its `#else` branch is the live one. See the field manual's [Known engine traps](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/troubleshooting/known-engine-traps.md#a-fix-in-an-ifdef-that-never-compiles), A fix in an `#ifdef` that never compiles. Caught on the multi-plane TDAFLD convoy: an `intheory=true` retry added to `Place_Object`'s helicopter fallback under `#ifdef` did nothing until it moved to the `#else`.
 
 ### 3.20 — Harvester dock plumbing port (TDPROC) — four-trap composite
 
 Porting TD's BSTATE_ACTIVE → AUX1 → AUX2 refinery cycle requires more than the building-side Mission_Harvest port. Four RA-side gaps trip in sequence:
 
-1. **`UnitClass::Offload_Tiberium_Bail` is an `#ifdef TOFIX` stub.** The return value is wrapped in a never-defined preprocessor block, so it always returns 0 — `Tiberium--` runs (cargo lost) but no credits returned. RA's vanilla refinery uses the one-shot Mission_Unload bulk dump and never calls this method. Fix: port TD's per-bail credit calc, adapted to RA's `Gold`/`Gems` model (`Rule.GemValue` first, then `Rule.GoldValue`; both decrement alongside Tiberium so Gold+Gems == Tiberium stays invariant).
+1. **`UnitClass::Offload_Tiberium_Bail` pays nothing** (its payout is under `#ifdef TOFIX`): see the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#silos-barracks-and-the-rest), Silos, barracks and the rest ("A refinery that takes its harvester inside"). Fix: port TD's per-bail credit calc, adapted to RA's `Gold`/`Gems` model (`Rule.GemValue` first, then `Rule.GoldValue`; both decrement alongside Tiberium so Gold+Gems == Tiberium stays invariant).
 
-2. **`Per_Cell_Process` RADIO_ATTACH case is empty.** RA's `case RADIO_ATTACH: break;` at `unit.cpp:1742` is a TD-flow stub that never calls `Limbo() + whom->Attach(this)`. For UNIT_TDHARV docking at STRUCT_TDPROC the building's RADIO_IM_IN returns RADIO_ATTACH (TD-verbatim), so this stub keeps the harvester visible at the dock pad with Attached_Object() returning NULL → MIDDLE state has nothing to siphon. Port TD's verbatim `Mark(MARK_UP); Limbo(); whom->Attach(this);` body.
+2. **`Per_Cell_Process` RADIO_ATTACH case is empty** (`unit.cpp:1742`; the same manual section). For UNIT_TDHARV docking at STRUCT_TDPROC the building's RADIO_IM_IN returns RADIO_ATTACH (TD-verbatim), so this stub keeps the harvester visible at the dock pad with Attached_Object() returning NULL → MIDDLE state has nothing to siphon. Port TD's verbatim `Mark(MARK_UP); Limbo(); whom->Attach(this);` body.
 
 3. **`Cell_Building()` returns NULL for OVERLAP-only cells.** Building registration splits into `Occupy_Down()` (occupier chain — `Cell_Find_Object` walks this) vs `Overlap_Down()` (separate `Overlapper[]` array). RA's IM_IN trigger at `unit.cpp:1737` checks `Map[CELL(cell - MAP_CELL_W)].Cell_Building()` (cell NORTH of harvester) — for the BSIZE_33 TDPROC footprint with row-0 corners as OVERLAP-only, that N-cell hits the Overlapper array and returns NULL. Fix: extend the check for UNIT_TDHARV to use TD's own-cell test (`Map[cell].Cell_Building() == whom`, mirroring `tiberiandawn/unit.cpp:1766`).
 
-4. **`if (Tiberium_Load())` rounds to 0 when ≤13 of 28 bails remain.** RA's `fixed` class has only `operator unsigned()` for implicit numeric conversion — and that operator **rounds to nearest int** (line 114 of `common/fixed.h`). For Rule.BailCount=28, `fixed(13, 28)` rounds to 0, so the bare-conditional bail loop exits with ~12 bails undrained (3 of 7 pips). Same root cause as §3.16's `Health_Ratio()` trap. Fix: explicit `> 0` comparison (`if (techno->Tiberium_Load() > 0)`) — that invokes `fixed::operator>(int)` which inspects `Data.Raw` directly without rounding.
+4. **`if (Tiberium_Load())` rounds to 0 when ≤13 of 28 bails remain** (`common/fixed.h` line 114): see the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#traps), Traps. Same root cause as §3.16. Fix: explicit `> 0` comparison (`if (techno->Tiberium_Load() > 0)`).
 
 **Symptom of any one missing fix:** Trap 1 + 2 → MIDDLE finds NULL Attached_Object, immediately falls through to AUX2 with no credits. Trap 3 → harvester at dock pad stays visible, IM_IN never sent, same outcome. Trap 4 → trickle starts correctly but stops at ~57% capacity (Tiberium=13). All four must be patched together for a clean TD dock cycle.
 
@@ -466,13 +459,9 @@ Porting TD's BSTATE_ACTIVE → AUX1 → AUX2 refinery cycle requires more than t
 
 ### 3.21 — TD building HP is DOUBLED at runtime (the "weak buildings" bug)
 
-**Trap:** TD's `BuildingTypeClass` constructor passes **`strength * 2`** to the `TechnoTypeClass` base (`tiberiandawn/bdata.cpp:3706`; same in EA's shipped `SOURCECODE/TIBERIANDAWN/BDATA.CPP`). So a TD building's listed `STRNTH` in bdata is **half** its real in-game HP. If you copy the raw bdata `STRNTH` into your `[TDxxxx]` rules.ini `Strength=`, the building ships at **half** its authentic durability — the entire faction feels papery.
+**Trap:** TD's `BuildingTypeClass` constructor doubles a building's strength (`tiberiandawn/bdata.cpp:3706`); RA reads `Strength=` as written, and units, infantry and aircraft aren't doubled. See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#read-tds-constructor-and-tds-per-type-code), Read TD's constructor and TD's per-type code ("TD doubles a building's strength"). Copied raw, the whole faction feels papery. It is the only constructor transform in TD's type data; cost, sight and the rest pass through. (TDMCV/TDHARV/TDC17 were already correct.)
 
-**RA does NOT double** — `redalert/bdata.cpp` reads `Strength=` literally.
-
-**Scope: buildings ONLY.** `UnitTypeClass`/`InfantryTypeClass`/`AircraftTypeClass` do **not** double; their listed strength is the real HP. (TDMCV/TDHARV/TDC17 were already correct.) This is the only "constructor silently changes the value" transform in TD type data — cost, sight, etc. all pass through.
-
-**Diagnosis (2026-05-28):** Nod Gun Turret (40 dmg AP) took **14** shots to kill a NUKE power plant, not 7. An instrumented `TechnoClass::Take_Damage` damage trace (`MOD_DEBUG_DAMAGE.txt`) showed `str 400->370` — NUKE's listed STRNTH=200 was 400 at runtime. Damage per shot (30 = 40 × 75% AP-vs-wood) was correct; HP was the variable. Verified by building an instrumented `TiberianDawn.dll` from the pristine `tiberiandawn/` tree and running the same test as a TD mod.
+**Diagnosis:** Nod Gun Turret (40 dmg AP) took **14** shots to kill a NUKE power plant, not 7. An instrumented `TechnoClass::Take_Damage` damage trace (`MOD_DEBUG_DAMAGE.txt`) showed `str 400->370` — NUKE's listed STRNTH=200 was 400 at runtime. Damage per shot (30 = 40 × 75% AP-vs-wood) was correct; HP was the variable. Verified by building an instrumented `TiberianDawn.dll` from the pristine `tiberiandawn/` tree and running the same test as a TD mod.
 
 **Fix (committed):** replicate the doubling in `redalert/bdata.cpp BuildingTypeClass::Read_INI`, after `TechnoTypeClass::Read_INI`:
 ```cpp
@@ -516,7 +505,7 @@ rules.ini now holds the **verbatim TD-source STRNTH** and the engine doubles it 
 
 **Symptom:** a fully-bundled custom bullet (donor `ImageData` + sprite ZIP + `RA_VFX.XML` tileset block — the complete TDDRAGON pattern) renders as a **white box** in flight, though arc / damage / impact are all correct.
 
-**Root cause:** `BulletClass::Shape_Number` (`bullet.cpp:537`) returns a **facing-based shape 0-31** for any visible (non-`IsFaceless`) bullet. The launcher honors that index, so a **32-frame *rotating* bullet** (`Rotates=yes`, e.g. the TDSSM / TDDRAGON missiles) maps cleanly, but an **8-frame *tumbling* bomb white-boxes for facings 8-31** (only frames 0-7 exist).
+**Root cause:** a projectile's frame is its facing plus its tumble, so an 8-frame tumbling bomb flagged `Rotates=yes` asks for frames it doesn't have: see the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#projectiles-and-their-impacts), Projectiles and their impacts. In TF `BulletClass::Shape_Number` is `bullet.cpp:537`; the 32-frame `Rotates=yes` TDSSM / TDDRAGON missiles map cleanly.
 
 **Fix:** match the sprite's frame model to the bullet kind.
 - **Rotating missiles (32-frame):** port as their own `BULLET_TDxxx` with `Rotates=yes` — renders fine.
@@ -528,16 +517,16 @@ rules.ini now holds the **verbatim TD-source STRNTH** and the engine doubles it 
 
 The TD flamethrower taught two distinct lessons. Both apply to **any** weapon whose visual is a directional *muzzle animation* rather than a flying projectile (FLAME, the SAM/GUN muzzle flashes, future chem-spray).
 
-**(a) The flame is a muzzle ANIM, not a projectile — and it's directional.** TD's flamethrower fires an **invisible** bullet; the visible jet is one of **8 facing-specific anims** (`FLAME-N … FLAME-NW`) spawned at the muzzle. Do **not** model it on RA's `[Flamer]` (a single visible `Fireball` *projectile* — a completely different mechanism). Port it as TD does:
-- Add 8 contiguous `ANIM_FLAME_N … ANIM_FLAME_NW` in **`Dir_Facing` order** (defines.h), ctors + `Init_Heap` regs in `adata.cpp`.
+**(a) The flame is a muzzle ANIM, not a projectile — and it's directional.** See the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#special-cases-at-method-level), Special cases ("Flame jets"). TF's port:
+- 8 contiguous `ANIM_FLAME_N … ANIM_FLAME_NW` in **`Dir_Facing` order** (defines.h), ctors + `Init_Heap` regs in `adata.cpp`.
 - In `techno.cpp::Fire_At`, dispatch the base case to the facing-offset member:
   ```cpp
   case ANIM_FLAME_N:  a = AnimType(ANIM_FLAME_N + Dir_Facing(Fire_Direction()));  break;
   ```
-  **Use `Fire_Direction()`, not `PrimaryFacing.Current()`** — that's what TD does (`TECHNO.CPP:2378`); copying the SAM's `PrimaryFacing` points the jet wrong. The weapon's `Anim=` in rules.ini names only the base member (`Anim=TDFLAME-N`); the `+ Dir_Facing` math selects the rest.
-- The anim is **attached** to the firer (`anim->Attach_To(this)`, `TECHNO.CPP:2389`) — *not* spawned standalone at a fixed coord.
+  `Fire_Direction()`, as TD does (`TECHNO.CPP:2378`), not the SAM's `PrimaryFacing`. The weapon's `Anim=` in rules.ini names only the base member (`Anim=TDFLAME-N`).
+- The anim is attached to the firer (`anim->Attach_To(this)`, `TECHNO.CPP:2389`).
 
-**(b) HD-only anims with NULL `ImageData` render a GREEN PLACEHOLDER → donor-ImageData fix.** See the field manual's [How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#rules), Rules, and [Adding a unit](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/adding-a-unit.md#4-a-classic-image-even-in-an-hd-only-mod), section 4. The `TDFLAME-*` tiles are HD-only, so TF copies a vanilla anim's `ImageData` under `#ifdef REMASTER_BUILD` (the built-in `ANIM_BEACON_VIRTUAL` does exactly this):
+**(b) HD-only anims with NULL `ImageData` render a GREEN PLACEHOLDER → donor-ImageData fix.** See the field manual's [How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#rules), Rules, and [Adding a unit](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/adding-a-unit.md#4-a-classic-image-even-in-an-hd-only-mod), section 4. The `TDFLAME-*` tiles are HD-only, so TF copies a vanilla anim's `ImageData` under `#ifdef REMASTER_BUILD`:
 ```cpp
 #ifdef REMASTER_BUILD
     void const* flame_donor = As_Reference(ANIM_FBALL1).ImageData;
@@ -554,7 +543,7 @@ The overlay then resolves the real `TDFLAME-<dir>` tile by IniName. **Generalise
 
 **Process note:** this took ~6 speculative deploy cycles before a one-line diagnostic log (`Anim(raw)`, `a(dir)`, `IniName`, spawned-pointer) proved the DLL side was perfect and isolated the bug to the render path — straight to (b). Ship logging in the *first* test of any new entity (see the infantry recipe).
 
-**(d) Suppress the warhead impact-explosion (RA conflates what TD separates).** In **TD** the impact anim lives on the *bullet* (`ClassFlame`/`ClassChem` both = `ANIM_NONE` → spray weapons produce **no impact blast**, only the muzzle jet). In **RA** the impact anim is chosen from the *warhead* (`Combat_Anim` reads `Warhead->ExplosionSet`). So a non-`IsTDPort` spray bullet + any warhead with `Explosion=` 1–6 spawns an unwanted blast on every hit (the chem's HE blast, the flame's napalm puff). **Fix:** set the warhead's `Explosion=0` — `combat.cpp:373` returns `ANIM_NONE` for any `ExplosionSet` outside 1–6. If the warhead is **shared** (the chem's HE table is also the E2 grenadier's `TDHE`, which *wants* its grenade blast), make a **dedicated copy** (`TDChemWar` = TDHE verses/spread, `Explosion=0`); if it's already weapon-specific (`TDFire`), just zero it in place. This was latent in the E4 flamethrower too — caught when the E5 chem's bigger HE blast made it obvious.
+**(d) Suppress the warhead impact-explosion.** TD plays the impact from the bullet, RA from the warhead: see the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#projectiles-and-their-impacts), Projectiles and their impacts. So a non-`IsTDPort` spray bullet + any warhead with `Explosion=` 1–6 spawns an unwanted blast on every hit (the chem's HE blast, the flame's napalm puff). **Fix:** set the warhead's `Explosion=0` (`combat.cpp:373`). If the warhead is **shared** (the chem's HE table is also the E2 grenadier's `TDHE`, which *wants* its grenade blast), make a **dedicated copy** (`TDChemWar` = TDHE verses/spread, `Explosion=0`); if it's already weapon-specific (`TDFire`), just zero it in place. This was latent in the E4 flamethrower too — caught when the E5 chem's bigger HE blast made it obvious.
 
 **(e) Classic-mode parity: bundle the classic SHPs so the donor becomes a no-op.** The donor-`ImageData` trick (b) only fixes **HD** — in classic mode there's no overlay, so `Draw_It` renders the *donor's* classic SHP (`FBALL1` = a fireball at the muzzle, no spray). Proper fix: the original 8 directional SHPs exist in TD's `CONQUER.MIX` (`chem-n..nw`, `flame-n..nw`), so add them to `build_tfassets.sh`'s list (`CHEM-N.SHP:TDCHEM-N.SHP` …), rebuild `TFASSETS.MIX` (palette-remapped). `AnimTypeClass::One_Time` retrieves `<IniName>.SHP` → now loads the **real classic spray**, and the `FBALL1` donor falls through to a no-op. **Verify the classic SHP frame count matches the ctor `stages`** (both chem/flame = 13, matching the HD tiles) — if they differ, set `stages` (classic) vs `virtualstages` (HD) independently. No DLL change when they match — pure data.
 
@@ -562,7 +551,7 @@ The overlay then resolves the real `TDFLAME-<dir>` tile by IniName. **Generalise
 
 ### 3.27 — A new ENGINEER type is INERT until added to every `INFANTRY_RENOVATOR` special-case (+ faction-conditional capture)
 
-`Infiltrate=yes` → `IsCapture` is **necessary but not sufficient**. The engineer's capture/renovate behaviour is **hardcoded to `INFANTRY_RENOVATOR`** at ~15 sites — `IsCapture` alone does nothing because the engine never reaches the generic capture path for an engineer; it dispatches on the *type*. A new engine type (e.g. `INFANTRY_TDE6`) builds, renders, paths onto the building — and then **does nothing** (falls through to the non-engineer branch). Symptom caught on TDE6, 2026-05-30: it would have shipped unable to capture.
+`Infiltrate=yes` → `IsCapture` is **necessary but not sufficient**: engineer behaviour is keyed on `INFANTRY_RENOVATOR`. See the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#infantry), Infantry ("Engineers are a type, not a flag"). A new type (e.g. `INFANTRY_TDE6`) builds, renders, paths onto the building — and then **does nothing** (falls through to the non-engineer branch); caught on TDE6 before it shipped.
 
 **The sites that matter for a human-player capture (add the new type at each):**
 - **Execution** — `infantry.cpp` Per_Cell_Process (`if (*this == INFANTRY_RENOVATOR)` around the renovate/capture/damage block). Without this the capture never *executes*.
@@ -584,11 +573,7 @@ if ((td_single || tech->Health_Ratio() <= EngineerCaptureLevel) && iscapturable)
 
 ### 3.28 — A per-step check in `Start_Of_Move` misses two-cell curves (`F_D` tracks)
 
-**Symptom:** a check keyed on the next cell (`dest` in `DriveClass::Start_Of_Move`) fires on some approaches and silently never fires on others (TS Service Depot drive-on, 2026-09-30: the vehicle sometimes curved straight onto the depot's middle cell with no log line).
-
-**Cause:** when the path bends, the track chosen from `Path[0]`/`Path[1]` can be a two-cell curve (`TrackControl[...].Flag & F_D`). Then `dest` moves on to the *second* cell (`dest = Adjacent_Cell(dest, nextface)`), so a unit whose curve ends on the target cell never has it as the first `dest`.
-
-**Fix:** also check whether the cell after `dest` (`Adjacent_Cell(dest, Path[1])`) is the target, and if so force a straight step into the cell before it (`nextface = facing`). The next `Start_Of_Move` then sees the target as `dest`. Worked example: `straight_in` in `drive.cpp`.
+See the field manual's [Units leaving buildings: exits and rails](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/exits-and-rails.md#traps), Traps ("A curve can skip the cell you check"). TF hit it on the TS Service Depot drive-on, where the track chosen from `Path[0]`/`Path[1]` was a two-cell curve. The fix (`straight_in` in `drive.cpp`) also checks whether `Adjacent_Cell(dest, Path[1])` is the target, and if so forces a straight step into the cell before it (`nextface = facing`), so the next `Start_Of_Move` sees the target as `dest`.
 
 ### 3.29 — A TD-port arcing or dropping bullet must not set `IsFalling` (double gravity)
 
@@ -781,17 +766,10 @@ campaign evac transport, so `InfantryClass::What_Action` excludes only `ACTION_A
 and `aircraft.cpp` use the same exclusion.
 
 ### Trap — diagnostic fopen paths MUST use %USERPROFILE%, never hardcoded
-Resolve DLL-side log paths via `getenv("USERPROFILE")`, not `C:/Users/steamuser/...` (that
-resolves in any Proton prefix, but on real Windows / other Wine prefixes the fopen silently fails
-and the log never appears). `Documents/CnCRemastered/` exists on every platform (the game's own save
-dir); fall back to CWD if the env var is empty.
+See the field manual's [Testing under Proton and on the Steam Deck](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/testing-under-proton.md#your-dlls-own-logs), Your DLL's own logs. TF falls back to the CWD if the variable is empty.
 
 ### Trap — AnimType enum ORDER must match adata.cpp Init_Heap ORDER, element-for-element
-Heap IDs are assigned by registration order; `AnimTypes.Ptr(animType)` looks up by that ID. If a new
-ANIM_ is placed at a different relative position in the enum vs Init_Heap, EVERY later anim shifts to
-the wrong AnimTypeClass. Symptom (the "red rocket" bug): HE infantry death spawned ANIM_CORPSE3 but
-Ptr() returned ANIM_CRATE_DEVIATOR (a red missile). Same invariant applies to unit/building/bullet/
-warhead heaps. Verify: diff enum order vs the `new XxxTypeClass(...)` order — identical, one-for-one.
+See the field manual's [Adding a unit](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/adding-a-unit.md#2-registration-keep-heap-order-and-enum-order-the-same), section 2: every type heap, animations included. TF's case was the "red rocket" bug (an HE infantry death's `ANIM_CORPSE3` came back as `ANIM_CRATE_DEVIATOR`, a red missile). Verify: diff enum order vs the `new XxxTypeClass(...)` order — identical, one-for-one.
 
 ### Trap — units render OVER a TD building (BuildingClass::Sort_Y)
 Oversized TD-Assets sprites on small footprints lose the vanilla height south-bias if given a bare
@@ -824,8 +802,4 @@ deleted. Fix: construct via the POINTER ctor `new BuildingClass(BuildingTypes.Pt
 scenario load or on-demand (the blossom/visceroid placement hit this too).
 
 ### Rendering — resizing a unit/vessel in HD = the Techno_Draw_Object `scale` arg, NOT the art frame size
-To render a unit bigger/smaller in HD, change the `scale` param (8.8 fixed: 0x0100=1.0x, 0x0180=1.5x)
-in its Draw_It Techno_Draw_Object call. Scaling the HD art frames in the tileset ZIP does NOTHING — the
-launcher normalises HD art to the unit's fixed logical footprint. scale is COSMETIC only: it does not
-change the logical footprint (still 1 cell), so a scaled-up sprite makes other units appear to overlap
-it. Keep vessel scale ~1.0x and size on-hull overlays to the native beam instead.
+Change the `scale` param (8.8 fixed: 0x0100=1.0x, 0x0180=1.5x) in its Draw_It `Techno_Draw_Object` call. See the field manual's [How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#rules), Rules ("A draw scale scales each draw about its own anchor"), and [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#size-comes-from-the-classic-shape), Size comes from the classic shape (why the ZIP's frame size changes nothing). The scale is cosmetic: the footprint stays one cell, so a scaled-up sprite makes other units appear to overlap it. Keep vessel scale ~1.0x and size on-hull overlays to the native beam instead.

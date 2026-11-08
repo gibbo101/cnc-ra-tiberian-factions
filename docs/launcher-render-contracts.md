@@ -7,19 +7,11 @@ Each contract cost a build-test cycle to find, most of them while porting the TS
 
 ## 1. Sprites anchor by the VIRTUAL CANVAS CENTER — place content accordingly
 
-The launcher anchors the meta `size` canvas's CENTER at the object's draw
-position; the meta `crop` only places the TGA on that canvas. So a unit's
-visual mass must be composed CENTERED on the canvas — content placed low
-draws low:
-
-- the Titan's feet-at-174-of-192 placement drew the mech ~45px below its cell
-  (selection box floating above it, "med tank shells missing" — they hit the
-  real, undrawn spot). The fix was placement (assembly centered), not crops.
-- ⚠️ A "crop-rect-center anchoring" theory was briefly believed (it fits the
-  Titan evidence equally — for tight crops, crop center == content center) and
-  was FALSIFIED by the Hover MLRS remake: content-centering its high-riding
-  rocket rack sank the rack into the platform; restoring model-space
-  (canvas-center) placement fixed it. Don't re-adopt that theory.
+The launcher anchors the canvas centre, not the crop: see the field manual's
+[How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#the-frame-and-its-meta),
+the frame and its `.meta`. The Titan's feet at 174 of 192 drew it about 45 px below its cell. The crop-centre
+theory fits that equally (for a tight crop, the crop centre is the content centre); the Hover MLRS rack is the
+test that ruled it out.
 
 **Rule:** compose every frame with its visual center (for voxel renders: the
 render canvas = model origin) at the tileset canvas center. `write_zip` in
@@ -28,51 +20,30 @@ which is kept as insurance — it makes both anchoring interpretations coincide.
 
 ## 2. Sub-object draws drop shape indexes ≥ 128
 
-A second draw call on the same object (turrets; also radar dishes, harvester
-stage overlays) silently renders NOTHING for shape numbers ≥ 128 ("cannon
-missing" #2 — the walk-layout turret block sat at 120–151). Base-object draws
-are NOT capped (the Mk. II body uses shapes up to 255 fine).
-
-**Rule:** any tileset whose shapes are drawn as a second draw on the object
-must keep those indexes ≤ 127. The Titan ships 8 facings × 12 walk frames
-(96) + 32 turret = exactly 128 shapes for this reason.
+Turrets, radar dishes and harvester overlays are second draws, and draw nothing from shape 128 up: see the
+field manual's [How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#rules),
+rules. The Titan ships exactly 128 shapes for this (8 facings × 12 walk frames + 32 turret), and the Mk. II
+body uses shapes up to 255.
 
 ## 3. The line renderer supports animation frames 0–4 only
 
-`CC_Draw_Line`'s Frame param (fed from `TechnoClass::LineFrame`, TD's, which TF ports; EA's RA exports
-no lines) indexes a
-5-entry launcher table. Frames ≥ 5 render as GIANT squares at the line's two
-endpoints, in the line's own color — the railgun "white boxes" saga (they
-turned red when the beam did, which was the giveaway). The Obelisk never hit
-it because TD's `LineMaxFrames = 5` sends 0–4.
-
-**Rule:** `LineMaxFrames <= 5` for anything using the `Lines[]` beam path.
-Related: `MAX_OBJECT_LINES = 3` (dllinterface.h ABI — cannot grow).
+TF ports TD's line path (`CC_Draw_Line`, `TechnoClass::LineFrame`), and its limits are in the field manual's
+[How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#beams),
+beams: frames 0 to 4, three lines an object. The railgun's beam drew giant squares (red when the beam was) until
+its frame count dropped, so keep `LineMaxFrames <= 5` on the `Lines[]` path.
 
 ## 4. Custom anim types render; a stage without a tile draws the white box
 
 A DLL-added `AnimType` with mod-shipped art and a tileset entry renders like any other: the Ion Cannon's
-`TDIONSFX.ZIP`, the C&C3 railgun shot. The launcher draws its white placeholder box for any anim stage
-that has no tile in the tileset XML, wherever the anim sits. The export loop draws every layer object,
-anims included, as its own root (`dllinterface.cpp`, `CurrentDrawCount = 0` per object), so a free anim
-never becomes a sub-object by position. Avoid the `AnimClass` ctor's `timedelay` param: vanilla uses it
-only for a few fades and fires (`bullet.cpp`, `terrain.cpp`), and delayed anims export in a pre-start state.
-
-**Rule:** custom-art anims are viable anywhere. Declare exactly as many tiles
-as the anim has stages (have the generator patch the XML, as
-`ts_gen_sonicwave.py` does), and write STRAIGHT alpha: PIL `paste(colour,
-mask)` onto a transparent canvas darkens the RGB toward black and the launcher
-draws the darkened sprite faithfully (read as grey/gold before it was caught).
+`TDIONSFX.ZIP`, the C&C3 railgun shot. The tile-per-stage, free-anim, `timedelay` and straight-alpha rules are in
+the field manual's [How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#rules),
+rules. Vanilla passes a `timedelay` only for a few fades and fires (`bullet.cpp`, `terrain.cpp`). Have the
+generator patch the tile count into the XML, as `ts_gen_sonicwave.py` does.
 
 ## 5. Untracked hull-fixed direct-fire units need `IsLockTurret = true`
 
-`UnitClass::Rotation_AI` turns a turretless unit's hull to its target only when
-it is tracked (`SPEED_TRACK`); a wheeled or walking one never turns. `unit.cpp`'s
-FIRE_FACING handler rotates the BODY toward the target when `IsLockTurret` is
-set, so the flag doubles as "turn the hull to aim" for those. Stock RA sets it
-on no unit (EA `UDATA.CPP` has it false for ARTY and V2 too). Without it, an
-untracked turretless unit aims its nonexistent turret forever and never fires
-("won't turn to shoot", the Mk. II).
+See the field manual's [Turrets](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/turrets.md#a-turretless-unit-that-fires-forward-may-need-islockturret),
+a turretless unit that fires forward. Stock RA sets the flag on no unit; the Mk. II needs it.
 
 ## 6. Pillow `paste` with an RGBA mask corrupts at negative offsets
 
@@ -84,45 +55,26 @@ the art pipeline.
 
 ## 7. Building selection boxes: the launcher owns POSITION, we own only SIZE
 
-Proven over five probe rounds (2026-08-13, ~one build-test cycle each — never
-spend another): the launcher centres a building's selection box on the
-building's plot by its own internal reckoning and takes ONLY `DimensionX/Y`
-(the box size, classic px) from the DLL's object export. Every position
-candidate was falsified live:
-
-- `CenterCoordY` bias — ignored (two bias-only moves, zero pixels).
-- Dimension-change "anchoring" — height changes grow the box symmetrically
-  around the plot centre; there is no fixed-edge growth.
-- `CellY` bias — ignored.
-- A doctored render-side `OccupyList` (bounding-box centring theory) — ignored.
-- `PositionY` bias — moves the SPRITE, not the box: the exported draw rect is
-  the art's anchor (the probe visibly detached the refinery from its
-  building-derived apron). Art and box cannot be decoupled by any export field.
-
-Corollaries: a box reads wrong exactly when the ART is seated off its plot
-centre (the TSFACT slab reseat is what "broke" its box — the box never moved).
-TDFACT (correct box, same 3x3 plot, same pipeline) vs TSFACT (box a tile high)
-is the standing control pair for the one unexplored lever: classic stub /
-canvas geometry. Open boxes: TSFACT (1 tile high), TSDROP
+The launcher centres the box on the plot and takes only `DimensionX/Y`; no position field moves the box
+(`PositionY` moves the sprite). See the field manual's [Building selection boxes](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/building-selection-boxes.md).
+The TSFACT slab reseat is what moved its art off the box. TDFACT (correct box) and TSFACT (a tile high) are TF's
+control pair for the unexplored stub and canvas lever. Open boxes: TSFACT (1 tile high), TSDROP
 (1 tile low), TSPROC (wants 2 tiles more headroom than a plot-centred box
 can give). Fix path: diff TDFACT's stub/canvas content geometry against
 TSFACT's and transplant the relationship, art compensated to stay put.
 
 ## 8. The launcher draws every exported sprite unrotated
 
-`CNCObjectStruct::Rotation` is ignored on exports: an anim, a unit-typed export, and either with `SHAPE_FADING`,
-all drew flat with a logged `Rotation` of 158. Art that must follow an angle is built from round pieces laid along
-the line (the railgun shot's dots, `cnc3-railgun-beam.md`), or drawn by the launcher's beam line (`Lines[]`, any
-angle).
+See the field manual's [How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#rules),
+rules (the logged `Rotation` was 158). TF's railgun shot is built from dots along the line
+(`cnc3-railgun-beam.md`).
 
 ## 9. Overlapping-sprite chains can never give a hard edge or keep a texture
 
-Measured offline against the TS Disruptor footage before the strip attempt: a chain of
-discs overlapping 6-7 deep (a) ramps its alpha at the strip edge whatever the disc edge
-does, because chord coverage falls off toward the edge (35-75 px ramps for every variant),
-and (b) smears any per-disc mottle along the chain (best interior std 7 vs TS's 19.5). If
-a hard edge or a preserved texture is the requirement, a chain can't give it, and a single
-sprite per span can't either, since the launcher draws exports unrotated (§8).
+See the field manual's [How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#worked-example-a-beam-the-launcher-cant-draw),
+the worked example. Measured offline against the TS Disruptor footage: discs overlapping 6-7 deep ramp their alpha
+over 35-75 px at the strip edge for every variant (chord coverage falls off toward the edge), and the best interior
+mottle was std 7 against TS's 19.5.
 
 ## 10. The chronal vortex is a launcher-drawn screen warp the DLL can position — but nothing else
 
@@ -180,17 +132,17 @@ bbox-centred paste **moves the sprite** even when every body pixel is in the sam
 ## 12. A new stub line does nothing until TFASSETS.MIX is rebuilt and committed
 
 Adding a stub line to `scripts/build_tfassets.sh` does nothing until the script is run and
-`CCDATA/TFASSETS.MIX` is committed. A new HD bullet with no classic stub of its own draws at its
-`bbdata.cpp` donor's size (the Heat Seeker's `ImageData`): the Disc Thrower's TSDISCUS flew at
-~70x80 px in its own colours until the rebuild. With no classic shape at all it isn't drawn, since
-`BulletClass::Draw_It` returns on a NULL `ImageData`. The rebuilt archive lists new entries by CRC, not name, so check the
+`CCDATA/TFASSETS.MIX` is committed. Until then a new HD bullet draws at its `bbdata.cpp` donor's size (see the
+field manual's [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#size-comes-from-the-classic-shape),
+size comes from the classic shape): the Disc Thrower's TSDISCUS flew at ~70x80 px on the Heat Seeker's
+`ImageData`. The rebuilt archive lists new entries by CRC, not name, so check the
 entry count against the committed copy (`mix_tools.py list`) rather than grepping for the name.
 
 ## 13. Art px to leptons is canvas px x 4/3
 
-A packed unit ships at 8x-classic density (canvas = ShapeSize x 8), so one canvas pixel is
-4/3 leptons and one TS SHP pixel at x6.4 is 8.53. Fire points, muzzle tables and any offset
-measured off packed art convert at that rate. Derive them in the packer and emit a table
+A packed unit ships at 8x-classic density (canvas = ShapeSize x 8), so one canvas pixel is 4/3 leptons (the
+field manual's [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#size-comes-from-the-classic-shape)
+has the conversion), and one TS SHP pixel at x6.4 is 8.53. Derive fire points and muzzle offsets in the packer and emit a table
 (`tstitn_muzzle.h`, `ts4tnk_muzzle.h`, `tsjugg_muzzle.h`, and `tshmec_muzzle.h` from
 `scripts/ts_hmec_muzzle.py`, read off the Mk. II's 3D model) so the art and the offset cannot
 drift; a hand-dialled constant will read right beside the unit and miss by cells at range.
@@ -215,8 +167,9 @@ Two stances of one entity, or a deployable and the building it becomes, must the
 - The Limpet Mine sits on the drone's shadow line, 11.6 classic px below the cell centre: a mine
   higher than that hops north the moment the drone deploys.
 
-Measure, do not eyeball: read the lowest opaque pixel per frame in full canvas space (add the
-meta `crop` offset) and divide by the density. For reference, TS's 1x1 buildings sit about +10 to
+Measure, do not eyeball, as the field manual's
+[How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#the-frame-and-its-meta)
+says for the ground line. For reference, TS's 1x1 buildings sit about +10 to
 +12 classic px below the cell centre, and unit shadows sit further out again the taller the unit
 (Wolverine +13.9, Juggernaut deployed +18, Titan +22.8).
 
@@ -264,22 +217,21 @@ highest quality the pipeline can produce.** Concretely:
   actual barrel-tip pixels) and `Fire_Coord` reads it. Re-tuning anchors =
   repack **then rebuild the DLL** (the table is compiled in).
 
-- **TS art palettes:** units/buildings decode with `UNITTEM.PAL`; cameos with
-  `CAMEO.PAL`; `ISOTEM`/`TEMPERAT` are terrain-only and produce noise.
+- **TS art palettes:** the terrain palettes that give noise are `ISOTEM` and `TEMPERAT`; see the field manual's
+  [Porting art from other C&C games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#tiberian-sun).
 - **TS walker anatomy:** the SHP "turret" frames are the whole upper torso;
   the Titan's cannon is a separate voxel (`MMCHBARL.VXL`) composited at
   runtime (`art.ini` PBarrelLength) — it is NOT in the SHP.
 - **MMCH.SHP facing order is CLOCKWISE**; the engine's frame space
   (`BodyShape[]`) is CCW 0=N. Voxel renders via `vxl_render.py --yaw0 90` are
   already CCW.
-- **Launcher alpha cutoff ~128:** sprite pixels below roughly half alpha are
-  discarded — soft low-alpha shadows render as nothing; bake shadows
-  mostly-solid (~135+).
-- **THE SHADOW CONVENTION (measured off EA's art, `ts_reshadow.py`).**
-  Ground units get NO engine shadow — the DLL only shadows things in the air
-  (`bullet.cpp:848`, `IsShadow` → `DisplayClass::UnitShadow`). Every ground
-  shadow is baked into the sprite, EA's included, as an offset copy of the
-  silhouette: pure black, alpha 191, soft-edged. On what the launcher draws
+- **Launcher alpha cutoff ~128** (the field manual's
+  [How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#rules)):
+  bake shadows mostly-solid (~135+).
+- **THE SHADOW CONVENTION (measured off EA's art, `ts_reshadow.py`).** Only things in the air get an engine
+  shadow (`bullet.cpp:848`, `IsShadow` → `DisplayClass::UnitShadow`); ground shadows are baked, as the field
+  manual's [How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#shadows-are-baked-in)
+  says, soft-edged. On what the launcher draws
   (alpha 128 and up) EA's Mammoths throw about 3.8 classic px down and 4.8
   across, 19% of the hull; the medium tanks about two thirds as far. Our vehicles
   are Mammoth-sized, so `drop_shadow` is fitted to the Mammoths: offset
@@ -295,15 +247,14 @@ highest quality the pipeline can produce.** Concretely:
   and up. Turret frames carry no shadow, which is what keeps TSHVR's rack
   seat out of its reach.
 - **Baked shadows: always the offset-silhouette (`drop_shadow`), never a
-  bottom-anchored shape.** Both bottom-anchored recipes tried on the Hover
-  MLRS (whole-hull squash at the bbox bottom, then the Mk. II bottom-slice)
-  collapse into a detached floating nub at diagonal facings — a diagonal
-  hull's bbox bottom is one pointy corner, so anything anchored there
-  concentrates at the corner instead of following the skirt. The full
-  silhouette offset down-right and composited UNDER the sprite hugs the whole
-  lower edge at every facing; scale the walker offset (14,18 @ 448 canvas) to
-  the unit's canvas. (The Mk. II bottom-slice works there only because a
-  mech's FEET genuinely span its bbox bottom.)
+  bottom-anchored shape** (why: the field manual's shadows section above). Both
+  bottom-anchored recipes tried on the Hover MLRS (whole-hull squash at the bbox
+  bottom, then the Mk. II bottom-slice) collapsed at the diagonal facings: a
+  diagonal hull's bbox bottom is one pointy corner, so anything anchored there
+  gathers at the corner instead of following the skirt. Scale
+  the walker offset (14,18 @ 448 canvas) to the unit's canvas. (The Mk. II
+  bottom-slice works there only because a mech's FEET genuinely span its bbox
+  bottom.)
 - **Walker gait system:** `WalkFrames=` / `WalkFacings=` / `WalkRate=` unit
   keys, walker branch in `UnitClass::Shape_Number`, turret block at
   `WalkFacings × WalkFrames`. Per-unit camera elevation is a legitimate dial

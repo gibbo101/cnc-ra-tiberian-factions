@@ -9,14 +9,16 @@ contract, the stub-size lever and the hover locomotor still hold; per-unit rules
 **Results that set the pattern:**
 - **The Stealth Generator reskin:** TS NASTLH art (base + the 16-frame `NASTLH_A` ring composited,
   damaged run at shapes 16-31, all 19 TS buildup frames), a **2x1 footprint** (`BSIZE_21` +
-  `List21`; `StoreList` is a 1-cell list and left a phantom footprint), **`FACING_NONE`** (FACING_S
-  made attackers aim one cell south), no bib, `_td_bdonors` → `STRUCT_TDSILO`.
+  `List21`) and **`FACING_NONE`**, both for the reasons in the field manual's
+  [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#placement-and-the-ai),
+  no bib, `_td_bdonors` → `STRUCT_TDSILO`.
 - **The Hover MLRS:** a 48x48 classic stub (`scripts/gen_stub_shp.py` via `build_tfassets.sh`), art
   content-cropped on a 192 canvas, body and turret placed by the shared voxel-origin maths (bbox or
   centroid centring jitters per facing). The turret's aft push must be engine-side: turret frames
   follow the aim, so an offset baked into the art slides round the hull.
-- **On-screen size follows the classic ImageData box;** the launcher fits the art to it, so a
-  transparent stub SHP is the size lever for HD-only units.
+- **On-screen size follows the classic ImageData box,** so a transparent stub
+  (`scripts/gen_stub_shp.py`) is the size lever for HD-only units, never a draw scale (the field manual's
+  [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#size-comes-from-the-classic-shape)).
 
 ## What shipped in the spike
 
@@ -30,12 +32,10 @@ hook (playbook §3.21) — TS Strength values are real HP.
 
 ## The pipeline (all scripts in `scripts/`)
 
-1. **Extract** — `~/Documents/development/cnc-remastered-mods/tools/ts_extract.py`
-   pulls files from the Steam TS install's `TIBSUN.MIX` (RA container + Blowfish
-   header, reuses `ra_mix_extract.py` crypto; TS filename hash = padded CRC32).
-   Voxels + INIs live in `LOCAL.MIX`; unit/cameo SHPs in `CONQUER.MIX`; building
-   SHPs in the theater mixes (`TEMPERAT.MIX` — NewTheater 'T' names, `GTPOWR`);
-   buildups in `ISOTEMP.MIX`; palettes in `CACHE.MIX`.
+1. **Extract** — the workspace's `tools/ts_extract.py` (reusing `ra_mix_extract.py`'s crypto)
+   pulls files from the Steam TS install's `TIBSUN.MIX`; the archives and where each kind of file
+   sits are in the field manual's [Porting art from other C&C games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#tiberian-sun).
+   Building build-ups come from `ISOTEMP.MIX`.
 2. **Render voxels** — `scripts/vxl_render.py <vxl> <outdir> --frames 32 --yaw0 90`,
    orthographic, with the model's own VXL normals through TS's normal tables (the default
    `--normals vxl`; `--normals geo` derives them from geometry) and the remap range
@@ -44,11 +44,10 @@ hook (playbook §3.21) — TS Strength values are real HP.
    **Voxel +X = nose = east at yaw 0; `--yaw0 90` puts frame 0 north; frames advance
    CCW** (verified against vanilla 2TNK HD frames: 0=N, 8=W).
 3. **Decode TS SHPs** — `scripts/ts_shp.py <shp> <pal> <outdir>` (TS-SHP format,
-   RLE-zero scanlines, remap 16–31 → team-green). GTPOWR frames: 0=healthy,
-   1=damaged (TS draws it below the yellow health threshold), 2=more wrecked; 3–5 are
-   TS's shadow half (OpenTS draws frame n's shadow from frame n + count/2), which
-   decode as magenta silhouettes (unused). GTPOWRMK: frames 0–19 real buildup, 20–39
-   their shadows (unused).
+   RLE-zero scanlines, remap 16–31 → team-green). GTPOWR frames: 0 healthy, 1 damaged,
+   2 more wrecked, 3–5 their shadows (unused); GTPOWRMK: 0–19 the build-up, 20–39 its
+   shadows (unused). The frame rules are in the field manual's
+   [Porting art from other C&C games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#tiberian-sun).
 4. **Package** — `scripts/ts_pack_art.py` (set `TS_RENDER_DIR` to the render dir):
    TSHVR.ZIP (64 frames: body 0–31 + turret 32–63, 192px canvas, hull ≈140px,
    turret center-aligned to body canvas — model-space origins line up), TSPOWR.ZIP
@@ -73,56 +72,33 @@ hook (playbook §3.21) — TS Strength values are real HP.
 
 ## Hover locomotion
 
-RA now has a real amphibious hover locomotor, and TSHVR uses it (`Hover=yes`):
-
-- **`SPEED_HOVER`** appended to SpeedType (defines.h) — TD had this slot, RA had
-  dropped it. Ground costs parsed from a new `Hover=` key in each land section
-  (`rules.cpp Land_Types`); rules.ini carries the TS-authentic table: **100% on
-  everything passable including Water/Beach/River/Ore, 0% on Rock/Wall**.
-- **`MZONE_HOVER`** appended to MZoneType with its own flood-fill in
-  `MapClass::Zone_Reset`/`Zone_Span` using SPEED_HOVER passability — one zone
-  spans land AND water, so all ~20 zone-equality gates (Basic_Path, Mission_Move,
-  Active_Click_With, Approach_Target, Greatest_Threat, Nearby_Location,
-  Find_Spread_Cell, reinforcement cells…) pass for cross-shoreline orders without
-  touching any of them individually. `TechnoTypeClass::Read_INI` derives
-  `MZone = MZONE_HOVER` from `Speed == SPEED_HOVER`; Chronosphere teleport
-  (`Can_Teleport_Here`) extended likewise.
-- Wall/terrain Zone_Reset callers (cell.cpp wall place, house.cpp wall sell/destroy,
-  terrain.cpp crumble) now include `MZONEF_HOVER` so hover zones track wall changes.
-- `UnitTypeClass::Read_INI`: new `Hover=yes` key overrides the Tracked/Wheel binary.
-- **Save-format note:** `CellClass::Zones[]` grew by one — old skirmish saves won't
-  load (standard consequence of any enum addition here; accepted).
+RA now has a real amphibious hover locomotor, and TSHVR uses it (`Hover=yes`), built by the method in the field
+manual's [Hover and amphibious units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/hover-and-amphibious-units.md#the-method-in-red-alerts-dll):
+`SPEED_HOVER` and `MZONE_HOVER` (`defines.h`), a `Hover=` column per land section (`rules.cpp Land_Types`; rules.ini carries
+TS's table as 100% on everything passable including Water, Beach, River and Ore, 0% on Rock and Wall), a `Hover=yes`
+unit key read in `UnitTypeClass::Read_INI` that overrides the Tracked/Wheel choice, the `MZone` derived in
+`TechnoTypeClass::Read_INI`, `Can_Teleport_Here`, and `MZONEF_HOVER` in
+the zone-reset callers (cell.cpp wall place, house.cpp wall sell/destroy, terrain.cpp crumble). The shared zone opens about 20
+zone-equality gates; besides the manual's list they include `Mission_Move`, `Find_Spread_Cell` and the reinforcement
+cells. Old skirmish saves won't load (`CellClass::Zones[]` grew by one).
 
 ## Traps
 
-1. **HD canvas must equal the classic donor's frame dims × 5.33.** The launcher's
-   render box comes from `Get_Build_Frame_Width/Height(ImageData/BuildupData)`.
-   WEAP classic 72×48 → 384×256 canvas (NOT square 384); POWR 48×48 → 256×256.
-   Shipping a square canvas for a non-square classic donor squashes the art
-   (the stealth-gen "pancake buildup"). Corollary: EVERY donor field with
-   dimensions must match the footprint — ImageData (idle scale), BuildupData
-   (buildup scale). The Stealth Generator donors both from TDSILO (48x24, its full
-   TDSILOMAKE construction anim).
-2. **The TGA/meta contract (the big one — three symptoms, one cause).** Verified
-   against vanilla 2TNK (`tga=(75,95)`, `size=[192,192]`, `crop=[59,57,134,152]`):
-   - the TGA file is **cropped to content**, not full-canvas;
-   - meta `size` = the virtual canvas dimensions;
-   - meta `crop` = corner bounds `[x0,y0,x1,y1]` giving where the cropped image
-     sits on that canvas (59+134 > 192 proves it's bounds, not w/h).
-   Shipping full-canvas TGAs makes the launcher squeeze the whole canvas into the
-   crop rect → per-frame squash (MLRS sliver/needle), per-frame drift (stealth-gen
-   "sliding" buildup), and undersized units. Near-full-canvas content hides the bug
-   (why TSPOWR looked almost right). Fixed in `scripts/ts_pack_art.py::write_zip`.
-3. **Unit on-screen size is NOT an art property.** The launcher fits unit art to
-   the classic ImageData box; the honest size lever for an HD-only unit is a
-   transparent classic stub SHP with the wanted dimensions (`gen_stub_shp.py`).
-   Draw-scale (`Techno_Draw_Object` arg) also works but shears turret alignment
-   (scales about the ground anchor per draw) and doesn't scale the health-bar/
-   selection UI.
-4. **Audio:** the launcher resolves novel sample names from loose files; the rule is format, an
-   MS-ADPCM WAV matching the channel's shape (`launcher-render-contracts.md`). A plain PCM WAV
-   plays a few times, then crashes ClientG's mixer. XML comments must not contain `--`.
-5. **Unit drop shadows = the hull silhouette offset down-right** by a fixed 4,22 canvas px
+The canvas, the build-up's `BuildupData` box, the TGA/meta crop contract, the sample format and XML comments with
+no `--` are in the field
+manual's [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#size-comes-from-the-classic-shape),
+[How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#the-frame-and-its-meta) and
+[TD sounds from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-sounds-from-the-base-game.md#samples-of-your-own).
+What they cost here:
+
+1. **Canvas = the classic donor's frame × 5.33.** A square canvas on the Stealth Generator's non-square donor gave
+   the "pancake buildup". It donors both `ImageData` and `BuildupData` from TDSILO (48x24, its full TDSILOMAKE
+   construction anim).
+2. **Full-canvas TGAs** squeezed into the crop gave a per-frame squash (the MLRS sliver), per-frame drift (the
+   Stealth Generator's sliding build-up) and undersized units; near-full-canvas content hid it (TSPOWR looked
+   almost right). Fixed in `scripts/ts_pack_art.py::write_zip`.
+3. **Audio:** a plain PCM WAV played a few times before it crashed the launcher.
+4. **Unit drop shadows = the hull silhouette offset down-right** by a fixed 4,22 canvas px
    (8 per classic px, `scripts/ts_reshadow.py`), never a fraction of the sprite, and never a squashed strip at
    the bbox bottom, which detaches on diagonal facings. Rocket origin: `Fire_Coord` gets the same aft-along-body
    offset as the draw seat (draw-side `Turret_Adjust` is cosmetic only).

@@ -64,11 +64,8 @@ An unset faction plays MIX, and an inline `;` comment after a value is ignored.
 
 ## How the launcher picks the music
 
-The music events are defined in `MUSICEVENTS.XML` and fired by name. A skirmish instance names its ambient
-music `MUS_RA_MULTIPLAYER_MODE` (`INSTANCES.XML`), and ClientG adds the audio prefix (`RAR`, `RAC` or `RAB`, by
-the player's audio setting) in `0x169CF30`, then looks the name up with the music manager's find
-(`0xE92A90`). That function runs at the start of the match and again whenever a track has ended and the gap
-has run out, so a swap there holds for the whole match.
+The skirmish event, its audio prefix and the lookup that runs at match start and after each track are on the field
+manual's [Music by faction, and the jukebox](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/sound-and-music/music-by-faction-and-the-jukebox.md#how-the-launcher-picks-skirmish-music), How the launcher picks skirmish music and Addresses in this client.
 
 `redalert/tf_music.cpp` redirects that one lookup (the call at `0x169D018`). For a skirmish event it asks for
 `<prefix>_TF_MUS_<LIST>`, and returns the stock event when that is missing. The lobby faction is read from

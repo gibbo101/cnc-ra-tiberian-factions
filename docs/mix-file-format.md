@@ -30,7 +30,7 @@ Red Alert wraps the classic layout with a flags header and optional encryption. 
 
 The flags header, the flags each archive carries, the key block and the encrypted index are in the field manual's
 [MEG and MIX archives](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/formats/meg-and-mix-archives.md#red-alerts-outer-mix), Red Alert's outer MIX. The flag words are
-`mixcreate.h:MixFlags`, and the index cipher is standard Blowfish-ECB with big-endian words.
+`mixcreate.h:MixFlags`.
 
 > **Tooling split:** `ra_mix_extract.py` handles *encrypted* extended mixes and *classic* mixes, but not the *extended-but-unencrypted* variant (flags header, no Blowfish). The Aftermath and Counterstrike `MAIN.MIX` use that combination; `mix_plain_alt.py` reads them (§8.1).
 
@@ -60,8 +60,7 @@ scripts/mix_namedb.py 0x1D597662       # -> 00-0000.aud
 ## 6. Nesting (mix-in-mix)
 
 Outer mixes hold inner mixes as ordinary entries: see the field manual's
-[MEG and MIX archives](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/formats/meg-and-mix-archives.md#where-red-alerts-files-are) for what each holds. `REDALERT.MIX`'s 6 nested mixes total
-about 25 MB.
+[MEG and MIX archives](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/formats/meg-and-mix-archives.md#where-red-alerts-files-are) for what each holds.
 
 `ra_mix_extract.py:find_in_mix` recurses automatically on extract (anything >64 bytes is a recursion candidate); `/tmp`-style inventory walks recurse into entries whose resolved name ends in `.mix`.
 
@@ -160,7 +159,8 @@ Names/sizes only — we do **not** bulk-commit extracted EA bytes (see §11).
 
 ### 10.4 Palettes & remap tables (classic-mode remap source)
 
-- **RA** (`REDALERT.MIX`): `egopal.pal`, `interior.pal`, `snow.pal`, `temperat.pal` + 48 `.lut` color lookup tables. Also note **`rules.ini` (≈60 KB) lives here** — the canonical RA rules.
+- **RA** (`REDALERT.MIX`): `egopal.pal`, `interior.pal`, `snow.pal`, `temperat.pal` + 48 `.lut` color lookup tables. `rules.ini` is in its `LOCAL.MIX` (the field manual's
+  [MEG and MIX archives](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/formats/meg-and-mix-archives.md#where-red-alerts-files-are)).
 - **TD** (theater mixes): `desert.pal`, `temperat.pal`, `winter.pal` + the `.mrf` fade/remap tables.
 - These are the RA-vs-TD palette pair behind `classic-mode-palette-remap.md` (the TD-176-191 → RA-80-95 remap).
 

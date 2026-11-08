@@ -224,7 +224,7 @@ the item's Owner Controls. A pack's own `ccmod.json` version follows the pack, n
 
 Did you restart Steam? Restart Steam.
 
-If you definitely restarted Steam and still hang: kill the uploader (`pkill -9 -f WorkshopUploader`), tail `~/.local/share/Steam/logs/workshop_log.txt` to see what Steam saw, and check whether your Steam account is currently "playing" the game on another device (Family Sharing / Remote Play / Steam Deck). Exit any such session and retry.
+If you definitely restarted Steam and still hang: kill the uploader (`pkill -9 -f WorkshopUploader`), then read Steam's log (`~/.local/share/Steam/logs/workshop_log.txt`) and check for a session on another device, as the field manual's [Publishing to the Workshop from Linux](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/publishing-to-the-workshop-from-linux.md#traps), Read Steam's own log, describes.
 
 ### `Unable to load shared library 'steam_api'`
 
@@ -246,8 +246,8 @@ Accept the Workshop agreement: see the field manual's [Publishing to the Worksho
   describes:** ask for `<game install>/log/CrashLog.txt`.
 - **A sim crash with a minidump:** `tools/dumpwalk.py <dmp> <RedAlert.dll>` prints the exception and
   the DLL return addresses on the faulting thread's stack.
-- **A ClientG crash can still be ours** (the manual's Traps list the causes). The DLL imports no d3d11,
-  dxgi or gdi32, but it calls D3D11 through ClientG's own texture (`tf_launcher.cpp`: `GetDevice`,
+- **A ClientG crash can still be ours** (the manual's Traps list the causes, and why a DLL reaches Direct3D only
+  through the launcher). TF's does, through ClientG's own texture (`tf_launcher.cpp`: `GetDevice`,
   `UpdateSubresource`), and it patches ClientG's memory and code; TF's own EVA cache
   patch once wrote over heap headers on skirmish load (fixed in 5.0.0).
 - **There is no graphics or VRAM setting to offer.** `GAMECONSTANTS.XML` has none, and the
@@ -259,7 +259,7 @@ Accept the Workshop agreement: see the field manual's [Publishing to the Worksho
 ## Don't-dos
 
 - Don't re-create the item shell for an existing release — `publishedfileid` is allocated once per item.
-- Don't pursue EA's `Uploader.exe` — it hung on Linux (Wine/Proton) AND on Windows, the same hang our tool hit before a Steam restart, and it was never retried after one. Our tool is easier to diagnose.
+- Don't pursue EA's `Uploader.exe` (the field manual's [Publishing to the Workshop from Linux](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/publishing-to-the-workshop-from-linux.md#routes-that-dont-work), Routes that don't work). Our tool is easier to diagnose.
 - Don't commit `tools/workshop-uploader/preview.jpg` or per-release `workshop.json` if they contain machine-absolute paths or release-specific descriptions; prefer relative paths so the JSON is portable.
 
 ---

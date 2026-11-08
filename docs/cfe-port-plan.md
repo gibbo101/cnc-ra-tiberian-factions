@@ -10,8 +10,7 @@ Plan for adopting QoL features and bugfixes from **CFE Patch Redux** by ChthonVI
 
 - **Source and licence:** see the field manual's [Porting CFE Patch Redux into your DLL](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/cfe-patch-ports.md#cfe-patch-redux-in-brief),
   CFE Patch Redux in brief. Local clone `reference/cfe-patch-redux/` (full history; RA and TD 1.9 test builds
-  through 2025-04). We already publish source; CFE's README threatens a DMCA complaint against non-compliant
-  reuse, so keep attribution and source publication in order (§6).
+  through 2025-04). We already publish source; keep attribution and source publication in order (§6).
 - **Their RA changelog files:** `Documentation/Changelogs/1.7/RA_Changelog_1.7.txt` and
   `1.8/RA_Changelog_1.8.txt`. Pre-1.7 fixes are only in git history.
 - **Their feature toggles:** everything is INI-gated: defaults in `Mod Data RA/CCDATA/DEFAULT.CFEPATCHREDUX_RA.INI`
@@ -165,8 +164,9 @@ porting rule is "document deviations."
   shape, so its cardinal exits are two cells out; the TS Service Depot is solid, so every exit is two
   cells out and never through the gantry. Units on the chosen cell and just beyond are asked to
   scatter, because the movement code treats the leaving unit as close enough and won't move them.
-- **`MinelayerFindSpot`** tests cells with `Can_Enter_Cell` plus "no building", which lets a
-  minelayer avoid cloaked enemy mines: a small information leak that came with the port.
+- **`MinelayerFindSpot`** steers round cloaked enemy mines (the field manual's
+  [Attack-move](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/cfe-patch-ports.md#attack-move), The minelayer sees hidden mines). TF
+  carries the leak; it came with the port.
 
 ### 1.4 Attack-move special cases (`TechnoClass::AI`)
 
@@ -216,10 +216,10 @@ reveal crate blocked after a reveal→darkness sequence (`e57652a54`).
 
 ### 3.2 Audits — ChthonVII says VC's fix is WRONG (check our copies vs his)
 
-- [ ] `Base_Is_Attacked()` defender-selection-by-strength — "Vanilla-Conquer commit c608b48
-      has this totally wrong."
-- [ ] `MISSION_NONE` used as array index (OOB reads) — "inspired by VC's 624e391, but I think
-      they have the logic wrong in places." Also one memcpy→memmove.
+CFE's own words on both: the field manual's [Already in Vanilla Conquer](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/cfe-patch-ports.md#already-in-vanilla-conquer), Two fixes disagree.
+
+- [ ] `Base_Is_Attacked()` defender selection by strength (VC `c608b48`).
+- [ ] `MISSION_NONE` used as an array index, OOB reads (VC `624e391`), and its one memcpy→memmove.
 
 ### 3.3 CFE-original engine fixes, RA-relevant (port candidates)
 

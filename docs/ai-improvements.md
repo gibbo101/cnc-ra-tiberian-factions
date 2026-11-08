@@ -28,48 +28,20 @@ all are **pure DLL changes** — no INI path exists for any of them.
 
 ## Root cause (shared)
 
-The AI production code was written assuming `Session.Type == GAME_NORMAL`
-(single-player campaign with hand-authored BaseNode lists and TeamTypes).
-Remastered skirmish runs as `GAME_GLYPHX_MULTIPLAYER`
-(`dllinterface.cpp:1565`, `1660`; enum at `session.h:121-130`), so the
-campaign code paths are skipped and the AI relies on thin dynamic fallback
-logic. That fallback has gaps and bugs which manifest as the three symptoms
-below.
+Skirmish skips every campaign path and leaves a thin fallback with gaps, which is where the three symptoms
+below come from (the field manual's [The skirmish AI and its IQ levels](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/skirmish-ai-and-iq.md#why-the-skirmish-ai-is-thin), Why the skirmish AI
+is thin). Skirmish is typed `GAME_GLYPHX_MULTIPLAYER` at `dllinterface.cpp:1565`,
+`1660` (enum at `session.h:121-130`).
 
 ---
 
 ## Problem 1 — AI never builds a Radar Dome (and so never reaches tech)
 
-### Symptom
-Computer opponents skip the Radar Dome unless the human player builds an
-aircraft. No dome → tech center prereq fails → no GPS, MIG, Longbow. The dome
-also gates the SAM, AA gun, helipad and airfield, so the AI gets no aircraft. (The
-Chronosphere, Iron Curtain and MSLO aren't on its build list at all: Problem 3a.)
-
-### Root cause
-In `HouseClass::AI_Building` (`house.cpp:5761`), `STRUCT_RADAR` is **only**
-queued from inside the air-defence block (`house.cpp:5944-5980`), and that
-block only runs when `airthreat == true` — which requires an enemy house to
-own at least one aircraft.
-
-```cpp
-// house.cpp ~5970
-if (airthreat) {
-    if (BQuantity[STRUCT_RADAR] == 0) {
-        b = &BuildingTypeClass::As_Reference(STRUCT_RADAR);
-        if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
-            choiceptr = BuildChoice.Alloc();
-            if (choiceptr != NULL) {
-                *choiceptr = BuildChoiceClass(URGENCY_HIGH, b->Type);
-            }
-        }
-    }
-    ...
-```
-
-The campaign BaseNode path at `house.cpp:5768-5773` is gated on
-`Session.Type == GAME_NORMAL` and is therefore skipped in skirmish — leaving
-the dynamic block as the **only** producer of build choices.
+### Symptom and root cause
+The stock AI queues the Radar Dome only against an air threat, so it never reaches tech (the field manual's [The skirmish AI and its IQ levels](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/skirmish-ai-and-iq.md#stock-bugs-and-gaps),
+Stock bugs and gaps: the radar dome row, with what the dome gates). In TF's tree: `HouseClass::AI_Building`
+(`house.cpp:5761`), the air-defence block `house.cpp:5944-5980` (the queue at ~5970, only while
+`BQuantity[STRUCT_RADAR] == 0`), and the campaign BaseNode path `house.cpp:5768-5773`.
 
 ### Fix
 Hoist the dome queue out of the `airthreat` conditional. Queue it once the
@@ -126,56 +98,27 @@ tech level and money.
 Compound problem with four sub-causes.
 
 ### 3a — The AI never queues the superweapon buildings
-Skirmish `AI_Building` has no entry for the Missile Silo, Iron Curtain or
-Chronosphere, so the AI never builds them whatever its tech. Only the GPS is
-downstream of Problem 1: it comes with the Allied tech center, which needs the
-Radar Dome, and the AI does queue the tech center. Fixing Problem 1 alone
-leaves the other three unbuilt.
+No Missile Silo, Iron Curtain or Chronosphere is on the list, and only the GPS follows from Problem 1 (the field
+manual's [The skirmish AI and its IQ levels](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/skirmish-ai-and-iq.md#stock-bugs-and-gaps), Stock bugs and gaps: the building-list and
+three-powers rows).
 
 ### 3b — Half the supers have no AI fire dispatch
-In `HouseClass::Super_Weapon_Handler` (`house.cpp:1523`), only four supers
-have the `if (Is_Ready() && !IsHuman) Special_Weapon_AI(...)` pattern:
-
-- NUKE — `house.cpp:1835`
-- SPY — `house.cpp:1881`
-- PARABOMB — `house.cpp:1913`
-- PARAINF — `house.cpp:1945`
-
-The Iron Curtain block (`1731-1776`), Chronosphere block (`1662-1724`), and
-Sonar Pulse block (`1783-1807`) handle availability and removal but contain
-**no AI-fire call**. Even if the AI builds and charges these supers, nothing
-fires them.
+Only the nuke, spy plane, parabomb and paratroopers have an AI fire call (the field manual's [The skirmish AI and its IQ levels](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/skirmish-ai-and-iq.md#stock-bugs-and-gaps),
+the three-powers row). In TF's tree: `Super_Weapon_Handler` `house.cpp:1523`, the calls at 1835 (nuke), 1881 (spy),
+1913 (parabomb) and 1945 (paratroopers); the Iron Curtain block `1731-1776`, Chronosphere `1662-1724` and Sonar
+Pulse `1783-1807` have none.
 
 ### 3c — Iron Curtain & Chronosphere pick the object by the mouse
-Even if you patched 3b in, the `Place_Special_Blast` cases at
-`house.cpp:2997-3030` (Iron Curtain) and `3032-3073` (Chronosphere) read
-`Keyboard->MouseQX` / `MouseQY` to pick the object within the target cell:
-
-```cpp
-// house.cpp:2999
-case SPC_IRON_CURTAIN:
-    if (SuperWeapon[SPC_IRON_CURTAIN].Is_Ready()) {
-        int x = Keyboard->MouseQX - Map.TacPixelX;
-        int y = Keyboard->MouseQY - Map.TacPixelY;
-        TechnoClass* tech = Map[cell].Cell_Techno(x, y);
-        ...
-```
-
-The cell comes from the caller; the mouse position only picks which object
-within that cell `Cell_Techno` returns. For an AI fire there's no mouse, so
-the pick within the cell follows the human's last cursor position. These cases
-need an AI-aware path that picks the object directly without consulting
-`Keyboard`, and a target choice of their own (the nuke's picker aims at enemy
-buildings).
-
-`Special_Weapon_AI`'s target picker at `house.cpp:2787-2817` (shared by the
-nuke, spy plane and paratroopers: the enemy building of highest `Value`, each
-candidate considered with a 90% chance) is the template the others should follow.
+Even with 3b patched in, both need an AI-aware object pick and a target choice of their own (the field manual's [The skirmish AI and its IQ levels](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/skirmish-ai-and-iq.md#stock-bugs-and-gaps),
+the superweapon-aim row). The cell comes from the caller; only the pick within it follows the mouse, through
+`Map[cell].Cell_Techno(Keyboard->MouseQX - Map.TacPixelX, Keyboard->MouseQY - Map.TacPixelY)`, so an AI fire
+picks by the human's last cursor position. In TF's tree: `Place_Special_Blast`'s Iron Curtain case
+`house.cpp:2997-3030` and Chronosphere case `3032-3073`; `Special_Weapon_AI`'s picker at `house.cpp:2787-2817` is the template the others
+should follow.
 
 ### 3d — Parabomb gated to campaign
-`house.cpp:1918-1919` includes `&& Session.Type == GAME_NORMAL` on the enable
-check. AI cannot acquire the parabomb super in skirmish at all, regardless of
-whether it has an airstrip. One-line fix.
+Parabombs are enabled only in `GAME_NORMAL` (the field manual's [The skirmish AI and its IQ levels](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/skirmish-ai-and-iq.md#stock-bugs-and-gaps),
+the three-powers row). The enable check is at `house.cpp:1918-1919`; a one-line fix.
 
 ### 3e — IQ floor (informational)
 The GPS, Chronosphere, Iron Curtain and nuke acquisition checks include
@@ -409,19 +352,10 @@ Pure DLL change.
 
 ## rules.ini tunables (existing — informational)
 
-| INI key | Section | Default | Effect |
-|---|---|---|---|
-| `OreNearScan` | `[AI]` | 6 cells | Search radius when current patch depleted |
-| `OreFarScan` | `[AI]` | 48 cells | Search radius on initial search from refinery (the `RulesClass` ctor's fallback is 32) |
-| `BailCount` | `[General]` | 28 | Bails per full load |
-| `OreTruckRate` | `[General]` | 1 | Harvest/dump speed; larger is slower |
-| `GoldValue` | `[General]` | 25 | Credits per gold bail (also patch weight; ctor fallback 35) |
-| `GemValue` | `[General]` | 50 | Credits per gem bail (×4 in patch weight; ctor fallback 110) |
-| `Harvester` (`IQHarvester`) | `[IQ]` | 2 | IQ floor for AI auto-replace harvesters |
-| `RefineryRatio` | `[AI]` | .16 | AI refinery build ratio |
-
-**No INI knob exists for**: threat-avoidance, latch reset, contention
-behaviour, or cache freshness. All harvester fixes are DLL changes.
+The keys, their stock values and the code's fallbacks are on the field manual's
+[Harvesters](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/harvesters.md#the-rulesini-knobs), The rules.ini knobs.
+The ore search weighs an ore cell at `GoldValue` and a gem cell at four times `GemValue` (`Tiberium_Check`).
+None of the keys touches the problems above, so every harvester fix is a DLL change.
 
 ---
 
@@ -614,32 +548,10 @@ compiled out via `#ifdef NEVER`."
 
 ## Problem 7 — `Greatest_Threat` area-scan never updates `bestval`
 
-### Symptom
-AI units consistently pick odd targets — often the last legal target
-evaluated in their scan range, not the highest-value one. Manifests as "AI
-feels dumb at target selection."
-
-### Root cause
-In `TechnoClass::Greatest_Threat` (`techno.cpp:2126`), the four expanding-
-ring scan branches (top row, bottom row, left col, right col) all do:
-
-```cpp
-// techno.cpp:2271-2274 (and similar at 2287, 2315, 2330)
-if (Evaluate_Cell(method, mask, newcell, range, &object, value, zone)) {
-    if (bestval < value) {
-        bestobject = object;
-        // bestval = value;  <-- MISSING
-    }
-}
-```
-
-**`bestval` is never assigned inside the area-scan branch.** It stays at its
-initial `-1`. Every subsequent successful `Evaluate_Cell` whose `value > -1`
-(all of them) updates `bestobject`, regardless of whether that target is
-actually worse than the last one. The whole-map fallback path
-(`techno.cpp:~2350+`) does update `bestval` correctly — so the bug only
-fires on area-limited scans, which is what most units use via
-`Threat_Range`.
+### Symptom and root cause
+Range-limited target scans keep the last candidate, not the best (the field manual's [The skirmish AI and its IQ levels](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/skirmish-ai-and-iq.md#stock-bugs-and-gaps),
+the target-choice row). In TF's tree: `TechnoClass::Greatest_Threat` (`techno.cpp:2126`), the four ring blocks at
+`2271-2274`, `2287`, `2315` and `2330`, the whole-map pass from `~2350`.
 
 ### Fix
 Four-token fix: add `bestval = value;` inside each of the four
@@ -650,32 +562,13 @@ highest-leverage change in this entire document.
 
 ## Problem 8 — `Expert_AI` strategy layer is mostly stubs
 
-### Symptom
-AI's "strategic" tier evaluates the situation every 5 game seconds and
-dispatches to strategy handlers — but almost nothing happens.
-
-### Root cause
-`HouseClass::Expert_AI` (`house.cpp:4939`) runs 10 Check/Act strategy pairs.
-Findings from auditing each:
-
-| Strategy | `Check_*` returns | `AI_Build_*` action |
-|---|---|---|
-| BUILD_POWER  | computed correctly | **`return false;`** stub (`house.cpp:5466`) |
-| BUILD_DEFENSE| **`URGENCY_NONE`** stub (`house.cpp:5272`) | **`return false;`** stub (`5477`) |
-| BUILD_OFFENSE| **`URGENCY_NONE`** stub (`5284`) | **`return false;`** stub (`5488`) |
-| BUILD_INCOME | **`URGENCY_NONE`** stub (`5314`) | **`return false;`** stub (`5499`) |
-| BUILD_ENGINEER | **`URGENCY_NONE`** stub (`5342`) | **`return false;`** stub (`5521`) |
-| FIRE_SALE    | functional | functional |
-| RAISE_MONEY  | functional | functional |
-| RAISE_POWER  | functional | functional |
-| LOWER_POWER  | functional | functional |
-| ATTACK       | functional | functional (`AI_Attack` at `5402`) |
-
-Of ten strategy slots, **four (DEFENSE, OFFENSE, INCOME, ENGINEER) never
-urgency-trigger because their `Check_*` is hardcoded to `URGENCY_NONE`**,
-and **five `AI_Build_*` callbacks are `return false` stubs.** The
-"strategic AI layer" effectively does: fire-sale, sell-to-raise-resources,
-and attack. Everything adaptive is missing.
+### Symptom and root cause
+Of `Expert_AI`'s ten strategies, four checks and five actions are stubs, so it fire-sells, raises money and
+power, and attacks, and nothing adaptive happens (the field manual's [The skirmish AI and its IQ levels](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/skirmish-ai-and-iq.md#how-it-chooses-what-to-build),
+How it chooses what to build, and the stubs row under Stock bugs and gaps). In TF's tree: `Expert_AI`
+`house.cpp:4939`; `Check_Build_Defense` 5272, `Check_Build_Offense` 5284, `Check_Build_Income` 5314,
+`Check_Build_Engineer` 5342; `AI_Build_Power` 5466, `AI_Build_Defense` 5477, `AI_Build_Offense` 5488,
+`AI_Build_Income` 5499, `AI_Build_Engineer` 5521; `AI_Attack` 5402.
 
 ### Fix
 Pure DLL changes. Each stub is ~10-30 lines of real implementation.
@@ -719,32 +612,10 @@ Easy / Normal / Hard difficulty in the skirmish launcher has no effect.
 Every game plays identically.
 
 ### Root cause
-**Smoking gun at `dllinterface.cpp:2143-2148`:**
-
-```cpp
-extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
-{
-    if (GAME_TO_PLAY == GAME_NORMAL) {
-        Set_Scenario_Difficulty(difficulty);
-    }
-}
-```
-
-Skirmish runs as `GAME_GLYPHX_MULTIPLAYER`, not `GAME_NORMAL`, so the
-launcher's difficulty value is **silently dropped**. `Scen.Difficulty`
-keeps its initialization value (`DIFF_NORMAL` from `init.cpp:507-508`).
-
-Then at `dllinterface.cpp:1290`, every skirmish house — player and AIs
-alike — gets:
-
-```cpp
-housep->Assign_Handicap(Scen.Difficulty);  // always DIFF_NORMAL in skirmish
-```
-
-So every house in every skirmish game gets `DIFF_NORMAL` handicap
-regardless of launcher choice. All `DifficultyClass` bias multipliers
-(firepower, speed, armor, ROF, cost, build speed) come out as 1.0× for
-everyone.
+Every skirmish house plays at the Normal handicap whatever the lobby says (the field manual's [The skirmish AI and its IQ levels](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/skirmish-ai-and-iq.md#difficulty),
+Difficulty). In TF's tree: `CNC_Set_Difficulty`'s `GAME_NORMAL` gate at `dllinterface.cpp:2143-2148`,
+`Scen.Difficulty`'s `DIFF_NORMAL` from `init.cpp:507-508`, and every house's `Assign_Handicap(Scen.Difficulty)`
+at `dllinterface.cpp:1290`, so every `DifficultyClass` bias is 1.0×.
 
 ### Compounding bug — Hard AI disables harvester replacement
 Even if you fix the gate above, there's a second problem at
@@ -968,9 +839,9 @@ distance; the re-pick cadence is already every attack cycle.
 
 These are small but worth fixing while in the area.
 
-- **Bitwise `|` instead of `&`** in power urgency check (`house.cpp:5255`):
-  `if (BScan | (STRUCTF_CHRONOSPHERE))` is always true. Meant `&`. One-char
-  fix.
+- **The power check's `|`** (`house.cpp:5255`) is always true (the field manual's
+  [The skirmish AI and its IQ levels](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/skirmish-ai-and-iq.md#stock-bugs-and-gaps), the power-check row). TF replaces the
+  whole check with a scan for an armed, powered building (`ai-upgrade-plan.md` W1.1).
 - **`IsScanLimited` is live:** `DriveClass::Start_Of_Move` sets it when a
   unit has no path to a `TarCom` out of range, and `TeamClass::Scan_Limit`
   sets it for the whole team. `Greatest_Threat` then scans weapon range only,
@@ -1040,8 +911,8 @@ work on AI polish post-four-faction-core.
    `object.cpp:1858, 1871`. Revives spatial threat map for skirmish.
 9. **Fix `GOINGTOIDLE` fall-through bug** (Problem 4) — add `return` or
    `else` at `unit.cpp:3065-3074`. Free bug fix.
-10. **Fix `BScan | STRUCTF_CHRONOSPHERE` typo** (Problem 17) — one-char
-    fix in `house.cpp:5255`.
+10. **Replace the `BScan | STRUCTF_CHRONOSPHERE` power check** (Problem 17) at
+    `house.cpp:5255` with a scan for an armed, powered building (`ai-upgrade-plan.md` W1.1).
 
 ## Tier 2 — Larger but high-value
 
@@ -1328,9 +1199,8 @@ Every deploy-mechanic unit (chrono tank, MAD tank, mine layer, demo truck for us
 
 ### Reinforcement / regrouping
 
-**No regrouping logic.** Two `AI_Attack` calls in three only shuffle guards (each guard-area unit in a zone has a 20% chance to be sent to another zone); the third is "everyone armed goes hunt." There's no "wait for N tanks before attacking" or "fall back if outnumbered" path.
-
-The `Attack` timer (`house.cpp:5454`, `Rule.AttackInterval * Random_Pick`) controls the *interval* between waves, not the *composition* — so an AI with one tank and an AI with twelve tanks both attack on the same cadence. Piecemeal pressure rather than waves.
+**No regrouping logic.** The stock attack has no wave, no wait for a force and no fall-back, and its timer
+(`house.cpp:5454`) sets the interval, not the army's size (the field manual's [The skirmish AI and its IQ levels](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/skirmish-ai-and-iq.md#how-it-attacks), How it attacks).
 
 **Severity: MEDIUM.** Fix surface: DLL. Adding a `min_force_size` check before triggering `AI_Attack` would produce more wave-like behaviour.
 
@@ -1560,9 +1430,8 @@ Topics 1-3 share file targets and would duplicate exploration.
 
 ---
 
-## Skirmish difficulty is hardcoded FLAT — IQ is the lever (migrated from memory 2026-07-15)
-CNC_Set_Difficulty (dllinterface.cpp:2159) and Set_Scenario_Difficulty (scenario.cpp:441) are both
-`GAME_NORMAL`-gated -> no-ops in skirmish; Scen.Difficulty stays DIFF_NORMAL for every house; AI IQ is
-pinned to Rule.MaxIQ (dllinterface.cpp:1272). Do NOT route the slider through Assign_Handicap
-(house.cpp:285) — that re-enables the vanilla STAT-bias difficulty the philosophy rejects. Post-v4.0
-behavioural-difficulty pass: set per-AI IQ from GlyphX player data at dllinterface.cpp:1272/1304.
+## Skirmish difficulty is flat; IQ is the lever
+Stock skirmish difficulty does nothing and every AI is at `MaxIQ` (the field manual's
+[The skirmish AI and its IQ levels](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/skirmish-ai-and-iq.md#difficulty), Difficulty and IQ levels). In TF's tree: `CNC_Set_Difficulty` (`dllinterface.cpp:2159`), `Set_Scenario_Difficulty`
+(`scenario.cpp:441`), the IQ set at `dllinterface.cpp:1272/1304`, `Assign_Handicap` (`house.cpp:285`). Never route
+the slider through `Assign_Handicap`: that is the stat-bias difficulty TF rejects.

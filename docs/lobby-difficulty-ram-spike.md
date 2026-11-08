@@ -37,32 +37,22 @@ role; do not derive MP constraints from transport code.
 - Scanner: `TF_Read_Lobby_AI_Difficulties` + helpers, directly above
   `CNC_Set_Difficulty`. Signature scan per the design below; validated candidates that
   disagree go to the ambiguity resolver. A failed read arms the deferred re-scan above.
-- **Trap found during GREEN:** the GlyphX house-assign loop renames AI houses'
-  `IniName` from `AIPLAYERn` to the "Computer" display name before
-  `CNC_Set_Difficulty` runs, and `InitialName` is compiled out (`WOLAPI_INTEGRATION`
-  undefined). Slot mapping therefore uses `TF_AILobbySlotByHouse`, captured in the
-  assign loop at the moment the name is destroyed (reset each match in
-  `CNC_Set_Multiplayer_Data`).
+- **The house-name trap** (the field manual's [Per-AI lobby difficulty](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md#the-method), The method, step 5): slot
+  mapping uses `TF_AILobbySlotByHouse`, captured in the assign loop before the name is overwritten (reset each
+  match in `CNC_Set_Multiplayer_Data`).
 - The TF_AI_DIAG HELLO lines (log + on-screen via the deferred
   `CNC_Advance_Instance` flush) print each house's mode tagged `[slot n]` (RAM) or
   `[global]` (fallback) — the standing per-match verification readout.
 
 ## Why RAM
 
-Every other route to the lobby's per-slot AI difficulty is measured dead (2026-07-18):
-
-| Route | Verdict |
-|---|---|
-| `CNC_Set_Difficulty` | Client sends `1` unconditionally in skirmish (5 lobbies measured: mixed, all-Easy ×2, all-Hard, campaign-option-Hard) and `-1` in LAN MP. Either way it is disconnected from the picker. |
-| Interface structs | No per-slot difficulty field anywhere; AI `Name` = bare `AIPLAYER1..4` (hex-verified). |
-| Persisted settings (`userdata/<id>/1213210/remote/Player_RA_settings_1.bin`) | ChunkFile+zlib TLV; holds map/faction/mode and a `CASUAL` label, but NO per-AI difficulty. The byte that moves at launches (tag 0x31) is a match-start counter. |
-| Wine registry / exit-time writes | Nothing difficulty-related. |
-| Cross-restart lobby memory | Doesn't exist — lobby resets to one default MEDIUM AI after full game restart. |
-
-The picker state lives **only in ClientG.exe process RAM**, where it demonstrably
-persists from lobby into match (the "reverts to last-launched settings" behaviour).
-So we read it there. DontCryJustDie suggested this generically ("if you know the
-offsets"); our design needs **no hardcoded offsets** (signature scan, below).
+Every other route is measured dead: see the field manual's [Per-AI lobby difficulty](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md#why-memory-is-the-only-source),
+Why memory is the only source. Measured beyond it: the settings file
+(`userdata/<id>/1213210/remote/Player_RA_settings_1.bin`) is a ChunkFile+zlib TLV holding a `CASUAL` label, and
+the byte that moves at each launch (tag 0x31) is a match-start counter; the Wine registry and exit-time writes
+hold nothing difficulty-related. That the picks persist in ClientG's memory shows in the launcher reverting to the
+last-launched settings. DontCryJustDie suggested reading RAM ("if you know the offsets"); TF's read uses
+no hardcoded offset (the signature scan below).
 
 ## PoC (proven live)
 
@@ -73,20 +63,9 @@ Scanned private writable regions for `AIPLAYER` (ASCII + UTF-16).
 Lobby under test: slots 2–5 = **Hard / Medium / Easy / Hard**, all-USSR (factions held
 constant so only difficulty varies).
 
-Found: a 4-record array (one per AI slot), record stride **0xA8**, each record starting
-with the ASCII slot name:
-
-| Record offset | Field | PoC values | Identity (settled 2026-07-22) |
-|---|---|---|---|
-| `0x00` | `AIPLAYERn\0` name string | AIPLAYER1..4 | unchanged |
-| `0x50` | *assumed* slot index int32 | 1, 2, 3, 4 | **team, 0-7, plus 8 = random** |
-| `0x54` | house / faction int32 | not read | **ActLike = HousesType + 2, 42 = random** |
-| `0x64` | **difficulty int32** | **3, 2, 1, 3** | unchanged, the payload |
-| `0x68` | *assumed* slot index again | 1, 2, 3, 4 | **lobby colour 0-7** |
-
-**Difficulty enum: 1 = Easy, 2 = Medium, 3 = Hard** (matched the lobby exactly).
-Record stride `0xA8` = 168 bytes. Human players occupy records ahead of the AI ones,
-with an empty name and difficulty 0; anchoring the scan on `AIPLAYERn` skips them.
+Found: a 4-record array, one per AI slot, reading 3, 2, 1, 3 at `+0x64`. The record layout, the field
+identities and the human records: see the field manual's [Per-AI lobby difficulty](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md#the-record), The record. The PoC lobby
+used default colours, so `+0x50` (team) and `+0x68` (colour) both read 1, 2, 3, 4 and looked like slot indices.
 
 ### Field identities
 
@@ -106,27 +85,11 @@ entire array and dropped every AI to the global tier whenever one player picked 
 faction. Gating team as `[0..7]` on a literal reading of "0-7 for valid teams" would do the
 same to a random team.
 
-The PoC lobby used default colours, so team, colour and slot index read alike: see the field manual's
-[Per-AI lobby difficulty](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md#the-record), The record.
-
-- **`0x68` is the lobby colour** (DontCryJustDie, 2026-07-21). Changing an AI's colour in
-  the lobby breaks any `0x50 == 0x68` test immediately. It is a liveness key rather than
-  just a field, because the DLL can independently corroborate it: the colours for the
-  current match arrive in `CNC_Set_Multiplayer_Data`, so an array carrying them belongs to
-  this match and not to a lobby that has been and gone.
-- **`0x50` is the team** (DontCryJustDie, 2026-07-22): 0-7 for a real team, 8 for random.
-  It counts from zero and is not a slot identity, which is why AIPLAYER1 reads `0` and a
-  three-AI lobby read `0, 1, 1` (two AIs sharing a team). The PoC's tidy `1, 2, 3, 4` was
-  a default-team coincidence. Range-check only; the roster's own `Team` is not a safe
-  equality test because a random pick resolves before the DLL sees it.
-- **`0x54` is the ActLike**, in the client's numbering: **RA HousesType + 2** (so 2-9),
-  with 42 meaning the lobby pick was random (DontCryJustDie, 2026-07-22). Both samples we
-  had logged decode exactly: an all-Soviet lobby's `4, 4, 4` is `HOUSE_USSR`, and a mixed
-  GDI / Nod / Allied lobby's `2, 9, 3` decoded as Spain / Turkey / Greece, logged while Nod still
-  sat on Turkey (GDI and Nod now hijack Spain and Greece). It is now a **second liveness key** alongside colour, gated against
-  `player_info.House` captured in `CNC_Set_Multiplayer_Data` before the Spain/Greece hijack
-  rewrites it. Skipped when the record reads 42 or falls outside 2-9, so an unexpected
-  encoding degrades to the colour-only gate instead of failing the read.
+Which fields are safe to gate on, and the samples that decode them: the field manual's
+[Per-AI lobby difficulty](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md#the-record), The record, and How it was verified (DontCryJustDie identified colour, team and
+country). TF gates colour and country (ActLike) as its two liveness keys, the country against `player_info.House`
+captured in `CNC_Set_Multiplayer_Data` before the Spain/Greece hijack rewrites it; team is range-checked only. The
+mixed `2, 9, 3` sample was logged while Nod still sat on Turkey.
 
 **The bug this caused.** The validator's range gate on `+0x50` was `< 1`, so every array's
 first record (team 0) was rejected. Validation stops at the first bad record and a candidate must cover the

@@ -19,18 +19,11 @@ asset-build pipeline.
 
 ## The remap rule
 
-Verified against TD `CONST.CPP` (`RemapRed`, its 176..191 row at line 325; `DISPLAY.CPP:248`) and RA's
-`PALETTE.CPS` row 0 (`init.cpp` `Init_Color_Remaps`):
-
-| | House-colour "unity" range | Action |
-|---|---|---|
-| TD | **176–191** (0xB0–0xBF) | map → RA 80–95 *positionally* (`i → i-96`) |
-| RA | **80–95** (0x50–0x5F) | RA engine recolours these per player |
-
-- **Index 0** stays 0 (transparent).
-- **Every other index** → closest-colour match (Euclidean RGB) from TD's
-  `TEMPERAT.PAL` into RA's `TEMPERAT.PAL`, **excluding** 0 and 80–95 as targets
-  (so a non-house pixel can never accidentally become house-coloured).
+The rule (0 kept, 176–191 moved onto 80–95, every other index to the nearest RA colour by Euclidean RGB) is in
+the field manual's
+[HD-only mods](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/hd-only-mods.md#porting-tds-classic-art-why-not-support-classic-mode-as-well).
+It was checked against TD `CONST.CPP` (`RemapRed`, its 176..191 row at line 325; `DISPLAY.CPP:248`) and RA's
+`PALETTE.CPS` row 0 (`init.cpp` `Init_Color_Remaps`).
 
 ## The tooling (offline, pack-time — no runtime cost)
 
@@ -48,16 +41,12 @@ Verified against TD `CONST.CPP` (`RemapRed`, its 176..191 row at line 325; `DISP
 
 ## Drawn colours (the Obelisk laser)
 
-The Obelisk laser is a **drawn line**, not a SHP, so it bypasses `TFASSETS.MIX`
-— but it has the *same* root cause. `redalert/techno.cpp` hardcoded TD's beam
-indices `0x7D`/`0x7F` (red in TD's palette, **green** in RA's). Fixed by remapping
-through the same LUT: `0x7D → 0xD8`, `0x7F → 0xE6`. Both the classic `LogicPage`
-draw and the Remastered launcher line-intercept (`DLL_Draw_Line_Intercept`) use
-RA's palette, so one value fixes both modes.
-
-**General rule for any new TD-sourced drawn colour:** look up the TD index's RGB
-in TD `TEMPERAT.PAL`, find the closest RA index (the LUT in `shptools.py` does
-this), hardcode the RA index. Don't reuse the raw TD index.
+The Obelisk laser is a drawn line, not a SHP, so it bypasses `TFASSETS.MIX`; its indices and their RA
+replacements are in the field manual's
+[HD-only mods](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/hd-only-mods.md#porting-tds-classic-art-why-not-support-classic-mode-as-well).
+`redalert/techno.cpp` carries the remapped values, which both the classic `LogicPage` draw and the launcher's
+line intercept (`DLL_Draw_Line_Intercept`) use. For any new TD-sourced drawn colour, take the RA index from the
+LUT in `shptools.py`, never the raw TD index.
 
 ## Verifying
 

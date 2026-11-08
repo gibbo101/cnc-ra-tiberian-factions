@@ -71,23 +71,14 @@ atlas too (`ui-atlas-modding.md`), where the radar crest is `UI_SIDEBAR_FACTIONL
 
 ---
 
-## ⚠️ THE SAME-SIZE RULE (read before ANY edit — proven 2026-05-30, re-proven the hard way 2026-06-09)
+## The same-size rule
 
-**Every inner file in the mod's CONFIG.MEG must keep its EXACT original byte size.**
-Mechanism: the launcher reads the mod MEG's file *data* at the **base archive's offsets**,
-ignoring the mod MEG's own (correct) offset table. Grow or shrink any member and every file
-after it shifts → the launcher reads some *downstream* file at a stale offset → garbage →
-**crash at boot**. Diagnostics for this failure mode:
-
-- ClientG dies at RVA `0x56A539` with `EXCEPTION_ACCESS_VIOLATION`. That address is the
-  **generic fatal-assert path**, not a specific subsystem — extract the crash-thread stack
-  strings from the minidump (`AppData/Roaming/CnCRemastered/*.dmp`) and you'll find the real
-  assert, e.g. `pglib\xml.cpp(1227): error reading xml header from .\Data\XML\GameConstants.xml`.
-  The file it names is the innocent *downstream* victim, not the file you edited.
-- Recipe: edit in place, then pad back to the exact original size by cannibalizing bytes from
-  XML comments (or padding inside one). Verify member size == original AND total MEG == base.
-- Consequence: a mod CONFIG.MEG can only **override existing files at their exact size** —
-  never grow, shrink, add, or remove members.
+Every member of the mod's CONFIG.MEG keeps its exact base size, and no member is added or removed: the launcher
+reads the data at the base archive's offsets. The rule, its boot crash and how to read the crash are on the field
+manual's [Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#a-replacement-configmeg), A replacement `CONFIG.MEG`, and
+[Crash triage](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/troubleshooting/crash-triage.md#4-a-clientg-crash-at-rva-0x56a539-is-an-assert), A ClientG crash at RVA `0x56A539` is an assert.
+TF pads each edited member back to size from its XML comments, then checks the member and the archive total
+against the base.
 
 ## Scope limit: mod CONFIG.MEG feeds the ClientG FRONT-END only
 
@@ -97,9 +88,9 @@ won't start, and the carrier that starts it, are on the field manual's
 [New maps in the skirmish Official list](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/new-maps-in-the-skirmish-list.md#why-a-listed-map-wont-start), Why a listed map won't start and Starting it
 (TF's tests: the assert at `serveripcmessagehandler.cpp(268)`; a hijacked `Community_2` still loaded `SCMC1EA`).
 
-- The launcher reads `Data/CNCDATA/...` map INIs via CWD-relative paths = **base install
-  only**; a mod's `Data/CNCDATA/` is never searched. The game does read a mod's map INIs, from its
-  `CCDATA\` (`campaign-tabs-research.md`).
+Where map INIs are read from (a mod's `CCDATA/`, never a `Data/CNCDATA/` of its own: the launcher reads them by paths
+relative to its working directory, the base install) is on the field manual's [New maps in the skirmish Official list](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/new-maps-in-the-skirmish-list.md#converting-the-map), Converting the map
+(`campaign-tabs-research.md` for TF's campaign maps).
 
 TF launches its new entries through Hastings' `D6` (`td-base-art.md`, "TD maps in the Official list"). Workshop
 *map items* (custom-maps tab, native pipeline, previews from the shipped TGA) remain the plain route.

@@ -628,11 +628,11 @@ human ally shared vision). Pincers/role-splitting = Hard-tier follow-on, not v1.
 ### W7 — Difficulty plumbing
 Research complete (IQ map, §7): per-AI IQ from lobby at dllinterface.cpp:1272 (+ mirror sites
 queue.cpp:3273, scenario.cpp:3016, saveload.cpp:1587); do NOT route through Assign_Handicap
-(stat biases). **Critical prerequisite: lower Rule.IQProduction below 5** or sub-max AIs stop
-base-building entirely (house.cpp:1262). Tier map: Easy=IQ3 (no supers/aircraft-AI/roam),
-Medium=IQ4 (+supers, aircraft, guard-area, content-scan), Hard=IQ5 + the new smart behaviours.
-New behaviours get their own IQ thresholds. IQSellBack quirk: it's actually a TechLevel gate,
-`House->Control.TechLevel >= Rule.IQSellBack` (`BuildingClass::Repair_AI`) — don't treat as IQ tier.
+(stat biases). **Critical prerequisite: lower Rule.IQProduction below 5** (house.cpp:1262), and
+`IQSellBack` is a tech-level test, not an IQ tier: both on the field manual's
+[The skirmish AI and its IQ levels](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/skirmish-ai-and-iq.md#iq-levels), IQ levels.
+Tier map: Easy=IQ3 (no supers/aircraft-AI/roam), Medium=IQ4 (+supers, aircraft, guard-area,
+content-scan), Hard=IQ5 + the new smart behaviours. New behaviours get their own IQ thresholds.
 
 ### W8 — Combat mechanics
 Directional armour per §2.3 (research complete: hook techno.cpp:4576 after ArmorBias, before

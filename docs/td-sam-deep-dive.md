@@ -57,35 +57,7 @@ Note: TD's `Status` is a `char` field on `MissionClass` (TD `mission.h:62`). Def
 
 ### 2. The render path (TD `building.cpp:548-571`)
 
-```cpp
-if (Class->IsTurretEquipped) {
-    shapenum = UnitClass::BodyShape[Facing_To_32(PrimaryFacing.Current())];
-
-    if (*this == STRUCT_SAM) {
-        // Raised states: 32 rotation frames live at frames 16-47.
-        if (Status == SAM_READY || Status == SAM_FIRING || Status == SAM_READY2 || Status == SAM_FIRING2
-            || Status == SAM_LOCKING) {
-            shapenum += 16;
-        } else {
-            // RISING (0-15) and LOWERING (48-63) drive shapenum directly from Stage.
-            shapenum = Fetch_Stage();
-        }
-    }
-    if (Health_Ratio() < 0x0080) shapenum += 64;  // Damaged offset.
-}
-```
-
-TD's SAM SHP layout (verified against the 129-frame TGA tileset we already have, ±1 construction frame):
-
-```
-0-15    Rising (door open + launcher up)        — driven by Set_Stage / Fetch_Stage
-16-47   Raised, 32 rotation frames              — driven by BodyShape[Facing_To_32]
-48-63   Lowering (launcher down + door close)   — driven by Set_Stage / Fetch_Stage
-64-79   Damaged rising
-80-111  Damaged raised rotation
-112-127 Damaged lowering
-[128]   Optional bib/construction tail
-```
+TD's `Shape_Number` draws the rise and the lowering from the animation stage, the raised launcher's 32 facings from frame 16, and the damaged set 64 frames on, below half health: see the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#the-sam-site-rise-fire-twice-lower), The SAM site (with the damaged runs 64–79, 80–111 and 112–127 and `SAM.ZIP`'s 129 frames), and The flags that decide the frames ("TD's damaged test"). The raised states are `SAM_READY`, `SAM_FIRING`, `SAM_READY2`, `SAM_FIRING2` and `SAM_LOCKING`. The 129th frame (128) is unexplained, perhaps a bib or construction tail.
 
 RA's SAM indexes its facings from frame 0 (and adds 35 when damaged, EA RA `BUILDING.CPP` `Shape_Number`), which read in play as "looks like the RA SAM". See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#the-sam-site-rise-fire-twice-lower), The SAM site.
 
@@ -106,19 +78,7 @@ A `Take_Damage` rule, not an `Armor=` field; TF ports it in M5. See the field ma
 
 ### 5. The firing animation overlay (TD `building.cpp:828-836`)
 
-```cpp
-if (*this == STRUCT_SAM) {
-    AnimClass* anim = new AnimClass(
-        (AnimType)(ANIM_SAM_N + Dir_Facing(PrimaryFacing.Current())),
-        Center_Coord());
-    if (anim) anim->Attach_To(this);
-    Sound_Effect(weapon->Sound, Coord);
-}
-```
-
-When SAM fires, TD spawns a standalone `ANIM_SAM_<dir>` overlay at `Center_Coord()` (not `Fire_Coord` — the overlay's frames already encode the muzzle position per direction). Uses `weapon->Sound` (= `VOC_ROCKET2` for `WEAPON_NIKE` per TD `const.cpp:91`).
-
-**Good news for the RA port:** RA's `TechnoClass::Fire_At` already handles `ANIM_SAM_N + Dir_Facing(PrimaryFacing.Current())` automatically (`techno.cpp:3392-3393`) when a weapon's `Anim=SAMFIRE` resolves to `ANIM_SAM_N`. RA's `adata.cpp:142-298` already defines the 8 directional `SAMN`..`SAMNE` entries with TD's frame layout (`18 * direction_index` starting frames, 18 stages each). So this overlay path Just Works once the weapon is wired correctly.
+TD's SAM takes its own branch of the building `Fire_At`: the launch flash at the centre (not `Fire_Coord`: the overlay's frames already place the muzzle for each direction), attached, then the weapon's sound (`WEAPON_NIKE`'s is `VOC_ROCKET2`, TD `const.cpp:91`). RA's `SAMFIRE` entries carry the same 18-stage layout. See the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#weapons-muzzle-flashes-and-offsets), Weapons, muzzle flashes and offsets. RA's `TechnoClass::Fire_At` already turns `Anim=SAMFIRE` by `PrimaryFacing` (`techno.cpp:3392-3393`; the eight entries at `adata.cpp:142-298`), so this overlay path Just Works once the weapon is wired correctly.
 
 ### 6. Muzzle position (TD `building.cpp:2804-2836`)
 

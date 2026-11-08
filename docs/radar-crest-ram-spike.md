@@ -19,28 +19,16 @@ Logging is `TF_DEV_BUILD`-only.
 The crest is side-keyed in ClientG's data, a wall that held on the data side and fell on the RAM
 side, as the EVA lines did (`eva-ram-patch-spike.md`).
 
-## The mechanism (what actually works)
+## The mechanism
 
-ClientG keeps **one small cached record per referenced atlas region** in ordinary writable heap:
-
-```
-float v0, u0, wn, hn;   // y/H, x/W, w/W, h/H of the region in MT_COMMANDBAR_COMMON.TGA (6871x6716)
-```
-
-The crest quad samples straight from this record every frame (the per-frame vertex buffers carry
-the same UVs). ALLIES = `{1706/6716, 5698/6871, 794/6871, 713/6716}`. There is a persistent
-master copy plus a per-match copy cloned from it (typically 2 records per slot, 4 total). The scans
-stop after the start-of-match burst, because records made later in a match are cloned from the
-master the scan already patched. Both
-TD crests already ship inside the atlas as the never-referenced `UI_SIDEBAR_FACTIONLOGO_GDI`
-(1,1875,718,706) and `_NOD` (3778,2221,660,660) regions. **Re-pointing the ALLIES record's 16
-bytes at the GDI or NOD rect swaps the drawn crest instantly** — no pixel data, no new art.
-
-The sim's DLL does it cross-process, the same way as the EVA patch (a launcher's own copy of the DLL runs the same scan for its own player):
-`CreateToolhelp32Snapshot` → `ClientG.exe` → `OpenProcess(VM_READ|VM_WRITE|VM_OPERATION)` →
-`VirtualQueryEx` over `MEM_PRIVATE`/`PAGE_READWRITE` regions → 4-byte-aligned needle search for
-any record holding a slot's stock rect or a TD rect → `WriteProcessMemory` of the wanted rect.
-Records must be computed as **double divide then cast to float** to byte-match ClientG's copies.
+ClientG's cached region record (`float v0, u0, wn, hn`), its master and per-match copies, and the cross-process
+scan and write that re-point it are on the field manual's
+[Re-pointing launcher UI art in memory](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/repointing-atlas-regions.md#the-record), The record and The method; the
+TD crests' own regions (`UI_SIDEBAR_FACTIONLOGO_GDI` and `_NOD`, which RA's HUD never draws) are on its
+[The UI atlas](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/the-ui-atlas.md#pick-the-right-region), Pick the right region. In TF, re-pointing a crest record's 16 bytes
+at the GDI or Nod rect swaps the drawn crest on the next frame. TF finds about two records per slot, four in all,
+and the per-frame vertex buffers carry the same UVs as the record. The sim's DLL makes the writes across processes,
+as the EVA patch does, and each launcher's own copy of the DLL runs the same scan for its own player.
 
 **The scan skips every thread stack** (`TF_Thread_Stacks`), as the field manual's
 [Re-pointing launcher UI art in memory](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/repointing-atlas-regions.md#the-method) describes (The method, step 2, and the fragility box).

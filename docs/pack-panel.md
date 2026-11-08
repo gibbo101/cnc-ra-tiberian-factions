@@ -15,8 +15,8 @@ launcher build none of it installs.
 TIBERIAN FACTIONS ADD-ONS, between LAN MODE and FACTION ENCYCLOPEDIA on the main menu, opens a screen of the mod's
 own: `TF_ADDONS.BUI` (`scripts/bui_addons_build.py`), the CAMPAIGNS page's frame with its class set to ClientG's
 `SplashScreen`, so the launcher layer binds every widget. It opens as the scene `RA/TF_AddOns`, as the field manual's
-[New screens and buttons](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/new-screens-and-buttons.md#a-new-screen) describes; a click handler bound with data `n` gets the behaviour
-object plus `n` in `ecx`, so one handler serves every row or tab.
+[New screens and buttons](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/new-screens-and-buttons.md#a-new-screen) describes, with one click handler, bound with each row's or tab's number,
+serving them all.
 
 - **Tabs** ASSETS, THEATRES and CAMPAIGNS (`PackInfo.Kind`), each a clone of BACK with a glow when open and a badge
   counting its changes. An empty tab shows COMING SOON.
@@ -59,8 +59,9 @@ logo id, Workshop item, the faction that needs it (none for an optional pack), n
 
 `scripts/bui_mainmenu_pack_notice.py` lays the notice out top right, every piece hidden, straight in
 `ScreenFitter_Group` (a cloned group carries the source group's tint and places its children differently).
-`scripts/pack_panel_art.py` paints the frame from the menu box's steel at the box's own scale (the launcher draws
-menu images without mipmaps, so a larger frame bands on the Deck) and the logo: the mod's title over ADD-ONS. A
+`scripts/pack_panel_art.py` paints the frame from the menu box's steel at the box's own scale (a frame painted larger banded on the Deck, which looks like the launcher drawing menu
+images without mipmaps: the field manual's
+[BUI screens](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/bui-screens.md#traps), Paint menu art at the size it's drawn) and the logo: the mod's title over ADD-ONS. A
 clone of the menu box's `Button_Scanlines` runs its moving sheen over the frame.
 
 It shows while any add-on is not on (`Pack_On`): never subscribed, downloading, downloaded or switched off. The text

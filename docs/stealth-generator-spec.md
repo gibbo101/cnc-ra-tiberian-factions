@@ -38,55 +38,30 @@ frame from `LogicClass::AI`.
 | 11 | **Armed defensive buildings** (Obelisk/SAM/AGT/towers): **ambush** — cloak normally, but **uncloak when they acquire an in-range target**, fire, then re-cloak once the threat leaves | building-side uncloak-on-target hook (see below) |
 
 ### Detector set (resolved via `IsScanner`, no hardcoded list)
-- **All infantry** — already `IsScanner=true` (forced in the `InfantryTypeClass` ctor). **No infantry changes.**
-- **Attack Dog** — it's an `InfantryTypeClass` → already a scanner. No work.
-- **All vessels** — already `IsScanner=true` (forced in the `VesselTypeClass` ctor).
+- **All infantry, the dog included, and all vessels** detect with no work (the field manual's
+  [A stealth generator](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/stealth-generator.md#what-the-engine-gives-you)).
 - **Radar Jammer (MRJ)** — a vehicle; **add `Sensors=yes`** to its rules.ini entry (the `Sensors=` key sets `IsScanner` in `TechnoTypeClass::Read_INI`). One line, no code.
 
 ---
 
 ## Engine facts
 
-- **`IsCloakable` must be wired on buildings.** RA never cloaked a building, so `BuildingClass`
-  never copied its type's `Cloakable` flag to the instance (units/infantry/vessels do). The one
-  missing line `IsCloakable = Class->IsCloakable;` in the `BuildingClass` ctor (already added in the
-  WIP) makes a building drivable through the cloak system. **Keep it.**
-
-- **Detector flag = `IsScanner`.** `FootClass::Per_Cell_Process` shimmers a
-  **cloaked object** when it arrives at a cell adjacent to an enemy techno whose type has
-  `IsScanner`. **Direction matters:** vanilla only fires this from the *cloaked object's own move*.
-  It does **nothing** for a stationary cloaked **building**, nor for an idle cloaked unit when a
-  scanner walks up to *it*. Our field is mostly buildings + idle units, so we need the **reverse
-  scan**: for each stealthed object, is any enemy `IsScanner` techno within reveal range → shimmer.
-  Same flag, added direction. `Sensors=` INI key → `IsScanner` (`TechnoTypeClass::Read_INI`).
-
-- **Cloak state machine** (techno.cpp): `Cloak` ∈ {UNCLOAKED, CLOAKING, CLOAKED, UNCLOAKING}.
-  - `Do_Cloak()` only acts if `IsCloakable && (Cloak==UNCLOAKED||UNCLOAKING)`; calls `Detach_All`.
-  - `Do_Uncloak()` only acts if `IsCloakable && (Cloak==CLOAKED||CLOAKING)`.
-  - `Cloaking_AI()` (called from each object's own AI) owns the transition + **auto-recloak** after
-    `CloakDelay` (`Rule.CloakDelay` minutes, read from `[General] SubmergeDelay` in
-    `RulesClass::General`; there is no `CloakDelay=` key) once `Is_Ready_To_Cloak()`. It also fires
-    `Do_Cloak()` itself when idle.
-  - **This is the key to the rewrite:** because we chose **no generic auto-reveal**, the driver must
-    **NOT force `Do_Cloak` every frame**. Set `IsCloakable=true` and let `Cloaking_AI` cloak the
-    object cleanly on its own. The every-frame forced `Do_Cloak` in the WIP fought `Cloaking_AI`
-    and the `FIRE_CLOAKED` fire sequence — that single mistake caused the flicker (#2), the
-    fire-does-no-damage (#1), and left the cloak enum inconsistent so `Do_Uncloak`'s guard missed
-    → reveal never fired (#7) and restore no-oped (#9). The driver owns only: (a) set/restore
-    `IsCloakable`; (b) force-reveal (`Do_Shimmer`/`Do_Uncloak`) when a detector is in range or an
-    armed building acquires a target.
+The engine side follows the field manual's [A stealth generator](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/stealth-generator.md): the cloak machine,
+the one-way detection, `IsCloakable` missing from the building constructor (TF's `BuildingClass` constructor copies
+it) and the forced-cloak trap. The driver owns only two things: setting and restoring `IsCloakable`, and forcing a
+reveal (`Do_Shimmer` / `Do_Uncloak`) when a detector is in range or an armed building acquires a target;
+`Cloaking_AI`, called from each object's own AI, does the rest. `Rule.CloakDelay` is read in `RulesClass::General`
+from `SubmergeDelay`; there is no `CloakDelay=` key.
 
 - **Owner vs enemy render:** the export sends the raw `Cloak` state, not
-  `TechnoClass::Visual_Character`, so whether `Visual_Character` shapes the launcher's render is
-  unproven. Settled `CLOAKED` returns `VISUAL_SHADOWY` for the owner and `VISUAL_HIDDEN` for others. For the **warped
+  `TechnoClass::Visual_Character` (its values per viewer are on the manual's page), so whether
+  `Visual_Character` shapes the launcher's render is unproven. For the **warped
   owner look** (#7): return a distorted stage for owner-owned cloaked objects instead of the clean
   `VISUAL_SHADOWY` — candidates are `VISUAL_RIPPLE` or a **held mid-`UNCLOAKING` stage** (colour +
   distortion). Tune empirically via the screenshot loop; **this supersedes the old bug-#8 preference
   for the clean ghost.**
 
-- **Bibs are stamped into map cells** (via `Lay_Bib`/`Bib_And_Offset`), not part of the building
-  sprite — so the cloak render does **not** hide them. Hiding the bib (#6) = suppress/redraw the
-  bib cells while the building is cloaked, restore on uncloak. Its own task.
+- **Bibs** (`Lay_Bib`/`Bib_And_Offset`) need their own hiding (#6): see "Building bibs" under Traps.
 
 - **Buildings uncloak to fire only from `Mission_Attack`.** `TechnoClass::Can_Fire` returns
   `FIRE_CLOAKED` for anything not `UNCLOAKED`, and `BuildingClass::Mission_Attack` answers it with
@@ -101,9 +76,9 @@ frame from `LogicClass::AI`.
   such driver-cloaked object exists (don't one-shot via a single-frame latch), and if `Do_Uncloak`'s
   guard would miss, reset `Cloak=UNCLOAKED` + `CloakingDevice` stage directly.
 
-- **Built-in collision-shimmer** (`DriveClass::Start_Of_Move` and `While_Moving`): a unit pathing *into* a cloaked cell shimmers
-  it. Momentary, on-theme, harmless — NOT the detector reveal, and explains a screenshot where units
-  "seemed to detect" the base by walking into it.
+- **Built-in collision shimmer** (`DriveClass::Start_Of_Move` and `While_Moving`): momentary,
+  harmless, and not the detector reveal (the field manual's
+  [What the engine gives you](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/stealth-generator.md#what-the-engine-gives-you)).
 
 - **Sidebar:** the cameo and name key on IniName (`RA_TDSTEAL` in `RABUILDABLES.XML`, ModText rows
   `TEXT_STRUCTURE_TDSTEAL` / `_DESC`).
@@ -147,39 +122,17 @@ The driver does the minimum and `Cloaking_AI` does the rest:
 
 ## Traps (fixed)
 
-### A helipad and its helicopter never cloaked
+Each is on the field manual's [A stealth generator](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/stealth-generator.md#traps), traps; TF's side of each:
 
-Two causes, both in the driver (`TF_Stealth_Drive`, building.cpp):
-
-1. **Helipad never cloaked** — a helipad is (near-)permanently in **radio contact** with its
-   parked helicopter, and the "don't cloak while `In_Radio_Contact()`" gate kept it UNCLOAKED
-   forever. **Fix:** the gate now blocks a fresh cloak only while the tethered partner is
-   *in transit* (`partner->Is_Foot() && Target_Legal(partner->NavCom)`) — an inbound harvester or
-   cargo plane stays protected from a stranding `Detach`, but a parked idle helicopter (no NavCom)
-   lets the pad cloak with it.
-2. **Helicopter itself never cloaked** — the cover pass only iterated Buildings + Units + Infantry.
-   **Fix:** added an `Aircraft` pass in `Process_Stealth_Generators`.
-
-### The whole base stayed cloaked after the generator died
-
-Killing the generator left previously-cloaked buildings cloaked forever (newly-built ones correctly
-stayed visible). Cause: the restore pass was gated by a single `_had_generators` latch that let it
-run for **exactly one frame** after the last generator died. `Do_Uncloak()` only *starts* a
-multi-frame transition, so the object never reached `UNCLOAKED` that frame, `IsCloakable` was never
-reset, and `Cloaking_AI` re-cloaked it. **Fix:** `TF_Stealth_Drive` now returns whether an object
-is still driver-cloaked, and `Process_Stealth_Generators` keeps the restore pass running (via
-`_restore_pending`) until a full pass finds nothing left to restore.
-
-### Building bibs (#6): hidden at render time, never removed
-
-Removing the bib is harmful: a `TF_Sync_Bib` implementation that `Disown`ed the
-bib `SmudgeClass` was tried and **removed**: a bib smudge also blocks placement
-(`CellClass::Is_Clear_To_Build`), so clearing it let the (blind) enemy build into a
-cloaked base's bib strip. The correct mechanism already existed in the Remaster draw path
-(`dllinterface.cpp` `tf_hide_bib`, from the original commit `cd8bd17`): it **keeps the smudge**
-(placement stays blocked) and suppresses only the *draw* when the covering building is
-`VISUAL_HIDDEN` — transparent to the enemy, bib still shown to the owner. This is the canonical
-approach; don't reintroduce smudge removal.
+- **A helipad and its helicopter never cloaked:** the radio-contact gate in `TF_Stealth_Drive` now blocks a fresh
+  cloak only while the partner is in transit (`partner->Is_Foot() && Target_Legal(partner->NavCom)`), and
+  `Process_Stealth_Generators` has an `Aircraft` pass.
+- **The whole base stayed cloaked after the generator died** (buildings built after it stayed visible): `TF_Stealth_Drive` returns whether an object is still
+  driver-cloaked, and `Process_Stealth_Generators` keeps restoring (`_restore_pending`) until a full pass finds
+  nothing left.
+- **Building bibs (#6): hidden at render time, never removed.** `tf_hide_bib` in `dllinterface.cpp` keeps the smudge
+  (placement stays blocked: `CellClass::Is_Clear_To_Build` refuses a bib) and suppresses only its draw while the covering building is `VISUAL_HIDDEN`, so the owner
+  still sees it. A `TF_Sync_Bib` that `Disown`ed the smudge was removed; don't reintroduce smudge removal.
 
 **Covering-building resolution (`58ae18f`):** the original this-cell-or-one-north probe missed TD foundations — TDPROC's entire bottom
 row is overlap-only (`TdOListProc`), so cloaked TD refineries kept floating bibs. The probe now

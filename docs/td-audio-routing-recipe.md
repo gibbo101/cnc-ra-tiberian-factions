@@ -14,18 +14,10 @@ few early ones (the Obelisk's laser among them); its own new sounds ship in
 
 ## How the launcher resolves audio
 
-`dllinterface.cpp:2575-2581`:
-
-```cpp
-strncpy(new_event.SoundEffect.SoundEffectName, SoundEffectName[sound_effect_index].Name, 16);
-if (extension != NULL) {
-    strncat(new_event.SoundEffect.SoundEffectName, extension, 16);
-}
-new_event.SoundEffect.SoundEffectPriority = SoundEffectName[sound_effect_index].Priority;
-new_event.SoundEffect.SoundEffectContext  = SoundEffectName[sound_effect_index].Where;
-```
-
-What the launcher does with the name: see the field manual's [TD sounds from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-sounds-from-the-base-game.md#how-a-sound-gets-from-the-dll-to-the-speakers), How a sound gets from the DLL to the speakers.
+What the launcher does with the name the DLL sends, and the variant suffix a unit response gets, are on the field
+manual's [TD sounds from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-sounds-from-the-base-game.md#how-a-sound-gets-from-the-dll-to-the-speakers), How a sound gets from the DLL to the speakers.
+TF's copy is `On_Sound_Effect` in `redalert/dllinterface.cpp`; besides the name, the event carries
+`SoundEffectPriority` and `SoundEffectContext`, copied from the table entry's `Priority` and `Where`.
 
 ---
 
@@ -93,31 +85,14 @@ Their pattern names files with the RA prefix directly (`RAC_SFX_OBELRAY1.WAV`) r
 
 ---
 
-## What this unlocks
+## Sample names and formats
 
-### Sample names and formats
-
-The launcher resolves **novel sample names** from loose `Data/AUDIO/` files, so new audio ships
-under its own names; the alias recipe above routes it. Proven on both channels: a TS EVA line on
-the localized channel, and a weapon report on the non-localized one. The rules are about format:
-1. **MS-ADPCM WAV only** (fmt tag 2). Plain PCM (tag 1) crashes ClientG with an integer
-   divide-by-zero in its ADPCM block math (ClientG+0xAB5E69). Encode SFX with
-   `ffmpeg -c:a adpcm_ms -ar 22050 -ac 1`. TD's remastered EVA lines are stereo, at rates that vary
-   per file from about 44,030 to 44,150 Hz; TF encodes at 44077 (`ffmpeg -ac 2 -ar 44077 -c:a adpcm_ms`,
-   the default 1024 block align is accepted). Classic EVA and RA's remastered EVA are mono, RA's at
-   rates that vary per file.
-2. **Localized samples live under a locale folder** (`Data/AUDIO/EN-US/`), and the XML's `.MP3`
-   extension maps to a `.WAV` member: the localized "MP3" entries are ADPCM WAVs.
-3. **A bad format fails silently or crashes.** Check a new file's md5 and fmt chunk against a base
-   sample on the same channel.
-
-Never probe audio through the launcher-fired credit tick: any loose override silences it. When a routed sound plays
-silent, check the event's preset and mixer before the sample: the TS credit tick's preset pinned its volume at 5 of
-100, and eight rounds went on the sample first.
-
-Every sound ships under its own new name, which loads on both channels: no sound rides a base TD
-sample's name. A loose file named after a base sample replaces that sample everywhere it plays, GUI
-events included (`SFX_GUI_Generic_Bad_Sound` plays SCOLD1).
+New sounds, their format and the traps (the plain-PCM crash, the rates, `.MP3` names that are WAVs, a loose file
+replacing a base sample) are on the field manual's [TD sounds from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-sounds-from-the-base-game.md#samples-of-your-own), Samples of your own and Traps; never test a sound through the
+credit tick (its [Credit tick and radar sounds by faction](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/sound-and-music/credit-tick-and-radar-by-faction.md#traps), Traps).
+TF encodes its sound effects with `ffmpeg -c:a adpcm_ms -ar 22050 -ac 1` and its EVA lines at 44,077 Hz stereo
+(`ffmpeg -ac 2 -ar 44077 -c:a adpcm_ms`, the default 1024 block). Check a new file's md5 and fmt chunk against a
+base sample on the same channel. Every TF sound ships under its own new name, so none replaces a base TD sample.
 
 ---
 

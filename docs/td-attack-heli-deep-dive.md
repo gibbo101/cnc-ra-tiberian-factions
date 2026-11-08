@@ -38,13 +38,10 @@ single-shot (GTWR's TDChainGun, E3/Bike's TDDragon have no Burst), so each attac
 ## 2. The attack-heli LOGIC — RA's is generic, reuse it
 
 The TD attack-heli behavior is: fly to target → strafe (fire pairs) → when `Ammo` runs out, fly back to
-a helipad (`MISSION_ENTER`) → reload → repeat. **RA's `AircraftClass` already implements all of this and
-it is essentially type-agnostic** (`redalert/aircraft.cpp`): `Ammo`/`MaxAmmo` (default -1, unlimited), `MISSION_ATTACK`,
-`MISSION_ENTER` reload-at-helipad (lines 2022/2260/2374), `Good_Fire_Location` (strafe positioning),
-`Pip_Count` (ammo pips). The file's live type checks are all for other aircraft: the Badger, the Chinook
-(`AIRCRAFT_TRANSPORT`) and the cargo plane; its one `AIRCRAFT_HIND` speed
-check sits inside `#ifdef TOFIX` and never compiles. So we get the attack-heli AI **for free** by setting the unit up like RA's HIND —
-no `_TD()` port needed (unlike the ground units' missions).
+a helipad → reload → repeat. RA's `AircraftClass` already runs all of it for any type built like its HIND: see the
+field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#the-same-pass-for-tds-rocket-launchers-and-aircraft), The same pass for TD's rocket launchers and aircraft.
+The other type checks there are the Badger, the Chinook (`AIRCRAFT_TRANSPORT`) and the cargo plane. The `MISSION_ENTER` reload is at `redalert/aircraft.cpp` lines 2022/2260/2374. So we get the attack-heli AI
+**for free** — no `_TD()` port needed (unlike the ground units' missions).
 
 **RA's HIND is the template** (`aadata.cpp` `OrcaHeli`=AIRCRAFT_HIND): `is_rotor=true`, not custom-rotor,
 not land-clear, `STRUCT_HELIPAD` preferred-landing, `primaryoffset=0x0040` (chain-gun muzzle), 32 stages.
@@ -56,8 +53,8 @@ not land-clear, `STRUCT_HELIPAD` preferred-landing, `primaryoffset=0x0040` (chai
 
 ## 3. The Orca is the odd one — NO rotor (VTOL)
 
-The GDI Orca is `is_rotorequipped=false` — it's a VTOL with fixed jet nacelles, not a helicopter. So it
-renders as **just the body sprite, no rotor overlay** (the `IsRotorEquipped` block in Draw_It is skipped).
+The GDI Orca is `is_rotorequipped=false` — it's a VTOL with fixed jet nacelles, not a helicopter — so it
+draws its body alone (the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#the-same-pass-for-tds-rocket-launchers-and-aircraft), "The Orca has no rotor").
 Otherwise it's the same attack-aircraft behavior (Ammo 6, fires TDStnkDragon pairs, returns to helipad).
 There's no RA rotor-less attack aircraft to clone, but the ctor is just HIND with `is_rotor=false`.
 

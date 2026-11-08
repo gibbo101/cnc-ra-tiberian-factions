@@ -33,31 +33,23 @@ the TGA and ships a DXT5 DDS of the same name (`scripts/sprite_dds.py`); the pic
 
 ---
 
-## The recipe
+## Editing it
 
-1. Extract base `MT_COMMANDBAR_COMMON.TGA` + `.MTD` from `TEXTURES_SRGB.MEG` (streaming lister — see `mix-file-format.md`).
-2. Find your region in the `.MTD`: locate the `NAME.TGA` bytes, **skip exactly the length in the u32 before the name** (it counts the 1–4 bytes of NUL padding that round the name up to a multiple of 4), read 4× little-endian `int32` = `x, y, w, h` (top-left origin). Don't skip NULs instead: an `x` whose low byte is zero gets eaten (`RA_UI_RED_SEARCH_BTN_NORMAL_MIDDLE`, x = 3584).
-3. **Byte-edit the `.TGA` pixels in place.** The atlas is 32-bit **BGRA**, **bottom-origin** (`desc=0x00`), 18-byte header, **no footer**. For image pixel `(x,y)` (top-left), the file offset is `18 + (H-1-y)*W*4 + x*4`; write bytes `B,G,R,A`. Preserve the header/footer exactly — don't round-trip through PIL's TGA writer (it appends a footer / flips the descriptor; harmless per the red-herring below, but byte-editing keeps the file format-identical and the rsync delta tiny).
-4. Ship the edited `MT_COMMANDBAR_COMMON.TGA` **loose** at `<mod>/Data/ART/TEXTURES/SRGB/`. `.TGA` only. Deploy.
+The `.MTD` layout, the pixel offset formula and the loose path are on the field manual's
+[The UI atlas](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/the-ui-atlas.md#the-atlas-and-its-region-table), The atlas and its region table and Shipping a repainted atlas.
+TF extracts the base TGA and `.MTD` with the streaming lister (`mix-file-format.md`), reads regions through
+`scripts/mtd.py`, and byte-edits the pixels in place, which keeps the rsync delta small. (Skipping NULs instead of reading the length misreads
+`RA_UI_RED_SEARCH_BTN_NORMAL_MIDDLE`, whose x is 3584.)
 
 ---
 
-## The regions that matter (RA) — **picking the right one is the whole battle**
+## The regions
 
-| UI element | Region(s) | Keying |
-|---|---|---|
-| **In-game radar crest** | RA's HUD scene: **`UI_SIDEBAR_FACTIONLOGO_ALLIES` / `_SOVIET`** (794×713). TD's HUD scene (GDI, Nod, TS GDI): **`UI_SIDEBAR_FACTIONLOGO_GDI` / `_NOD`** | per side in data; per faction via the RAM patch (`radar-crest-ram-spike.md`) |
-| Lobby faction-pick big logo | `RA_UI_MULTIPLAYER_ALLIED/SOVIET_LOGO_LARGE_NORMAL`/`_HOVER`/`_SELECTED` (309–311) | per-side |
-| Lobby / player-list flag icon | `RA_UI_FLAG_ICON_<COUNTRY>` (SPAIN, TURKEY, … 73×40) | **per-COUNTRY** |
-| Small player-list logo | `RA_UI_ALLIED/SOVIET_LOGO_SMALL` | per-side |
-
-We burned ~an afternoon editing `RA_UI_MULTIPLAYER_ALLIED_LOGO_LARGE_*` (the **lobby** logo) and seeing no in-game change. The in-game crest is **`UI_SIDEBAR_FACTIONLOGO_ALLIES`** — a different, 794×713, metallic-backed region. *Always confirm the region.*
-
-Each HUD scene picks its crest region by RA side: RA's scene draws `_ALLIES` / `_SOVIET`, TD's scene `_GDI` / `_NOD`. The `_DINO` region is unused.
-
-**Per-side vs per-country is the design constraint:**
-- The in-game crest is **per-SIDE on the data side**: the pixels painted here are what every faction on that side and scene would see. Per-faction crests come from the DLL re-pointing ClientG's cached region records at runtime (`radar-crest-ram-spike.md`).
-- Flags are **per-COUNTRY**, so repainting the flag of the country a faction rides changes that faction only, and England and the USSR keep theirs. This is the clean lever for per-faction identity on the faction-select screen (`faction-select-identity.md`).
+Which region draws what (the radar crest, the lobby logos, flags, markers, picker emblems), and why per side versus
+per country decides what data can do, are on the field manual's
+[The UI atlas](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/the-ui-atlas.md#pick-the-right-region), Pick the right region. Two details it lacks: the
+big lobby logos are 309 × 254 (Allied) and 311 × 280 (Soviet), the in-match crest region is the metallic-backed one, and the `_DINO` crest region is unused. Per-faction
+crests come from the RAM patch (`radar-crest-ram-spike.md`); the lobby identity is in `faction-select-identity.md`.
 
 ---
 
@@ -78,16 +70,12 @@ graphics imports and does nothing in ClientG.
 
 ---
 
-## Growing the atlas (proven 2026-09-11, not adopted)
+## Growing the atlas (proven, not adopted)
 
-When every region is taken, the atlas can grow. The `.MTD` stores pixel boxes only, with no
-atlas size, and ClientG carries no size constant: it divides by the real texture size. An
-8192x8192 atlas, with the stock art at its own coordinates and the rest padded, loads; the menu,
-lobby and TD sidebar draw correctly, ClientG's cached region records read W=H=8192, and the TS Nod
-emblem painted at 7000,100 drew as the live radar crest.
+Growing the atlas, and why new space can only be reached by re-pointing a cached record, are on the field manual's
+[The UI atlas](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/the-ui-atlas.md#growing-the-atlas), Growing the atlas. In TF's test an 8192x8192 copy drew the menu, lobby and TD sidebar
+correctly, ClientG's cached region records read W=H=8192, and it drew the TS Nod emblem, painted at 7000,100, as the live radar crest (`radar-crest-ram-spike.md`).
 
-- **The new space has no names.** A loose `.MTD` is ignored, so new pixels are reached only by
-  re-pointing a cached region record at runtime (`radar-crest-ram-spike.md`).
 - **Adopting it** means moving everything that hardcodes 6871x6716 to the new size: the crest
   needles in `dllinterface.cpp` (`const double W = 6871.0, H = 6716.0`), and
   `crest_atlas_paint.py`, `picker_emblems_paint.py`, `frontend_atlas_build.py`,

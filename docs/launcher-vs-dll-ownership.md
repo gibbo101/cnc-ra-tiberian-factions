@@ -12,17 +12,15 @@ Complements `building-sound-routing.md` (per-event audio) and `td-audio-routing-
 
 ---
 
-## TL;DR — the governing principle
+## The governing principle
 
-The Remastered front-end (Petroglyph "Mobius" engine, **native C++**) is **faction-blind**. It talks to the sim over a narrow, fixed C ABI. Three rules follow:
+The launcher is faction-blind, knows only what crosses the DLL interface, and needs a lever for anything it does by
+itself: see the field manual's [What the launcher owns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/what-the-launcher-owns.md#how-to-tell-who-owns-a-behaviour), How to tell who owns a behaviour.
+TF keys every such choice on `ActLike` before it crosses: the radar, EVA, unit-voice and credit-tick routing.
 
-1. **The launcher only knows what crosses the boundary.** If a piece of state (faction/side, render mode, a specific sound trigger) isn't in an interface struct or the callback, the launcher cannot act on it.
-2. **Faction-aware behaviour starts in the DLL.** The launcher plays audio and renders UI from the *name/value* the DLL hands it; it never branches on the player's faction itself. The lever for per-faction behaviour is **the DLL choosing the name/value (keyed on `ActLike`) before it crosses**, which is how the radar, EVA, unit-voice and credit-tick routing work.
-3. **What the launcher does by itself needs one of the four levers below.** "Launcher-owned" does not mean "unmoddable"; it means the sim alone cannot change it.
+**The data lever.** The launcher's data ships loose, in the mod's own `Data/CONFIG.MEG` or through `GameConstants_Mod.xml`: see the field manual's [Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#three-ways-in), Three ways in, and search the data before calling anything a code lock (What the launcher owns, Search in this order). TF's: `config-meg-mod-delivery.md`, `config-meg-lever-audit.md`.
 
-**The data lever.** The data the launcher reads from `CONFIG.MEG` (faction defs in `FACTIONS.XML`, Mission Select in `INSTANCES.XML`, `MASTERTEXTFILE` strings, theatres, GUI lists, `.bui` screens) ships in the mod's own `Data/CONFIG.MEG`, which the launcher loads over the base; `Data/XML/GameConstants_Mod.xml` merges over GameConstants. Ask whether a behaviour is driven by data (moddable) before calling it a code lock. Canonical: `config-meg-mod-delivery.md`, `config-meg-lever-audit.md`.
-
-**The image lever.** Launcher 2D UI images (the sidebar crest, lobby logos, flags, buttons, menus) come from the `MT_COMMANDBAR_COMMON.TGA` atlas or standalone textures, and a loose copy in `Data/ART/TEXTURES/SRGB/` overrides them in the shell and in game. Canonical: `ui-atlas-modding.md`.
+**The image lever.** A loose atlas or texture overrides the launcher's 2D UI images, in the menus and in the match: see the field manual's [The UI atlas](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/the-ui-atlas.md#shipping-a-repainted-atlas), Shipping a repainted atlas. TF's: `ui-atlas-modding.md`.
 
 **The RAM lever.** On the host, the sim's DLL opens ClientG (`TF_Open_ClientG`, `OpenProcess` + `ReadProcessMemory`/`WriteProcessMemory`) and rewrites its runtime state: the cached EVA sample blobs (`eva-ram-patch-spike.md`) and the cached per-region UV records behind the radar crest and sidebar (`radar-crest-ram-spike.md`). It changes what an existing launcher-drawn element samples or plays, never layout. Probe with `scripts/clientg_region_probe.py`.
 
@@ -51,16 +49,18 @@ ClientLauncherG.exe   — outer bootstrap/menu shell; spawns the other two
 
 The sim runs in InstanceServerG, which loads the DLL on the hosting machine only (in LAN, only the host simulates). ClientG loads the DLL at startup on every machine; `DllMain` there (`TF_Patch_Launcher_At_Load`) patches launcher code and pins the DLL, and a worker thread woken by the host's `@@TFL:` message applies the faction patches for that machine's own player. On the host, the sim's DLL also patches ClientG across processes.
 
-`ClientG` dials **out** to `InstanceServerG` (the server on `CLIENT_PORT=16000`). The C&C payload on that socket is a **1:1 serialization of the CNC ABI**: the 13-member `EventCallback` union outbound (`GamePluginClass::Event_Callback` → `SERVER_TO_CLIENT_EXTERNAL_GAME_PLUGIN_EVENT`), and the `CNC_Get_Game_State` structs pulled inbound (`Export_State`/`Import_State`). ClientG's receiver (`IncomingExternalGamePluginEventClass::Execute`) is a **fixed compiled switch** over exactly those types, with no passthrough branch; unknown payloads are dropped.
-
-**Consequence: the CNC ABI is the wire format between sim and launcher.** The BitStream is positional (appended fields desync and fail the CRC), so nothing the sim emits can create launcher behaviour ClientG has no handler for. Launcher behaviour changes only through the four levers above. ClientG's front-end embeds Lua 5.1 and a ClickScript VM, but no `.lua` ships in any MEG and the CNC callback has no ClickScript member (`bui-front-end-modding.md`).
+The socket, what crosses it and why a new kind of event from the DLL has nowhere to land (the receiver,
+`IncomingExternalGamePluginEventClass::Execute`, is a compiled switch over the callback's types; Lua and ClickScript
+are no way in either) are on the field manual's [What the launcher owns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/what-the-launcher-owns.md#how-to-tell-who-owns-a-behaviour), How to tell who owns a behaviour.
+Outbound, the DLL's callback lands in InstanceServerG's `GamePluginClass::Event_Callback`, which forwards it as
+`SERVER_TO_CLIENT_EXTERNAL_GAME_PLUGIN_EVENT`; inbound, the server pulls the `CNC_Get_Game_State` structs (all three
+names are strings in the executables). Launcher behaviour changes only through the four levers above.
 
 ---
 
 ## Binary facts (so we never re-investigate tooling)
 
-- `ClientG.exe` (34 MB), `ClientLauncherG.exe`, `InstanceServerG.exe` are **native PE32 C++** — no CLR header (`mscoree` / `coreclr` / `hostfxr` all absent). **ILSpy/dnSpy do not apply.**
-- The **only** managed .NET binary in the install is `CnCTDRAMapEditor.exe` (.NET Framework 4.6.2 WinForms; source is already public on GitHub). The `System.*` / `Newtonsoft.Json` / `Pfim` DLLs in `bin/` are **the map editor's** dependencies — *not* evidence that the launcher is managed.
+- Native executables, and the map editor as the only .NET program: see the field manual's [What the launcher owns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/what-the-launcher-owns.md#how-to-tell-who-owns-a-behaviour) (The tools). The details it lacks: `ClientG.exe` is 34 MB with no CLR imports (`mscoree`, `coreclr`, `hostfxr` all absent); the editor is .NET Framework 4.6.2 WinForms, and the `System.*`, `Newtonsoft.Json` and `Pfim` DLLs in `bin/` are its dependencies, not the launcher's.
 - Engine identity from strings: `pgaudio` (`SFXEventManagerClass`, `SFXEventClass`), build paths `c:\buildsystem\...\mobius\qa\libs\pgaudio\...`.
 - Native RE tooling on this machine: `objdump`, `strings` only (no Ghidra/rizin/wine). A *targeted* Ghidra dive is possible but currently unwarranted — see the last section.
 
@@ -111,40 +111,26 @@ Everything the DLL tells the launcher flows through the single `CNC_Event_Callba
 | **Classic/remaster view toggle (spacebar)** | **Launcher** | No, but data locks it out (`CNCDisableLegacyGraphicsOption`); the DLL cannot *observe* it (see below) | `GameConstants_Mod.xml`; no input enum |
 | Sidebar build icons / cost / progress | DLL supplies per-entry; launcher renders | **Partial** — DLL owns `AssetName`/cost/etc. | `CNCSidebarEntryStruct` |
 | HUD credit/power/timer **values** | DLL supplies values; launcher renders | Values yes, rendering no | `CNCSidebarStruct` |
-| Superweapon `$cost` line suppression | Launcher (keyed on the AssetName string) | Only by choosing the AssetName | see "Superweapon $cost line" below |
+| Superweapon `$cost` line suppression | Launcher (its test is not found) | Not by data; a code patch is untried | see "Superweapon $cost line" below |
 | **Superweapon targeted-vs-instant firing** | **Launcher** (compiled: the cameo left-click handler forks on the entry being a superweapon) | **Yes, by a runtime code patch of ClientG** (every player; see "Launcher-resident patches"). Data levers are dead; see below | `TF_Patch_ClientG_Click_Specials`; see below |
 | Launcher-played EVA lines (mission won/lost, select target, low power, cannot deploy, battle control terminated, repairing, mission saved, building in progress) | Launcher (`Faction_Event_GUI_SFX_*`) | **Yes (shipped)**, by overwriting the cached samples at match start | `eva-ram-patch-spike.md` |
 | Other launcher GUI stings | Launcher | No (Allied/Soviet only, see below) | strings |
 
 ---
 
-### Sidebar build-tab icons: named in ClientG CODE, fixed by rewriting the prefix string (2026-09-04)
+### Sidebar build-tab icons: rewriting the prefix string
 
-GDI/Nod on TD's HUD scene still drew RA's gold 130x64 tab icons squashed into TD's smaller
-tab widgets (the vehicle tabs are 122x60 and 127x60), in every state (off/on/bright/placement), while repair/sell/map/plates were TD.
-**Why these four only:** every other sidebar element is named in the scene file, so the
-TD scene swap fixed them. The tab icons are the one element the launcher names in code: it
-appends the state to a per-game prefix baked into `ClientG.exe` (`strings` shows both sets:
-`UI_Sidebar_TabIcon_Structure_` ... and `UI_RA_Sidebar_TabIcon_Structure_` ...) and looks the
-region up by that name; RA mode picks the RA prefix regardless of scene.
+The tab icons are the one sidebar element the launcher names in code, so the TD scene swap left them RA's. The fix,
+rewriting the four RA prefix strings in ClientG's image, is on the field manual's
+[Rewriting launcher strings in memory](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/rewriting-launcher-strings.md#the-example-sidebar-tab-icons).
+TF's is `TF_Patch_ClientG_Tab_Prefix`, called from `TF_Patch_ClientG_Crest` at match start for every side (TD's
+prefix for TD-era players, RA's back for RA sides). It searches on every call, because the DLL instance doesn't
+persist between matches.
 
-**Fix (`TF_Patch_ClientG_Tab_Prefix`, called from `TF_Patch_ClientG_Crest` at match start):**
-locate the four RA prefix slots in ClientG's IMAGE (MEM_IMAGE regions) and
-`VirtualProtectEx` + `WriteProcessMemory` the TD prefix over them for TD-era players (shorter,
-NUL-terminated, always fits); write the RA prefix back for RA sides. Locate on EVERY call and
-by EITHER form: after a TD-era match a slot reads as the TD string with the RA tail still behind
-its terminator (which is also what tells it from the genuine TD prefix elsewhere in the image),
-and the DLL instance does not persist between matches, so nothing can be cached. Verified both
-ways in one launch (GDI green in every state incl. placement, Allied gold).
-
-**Two dead detours, recorded so nobody repeats them:** (1) re-pointing the drawn UV RECORDS
-(12 crest-style slots) works but every state's record is created on demand (first hover, first
-"ready", placement), so each shows gold until the next heap scan — and scanning often enough
-to hide that lags the game; (2) patching the atlas TABLE entry (`{w,h,x,y}` int32, name ptr 68
-bytes before the quad, second `{w,h}` copy 32 before) makes new records right at birth but
-still misses states born before the patch and needs the same heap walk. A code-side string
-is the cheapest lever when the launcher builds a name in code: **grep `strings ClientG.exe`
-for the name family before touching records.**
+**Two dead detours** (re-pointing the twelve tab records, and patching the atlas lookup table) are on the same page's
+[Two routes that didn't work](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/rewriting-launcher-strings.md#two-routes-that-didnt-work). The lookup
+table's entry, for the record: `{w,h,x,y}` as int32, the name pointer 68 bytes before the quad, a second `{w,h}`
+copy 32 bytes before.
 
 ## The one new lead: the launcher's `FactionType` audio table — and why it can't help us
 
@@ -174,40 +160,22 @@ ClientG facts for next time: command ids deploy = `0x1020`, select-all-on-screen
 the DLL; ClientG talks over IPC); gdb attaches but neither hardware watchpoints nor int3
 breakpoints fired on this Wine process — `/proc/<pid>/mem` is the reliable probe.
 
-### Superweapon targeted-vs-instant firing: launcher code, reachable by a runtime patch (2026-09-30)
+### Superweapon targeted-vs-instant firing: launcher code, reachable by a runtime patch
 
 **Question:** can a superweapon cameo act on a single left click with no targeting cursor (the
 Firestorm's on/off, the Hunter Seeker's launch)? **Yes, on the host, by patching the launcher's
 click handler in memory, in every player's launcher. No data lever exists.**
 
-**The launcher's cameo left-click handler** (ClientG `0x73E950`; right click is `0x73EDF0`) reads
-its own copy of each sidebar entry: `+0x18` BuildableType, `+0x1C` BuildableID, `+0x20` Type
-(DllObjectTypeEnum), `+0x24` SuperWeaponType, `+0x44` Completed, `+0x45` Constructing, `+0x46`
-ConstructionOnHold, `+0x47` Busy. It forks at `0x73EA39` on `Type == SPECIAL`:
-- **SPECIAL, Completed:** plays "select target" and calls `0x1689200`, which stores the entry's
-  type/id/name/SW type and sets the input-mode global `0x20F1C90` to 4 (targeting). Nothing is
-  sent to the DLL until the map click (`SUPERWEAPON_REQUEST_PLACE_SUPER_WEAPON`) or the cancel
-  (`SIDEBAR_CANCEL_PLACE -1,-1`).
-- **SPECIAL, not Completed:** local sound only (or nothing). Nothing is sent.
-- **Any other Type:** the build path, which sends `START_CONSTRUCTION` (or `_MULTI`) with the
-  entry's BuildableType/ID at `0x73ECE9`.
+**The launcher's cameo click handler, the input-mode global and the patch** are on the field manual's
+[Launcher key commands and superweapon clicks](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/launcher-key-commands-and-clicks.md#superweapon-cameos-one-click-no-cursor), Superweapon cameos. One detail it lacks: the build path can send
+`START_CONSTRUCTION_MULTI` as well as `START_CONSTRUCTION`.
 
-`0x20F1C90` is the launcher's input mode (0 idle, 4 superweapon targeting, 5 building placement);
-it is a static global, since ClientG loads at its fixed base `0x400000` and has no relocations.
-The DLL can also start targeting itself: `CALLBACK_EVENT_SPECIAL_WEAPON_TARGETTING` lands in
-`0x1689130` (the Chronosphere's second step uses it).
+**TF's patch** is `TF_Patch_ClientG_Click_Specials` (dllinterface.cpp), applied at every match start, idempotent,
+living as long as the launcher process. Its cave is at `0x1BE91A0`, and it sends the entries listed in
+`TF_ClickSpecials` (`RTTI_SPECIAL` plus the Firestorm's and the Hunter Seeker's ids) to the build send. To add a
+superweapon, add it to `TF_ClickSpecials` and give it an order in `Place_Special_Blast`.
 
-**The patch** (`TF_Patch_ClientG_Click_Specials`, dllinterface.cpp, applied at every match start,
-idempotent, lives as long as the launcher process): the 12 bytes at the fork become a jump into
-the zero-filled tail of ClientG's last code page (`0x1BE91A0`), where a few instructions redo the
-original test and send the entries listed in `TF_ClickSpecials` (`RTTI_SPECIAL` plus the Firestorm's
-and the Hunter Seeker's ids) to the build send in every state. Every other entry runs the original
-code. Both spots are checked byte for byte first; a different launcher build is left alone. The
-request arrives in `CNC_Handle_Sidebar_Request`. The cameo stays in the superweapon tab with its
-normal clock and "Ready!". To add a superweapon, add it to `TF_ClickSpecials` and give it an order
-in `Place_Special_Blast`.
-
-**What the Deck probe established (2026-09-30), for any future data-only idea:**
+**What the Deck probe established, for any future data-only idea:**
 - The tab is chosen by `Type` alone. `UNIT_TYPE` goes to the vehicle tab even with an `SW_` type
   set; `UNKNOWN` and `OBJECT` make the cameo vanish. SuperWeaponType, Busy, Fake and a non-special
   BuildableType under a SPECIAL Type change nothing about the tab or the left click.
@@ -218,50 +186,36 @@ in `Place_Special_Blast`.
 **LAN:** the patch also goes in at each launcher's own startup load of the DLL, so a joiner's
 launcher gets it too (see "Launcher-resident patches" below).
 
-### Launcher-resident patches: LAN joiners get every launcher patch (2026-09-30)
+### Launcher-resident patches: LAN joiners get every launcher patch
 
-Only the host simulates a LAN game, so everything the DLL
-did to a launcher (crest, TD tab icons, era EVA lines, click specials) used to reach the host's
-launcher only. **But ClientG loads the mod's DLL itself, briefly, at its own startup, on every
-machine** (it attaches inside ClientG.exe and detaches a moment later). That
-load is the way in:
+Only the host simulates a LAN game, so everything the DLL did to a launcher (crest, TD tab icons, era EVA lines,
+click specials) used to reach the host's launcher only. The way round it (ClientG's own start-up load of the DLL,
+pinning it, and a hidden message the hooked event dispatcher picks up for its own player) is on the field manual's
+[Patching the launcher's code from your DLL](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/patching-the-launchers-code.md#telling-each-players-launcher-something), The way in, Keeping the DLL loaded and Telling each player's launcher something.
 
-- `DllMain` -> `TF_Patch_Launcher_At_Load` (only when the process is ClientG.exe) writes the
-  click-special patch in-process, pins the DLL (`GetModuleHandleEx` PIN) and hooks the launcher's
-  plugin event dispatcher (`IncomingExternalGamePluginEventClass::Execute` 0x783B60, at its type
-  switch 0x783B82; the hook code sits at 0x1BE9240 beside the click patch).
-- At match start, and 45 and 150 frames later, the host sends every human player a direct message
-  `@@TFL:<GlyphX id, 16 hex>:<house>` (`TF_Tell_Launchers`). In the launcher a message event is
-  type 6 with its text as a std::string at +0x180; the hook sets its kind (+0x19C) past the four
-  the launcher shows, so it never reaches the screen, and compares the id with the launcher's own
-  player id (cached by ClientG at 0x1FB6D48, flagged at 0x1FB6D40).
-- For its own player the hook wakes a worker thread in that launcher, which runs the same
-  functions the host runs (`TF_Mailbox_Write_EVA_Voice`, `TF_Patch_ClientG_Crest`, then
-  `TF_Crest_Tick` at 15 ticks a second for three minutes), with the house from the message
-  (`TF_Local_ActLike`). The heap scans stay off the launcher's thread.
-- Verified 2026-09-30 in a LAN game (Deck host, desktop joiner, both TS GDI): the joiner's tab
-  icons, crest and launcher-played EVA lines all follow its faction, and no message text shows.
+- `DllMain` -> `TF_Patch_Launcher_At_Load` (only when the process is ClientG.exe) writes the click-special patch
+  in-process, pins the DLL and hooks the dispatcher; TF's hook code sits at `0x1BE9240`, beside the click patch.
+- `TF_Tell_Launchers` sends each human player `@@TFL:<GlyphX id, 16 hex>:<house>` at match start and 45 and 150
+  frames later.
+- For its own player the hook wakes a worker thread in that launcher, which runs the same functions the host runs
+  (`TF_Mailbox_Write_EVA_Voice`, `TF_Patch_ClientG_Crest`, then `TF_Crest_Tick` at 15 ticks a second for three
+  minutes), with the house from the message (`TF_Local_ActLike`).
+- Verified in a LAN game (Deck host, desktop joiner, both TS GDI): the joiner's tab icons, crest and
+  launcher-played EVA lines all follow its faction, and no message text shows.
 
-**The keys** (`TF_Patch_Launcher_Keys_In`, same startup load): the launcher's tactical command
-dispatcher (0x168A1B0, command number at `[cmd+0x24]`) jumps through a table at 0x168AD74 for
-commands 0x1006 on. Deploy (0x1020, slot 10) now runs a stub that becomes mod command 1 and joins the
-mod-command send (0x168ABDB), so every player's deploy key reaches the host's generic
-`TF_Self_Action_Selected` (debounced per house: on the host the keyboard read fires too). Camera to yard (0x100B, slot 5)
-becomes mod command 3 the same way.
-Select all on screen (0x101B, slot 8) and in world (0x101A, slot 7) first re-run the dispatcher on
-the same command numbered as mod command 2 (0x1033), which latches that house's harvester and MCV
-filter on the host (`TF_Select_All_Excludes`), then run the stock handler. Verified in LAN
-2026-09-30. Still host-only: the dev cheats (they follow the host's local player).
+**The keys** (`TF_Patch_Launcher_Keys_In`, same startup load) re-route the deploy, camera-to-yard and select-all
+commands to mod commands, as on the field manual's [Launcher key commands and superweapon clicks](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/launcher-key-commands-and-clicks.md#re-routing-a-key-to-a-mod-command), Re-routing a key to a mod command.
+Mod command 1 (deploy) runs the host's `TF_Self_Action_Selected`, debounced per house since the host's keyboard read
+fires too; mod command 3 (camera to yard) runs `TF_Home_Camera`; mod command 2 (`0x1033`), sent before the stock
+select-all, latches that house's harvester and MCV filter (`TF_Select_All_Excludes`). Still host-only: the dev
+cheats, which follow the host's local player.
 
 Dead routes for a one-click super: reading the click from the screen (`GetAsyncKeyState` +
 `GetCursorPos`), and reporting the super as an unfinished build item.
 
-**Aiming is invisible to the sim.** With all 44 exports hooked (probe 2026-09-27), the traffic
-while a superweapon is being aimed matched idle: the sim hears only
-`SUPERWEAPON_REQUEST_PLACE_SUPER_WEAPON`, or `SIDEBAR_CANCEL_PLACE (-1,-1)` when targeting ends.
-Anything that must know a player is aiming (an aiming-only range ring for the E.M. Pulse) reads
-the input-mode global `0x20F1C90` from inside that player's launcher, through the startup-load
-copy of the DLL. How a reading there reaches the sim's drawing is not worked out.
+**Aiming is invisible to the sim** (all 44 exports hooked, the traffic while aiming matched idle), so anything that must know a player is aiming reads the launcher's input-mode
+global from inside that launcher: see the field manual's [Launcher key commands and superweapon clicks](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/clientg-ram/launcher-key-commands-and-clicks.md#superweapon-cameos-one-click-no-cursor). How a reading there
+reaches the sim's drawing (an aiming-only range ring for the E.M. Pulse) is not worked out.
 
 **Cameo art is independent of the click-detect mechanism and is normal AssetName wiring**: give
 the super its own `RA_SW_<name>` entry in `RABUILDABLES.XML` with its own `BuildIcon`, and export
@@ -275,45 +229,30 @@ Verified end to end: a single click spawns the droid, which flies to the AI and 
 crash. Testing traps: the pause menu freezes the poll in a headless run, the LAN lobby's Start is
 disabled under a mod, and the instant-superweapon dev cheat masks the real recharge.
 
-### `this == PlayerPtr` is ALWAYS TRUE inside HouseClass::AI (REMASTER_BUILD)
-`HouseClass::AI()` opens with `Logic_Switch_Player_Context(this)` under `#ifdef REMASTER_BUILD`, so
-`PlayerPtr` is reassigned to the current house every tick. Any `if (this == PlayerPtr)` later in
-HouseClass::AI runs for EVERY house, not just the local player. Use `IsHuman` (skirmish) or the GlyphX
-local-player index `DLLExportClass::CurrentLocalPlayerIndex` (MP) instead. Also: `ActiveBScan &
-STRUCTF_RADAR` / `Map.IsRadarActive` oscillate 1/0 every frame (Recalc_Attributes quirk) — never
-edge-detect on the radar scan bit; count the Buildings heap + `Power_Fraction()` and debounce.
+### `this == PlayerPtr` is always true inside HouseClass::AI
+See the field manual's [Adding a faction](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/adding-a-faction.md#traps), Traps. TF's local-player test in
+multiplayer is `DLLExportClass::CurrentLocalPlayerIndex` (`IsHuman` suffices in skirmish). Also: `ActiveBScan & STRUCTF_RADAR` / `Map.IsRadarActive`
+oscillate 1/0 every frame (Recalc_Attributes quirk) — never edge-detect on the radar scan bit; count the Buildings
+heap + `Power_Fraction()` and debounce.
 
-### Superweapon $cost line: keyed on AssetName string, not the SW_ enum
-The launcher suppresses the "Cost: $N" line for the stock supers' AssetNames ("SW_Nuke","SW_Chrono",
-"SW_GPS","SW_SonarPulse"...), which ClientG lists in its build-command and hotkey tables. TF sends the Ion
-Cannon as `SW_IonCannon` (enum value `SW_ION_CANNON`), which no table lists -> the Ion Cannon cameo shows $0. Engine-side `CNCSidebarEntryStruct.Cost` is
-IGNORED for supers. Cosmetic. No data lever reaches it; a runtime code patch of ClientG (see "Launcher-resident patches") hasn't been tried. The $0 stands until one is.
+### Superweapon $cost line
+A new superweapon's cameo shows "Cost: $0" where the stock ones show no cost line, and the launcher's test for that
+isn't found: see the field manual's [What the launcher owns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/what-the-launcher-owns.md#the-walls-and-the-way-through) (the "Cost: $0" row).
+TF sends the Ion Cannon as `SW_IonCannon` (enum `SW_ION_CANNON`), and its cameo shows $0; a cost set in
+`CNCSidebarEntryStruct.Cost` for a superweapon changes nothing. Cosmetic, and no code patch has been tried.
 
 ### Roster-scaling CTD — NameOverride[25] table exhaustion
-Adding the ~30th unit TYPE crashed the game in InstanceServerG, not ClientG: `std::string(NULL)` built from
-the export's `const char* OverrideDisplayName`, which only the DLL's own process can read, on refinery
-placement/MCV deploy. Root cause: every techno with a rules.ini `Name=` HD override registers into
-`NameOverride[25]`, rules are read TWICE (rules.ini + aftrmath.ini) with no dedup -> the 25-slot table
-exhausts; plus `Text_String` off-by-one rejected the last slot -> NULL -> CTD. Fix (all DLL): tables
-25->256; dedup by id in TechnoTypeClass::Read_INI; inline.h `<`->`<=`; NULL-guard OverrideDisplayName in
-dllinterface.cpp. Only after this could the roster keep growing.
+See the field manual's [Known engine traps](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/troubleshooting/known-engine-traps.md#about-25-named-types-fill-the-name-table), About 25 named types fill the name table. TF's fix,
+all in the DLL: the tables grown from 25 to 256 (`globals.cpp`), a dedup by id in `TechnoTypeClass::Read_INI`,
+`inline.h`'s `<` made `<=`, and a NULL guard on `OverrideDisplayName` in `dllinterface.cpp`.
 
-### Classic-mode toggle: locked out by launcher DATA
+### Classic-mode toggle: locked out by launcher data
 
-**`GAMECONSTANTS.XML` → `<CNCDisableLegacyGraphicsOption network="client"> True </...>`
-removes classic graphics from the game.** EA added it as a mod option in 2020 ("Community-
-requested Mod option so that players can't access legacy graphics"). Verified on the desktop:
-the toggle is gone from the Options menu **and the spacebar no longer switches modes**.
-
-It ships in `Data/XML/GameConstants_Mod.xml`, which ClientG merges over the base GameConstants
-(additive, no same-size rule).
-
-**This is the trichotomy in action, and a caution about how the section below reads.** Every
-finding under it remains true — the *DLL* still cannot detect, suppress, or even observe the
-classic toggle. But "the DLL can't" was allowed to harden into "a mod can't", and three
-DLL-side routes plus a RAM probe were spent before anyone checked the launcher's own data for
-a switch that had been sitting there since 2020. When a behaviour is launcher-owned, search
-`CONFIG.MEG` **first**; `ClientG.exe` code is the only real lock.
+One launcher constant removes classic graphics, menu option and spacebar alike: see the field manual's
+[HD-only mods](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/hd-only-mods.md#the-switch), The switch. EA added it in 2020, commented "Community-requested Mod
+option so that players can't access legacy graphics". TF ships it in
+`Data/XML/GameConstants_Mod.xml`. The DLL still cannot detect, suppress or observe the toggle (below); the lockout
+is the data lever the field manual's [What the launcher owns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/what-the-launcher-owns.md#search-in-this-order), Search in this order, puts first.
 
 ### The DLL cannot detect classic mode at all
 
@@ -324,13 +263,8 @@ A mod cannot tell whether classic mode is on screen, let alone react to it.
   viewport (HUD still drawn over it). The launcher decides toggle availability from its
   own lobby data and never consults us; EA simply implemented the same `num_humans < 2`
   rule independently on both sides, which is why it looks like one gate in MP.
-- **The page is requested EVERY FRAME regardless of displayed mode** — the launcher
-  keeps it warm so toggling is instant. So "is the page being asked for?" carries no
-  information about what the player is looking at. Any heuristic built on call
-  frequency, gaps, or streaks will fire during normal HD play.
-- **The spacebar never reaches the DLL.** `DLLExportClass::Get_Input_Key_State` handles
-  only `KN_LCTRL` / `KN_LSHIFT` / `KN_LALT` and returns false for everything else;
-  `INPUT_REQUEST_SPECIAL_KEYS` carries the same three modifiers.
+- The page is requested every frame in both modes, and the spacebar never reaches the DLL: see the field
+  manual's [HD-only mods](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/hd-only-mods.md#porting-tds-classic-art-why-not-support-classic-mode-as-well), the last point under Porting TD's classic art.
 
 **Consequence:** a notice shown only when the player enters classic mode is not
 implementable from a mod. The available options are an unconditional match-start
@@ -340,7 +274,7 @@ rather than sitting on screen; launcher messages via `On_Message` are screen-fix
 `On_Message` only lands when issued from `CNC_Advance_Instance` after the player context
 is set.
 
-**RAM route also tried and abandoned (2026-07-19).** ClientG's memory IS readable
+**RAM route also tried and abandoned.** ClientG's memory IS readable
 cross-process (the difficulty scanner already does it), so the render-mode flag is in
 principle findable by toggling and keeping bytes that track it. Attempted with 3 HD +
 3 classic snapshots (~1.1GB each) of private writable regions: 13,515 bytes tracked the
