@@ -63,7 +63,7 @@ TD `STRUCT_BARRACKS` engine dispatch sites:
 | Field | Our | TD | Status |
 |---|---|---|---|
 | Strength | 200 | 200 | match |
-| **Sight** | **5** | **2** | ⚠ DIVERGES (player sees 2.5× further than TD) |
+| Sight | 2 (+3 for every TD building in `bdata.cpp:6266`: 5 in play) | 2 | TD's value; TF's +3 is deliberate |
 | Cost | 300 | 300 | match |
 | Power | +100 | +100 | match |
 | Power drain | 0 | 0 | match (no `Drain=` field needed) |
@@ -89,7 +89,7 @@ Comment at our `bdata.cpp:631`: `BSIZE_22 // TD-authentic: 2x2 (not APWR's 3x3)`
 | Field | Our | TD | Status |
 |---|---|---|---|
 | Strength | 300 | 300 | match |
-| **Sight** | **5** | **2** | ⚠ DIVERGES (same as TDNUKE) |
+| Sight | 2 (+3 in code: 5 in play) | 2 | TD's value; TF's +3 is deliberate |
 | Cost | 700 | 700 | match |
 | Power | +200 | +200 | match |
 | Power drain | 0 | 0 | match |
@@ -122,7 +122,7 @@ Note: our comment at line 641 says "Match TENT" — TENT is RA's Allied Soviet b
 | Field | Our | TD | Status |
 |---|---|---|---|
 | Strength | 400 | 400 | match |
-| **Sight** | **4** | **3** | ⚠ DIVERGES (player sees ~1.3× further than TD) |
+| Sight | 3 (+3 in code: 6 in play) | 3 | TD's value; TF's +3 is deliberate |
 | Cost | 300 | 300 | match |
 | Power drain | -20 | Drain=20 | match |
 | Armor | wood | wood | match |
@@ -183,7 +183,7 @@ case STRUCT_TDPYLE:     // ← add
 | Field | Our | TD | Status |
 |---|---|---|---|
 | Strength | 150 (doubled to 300 in `BuildingTypeClass::Read_INI`, `bdata.cpp:6265`) | 150 (TD's constructor doubles it to 300) | match |
-| Sight | 2 | 2 | match |
+| Sight | 2 (+3 in code: 5 in play) | 2 | TD's value; TF's +3 is deliberate |
 | Cost | 150 | 150 | match |
 | Storage | 1500 | 1500 | match |
 | Power drain | -10 | Drain=10 | match |
@@ -222,8 +222,6 @@ This is a positive-dispatch alias of two buildings with **identical** behavior (
 
 | Symptom | Building | Root cause | Fix |
 |---|---|---|---|
-| Power Plant has unnaturally large sight radius (~5 cells) | TDNUKE, TDNUK2 | rules.ini Sight=5 vs TD's 2 | rules.ini |
-| Barracks has 1 cell more sight than TD | TDPYLE | rules.ini Sight=4 vs TD's 3 | rules.ini |
 | Silo takes 2× longer to destroy than TD-authentic | TDSILO | rules.ini Strength=300, doubled in code to 600 against TD's 300 | rules.ini |
 | Silo always renders empty (frame 0) regardless of player's tiberium fill | TDSILO | Shape_Number STRUCT_STORAGE branch doesn't include STRUCT_TDSILO | engine |
 | Barracks-produced infantry may spawn inside footprint / fail to exit cleanly | TDPYLE | Exit_Object switch missing STRUCT_TDPYLE case | engine |
@@ -237,13 +235,13 @@ This is a positive-dispatch alias of two buildings with **identical** behavior (
 
 ```ini
 [TDNUKE]
-Sight=2          ; was 5 — TD POWER Sight=2
+Sight=2          ; TD POWER Sight=2 (bdata.cpp adds 3)
 
 [TDNUK2]
-Sight=2          ; was 5 — TD ADVANCED_POWER Sight=2
+Sight=2          ; TD ADVANCED_POWER Sight=2 (bdata.cpp adds 3)
 
 [TDPYLE]
-Sight=3          ; was 4 — TD BARRACKS Sight=3
+Sight=3          ; TD BARRACKS Sight=3 (bdata.cpp adds 3)
 
 [TDSILO]
 Strength=150     ; was 300 — TD STORAGE lists 150; TD's ctor and bdata.cpp both double it to 300
@@ -304,7 +302,7 @@ Update the four dict `"notes"` fields to reference this doc. No structural chang
 - [ ] `STRUCT_TDSILO` added to `Shape_Number` STRUCT_STORAGE branch at building.cpp:712
 
 **Smoke tests:**
-- [ ] Sell a Power Plant → mini-map fog re-grows to TD's 2-cell sight ring (not 5)
+- [ ] A Power Plant reveals a 5-cell ring (TD's 2, plus the 3 `bdata.cpp` adds to every TD building)
 - [ ] Build a TDPYLE, train an infantry → infantry walks out via Find_Exit_Cell properly
 - [ ] Sell a TDPYLE → INFANTRY_E1 (GDI minigunner) emerges
 - [ ] Fill TDPROC, watch TDSILO frame progression: 0 (empty) → 1 → 2 → 3 → 4 (full)
@@ -317,7 +315,7 @@ Update the four dict `"notes"` fields to reference this doc. No structural chang
 
 - **No donor.** All TD-source-grounded. The aliased dispatches (STRUCT_TDPYLE with STRUCT_BARRACKS; STRUCT_TDSILO with STRUCT_STORAGE) are *identical-behavior positive-dispatch aliases* between TD and RA buildings that conceive of barracks/silo the same way. This is the legitimate aliasing pattern (`td-sam-deep-dive.md` M6) — not "modeling on" RA.
 - **TDSILO Strength=150 is the only balance-affecting change.** TD-authentic value: 300 in play, as in TD. If playtest reveals silos die too easily, balance via warhead Verses table or armor type, never by reverting to a non-TD strength.
-- **Sight value corrections are pure data.** No code change, no risk to other buildings.
+- **Sight:** `rules.ini` lists TD's sight values, and `bdata.cpp` adds 3 cells to every TD building because TD's sight ranges read short at RA's scale. Balance sight there, not per building.
 - **TDPYLE exit-point `XYP_COORD(24, 47)` left alone for now.** TD uses `(30, 33)`. Difference is cosmetic in practice — Find_Exit_Cell handles the actual cell pathfinding. Worth fixing for full TD parity, but lower priority than the engine dispatch gaps.
 
 ---
