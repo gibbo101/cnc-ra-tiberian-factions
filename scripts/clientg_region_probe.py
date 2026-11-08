@@ -24,6 +24,8 @@ import struct
 import subprocess
 import sys
 
+import mtd
+
 MTD = 'scripts/cameo_work/MT_COMMANDBAR_COMMON.MTD'
 # The atlas size the launcher divides region rects by; override for a resized atlas.
 W = float(os.environ.get('ATLAS_W', 6871))
@@ -31,17 +33,7 @@ H = float(os.environ.get('ATLAS_H', 6716))
 
 
 def regions():
-    mtd = open(MTD, 'rb').read()
-    regs = {}
-    for m in re.finditer(rb'([A-Za-z0-9_]+)\.TGA', mtd):
-        name = m.group(1).decode()
-        j = m.end()
-        while mtd[j] == 0:
-            j += 1
-        x, y, w, h = struct.unpack('<4i', mtd[j:j + 16])
-        if 0 < w < 4000 and 0 < h < 4000:
-            regs[name] = (x, y, w, h)
-    return regs
+    return mtd.read_regions(MTD)
 
 
 def record(rect):

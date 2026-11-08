@@ -6724,7 +6724,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
 
             int full_name = techno_object->Full_Name();
             if (full_name < 0) {
-                // TF: the launcher copies OverrideDisplayName straight into a std::string, so a NULL crashes it:
+                // TF: InstanceServerG copies OverrideDisplayName straight into a std::string, so a NULL crashes it:
                 // override only when Text_String resolved.
                 const char* override_name = Text_String(full_name);
                 if (override_name != NULL) {

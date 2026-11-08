@@ -3,19 +3,16 @@
 
 The per-faction radar crest (docs/radar-crest-ram-spike.md) re-points ClientG's cached region
 records at atlas regions, so the shipped atlas must hold:
-  * the PRISTINE Allied / Soviet crests in UI_SIDEBAR_FACTIONLOGO_ALLIES / _SOVIET (the old
-    C&C-logo-for-all paint is retired), and
-  * an aspect-correct GDI eagle (scaled to EAGLE_H high, centred horizontally and TOP-aligned in
-    a 495x444 window = the slot's 794:713, so it clears the launcher's "GDI" label drawn over the
-    bottom of the slot) in the top-left of the never-referenced UI_SIDEBAR_FACTIONLOGO_DINO
-    region, which is the rect the DLL points the GDI crest at (TF_Crest_Slots: {2154, 1900, 495, 444}).
+  * the PRISTINE Allied / Soviet crests in UI_SIDEBAR_FACTIONLOGO_ALLIES / _SOVIET, and
+  * the Tiberian Sun GDI emblem (scaled to TSGDI_H high, centred horizontally and TOP-aligned in a
+    434x400 window, so it clears the launcher's label drawn over the bottom of the slot) in
+    UI_OBSERVER_MAP_BG -- a plain metal panel that only TD-mode observer view draws, so an RA-mode
+    match never renders it. The atlas has no free space left (99% covered), so a fifth faction's
+    crest has to claim a region the mod cannot show. TF_Crest_Slots points a TS GDI player's crest
+    at {4220, 2883, 434, 400}.
 
-It also holds:
-  * the Tiberian Sun GDI emblem, same treatment, in UI_OBSERVER_MAP_BG -- a plain metal panel
-    that only TD-mode observer view draws, so an RA-mode match never renders it. The atlas has
-    no free space left (99% covered) and the DINO slot is already spent on the GDI eagle, so a
-    fifth faction's crest has to claim a region the mod cannot show. TF_Crest_Slots points a TS
-    GDI player's crest at {4220, 2883, 434, 400}.
+GDI and Nod need no paint: TF_Crest_Slots points them at the stock TD crests, UI_SIDEBAR_FACTIONLOGO_GDI
+and _NOD.
 
 Byte-edits the target in place (same size, format-identical). Source of truth for the pristine
 pixels is the base atlas kept at scripts/cameo_work/MT_COMMANDBAR_COMMON.TGA.
@@ -36,7 +33,7 @@ GDI = (1, 1875, 718, 706)
 # rows clear of the label the launcher draws across the foot of the crest widget.
 TSGDI = (4220, 2883, 434, 400)
 TSGDI_ART = 'scripts/tab_emblems/tsgdi.png'
-TSGDI_H = 380  # emblem height inside the window, matching the eagle's headroom
+TSGDI_H = 380  # emblem height inside the window, leaving headroom for the launcher's label
 
 
 def row_off(x, y):

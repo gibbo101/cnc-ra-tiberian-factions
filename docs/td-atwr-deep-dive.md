@@ -303,18 +303,18 @@ if (*this == STRUCT_ATOWER || *this == STRUCT_OBELISK) {
 }
 ```
 
-Port to RA as a dedicated `STRUCT_TDATWR` branch (and `STRUCT_TDOBLI` since we already separated it):
+RA's crew spawn on a sale (`BuildingClass::Mission_Deconstruction`) already has the step for the Tesla
+Coil; the port adds both TD towers to it, since all three are 1x2:
 
 ```cpp
 COORDINATE coord = Coord_Add(Center_Coord(), XYP_COORD(0, -12));
-if (*this == STRUCT_TDATWR || *this == STRUCT_TDOBLI) {
+if (*this == STRUCT_TESLA || *this == STRUCT_TDOBLI || *this == STRUCT_TDATWR) {
     coord = Map[Coord_Cell(coord)].Adjacent_Cell(FACING_S)->Cell_Coord();
 }
 ```
 
-(Vanilla Conquer's TD aliases `STRUCT_ATOWER || STRUCT_OBELISK` because both buildings share the south-offset rule; EA's TD has no south step, and Vanilla Conquer's RA has the same step for `STRUCT_TESLA`. Our port aliases `STRUCT_TDATWR || STRUCT_TDOBLI` for the same reason. This is a *positive-dispatch* alias that's identical behavior for two TD buildings — acceptable per the M6 rule in `td-sam-deep-dive.md`: identical behavior across two TD entities can share a comment-tagged branch.)
+(Vanilla Conquer's TD aliases `STRUCT_ATOWER || STRUCT_OBELISK` because both buildings share the south-offset rule; EA's TD has no south step, and Vanilla Conquer's RA has the same step for `STRUCT_TESLA`. Our port adds `STRUCT_TDOBLI` and `STRUCT_TDATWR` to that branch for the same reason. This is a *positive-dispatch* alias that's identical behavior for two TD buildings — acceptable per the M6 rule in `td-sam-deep-dive.md`: identical behavior across two TD entities can share a comment-tagged branch.)
 
-If RA's `Drop_Debris` already has the south-offset adjustment for some vanilla buildings, slot ours into that same place. If not, add the check before the `Unlimbo` call for the crew infantry.
 
 ### M7 — Manifest sync (`scripts/buildings_manifest.py`)
 

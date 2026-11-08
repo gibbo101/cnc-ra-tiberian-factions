@@ -12,11 +12,11 @@ usage: picker_emblems_paint.py <target MT_COMMANDBAR_COMMON.TGA> [more targets..
 """
 import hashlib
 import os
-import re
-import struct
 import sys
 
 from PIL import Image, ImageFilter
+
+import mtd
 
 MTD = 'scripts/cameo_work/MT_COMMANDBAR_COMMON.MTD'
 PRISTINE = 'scripts/cameo_work/MT_COMMANDBAR_COMMON.TGA'
@@ -55,16 +55,7 @@ MAP_SLOTS = {nn: SLOTS[nn][0] for nn in SLOTS}
 
 
 def regions():
-    mtd = open(MTD, 'rb').read()
-    out = {}
-    for m in re.finditer(rb'([A-Za-z0-9_]+)\.TGA', mtd):
-        j = m.end()
-        while mtd[j] == 0:
-            j += 1
-        x, y, w, h = struct.unpack('<4i', mtd[j:j + 16])
-        if 0 < w < 4000 and 0 < h < 4000:
-            out[m.group(1).decode().upper()] = (x, y, w, h)
-    return out
+    return mtd.read_regions(MTD)
 
 
 def row_off(x, y):

@@ -29,12 +29,13 @@ License: GPL v3.
 import json
 import os
 import re
-import struct
 import sys
 from itertools import combinations
 from pathlib import Path
 
 from PIL import Image
+
+import mtd
 
 import asset_packs
 import stage_asset_packs
@@ -87,19 +88,8 @@ def emblem_layout(count, cameo_width):
 
 def load_regions():
     """region-name -> (x, y, w, h) from the atlas .MTD sidecar."""
-    raw = MTD.read_bytes()
-
-    def lookup(name):
-        key = name.upper().encode() + b".TGA"
-        i = raw.find(key)
-        if i < 0:
-            return None
-        p = i + len(key)
-        while p < len(raw) and raw[p] == 0:  # trailing null padding, 1-2 bytes
-            p += 1
-        return struct.unpack_from("<4i", raw, p)
-
-    return lookup
+    regions = mtd.read_regions(MTD)
+    return lambda name: regions.get(name.upper())
 
 
 def owner_sets():

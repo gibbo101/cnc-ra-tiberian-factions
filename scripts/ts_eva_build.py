@@ -84,7 +84,7 @@ LINES = {
     "MISNLST":  ("00-I286", None,                         "you have lost"),
 }
 
-# The localized EVA channel: MS-ADPCM, stereo, 44077 Hz. Plain PCM crashes ClientG's ADPCM block maths.
+# EVA lines are encoded MS-ADPCM stereo at 44077 Hz (stock TD rates vary per file). Plain PCM crashes ClientG's ADPCM block maths.
 RATE = 44077
 
 

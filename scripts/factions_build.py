@@ -6,8 +6,8 @@ shipped CONFIG.MEG). Three edits, all byte-length-neutral because CONFIG.MEG mem
 change size (offsets resolve against the base archive):
 
   * ICONS: Spain (Faction3, GDI) and Turkey (Faction10, an Allied duplicate) point at their
-    own 150x80 plates (_03 / _10) instead of the 66x56 _00 / _01 icons the base gives them, so
-    all picker rows share one size. scripts/picker_emblems_paint.py paints the plates.
+    own 150x80 plates (_03 / _10), as stock does, where factions_work/FACTIONS.base.XML gives them
+    the 66x56 _00 / _01 icons, so all picker rows share one size. scripts/picker_emblems_paint.py paints the plates.
   * TD_HUD: every entry names both tactical scenes, TD's Tactical_UI.bui in TopLevelGUIList and
     RA's RA_Tactical_UI.bui in TopLevelGUIListAlt; the launcher picks one list per game. In the
     GDI (Faction3), Nod (Faction4) and TS GDI (Faction8) entries the two scene names are

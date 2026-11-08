@@ -5923,8 +5923,8 @@ int BuildingClass::Mission_Deconstruction(void)
 
                         /* extra check to prevent building crew for Tesla Coil spawning
                            one cell above building foundation */
-                        // TF: the Obelisk shares the Tesla Coil's 1x2 footprint.
-                        if (*this == STRUCT_TESLA || *this == STRUCT_TDOBLI) {
+                        // TF: the Obelisk and Advanced Guard Tower share the Tesla Coil's 1x2 footprint.
+                        if (*this == STRUCT_TESLA || *this == STRUCT_TDOBLI || *this == STRUCT_TDATWR) {
                             coord = Map[coord].Adjacent_Cell(FACING_S)->Cell_Coord();
                         }
                         coord = Map[coord].Closest_Free_Spot(coord, false);

@@ -507,7 +507,7 @@ void UnitClass::AI(void)
     }
 
     // TF: the Visceroid regenerates on Tiberium, as in TD.
-    if (*this == UNIT_TDVICE && (Frame % 16) == 0 && Health_Ratio() < 0x0100
+    if (*this == UNIT_TDVICE && (Frame % 16) == 0 && Health_Ratio() < 1
         && Map[Coord_Cell(Coord)].Land_Type() == LAND_TIBERIUM) {
         Strength++;
         Mark(MARK_CHANGE);
