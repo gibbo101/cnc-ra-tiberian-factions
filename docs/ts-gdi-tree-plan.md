@@ -118,7 +118,7 @@ superweapon payload, or dormant.
 - **TSPOWR (2x2 box) and TSRADR (2x4 box) use a south-row footprint**: the rows behind it are art
   that units walk behind and buildings may stand on. The ghost is the south row and the bib
   (`Placement_Ghost_Rows_Above`), and the rows behind need only be on the map.
-- **Damage states use frame 1 (LIGHT)** across the tree; the bay keeps its weathered heavy art.
+- **Damage states use frame 1**, the frame TS shows, across the tree; the bay keeps its weathered heavy art.
 - **Aprons draw under everything:** the renderer derives them from the owning building's
   footprint (the `_aprons` table in `dllinterface.cpp`), not from map state. Ore and bibs draw
   over them, nothing erases them, and they vanish with the building.
@@ -179,7 +179,7 @@ under-door floor `TSWEAPUD` (TS's `UnderDoorAnim=GAWEAP_1`) draws over it. The n
 hangar minus the opening at the idle phase (`TSWEAPNF`, or `TSWEAPNU` while unloading), stands in
 front of a vehicle in the bay, and the roll-up shutter `TSWEAPDR` (`DoorAnim=GAWEAP_D`,
 `DoorStages=9`; the damaged run repeats the nine stages) draws over that. GTWEAP frames 0/1/2 are
-healthy / LIGHT / HEAVY, and `GTWEAP_D` frames 9-17 are TS's shadows of stages 0-8 (frame n +
+healthy / damaged / a more wrecked look TS never draws, and `GTWEAP_D` frames 9-17 are TS's shadows of stages 0-8 (frame n +
 count/2), which decode as magenta silhouettes: TS ships no damaged door art.
 
 - **Exit seats** (`tsweap_exit_seats.inc`): on the door's centre line, `TSWEAP3_SEAT` for tracked
@@ -425,7 +425,8 @@ save versions, the NULL `shape_file_name`, `Find_Exit_Cell` and `Tracked=` are g
 **TS art conventions:**
 - **Every TS anim SHP packs healthy frames then damaged frames** in its usable window; full-cycle
   exceptions exist (GTCNST_B's rotating light, NTREFN_B's plume), so check each.
-- **Base frames:** 0 healthy, 1 LIGHT, 2 HEAVY, 3-5 the shadows of 0-2. Frame 1 is the damaged look
+- **Base frames:** 0 healthy, 1 damaged, 2 a more wrecked look, 3-5 the shadows of 0-2. OpenTS's
+  `BuildingClass::Shape_Number` adds 1 at or below `ConditionYellow` and never picks frame 2. Frame 1 is the damaged look
   and never a free variant, and the second half of an SHP is shadows (the field manual's
   [Porting art from other C&C games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#tiberian-sun); OpenTS's
   `TechnoClass::Techno_Draw_Object` via `BuildingClass::Draw_It`, and `AnimClass::Draw_It` for the

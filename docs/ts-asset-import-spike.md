@@ -45,7 +45,7 @@ hook (playbook §3.21) — TS Strength values are real HP.
    CCW** (verified against vanilla 2TNK HD frames: 0=N, 8=W).
 3. **Decode TS SHPs** — `scripts/ts_shp.py <shp> <pal> <outdir>` (TS-SHP format,
    RLE-zero scanlines, remap 16–31 → team-green). GTPOWR frames: 0 healthy, 1 damaged,
-   2 more wrecked, 3–5 their shadows (unused); GTPOWRMK: 0–19 the build-up, 20–39 its
+   2 more wrecked (TS never draws it: `Shape_Number` picks 0 or 1), 3–5 their shadows (unused); GTPOWRMK: 0–19 the build-up, 20–39 its
    shadows (unused). The frame rules are in the field manual's
    [Porting art from other C&C games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#tiberian-sun).
 4. **Package** — `scripts/ts_pack_art.py` (set `TS_RENDER_DIR` to the render dir):
