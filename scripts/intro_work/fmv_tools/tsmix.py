@@ -11,7 +11,7 @@ Reuses (read-only) the Tiberian Factions repo's crypto + name database:
 Names that cannot be resolved are written as <crc8hex>.VQA.
 """
 import os, struct, sys, zlib
-REPO = '/home/gibbo101/Documents/development/cnc-remastered-mods/cnc-ra-tiberian-factions/scripts'
+REPO = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 sys.path.insert(0, REPO)
 import ra_mix_extract as ra
 from mix_namedb import load as namedb_load

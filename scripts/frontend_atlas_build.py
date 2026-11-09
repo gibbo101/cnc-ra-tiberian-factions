@@ -58,7 +58,7 @@ def crop(region):
     return Image.frombytes('RGBA', (rw, rh), b''.join(rows), 'raw', 'BGRA').resize((rw * 3, rh * 3), Image.NEAREST)
 
 
-D = '/home/gibbo101/Desktop'
+D = os.path.expanduser('~/Desktop')
 
 if apply_crest:
     cc = f'{D}/cnc_menu_art/ui_candc_logo.png'
