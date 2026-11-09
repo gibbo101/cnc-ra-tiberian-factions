@@ -1,45 +1,45 @@
 # Building sound routing (TD-authentic audio for GDI/Nod)
 
-**Status:** Reference. Which RA building, credit and UI sound events have TD sounds for GDI and
-Nod, and how each is routed; shipped.
+**Status:** Reference. Which RA building, credit and UI sound events have TD and TS sounds for GDI, Nod and TS GDI,
+and how each is routed; shipped.
 
-How RA building audio is triggered, which events have TD equivalents worth
-routing for GDI/Nod, and the routing pattern. Complements
+How RA building audio is triggered, which events have TD or TS equivalents, and the routing pattern. Complements
 `td-audio-routing-recipe.md` (the SFXEvent/launcher mechanics and EVA voices).
 
 ## The routing pattern
 
-The engine sends **one** VOC name per sound; the Remastered launcher just plays
-the mapped clip and cannot know the player's faction. **Faction-routing must
-happen in the DLL.** Two keys are available:
+The DLL sends **one** VOC name per sound; the launcher plays the mapped clip and can't know the player's faction, so
+faction routing happens in the DLL. Two keys:
 
-- **Building-keyed:** `Class->Type >= STRUCT_TDOBLI && Class->Type < STRUCT_COUNT`
-  — true for all separated TD structures. Use when the sound belongs to a
-  building (placement, construction).
-- **Player-keyed:** `PlayerPtr->ActLike == HOUSE_GOOD || == HOUSE_BAD` — use for
-  player-global UI sounds (credit tick).
+- **Building-keyed:** `BuildingTypeClass::Is_TS_Era()` and `Is_Tiberian_Era()` (`redalert/bdata.cpp`; the TD
+  structures from `STRUCT_TDOBLI` on, the TS trees, the Tiberium tick, and gates by their era). Used for sounds that
+  belong to a building (placement, construction), sent to the building's own house with `TF_Sound_Effect_For`, since
+  in LAN the game loop runs as the lobby's first player, who may be another human.
+- **Player-keyed:** `ActLike == HOUSE_GOOD || HOUSE_BAD` for GDI and Nod, `Is_TS_GDI(ActLike)` for TS GDI. Used for
+  player-global UI sounds (the credit tick, radar on/off).
 
-Then dispatch a new `VOC_TD_*` in the gated branch, added and routed as on the field manual's
+Then dispatch a new `VOC_TD_*` or `VOC_TS_*` in the gated branch, added and routed as on the field manual's
 [TD sounds from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-sounds-from-the-base-game.md#the-method), The method.
+TS samples ship bundled under their own `TS`-prefixed names.
 
 ## Event-by-event map
 
-| Event | RA sound | TD equivalent | Status |
+| Event | RA sound | TD and TS equivalents | Routing |
 |---|---|---|---|
-| **Placement slam** | `VOC_PLACE_BUILDING_DOWN`=`PLACBLDG` (`house.cpp` place, `unit.cpp` MCV deploy) | `VOC_SLAM`=`HVYDOOR1` (TD `HOUSE.CPP:2933`) | **Shipped** `VOC_TD_PLACE_BUILDING_DOWN`, building-keyed |
-| **Construction loop** | `VOC_CONSTRUCTION`=`BUILD5` | `VOC_TD_CONSTRUCTION`=`CONSTRU2` (`building.cpp` Mission_Construction) | Shipped earlier |
-| **Radar on/off** | `VOC_RADAR_ON/OFF`=`RADARON2`/`RADARDN1`, launcher auto-fire silenced, DLL re-fires | `TFRADRON`/`TFRADROF` (TD Comm Center / Power Down) | **Shipped**, player-keyed. TS GDI has its OWN pair from 2026-09-06: `TSCOMMUP1`/`TSRADARDN1` (TS rules `[AudioVisual] RadarOn=COMMUP1`, `RadarOff=RADARDN1`) — it was borrowing TD's, which is the wrong era. |
-| **Credit tick** | `VOC_MONEY_UP/DOWN`=`CASHUP1/CASHDN1` (`credits.cpp:104/106`) | `VOC_UP/DOWN`=`TONE15`/`TONE16` (TD `CREDITS.CPP:98/100`) | **Shipped** via silence-and-refire (see below). TS GDI joined 2026-09-05: `VOC_TS_MONEY_UP/DOWN` = TS's own `CREDUP1`/`CREDDWN1` (TS rules `[AudioVisual] CreditTicks=`), bundled under their own names. |
-| **Damaged** | *none* — RA plays no building hit-SFX | — | No action |
-| **Sell** | `VOC_CASHTURN` + EVA voice | `VOC_CASHTURN` (TD `HOUSE.CPP:4761`) — same | No action |
-| **Destroyed** | `VOC_KABOOM22` + `VOC_CRUMBLE` | none — TD's BUILDING/TECHNO play no building-death VOC; `KABOOM22` not in TD's table | Left as-is (user choice) |
+| **Placement slam** | `VOC_PLACE_BUILDING_DOWN`=`PLACBLDG` (`house.cpp` place, `unit.cpp` MCV deploy) | TD: `VOC_SLAM`=`HVYDOOR1` (TD `HOUSE.CPP:2933`), as `VOC_TD_PLACE_BUILDING_DOWN`. TS: `VOC_TS_PLACE_BUILDING_DOWN`=`TSPLACE2` (TS `BuildingSlam=` PLACE2) | Building-keyed |
+| **Construction loop** | `VOC_CONSTRUCTION`=`BUILD5` | TD: `VOC_TD_CONSTRUCTION`=`CONSTRU2` (`building.cpp` Mission_Construction). TS buildings rise in silence: no TS structure defines a build-up sound | Building-keyed |
+| **Radar on/off** | `VOC_RADAR_ON/OFF`=`RADARON2`/`RADARDN1`; the launcher's auto-fire is silenced, the DLL re-fires | TD: `TFRADRON`/`TFRADROF` (TD Comm Center / Power Down). TS: `TSCOMMUP1`/`TSRADARDN1` (TS rules `[AudioVisual] RadarOn=COMMUP1`, `RadarOff=RADARDN1`). RA: `RAORADON`/`RAORADOF` | Player-keyed, in `On_Sound_Effect` (`dllinterface.cpp`) |
+| **Credit tick** | `VOC_MONEY_UP/DOWN`=`CASHUP1/CASHDN1` (`credits.cpp:104/106`) | TD: `VOC_UP/DOWN`=`TONE15`/`TONE16` (TD `CREDITS.CPP:98/100`). TS: `VOC_TS_MONEY_UP/DOWN`=`TSCREDUP1`/`TSCREDDWN1`, TS's `CREDUP1`/`CREDDWN1` (TS rules `[AudioVisual] CreditTicks=`) | Player-keyed, silence-and-refire (below) |
+| **Damaged** | *none*: RA plays no building hit sound | — | None |
+| **Sell** | `VOC_CASHTURN` + EVA voice | `VOC_CASHTURN` (TD `HOUSE.CPP:4761`), the same | None |
+| **Destroyed** | `VOC_KABOOM22` + `VOC_CRUMBLE` | none: TD's BUILDING/TECHNO play no building-death VOC, and `KABOOM22` is not in TD's table | Left as RA's |
 
 ## Two rules
 
 **1. Hear every routed TD sound in game.** Why a routed sound can be silent, and the workaround, are in the field
 manual's [TD sounds from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-sounds-from-the-base-game.md#how-it-was-verified), How it was verified.
-A silent route raises no error, so it can pass for a fix: the placement double once vanished only because the new
-`HVYDOOR1` was silent.
+A silent route raises no error, so it can pass for a fix: the doubled placement sound (below) once seemed fixed only
+because the new `HVYDOOR1` route was silent.
 
 **2. The credit tick is silenced in data and re-fired by the DLL**, as on the field manual's
 [Credit tick and radar sounds by faction](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/sound-and-music/credit-tick-and-radar-by-faction.md).
@@ -50,12 +50,10 @@ joiner (`player_ptr != PlayerPtr`, `IsHuman`, not `GAME_NORMAL`) it calls `TF_Fi
 instead, which picks the same pair and addresses it to the joiner's house. Whether a joiner hears it is untested
 (`known-issues.md`).
 
-## Gotcha that cost us a session
+## Doubled sounds
 
-The "double construction sound" on GDI/Nod was **not** a bug in one trigger — it
-was two *separate, legitimate* sounds stacking: the **placement slam** (`PLACBLDG`)
-fires the instant you drop the building, then the **construction loop**
-(`CONSTRU2`) starts over it. RA factions sounded fine only because `PLACBLDG` +
-`BUILD5` are both RA-flavoured. The fix was routing the slam to TD's `HVYDOOR1`,
-not silencing anything. **When chasing a "doubled" sound, first confirm whether
-it's one trigger firing twice or two different triggers in the same flow.**
+GDI and Nod's "double construction sound" was two separate sounds stacking, not one trigger firing twice: the
+**placement slam** fires the instant the building drops, then the **construction loop** starts over it. RA factions
+sound right because `PLACBLDG` and `BUILD5` are both RA's. The fix was routing the slam to TD's `HVYDOOR1`, not
+silencing anything. When chasing a doubled sound, first check whether it is one trigger firing twice or two
+different triggers in the same flow.

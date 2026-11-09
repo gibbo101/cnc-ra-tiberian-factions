@@ -1,95 +1,72 @@
-# TD attack helicopters — Apache (Nod) + Orca (GDI) deep dive
+# TD attack helicopters: the Apache and the Orca
 
-**Status:** Reference; shipped in 1.0.0. The Apache (`TDHELI`) and Orca (`TDORCA`) reuse RA's
-`AircraftClass` attack loop. Below is the TD-source analysis; live stats are in rules.ini and
-`balance-deep-dive.md` (both at 225 HP for $1200 since 4.0.0). Read with `td-vehicle-port-recipe.md`.
+**Status:** Reference; shipped in 1.0.0. The Apache (`TDHELI`, `AIRCRAFT_TDAPACHE`) and the Orca (`TDORCA`,
+`AIRCRAFT_TDORCA`) fly RA's own attack-aircraft loop. Both have 225 strength for $1200, RA's helicopters' numbers
+(`balance-deep-dive.md`). Read with `td-vehicle-port-recipe.md`.
 
 ---
 
-## 1. The two units (TD source)
+## TD's two units
 
 | | Apache (`AIRCRAFT_HELICOPTER`, "HELI") | Orca (`AIRCRAFT_ORCA`, "ORCA") |
 |---|---|---|
-| Display | TXT_HELI = "Apache" | TXT_ORCA = "Orca" |
-| Faction | **Nod** (HOUSEF_BAD) | **GDI** (HOUSEF_GOOD) |
+| Display | `TXT_HELI`, "Apache" | `TXT_ORCA`, "Orca" |
+| Faction | Nod (`HOUSEF_BAD`) | GDI (`HOUSEF_GOOD`) |
 | Weapon | `WEAPON_CHAIN_GUN` | `WEAPON_DRAGON` |
-| **Rotor** | **yes** (single, not custom) | **NO** (VTOL jets — `is_rotorequipped=false`) |
-| Two-shooter (fires a pair) | **yes** | **yes** |
+| Rotor | yes, single | no: a VTOL with jets |
+| Two-shooter | yes | yes |
 | Ammo | 15 | 6 |
-| Strength / Cost | 125 / 1200 | 125 / 1200 |
-| Armor / Speed / ROT | STEEL / MPH_FAST / 4 | STEEL / MPH_FAST / 4 |
-| Build level / prereq | 6 / Helipad | 6 / Helipad |
-| Land on clear terrain | no (returns to helipad) | no |
+| Strength, cost | 125, 1200 | 125, 1200 |
+| Armour, speed, ROT | steel, `MPH_FAST`, 4 | steel, `MPH_FAST`, 4 |
+| Build level, prerequisite | 6, helipad | 6, helipad |
+| Lands on clear ground | no, returns to a helipad | no |
 
-**Weapons are BOTH already shipped:**
-- `WEAPON_CHAIN_GUN` = `{BULLET_SPREADFIRE, 25, 50, range 4, VOC_MINI, ANIM_GUN_N}` = our **`TDChainGun`**
-  (the Guard Tower's; exact match) firing `TDSpreadfire`.
-- `WEAPON_DRAGON` = `{BULLET_TOW, 30, 60, range 4, VOC_BAZOOKA}` = our **`TDDragon`** (E3/Bike's) firing `TDTOW`.
+`WEAPON_CHAIN_GUN` is `{BULLET_SPREADFIRE, 25, 50, 0x0400, VOC_MINI, ANIM_GUN_N}`, TF's Guard Tower `TDChainGun`;
+`WEAPON_DRAGON` is `{BULLET_TOW, 30, 60, 0x0400, VOC_BAZOOKA}`, TF's `TDDragon` (the Rocket Soldier's and the Recon
+Bike's). Both of those fire one shot, so each helicopter takes a `Burst=2` variant for TD's two-shooter:
 
-**Two-shooter handling:** TD's `is_twoshooter` → RA `Burst=2` on the weapon. Both shared weapons are
-single-shot (GTWR's TDChainGun, E3/Bike's TDDragon have no Burst), so each attack heli needs a
-**Burst=2 variant**:
-- Apache → NEW `TDApacheGun` = TDChainGun + Burst=2.
-- Orca → **reuse the existing `TDStnkDragon`** (the Stealth Tank's TDDragon+Burst=2 — same WEAPON_DRAGON
-  two-shot). No new weapon for the Orca.
+- **Apache:** `[TDApacheGun]`, `TDChainGun` with `Burst=2` and `Anim=MINIGUN` (TD's small directional gun flash;
+  `GUNFIRE` read as an explosion on the nose).
+- **Orca:** `[TDStnkDragon]`, the Stealth Tank's `TDDragon` with `Burst=2`, the same two-shot `WEAPON_DRAGON`.
 
 ---
 
-## 2. The attack-heli LOGIC — RA's is generic, reuse it
+## The loop is RA's
 
-The TD attack-heli behavior is: fly to target → strafe (fire pairs) → when `Ammo` runs out, fly back to
-a helipad → reload → repeat. RA's `AircraftClass` already runs all of it for any type built like its HIND: see the
-field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#the-same-pass-for-tds-rocket-launchers-and-aircraft), The same pass for TD's rocket launchers and aircraft.
-The other type checks there are the Badger, the Chinook (`AIRCRAFT_TRANSPORT`) and the cargo plane. The `MISSION_ENTER` reload is at `redalert/aircraft.cpp` lines 2022/2260/2374. So we get the attack-heli AI
-**for free** — no `_TD()` port needed (unlike the ground units' missions).
+Fly to the target, strafe in pairs, fly back to a helipad when `Ammo` runs out, reload, repeat: RA's
+`AircraftClass` runs all of it for any type built like its Hind. See the field manual's
+[The same pass for TD's rocket launchers and aircraft](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#the-same-pass-for-tds-rocket-launchers-and-aircraft).
+The flight back to reload is `MISSION_ENTER`, set in `AircraftClass::Mission_Move` (`aircraft.cpp:2142`) and
+`Enter_Idle_Mode` (`aircraft.cpp:2422`, `2542`). There is no `_TD()` port, unlike the ground units' missions. The helipad plumbing for a separated `TDHPAD` is the
+playbook's §3.11 and §3.12.
 
-**RA's HIND is the template** (`aadata.cpp` `OrcaHeli`=AIRCRAFT_HIND): `is_rotor=true`, not custom-rotor,
-not land-clear, `STRUCT_HELIPAD` preferred-landing, `primaryoffset=0x0040` (chain-gun muzzle), 32 stages.
-`[HIND]` rules: `Primary=ChainGun, Ammo=12, Prerequisite=hpad`. The **Apache maps almost 1:1 onto HIND**
-(swap ChainGun→TDApacheGun, Ammo 12→15, Owner soviet→BadGuy, the HELI sprite). Helipad-built; the
-§3.11/§3.12 TDHPAD plumbing is already in place.
+## The constructors (`redalert/aadata.cpp`)
 
----
+Both are RA's Hind (`AIRCRAFT_HIND`): not fixed-wing, no custom rotor sets, not landing on clear ground, landing on
+`STRUCT_HELIPAD` at `0xFF`, primary offset `0x0040`, 32 facings, `MISSION_HUNT`.
 
-## 3. The Orca is the odd one — NO rotor (VTOL)
+- **`TdApacheHeli`** (`aadata.cpp:372`): one rotor, drawn by `Draw_Rotors`' generic single-rotor branch at the body
+  centre, as RA's Hind and Longbow are, not the Chinook's two-rotor branch.
+- **`TdOrca`** (`aadata.cpp:395`): no rotor, so it draws its body alone (see the manual's "The Orca has no rotor").
+  RA has no rotorless attack aircraft; the Hind with the rotor off is all it needs.
 
-The GDI Orca is `is_rotorequipped=false` — it's a VTOL with fixed jet nacelles, not a helicopter — so it
-draws its body alone (the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#the-same-pass-for-tds-rocket-launchers-and-aircraft), "The Orca has no rotor").
-Otherwise it's the same attack-aircraft behavior (Ammo 6, fires TDStnkDragon pairs, returns to helipad).
-There's no RA rotor-less attack aircraft to clone, but the ctor is just HIND with `is_rotor=false`.
+Ported aircraft art can disagree with offsets RA hardcodes per type: on the Chinook, the two-rotor branch drew the
+rotors off the TD-Assets art, and its facing 0 pointed diagonally. Check a new aircraft's facing 0 and rotor in game
+first.
 
----
+`AircraftTypeClass::One_Time` (`aadata.cpp:671`, `679`) lends each the Hind's `ImageData` and `CameoData`. With its
+classic stub missing from TFASSETS, a donor must have at least as many frames as the type draws (TDORCA 0-31, TSHUNT
+0-7), and the Hind's 32 cover both. The HD art is TD's `HELI` (32 frames) and `ORCA` (64).
 
-## 4. Sprite-geometry risk (the Chinook lesson)
+## `rules.ini`
 
-The Chinook showed that TD-Assets aircraft sprites can mismatch the engine's hardcoded per-type
-offsets. For these two:
-- **Apache: single rotor** = the **generic `else` branch** in `Draw_Rotors` (NOT the TRANSPORT-gated dual-rotor
-  that broke the Chinook), drawn at body-centre — so it should align like RA's HIND/LONGBOW. The risk that
-  remains is the TD-Assets **facing-0 orientation** (the Chinook's pointed diagonal): if HELI's facing-0
-  isn't north, the body faces wrong. **Smoke-test first.** Muzzle offset (`primaryoffset`) = screenshot-tune.
-- **Orca: no rotor**, so no rotor risk.
-- Both use RA's HIND (32 frames) as the donor (`aadata.cpp` `One_Time`). With a missing TFASSETS stub, the donor needs at least as many frames as the type draws (TDORCA 0-31, TSHUNT 0-7), so HIND is safe for both.
-- Build icons `BuildIcon_TD_Apache` / `BuildIcon_TD_Orca` exist. Text `TXT_HELI`/`TXT_ORCA` (RA has TXT_ORCA).
+`[TDHELI]` and `[TDORCA]`: `Strength=225`, `Armor=heavy`, `Cost=1200`, `TechLevel=6`, `Speed=16` (`MPH_FAST`),
+`ROT=4`, `Sight=0`, `Points=80`, `Crewed=yes`, `Prerequisite=hpad`; the Apache `Ammo=15`, `Owner=BadGuy`; the Orca
+`Ammo=6`, `Owner=GoodGuy`.
 
-**Fallback if a TD sprite's facing/geometry is broken (per the Chinook):** these DO have faction-distinct
-gameplay (own weapons), so don't drop to pure-RA wholesale — but if the *sprite* is unusable, render RA's
-HIND/(Orca has no RA equiv) while keeping the TD weapon/stats, or remap the frames.
+## Names and cameos
 
-**Names:** the Apache's sidebar label is `TEXT_UNIT_TITLE_NOD_HELICOPTER` ("Attack Helicopter") and its
-popup `Name=` "Apache"; the Orca uses the native `TEXT_UNIT_TITLE_GDI_ORCA`, so neither needs a
-CONFIG.MEG edit.
-
----
-
-## 5. Port plan
-
-**Apache (`AIRCRAFT_TDAPACHE`, Nod), first:** clone RA HIND ctor (rotor, helipad-landing,
-primaryoffset 0x40), IniName "TDHELI"; NEW weapon `TDApacheGun` (TDChainGun + Burst=2); HELI sprite
-(32-frame, HIND donor); `[TDHELI]` rules (Primary=TDApacheGun, Ammo=15, Str 125, Armor=heavy, Cost 1200,
-Owner=BadGuy, Prereq=hpad, TechLevel 6, Speed 16=MPH_FAST, ROT 4). Cameo BuildIcon_TD_Apache.
-
-**Orca (`AIRCRAFT_TDORCA`, GDI) — second:** clone HIND ctor but `is_rotor=false`; reuse `TDStnkDragon`;
-ORCA sprite (64-frame); `[TDORCA]` rules (Ammo 6, Owner=GoodGuy, else as Apache). Cameo BuildIcon_TD_Orca.
-
-Both: smoke-test the sprite facing/rotor first (Chinook caveat).
+The Apache's sidebar label is `TEXT_UNIT_TITLE_NOD_HELICOPTER` ("Attack Helicopter") with `Name=Apache` in its
+popup; the Orca uses the base game's `TEXT_UNIT_TITLE_GDI_ORCA`. Neither needs a CONFIG.MEG edit. The cameos are the
+base game's `BuildIcon_TD_Apache` and `BuildIcon_TD_Orca`. Both constructors pass RA's `TXT_ORCA` as a placeholder
+text ID; the names come from `Name=` and the launcher's text.

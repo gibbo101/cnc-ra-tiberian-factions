@@ -1,185 +1,82 @@
-# Lobby difficulty ambiguity — overnight findings (2026-07-23)
+# Lobby difficulty: telling a stale copy from the live one
 
-**Status:** Reference; the resolver ships in 5.0.0 (`2d3fc4de`, and the V branch in `ec3324a3`
-under an unrelated message). It resolved all 28
-ambiguous reproductions here (0 wrong, 0 undecided) and 46/46 in the offline harness; the
-vector-triple branch has never been needed live. Branch `U` keeps the old fail-closed fallback.
+**Status:** Reference; the resolver ships in 5.0.0. It settled all 28 recorded ambiguous reads (none wrong, none
+undecided) and 46 of 46 recorded cycles in the compiled harness. Its vector-triple branch has never fired live.
+**Open:** one live ambiguous scan on the resolver build, and one observation on native Windows.
 
-Companion to `lobby-difficulty-ram-spike.md`
-(the subsystem). Everything below was measured under Proton on the desktop prefix, dev DLL,
-read-only against ClientG.exe. Raw logs + analysis scripts in the session scratchpad.
-
-**Ruled out, do not re-attempt:** a tiebreak against the last launch's picks (it settles the plain change-only
-case, and fails only when a pick is changed and changed back), and more corroboration fields from the roster. Why
-each fails: the field manual's
+The subsystem is `lobby-difficulty-ram-spike.md`. The problem, the five-step order (vector triple, exact pointer,
+freshness, strict majority, fail closed) and the routes that don't work are game-level: see the field manual's
 [Per-AI lobby difficulty](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md#stale-copies-of-the-lobby),
-Stale copies of the lobby, What doesn't work. A complete fix has to identify which copy the client is using,
-which is what the resolver does.
+Stale copies of the lobby. This doc holds TF's implementation and the measurements behind it. Every measurement
+was made under Proton, on the dev DLL, reading ClientG only.
 
-## The problem (DontCryJustDie was right)
+## What the ambiguous scans looked like
 
-The lobby AIPLAYERn record array exists in several copies in ClientG's heap. Our scanner
-corroborates candidates against the roster's colour + country, and fails closed (falls back
-to the default difficulty, silently) when full-roster candidates disagree on difficulty. In
-DCJD's scenario — change ONLY the difficulty between matches — the stale copy shares colour
-and country with the live one, so both pass corroboration and the read is ambiguous.
+- Several candidates held the live difficulty (one to three seen) and one held a stale value; no scan had more than
+  one stale copy. Samples covered two lobby shapes (three live and one stale; one live and one stale, a tie) and two
+  distinct persistent stale copies.
+- The 168 record bytes and the 32 before them hold nothing to key on.
+- A freshly launched session tends to overwrite every copy in place: changing the difficulty alone (a quick quit and
+  change, about 13 single-AI cycles, both scan sites) gave no ambiguity. Ambiguity came reliably only after a match
+  had been played and the session held a lingering orphan array, so a player meets it sometimes, not every time.
+- The referrer pointers are there only at the first scan (frame 0). By the deferred re-scans (frame 90 on) they are
+  gone, so the resolver runs on the first read.
 
-## Reproduction
+## The resolver
 
-- Changing difficulty ALONE does not reproduce it: a quick quit + change overwrites the
-  array in place, no stale survives (~13 single-AI cycles, 0 ambiguity, both scan sites).
-- Ambiguity needs a real match PLAYED first (heap churn), then the change, then restart —
-  exactly DCJD's "plays, loses, comes back and lowers difficulty".
-- It is INTERMITTENT and heap-history-dependent. A freshly launched session tends to
-  consolidate all copies in place (0 ambiguity over 10+ cycles); ambiguity appeared reliably
-  only once the session had accumulated a lingering orphan array. So a player will hit it
-  sometimes, not every time.
-- Both scan sites (CNC_Set_Multiplayer_Data = DCJD's, and CNC_Set_Difficulty = ours) saw an
-  IDENTICAL candidate set every time. Scan-site choice does not dodge the ambiguity.
+`TF_Resolve_Lobby_Ambiguity` in `redalert/dllinterface.cpp` runs only when full-roster candidates disagree. The
+referrer sweep (`TF_Count_Referrers`) is a full address-space scan per candidate, so nothing extra runs on an
+unambiguous read. Each branch takes a value only when all its survivors agree:
 
-## Structure of every ambiguous scan
+The anchor is the candidate's record for its first roster AI (the lowest-numbered `AIPLAYERn` in the roster,
+`anchor_n` in `TF_Scan_Process_For_Lobby_Difficulty`), since names carry on across lobbies.
 
-- Several candidates hold the LIVE difficulty; one holds a STALE value (a lone orphan).
-- Live-copy count varies (seen 1 to 3). Stale count seen as 1.
-- The stale is a PREVIOUSLY-ACTIVE match array: it carries many leftover pointers into its
-  neighbourhood (see refwin below); the freshly-allocated live array carries very few.
+1. **V, vector triple.** The sweep looks for pointers to the candidate's array base
+   (`anchor − TF_HumanPlayerCount × 168`) and `TF_Read_Vector_Triple` checks each hit: `begin == base`,
+   `begin < end <= capacity`, `(end − begin) % 168 == 0`, and `(end − begin) / 168` equal to humans plus roster
+   AIs. Any candidate with a valid triple counts as live. DontCryJustDie's replication saw two such triples per
+   array; two owning vectors can't share a buffer, so at least one is a copy or a non-owning view.
+2. **R, exact referrer** (`refeq`): pointers exactly on the candidate's anchor record. Present in about 20 of
+   the 28 ambiguous scans and always on the live copy. The array base sits a stride per human before that record,
+   which is likely why `refeq` missed the rest.
+3. **F, freshness** (`refwin`): pointers into a window from four strides before the record to two after. The stale
+   copy read about 35, the live ones 1 to 13. Candidates at or under `4 × min + 2` survive.
+4. **M, plurality** of difficulty vectors over all candidates (not only F's survivors): the most common vector
+   wins when no other vector's count reaches it.
+5. **U, undecided**: return 0 slots. That arms `TF_Lobby_Difficulty_Retry` (four re-scans, 90 frames apart); by
+   then the referrers are gone, so in practice the read ends at the global tier.
 
-## Route A — a discriminator byte inside the record: REJECTED
+Branch split: the Python model over the 28 ambiguous scans gave R 20, F 5, M 3, U 0. The compiled harness over all
+46 cycles (28 ambiguous, 18 not) gives R 20, F 10, M 16, V 0; one batch lacks `refwin`, so its cases route through
+majority instead of freshness, with the same outcome. The recorded corpus stores only `refeq`/`refwin` counts, so
+V cannot fire on it; V rests on DontCryJustDie's replication (about 30 samples) and the fail-safe branch shape.
 
-Dumped all 168 record bytes and the 32 before them: nothing to key on (the field manual's What doesn't work,
-as above). Dead.
+Dev builds (`TF_DEV_BUILD`) log the raw record bytes (`PRE`/`REC`), and `LOBBYCAND`, `CAND`
+(`base=`/`vecref=`/`ntrip=`), `RESOLVE` and one `TRIPLE ref=/begin=/end=/cap=/nplayers=/ok=` line per referrer hit,
+rejects included, so a live run shows whether the strict size equality (humans plus roster AIs) is right: TF's
+check has never been seen live. The resolver reads none of the record bytes; they are kept so a future ambiguity can be
+re-examined offline.
 
-## Route B — referrer pointers: the useful signal (two variants)
+## Evidence and tools
 
-For each candidate we scan ClientG's writable memory for aligned 32-bit pointers.
+All in `lobby-ambiguity-data/` (its README says how to run each):
 
-- **refeq** = pointers landing exactly on the record base. This is the client's live-array
-  pointer: when present it was on the LIVE copy in every case, NEVER on a stale. Present in
-  ~20/28 ambiguous scans; absent (all zero) in the rest, timing-dependent. Principled.
-- **refwin** = pointers into a window around the record. My first idea was that widening
-  would catch the array-base pointer more reliably. It does the OPPOSITE of the intuition:
-  the STALE copy has the HIGH refwin (~35, leftover from being the active array), the fresh
-  live copy has LOW refwin (1–13). So **min-refwin = live, max-refwin = stale**. A freshness
-  signal, not a "more referenced = more real" signal. Clean, large gap in every sample.
+- `resolver.py`: an exact port of the resolver; over `batch2`, `batch4` and `batch5` it gives 28 ambiguous, 28 pass.
+- `test_resolver.c`: the resolver's C source in a standalone harness, run over every recorded cycle.
+- `batchN-results.txt`: the captured scans, with ground truth per cycle.
+- `lobby-ambiguity-data/overnight-2026-08-01-results.md`: 43 scripted play, difficulty-only flip and relaunch cycles on the resolver
+  build (double flips and flips after a long match included), 43 reads correct and none ambiguous. Scripted single-session cycling does not provoke the ambiguity under
+  Proton. One played session did show a stale copy that differed only in the team field: a stale copy can survive
+  without differing in difficulty.
 
-Note: the referrer pointers are present only at the initial (frame-0) scan; by the deferred
-re-scans (frame 90+) they are gone. Fine — identification is needed at the initial scan.
+## Residual risk
 
-## The resolver (validated 28/28, 0 wrong, 0 undecided)
-
-On disagreement, instead of failing closed, decide in this order — each branch requires its
-survivors to agree, so it never picks a stale; the worst case is 'U' == today's fallback:
-
-1. **R — exact referrer**: if a unique difficulty among refeq>0 candidates, that is live.
-   (principled; the client's own pointer)  — resolved 20/28.
-2. **F — freshness cluster**: drop high-refwin (stale) copies; if the low-refwin survivors
-   agree, that is live.  — resolved 5/28.
-3. **M — strict majority**: plurality difficulty vector (no other vector ties it). — 3/28.
-4. **U — undecided**: fail closed (today's behaviour). — 0/28.
-
-Validated across two lobby structures (3-live-1-stale in one batch; variable incl. 1-live-
-1-stale ties in others) and two distinct persistent stales. Offline analysis scripts:
-`lobby-ambiguity-data/resolver.py` (an exact port of the C logic). It is strictly safer than the
-old behaviour, where any disagreement fell back silently: the resolver settles DCJD's case every
-observed time and only ever falls back, never a wrong pick.
-
-**Compiled-C validation.** The actual C source of `TF_Resolve_Lobby_Ambiguity` was extracted
-verbatim into a standalone harness (`docs/lobby-ambiguity-data/test_resolver.c`) and run over
-every recorded cycle: 46 cycles (28 genuinely ambiguous + 18 no-ambiguity), **PASS=46,
-WRONG=0, UNDECIDED=0**. So the compiled logic — not just the Python model — is proven
-zero-wrong on all real data. (Ambiguous branch split matches the offline model; the only
-difference is batch2's missing refwin field routes its cases through majority instead of
-freshness, same outcome.)
-
-## Implementation status
-
-- `redalert/dllinterface.cpp`: the candidate registry, `TF_Count_Referrers()` and
-  `TF_Resolve_Lobby_Ambiguity()` all build in release. On an ambiguous read
-  `TF_Read_Lobby_AI_Difficulties` counts refeq/refwin per candidate, resolves, and applies
-  the resolved vector; branch `U` returns 0 exactly as before.
-- The referrer sweep runs **only when the read is actually ambiguous** — it is a full
-  address-space scan per candidate, and there is no signal to extract otherwise. In the
-  common (unambiguous) case nothing extra runs.
-- The raw record dump (`PRE`/`REC` bytes) and the `LOBBYCAND` / `CAND` / `RESOLVE` log
-  lines stay `#if TF_DEV_BUILD`. The resolver reads none of those bytes — Route A is dead,
-  they are kept only so a future ambiguity can be re-examined offline.
-- Both configurations build clean (dev and `-DTF_DEV_BUILD=0`).
-
-## Honesty / residual risk
-
-- All measured under Proton. Native Windows (DCJD's platform) heap/pointer behaviour may
-  differ; the SHAPE of the two signals should hold but exact counts are not gospel. The
-  exact-referrer (R) branch is the one to trust most cross-platform.
-- The long-batch samples share a persistent orphan, so they are not fully independent; the
-  first reproduction (a genuinely fresh stale) was also resolved correctly (via majority).
-- I could NOT reproduce fresh-stale ambiguity in a clean post-restart session this night, so
-  the in-DLL RESOLVE line is validated by CODE REVIEW (faithful port of the 28/28 offline
-  logic), not yet by a live ambiguous scan on the resolver build. Worth one confirming run
-  when ambiguity next reproduces.
-- The freshness (F) and majority (M) branches are empirical (allocator behaviour); the
-  fail-closed backstop bounds the risk — the fix is never wrong, only occasionally deferring.
-
-## Outcome
-
-Promoted with all three branches, keeping fail-closed as branch U and
-the 4.2.0 on-screen readout surfacing any residual fallback. All-branches rather than
-R-only was judged safe because no branch can pick a stale over a live copy — the worst
-case is the fallback we already shipped — and because holding the release until the AI
-milestone buys a long soak in which a wrong pick would surface locally first.
-
-**Owed before it ships:** one confirming run on a live ambiguous scan (the resolver build
-never saw one — the night it was written, sessions stayed clean), and ideally a Windows
-observation, since every measurement here is under Proton.
-
-## 2026-07-31 addendum — DCJD replication + the std::vector identification
-
-DCJD implemented the pointer-scan approach independently (forum posts #5–#6, 24–25 Jul)
-and reported two things that upgrade the resolver:
-
-1. **Target the ARRAY BASE, not the AIPLAYER1 record.** They aimed the exact-referrer
-   scan at `anchor − human_count × 168` (the human record precedes AIPLAYER1) and got
-   `ExactReferrer` on **every** sample (~30 across both updates, zero failures). This
-   explains our 20/28 refeq coverage: our refeq window sits on the AIPLAYER1 record,
-   one stride past where the client's canonical pointer actually points.
-2. **The stable referrers are vector triples.** At a hit address R: `[R]` = begin,
-   `[R+4]` = end, `[R+8]` = capacity, and `(end − begin) / 168 == num_players`. Two
-   such stable triples exist. (Two owning `std::vector`s can't share a buffer, so at
-   least one is a copied triple or non-owning view — irrelevant to us; the shape is
-   the signal.)
-
-**IMPLEMENTED 2026-07-31 (same day, on top of the addendum plan):**
-- New resolver branch **V — validated vector triple**, ahead of R. Per candidate the
-  sweep now scans for referrers at the candidate's array base
-  (`anchor − TF_HumanPlayerCount × 168`), records hit addresses
-  (`TF_Count_Referrers` grew optional hit recording), and validates each hit's
-  neighbours as a triple (`TF_Read_Vector_Triple`): `begin == base`,
-  `begin < end <= capacity`, `(end − begin) % 168 == 0`, and
-  `(end − begin) / 168 == humans + roster AIs`. Any candidate with a validated
-  triple is a structural positive ID; survivors must still agree (same fail-safe
-  shape as every other branch). R/F/M/U untouched as fallbacks.
-- Dev-build forensics: `CAND` lines carry `base=/vecref=/ntrip=`, and each referrer
-  hit dumps a `TRIPLE ref=/begin=/end=/cap=/nplayers=/ok=` line — including
-  rejects, so a live run shows whether strict size equality is right.
-- `test_resolver.c` mirrors the new resolver verbatim (parses `vecref=` when
-  present, 0 on the old corpus). Re-run over all recorded batches:
-  **46/46 PASS, 0 wrong, V=0, branch split identical to the pre-change harness**
-  (R=20 F=10 M=16) — legacy routing provably unchanged.
-- Dev build compiled + linked clean; release config (`-DTF_DEV_BUILD=0`)
-  syntax-checked clean against the real cross-compile flags.
-- **Verification constraint stands:** the recorded corpus stores refeq/refwin
-  *counts* only, so the triple check cannot fire on old data by construction. It
-  needs a live ambiguous scan; until one reproduces, V's correctness rests on
-  DCJD's ~30-sample replication plus the fail-safe branch shape.
-
-**Overnight live soak 2026-08-01 (full record:
-`lobby-ambiguity-data/overnight-2026-08-01-results.md`):** 43 scripted play → 
-difficulty-only-flip → relaunch cycles on the resolver build. **43/43 reads correct,
-0 ambiguous** — the client consolidated every copy in place every time (double-flip
-and post-F11.5k-match flips included), so the V branch has still never fired live.
-Scripted single-session cycling does not provoke the ambiguity under Proton; the
-corpus stands as a base-path regression result, and one live stale TEAM-field copy
-was observed in a played session, proving stale survival without difficulty divergence.
-The V-branch DLL code rode into commit `ec3324a` under an unrelated message.
-
-**Windows caveat:** DCJD's replication is believed to be native Windows. No confirmation is
-recorded, so the Windows observation owed above stands.
+- Native Windows heap behaviour may differ from Proton's. The shape of the signals should hold, the counts may
+  not; the exact-referrer branch is the one to trust most across platforms. DontCryJustDie's replication is
+  believed to be on Windows, but that is not confirmed.
+- The long-batch samples share one persistent orphan, so they are not fully independent. The first reproduction,
+  a fresh stale copy, also resolved correctly (by majority).
+- The in-DLL resolver is checked by the compiled harness over recorded data, not yet by a live ambiguous scan.
+- F and M are empirical, resting on allocator behaviour. No branch can pick a stale copy over a live one, so the
+  worst case is the global-tier fallback. The on-screen `Enemy AI:` line names each house's mode but not its source
+  (`lobby-difficulty-ram-spike.md`), so a fallback shows only as every AI on the global mode.

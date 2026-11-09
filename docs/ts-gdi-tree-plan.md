@@ -3,7 +3,7 @@
 **Status:** Reference; every TS GDI entity listed here is in the mod as of 5.5.0.
 **Open:** the queue at the end.
 
-What is built, how each piece was ported, and the traps that cost time. The faction itself (lobby
+What is built, how each piece is ported, and the traps. The faction itself (lobby
 slot, crest, EVA, voices) is `ts-gdi-faction.md`. Art rules live in the `ts-to-ra-hd-art` and
 `unit-art-placement` skills, launcher render rules in `launcher-render-contracts.md`, and the
 Firestorm, EMP and subterranean arcs in `firestorm-design.md`, `emp-cannon-design.md` and
@@ -113,8 +113,8 @@ superweapon payload, or dormant.
 ### Footprints and boxes
 
 - **The selection box is centred on the BSIZE plot** (the field manual's
-  [Building selection boxes](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/building-selection-boxes.md#the-rule)), so TSFACT and TSDROP went
-  from 3x3 to 3x2: the empty top row held their boxes off the art.
+  [Building selection boxes](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/building-selection-boxes.md#the-rule)), so TSFACT and TSDROP sit
+  on 3x2 plots: a 3x3 plot's empty top row would hold their boxes off the art.
 - **TSPOWR (2x2 box) and TSRADR (2x4 box) use a south-row footprint**: the rows behind it are art
   that units walk behind and buildings may stand on. The ghost is the south row and the bib
   (`Placement_Ghost_Rows_Above`), and the rows behind need only be on the map.
@@ -139,7 +139,7 @@ Resource plugs stack by design (`Can_Upgrade`): the power plant takes two turbin
   pod (`TSPODDROP`, `bullet.cpp`) spawns one drop-height to the side of the landing zone and falls
   at equal horizontal and vertical speed, so it arrives as it grounds. It trails SMOKEY every 6
   frames, drawn north by altitude; touchdown spawns the trooper, a DROPPOD1/2 husk and DROPEXP. TS keeps husks forever; ours fade after
-  5 loops, by choice. Each pod's strafe does `TF_POD_STRAFE_DAMAGE` (25), half its first value, because
+  5 loops, by choice. Each pod's strafe does `TF_POD_STRAFE_DAMAGE` (25), because at 50
   five pods' strafes one-shot power plants and barracks. The
   5-minute recharge was chosen to sit between the paratroops and the Ion Cannon (not a TS value).
 - **The Hunter Seeker** (`SPC_TS_HUNTSEEK`) flies as an `AircraftClass`, not a bullet. One left click launches it (`launcher-vs-dll-ownership.md`); only the
@@ -222,9 +222,9 @@ count/2), which decode as magenta silhouettes: TS ships no damaged door art.
   `harvester-docking-rework-plan.md`.
 - **TSHARV.ZIP has 64 frames** (`scripts/ts_pack_hd_buildings.py`): 0-31 the harvester, 32-63 TS's
   unloading truck with its bed lowered, not drawn.
-- **The refinery radio protocol gated on literal `STRUCT_REFINERY || STRUCT_TDPROC` in about 15
+- **The refinery radio protocol gates on literal `STRUCT_REFINERY || STRUCT_TDPROC` in about 15
   sites;** all take TSPROC. Repair (`STRUCT_REPAIR || STRUCT_TDFIX`, ~17 sites) and radar
-  (`STRUCT_RADAR || TDHQ || TDEYE`, 7 chains) needed the same audit.
+  (`STRUCT_RADAR || TDHQ || TDEYE`, 7 chains) take the TS types the same way.
 
 **Aprons** (`SMUDGE_TSWEAPBB`, `SMUDGE_TSPROCBB`, 5 wide x 3 tall over each 4x3 plot):
 - They draw as terrain: the TD-template ground entry (`IsOverlay`, `IsTheaterShape`,
@@ -268,7 +268,7 @@ the plot is the deck's 3x2 and the canvas is padded to centre on it.
 - **The one-bay cap counts standing bays** (`Has_Building_Active(STRUCT_TSDROP)`), and the sidebar
   never evicts an entry with `Factory != -1`: both are the field manual's
   [production contracts](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/troubleshooting/known-engine-traps.md#production-contracts-that-catch-new-code-out).
-  A trunk merge dropped the eviction guard once; after any merge, `git log -S` the known one-line guards.
+  A trunk merge can drop the eviction guard, so after any merge `git log -S` the known one-line guards.
 - **Deliberately not a helipad:** outside `Is_Helipad` (a free helicopter on build, a general
   rearm target) and `STRUCTF_HELIPAD` (prerequisites). Its rim takes house colour; the emblem has
   no remap pixels and stays GDI gold.
@@ -281,11 +281,9 @@ the plot is the deck's 3x2 and the canvas is padded to centre on it.
 
 ## Units
 
-**Voxel lighting:** `vxl_render.py --shade ts` (the default) ports TS's lighting: a length-1.5
-light vector, n·L·16 truncated to a table index, and fixed palette scales from 0.62 (facing away)
-through 1.26 (neutral) to 1.70 (fully lit), from OpenTS `voxlib.cpp` and the shipped VOXELS.VPL. The
-old shading was 1.6-1.8x too dark. Team colour needs no extra lift in TS mode, and shaded RGB clips
-at 255. If units ever read too bright, the lever is one multiplier on `TS_VPL_SCALE`.
+**Voxel lighting:** `vxl_render.py --shade ts` (the default) ports TS's lighting, as
+`launcher-render-contracts.md` §11 sets out. If units ever read too bright, the lever is one multiplier on
+`TS_VPL_SCALE`.
 
 **Shadows:** EA's throw is a fixed pixel distance, not a fraction of the sprite: `EA_DX = 4`,
 `EA_DY = 22` canvas px (at 8 canvas px per classic px), alpha 191, Gaussian blur 3, for every unit
@@ -355,7 +353,7 @@ A unit here is done: no open art, geometry or behaviour work.
 |---|---|
 | Hover MLRS | HD v2: rack on a pad on its back, seated per hull frame |
 | Mammoth Mk. II | HD v3: railgun from the side pods, missiles from the rear pods, alternating sides (`scripts/ts_hmec_muzzle.py`); hull keeps 40% of TS's walk roll; bay-delivered, capped |
-| Titan | signed off once the fixed 6 px shadow throw replaced the width fraction |
+| Titan | fixed 6 px shadow throw, not a width fraction |
 | Wolverine | cameo, TS firing animation, TSGUN4, canopy dot |
 | TS MCV | 32° render; `Speed=5` to match the TD MCV family |
 | Amphibious APC | unload fix, water hull, `SPEED_AMPHIBIOUS` |
@@ -385,7 +383,7 @@ A unit here is done: no open art, geometry or behaviour work.
   it in game before either this doc or the code claims it.
 - **A tower with N/E/S/W connectors:** voxel splats, two procedural Blender towers, an image-model
   redraw and a third-party STL were all rejected; the tower is TS's own sprite. Running TRELLIS
-  locally needs 24 GB of VRAM (this box has 12).
+  locally needs 24 GB of VRAM (the dev machine has 12).
 
 ## Engine facts, traps, lessons
 
@@ -417,10 +415,9 @@ save versions, the NULL `shape_file_name`, `Find_Exit_Cell` and `Tracked=` are g
   which loses the free harvester.
 - **Grep a new vehicle's rules for `Tracked=`** before its first drive.
 - **A helipad-built aircraft exits by the stock path:** `sidebarglyphx.cpp` queues `EventClass::PLACE`,
-  `HouseClass::Place_Object` runs the `#else` of `FIXIT_HELI_LANDING` (which is off) and asks
-  `Who_Can_Build_Me` in theory, and that builder's `Exit_Object` `RTTI_AIRCRAFT` branch places it. Code in the
-  `#ifdef` half never compiles (the field manual's
-  [A fix in an `#ifdef` that never compiles](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/troubleshooting/known-engine-traps.md#a-fix-in-an-ifdef-that-never-compiles)).
+  `HouseClass::Place_Object` runs the live `#else` of `FIXIT_HELI_LANDING` (the field manual's
+  [A fix in an `#ifdef` that never compiles](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/troubleshooting/known-engine-traps.md#a-fix-in-an-ifdef-that-never-compiles)),
+  and that builder's `Exit_Object` `RTTI_AIRCRAFT` branch places it.
 
 **TS art conventions:**
 - **Every TS anim SHP packs healthy frames then damaged frames** in its usable window; full-cycle

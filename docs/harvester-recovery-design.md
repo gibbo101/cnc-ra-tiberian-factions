@@ -1,6 +1,7 @@
 # Harvester unreachable-ore recovery
 
-**Status:** Reference; shipped in 2.4.0, extended by the 3.0.0 watchdog.
+**Status:** Reference; shipped in 2.4.0, extended by the 3.0.0 watchdog; a switch since 5.7.0
+(`player-settings.md`, Harvesters).
 
 A harvester that stops closing on its ore for 5 s blacklists the whole contiguous field and pulls
 back toward its refinery to rescan. Movement zones ignore buildings by design, so a zone-based check
@@ -47,55 +48,45 @@ ore patch while a harvester is en route.
 
 ## Two root causes
 
-1. **Building placement does NOT recompute movement zones.** `MapClass::Zone_Reset` (map.cpp:1801)
-   is the full-map flood-fill that rebuilds `CellClass::Zones[MZONE_*]` (the connected-region map all
-   reachability checks use). Its callers are: **walls** (overlay.cpp:179 place, cell.cpp:1938 +
-   house.cpp:5017 destroy), **terrain/trees** (terrain.cpp:577), **bridges** (map.cpp:2227/2311/2374),
-   and **scenario load** (scenario.cpp:725/860). **Ordinary buildings are NOT in that list.** So when
-   you wall an ore patch with a turret, the zone map is never updated — those ore cells keep their old
-   "connected" zone id. Every zone-based reachability check therefore reads STALE data and believes the
-   patch is reachable: `Tiberium_Check`'s zone filter (unit.cpp:2519), `Is_In_Same_Zone`
-   (techno.cpp:5781), `Find_Path_AStar`'s zone gate (findpath.cpp:533). **This is the core bug.**
-
-2. **The legacy pathfinder always "succeeds."** When A* fails (it correctly refuses the blocked
-   cell), `FootClass::Find_Path` falls back to the legacy crash-and-turn edge-follower, which returns
-   *some* wandering path that heads toward the wall and never arrives. So `Basic_Path` rarely returns
-   "no path", the drive no-path/ABANDON branch rarely fires, and **any fix hooked to a failure EVENT
-   can't see the stuck state.** Only the *symptom* — "not getting closer to the ore" — is reliable.
-   (Three event-hooked detectors missed for this reason: LOOKING-only, NavCom-goes-clear and
-   no-path-branch.)
+1. **Zones can't see a building-walled field.** Zones ignore buildings by design, and building placement never
+   calls `Zone_Reset` (the field manual's
+   [Movement zones, and what they ignore](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/pathfinding.md#movement-zones-and-what-they-ignore)).
+   In TF's tree `Zone_Reset` runs for walls (`overlay.cpp:179` placing, `cell.cpp` and `house.cpp` destroying, and the
+   component tower's joint walls in `building.cpp`), terrain (`terrain.cpp`), bridges (`map.cpp`, `infantry.cpp`)
+   and scenario load (`scenario.cpp`), never for an ordinary building. So every zone-based reachability check reads
+   the walled field as reachable: `Tiberium_Check`'s zone filter, `Is_In_Same_Zone` (`techno.cpp`) and
+   `Find_Path_AStar`'s zone gate (`findpath.cpp`).
+2. **The legacy pathfinder always "succeeds."** When A* fails (it correctly refuses the blocked cell),
+   `FootClass::Find_Path` falls back to the edge-follower, which returns *some* path toward the wall that never
+   arrives (the field manual's
+   [The stock pathfinder](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/pathfinding.md#the-stock-pathfinder-edge-following-no-a)).
+   So `Basic_Path` rarely returns "no path", the drive no-path/ABANDON branch rarely fires, and **any fix hooked to a
+   failure EVENT can't see the stuck state**; only the *symptom*, "not getting closer to the ore", is reliable.
+   Three event-hooked detectors missed it: LOOKING-only, NavCom-goes-clear and no-path-branch.
 
 ## ❌ Dead route: calling `Zone_Reset` on building placement
-The whole "make buildings call `Zone_Reset` → every zone check just works" plan rested on an
-assumption that turned out to be **false**: that the zone flood-fill counts building cells as
-impassable. **It does not — by deliberate design.**
+It doesn't help, because the flood walks straight through building footprints (the field manual's
+[Harvesters](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/harvesters.md#traps), Traps).
+The mechanism in TF's tree:
 
-- `Zone_Reset` → `Zone_Span` (map.cpp:1895) tests each cell with
-  `Is_Clear_To_Move(SPEED_TRACK, ignoreinfantry=true, **ignorevehicles=true**, -1, check)`
-  (map.cpp:1917).
-- In `Is_Clear_To_Move` (cell.cpp:3091), `ignorevehicles` runs `composite &= 0x5F` — and the
-  original devs commented it **"Drop the vehicle/building bit."** The **Building** occupy bit is
-  `0x80` (cell.h:228, little-endian); `0x5F` clears it. A building footprint cell also keeps its
-  normal land type, so `Ground[land].Cost` is non-zero → the cell reads **clear**.
-- Net: **the zone flood walks straight through building footprints.** Even if buildings called
-  `Zone_Reset` on every place/sell, a building-walled ore patch stays in the **same zone** — zones
-  never disconnect it. (Walls work because they're *overlay*, checked separately at cell.cpp:3145
-  via `overlay->IsWall`, not via the occupy bits.)
-- **Why the original design does this:** zones are a *coarse* terrain+wall connectivity map. Buildings
-  are meant to be dynamic obstacles that fine-grained A* routes around at the cell level, so they're
-  intentionally not zone-dividers (else every structure would shatter the map into tiny zones needing
-  a rebuild on every build/sell). The harvester bug is exactly this mismatch: **A* respects buildings,
-  zones don't.**
-- **The bib is not the reason:** a building's bib is a separate passable `SmudgeClass`
-  apron on cells *outside* the `Occupy_List`; it sets no occupy bits. The footprint cells themselves
-  are fully blocked (`Occupy_Down` sets `Flag.Occupy.Building`, cell.cpp:650). Buildings are ignored
-  in zones because of the `0x5F` mask, full stop.
+- `Zone_Reset` → `Zone_Span` (`map.cpp`) tests each cell with
+  `Is_Clear_To_Move(SPEED_TRACK, ignoreinfantry=true, ignorevehicles=true, -1, check)`, and `ignorevehicles` runs
+  `composite &= 0x5F` in `CellClass::Is_Clear_To_Move` (`cell.cpp`, "Drop the vehicle/building bit"). The building
+  occupy bit is `0x80` (`cell.h`, little-endian), and a footprint cell keeps its land type, so `Ground[land].Cost` is non-zero and
+  the cell reads **clear**.
+- Walls do divide zones because they're *overlay*, tested separately through `overlay->IsWall`, not through the
+  occupy bits.
+- **The bib is not the reason:** a building's bib is a separate passable `SmudgeClass` apron on cells *outside* the
+  `Occupy_List` and sets no occupy bits; the footprint cells themselves are blocked (`Occupy_Down` sets
+  `Flag.Occupy.Building`). The `0x5F` mask alone is why buildings don't divide zones.
+- **Why the design does this:** zones are a *coarse* terrain-and-wall connectivity map; buildings are dynamic
+  obstacles that A* routes round cell by cell, or every structure would shatter the map into tiny zones needing a
+  rebuild on every build or sell. **A* respects buildings, zones don't.**
 
-**Consequence:** making the zone fix actually work would *also* require making the flood honor the
-Building bit (a `Zone_Span`-only variant of `Is_Clear_To_Move` that keeps `0x80`). That changes the
-global meaning of `Zones[]` and touches **every** consumer — AI target selection, the A* zone gate,
-`Is_In_Same_Zone`, base placement — i.e. an MP-determinism-sensitive, regression-prone change needing
-a full playtest cycle. **Too big for the payoff vs. the proven symptom-patch.**
+Making the zone fix work would mean a `Zone_Span`-only variant of `Is_Clear_To_Move` that keeps `0x80`, which
+changes the meaning of `Zones[]` for **every** consumer (AI target selection, the A* zone gate, `Is_In_Same_Zone`,
+base placement): a determinism-sensitive, regression-prone change needing a full playtest cycle, too big for the
+payoff against the symptom patch that ships.
 
 ## Diagnostic instrument
 `tf_astar.log` (TF_DEV_BUILD): `HARV-BLACKLIST` (harvester recovery), `CHOKE: ... mission=N

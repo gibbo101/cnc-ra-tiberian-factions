@@ -2,183 +2,97 @@
 
 **Status:** Reference; shipped in 4.1.0, the ambiguity resolver in 5.0.0.
 
-Per-slot AI difficulty is read from ClientG's lobby records (`AIPLAYERn`) at match start.
+Each skirmish AI plays at the difficulty picked for it in the lobby, read from ClientG's `AIPLAYERn` records at match
+start. Why memory is the only source, the method, the record layout, the gates and the stale-copy problem are
+game-level: see the field manual's
+[Per-AI lobby difficulty](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md).
+DontCryJustDie suggested reading it from the launcher and identified most of the record's fields. TF's read uses
+no hardcoded offset, only the record's shape: addresses change every run.
 
-- **Where it runs:** only the LAN host simulates, so the host's read sets every AI and there is
-  nothing to synchronise. A joiner's launcher loads the DLL only for the launcher patches; the sim
-  never runs there (`launcher-vs-dll-ownership.md`). Proven by role swap on one machine: no sim
-  log lines as joiner, the first within ~10 s as host.
-- **When:** the client tears down and rebuilds its `AIPLAYERn` records as a match launches, so a
-  scan inside that window finds nothing or a half-written array (`E M H M` was caught reading
-  `E M M M`). The deferred re-scan from `CNC_Advance_Instance` (`TF_Lobby_Difficulty_Retry`, 4
-  attempts 90 frames apart) requires two consecutive agreeing scans; the last attempt accepts an
-  unconfirmed read rather than none. Solo skirmish hits this too,
-  from the second match of a session.
-- **Stale copies:** the heap can hold a stale copy of the array that matches the live one on
-  colour and country. The resolver (`TF_Resolve_Lobby_Ambiguity`, `lobby-ambiguity-findings.md`)
-  picks the live copy by its vector triple, exact referrer, freshness or a strict majority, and
-  fails closed when undecided.
-- **Fallback chain:** RAM read, then `Documents/CnCRemastered/tf_ai_difficulty.txt` (global; it
-  applies in LAN too, since only the host simulates, but that is not live-verified; the ClientG read
-  always comes first),
-  then Hard.
-- `GlyphxID` cannot tell live from stale arrays: the IDs are fixed per slot index.
-- Mods load in LAN games only, so LAN is the whole modded multiplayer surface.
+## How TF runs it
 
-Verified in play: a mixed Hard/Medium/Easy/Hard solo lobby gave IQ 5/4/3/5; a two-human LAN lobby
-set Easy/Easy/Easy/Hard read `s2=1 s3=1 s4=1 s5=3`, a multiset that is no permutation of the
-cached values, so a live read.
+All in `redalert/dllinterface.cpp`:
 
-**Dead routes, do not rebuild:** a host-broadcast EventClass, mirrored lobby reads across peers, a
-live-model hex hunt, the `PHASEB-ID` GlyphxID probe. Each assumed both peers simulate. Measure the
-role; do not derive MP constraints from transport code.
+- **Scanner:** `TF_Read_Lobby_AI_Difficulties` and its helpers, directly above `CNC_Set_Difficulty`, scan and
+  validate as the manual's [method](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md#the-method)
+  describes (steps 1 to 4). ClientG is found by exe name, since only one runs (ClientLauncherG starts it beside InstanceServerG; see the field manual's [What the launcher owns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/what-the-launcher-owns.md#how-to-tell-who-owns-a-behaviour)).
+  `TF_Validate_Lobby_Records` stops at the first bad record, and a candidate must cover the whole roster, so one
+  over-strict gate drops every AI to the global tier. Gate only on a field whose meaning is measured, never
+  assumed: team is range-checked `0..TF_LOBBY_MAX_TEAM` (8, a random team), and a country of 42 (a random faction)
+  skips the country test. TF compares the country against `player_info.House`, captured in
+  `CNC_Set_Multiplayer_Data` before the Spain/Greece hijack rewrites it.
+- **Slot to house** (the manual's method, step 5): `TF_AILobbySlotByHouse`, captured in the assign loop before the
+  name is overwritten, reset each match in `CNC_Set_Multiplayer_Data`.
+- **Difficulty to IQ:** `TF_AI_IQ_From_Difficulty` (`redalert/house.cpp`): Easy IQ 3, Medium IQ 4, Hard
+  `Rule.MaxIQ`. The record's difficulty is 1-based, TF's `DiffType` 0-based. Every AI keeps `MaxIQ` until a lobby
+  difficulty has arrived, and under the classic AI.
+- **Rebuild window:** a failed read arms `TF_Lobby_Difficulty_Retry` from `CNC_Advance_Instance`: up to four
+  re-scans, `TF_LOBBY_RETRY_FRAME_GAP` (90) frames apart. A read applies once two in a row agree, or on the last
+  attempt rather than none.
+- **Stale copies:** validated candidates that disagree go to `TF_Resolve_Lobby_Ambiguity`
+  (`lobby-ambiguity-findings.md`), which fails closed when undecided.
+- **Fallback chain:** the RAM read, then `Documents/CnCRemastered/tf_ai_difficulty.txt` (global), then Hard. The
+  file applies in LAN too, since only the host simulates, but that is not live-verified.
+- **Readout:** `TF_Apply_AI_Difficulties` queues one line per computer house, `Enemy AI: <side> (<colour>) -
+  <mode>`, and `CNC_Advance_Instance` shows them on screen through `On_Message` for 30 s from frame 30, in release
+  builds too. The line names the mode, not its source, so a global-tier fallback looks the same as a slot read.
 
-**Implementation notes (what shipped, all in `redalert/dllinterface.cpp`):**
-- Scanner: `TF_Read_Lobby_AI_Difficulties` + helpers, directly above
-  `CNC_Set_Difficulty`. Signature scan per the design below; validated candidates that
-  disagree go to the ambiguity resolver. A failed read arms the deferred re-scan above.
-- **The house-name trap** (the field manual's [Per-AI lobby difficulty](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md#the-method), The method, step 5): slot
-  mapping uses `TF_AILobbySlotByHouse`, captured in the assign loop before the name is overwritten (reset each
-  match in `CNC_Set_Multiplayer_Data`).
-- The TF_AI_DIAG HELLO lines (log + on-screen via the deferred
-  `CNC_Advance_Instance` flush) print each house's mode tagged `[slot n]` (RAM) or
-  `[global]` (fallback) — the standing per-match verification readout.
+Only the LAN host simulates, so the host's read sets every AI and nothing needs synchronising (see the manual's
+[LAN games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/lan-games.md#one-simulation-on-the-host)).
+TF measured it by role swap on one machine: no simulation log lines as joiner, the first within about 10 s as
+host. `GlyphxID` can't tell a live array from a stale one: the IDs are fixed per slot index.
 
-## Why RAM
+**Dead routes, do not rebuild:** a host-broadcast EventClass, mirrored lobby reads across peers, a live-model hex
+hunt, and the `PHASEB-ID` `GlyphxID` probe. Each assumed both peers simulate. Measure the role; don't derive multiplayer
+constraints from transport code.
 
-Every other route is measured dead: see the field manual's [Per-AI lobby difficulty](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md#why-memory-is-the-only-source),
-Why memory is the only source, which also covers what the settings file
-(`userdata/<id>/1213210/remote/Player_RA_settings_1.bin`), the Wine registry and the exit-time writes hold.
-DontCryJustDie suggested reading RAM ("if you know the offsets"); TF's read uses
-no hardcoded offset (the signature scan below).
+## Verified in play
 
-## PoC (proven live)
-
-Method: host-side Python reading `/proc/<ClientG pid>/mem` (same-user read of wine
-process memory — the same permission model `ReadProcessMemory` uses in-prefix).
-Scanned private writable regions for `AIPLAYER` (ASCII + UTF-16).
-
-Lobby under test: slots 2–5 = **Hard / Medium / Easy / Hard**, all-USSR (factions held
-constant so only difficulty varies).
-
-Found: a 4-record array, one per AI slot, reading 3, 2, 1, 3 at `+0x64`. The record layout, the field
-identities and the human records: see the field manual's [Per-AI lobby difficulty](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md#the-record), The record. The PoC lobby
-used default colours, so `+0x50` (team) and `+0x68` (colour) both read 1, 2, 3, 4 and looked like slot indices.
-
-### Field identities
-
-**Both gates live-verified 2026-07-22** over two desktop skirmishes, colours deliberately
-shuffled out of slot order so no coincidence could carry the read:
-
-- Fixed lobby (GDI/Nod/Allies/Soviet, Hard/Easy/Medium/Hard, teams 2,2,3,3): all four
-  records accepted, every `house` decoding to the roster's country, all four houses tagged
-  `[slot n]`, IQ 5/3/4/5 on screen. Teams read 1,1,2,2, i.e. the lobby's team number minus 1.
-- Random lobby (AI 3 random faction, AI 4 random team): the random faction's record still
-  read **42** while the roster had already resolved that AI to Greece, and the random team
-  read **8**. Both accepted via their skips.
-
-The random case is why neither skip is optional. Validation stops at the first bad record
-and a candidate must cover the whole roster, so gating hard on 42 would have discarded the
-entire array and dropped every AI to the global tier whenever one player picked a random
-faction. Gating team as `[0..7]` on a literal reading of "0-7 for valid teams" would do the
-same to a random team.
-
-Which fields are safe to gate on, and the samples that decode them: the field manual's
-[Per-AI lobby difficulty](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md#the-record), The record, and How it was verified (DontCryJustDie identified colour, team and
-country). TF gates colour and country (ActLike) as its two liveness keys, the country against `player_info.House`
-captured in `CNC_Set_Multiplayer_Data` before the Spain/Greece hijack rewrites it; team is range-checked only. The
-mixed `2, 9, 3` sample was logged while Nod still sat on Turkey.
-
-**The bug this caused.** The validator's range gate on `+0x50` was `< 1`, so every array's
-first record (team 0) was rejected. Validation stops at the first bad record and a candidate must cover the
-whole AI roster, so one rejected record discarded the entire array and the read returned
-zero slots, silently falling every AI back to the global tier. It appeared intermittent
-rather than broken because a single AI, or a first AI at a non-zero index, happened to pass.
-The fix is `slot < 1` becoming `slot < 0` in `TF_Validate_Lobby_Records`
-(`redalert/dllinterface.cpp`); the read then succeeds on the first scan at frame 0 with no
-retries, verified with four AIs and with colours deliberately set to break slot ordering.
-Re-read mid-match: array intact, values unchanged — readable at match time, when the
-DLL needs it. Addresses are per-run (heap); only the record SHAPE is stable.
-
-Other `AIPLAYER` hits in memory are why the scanner validates every candidate: see the field manual's
-[Per-AI lobby difficulty](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md#the-method), The method, step 4.
+- A Hard/Medium/Easy/Hard solo lobby gave IQ 5/4/3/5.
+- A fixed lobby (GDI/Nod/Allies/Soviet, Hard/Easy/Medium/Hard, teams 2,2,3,3, colours shuffled out of slot order):
+  all four records accepted, every country matching the roster, all four houses `[slot n]`, IQ 5/3/4/5. The read
+  succeeds on the first scan at frame 0, with no retries.
+- A random lobby (one AI on a random faction, one on a random team): the records read 42 and 8 while the roster had
+  resolved them, and both were accepted through their skips.
+- A two-human LAN lobby set Easy/Easy/Easy/Hard read `s2=1 s3=1 s4=1 s5=3`, no permutation of the cached values, so
+  a live read.
+- Re-read mid-match: the array intact and unchanged.
 
 ## Reference tooling
 
-`scripts/read_lobby_difficulty.py <pid>` — the proven host-side reader (signature scan +
-record walk, offsets baked in). Get the stable pid with
-`pgrep -f "ClientG.exe GAME_INDEX=0 REDALERT"` while a match is loaded. This is the
-reference the in-DLL phase-A read reimplements via ReadProcessMemory.
+`scripts/read_lobby_difficulty.py <pid>` is the host-side reader the in-DLL read reimplements through
+`ReadProcessMemory`: it reads `/proc/<pid>/mem` (the same same-user permission `ReadProcessMemory` uses inside the
+prefix), with the signature scan, record walk and offsets built in. Get the pid with
+`pgrep -f "ClientG.exe GAME_INDEX=0 REDALERT"` while a match is loaded. The first proof-of-concept read searched private writable regions for
+`AIPLAYER` in both ASCII and UTF-16; the records are found by the ASCII name, which is all this reader and the DLL
+search for.
 
-## Implementation design
+## What else ClientG's memory holds
 
-### Solo skirmish (phase A)
-
-At match start (`CNC_Set_Multiplayer_Data` gives us the AI slot names + order; the
-difficulty read can also run lazily on first AI tick — retro-apply already exists):
-
-1. Scan and validate as the field manual's [Per-AI lobby difficulty](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/per-ai-lobby-difficulty.md#the-method) describes
-   (steps 1–4 there), in `TF_Read_Lobby_AI_Difficulties`. ClientG is found by exe name: it is InstanceServerG's
-   parent and only one runs. Equality tests against any field whose meaning is merely assumed are what broke this
-   twice (`slot == slot2` first, then the 1-based floor on `+0x50`). Candidates that pass but disagree go to the
-   ambiguity resolver; zero hits is a scan failure.
-2. Map `AIPLAYERn` → the n-th AI entry in the `CNC_Set_Multiplayer_Data` player list
-   (names match — we log both already), then per-house:
-   Easy→IQ 3, Medium→IQ 4, Hard→`Rule.MaxIQ` (existing `TF_AI_IQ_From_Difficulty`,
-   note the RAM enum is 1-based vs our DiffType 0-based).
-3. **Fallback chain: RAM scan → `tf_ai_difficulty.txt` (global) → default Hard.**
-   Log the outcome per house under TF_AI_DIAG.
-
-32/64-bit note: our DLL is 32-bit; all PoC addresses were < 4 GB. If ClientG turns out
-to allocate the array above 4 GB on some machines, use `NtWow64ReadVirtualMemory64`.
-Check `IsWow64Process` on ClientG during implementation.
-
-## RAM reconnaissance — what else is extractable
-
-Question posed: is reading ClientG RAM a general "launcher unblocker"? **Reading alone is not —
-it is a lobby-SELECTION extraction channel. Writing is**, and it has since moved several launcher
-walls. The distinction is read vs write:
-
-- **Reading** ClientG surfaces values the client computed but won't pass the DLL
-  (difficulty is the proven case). Good for "the client knows X, the DLL needs X, no
-  official pipe."
-- The launcher WALLS (5th faction, playable campaign, hotkey classes, front-end
-  textures — see `bui-front-end-modding.md`, `ui-atlas-modding.md`) are
-  limits of the client's COMPILED BEHAVIOUR, not hidden data. Reading can't change them.
-  Writing can: the per-faction radar crest re-points atlas region records
-  (`radar-crest-ram-spike.md`), the TD tab icons rewrite a launcher string, the EVA mailbox
-  overwrites cached samples (`td-audio-routing-recipe.md`, "EVA lines the launcher plays"), and code hooks patched in from the DLL
-  that ClientG loads at startup carry the hotkeys, click specials and the ADD-ONS screen
-  (`launcher-vs-dll-ownership.md`, `pack-panel.md`). Each is fragile against a new ClientG build.
-
-Token survey of a live in-match ClientG (3-AI skirmish):
+Reading surfaces values the launcher computed but doesn't pass the DLL. It can't move a launcher wall, which is
+compiled behaviour; writing can (`launcher-vs-dll-ownership.md`). A token survey of a live in-match ClientG (3-AI
+skirmish):
 
 | Token | Hits | What it is |
 |---|---|---|
-| `AIPLAYERn` | array | per-slot AI record — difficulty at +0x64 (THE win) |
-| `FACTION5` | 21 | faction-type registry object (`FACTION5\0NTTYPEI` + index) — slot faction assignments are readable |
-| `Docklands` | 17 | selected map name |
-| `CASUAL` | 25 | difficulty label strings (Casual/Normal/Brutal-family UI text) |
-| `EnableSuperweaponsGroup` | 2 | asset GROUP NAME, not the live toggle value |
-| `FirepowerBias`, `MPlayerCredits`, `UnitCount`, `BRUTAL` | 0 | rules/option VALUES are not string-tagged in RAM (credits/unitcount already arrive via CNC_Set_Multiplayer_Data anyway) |
+| `AIPLAYERn` | array | the per-slot AI record, difficulty at +0x64 |
+| `FACTION5` | 21 | a faction-type registry object (`FACTION5\0NTTYPEI` plus index): slot faction picks are readable |
+| `Docklands` | 17 | the selected map's name |
+| `CASUAL` | 25 | difficulty label strings (the Casual/Normal/Brutal family) |
+| `EnableSuperweaponsGroup` | 2 | an asset group name, not the live toggle |
+| `FirepowerBias`, `MPlayerCredits`, `UnitCount`, `BRUTAL` | 0 | rule and option values are not string-tagged in memory |
 
-Takeaway: extractable = lobby's **named selections/definitions** (faction-per-slot, map,
-difficulty). NOT extractable as tagged data = numeric rule values (they reach the DLL
-legitimately or exist only as raw untagged numbers). So the practical yield beyond
-difficulty is thin — most lobby data the DLL needs, it already gets. Difficulty was the
-one real gap, and it's solved.
+So the lobby's named selections (faction per slot, map, difficulty) are extractable; numeric rule values are not,
+and credits and unit count already arrive through `CNC_Set_Multiplayer_Data`. Difficulty was the one real gap.
 
-## Risks / caveats
+## Risks
 
-- **AV heuristics (Windows players):** a game DLL calling `ReadProcessMemory` on a
-  sibling process is mildly heuristic-adjacent. Read-only, own-game, low risk — but if
-  reports surface, the flag-file fallback remains and a config kill-switch for the
-  scanner is one bool.
-- **Record shape is empirical**, from one build of the frozen (archived Jan 2025)
-  client. The validating signature makes false positives unlikely and false negatives
-  fall back gracefully.
-- **Lobby edits mid-match** (host fiddling a hypothetical UI) are not re-read; we read
-  once at match start, matching launcher semantics.
-- Scanner cost: a pass over ClientG's private RW regions (~hundreds of MB) at match start,
-  plus up to four deferred re-scans. Chunked reads; every validated array is kept for the
-  resolver.
+- **Antivirus heuristics on Windows:** a game DLL calling `ReadProcessMemory` on a sibling process is mildly
+  heuristic-adjacent. If reports come in, the file fallback remains, and a kill switch for the scanner is one bool.
+- **The record shape is empirical**, from one build of a client EA no longer patches. The validating signature makes
+  false positives unlikely, and false negatives fall back.
+- **Mid-match lobby edits** are not re-read; TF reads once at match start, as the launcher does.
+- **32/64-bit:** TF's DLL is 32-bit and every measured address was under 4 GB. If ClientG ever allocates the array
+  above 4 GB, read it with `NtWow64ReadVirtualMemory64` after checking `IsWow64Process`; the scanner does neither.
+- **Cost:** one pass over ClientG's private read-write regions (hundreds of MB) at match start, plus up to four
+  re-scans, in chunked reads, every validated array kept for the resolver.

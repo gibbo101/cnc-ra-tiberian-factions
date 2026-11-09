@@ -3,13 +3,15 @@
 **Status:** Reference. Which CONFIG.MEG data levers are in use, untried, or dead.
 
 Census of CONFIG.MEG's 230 XML members for launcher levers. In use: `GameConstants_Mod.xml`
-(classic lockout, mod hotkeys, zoom), `FACTIONS.XML`, `MASTERTEXTFILE`, `MUSICEVENTS`,
+(classic lockout, mod hotkeys, zoom, theatre tilesets), `FACTIONS.XML`, `MASTERTEXTFILE`, `MUSICEVENTS`,
 `GUITEXTURESETS` and the `.bui` screens. Untried: campaign files, team colours, cursors, lobby
-value lists, the bonus gallery, slash commands. The sweep started when the classic-graphics
-lockout, after three DLL-side routes and a RAM probe, turned out to be one constant EA shipped for mods.
+value lists, the bonus gallery, slash commands.
 
-**Standing rule this establishes:** a wall proven on the *code* side is not proven on the *data*
-side. Before declaring a launcher behaviour impossible, grep CONFIG.MEG.
+**The rule:** a wall proven on the code side is not proven on the data side. Before declaring a launcher behaviour
+impossible, grep CONFIG.MEG: see the field manual's
+[What the launcher owns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/what-the-launcher-owns.md#search-in-this-order),
+Search in this order. The classic-graphics lockout, after three DLL-side routes and a RAM probe, was one constant EA
+shipped for mods.
 
 **Coverage.** All 230 non-tilepatch XML members were extracted and profiled (size, root element,
 element census, keyword scan for `TBD` / `not used` / `no longer used` / `Community-requested` /
@@ -22,18 +24,17 @@ their profile, and that dismissal is itself a finding — see "Dismissed by clas
 its exact byte length, with no member added or removed: see the field manual's
 [Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#three-ways-in), Three ways in.
 
----
-
 ## Delivery: `GameConstants_Mod.xml` beats editing the member
 
 The overlay (merged over the base constants, `overwrite="true"` for a list, the only `_Mod` overlay, no input
 overlay) is on the field manual's [Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#gameconstants_modxml), `GameConstants_Mod.xml`.
 Kushan documented it (ppmforums.com/topic-54809), and Vanilla Conquer's TD sample uses it to switch on megamaps.
 
-**TF's constants ship in it** (classic-graphics lockout, mod hotkeys, the Unholy Alliance default, CFE's zoom
-factors), so the 128 KB `GAMECONSTANTS.XML` member needs no same-size rewrite and no repack, and a rebuild has
-one less member to clobber. With no input overlay, the mod sends its commands from the launcher's own keys instead (Tier 1
-item 1 below).
+**TF's constants ship in it** (`resources/remaster_mods/Vanilla_RA/Data/XML/GameConstants_Mod.xml`: the
+classic-graphics lockout, mod hotkeys, CFE's zoom factors and the theatre tilesets), so the 128 KB
+`GAMECONSTANTS.XML` member needs no same-size rewrite and no repack, and a rebuild has one less member to clobber.
+The Unholy Alliance needs no constant: it rides the Shroud Regrows checkbox, which vanilla already ships unticked.
+With no input overlay, the mod sends its commands from the launcher's own keys instead (Tier 1 item 1 below).
 
 ## Tier 1 — actionable levers
 
@@ -41,12 +42,11 @@ item 1 below).
 
 EA's mod hotkey path (the constant, four commands with empty keys, and the DLL input event that stops at EA's
 placeholder) is on the field manual's [Mod hotkey commands](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/mod-hotkey-commands.md#what-ea-left-in), What EA left in (the
-constant's comment and how a key is written included; the bookmark commands above them bind F1–F4 that way). TF's handler is the `INPUT_REQUEST_MOD_GAME_COMMAND_1..4_AT_POSITION` cases of `CNC_Handle_Input` in
-`redalert/dllinterface.cpp`.
+constant's comment and how a key is written included; the bookmark commands above them bind F1–F4 that way).
 
-**What ships:** `CNCEnableModHotKeyGameCommands` is on in `GameConstants_Mod.xml`, and the handler
-in `dllinterface.cpp` (`INPUT_REQUEST_MOD_GAME_COMMAND_1..4_AT_POSITION`) uses all four. The
-patched launcher key code (`TF_Patch_Launcher_Keys_In`, `launcher-vs-dll-ownership.md`) sends
+**What ships:** `CNCEnableModHotKeyGameCommands` is on in `GameConstants_Mod.xml`, and the
+`INPUT_REQUEST_MOD_GAME_COMMAND_1..4_AT_POSITION` cases of `CNC_Handle_Input` (`redalert/dllinterface.cpp`) use
+all four. The patched launcher key code (`TF_Patch_Launcher_Keys_In`, `launcher-vs-dll-ownership.md`) sends
 them from the launcher's own keys, so every player's press reaches the host with no binding:
 Mod Command 1 is the deploy key and runs each selected object's self-action (MCVs deploy,
 transports unload); Mod Command 2 comes just before the launcher's own select-all, so the DLL can
@@ -78,27 +78,28 @@ Campaigns are **faction-bound**, carry their own intro movie, and list mission m
 `GAMECONSTANTS.XML` also holds `CNCFirstAntCampaignMapName` / `CNCFirstJurassicCampaignMapName`
 as client-side entry points.
 
-**The ants are not a faction of their own** — worth stating because `<Faction>Faction6</Faction>`
-reads like one. `FACTIONS.XML`'s 11 faction objects are on the field manual's
+**The ants are not a faction of their own**, though `<Faction>Faction6</Faction>` reads like one.
+`FACTIONS.XML`'s 11 faction objects are on the field manual's
 [Adding a faction](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/adding-a-faction.md#the-launchers-data-for-the-row), The launcher's data for the row. `Faction6` is an ordinary RA country slot that the Ant
-campaign declares itself against, the same mechanism our factions use: GDI rides `Faction3`
+campaign declares itself against, the same mechanism TF's factions use: GDI rides `Faction3`
 (Spain), Nod `Faction4` (Greece) and TS GDI `Faction8` (Germany). The binding is one-directional
 (campaign names a faction), and none of the faction entries carry buildable structure or unit
-lists — those are all empty, because the tech trees live in our DLL.
+lists — those are all empty, because the tech trees live in the DLL.
 
-**Two things follow.** First, if we ever repoint `ANT.XML`, bind it to `Faction3` or `Faction4`
+**Two things follow.** First, a repointed `ANT.XML` should bind to `Faction3` or `Faction4`
 so a GDI or Nod campaign sits on that faction's slot instead of a leftover country. Second,
 `Faction_Funpark` is an eleventh entry with a **non-numeric name**, so the launcher's faction
 table is a data list rather than a fixed `Faction1..10` enum. New factions did not need it: TS GDI
 rides an existing country slot (`ts-gdi-faction.md`).
+
 **`<CoopCampaignType>` is a cut feature, not a lever**: see the field manual's
 [What the launcher owns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/what-the-launcher-owns.md#the-walls-and-the-way-through) (the co-op campaign row). The field sits beside `<CampaignType>` in every faction, and
 ClientG's compiled co-op code also tracks per-mission star counts. Whether ClientG would open the co-op screen from a loose `.bui` alone is
 untested; TF's verdict is in `coop-missions-design.md`.
 
-**Why it matters:** our campaign plan hijacks Counterstrike/Aftermath *mission slots*
-(`campaign-tabs-research.md`). This is the layer above. We cannot add a campaign file, but
-`ANT.XML` is 461 bytes and `FUNPARK.XML` 553 — **repointing a low-value campaign may be a
+**Why it matters:** TF's campaign plan hijacks Counterstrike/Aftermath *mission slots*
+(`campaign-tabs-research.md`). This is the layer above. A mod cannot add a campaign file, but
+`ANT.XML` is 461 bytes and `FUNPARK.XML` 553, so **repointing a low-value campaign may be a
 cleaner hijack than borrowing Aftermath slots**, and it comes with its own faction binding.
 What Mission Select shows comes from `INSTANCES.XML`, and the campaign files decide what launches: see the field
 manual's [Custom campaigns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-campaigns.md#display-and-launch-are-separate), Display and launch are separate.
@@ -106,9 +107,9 @@ manual's [Custom campaigns](https://github.com/gibbo101/remastered-modding-field
 ### 3. Team colours are data
 
 The team-colour files are on the field manual's [Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#example-team-colours), Example: team colours
-(`CNCRATEAMCOLORS.XML` is 14.9 KB; its transforms work against `TeamColorLarge.tga`). Since GDI/Nod ride country slots, **their in-game colour identity is
-data-editable** without touching the DLL. Not something we have wanted yet, but it is the answer
-if faction colour ever comes up.
+(`CNCRATEAMCOLORS.XML` is 14.9 KB; its transforms work against `TeamColorLarge.tga`). Since GDI/Nod ride country
+slots, **their in-game colour identity is data-editable** without touching the DLL. TF hasn't needed it, but it is
+the answer if faction colour ever comes up.
 
 ### 4. Mouse cursors are data
 
@@ -121,7 +122,7 @@ hotkey command — is a real option.
 
 `CNCStartingUnits`, `CNCRATechLevels`, `CNCStartingCredits`, `CNCGameSpeedMods`,
 `CNCUnitCountDefault`, `CNCOreRegrowth` and friends are `<Entry>` lists and defaults — the values
-the lobby dropdowns *offer*. We can change what is on the menu (more starting units than 9,
+the lobby dropdowns *offer*. A mod can change what is on the menu (more starting units than 9,
 different credit tiers) without touching the launcher.
 
 ### 6. Bonus-content gallery is data
@@ -130,8 +131,6 @@ different credit tiers) without touching the launcher.
 `ThumbnailName`, `InfoTextID`, `Unlock`, `UnlockOnMissionCompletions`. The extras gallery is
 therefore mod-editable in place (thumbnails via the loose texture path). Cosmetic, but it is a
 player-facing surface nobody has used.
-
----
 
 ## Tier 2 — unknowns worth one cheap test each
 
@@ -146,10 +145,10 @@ player-facing surface nobody has used.
 - **`CNCRULES.XML` — a launcher-side difficulty table.** Carries `RulesTypeClass Name="TD"` and
   `Name="RA"`, both `network="server"`, with per-difficulty `Firepower` / `Groundspeed` /
   `Airspeed` / `BuildTime` / `Armor` / `ROF` / `Cost` / `RepairDelay` / `BuildDelay` /
-  `BuildSlowdown` / `DestroyWalls` / `ContentScan`. Probably an unused server-build artifact —
-  but see the decision below, because the same table exists on the live DLL side.
-
----
+  `BuildSlowdown` / `DestroyWalls` / `ContentScan`. The same table is live on the DLL side, as `rules.ini`'s `[Easy]`, `[Normal]` and `[Difficult]`
+  sections read by `Difficulty_Get` (`RULES.CPP`). Whether the server also passes this file's values in, through
+  the DLL's exported `CNC_Config`, is open: see the field manual's
+  [Open questions](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/open-questions.md).
 
 ## Tier 3 — confirmed dead, do not re-chase
 
@@ -162,15 +161,15 @@ player-facing surface nobody has used.
   it enables TD's 128×128 megamaps — the cap RA already runs at. It explains why TD's 64×64 build
   carries the same `MAX_EXPORT_CELLS (128*128)`. That negative stands, but the 128x128 export
   arrays are not the launcher's wall: InstanceServerG copies them, and the `megamaps-spike` branch
-  patches that copy to reach 253x253 (`megamaps-feasibility.md`).
+  patches that copy to reach 253x253 (the field manual's
+  [Bigger maps](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/bigger-maps.md#why-128-looked-like-a-wall),
+  Why 128 looked like a wall).
 - **`CNCTDMaxPlayers` = 6** — "more than 6 players in skirmish/LAN for TD if a modded DLL supports
   it". TD-only. RA's 8 players is a separate setting among the lobby defaults,
   `CNCAllow8PlayersDefault`, and its stock value is false.
 - **`AISKIRMISHPERSONALITIES.XML`** defines one personality (`Balanced`) pointing at a CLIPS
   expert-system file (`BalancedPersonality.clp`) that is not in the archive. Petroglyph's generic
-  AI, not C&C's — our DLL is the AI. Not a lever.
-
----
+  AI, not C&C's: the DLL is the AI. Not a lever.
 
 ## Dismissed by class (and why that is safe)
 
@@ -187,22 +186,18 @@ player-facing surface nobody has used.
 - **~20 `EnumDefinition` files** (`DAMAGETYPE`, `PASSABILITYCLASSTYPE`, `UGCTAGTYPE` …) define
   engine enums the compiled client already knows. Editing an enum list does not create engine
   behaviour.
-- **Tilesets / audio-event / localisation members** are content we already know how to reach via
+- **Tilesets / audio-event / localisation members** are content already reached through
   their own documented pipelines (`td-tile-hd-loose-art-investigation.md`,
   `td-audio-routing-recipe.md`, `faction-select-identity.md`).
 - **Engine leftovers from other Petroglyph titles** — `LIGHTNINGEFFECTTYPES` names
   `Air_Elemental_Lightning` / `Fusion_Beam_*`, `CAMERAS.XML` is marked "no longer used",
   `LASERBEAMS.XML` says its custom-render fields are "no longer used". Present but inert for C&C.
 
----
-
 ## Appendix — the full member census
 
 Generated from the extracted archive; grouped by class, largest first within each group. Files
-named in the tiers above are the ones whose contents were read in full.
-
-`scripts/`-side reproduction: extract with `meg_extract.py list|extract`, then profile.
-The working copies live in the session scratchpad (`meg/`), not in the repo.
+named in the tiers above are the ones whose contents were read in full. To reproduce, extract with
+`meg_extract.py list|extract`, then profile.
 
 **other** (108)
 

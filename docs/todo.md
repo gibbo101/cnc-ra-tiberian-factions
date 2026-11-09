@@ -26,8 +26,8 @@ Order: TS Nod, the match warm-up (`sprite-memory.md`), maps past 128x128, TS the
 - **Check `asset-packs/` for unused files.** The rest of the checkout has been through it: every
   tracked script and art source is named by a build step, script or doc. The asset-pack instance
   owns `asset-packs/`, so it checks that folder.
-- **Shrink the package.** Players with 4 to 6 GB cards lag (`known-issues.md`: about 4.4 GB of video memory in TF
-  against 2.3 GB in vanilla); the warm-up comes first. Other leads: `TSWEAP2.ZIP` (2.5 MB), the war factory overlay
+- **Shrink the package.** Players with 4 to 6 GB cards lag (`known-issues.md`: about 4.7 GB of video memory at the menu
+  in TF against 2.3 GB in vanilla); the warm-up comes first. Other leads: `TSWEAP2.ZIP` (2.5 MB), the war factory overlay
   the game never draws, once the map editor's factory overlay (`editor_manifest.py`) reads the current layers.
   Movies (67 MB), lobby thumbnails (51 MB) and CONFIG.MEG (43 MB) are EA's sizes. Restage clean
   (`stage_asset_packs.py --full`) before measuring.
@@ -46,9 +46,10 @@ Order: TS Nod, the match warm-up (`sprite-memory.md`), maps past 128x128, TS the
   misses its landing on `TDAFLD` and fix it, with a play test of several deliveries.
 - **C3PRED turret seats:** the README's tables now run clockwise. If a modder still finds the Predator off,
   compare its draw with ours in play and refine `_c3pred_seat_px` (`c3tanks.h`).
-- **Save compatibility, before campaigns ship.** Flag saves that need the TS-HD-Assets pack when it is missing,
-  and autosave at every campaign mission start, so a layout-changing update costs at most the mission in
-  progress. A reorder of equal length still passes the save version. Campaigns wait for a stable roster.
+- **Save compatibility, before campaigns ship.** Autosave at every campaign mission start, so a layout-changing
+  update costs at most the mission in progress (Load Game already greys out a save that needs the TS-HD-Assets pack
+  while it is off, `pack-panel.md`). A reorder of equal length still passes the save version. Campaigns wait for a
+  stable roster.
 - **Map editor loads the TS-HD-Assets pack with Tiberian Factions,** after maps past 128x128. The pack carries
   the TS art TF's XML points at, so the editor must load it whenever TF is active (from the Mods folder or the
   Workshop cache) and look up art across every active mod. `cnc-map-editor` already merges several mods' manifests.
@@ -96,7 +97,7 @@ Order: TS Nod, the match warm-up (`sprite-memory.md`), maps past 128x128, TS the
 - **Component tower:** animations and weapon geometry for the Vulcan, RPG and SAM plugs. Confirm
   what is still wanted now the HD tower is in.
 - **Mk. II cap:** `TF_MK2_CAP` is 1; it goes to 3 on the maintainer's word.
-- **Code tidy:** the dead-code pass (needs calls first), the comments left inside the
+- **Code tidy:** the rest of the dead-code pass, the comments left inside the
   ts-buildings-hd branch's ranges, and phase 2: `code-tidy.md`. Also `defines.h:589` rounds
   `MAP_REGION_HEIGHT` with `REGION_WIDTH` (harmless while both are equal).
 

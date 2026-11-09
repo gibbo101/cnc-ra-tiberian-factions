@@ -38,15 +38,12 @@ music uses: 44.1 kHz stereo MS-ADPCM. The tracks already sit at the stock tracks
 
 ## Settings
 
-TIBERIAN FACTIONS SETTINGS, under REPLAY / OBSERVER on the main menu, sets the music. `TF_SETTINGS.BUI`
-(`scripts/bui_settings_build.py`) is the CAMPAIGNS page run by `SplashScreen`, opened and bound by
-`redalert/tf_launcher.cpp` as the ADD-ONS screen is (`pack-panel.md`):
-
-- **AUDIO** has a tab per faction under the game banners, the faction's crest, and four rows: MIX, RED ALERT, TIBERIAN
-  DAWN and TIBERIAN SUN, the saved one ticked. A click saves it at once; it plays from the next track. While the
-  TS-Music tracks are missing, TIBERIAN SUN reads "Not installed" and can't be picked. DEFAULTS puts every faction
-  back on MIX.
-- **GAME RULES** shows COMING SOON.
+The TIBERIAN FACTIONS SETTINGS page (`TF_SETTINGS.BUI`, `player-settings.md`; under REPLAY / OBSERVER on the main
+menu) sets the music,
+in its GENERAL page's AUDIO category: a tab per faction, the faction's crest, and four rows (MIX, RED ALERT,
+TIBERIAN DAWN and TIBERIAN SUN), the saved one ticked. A click saves it at once; it plays from the next track. While
+the TS-Music tracks are missing, TIBERIAN SUN reads "Not installed" and can't be picked. DEFAULTS puts every faction
+back on MIX. The rows' names and values are `MUSIC_CHOICES` in `redalert/tf_launcher.cpp`.
 
 The page writes `Documents/CnCRemastered/tf_music.ini`, which the hook reads at every skirmish track:
 
@@ -69,8 +66,8 @@ manual's [Music by faction, and the jukebox](https://github.com/gibbo101/remaste
 
 `redalert/tf_music.cpp` redirects that one lookup (the call at `0x169D018`). For a skirmish event it asks for
 `<prefix>_TF_MUS_<LIST>`, and returns the stock event when that is missing. The lobby faction is read from
-`0x20E0CF8`: the picker row plus two (GDI 2, Nod 3, Soviets 4, Allies 5, TS GDI 7; 6, 8 and 9 are the
-duplicate rows).
+`0x20E0CF8`: the picker row plus two (GDI 2, Nod 3, Soviets 4, Allies 5, TS GDI 7; the duplicate rows play
+Soviets' choice at 6 and Allies' at 8 and 9, `FACTION_KEYS` in `tf_music.cpp`).
 
 TS-Music counts as present when `Data\AUDIO\MUSIC\TS_MUS_VALVES.WAV` exists under any enabled mod's folder
 (the launcher's mod roots, `0x1FE4C28`), which is where the launcher would open it.

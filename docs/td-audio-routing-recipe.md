@@ -8,7 +8,7 @@ See the field manual's [TD sounds from the base game](https://github.com/gibbo10
 TF's files: the `VOC_TD_*` entries in `redalert/defines.h`, the `SoundEffectName[]` entries in
 `redalert/audio.cpp`, and the merged `resources/remaster_mods/Vanilla_RA/Data/XML/AUDIO/SFXEVENTSNONLOCALIZED.XML`.
 Base files come out with `scripts/meg_extract.py`. TF ships no WAV for a routed TD sample, apart from copies of a
-few early ones (the Obelisk's laser among them); its own new sounds ship in
+few early ones (the Obelisk's laser and power-up, `OBELRAY1` and `OBELPOWR`); its own new sounds ship in
 `resources/remaster_mods/Vanilla_RA/Data/AUDIO/` under their own names.
 
 ---
@@ -55,33 +55,14 @@ The player switches classic and remastered sound at runtime in Options → Audio
 
 ## Reference precedent
 
-The Remastered Workshop mod **Reilsss's CnCinRA** (workshop ID `2853520457`) was the breakthrough source for this recipe. Their `DATA/XML/AUDIO/SFXEVENTSNONLOCALIZED.XML` already had `RAC_SFX_OBELRAY1` / `RAR_SFX_OBELRAY1` SFXEvents routing to `TDC_/TDR_SFX_OBELRAY1.WAV` — proving the pattern works in production. They ship 88 `.WAV` files this way, mostly TD assets re-aliased into RA mode.
-
-Their mod folder structure (at `<Steam library>/steamapps/workshop/content/1213210/2853520457/ReilsssCnCinRA/`; `scripts/steam_library.py` finds the library):
-
-```
-ReilsssCnCinRA/
-├── ccmod.json
-├── CCDATA/
-│   ├── a_rules.ini
-│   ├── aftrmath.ini
-│   ├── mplayer.ini
-│   └── EXPAND2.MIX
-└── DATA/
-    ├── ART/...
-    ├── XML/
-    │   ├── OBJECTS/
-    │   ├── TILESETS/
-    │   └── AUDIO/
-    │       └── SFXEVENTSNONLOCALIZED.XML
-    └── AUDIO/
-        ├── RAC_SFX_*.WAV  (88 files — TD audio re-aliased)
-        ├── EN-US/
-        ├── DE-DE/
-        └── FR-FR/
-```
-
-Their pattern names files with the RA prefix directly (`RAC_SFX_OBELRAY1.WAV`) rather than keeping TD names. Both approaches work — our pattern keeps `.WAV` filenames as TD originals and uses the SFXEvent `<SampleNamesList>` to bridge, which makes provenance clearer in the file tree.
+Reilsss's CnCinRA (Workshop item `2853520457`, folder `ReilsssCnCinRA/` in the Workshop cache, which
+`scripts/steam_library.py` finds) routes TD sounds the same way: its `DATA/XML/AUDIO/SFXEVENTSNONLOCALIZED.XML` has
+`RAC_SFX_OBELRAY1` and `RAR_SFX_OBELRAY1` pointing at `TDC_/TDR_SFX_OBELRAY1.WAV`. It ships its other sounds as loose
+WAVs under RA's own stock sample names (`DATA/AUDIO/RAC_SFX_*.WAV` and `RAR_SFX_*.WAV`, about 85, such as `BUILD5`,
+`CASHUP1`, `RADARON2` and the `DEDMAN` deaths, beside `EN-US/`, `DE-DE/` and `FR-FR/`), so each replaces RA's sample
+everywhere it plays. They are mostly TD audio, by an earlier survey not rechecked sample by sample. Beside them sit `DATA/ART/` (`MOVIES/`, `TEXTURES/`), `DATA/XML/OBJECTS/` and `TILESETS/`,
+`DATA/ModText.csv`, and `CCDATA/` holding `a_rules.ini`, `aftrmath.ini`, `mplayer.ini` and `EXPAND2.MIX`. TF
+instead keeps TD's own sample names and bridges them in `<SampleNamesList>`, so a file's origin shows in its name.
 
 ---
 
@@ -97,25 +78,31 @@ base sample on the same channel. Every TF sound ships under its own new name, so
 ---
 
 ## EVA voice (VoxType) faction routing
-44-voice catalogue, GDI+Nod share. Speak(VOX_X) -> On_Speech (dllinterface.cpp) consults `SpeechTD[]`
-(audio.cpp): if `player_ptr->ActLike == HOUSE_GOOD||HOUSE_BAD` and `SpeechTD[X]!=NULL`, send the
-TD-prefixed name (e.g. TDIONCHRG1); else Speech[X]. Launcher resolves `RAC_SFX_TD<NAME>` /
-`RAR_SFX_TD<NAME>` in mod SFXEVENTSLOCALIZED.XML -> base-shipped `TDC_/TDR_SFX_EVA_<NAME>_EN-US.MP3`
-(no WAV reship). Shared semantic VOX: keep enum, set SpeechTD[]. TD-only events: new VOX_TD_* enums,
-Speech[]="TD<NAME>". VoxType backing bumped char->short (>127 entries).
+
+The launcher side (`RAC_SFX_TD<NAME>` and `RAR_SFX_TD<NAME>` events in the mod's `SFXEVENTSLOCALIZED.XML`, pointing
+at the base game's `TDC_/TDR_SFX_EVA_<NAME>_EN-US.MP3`, so no WAV ships) and the widened enum are on the field manual's
+[TD sounds from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-sounds-from-the-base-game.md#the-method), The method.
+TF's `VoxType` is `: short` (`redalert/defines.h`), for its `VOX_TD_*` and `VOX_TS_*` entries.
+
+The DLL picks the name in `On_Speech` (`redalert/dllinterface.cpp`) by the player's `ActLike`:
+- **TS GDI** sends `SpeechTS[X]` (`Init_SpeechTS`, `redalert/audio.cpp`), or nothing if that slot is NULL.
+- **GDI and Nod** (`HOUSE_GOOD`, `HOUSE_BAD`) send `SpeechTD[X]` (`Init_SpeechTD`, such as `TDACCOM1`) when it is set,
+  `Speech[X]` when that name already starts with `TD`, and nothing otherwise.
+- **Allies and Soviets** send `Speech[X]`, or `SpeechRAO[X]` (`Init_SpeechRAO`, such as `RAOSTRUSLD1`): the name of an
+  audible loose copy, for a line whose stock sample TF ships as a silent stub to mute the launcher's own auto-fire.
+
+A line both eras share keeps its RA enum and gets a `SpeechTD[]` slot. A TD-only line gets a new `VOX_TD_*` enum whose
+`Speech[]` name is `TD<NAME>`.
 
 ### EVA lines the launcher plays
 
-Shipped in 5.0.0. Lifts the last limit of the EVA era-mailbox: ClientG caches each localized sample once per boot,
-so a faction switch WITHOUT relaunching kept the stale voice on already-heard lines. The DLL now
-overwrites the cached blob in ClientG's memory at match start, so all nine launcher-owned EVA
-lines in `tf_eva_mailbox.h` (`BCT1`, `MISNLST1`, `MISNWON1`, `NODEPLY1`, `NOPOWR1`, `PROGRES1`,
-`REPAIR1`, `SAVE1`, `SLCTTGT1`, each on both audio channels) follow the picked faction across an
-in-session switch. Structure-sold is not one of them: the DLL routes it (`SpeechTD` / `SpeechTS` in
-`audio.cpp`). **Verified in play, both directions, on cannot-deploy, mission-accomplished,
-mission-failed and battle-control-terminated, no crash.** Promoted to shipping (runs in release builds; logging is
-`TF_DEV_BUILD`-only). Code: `TF_Patch_ClientG_Cache` / `TF_Replace_File_In_Process`,
-`dllinterface.cpp`.
+The nine launcher-owned EVA lines in `tf_eva_mailbox.h` (`BCT1`, `MISNLST1`, `MISNWON1`, `NODEPLY1`, `NOPOWR1`,
+`PROGRES1`, `REPAIR1`, `SAVE1`, `SLCTTGT1`, each on both audio channels) follow the picked faction, across a faction
+switch within one session too: at match start the DLL writes the faction's recording over the seed files and over
+ClientG's cached copy of each. Structure-sold is not one of them: the DLL routes it (`SpeechTD` / `SpeechTS` in
+`audio.cpp`). Verified in play in both directions on cannot-deploy, mission-accomplished, mission-failed and
+battle-control-terminated. It runs in release builds; its logging is `TF_DEV_BUILD`-only. Code:
+`TF_Patch_ClientG_Cache` / `TF_Replace_File_In_Process`, `dllinterface.cpp`.
 
 #### How the cache patch works
 
@@ -141,21 +128,19 @@ method section.
    caches TF's bytes. A deploy must never `--delete` them.
 5. **A line is cacheable only after it has played.** `BCT` is fixed at the next match start.
 6. **Never write on a needle alone.** Where the stale copies come from is on the EVA page's Traps; the patch
-   zeroes its own buffers before freeing them. The crash this fixed:
-   after a TS GDI match then a TD match, the TD write of `TF_MBX_TD_NODEPLY_R.WAV` at `0x378b9468` spanned the
-   heap block at `+976`, and ClientG's heap tripped over it on the next skirmish load.
+   zeroes its own buffers before freeing them. Without the whole-recording compare, the TD write of
+   `TF_MBX_TD_NODEPLY_R.WAV` after a TS GDI match landed across a freed heap block (at `+976` into the write), and
+   ClientG's heap failed on the next skirmish load.
 
 #### Shipping notes
 
-- The patch runs in release builds and degrades to the disk-mailbox voice (first-fire-correct,
-  stale-on-switch) when the process, a needle or a whole payload is not found, or a write is
-  refused. Its writes are memory writes into a live process, so the whole-payload check (finding
-  6) is what keeps it from crashing ClientG. Diagnostic logging (`tf_cache_probe.log`) is
-  `TF_DEV_BUILD`-only: `PATCH OK` = replaced, `PATCH FAIL` = left alone.
+- When the process, a needle or a whole payload is not found, or a write is refused, the patch leaves memory alone
+  and the line keeps the seed-file voice (right on its first play in a session, stale after a switch).
+  Diagnostic logging (`Documents/CnCRemastered/tf_cache_probe.log`) is `TF_DEV_BUILD`-only: `PATCH OK` = replaced,
+  `PATCH FAIL` = left alone.
 - `scripts/eva_mailbox_payload.py` builds one TD + RA payload pair and prints its needle lines.
-- Needles/offsets are regenerated whenever a payload is re-padded (the re-encode/pad changes the
-  bytes). The generator picks a high-entropy 20-byte slice from the real audio (never the leading
-  silence) and records its file offset.
-- Cross-process `WriteProcessMemory` in a shipped mod could in principle trip aggressive AV/anti-
-  cheat, but it targets only positively-identified sample blobs in the sibling game process the
-  DLL already reads. No issue observed.
+- Needles and offsets are regenerated whenever a payload is re-padded (the re-encode or pad changes the bytes). The
+  generator picks a high-entropy 20-byte slice from the real audio (never the leading silence) and records its file
+  offset.
+- Cross-process `WriteProcessMemory` in a shipped mod could in principle trip aggressive AV or anti-cheat, but it
+  targets only positively identified sample blobs in the sibling game process the DLL already reads. No report of it.

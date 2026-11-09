@@ -4,7 +4,9 @@
 
 How to publish or update `cnc-ra-tiberian-factions` on the Steam Workshop (App `1213210`).
 
-The canonical tool is our own Linux-native uploader at `tools/workshop-uploader/`. No Wine, no Windows, no Deck needed.
+The canonical tool is TF's own Linux-native uploader at `tools/workshop-uploader/`. No Wine, no Windows, no Deck needed.
+It follows the SteamUGC sequence of EA's map editor (`SOURCECODE/CnCTDRAMapEditor/Utility/SteamworksUGC.cs` in the
+game install), the one official publisher for this app that works.
 
 ---
 
@@ -12,10 +14,8 @@ The canonical tool is our own Linux-native uploader at `tools/workshop-uploader/
 
 A Steam client that has been running a while hangs the upload silently at "preparing config" (Steam logs `Upload starting`, then nothing): see the field manual's [Publishing to the Workshop from Linux](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/publishing-to-the-workshop-from-linux.md#traps), Traps.
 
-1. In Steam's menu bar: `Steam → Exit` (full exit, not just close window).
-2. Wait ~10 seconds for background helpers to die.
-3. Relaunch Steam, log in if prompted.
-4. Confirm Steam is up before continuing.
+`Steam → Exit` (a full exit, not closing the window), wait about 10 seconds for the background helpers to end,
+relaunch and log in, and confirm Steam is up before continuing.
 
 ---
 
@@ -39,11 +39,9 @@ Check anything new in the release, a pack, a feature or a page, against EA's C&C
 promotion. The packagers run `scripts/ea_guidelines_check.py` and refuse a release that fails it.
 
 Ask explicitly whether anything should stay **unannounced**. That is not derivable from the
-CHANGELOG: easter eggs are meant to stay quiet, and some fixed surfaces are ones he would rather
-not draw attention to. The changelog is the engineering record; the listing is the shopfront.
-
-Publishing first and correcting after means editing live on a public page. It happened on 4.1.0
-and cost six edits across five re-uploads.
+CHANGELOG: easter eggs are meant to stay quiet, and some fixed surfaces are better left unmentioned.
+The changelog is the engineering record; the listing is the shopfront. Publishing first and
+correcting after means editing a live public page, one re-upload per fix.
 
 ### 1. Prepare the release on main, in the main checkout
 
@@ -125,8 +123,7 @@ this wrong makes a point release read as a milestone in the listing.
 python3 -c "import json;print(len(json.load(open('tools/workshop-uploader/workshop.json'))['description']))"
 ```
 
-Hit 2026-07-22 on the 4.1.0 publish at 8660 characters. When a new version block pushes it over,
-collapse the oldest per-version changelog blocks to a one-line summary each; the listing already
+When a new version block pushes it over, collapse the oldest per-version changelog blocks to a one-line summary each; the listing already
 links the full changelog on GitHub.
 
 ### 3b. (Optional) Refresh preview screenshot
@@ -134,7 +131,7 @@ links the full changelog on GitHub.
 Pull a fresh in-game shot from the Deck:
 
 ```bash
-ssh deck@steamdeck "ls -t /home/deck/.steam/steam/userdata/42346487/760/remote/1213210/screenshots/*.jpg | head -1" \
+ssh deck@steamdeck "ls -t /home/deck/.steam/steam/userdata/*/760/remote/1213210/screenshots/*.jpg | head -1" \
   | xargs -I{} scp deck@steamdeck:{} tools/workshop-uploader/preview.jpg
 ```
 
@@ -169,7 +166,7 @@ Time scales with upload bandwidth. 89 MB takes ~21s on a ~50 Mbit upstream.
 3. Subscribe via Steam and let it sync. Verify the mod folder appears at:
    - **Deck:** `/home/deck/.steam/steam/steamapps/compatdata/1213210/pfx/drive_c/users/steamuser/Documents/CnCRemastered/Mods/Red_Alert/<itemid>/`
 4. Launch the game (on the Deck), enable the mod, smoke-test the headline feature.
-5. If self-test passes: promote visibility to Public via the Workshop website's Owner Controls panel (no need to re-run the uploader for visibility-only changes).
+5. For a new item, once the self-test passes: make it Public from the item's Owner Controls on the Workshop page (no need to re-run the uploader for a visibility-only change).
 
 ### 6. Tag, GitHub release, post-release bump
 
@@ -248,8 +245,8 @@ Accept the Workshop agreement: see the field manual's [Publishing to the Worksho
   the DLL return addresses on the faulting thread's stack.
 - **A ClientG crash can still be ours** (the manual's Traps list the causes, and why a DLL reaches Direct3D only
   through the launcher). TF's does, through ClientG's own texture (`tf_launcher.cpp`: `GetDevice`,
-  `UpdateSubresource`), and it patches ClientG's memory and code; TF's own EVA cache
-  patch once wrote over heap headers on skirmish load (fixed in 5.0.0).
+  `UpdateSubresource`), and it patches ClientG's memory and code: the EVA cache patch writes into
+  ClientG's heap (`td-audio-routing-recipe.md`).
 - **There is no graphics or VRAM setting to offer.** `GAMECONSTANTS.XML` has none, and the
   mod's UI atlas is the same size as EA's (about 184 MB).
 - **Workshop comments are capped at 1,000 characters.** Draft replies to fit.
@@ -259,11 +256,6 @@ Accept the Workshop agreement: see the field manual's [Publishing to the Worksho
 ## Don't-dos
 
 - Don't re-create the item shell for an existing release — `publishedfileid` is allocated once per item.
-- Don't pursue EA's `Uploader.exe` (the field manual's [Publishing to the Workshop from Linux](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/publishing-to-the-workshop-from-linux.md#routes-that-dont-work), Routes that don't work). Our tool is easier to diagnose.
+- Don't pursue EA's `Uploader.exe` (the field manual's [Publishing to the Workshop from Linux](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/publishing-to-the-workshop-from-linux.md#routes-that-dont-work), Routes that don't work). TF's tool is easier to diagnose.
 - Don't commit `tools/workshop-uploader/preview.jpg` or per-release `workshop.json` if they contain machine-absolute paths or release-specific descriptions; prefer relative paths so the JSON is portable.
 
----
-
-## Historical context
-
-- 2026-05-20: First Workshop publish for this mod (v0.3.0). EA's `Uploader.exe` ruled out after it hung across Windows / Wine / Proton (never retried after a Steam restart). Built our own C# uploader using `Steamworks.NET`, mirroring the SteamUGC sequence in `<Steam library>/steamapps/common/CnCRemastered/SOURCECODE/CnCTDRAMapEditor/Utility/SteamworksUGC.cs` (EA's MapEditor — the only working official Workshop publisher for this app). The uploader hung on the same "preparing config" symptom EA's tool produces until a Steam restart cleared it, hence Step 0.

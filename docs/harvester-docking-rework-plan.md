@@ -46,23 +46,23 @@ Traps:
 
 | Aspect | RA: UNIT_HARVESTER → STRUCT_REFINERY (vanilla) | TD: UNIT_TDHARV → STRUCT_TDPROC |
 |---|---|---|
-| Dock cell | DIR_S of center — `building.cpp:435-437` | DIR_SW of center — `building.cpp:439-452` |
-| Drive-in | turn DIR_W, stay on dock cell, tether — `unit.cpp:901-915` | turn DIR_SW, `Force_Track(BACKUP_INTO_REFINERY, Adjacent_Cell(Center,FACING_N))` drives INTO footprint — `unit.cpp:876-899` |
-| Attach trigger | none — harvester stays visible on the dock cell | `Per_Cell_Process` cell-match → `RADIO_IM_IN` → `RADIO_ATTACH` → `Mark(MARK_UP); Limbo(); whom->Attach(this)` — `unit.cpp:1962-1996` |
-| Building RADIO_IM_IN | `from->Assign_Mission(MISSION_UNLOAD); return RADIO_ROGER` — `building.cpp:326-329` | `Begin_Mode(BSTATE_ACTIVE); Assign_Mission(MISSION_HARVEST); return RADIO_ATTACH` — `building.cpp:331-345` |
-| Who unloads | the **harvester** runs `Mission_Unload` — `unit.cpp:2947-2974` | the **building** runs `Mission_Harvest_TD` — `building.cpp:5400-5492` |
-| Unload model | one-shot: `House->Harvested(Credit_Load())` when dump anim ends | bail-by-bail: `Offload_Tiberium_Bail()` per cycle — `unit.cpp:5530-5586` |
-| Cadence driver | harvester dump anim (`Rule.OreDumpRate`, 22-frame `Harvester_Dump_List`) | **building animation** reaching its last frame sets `IsReadyToCommence` — `building.cpp:7560-7590` |
-| Refinery anim | **NONE** — only static `BSTATE_IDLE` (1 frame) + `BSTATE_FULL` flashing lights. No ACTIVE/AUX1/AUX2 rows in `bdata.cpp` (`ClassRefinery`, line 1491). | full cycle — `bdata.cpp:3944-3948` (ACTIVE 12,7,4 / AUX1 19,5,4 / AUX2 24,6,4 / IDLE / FULL) |
+| Dock cell | DIR_S of center (`BuildingClass::Receive_Message`, the docking reply) | DIR_SW of center (the same reply) |
+| Drive-in | turn DIR_W, stay on dock cell, tether (`UnitClass::Receive_Message`) | turn DIR_SW, `Force_Track(BACKUP_INTO_REFINERY, Adjacent_Cell(Center,FACING_N))` drives INTO footprint (the same) |
+| Attach trigger | none — harvester stays visible on the dock cell | `UnitClass::Per_Cell_Process` cell-match → `RADIO_IM_IN` → `RADIO_ATTACH` → `Mark(MARK_UP); Limbo(); whom->Attach(this)` |
+| Building RADIO_IM_IN | `from->Assign_Mission(MISSION_UNLOAD); return RADIO_ROGER` (`BuildingClass::Receive_Message`) | `Begin_Mode(BSTATE_ACTIVE); Assign_Mission(MISSION_HARVEST); return RADIO_ATTACH` (the same) |
+| Who unloads | the **harvester** runs `UnitClass::Mission_Unload` | the **building** runs `Mission_Harvest_TD` (TD's `BuildingClass::Mission_Harvest`, ported) |
+| Unload model | one-shot: `House->Harvested(Credit_Load())` when dump anim ends | bail-by-bail: `Offload_Tiberium_Bail()` per cycle |
+| Cadence driver | harvester dump anim (`Rule.OreDumpRate`, 22-frame `Harvester_Dump_List`) | **building animation** reaching its last frame sets `IsReadyToCommence` |
+| Refinery anim | **NONE** — only static `BSTATE_IDLE` (1 frame) + `BSTATE_FULL` flashing lights. No ACTIVE/AUX1/AUX2 rows in `bdata.cpp` (`ClassRefinery`). | full cycle in `bdata.cpp` (ACTIVE 12,7,4 / AUX1 19,5,4 / AUX2 24,6,4 / IDLE / FULL) |
 | Harvester during unload | **visible**, animated tip-up | **invisible** (Limbo'd, attached cargo) |
-| Capture grabs harvester? | NO — radio contact only, distance-gated path may eject it — `building.cpp:4260-4271` | YES — `Attached_Object()` → `tech->Captured(newowner)` — `building.cpp:4251-4253` |
-| Exit | instant respawn at dock cell | `Exit_Object(Detach_Object())` → `Unlimbo` + `Force_Track(OUT_OF_REFINERY)` — `building.cpp:2720-2754` |
+| Capture grabs harvester? | NO — radio contact only, and the distance-gated path may eject it (`BuildingClass::Captured`) | YES — `Attached_Object()` → `tech->Captured(newowner)` (the same) |
+| Exit | instant respawn at dock cell | `Exit_Object(Detach_Object())` → `Unlimbo` + `Force_Track(OUT_OF_REFINERY)` (`BuildingClass::Exit_Object`) |
 
 ## Dock time
 
-Vanilla RA dumped a full load in one shot. Every path was first tuned to the ~588-tick TD dock time
-(28 bails), then `HARV_DOCK_BAILS_PER_CYCLE` = 2 halved all four pairings together: animation cadence
-unchanged, fewer cycles, credits per load unchanged. Keeping the same value on every pairing keeps
+Vanilla RA dumps a full load in one shot. Every pairing runs off `HARV_DOCK_BAILS_PER_CYCLE`: at 1 it takes TD's
+~588-tick dock time (28 bails), and the shipped 2 halves all four pairings together: animation cadence unchanged,
+fewer cycles, credits per load unchanged. Keeping the same value on every pairing keeps
 the RA and TD economies equal, which is what makes cross-faction unit balance tractable. 1 =
 TD-matched, 4 = close to RA's instant dump.
 
@@ -90,8 +90,8 @@ TD-matched, 4 = close to RA's instant dump.
 ## Recovery lessons that apply to docking
 - **Two detectors, and only one blacklists.** The ore no-progress detector owns field blacklisting
   (A* reachability); the position watchdog owns physical un-sticking and idle restart and must not
-  blacklist, because it can't tell an unreachable field from a wedged harvester (it poisoned good
-  fields: 151 skips, down to 4 once it stopped).
+  blacklist, because it can't tell an unreachable field from a wedged harvester (a blacklisting watchdog poisoned
+  good fields: 151 skips, against 4 without).
 - **Most "stuck" harvesters on the shipped maps are terrain** (cliff- or water-separated ore, narrow
   gaps), not infantry pins.
 - **A* can report a short path a harvester can't physically thread** through a packed base, which

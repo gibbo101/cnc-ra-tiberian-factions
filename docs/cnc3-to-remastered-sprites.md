@@ -8,7 +8,7 @@ Kane's Wrath's Militant and Cyborg.
 How to pull a unit out of Command & Conquer 3: Tiberium Wars (models, textures, audio,
 stats) and turn it into HD sprites for a C&C Remastered Collection mod. Written for an AI
 coding agent to follow. Every fact here was verified on the GDI Mammoth Tank and Predator
-Tank (Steam release, patch 1.9, 2026) and the Scorpion Tank, except where a line says it is unverified. No
+Tank (Steam release, patch 1.9) and the Scorpion Tank, except where a line says it is unverified. No
 external modding tools are needed: Python 3 with numpy and Pillow, plus ffmpeg for audio.
 
 **Legal:** EA's assets come from your own install. Ship them in your mod on the same terms as
@@ -34,8 +34,7 @@ Militant (`NUMILTNB_SKN`) has a new mesh and texture, so take a unit from the ga
 
 There are no W3X or DDS files on disk. EA's asset builder compiled everything into binary
 "asset streams" packed inside the `.big` archives. (Audio has patch streams too, in
-`Core/1.5`, `Core/1.7`, `EnglishAudio/1.5` and `EnglishAudio/1.7`; the 1.0 audio was enough
-for these two units, and the audio patch chain was not checked.)
+`Core/1.5`, `Core/1.7`, `EnglishAudio/1.5` and `EnglishAudio/1.7`: see Audio in section 5.)
 
 ## 2. Reading the archives
 
@@ -378,10 +377,10 @@ rather than using Blender: you need exact control of camera, light and colour.
   Leave near-white, low-saturation texels white (unit numbers, the GDI eagle): the mask is
   scaled by `1 - clip((lum - 170)/40, 0, 1) * clip(1 - 3*sat, 0, 1)`, `sat = (max-min)/max`.
 - **Sprite ZIP:** `ART/TEXTURES/SRGB/RED_ALERT/UNITS/<NAME>.ZIP` holding one
-  `<name>-NNNN.tga` + `<name>-NNNN.meta` per frame. The meta is
-  `{"size": [W, H], "crop": [x0, y0, x1, y1]}`. The launcher anchors the **canvas centre**
-  on the unit, so compose each frame centred on the canvas; the crops are also made
-  centre-symmetric (the crop centre equals the canvas centre) as insurance.
+  `<name>-NNNN.tga` + `<name>-NNNN.meta` per frame, in the form and with the **canvas-centre**
+  anchor of the field manual's
+  [How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#the-frame-and-its-meta);
+  the crops are also made centre-symmetric (the crop centre equals the canvas centre) as insurance.
   Canvas = ShapeSize x 8 (8x classic density) keeps real pixels for the zoom levels. Ours:
   Mammoth ShapeSize 64 (512 canvas), Predator 48 (384).
 - **Tileset XML:** one `<Tile>` per shape number in `RA_UNITS.XML` (`<Key><Name>C3MK3</Name>
@@ -453,24 +452,22 @@ rather than using Blender: you need exact control of camera, light and colour.
   and pick `facing * steps + ((frame + unitID) / rate) % steps` while the unit is driving and
   not rotating in place (step 0 otherwise). Size the rate so a link travels about as fast as
   the ground (1 canvas px = 4/3 leptons). Unverified: no rate has been tuned in play yet.
-- **Shape cap:** a second draw on an object (the turret) renders NOTHING for shape numbers
-  128 and above. Keep turret frames below 128: 32 facings x 3 tread steps = 0-95, turret
-  96-127.
+- **Shape cap:** a second draw (the turret) renders nothing from shape 128 up (the field manual's
+  [How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#rules)).
+  Keep turret frames below 128: 32 facings x 3 tread steps = 0-95, turret 96-127.
 - **Fire points:** project each muzzle bone through the render camera per turret facing and
   emit leptons (1 packed canvas px = 4/3 leptons), measured from the turret's ground point
   (the muzzle's height folds into the north-south offset, as the camera draws it). Fire
   coordinate = unit centre + seat (in leptons, indexed by `Dir_To_32` of the hull facing) +
   muzzle offset (indexed by `Dir_To_32` of the turret facing).
-- **Audio:** loose WAVs under their own (new) sample names resolve; the WAV must be
-  MS-ADPCM, because plain PCM crashes the Remastered client. ffmpeg's cdata output is PCM, so
-  re-encode: `ffmpeg -i in.wav -c:a adpcm_ms -ar 22050 -ac 1 out.wav` matches the weapon-SFX
-  channel. Check the format against a stock sample on the same channel before shipping.
-  New names are proven in play for other games' units (the RA2 tanks' voices and weapons
-  ship as `R2*.WAV` in `Data/AUDIO/`). Each sound needs `RAC_SFX_<NAME>` and `RAR_SFX_<NAME>`
-  events in `SFXEVENTSNONLOCALIZED.XML`; an event listing several `<entry>` WAVs plays one of
-  them per trigger, which suits C&C3's many cannon takes. The DLL side is a VOC enum value
-  plus a row in `audio.cpp`'s sound table, and the two are ORDER-COUPLED: append to both in
-  the same order or every later sound shifts.
+- **Audio:** ffmpeg's cdata output is PCM, which crashes the Remastered client, so re-encode it
+  and route it as the field manual's
+  [TD sounds from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-sounds-from-the-base-game.md#samples-of-your-own)
+  sets out: the MS-ADPCM format and its ffmpeg line, the `RAC_SFX_`/`RAR_SFX_` events, and the VOC enum value
+  and `audio.cpp` table row kept in the same order ([the method](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-sounds-from-the-base-game.md#the-method)).
+  Check the format against a stock sample on the same channel before shipping. An event listing several
+  `<entry>` WAVs plays one of them per trigger, which suits C&C3's many cannon takes. The RA2 tanks' voices
+  and weapons ship this way as `R2*.WAV` in `Data/AUDIO/`.
 
 ## 9. Converting stats to RA scale
 

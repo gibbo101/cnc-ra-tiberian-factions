@@ -1,6 +1,6 @@
 # Chokepoint give-way and corridor claims
 
-**Status:** Reference; shipped in 2.3.0.
+**Status:** Reference; shipped in 2.3.0, a switch since 5.7.0 (`player-settings.md`, Give way).
 **Open:** a vehicle head-on in a one-cell gap with no escape cell, scatter churn on a unit that
 re-paths straight back (`known-issues.md`).
 
@@ -21,7 +21,7 @@ Vehicles crossing a 1-wide pinch in opposite directions no longer deadlock. Thre
   head-on case counts only when the blocking cell holds an allied unit, never bare terrain, or
   units would jiggle against cliffs.
 
-## The problem (confirmed, not theorised)
+## The problem
 
 Two vehicle columns cross a **1-tile-wide × 3-tile-high terrain pinch** (snow map: gap between the
 frozen lake/rocks and the map edge, around cell `x126`, `y50-53`) in **opposite directions** at the
@@ -31,7 +31,7 @@ has no head-on rule and they stack 5 sub-cell, so they slip past; this is **vehi
 
 ### The engine mechanism
 The head-on `MOVE_NO` rule and the `MoveType` ratings: see the field manual's [Pathfinding](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/pathfinding.md#vehicles-jam-head-on), Vehicles jam head-on.
-In TF the rule sits at `unit.cpp:~3649-3678` (verified by the `HEADON` diagnostic, 1000s of hits). A moving ally
+In TF the rule sits in `UnitClass::Can_Enter_Cell` (`unit.cpp`; the `HEADON` diagnostic logged thousands of hits). A moving ally
 rates `MOVE_MOVING_BLOCK` (2), which TF's A\* routes through; a stationary one `MOVE_TEMP` (4); the head-on case
 `MOVE_NO` (5). On a 1-wide pinch the head-on `MOVE_NO` makes A\* fail and the legacy crash-and-turn oscillate for
 good. `HEADON:` lines in `tf_astar.log` record it.
@@ -46,7 +46,7 @@ All in `DriveClass`. Vehicles only. Deterministic (`As_Target()` ids, no `Random
   predictive scan:
   - Walks the unit's **actual `Path[]`** through the terrain (NOT a straight line to NavCom — a route
     to an off-axis/inland goal bends down the pinch first, and a straight-line scan walks diagonally
-    off the corridor and misses it. This was a real bug; path-following fixed it).
+    off the corridor and misses it).
   - Finds the 1-wide corridor on the route (`narrow` = both perpendicular cells impassable terrain),
     tracks `corridor_start` (our distance to the near mouth) and `corridor_end` (far mouth).
   - **Occupancy rule:** an opposing allied vehicle **inside** the corridor → we yield (it owns it).
@@ -59,7 +59,7 @@ All in `DriveClass`. Vehicles only. Deterministic (`As_Target()` ids, no `Random
     heading** — otherwise a unit mid-retreat reads its own same-direction followers as oncoming
     traffic (the "APC giving way to the tank behind it" wedge). The **scan direction** uses current
     NavCom (so a retreat actually executes); the **opposing test** uses intent. Conflating these two
-    caused a 903-event retreat storm — they MUST stay separate.
+    gives a retreat storm (903 events in one match) — they MUST stay separate.
   - **Form:** HOLD on open ground (`!here_narrow`) = "stop before the bridge"; RETREAT if caught
     inside the pinch (`here_narrow`) = back out via `Find_Give_Way_Cell`, then it flips to HOLD on
     open ground. A unit nose-to-nose with the winner (`head_on_ahead`) retreats even on open ground:
@@ -85,18 +85,18 @@ All in `DriveClass`. Vehicles only. Deterministic (`As_Target()` ids, no `Random
   a unit stops yielding; `HoldFrames` resets on any non-hold and on a cell advance. The patient queue
   scans all 8 neighbours, because the cell toward an off-axis goal can be terrain while the busy
   pinch is off to the side.
-  - ⚠️ **Recursion hazard:** `DriveClass::Assign_Destination` re-enters
-    `Start_Of_Move` for a stationary unit, so a RETREAT whose nested evaluation again decides
-    RETREAT recursed unboundedly — `EXCEPTION_STACK_OVERFLOW` at ~1,500 frames deep in a fully
-    jammed pinch (2026-08-01 DOCKLANDS crash dump). Guarded by `giveway_retreat_depth`: the
-    retreat-triggered nested pass skips give-way evaluation and paths straight to the yield cell.
-    Give-way is stateless-per-tick, so the skipped evaluation costs nothing.
+  - ⚠️ **Recursion hazard:** a RETREAT whose nested `Start_Of_Move` again decides RETREAT recurses
+    unboundedly (the field manual's
+    [Giving up on a hopeless path](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/pathfinding.md#giving-up-on-a-hopeless-path),
+    Guard recursion in give-way); it overflowed the stack (`EXCEPTION_STACK_OVERFLOW`) in a fully jammed pinch on Docklands. Guarded by
+    `giveway_retreat_depth`: the retreat-triggered nested pass skips give-way evaluation and paths straight to the
+    yield cell. Give-way is stateless-per-tick, so the skipped evaluation costs nothing.
 - **No-path sidestep (safety net)** lower in the no-path branch, opposing-guarded.
 - **Diagnostics (`TF_DEV_BUILD`, → `tf_astar.log`):** `HEADON:` (every head-on MOVE_NO),
   `CHOKE:` (every no-path branch: branch taken + `towardNav`/`aheadFacing` MoveType + try count),
   `GIVEWAY-retreat:`, `CLAIM:`, `HOLD-claim:`, `HOLD-unit:`, `SCATTER-deadlock`.
 
-### Why give-way alone was not enough
+### Why give-way alone is not enough
 Every remaining failure is **near-simultaneous entry → boxed-column reversal**: both leads enter the
 pinch before either is established as owner; the losing column must fully reverse, but the front unit
 can't back up until its own followers do, cascading from the rear. Stateless units have **no shared
@@ -110,11 +110,11 @@ boxed loser while the winner shoves), and a distance tiebreak flaps every tick (
 
 A full WHCA\* space-time grid was rejected for invasiveness and cost (a cell×tick structure, `Find_Path`
 rewritten to consult it and emit waits, the legacy fallback, harvesters and production exits all
-untangled). OpenRA itself is occupancy plus local avoidance plus repath. The claim makes corridor
+untangled). OpenRA itself is said to be occupancy plus local avoidance plus repath (not checked against its source). The claim makes corridor
 ownership explicit and atomic at the moment of commitment, the one thing per-tick inference lacked, and
 the give-way HOLD machinery reads it.
 
-### MP sync is NOT the blocker (the key realisation)
+### MP sync is not a blocker
 Only the host simulates, so a reservation in the sim reaches every player with no sync step: see the field
 manual's [LAN games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/lan-games.md#one-simulation-on-the-host). The original game ran every client's sim in lockstep, and desynced only from a short,
 auditable foot-gun list; the code keeps to it, so it stays deterministic:
@@ -123,8 +123,8 @@ auditable foot-gun list; the code keeps to it, so it stays deterministic:
 2. **Prefer int over float.** Our A\* uses `float` costs — fine on the identical 32-bit Windows DLL all
    clients run, but the reservation logic should be int to be safe. Original engine used fixed-point
    partly for this.
-3. **No dependence on `unordered_map`/hash iteration order** for any synced result. (Our A\* uses it
-   only for lookups, not result order — keep it that way.)
+3. **No dependence on `unordered_map`/hash iteration order** for any synced result. (TF's A\* uses no hash map:
+   its visited set is a per-cell table.)
 4. **Initialise all memory; no pointer-address-order comparisons.**
 
 Claims are transient: whatever a save holds ages out within the TTL.

@@ -45,8 +45,8 @@ All granted by a host building, the Ion Cannon pattern, in `HouseClass` (`house.
 ## Ship art from 3D models
 
 - **Image to model:** a clean hull view fed to an image-to-3D service (TRELLIS or Hunyuan3D-2) for a
-  GLB. Running TRELLIS locally needs more VRAM than this machine has.
-- **Render:** portable Blender (`~/blender-portable/blender`), `scripts/render_gunboat_facings.py <glb>
+  GLB. Running TRELLIS locally needs more VRAM than the dev machine has.
+- **Render:** a portable Blender build, `scripts/render_gunboat_facings.py <glb>
   <outdir> [bow_deg] [pitch] [scale]`: an orthographic camera at 54° elevation (a destroyer's
   foreshortening, 0.81 = sin 54°), 16 facings, transparent PNGs. The voxel fleet uses 32° instead
   (`ts-gdi-tree-plan.md`).

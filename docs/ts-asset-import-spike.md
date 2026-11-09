@@ -2,8 +2,8 @@
 
 **Status:** Reference; the pipeline shipped in 4.1.0.
 
-The TS art pipeline, proven on the Hover MLRS and the TS Power Plant. Extraction, the crop
-contract, the stub-size lever and the hover locomotor still hold; per-unit rules live in the
+The TS art pipeline, first proven on the Hover MLRS and the TS Power Plant; its extraction, crop
+contract, stub-size lever and hover locomotor are still current. Per-unit rules live in the
 `unit-art-placement` and `ts-to-ra-hd-art` skills and in `ts-gdi-tree-plan.md`.
 
 **Results that set the pattern:**
@@ -20,7 +20,7 @@ contract, the stub-size lever and the hover locomotor still hold; per-unit rules
   (`scripts/gen_stub_shp.py`) is the size lever for HD-only units, never a draw scale (the field manual's
   [HD tilesets and ZIPs](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/hd-tilesets-and-zips.md#size-comes-from-the-classic-shape)).
 
-## What shipped in the spike
+## The first two entities
 
 | Entity | Engine type | Art source | Notes |
 |---|---|---|---|
@@ -28,7 +28,7 @@ contract, the stub-size lever and the hover locomotor still hold; per-unit rules
 | **Tiberian Power Plant** (`TSPOWR`) | `STRUCT_TSPOWR` | `GTPOWR.SHP` + `GTPOWRMK.SHP` (TS-SHP, upscaled) | clone of RA POWR. Power=100, Cost=300, Str 750. |
 
 The `TS` IniName prefix is deliberate: it dodges the `TD`-prefix building HP-doubling
-hook (playbook §3.21) — TS Strength values are real HP.
+hook (`td-port-playbook.md` §3.21) — TS Strength values are real HP.
 
 ## The pipeline (all scripts in `scripts/`)
 
@@ -42,7 +42,8 @@ hook (playbook §3.21) — TS Strength values are real HP.
    painted as the launcher's team green. The fleet renders at the 32° camera with TS's own
    lighting (`--shade ts`); per-model settings are in `ts-gdi-tree-plan.md` and the skills.
    **Voxel +X = nose = east at yaw 0; `--yaw0 90` puts frame 0 north; frames advance
-   CCW** (verified against vanilla 2TNK HD frames: 0=N, 8=W).
+   CCW**, the order in the field manual's
+   [Porting art from other C&C games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#the-camera-and-facings).
 3. **Decode TS SHPs** — `scripts/ts_shp.py <shp> <pal> <outdir>` (TS-SHP format,
    RLE-zero scanlines, remap 16–31 → team-green). GTPOWR frames: 0 healthy, 1 damaged,
    2 more wrecked (TS never draws it: `Shape_Number` picks 0 or 1), 3–5 their shadows (unused); GTPOWRMK: 0–19 the build-up, 20–39 its
@@ -96,7 +97,8 @@ What they cost here:
    construction anim).
 2. **Full-canvas TGAs** squeezed into the crop gave a per-frame squash (the MLRS sliver), per-frame drift (the
    Stealth Generator's sliding build-up) and undersized units; near-full-canvas content hid it (TSPOWR looked
-   almost right). Fixed in `scripts/ts_pack_art.py::write_zip`.
+   almost right). Write each frame cropped to its content, with that crop in its `.meta`, as
+   `scripts/ts_pack_hd_buildings.py`'s `write_zip` does.
 3. **Audio:** a plain PCM WAV played a few times before it crashed the launcher.
 4. **Unit drop shadows = the hull silhouette offset down-right** by a fixed 4,22 canvas px
    (8 per classic px, `scripts/ts_reshadow.py`), never a fraction of the sprite, and never a squashed strip at
@@ -114,6 +116,6 @@ What they cost here:
 ## Legal note
 
 TS assets are EA copyright (2010 freeware ≠ redistribution license; TS was never
-GPL'd). EA's C&C modding guidelines license other C&C games' art, sounds and voices to
-mods, revocably, but no music file from any C&C game (`ea-modding-guidelines.md`). The
-mod ships TS art and sounds on that licence.
+GPL'd). The mod ships TS art and sounds on the licence EA's C&C modding guidelines give, which
+excludes music (`ea-modding-guidelines.md`, and the field manual's
+[Porting art from other C&C games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#when-you-need-this)).

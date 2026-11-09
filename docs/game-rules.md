@@ -104,8 +104,9 @@ per match (balanced, tank rush, air, naval, turtle).
 
 ## The screens
 
-- **Match rules:** a tab on the TIBERIAN FACTIONS SETTINGS page, which takes the main menu's HELP
-  button and is tabbed like the ADD-ONS screen. Its first tab is AUDIO; the rules tab comes later.
+- **Match rules:** the GAME RULES tab of the TIBERIAN FACTIONS SETTINGS page (`player-settings.md`), which
+  reads COMING SOON until the editor is built. The page's main-menu button sits under REPLAY / OBSERVER, in OPTIONS'
+  old row; OPTIONS takes HELP's row, and HELP shrinks to nothing (`scripts/bui_mainmenu_pack_notice.py`).
 - **Unit values:** home undecided. Proposed: the Faction Encyclopedia, which already has the
   faction tabs, the grouped list and live stats read from the mod's rules inside ClientG. The
   custom layer applies there too, so the shown values are the ones the next match uses.

@@ -1,6 +1,6 @@
 # Sidebar cameos as DDS
 
-**Status:** Design; shipped in 5.6.0. Staging writes DDS cameos. Every faction's cameos draw in the
+**Status:** Reference; shipped in 5.6.0. Staging writes DDS cameos. Every faction's cameos draw in the
 encyclopedia on the desktop, and Nod's sidebar.
 **Open:** a Deck check.
 

@@ -48,7 +48,7 @@ The `SubBlock.CRC` is Westwood's `CRCEngine` hash, in the field manual's
 
 Because MIX stores hashes, a raw listing is opaque. `tools/mixtool/mixnamedb_data.cpp` is a **29,075-entry** table — `{file_name, file_desc, ra_crc, ts_crc}`, derived from the XCC mix database (+ tomsons26). Its `ra_crc` column is exactly our `ww_crc`.
 
-`scripts/mix_namedb.py` parses that table into `{crc → (name, desc)}` and exposes `resolve(crc)`. After dropping zero-CRC rows it yields **11,798 RA names / 17,436 TS names**. Both `mix_tools.py list` and `ra_mix_extract.py list` now print resolved filenames automatically (soft import — they degrade to raw CRCs if the DB is unavailable).
+`scripts/mix_namedb.py` parses that table into `{crc → (name, desc)}` and exposes `resolve(crc)`. After dropping zero-CRC rows it yields **11,798 RA names / 17,436 TS names**. Both `mix_tools.py list` and `ra_mix_extract.py list` print resolved filenames (soft import — they degrade to raw CRCs if the DB is unavailable).
 
 ```
 scripts/mix_namedb.py --stats          # entry counts
@@ -68,9 +68,8 @@ Outer mixes hold inner mixes as ordinary entries: see the field manual's
 
 ## 7. MEG (Remastered bundles) — brief
 
-Reader `scripts/meg_extract.py`, repacker `scripts/meg_pack.py`. The 8-byte magic (`0xFFFFFFFF`/`0x8FFFFFFF` +
-version) is optional: EA's reader accepts its absence. The layout, and why a repack loads (nothing is
-checked, and a no-change repack is byte-identical), are in the field manual's [MEG and MIX archives](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/formats/meg-and-mix-archives.md#meg).
+Reader `scripts/meg_extract.py`, repacker `scripts/meg_pack.py`. The layout (with the optional 8-byte magic), and
+why a repack loads (nothing is checked, and a no-change repack is byte-identical), are in the field manual's [MEG and MIX archives](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/formats/meg-and-mix-archives.md#meg).
 Editing the base archive is reverted by Steam's verify. TF ships its `INSTANCES.XML` loose (`campaigns-page.md`);
 on the Deck, a broken mission def killed that mission's launch. The campaign model is `campaign-tabs-research.md`,
 and a shipped `CONFIG.MEG` is `config-meg-mod-delivery.md`.
@@ -129,7 +128,7 @@ scripts/mix_namedb.py 0xe6e4fbb4        # -> ctnk.shp
 
 ---
 
-## 10. Asset inventories (the four deep dives)
+## 10. Asset inventories
 
 Names/sizes only — we do **not** bulk-commit extracted EA bytes (see §11).
 

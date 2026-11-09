@@ -15,23 +15,20 @@ the co-op campaign row). Worth knowing before anyone finds the traces and gets h
 `<CoopCampaignType>` sits beside `<CampaignType>`; neither TF's CONFIG.MEG nor the base one holds
 `UI_CampaignMenu_CoOp`; and `PROGRESSIVECAMPAIGNFILES.XML` defines no co-op campaign.
 
-**Can we finish it? No — three independent walls, and two are things already proven impossible:**
+**The cut co-op mode can't be finished.** Hosting runs through EA's online coordinator and mods play over LAN only, so a working
+co-op button would start an *unmodded* match (the manual's row above). The other two gaps are untried, not walls:
 
-1. **The screen cannot be supplied.** `UI_CampaignMenu_CoOp` is not a member of either archive, and
-   a mod cannot add a member. A loose `Data/ART/GUI/*.bui` overrides an archive member at any size (`campaigns-page.md`);
-   whether ClientG opens a screen with no member is untested, and even if it did we
-   would be authoring a whole ChunkFile scene graph to match what the compiled class expects.
-2. **The entry point does not ship either.** The campaign menu that does ship
-   (`UI_CAMPAIGNMENU.BUI`) contains no `Button_CoopCampaign` and no `CoOp_MissionDetails_Group`;
-   those names live only in `ClientG.exe`. Widgets can be inserted (`bui-front-end-modding.md`),
-   but whether ClientG wires an inserted button to the co-op class is unproven. There is no slash
-   command that could host a co-op lobby directly (all 203 checked).
-3. **It would launch the wrong thing anyway.** Hosting runs through EA's online coordinator, and
-   mods load in LAN games only — so a working co-op button would start an *unmodded* match.
+1. **The screen.** `UI_CampaignMenu_CoOp` is a member of neither archive. A loose `.BUI` of a new name does open
+   (TF's own `TF_ADDONS.BUI`, `TF_SETTINGS.BUI`; the field manual's
+   [New screens and buttons](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/new-screens-and-buttons.md#a-new-screen)),
+   but the screen would have to be authored to match the scene graph the compiled co-op class expects.
+2. **The entry point.** The campaign menu that ships (`UI_CAMPAIGNMENU.BUI`) contains no `Button_CoopCampaign` and
+   no `CoOp_MissionDetails_Group`; those names live only in `ClientG.exe`. A cloned button can be bound from a
+   launcher hook (the same manual page), but whether ClientG wires one to the co-op class is unproven. There is no
+   slash command that could host a co-op lobby directly (all 203 checked).
 
-**And we do not need it.** Tier 2 below reaches the same gameplay through a LAN skirmish plus a
-map flag plus opening the win/lose and briefing gates in our own DLL — entirely in code we
-control. **This closes the "maybe there is a built-in co-op we can switch on" question.**
+**It isn't needed.** Tier 2 below reaches the same gameplay through a LAN skirmish plus a map flag plus opening
+the win/lose and briefing gates in TF's own DLL, entirely in TF's code. There is no built-in co-op to switch on.
 
 One encouraging signal, though not an actionable one: the hosting signature is
 `Host_Coop_Campaign_Lobby(ClientProgressiveCampaignMissionTypeClass*, ...)` — a **campaign
@@ -64,18 +61,18 @@ gated to single-player. Removing those gates (for co-op maps only) is "Path B".
 
 ## 2. How factions map to houses (the mechanism that makes 4-faction games possible)
 
-The lobby picker's country slots carry the factions (`faction-select-identity.md`):
+Every MP player, human or AI, plays a `HOUSE_MULTI1 + i` house whose `ActLike` is the faction picked, and
+side-specific code asks `ActLike`: see the field manual's
+[Adding a faction](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/adding-a-faction.md#how-a-pick-becomes-a-house),
+How a pick becomes a house. TF's rows (`faction-select-identity.md`):
 
 - **Spain → `HOUSE_GOOD` (GDI)** and **Greece → `HOUSE_BAD` (Nod)**, remapped on receipt in
   `CNC_Set_Multiplayer_Data`;
 - **Germany = TS GDI** (`Is_TS_GDI`, no remap: the country house is the faction).
 
-Then in `GlyphX_Assign_Houses` (`dllinterface.cpp`), **every MP player — human or AI — gets a
-real house slot `HOUSE_MULTI1 + i`**, and their picked faction is written as that house's
-**`ActLike`** via `Init_Data`. `ActLike` is the faction-identity lever:
-it gates the buildable tech tree (`Owner=` lists), unit voices, radar SFX, classic-palette
-remap — everything faction-specific keys off it. Alliances come from lobby **team IDs** —
-same team → `Make_Ally`.
+In TF `ActLike` gates the buildable tech tree (`Owner=` lists), unit voices, radar SFX and the classic-palette
+remap. Alliances come from lobby **team IDs**: `GlyphX_Assign_Houses` (`dllinterface.cpp`) calls `Make_Ally` for
+players on the same team.
 
 **Consequence:** GDI (`ActLike=HOUSE_GOOD`), Allied (`ActLike=HOUSE_GREECE`/`ENGLAND`/…), and
 Soviet (`ActLike=HOUSE_USSR`) are just different `ActLike` values on Multi houses.
@@ -84,14 +81,13 @@ it's scripting + a small win/lose-in-MP patch on top of the existing faction plu
 
 ---
 
-## 3. Map discovery (RESOLVED — disk + editor-source evidence)
+## 3. Map discovery
 
 **Discovery and the entry point:** the launcher lists custom maps from
 `Documents/CnCRemastered/Local_Custom_Maps/Red_Alert/` as `.mpr`/`.tga`/`.json` triplets and starts one through
 `CNC_Start_Custom_Instance`, which loads the `.mpr` as an INI: see the field manual's
 [New maps in the skirmish Official list](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/new-maps-in-the-skirmish-list.md#the-other-route-the-players-custom-maps),
-The other route. The `.mpr` is the whole scenario (briefing, triggers, teams, houses, win/lose). On the Deck the
-folder held 73 maps.
+The other route. The `.mpr` is the whole scenario (briefing, triggers, teams, houses, win/lose).
 
 Local-authored maps keep short names (`RDS06.mpr`); Workshop maps and their previews are named as the same
 manual section describes (RA's meta suffix `MAPDATA` is per editor source `GameInfoRedAlert.cs:364`).
@@ -99,7 +95,7 @@ manual section describes (RA's meta suffix `MAPDATA` is per editor source `GameI
 
 **The `.json` has no "co-op"/category field** — the lobby list is built from geometry +
 `Waypoints[]` (= start positions / max players; RDS01=8, a sample UGC map=4). So co-op-ness is
-NOT discovery metadata; it lives in the `.mpr` content + our gate-patch.
+NOT discovery metadata; it lives in the `.mpr` content + TF's gate patch.
 
 In TF's tree `CNC_Start_Custom_Instance` (`dllinterface.cpp`) builds the path with `snprintf("%s%s.mpr", …)` and
 reads it through `CCFileClass`, so the DLL already parses the map.
@@ -124,9 +120,8 @@ open empirical question (§6).
 
 The workspace's native Linux editor (`cnc-map-editor/`, mod-aware through the mod's
 `mapeditor.json`) or `reference/MobiusMapEditor`. The latter is Nyerguds' actively-maintained fork of EA's open-source `CnCTDRAMapEditor` — same EA-source→improved-fork lineage
-as our DLL↔Vanilla-Conquer. (We also have EA stock in the game install `SOURCECODE/` and two
-local checkouts: `~/Documents/development/CnC_Remastered_Collection` (EA) and `.../EMC_Workshop`
-(JohnnyJigglez EMC fork).)
+as TF's DLL and Vanilla Conquer. (EA's stock editor is also in the game install's `SOURCECODE/`, and the workspace
+holds two more checkouts: EA's released source and EMC_Workshop, JohnnyJigglez's EMC fork.)
 
 Relevant capabilities (from its source + MANUAL):
 - SP/MP toggle = **`BasicSection.SoloMission`** → `[Basic] SoloMission=`. Validation:
@@ -135,7 +130,7 @@ Relevant capabilities (from its source + MANUAL):
 - **Co-op map shape = `SoloMission=false`** (surfaces in LAN lobby, 2+ human starts) **+
   hand-authored Teamtypes/Triggers** (the editor writes triggers into *any* map).
 - The MANUAL caveat — *"scripting is mostly a singleplayer thing, severely limited in
-  multiplayer"* — describes the **engine's** MP win/lose gates (exactly the 4 we patch), NOT
+  multiplayer"* — describes the **engine's** MP win/lose gates (exactly the 4 TF patches), NOT
   an editor limitation on writing the triggers.
 - Editor auto-writes the `.json`+`.tga` meta files for MP maps (unless ClassicFiles mode,
   `ClassicProducesNoMetaFiles`). Built-in Steam Workshop publish (`SteamworksUGC.cs`), needs
@@ -160,7 +155,7 @@ The four gates, by function (line numbers drift):
 **Key observation:** each gate is **already self-gating on map content.** Win/lose only fire
 if the map carries `TACTION_WIN`/`LOSE` triggers (`IsToWin` stays false otherwise); the
 briefing text only shows if the map has briefing text. So relaxing them is *fairly* safe even
-unconditionally — but "fairly" is why we want a discriminator (§7).
+unconditionally — but "fairly" is why the design wants a discriminator (§7).
 
 The backstop is preserved either way: `IsDefeated` / `MPlayer_Defeated` (called from
 `HouseClass::AI`) remains the last-team-standing safety net if a mission's scripted win never
@@ -190,8 +185,8 @@ each load, so no state leak into the next skirmish). Gates become
 ### Option 2 — Relax the gates for all MP
 Flip the 4 gates to `(== GAME_NORMAL || == GAME_GLYPHX_MULTIPLAYER)`. No flag, no new state.
 - **Pros:** simplest; no per-map authoring step.
-- **Cons:** changes behavior for **every** MP game, including the hundreds of Workshop maps we
-  don't own. Self-gating on map content makes it low-probability, but a competitive map with a
+- **Cons:** changes behavior for **every** MP game, including the hundreds of Workshop maps TF
+  doesn't own. Self-gating on map content makes it low-probability, but a competitive map with a
   stray win trigger or leftover briefing text would silently change behavior → an
   unreproducible bug report. "Probably fine," not "fine by construction."
 - **Cost:** ~6 lines, but uncontrolled surface.
@@ -231,9 +226,9 @@ data-driven, and a clean stepping stone to Option 3 if co-op ever outgrows these
    to last-team-standing). Two humans needed.
 3. **Who wins.** `TACTION_WIN`/`TACTION_LOSE` (`taction.cpp`) compare the house they name with
    `PlayerPtr`, and `HouseClass::AI` sets `PlayerWins` for `PlayerPtr`. In a LAN game `PlayerPtr` switches
-   between players as the host's simulation works, so a scripted win likely needs per-house handling to reach
-   both humans. Mods only play over LAN: the base game turns online multiplayer off while a mod is enabled
-   (Remastered Modding Field Manual, `engine/lan-games.md`).
+   between players as the host's simulation works (the field manual's
+   [LAN games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/lan-games.md#what-that-means-for-a-mod)),
+   so a scripted win likely needs per-house handling to reach both humans.
 4. **First milestone proposal:** Option-1 flag + the two `house.cpp` win/lose gates + a trivial
    test `.mpr` → smoke test. Defer briefing gates + real mission design until that proves out.
 5. **TD story NPCs available for mission scripting.** TD's `InfantryType` enum includes three

@@ -1,8 +1,8 @@
 # Add-ons: the ADD-ONS screen, menu notice, lobby popup and save check
 
 **Status:** Reference. What the launcher layer (`redalert/tf_launcher.cpp`) does for the asset packs, against
-ClientG 1.153.745903: the popup and save check ship in 5.5.0; the ADD-ONS screen and the menu notice ship in the
-next release.
+ClientG 1.153.745903: the popup and save check ship since 5.5.0, the ADD-ONS screen and the menu notice since
+5.6.0.
 
 An add-on is found by a marker file in the launcher's own mod list: a required pack's CCDATA marker
 (`asset-packs.md`, Required packs), any file unique to it otherwise. The ADD-ONS screen gets, switches on and
@@ -58,11 +58,11 @@ logo id, Workshop item, the faction that needs it (none for an optional pack), n
 ## Main menu notice
 
 `scripts/bui_mainmenu_pack_notice.py` lays the notice out top right, every piece hidden, straight in
-`ScreenFitter_Group` (a cloned group carries the source group's tint and places its children differently).
-`scripts/pack_panel_art.py` paints the frame from the menu box's steel at the box's own scale (a frame painted larger banded on the Deck, which looks like the launcher drawing menu
-images without mipmaps: the field manual's
-[BUI screens](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/bui-screens.md#traps), Paint menu art at the size it's drawn) and the logo: the mod's title over ADD-ONS. A
-clone of the menu box's `Button_Scanlines` runs its moving sheen over the frame.
+`ScreenFitter_Group`, not in a cloned group (the field manual's
+[BUI screens](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/bui-screens.md#traps),
+Traps). `scripts/pack_panel_art.py` paints the frame from the menu box's steel at the box's own scale (Traps, Paint
+menu art at the size it's drawn) and the logo: the mod's title over ADD-ONS. A clone of the menu box's
+`Button_Scanlines` runs its moving sheen over the frame.
 
 It shows while any add-on is not on (`Pack_On`): never subscribed, downloading, downloaded or switched off. The text
 is fixed: YOU HAVE TIBERIAN FACTIONS ADD-ONS / AVAILABLE THAT ARE NOT ENABLED. The main menu is one object for the
@@ -87,7 +87,7 @@ In multiplayer every player needs the same add-ons: see the field manual's
 
 ## Load Game check
 
-The DLL writes `TFS2`, its save version and a flags word (bit 1: the TS-HD pack was on) first in its save data,
+The DLL writes `TFS2`, its save version and a flags word (`TF_SAVE_TS_PACK`, value 1: the TS-HD pack was on) first in its save data,
 and refuses any other save. The launcher reads the selected save through Steam's remote storage and greys
 **Load** with a reason, through the load screen's stock missing-custom-map path, when the marker or version
 differs, or when the save needs a pack that isn't loaded.

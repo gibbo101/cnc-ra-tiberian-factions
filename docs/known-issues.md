@@ -3,7 +3,7 @@
 **Status:** Tracker. Open bugs, and player-facing limitations a mod cannot fix.
 
 The tracker for open bugs, and for player-facing limitations a mod cannot fix, so nobody
-re-investigates them. Checked against main at the 5.0.0 release (2026-10-04).
+re-investigates them. Checked against main at the 5.0.0 release.
 
 Each entry gives a **severity** (blocker / major / minor / cosmetic) and where the detail lives.
 When an issue is fixed, delete its entry: the commit message and `CHANGELOG.md` record the fix.
@@ -25,6 +25,15 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
   three a pass and makes more passes to use up its ten. The run (`AircraftClass::Mission_Attack`,
   `TF_BOMB_LOOP`) releases a bomb by its distance along the line to the target, from two cells short
   to two past, and ends at a point four cells beyond it. Cause not yet looked into.
+
+### A Stealth Generator over a house's only war factory cancels its build
+- **Severity:** minor (seen in a scripted skirmish test, not yet in a real match).
+- When the generator's cover cloaks a house's only factory of a kind mid-build, `Do_Cloak` calls `Detach_All`,
+  which finds no other builder for the item and abandons it, refunding what was spent (a Medium Tank 14% built,
+  gone within a frame). A second factory of the kind keeps the build. The field manual's
+  [Stealth generator](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/stealth-generator.md#traps)
+  page has the mechanism. Fix: keep a house's last factory of a kind out of the cover while it's producing
+  (`stealth-generator-spec.md`). Whether a cloaked factory can start a new build is untested.
 
 ### A Tesla Coil on a jump jet taking off loops its charge sound (reported, not reproduced)
 - **Severity:** cosmetic (one player report).
@@ -109,7 +118,7 @@ A dead end worth warning about stays as one line in the topic doc it belongs to.
   which cycles every start position but the house's own) are the suspects.
 - Next time: watch the host's `MOD_DEBUG_AI.txt` (WAVE lines) live from the first defeat.
 
-### Sim froze once in a 4-Hard-AI Docklands match (2026-09-02)
+### Sim froze once in a 4-Hard-AI Docklands match
 - **Severity:** unknown, unreproduced.
 - Every DLL log stopped inside frame 22357 (about 11 minutes); ClientG kept spinning at about 60%
   CPU; no minidump, no A* storm. A rerun of the same build and lobby ran to F45000 clean. Logs:

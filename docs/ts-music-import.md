@@ -25,14 +25,17 @@ only Tiberian Sun's own themes are imported.
 
 A C++ port of `scripts/ts_music_build.py`, run by the DLL inside the launcher:
 
-- read `THEME.INI` from `LOCAL.MIX` inside `TIBSUN.MIX` (and `THEME01.INI` from `expand01.mix`) for the themes a
-  player hears in game, their titles and sides;
-- read each theme's `.AUD` (`<section>.AUD`) from the scores archive and decode Westwood's IMA ADPCM
-  (AUD compression 99, `SCOMP_SOS`; 22,050 Hz mono; ffmpeg reads it as `adpcm_ima_ws`);
-- write it as the Remastered music WAV the pack shipped (MS-ADPCM, WAV format tag 2, 44.1 kHz stereo;
-  `ffmpeg ... -c:a adpcm_ms -ar 44100 -ac 2`), under the pack's names
-  (`TS_MUS_<TITLE>.WAV`), with the pack's `ccmod.json`, `CCDATA` marker and music XML beside them, into
-  `Mods/Red_Alert/TS-Music/` in the player's Documents.
+- read `THEME.INI` (from `LOCAL.MIX` inside `TIBSUN.MIX`) and `THEME01.INI` for the themes a player hears in game,
+  their titles and sides;
+- decode each theme's `<section>.AUD` from the scores archive;
+- write it as the Remastered music WAV the pack shipped, under the pack's names (`TS_MUS_<TITLE>.WAV`), with the
+  pack's `ccmod.json`, `CCDATA` marker and music XML beside them, into `Mods/Red_Alert/TS-Music/` in the player's
+  Documents.
+
+Where TS keeps its scores and theme lists, and their AUD format, are in the field manual's
+[Porting art from other C&C games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#tiberian-sun)
+(sound and music); the Remastered track format and its ffmpeg line are in
+[Music by faction, and the jukebox](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/sound-and-music/music-by-faction-and-the-jukebox.md#how-the-launcher-picks-skirmish-music).
 
 The output matches what `ts_music_build.py` writes byte for byte where the formats allow, so the build script
 stays the reference and its checksums (`scripts/ts_music_work/music.md5`) test the port.

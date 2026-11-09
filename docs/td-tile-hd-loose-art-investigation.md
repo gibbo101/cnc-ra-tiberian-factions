@@ -9,8 +9,7 @@ The launcher renders terrain templates only from its preloaded base-MEG atlas, s
 loose art crashes ClientG: see the field manual's
 [Adding a theatre of your own](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-theatres.md#the-wall-no-new-terrain-template-names),
 the wall, which says why the DLL can't fix it. The same page has the `S02` repoint test under what works, and
-what EMC and Reilsss's mods really do under how it was verified (his Snow to Desert ships 8,304 loose DDS frames
-at stock template paths).
+what EMC and Reilsss's mods really do under how it was verified.
 
 ## Loose overrides that do work
 

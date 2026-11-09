@@ -2,9 +2,11 @@
 
 **Status:** Reference. The pipeline for porting a TD vehicle; every TD vehicle ships this way.
 
-**Worked example (shipped 2026-05-30):** `UNIT_TDMTNK` — **GDI Medium Tank**, the first combat vehicle. Establishes the vehicle pipeline the way TDE1 established infantry and TDATWR established buildings. (TDMCV + TDHARV were ported earlier in the building-separation arc but are turret-less utility units; the Medium Tank is the first turreted combat vehicle.)
+**Worked example:** `UNIT_TDMTNK`, the **GDI Medium Tank**, the model for every turreted combat vehicle, as TDE1 is
+for infantry and TDATWR for buildings. (TDMCV and TDHARV are turret-less utility units, ported with the buildings.)
 
-**Read first:** `docs/td-port-playbook.md` (architecture + traps) and `docs/td-infantry-port-recipe.md` (the bundling pipeline this shares). This doc is the vehicle-specific companion.
+**Read first:** `td-port-playbook.md` (architecture and traps) and `td-infantry-port-recipe.md` (the bundling
+pipeline this shares). This doc is the vehicle-specific companion.
 
 ---
 
@@ -76,8 +78,8 @@ weapon + one ctor + assets.
 
 - **NO techno.cpp change.** The flame-jet dispatch is **anim-keyed**, not weapon-keyed:
   `techno.cpp` `case ANIM_FLAME_N: a = ANIM_FLAME_N + Dir_Facing(Fire_Direction())` fires for
-  *any* weapon whose rules.ini `Anim=TDFLAME-N`. (First instinct was to add the weapon enum to a
-  `switch(weapon)` — wrong, there's no such switch. Just set `Anim=TDFLAME-N`.)
+  *any* weapon whose rules.ini `Anim=TDFLAME-N`. There is no `switch(weapon)` to add the weapon to; set
+  `Anim=TDFLAME-N`.
 - **Turret-less = zero offset tuning.** `is_turret_equipped=false` → no muzzle-flash geometry to
   screenshot-tune (the §traps "muzzle-flash mis-positioned" trap doesn't apply). The jet draws from
   the body's `Fire_Coord`; the body rotates to face target (TD tracked-vehicle rule, the non-turret
@@ -143,13 +145,11 @@ The GDI APC (`UNIT_TDAPC`, TD `UnitAPC` udata.cpp:907) is the first **transport*
 - **Deploy/unload key:** works for any unit whose self-click deploys or unloads (playbook §3.23); the
   DLL reads the key and runs the self-action, so a new transport needs no key work.
 
-> ⚠️ **`build_tfassets.sh` must run BEFORE the DLL build, or the deploy ships a stale MIX** (cost a cycle on
-> the APC, 2026-06-01). The DLL build's POST_BUILD stages `resources/` → `build/`; if you rebuild
-> `TFASSETS.MIX` *after* that, `build/` still holds the **old** MIX, and `deploy.sh --no-build` (which rsyncs
-> `build/`) ships it. Symptom: unit builds with correct name/prereq/cameo but renders **invisible** —
-> `One_Time`'s `MFCD::Retrieve("TD<NAME>.SHP")` returns NULL → `ImageData=0` → width 0 (`tf_objlist.log`
-> shows `ImageData=00000000 ow=0` vs a working unit's `ImageData=<ptr> ow=48`). Fix: run `build_tfassets.sh`
-> first, OR `cp resources/.../TFASSETS.MIX build/.../TFASSETS.MIX` before `deploy.sh --no-build`.
+> ⚠️ **A rebuilt `TFASSETS.MIX` needs a full `deploy.sh`.** `deploy.sh --no-build` ships `build/` as it stands
+> (see the box at the end), so a MIX rebuilt after the last staging stays old there. Symptom: the unit builds with
+> the right name, prerequisite and cameo but is **invisible**: `One_Time`'s `MFCD::Retrieve("TD<NAME>.SHP")`
+> returns NULL, so `ImageData` is 0 and its width 0 (`tf_objlist.log` shows `ImageData=00000000 ow=0` against a
+> working unit's `ImageData=<ptr> ow=48`). Run `build_tfassets.sh`, then `deploy.sh` without `--no-build`.
 
 ## §STEALTH — a cloaking unit (Stealth Tank), and stealth detection
 
@@ -170,8 +170,8 @@ base `TDC/TDR_SFX_TRANS1.WAV` (`SFXEVENTSNONLOCALIZED.XML`, BAZOOK1 pattern, no 
 **(e) Other STANK specifics.** Turret-less (all-zero weapon offsets, like the Bike); the ctor's
 invisible-to-radar param is `true`, as in TD, but it changes nothing: the `is_stealthy` field
 (`ObjectTypeClass::IsStealthy`) is set and never read in either game's source. Whether the launcher's minimap
-shows a cloaked or `Invisible=` unit to an enemy is untested. `ANIM_TDFRAG2` death; `Prerequisite=weap,dome` (Nod
-airstrip + radar, matching TD's `STRUCTF_RADAR`); Speed 12 (`MPH_MEDIUM_FAST`, = Hum-vee/Buggy — TD-authentic, kept).
+shows a cloaked or `Invisible=` unit to an enemy is untested. `ANIM_TDFRAG2` death; `Prerequisite=weap,TDHQ` (the Nod
+airstrip and the communications centre, TD's `STRUCTF_RADAR`); Speed 12 (`MPH_MEDIUM_FAST`, = Hum-vee/Buggy — TD-authentic, kept).
 
 **Compile traps hit:** `TXT_STANK` (the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#traps), Traps) → TF uses the `TXT_LTANK` placeholder; `Techno_Type_Class()` returns a **pointer** not a reference → `->IniName`.
 
@@ -187,6 +187,7 @@ SSM Launcher followed with their own weapon ports (`td-mlrs-deep-dive.md`), and 
 and the TDCARGO plumbing.
 
 > **deploy.sh and `POST_BUILD`:** the build's repackage is a **RedAlert POST_BUILD step**
-> (`redalert/CMakeLists.txt:213`) that only fires when the DLL relinks, so `deploy.sh` restages
+> (`redalert/CMakeLists.txt:222`) that only fires when the DLL relinks (the field manual's
+> [Building the DLL on Linux](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/building-the-dll-on-linux.md#traps)), so `deploy.sh` restages
 > `build/remaster/Vanilla_RA/` from scratch after every build and copies the linked DLL in from
 > `build/remaster/RelWithDebInfo/RedAlert.dll` (playbook §3.9). Only `--no-build` ships `build/` as it stands.

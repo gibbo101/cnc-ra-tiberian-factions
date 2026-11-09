@@ -7,7 +7,9 @@ from reading the source, unproven in play.
 
 Every behaviour the mod changes from vanilla Red Alert, other than balance, becomes a switch on the TIBERIAN
 FACTIONS SETTINGS page. Every switch is on by default, so a player who never opens the page plays the mod as it
-ships; a player who prefers vanilla behaviour, the sidebar's arrival order among them, turns it off.
+ships; a player who prefers vanilla behaviour, the sidebar's arrival order among them, turns it off. The general
+pattern (off means vanilla's own code path, the file in `Documents`, read once per match, whose file a LAN game
+follows) is the field manual's [A player settings page](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/structuring/player-settings-page.md#the-rule-off-means-exactly-vanilla).
 
 ## The file
 
@@ -19,6 +21,8 @@ ships; a player who prefers vanilla behaviour, the sidebar's arrival order among
 - **The DLL reads the file once, at match start** (`TF_Settings_Load`), and every site asks `tf_settings.h`.
   Pathfinding, the sidebar export and the AI run every frame and never read the file. A loaded save takes the
   file as it stands at load: the switches change behaviour, not stored state.
+- **A campaign mission ignores the AI switches:** `TF_Settings_Load(campaign)` turns Classic AI off and fair fog,
+  attack waves, naval and radar on. The units and sidebar switches still apply.
 
 ## LAN: sidebar per player, the rest from the host
 
@@ -48,7 +52,7 @@ export. What ClientG does on each machine stays that player's own: the radar cre
 - **The AI's anti-air response** is vanilla Red Alert's (`HouseClass::AI_Building`: build AA when an enemy has
   aircraft). Ours only teaches it the GDI, Nod and TS SAMs and radars, so it has no switch.
 - **The AI's build order, unit picks and economy gate** replaced vanilla's code rather than branching from it, so
-  the TF AI switches with every one off still leave our AI. The Classic AI switch below is the way back.
+  the TF AI switches with every one off still leave TF's AI. The Classic AI switch below is the way back.
 
 ## The switches
 
@@ -80,7 +84,7 @@ export. What ClientG does on each machine stays that player's own: the radar cre
 - **Naval off** also stops the ferry: it needs the transports only a naval yard builds.
 - **Radar** matters only to Allies and Soviets. Vanilla's builder asks for a radar only when an enemy has aircraft,
   and RA's helipad, airfield and tech centres need one. GDI, Nod and TS GDI build theirs early either way.
-- **Base placement and sell logic are not switches.** They are bug fixes and support for our base builder (the
+- **Base placement and sell logic are not switches.** They are bug fixes and support for TF's base builder (the
   naval and expansion-yard placement, the sell priorities of what it rebuilds), so Classic AI is their way back.
 - **The unit switches** come from the host's file too. A* and give way are independent: give way works on either
   pathfinder's route.
@@ -102,14 +106,14 @@ The GAMEPLAY page's CLASSIC AI category holds the master switch, **TF AI** (the 
   with each RA building routed to the faction's own and counted with it (`TF_Classic_Count`). TS GDI's addons
   use the TF AI's guards: a component tower is laid bare and armed on a later pass (`TF_AI_Tower_Step`), and a
   turbine goes only on a free power plant (`TF_AI_Plug_Fits`).
-- **Units, infantry, aircraft and ships** keep our pickers, which are vanilla's plus the mapping: with Classic
+- **Units, infantry, aircraft and ships** keep TF's pickers, which are vanilla's plus the mapping: with Classic
   picked they skip the economy hold and build one harvester a refinery, as vanilla did. Naval is off, so no ships.
 - **Attacks** are vanilla's (`TF_Classic_AI_Attack`), and fair fog is off.
 - **Selling** uses vanilla's urgencies (the Classic column of the `AI_Raise_Power` and `AI_Raise_Money` tables).
 - **Difficulty** is vanilla's one for the match: every computer house gets `Rule.MaxIQ`
   (`TF_AI_IQ_From_Difficulty`), and the lobby's per-slot picks are not read.
 - Stock RA's AI attacks sooner than ours (`todo.md`, the AI milestone), so Classic plays differently, and it is
-  the baseline our AI is tuned against.
+  the baseline TF's AI is tuned against.
 - Proven in skirmish against a Soviet, a Nod and a TS GDI computer house: each built vanilla's order with its own
   buildings, TS GDI's armed towers and turbines among them.
 

@@ -8,7 +8,7 @@ the Allied Aftermath slots), **Nod = the Soviet expansions tab** (8 missions, th
 The CAMPAIGNS page shows those two tabs as GDI and Nod (`campaigns-page.md`).
 Mechanics live in `coop-missions-design.md` (gates, ActLike houses) and
 `campaign-tabs-research.md` (hijack delivery).
-Lore researched against the EVA Database (cnc.fandom.com), 2026-06-10.
+Lore checked against the EVA Database (cnc.fandom.com).
 
 ---
 
@@ -36,15 +36,15 @@ Verified canon anchors:
   TD's GDI player character James Solomon transfers in the late 1990s).
 - **First Tiberium War: ~1997–2003** (wiki-sourced range), opening with the Vienna Grain
   Trade Center bombing. Nod enters TD controlling 49% of the world's Tiberium.
-- Developer precedent for our exact premise: Westwood's cancelled **Renegade 2** drafted
+- Developer precedent for this exact premise: Westwood's cancelled **Renegade 2** drafted
   the *Scavengers* — a faction rising from the collapsed USSR's remnants as **the
   predecessor of Nod**. Non-canon, but it's official-developer territory.
-- Aftermath/Counterstrike gave us **Volkov** (cyborg commando — the wiki calls him "a
+- Aftermath/Counterstrike supply **Volkov** (cyborg commando — the wiki calls him "a
   forerunner of Nod's Cyborg Commandos"), **Dr. Demitri** (Super Tank), the **Phase
-  Transport** (Allied cloaking prototype) and the **MAD/Tesla tanks**. Since we are
-  literally hijacking the CS/AM mission slots, we honor their cast and tech.
+  Transport** (Allied cloaking prototype) and the **MAD/Tesla tanks**. The campaign
+  takes over the CS/AM mission slots, so it keeps their cast and tech.
 
-**Flagged as our invention** (canon gives no answer): the dissolution date (~1991, echoing
+**Flagged as TF's invention** (canon gives no answer): the dissolution date (~1991, echoing
 Nadia's line), the Soviet hardliner remnant (**the Red Vanguard**, Marshal Orlov), and
 the rogue Allied command (**Field Marshal Edric Wessler**). "Operation Drop Shot" and
 "the Forsaken" are NOT canon — do not use.
@@ -68,7 +68,7 @@ requires GDI's funding and Ion Cannon to survive, and the Temple rises at Saraje
 **Faction casting (engine):** the player house is Spain (GDI) or Greece (Nod); Allies are the
 England/France/Turkey houses with the vanilla RA roster; Soviets the USSR/Ukraine houses with the
 vanilla Soviet roster (Germany is TS GDI). The factions coexist per `coop-missions-design.md`.
-GDI/Nod field our TD rosters — in-fiction, GDI's "next-generation" gear is the
+GDI/Nod field TF's TD rosters — in-fiction, GDI's "next-generation" gear is the
 consolidated classified prototype programs of the Allies (the Mammoth lineage descends
 from RA heavy armor), and Nod's arsenal is Tiberium money spent well.
 
@@ -121,7 +121,7 @@ from the shadows… We estimated the Brotherhood would tire of the USSR by the e
 
 - **Shared events, both sides:** the Tiber crater (G1/N2), the Volkov lab (G6/N5), the
   Poland false-flag (G5/N6), the prototype vault (G3→G7 / N4), Sarajevo (G9/N8).
-- **Tech bridges we dramatise:** Phase Transport → Stealth Tank; ReGenesis/Volkov → Nod
+- **Tech bridges the story dramatises:** Phase Transport → Stealth Tank; ReGenesis/Volkov → Nod
   cyborgs; Allied heavy-armor programs → GDI Mammoth; Tiberium wealth → Nod's TD warchest.
 - **Mod features as story beats:** Tiberium ecosystem (growth/spread, infantry damage,
   visceroids, blossom trees) debuts in G1/G8/N2/N3; Ion Cannon and the Obelisk get
@@ -131,8 +131,9 @@ from the shadows… We estimated the Brotherhood would tire of the USSR by the e
 ## 6. Implementation constraints (recap — don't violate)
 
 - **Hijack only (proven on the desktop and the Deck).** Re-style
-  existing CS/AM instances; new instances list but cannot launch (InstanceServerG resolves
-  from BASE). GDI uses the 9 `Mobius_Aftermath_Allied_Map_Base` slots; Nod the 8
+  existing CS/AM instances; new instances list but cannot launch (the field manual's
+  [Custom campaigns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-campaigns.md#adding-a-mission-data-shows-it-but-launching-is-the-hard-part),
+  Adding a mission; the mission carrier in `campaigns-page.md` is dev builds only). GDI uses the 9 `Mobius_Aftermath_Allied_Map_Base` slots; Nod the 8
   `Mobius_USSR_Counterstrike_Map_Base` slots, since a slot's tab follows its side and TF's tab sort files Nod
   with the Soviets. The Allied Counterstrike (8) and Soviet Aftermath (9) slots stay in
   reserve — bonus missions, interludes, or a second act. **The delivery is confirmed in game:** a
@@ -151,8 +152,8 @@ from the shadows… We estimated the Brotherhood would tire of the USSR by the e
   Nod's canon strongholds in Africa can be desert missions.
 - **Win/lose/briefing gates:** the four DLL gates in `coop-missions-design.md` §5 open only when
   `Session.Type == GAME_NORMAL`, so they block co-op and skirmish sessions. A campaign mission
-  launched from Mission Select should run as `GAME_NORMAL` and pass them (inferred from the gates'
-  tests, untested).
+  launched from Mission Select runs as `GAME_NORMAL` and passes the win gate: the shadowed probe in
+  `campaign-tabs-research.md` won through its own win trigger. The briefing gates are untested.
 - Authoring: the native `cnc-map-editor` or the Mobius fork, RA-format `.mpr`/INI scenarios.
 
 ## 7. Open questions
@@ -173,6 +174,6 @@ It grounds the TS stance in the fiction: TS-authentic stats "a generation ahead 
 mission's premise, not a balance problem. Lore hook available: RA already
 has Chronosphere time travel — the rift can be a Chrono experiment gone
 wrong. Mechanically all on proven ground: hijacked mission slot + CCDATA
-scenario INI (campaign-tabs-research.md), TS tree ownable by any house, no
+scenario INI (`campaign-tabs-research.md`), TS tree ownable by any house, no
 new engine work. Design detail TBD when campaign authoring resumes
 (deferred behind the AI milestone).

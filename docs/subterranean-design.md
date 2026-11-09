@@ -67,15 +67,14 @@ and legal surfacing cells.
 
 TS `[General]`: `TunnelSpeed=1`, `DigSound=SUBDRIL1`, `Dig=DIG` (dig-in AND emerge
 anim). `[DIG]` art: `Surface=yes`. FireballLauncher is Damage=0 + fire particles
-(ROF=50, Range=4.25, Burst=2, Warhead=Fire, Report=FLAMTNK1) — map onto our ported
-TD Flame Tank weapon chain rather than porting the particle system.
+(ROF=50, Range=4.25, Burst=2, Warhead=Fire, Report=FLAMTNK1); TF ports the particle stream itself
+(What ships).
 
 ## Art
 
-- `SUBTANK.VXL/HVA`, `SAPC.VXL/HVA` extracted; **both rendered clean** at the
-  FLEET-STANDARD camera: `vxl_render.py --frames 32 --yaw0 90 --px-per-voxel 12
-  --elev 32`, the fleet angle (54° reads top-down).
-  Devil's Tongue = twin flame prongs forward; SAPC = striped drill nose.
+- `SUBTANK.VXL/HVA`, `SAPC.VXL/HVA` extracted. Both units ship as HD rebuilds, 113 shapes each, packed by
+  `scripts/ts_pack_hd_buildings.py` (`TSSUBTANK`, `TSSAPC`; layout in `scripts/ts_pack_subterranean.py`'s
+  docstring). Devil's Tongue = twin flame prongs forward; SAPC = striped drill nose.
 - `DIG.SHP` (37 frames): mound erupts → churns → collapses to a settling ring.
   ⚠ Decode anims with **remap=None** — `ts_shp.py`'s CLI hardcodes remap 16–31
   team paint, which turned the thrown-dirt highlights fake green.
@@ -84,24 +83,24 @@ TD Flame Tank weapon chain rather than porting the particle system.
   `ANIM_TS_DIG` (TSDIG.ZIP, 37 tiles, x4 on a 512 canvas, 64x64 stub).
 - **Dive/emerge is not an asset:** TS tilts the voxel at run time (the field manual's
   [Subterranean units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/subterranean-units.md#the-dive-is-made-in-the-engine)
-  has the proof; SAPC.HVA's single frame is on its [Porting art from other C&C games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#tiberian-sun)). TF bakes the pitched renders: dive
-  `0/-8/-16/-24/-32/-40`, emerge `+40/+32/+24/+16/+8/0`, 8 facings, ~112 shapes. The DLL adds the sink
+  has the proof; SAPC.HVA's single frame is on its
+  [Porting art from other C&C games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#tiberian-sun)).
+  TF bakes the rebuilt model pitched, 8 facings each: the dive -8/-16/-24/-32/-40 (shapes 32-71) and the emerge
+  nose-up +40/+32/+24/+16/+8 (shapes 72-111, its own frames, not the dive played back); each ladder's 0-pitch step is
+  the driving frame; shape 112 is the earth marker (`UnitClass::Shape_Number`, `unit.cpp`). The DLL adds the sink
   offset and plays DIG over the top during DIGGING_IN/EMERGING.
-  ⚠ `vxl_render.py --pitch` was once parsed but never forwarded to `render_frame`, so every CLI
-  pitch render was flat; fixed.
 - `DIRTEXPL.SHP` is extracted but unused. Cameos `SUBTICON.SHP` / `SAPCICON.SHP`. SUBDRIL1 (dig)
   and FLAMTNK1 (flame) ship as MS-ADPCM WAVs (`td-audio-routing-recipe.md`).
 
 ## Transition choreography
 
-Dialled over five preview rounds and encoded in the DIGGING_IN / EMERGING states; the tick counts
-are the tunables:
+Encoded in the DIGGING_IN / EMERGING states, in the order the field manual's
+[Subterranean units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/subterranean-units.md#the-dive-is-made-in-the-engine)
+gives; the tick counts are the tunables:
 
-- **Angle leads, sink follows.** The 5-step pitch ladder plays AT SURFACE level
-  (no submergence while tilting; only a small cosmetic settle, ~0→26px at pack
-  scale across the steps).
-- **Tilt starts clean** — no dirt for steps 1–3. The DIG anim fires at step 4,
-  when the nose is well into the angle.
+- **Angle leads, sink follows.** The 5-step pitch ladder plays at surface level, with only a small
+  cosmetic settle (~0→26px at pack scale across the steps).
+- **Tilt starts clean:** no dirt for steps 1–3. The DIG anim fires at step 4.
 - **Into the soil = GONE.** The hull hides the instant step 5 completes, while
   the DIG mound is still solid. No slide-under, no tail poking out. The mound
   churns out alone over the hidden object.

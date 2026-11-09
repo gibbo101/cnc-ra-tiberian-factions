@@ -4,8 +4,13 @@
 Values are TD-authentic, from `tiberiandawn/bdata.cpp`; live rules.ini values differ where
 `balance-deep-dive.md` moved them. `scripts/buildings_manifest.py` mirrors the flag and wiring
 tables, and wins if they drift. How the buildings were ported: `td-building-separation-recipe.md`
-and the `td-*` deep dives. The "📝" markers and "Donor" columns below are design-era: no entity
-aliases an RA donor.
+and the `td-*` deep dives.
+
+All nineteen ship as their own `STRUCT_TD*` types; TDFACT and the TD MCV were split per faction in 4.1.0
+(TDGFACT, TDNFACT, TDGMCV, TDNMCV). Entry names below use the TD asset name (e.g. "PYLE", "HAND") where the
+rules.ini IniName is TD-prefixed (`TDPYLE`, `TDHAND`) to avoid the vanilla-RA collision class in
+`td-building-separation-recipe.md`, gotcha 9. Not ported: TD's Hospital (HOSP), Bio Lab (BIO) and Tanker (ARCO),
+all TD level 99 and not normally buildable.
 
 ---
 
@@ -13,43 +18,43 @@ aliases an RA donor.
 
 Per-building flags extracted from `tiberiandawn/bdata.cpp`. These are the values `add_building.py` reads. **IniName** is the catalogue IniName (TD-prefixed); **Image/Footprint/sprite ZIPs** keep the unprefixed TD asset names.
 
-| IniName | Faction | Donor | Cost | Power | STRNTH | Sight | Adj | Armor | Bib | Cap | Crew | Repair | Idle:Start/Count/Rate | Points | Notes |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| TDNUKE | both  | POWR | 300  | +100 | 200  | 2 | 1 | wood     | yes | yes | yes | yes | 0/4/15  | 50  | TD lvl 0 |
-| TDNUK2 | both  | APWR | 700  | +200 | 300  | 2 | 1 | wood     | yes | yes | yes | yes | 0/4/15  | 75  | TD lvl 5, prereq TDNUKE |
-| TDPROC | both  | PROC | 2000 | -40  | 450  | 4 | 1 | wood     | yes | yes | yes | yes | 0/6/4   | 55  | TD lvl 1, has dock/siphon cycles — keep RA donor behaviour |
-| TDSILO | both  | SILO | 150  | -10  | 150  | 2 | 1 | wood     | yes | yes | no  | yes | —       | 16  | TD lvl 1 — capacity-based shape, not a cycle |
-| TDPYLE | GDI   | TENT | 300  | -20  | 400  | 3 | 1 | wood     | yes | yes | yes | yes | 0/10/3  | 60  | TD lvl 0 |
-| TDHAND | Nod   | BARR | 300  | -20  | 400  | 3 | 1 | wood     | yes | yes | yes | yes | 0/10/3  | 61  | TD lvl 0, 2×3 footprint |
-| TDWEAP | GDI   | WEAP | 2000 | -30  | 500  | 3 | 1 | aluminum | yes | yes | yes | yes | 0/1/0   | 86  | TD lvl 2, static idle |
-| TDAFLD | Nod   | WEAP | 2000 | -30  | 500  | 5 | 1 | steel    | yes | yes | yes | yes | 0/16/3  | 86  | TD lvl 2, 4×2, AIRSTRIP anim spec |
-| TDHQ   | both  | DOME | 1000 | -40  | 500  | 10| 1 | wood     | yes | yes | yes | yes | 0/16/4  | 20  | TD lvl 2, radar |
-| TDEYE  | GDI   | MSLO | 2800 | -200 | 500  | 10| 1 | wood     | yes | **no** | yes | yes | 0/16/4 | 100 | TD lvl 7, GDI superweapon host |
-| TDTMPL | Nod   | MSLO | 3000 | -150 | 1000 | 4 | 1 | aluminum | yes | **no** | yes | yes | 0/1/0  | 20  | TD lvl 7, Nod superweapon host |
-| TDFIX  | both  | FIX  | 1200 | -30  | 400  | 3 | 1 | wood     | yes | yes | yes | yes | 0/1/0   | 46  | TD lvl 5, ACTIVE 0/7/2 |
-| TDHPAD | both  | HPAD | 1500 | -10  | 400  | 3 | 1 | wood     | yes | yes | **no** | yes | 0/0/0 | 65  | TD lvl 6, no idle anim |
-| TDGTWR | GDI   | PBOX | 500  | -10  | 200  | 3 | 1 | wood     | no  | **no** | yes | yes | —     | 25  | TD lvl 2, 1×1 |
-| TDATWR | GDI   | AGUN | 1000 | -20  | 300  | 4 | 1 | aluminum | no  | **no** | yes | yes | —     | 30  | TD lvl 4, 1×2 |
-| TDOBLI | Nod   | TSLA | 1500 | -150 | 200  | 5 | 1 | aluminum | no  | **no** | yes | yes | —     | 35  | TD lvl 4, 1×2, ACTIVE 0/4/RATE |
-| TDGUN  | Nod   | GUN  | 600  | -20  | 200  | 5 | 1 | steel    | no  | **no** | yes | yes | —     | 26  | TD lvl 2, 1×1 |
-| TDSAM  | Nod   | SAM  | 750  | -20  | 200  | 3 | 1 | steel    | no  | **no** | **no** | yes | — | 40  | TD lvl 6, 2×1, turret-based |
-| TDFACT | both  | FACT | 5000 | **0** | 400  | 3 | 1 | wood     | yes | yes | yes | yes | 0/4/3   | 70  | TD lvl 99, ✅ shipped v0.3.0-phase5e — Power=0 per vanilla RA [FACT] |
+| IniName | Faction | Cost | Power | STRNTH | Sight | Adj | Armor | Bib | Cap | Crew | Repair | Idle:Start/Count/Rate | Points | Notes |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| TDNUKE | both  | 300  | +100 | 200  | 2 | 1 | wood     | yes | yes | yes | yes | 0/4/15  | 50  | TD lvl 0 |
+| TDNUK2 | both  | 700  | +200 | 300  | 2 | 1 | wood     | yes | yes | yes | yes | 0/4/15  | 75  | TD lvl 5, prereq TDNUKE |
+| TDPROC | both  | 2000 | -40  | 450  | 4 | 1 | wood     | yes | yes | yes | yes | 0/6/4   | 55  | TD lvl 1, dock cycles (`harvester-docking-rework-plan.md`) |
+| TDSILO | both  | 150  | -10  | 150  | 2 | 1 | wood     | yes | yes | no  | yes | —       | 16  | TD lvl 1 — capacity-based shape, not a cycle |
+| TDPYLE | GDI   | 300  | -20  | 400  | 3 | 1 | wood     | yes | yes | yes | yes | 0/10/3  | 60  | TD lvl 0 (rules.ini TechLevel 1) |
+| TDHAND | Nod   | 300  | -20  | 400  | 3 | 1 | wood     | yes | yes | yes | yes | 0/10/3  | 61  | TD lvl 0 (rules.ini TechLevel 1), 2×3 footprint |
+| TDWEAP | GDI   | 2000 | -30  | 500  | 3 | 1 | aluminum | yes | yes | yes | yes | 0/1/0   | 86  | TD lvl 2, static idle |
+| TDAFLD | Nod   | 2000 | -30  | 500  | 5 | 1 | steel    | yes | yes | yes | yes | 0/16/3  | 86  | TD lvl 2, 4×2, AIRSTRIP anim spec |
+| TDHQ   | both  | 1000 | -40  | 500  | 10| 1 | wood     | yes | yes | yes | yes | 0/16/4  | 20  | TD lvl 2, radar |
+| TDEYE  | GDI   | 2800 | -200 | 500  | 10| 1 | wood     | yes | **no** | yes | yes | 0/16/4 | 100 | TD lvl 7, GDI superweapon host |
+| TDTMPL | Nod   | 3000 | -150 | 1000 | 4 | 1 | aluminum | yes | **no** | yes | yes | 0/1/0  | 20  | TD lvl 7, Nod superweapon host |
+| TDFIX  | both  | 1200 | -30  | 400  | 3 | 1 | wood     | yes | yes | yes | yes | 0/1/0   | 46  | TD lvl 5, ACTIVE 0/7/2 |
+| TDHPAD | both  | 1500 | -10  | 400  | 3 | 1 | wood     | yes | yes | **no** | yes | 0/0/0 | 65  | TD lvl 6, no idle anim |
+| TDGTWR | GDI   | 500  | -10  | 200  | 3 | 1 | wood     | no  | **no** | yes | yes | —     | 25  | TD lvl 2, 1×1 |
+| TDATWR | GDI   | 1000 | -20  | 300  | 4 | 1 | aluminum | no  | **no** | yes | yes | —     | 30  | TD lvl 4, 1×2 |
+| TDOBLI | Nod   | 1500 | -150 | 200  | 5 | 1 | aluminum | no  | **no** | yes | yes | —     | 35  | TD lvl 4, 1×2, ACTIVE 0/4/RATE |
+| TDGUN  | Nod   | 600  | -20  | 200  | 5 | 1 | steel    | no  | **no** | yes | yes | —     | 26  | TD lvl 2, 1×1 |
+| TDSAM  | Nod   | 750  | -20  | 200  | 3 | 1 | steel    | no  | **no** | **no** | yes | — | 40  | TD lvl 6, 2×1, turret-based |
+| TDFACT | both  | 5000 | **0** | 400  | 3 | 1 | wood     | yes | yes | yes | yes | 0/4/3   | 70  | TD lvl 99; Power 0 as RA's [FACT]; split per faction in 4.1.0 (TDGFACT, TDNFACT) |
 
 **Reading the table:**
 - `STRNTH` is TD's raw `bdata.cpp` value, which is what rules.ini `Strength=` holds. TD's `BuildingTypeClass` constructor passes `strength*2`, and `redalert/bdata.cpp`'s `Read_INI` doubles every `TD*` building's `MaxStrength` to match, so in-game HP is twice the column (`td-port-playbook.md` §3.21).
+- `Sight` is TD's own value (each `tiberiandawn/bdata.cpp` class's `// SIGHTRANGE: Range of sighting.` line), which rules.ini `Sight=` holds. TD's sight reads short at RA's scale (roughly 2 cells under the RA equivalents, e.g. NUKE=2 vs POWR=4, PYLE=3 vs TENT=5), so the same `Read_INI` branch adds 3 cells to every `TD*` building: in game a TD power plant sees 5.
 - Empty `Idle` column = no idle animation (engine renders shape 0 statically). Damaged state = shape 1 in that case (the engine's `largest = max(Anims[*].Start + Count) = 1` auto-shift).
 - `Crew=no` means selling/destroying spawns zero infantry (TD canon for SILO/HPAD/SAM).
-- `Cap=no` (bold) marks entries where TD authentic differs from the original catalogue spec — defensive structures and superweapon hosts can't be captured. **TMPL and EYE are NOT capturable per TD.**
-- `Points` is the TD-authentic Risk/Reward value extracted from `tiberiandawn/bdata.cpp` per-class constructor (the line commented `// RISK/RWRD: Risk/reward rating values`). Both `Risk` and `Reward` fields are set from the rules.ini `Points=` key (`redalert/techno.cpp:7067`), and the value feeds `TechnoClass::Value()` (`redalert/techno.cpp:5171`). Without it the AI can't see the building — see `td-building-separation-recipe.md`, gotcha 11. **Mandatory field for every TD entry.**
-- `Sight` values are TD-authentic (extracted from each `tiberiandawn/bdata.cpp` class's `// SIGHTRANGE: Range of sighting.` line). **TD buildings have systematically smaller sight radii than RA equivalents** (roughly -2 cells across the board — e.g., NUKE=2 vs POWR=4, PYLE=3 vs TENT=5). This is by design while we stay vanilla-faithful; expect GDI/Nod bases to feel "shrouded" next to Allied/Soviet ones until scouting units are deployed. Revisit if balance demands it.
+- `Cap=no` (bold) marks TD's uncapturable buildings: defensive structures and the superweapon hosts. **TMPL and EYE are NOT capturable per TD.**
+- `Points` is the TD-authentic Risk/Reward value extracted from `tiberiandawn/bdata.cpp` per-class constructor (the line commented `// RISK/RWRD: Risk/reward rating values`). Both `Risk` and `Reward` fields are set from the rules.ini `Points=` key (`TechnoTypeClass::Read_INI`), and the value feeds `TechnoClass::Value()`. Without it the AI can't see the building — see `td-building-separation-recipe.md`, gotcha 11. **Mandatory field for every TD entry.**
 
-**Note on TDHQ:** TD's `RADAR` (HQ) has Points=20, which is lower than RA's `DOME` (Points=30, the engine donor). Using TD-authentic = 20 here means the AI weighs HQs slightly less than vanilla. If skirmishes show HQ being ignored relative to the rest of the base, consider bumping to 30 to match the RA donor — document any deviation here.
+**Note on TDHQ:** TD's `RADAR` (HQ) has Points=20, lower than RA's `DOME` (Points=30), so the AI weighs HQs slightly less than domes. If skirmishes show HQs being ignored, raising it to 30 is the lever; record any deviation here.
 
 ---
 
 ## Master wiring table (engine hookups)
 
-Values that **must be set in rules.ini per-entry**; nothing is inherited from a donor. Omitting any of these reproduces the same class of bug as the `Points=` issue: the building constructs but the engine treats it as a vanilla-default placeholder for the missing field.
+Values that **must be set in rules.ini per-entry**; nothing is inherited. Omitting any of these reproduces the same class of bug as the `Points=` issue: the building constructs but the engine treats it as a vanilla-default placeholder for the missing field.
 
 | IniName | TechLevel | Prereq (TD-prefixed) | Primary | Secondary | BaseNormal | Owner | TD source line |
 |---|---|---|---|---|---|---|---|
@@ -57,41 +62,31 @@ Values that **must be set in rules.ini per-entry**; nothing is inherited from a 
 | TDNUK2 | 5  | TDNUKE | —         | — | yes | GoodGuy,BadGuy | `bdata.cpp:943` |
 | TDPROC | 1  | TDNUKE | —         | — | yes | GoodGuy,BadGuy | `bdata.cpp:585` |
 | TDSILO | 1  | TDPROC | —         | — | yes | GoodGuy,BadGuy | `bdata.cpp:636` |
-| TDPYLE | 0  | TDNUKE | —         | — | yes | GoodGuy        | `bdata.cpp:1097` |
-| TDHAND | 0  | TDNUKE | —         | — | yes | BadGuy         | `bdata.cpp:1148` |
+| TDPYLE | 1 (TD 0) | TDNUKE | —         | — | yes | GoodGuy        | `bdata.cpp:1097` |
+| TDHAND | 1 (TD 0) | TDNUKE | —         | — | yes | BadGuy         | `bdata.cpp:1148` |
 | TDWEAP | 2  | TDPROC | —         | — | yes | GoodGuy        | `bdata.cpp:264` |
 | TDAFLD | 2  | TDPROC | —         | — | yes | BadGuy         | `bdata.cpp:841` |
 | TDHQ   | 2  | TDPROC | —         | — | yes | GoodGuy,BadGuy | `bdata.cpp:739` |
 | TDEYE  | 7  | TDHQ   | —         | — | yes | GoodGuy        | `bdata.cpp:213` |
 | TDTMPL | 7  | TDHQ   | —         | — | yes | BadGuy         | `bdata.cpp:162` |
 | TDFIX  | 5  | TDNUKE | —         | — | yes | GoodGuy,BadGuy | `bdata.cpp:1250` |
-| TDHPAD | 6  | TDPYLE / TDHAND | — | — | yes | GoodGuy,BadGuy | `bdata.cpp:688` |
-| TDGTWR | 2  | TDPYLE | Vulcan    | — | yes | GoodGuy        | `bdata.cpp:320` |
-| TDATWR | 4  | TDHQ   | TurretGun | Nike | yes | GoodGuy      | `bdata.cpp:372` |
-| TDOBLI | 4  | TDHQ   | HellFire  | — | yes | BadGuy         | `bdata.cpp:424` |
-| TDGUN  | 2  | TDHAND | TurretGun | — | yes | BadGuy         | `bdata.cpp:475` |
-| TDSAM  | 6  | TDHAND | Nike      | — | yes | BadGuy         | `bdata.cpp:790` |
+| TDHPAD | 6  | TDPYLE (the faction pads: TDGHPAD TDPYLE, TDNHPAD TDHAND) | — | — | yes | GoodGuy,BadGuy | `bdata.cpp:688` |
+| TDGTWR | 2  | TDPYLE | TDChainGun  | — | yes | GoodGuy      | `bdata.cpp:320` |
+| TDATWR | 4  | TDHQ   | TDTowTwo    | — | yes | GoodGuy      | `bdata.cpp:372` |
+| TDOBLI | 4  | TDHQ   | TDOblsLaser | — | yes | BadGuy       | `bdata.cpp:424` |
+| TDGUN  | 2  | TDHAND | TDTurretGun | — | yes | BadGuy       | `bdata.cpp:475` |
+| TDSAM  | 6  | TDHAND | TDNike      | — | yes | BadGuy       | `bdata.cpp:790` |
 | TDFACT | 99 | —      | —         | — | yes | GoodGuy,BadGuy | `bdata.cpp:534` |
 
 **Column derivation:**
 
-- **TechLevel** — TD source's "Build level" line. Drives sidebar gating. `redalert/techno.cpp:7063` loads from `TechLevel=`.
-- **Prereq** — TD source's STRUCTF_* mapped to the TD-prefixed equivalent. STRUCTF_POWER → TDNUKE; STRUCTF_REFINERY → TDPROC; STRUCTF_RADAR → TDHQ; STRUCTF_BARRACKS → TDPYLE (GDI) / TDHAND (Nod) — split by faction so each side's chain is internally consistent. `techno.cpp:7060` loads from `Prerequisite=`.
-- **Primary / Secondary** — RA donor's weapon name, because TD's `WEAPON_OBELISK_LASER` / `WEAPON_TOW_TWO` / `WEAPON_CHAIN_GUN` don't exist in RA's weapon table. The TD-authentic intent is preserved in the donor choice. `techno.cpp:7052-7055` loads from `Primary=` / `Secondary=`.
-- **BaseNormal** — all 19 entries are real base structures, so `yes` across the board. (Decorative/civilian buildings would be `no`, but none of ours are.) `bdata.cpp:3717` loads from `BaseNormal=`.
+- **TechLevel** — TD source's "Build level" line. Drives sidebar gating. `TechnoTypeClass::Read_INI` (`redalert/techno.cpp`) loads it from `TechLevel=`.
+- **Prereq** — TD source's STRUCTF_* mapped to the TD-prefixed equivalent (table below). STRUCTF_BARRACKS splits by faction so each side's chain is internally consistent: the shared TDHPAD names TDPYLE, and the per-faction pads take their own barracks (`ai-upgrade-plan.md` W2); `HouseClass::Can_Build` lets either barracks stand in for the other on a type both GDI and Nod own (`Owner=GoodGuy,BadGuy`, as TDHPAD). Loaded from `Prerequisite=` in the same function.
+- **Primary / Secondary** — each TD weapon ships as its own TD-ported weapon type (`td-port-playbook.md`); the live values are in rules.ini. Loaded from `Primary=` / `Secondary=`.
+- **BaseNormal** — all 19 entries are real base structures, so `yes` across the board. (Decorative/civilian buildings would be `no`, but none of ours are.) `BuildingTypeClass::Read_INI` (`redalert/bdata.cpp`) loads it from `BaseNormal=`.
 - **Owner** — TD source's HOUSEF_GOOD/HOUSEF_BAD flags mapped to our `Owner=GoodGuy,BadGuy` syntax. GoodGuy = GDI (HOUSE_GOOD), BadGuy = Nod (HOUSE_BAD).
 
-**Weapons:** every TD weapon ships as its own TD-ported weapon type (`td-port-playbook.md`); the live
-values are in rules.ini.
-
----
-
-
-**Status legend:** ✅ built & verified on Deck · 🔨 implemented, untested · 📝 designed, not yet built · ❓ open design question · 🚧 needs engine work
-
-**Visual reference:** `~/Desktop/cnc-buildings/{TD,RA}/` — idle-frame PNGs.
-
-**TD prereq → RA Prerequisite= mapping** (TD-prefixed because our IniNames are prefixed to avoid vanilla collisions):
+**TD prereq → RA Prerequisite= mapping:**
 
 | TD prereq enum | TD building | Our entry uses |
 |---|---|---|
@@ -100,515 +95,46 @@ values are in rules.ini.
 | STRUCTF_BARRACKS | PYLE (GDI) / HAND (Nod) | `Prerequisite=TDPYLE` or `TDHAND` per faction |
 | STRUCTF_REFINERY | PROC | `Prerequisite=TDPROC` |
 | STRUCTF_RADAR | HQ | `Prerequisite=TDHQ` |
-| STRUCTF_HOSPITAL | HOSP | `Prerequisite=TDHOSP` (not in v0.3 catalogue) |
+| STRUCTF_HOSPITAL | HOSP | `Prerequisite=TDHOSP` (HOSP isn't ported) |
 
 ---
 
-## Donor cheat-sheet (RA buildings → engine behaviour)
+## Footprints
 
-| Donor | Role / behaviour | Notes |
-|---|---|---|
-| POWR | Power plant — generates power | |
-| APWR | Advanced Power Plant — bigger generator | 3×3 footprint by default — override |
-| TENT | Allied Barracks — infantry production | |
-| BARR | Soviet Barracks — infantry production | |
-| PROC | Ore Refinery — spawns free Ore Truck on build | |
-| SILO | Ore Silo — increases credit cap | |
-| WEAP | War Factory — vehicle production | |
-| HPAD | Helipad — helicopter production / landing | |
-| DOME | Radar Dome — map reveal, tech prereq | |
-| FIX | Service Depot — vehicle repair | |
-| FACT | Construction Yard — building production | tied to MCV deploy |
-| ATEK | Allied Tech Center | |
-| STEK | Soviet Tech Center | |
-| GUN | Allied Turret — anti-vehicle | powered |
-| PBOX | Allied Pillbox — anti-infantry | manned by GI |
-| FTUR | Soviet Flame Turret — anti-infantry | |
-| TSLA | Tesla Coil — heavy anti-everything | power-hungry |
-| SAM | RA SAM Site — anti-air | |
-| AGUN | Anti-Aircraft Gun — fast AA | |
-| MSLO | Missile Silo (superweapon — Atom Bomb) | |
-| IRON | Iron Curtain (superweapon — invuln beam) | |
-| PDOX | Chronosphere (superweapon — teleport) | |
-| AFLD | Airfield (Soviet vehicle delivery via plane) | |
+Each TD building's occupy and overlap lists are decoded from `tiberiandawn/bdata.cpp` (TD's `MCW` is RA's
+`MAP_CELL_W`) and ship in its class constructor in TF's `redalert/bdata.cpp` (for example `TdListProc` /
+`TdOListProc`, and `List21` / `OListSAM` for the SAM, whose overlap uses negative offsets above its box). The
+`Footprint=` presets in `BuildingTypeClass::Read_INI` cover NUKE, NUK2, EYE and HQ (NUK2's 2×2 L-shape: three cells
+occupied, one overlap), PYLE (top row occupied, bottom row overlap), HAND (2×3, with its own exit list and exit point
+`XYP_COORD(36, 63)`), TMPL (3×3, top row overlap) and SILO (2×1). Sizes: HPAD 2×2 full; PROC, WEAP, TMPL and FIX 3×3;
+FACT 3×2; AFLD 4×2; SILO and SAM 2×1; ATWR and OBLI 1×2; GTWR and GUN 1×1.
 
 ---
 
-## Per-entry sections — design rationale
-
-The sections below capture **design rationale and donor choice** for each catalogue entry. The flag values shown in per-entry field tables are illustrative — the **master flag table above is the canonical source** the script reads. Where they disagree, the master table wins.
-
-Entry names below use the TD asset name (e.g. "PYLE", "HAND") for readability; the actual IniName in rules.ini is TD-prefixed (`TDPYLE`, `TDHAND`, etc.) to avoid the vanilla-RA collision class in `td-building-separation-recipe.md`, gotcha 9.
-
----
-
-## GDI catalogue
-
-GDI: Allied-flavoured engine donors where there's a choice. Armoured, ordered, Western.
-
-### PYLE — GDI Barracks 📝
-Faction: GDI · Donor: **TENT** (Allied barracks) · TD lvl 0, $300, -20 power, 400 HP, 2×2 wood, prereq NUKE
-
-| Field | Value |
-|---|---|
-| Image= | PYLE |
-| Footprint= | PYLE (2×2, to add) |
-| Name= | Barracks |
-| TechLevel | 0 |
-| Prerequisite | NUKE |
-| Owner= | GoodGuy |
-| Cost | 300 |
-| Power | -20 |
-| Strength | 400 |
-| Armor | wood |
-| Sight | 3 |
-| Adjacent | 1 |
-| BaseNormal | yes |
-| Capturable | true |
-| Bib | yes |
-
-**Note:** GDI inherits Allied infantry roster (GI, Rocket Soldier, Engineer, Medic, Spy, Tanya) via the TENT donor for v0.3. *Partly superseded (v0.50+):* custom TD infantry have begun shipping as their own engine types — `INFANTRY_TDE1` Minigunner, `TDE2` Grenadier, `TDE3` Rocket Soldier are in (see `td-infantry-port-recipe.md`); the remaining roles still fall back to the vanilla roster.
-
-### HPAD — Helipad 📝
-Faction: **both** · Donor: **HPAD** · TD lvl 6, $1500, -10 power, 400 HP, 2×2 wood, prereq Barracks
-
-| Field | Value |
-|---|---|
-| Image= | HPAD |
-| Footprint= | HPAD (2×2) |
-| Name= | Helipad |
-| TechLevel | 6 |
-| Prerequisite | PYLE\|HAND |
-| Owner= | GoodGuy,BadGuy |
-| Cost | 1500 |
-| Power | -10 |
-| Strength | 400 |
-| Armor | wood |
-| Sight | 3 |
-| Adjacent | 1 |
-| BaseNormal | yes |
-| Capturable | true |
-| Bib | yes |
-
-**Note:** Both factions share HPAD per TD canon (GDI Orca, Nod Apache). Helicopter roster inherits from HPAD donor — RA Longbow for Allied-side, Hind for Soviet-side. TD-flavoured helicopters land in v0.4 with the unit roster work.
-
-### HQ — Communications Center / Radar 📝
-Faction: **both** · Donor: **DOME** · TD lvl 2, $1000, -40 power, 500 HP, 2×2 wood, sight **10**, prereq PROC
-
-| Field | Value |
-|---|---|
-| Image= | HQ |
-| Footprint= | HQ (2×2) |
-| Name= | Communications Center |
-| TechLevel | 2 |
-| Prerequisite | PROC |
-| Owner= | GoodGuy,BadGuy |
-| Cost | 1000 |
-| Power | -40 |
-| Strength | 500 |
-| Armor | wood |
-| Sight | 10 |
-| Adjacent | 1 |
-| BaseNormal | yes |
-| Capturable | true |
-| Bib | yes |
-
-**Note:** TD didn't differentiate visually — both factions shared HQ. Single shared entry.
-
-### EYE — Advanced Communications Center (hosts Ion Cannon) 📝 🚧
-Faction: GDI · Donor: **MSLO** (RA Missile Silo — for superweapon hosting) · TD lvl 7, $2800, -**200** power, 500 HP, 2×2 wood, sight 10, prereq HQ
-
-| Field | Value |
-|---|---|
-| Image= | EYE |
-| Footprint= | EYE (2×2) |
-| Name= | Advanced Communications Center |
-| TechLevel | 7 |
-| Prerequisite | HQ |
-| Owner= | GoodGuy |
-| Cost | 2800 |
-| Power | -200 |
-| Strength | 500 |
-| Armor | wood |
-| Sight | 10 |
-| Adjacent | 1 |
-| BaseNormal | yes |
-| Capturable | true |
-| Bib | yes |
-
-EYE (`STRUCT_TDEYE`) is GDI's superweapon host: it grants the Ion Cannon (`SPC_TD_ION_CANNON`,
-`ANIM_TD_ION_CANNON`), as the Temple grants Nod's nuke. The strike's `Explosion_Damage` gets a NULL
-source on purpose (`AnimClass::Middle`): a real source would make that Eye immune, so a player
-couldn't Ion Cannon their own Eye. The cost is that its kills aren't credited.
-
-**-200 power drain** is huge — players will need NUK2 (or two NUKEs) to support EYE. TD's design intent.
-
-### GTWR — Guard Tower 📝
-Faction: GDI · Donor: **PBOX** (Allied Pillbox) · TD lvl 2, $500, -10 power, 200 HP, **1×1** wood, prereq PYLE
-
-| Field | Value |
-|---|---|
-| Image= | GTWR |
-| Footprint= | GTWR (1×1, to add) |
-| Name= | Guard Tower |
-| TechLevel | 2 |
-| Prerequisite | PYLE |
-| Owner= | GoodGuy |
-| Cost | 500 |
-| Power | -10 |
-| Strength | 200 |
-| Armor | wood |
-| Sight | 3 |
-| Adjacent | 1 |
-| BaseNormal | yes |
-| Capturable | true |
-| Bib | no (1×1 = no bib) |
-
-### ATWR — Advanced Guard Tower 📝
-Faction: GDI · Donor: **AGUN** (Anti-Aircraft Gun) or **GUN** · TD lvl 4, $1000, -20 power, 300 HP, **1×2** aluminum, prereq HQ
-
-| Field | Value |
-|---|---|
-| Image= | ATWR |
-| Footprint= | ATWR (1×2, to add) |
-| Name= | Advanced Guard Tower |
-| TechLevel | 4 |
-| Prerequisite | HQ |
-| Owner= | GoodGuy |
-| Cost | 1000 |
-| Power | -20 |
-| Strength | 300 |
-| Armor | aluminum |
-| Sight | 4 |
-| Adjacent | 1 |
-| BaseNormal | yes |
-| Capturable | true |
-| Bib | no |
-
-**Donor choice:** TD's ATWR fires rockets at both ground & air. AGUN (anti-air only) is closer to the "anti-air rocket" feel. Alternative: GUN (anti-vehicle gun) for a pure anti-ground tower. Pick **AGUN** as default — TD's ATWR was anti-air-capable.
-
----
-
-## Nod catalogue
-
-Nod: Soviet-flavoured engine donors. Aggressive, asymmetric, distinctive defence.
-
-### HAND — Hand of Nod (barracks) 📝
-Faction: Nod · Donor: **BARR** (Soviet barracks) · TD lvl 0, $300, -20 power, 400 HP, **2×3** wood, prereq NUKE
-
-| Field | Value |
-|---|---|
-| Image= | HAND |
-| Footprint= | HAND (2×3, to add — bigger than PYLE) |
-| Name= | Hand of Nod |
-| TechLevel | 0 |
-| Prerequisite | NUKE |
-| Owner= | BadGuy |
-| Cost | 300 |
-| Power | -20 |
-| Strength | 400 |
-| Armor | wood |
-| Sight | 3 |
-| Adjacent | 1 |
-| BaseNormal | yes |
-| Capturable | true |
-| Bib | yes |
-
-**Note:** Footprint is 2×3 (BSIZE_23) — bigger than PYLE's 2×2. Nod barracks: Conscript, Grenadier, Engineer, Spy, Tesla Trooper, Flamethrower via BARR donor.
-
-### GUN — Nod Gun Turret 📝
-Faction: Nod · Donor: **GUN** (Allied Turret) · TD lvl 2, $600, -20 power, 200 HP, **1×1** steel, prereq HAND
-
-| Field | Value |
-|---|---|
-| Image= | GUN |
-| Footprint= | GUN (1×1) |
-| Name= | Nod Turret |
-| TechLevel | 2 |
-| Prerequisite | HAND |
-| Owner= | BadGuy |
-| Cost | 600 |
-| Power | -20 |
-| Strength | 200 |
-| Armor | steel |
-| Sight | 5 |
-| Adjacent | 1 |
-| BaseNormal | yes |
-| Capturable | true |
-| Bib | no |
-
-**Note:** Same IniName as RA's GUN — the display name disambiguates ("Nod Turret" vs "Turret").
-
-### SAM — SAM Site (Nod anti-air) 📝
-Faction: Nod · Donor: **SAM** (RA's own SAM) · TD lvl 6, $750, -20 power, 200 HP, **2×1** steel, prereq HAND
-
-| Field | Value |
-|---|---|
-| Image= | SAM |
-| Footprint= | SAM (2×1) |
-| Name= | SAM Site |
-| TechLevel | 6 |
-| Prerequisite | HAND |
-| Owner= | BadGuy |
-| Cost | 750 |
-| Power | -20 |
-| Strength | 200 |
-| Armor | steel |
-| Sight | 3 |
-| Adjacent | 1 |
-| BaseNormal | yes |
-| Capturable | true |
-| Bib | no |
-
-**Donor choice:** SAM (donor = SAM) makes the engine pop-up missile launcher fire. Alternative: AGUN for continuous fire. Stick with SAM-as-donor for the iconic pop-up feel.
-
-### OBLI — Obelisk of Light 📝
-Faction: Nod · Donor: **TSLA** · TD lvl 4, $1500, -**150** power, 200 HP, **1×2** aluminum, prereq HQ
-
-| Field | Value |
-|---|---|
-| Image= | OBLI |
-| Footprint= | OBLI (1×2, to add) |
-| Name= | Obelisk of Light |
-| TechLevel | 4 |
-| Prerequisite | HQ |
-| Owner= | BadGuy |
-| Cost | 1500 |
-| Power | -150 |
-| Strength | 200 |
-| Armor | aluminum |
-| Sight | 5 |
-| Adjacent | 1 |
-| BaseNormal | yes |
-| Capturable | true |
-| Bib | no |
-
-**Note:** -150 power drain is the design tax for the devastating weapon. Matches TD's design — Obelisk-spam is gated by power.
-
-### AFLD — Nod Airstrip (vehicle factory with cargo-plane delivery) 📝 🚧
-Faction: Nod · Donor: **WEAP** (TD's Airstrip is Nod's vehicle factory) · TD lvl 2, $2000, -30 power, 500 HP, **4×2** steel, prereq PROC, **is_factory=yes**
-
-| Field | Value |
-|---|---|
-| Image= | AFLD |
-| Name= | Nod Airstrip |
-| TechLevel | 2 |
-| Prerequisite | PROC |
-| Owner= | BadGuy |
-| Cost | 2000 |
-| Power | -30 |
-| Strength | 500 |
-| Armor | steel |
-| Sight | 5 |
-| Adjacent | 1 |
-| Factory | yes |
-| BaseNormal | yes |
-| Capturable | true |
-| Bib | yes |
-
-**Design (2026-05-19):** TD-faithful split — GDI=WEAP, Nod=AFLD. Both are vehicle factories with the same vehicle roster until v0.4 brings TD-flavoured tanks.
-
-**Engine work needed (scoped for v0.3, in Nod's portion of the build):**
-
-1. **Exit cell for 4×2 footprint.** WEAP's `ExitList[0]` offset assumes a 3×3 footprint and lands south of row 2. For AFLD's 4×2 it may land inside or beyond the AFLD cells. Test first — if WEAP's offset works for 4×2 (lucky alignment), no change needed. If not, add an `ExitList=` rules.ini override field analogous to the existing `Footprint=` pipeline (1 small DLL change in `BuildingTypeClass::Read_INI`).
-
-2. **Cargo plane delivery mechanic.** Replace the "vehicle teleports to exit coord" behaviour with TD-style "cargo plane flies in → lands → vehicle drives off → plane departs." Engine work in `BuildingClass::Exit_Object` (`redalert/building.cpp:2030`):
-   - Add a check at the start of `case STRUCT_WEAP` (or earlier): if the BuildingTypeClass has an `IsAirDelivered=yes` flag (new rules.ini field), take the air-delivery path instead.
-   - Air-delivery path: spawn a cargo aircraft (new TD AircraftType, donor=BADGER or new) at the closest map edge, carrying the unit as cargo. Aircraft mission flies to the AFLD's center cell, lands (similar to HPAD's `Helper_Find_Cell` for helicopter landing), unloads the vehicle (similar to existing transport-unload code), then takes off and exits the map.
-   - Plumbing: `AircraftClass::Paradrop_Cargo` exists for infantry; vehicle delivery follows the same general arc but needs new code for the "land and unload vehicle" step (RA's Hind/Chinook transport unload is the closest existing path).
-   - Asset: TD's cargo plane sprite (`CARGO.ZIP` from `TEXTURES_TD_SRGB.MEG`).
-
-**Timing:** Don't block. GDI catalogue (NUKE/NUK2/PYLE/HQ/EYE/WEAP/FIX/GTWR/ATWR/HPAD) ships first. When we move into Nod's portion (HAND/GUN/SAM/OBLI/TMPL), AFLD becomes its own focused slice with the two engine pieces above. Estimated 1-2 sessions for the air-delivery work, then AFLD plugs in like any other catalogue entry.
-
-### TMPL — Temple of Nod (superweapon) 📝 🚧
-Faction: Nod · Donor: **MSLO** (RA Missile Silo) · TD lvl 7, $3000, -150 power, **1000** HP, 3×3 aluminum, prereq HQ
-
-| Field | Value |
-|---|---|
-| Image= | TMPL |
-| Footprint= | TMPL (3×3, to add) |
-| Name= | Temple of Nod |
-| TechLevel | 7 |
-| Prerequisite | HQ |
-| Owner= | BadGuy |
-| Cost | 3000 |
-| Power | -150 |
-| Strength | 1000 |
-| Armor | aluminum |
-| Sight | 4 |
-| Adjacent | 1 |
-| BaseNormal | yes |
-| Capturable | true |
-| Bib | yes |
-
-**Launch** (`Mission_Missile`): `BULLET_NUKE_UP` uses `WARHEAD_NONE`, so its top-edge impact shows no
-explosion, and it launches 0xA0 north of centre: TD's roof opening is centred on the 3x3, where the
-Missile Silo's tunnel is NNE.
-
-**Note:** TMPL is `STRUCT_TDTMPL` and fires Nod's nuclear strike (`SPC_TD_NUKE`), launched like RA's Missile Silo (`House->NukeDest`).
-
----
-
-## Shared (both factions) catalogue
-
-Production-chain buildings without strong faction-identity differences.
-
-### NUKE — Power Plant (tier 1) 📝
-Faction: **both** · Donor: **POWR** · TD lvl 0, $300, +100 power, 200 HP, 2×2 wood
-
-| Field | Value |
-|---|---|
-| Image= | NUKE |
-| Footprint= | NUKE (2×2, to add — same shape as NUK2) |
-| Name= | Power Plant |
-| TechLevel | 0 |
-| Owner= | GoodGuy,BadGuy |
-| Cost | 300 |
-| Power | +100 |
-| Strength | 200 |
-| Armor | wood |
-| Sight | 2 |
-| Adjacent | 1 |
-| BaseNormal | yes |
-| Capturable | true |
-| Bib | yes |
-
-### NUK2 — Advanced Power Plant (tier 2) ✅→📝
-Faction: **both** · Donor: **APWR** (was POWR in POC) · TD lvl 5, $700, +200 power, 300 HP, 2×2 wood, prereq NUKE
-
-| Field | POC value | TD-authentic target |
-|---|---|---|
-| Image= | NUK2 | NUK2 |
-| Footprint= | NUK2 | NUK2 |
-| Name= | GDIPowerPlant | Advanced Power Plant |
-| TechLevel | 1 | **5** |
-| Prerequisite | — | **NUKE** |
-| Owner= | GoodGuy | **GoodGuy,BadGuy** |
-| Cost | 350 | **700** |
-| Power | +100 | **+200** |
-| Strength | 400 | **300** |
-| Armor | wood | wood |
-| Sight | 3 | 2 |
-
-**Status:** POC verified on Deck. Migration to TD-authentic values is a v0.3 task — covered when we run the buildout.
-
-### PROC — Refinery 📝
-Faction: **both** · Donor: **PROC** · TD lvl 1, $2000, -40 power, 450 HP, 3×3 wood, prereq NUKE
-
-| Field | Value |
-|---|---|
-| Image= | PROC |
-| Footprint= | PROC (3×3) |
-| Name= | Tiberium Refinery |
-| TechLevel | 1 |
-| Prerequisite | NUKE |
-| Owner= | GoodGuy,BadGuy |
-| Cost | 2000 |
-| Power | -40 |
-| Strength | 450 |
-| Armor | wood |
-| Sight | 4 |
-| Adjacent | 1 |
-| BaseNormal | yes |
-| Capturable | true |
-| Bib | yes |
-
-**Note:** TD calls the refinery's output "Tiberium" rather than "Ore". Display name reflects that.
-
-### SILO — Ore Silo 📝
-Faction: **both** · Donor: **SILO** · TD lvl 1, $150, -10 power, 150 HP, 2×1 wood, prereq PROC
-
-| Field | Value |
-|---|---|
-| Image= | SILO |
-| Footprint= | SILO (2×1) |
-| Name= | Tiberium Silo |
-| TechLevel | 1 |
-| Prerequisite | PROC |
-| Owner= | GoodGuy,BadGuy |
-| Cost | 150 |
-| Power | -10 |
-| Strength | 150 |
-| Armor | wood |
-| Sight | 2 |
-| Adjacent | 1 |
-| BaseNormal | yes |
-| Capturable | true |
-| Bib | yes |
-
-### WEAP — Weapons Factory (GDI vehicle factory) 📝
-Faction: **GDI** · Donor: **WEAP** · TD lvl 2, $2000, -30 power, 500 HP, **3×3** aluminum, prereq PROC
-
-| Field | Value |
-|---|---|
-| Image= | WEAP |
-| Name= | Weapons Factory |
-| TechLevel | 2 |
-| Prerequisite | PROC |
-| Owner= | GoodGuy |
-| Cost | 2000 |
-| Power | -30 |
-| Strength | 500 |
-| Armor | aluminum |
-| Sight | 3 |
-| Adjacent | 1 |
-| Factory | yes |
-| BaseNormal | yes |
-| Capturable | true |
-| Bib | yes |
-
-**Note:** TD-faithful: GDI builds vehicles here, Nod builds at AFLD. Both produce the same vehicle roster until v0.4's TD vehicle work.
-
-### FIX — Service Depot 📝
-`[TDFIX] Name=Repair Facility` matches TD's `TXT_FIX_IT`; RA calls its own one the Service Depot.
-
-Faction: **both** · Donor: **FIX** · TD lvl 5, $1200, -30 power, 400 HP, 3×3 wood, prereq NUKE
-
-| Field | Value |
-|---|---|
-| Image= | FIX |
-| Footprint= | FIX (3×3) |
-| Name= | Service Depot |
-| TechLevel | 5 |
-| Prerequisite | NUKE |
-| Owner= | GoodGuy,BadGuy |
-| Cost | 1200 |
-| Power | -30 |
-| Strength | 400 |
-| Armor | wood |
-| Sight | 3 |
-| Adjacent | 1 |
-| BaseNormal | yes |
-| Capturable | true |
-| Bib | yes |
-
-### FACT — Construction Yard (paired with TD MCV) 📝 🚧
-Faction: **both, split into GDI / Nod variants** · Donor: **FACT** · TD lvl 99 (MCV deploys into it), $5000, -30 power, 400 HP, 3×2 wood
-
-| Field | GDIFACT | NODFACT |
-|---|---|---|
-| Image= | FACT (TD art) | FACT (TD art — same — visual differentiation via remap colour) |
-| Footprint= | FACT (3×2) | FACT (3×2) |
-| Name= | Construction Yard | Construction Yard |
-| TechLevel | 99 | 99 |
-| Owner= | GoodGuy | BadGuy |
-| Cost | 5000 | 5000 |
-| Power | -30 | -30 |
-| Strength | 400 | 400 |
-| Armor | wood | wood |
-| Sight | 3 | 3 |
-
-**Direction (locked 2026-05-19):** v0.3 builds out the standalone TD buildings first, then closes with the MCV+CY pair as the final v0.3 slice. We can't keep starting in a vanilla RA con yard — the visual mismatch is too jarring once the rest of the base is TD-themed.
-
-**Sequencing:** TD buildings (NUKE, NUK2, PROC, SILO, PYLE, HAND, HQ, WEAP, AFLD, EYE, TMPL, FIX, GTWR, ATWR, OBLI, GUN, SAM, HPAD) → then MCV/CY pair → ship v0.3.
-
-**Engine work for MCV/CY pair (v0.3 closing slice):**
-- Add `GDIMCV` / `NODMCV` unit types.
-- Modify MCV deploy logic so it creates the faction-appropriate CY type by reading Owner (or a new field on UnitTypeClass like `DeploysInto=`).
-- Modify initial-units placement in `house.cpp` so GDI/Nod players start with their respective MCV instead of the vanilla one.
-- New CY entries above are then the deploy targets.
-
-This is one cohesive slice — likely a 1-2 session implementation.
+## Entry notes
+
+- **HQ** (Communications Center): TD didn't differentiate it by faction, so it's one shared entry.
+- **EYE** (`STRUCT_TDEYE`, Advanced Communications Center) is GDI's superweapon host: it grants the Ion Cannon
+  (`SPC_TD_ION_CANNON`, `ANIM_TD_ION_CANNON`), as the Temple grants Nod's nuke. The strike's `Explosion_Damage` gets a
+  NULL source on purpose (`AnimClass::Middle`): a real source would make that Eye immune, so a player couldn't Ion
+  Cannon their own Eye. The cost is that its kills aren't credited. Its **-200 power** needs an NUK2 or two NUKEs, as
+  TD intended.
+- **HAND** (Hand of Nod): 2×3 (`BSIZE_23`), bigger than the PYLE's 2×2.
+- **OBLI** (Obelisk of Light): the -150 power drain is the design tax on the weapon; Obelisk-spam is gated by power,
+  as in TD.
+- **AFLD** (Nod Airstrip): Nod's vehicle factory, as TD split it (GDI builds at WEAP, Nod at AFLD); its cargo-plane
+  delivery is `cargo-plane-port.md`.
+- **TMPL** (`STRUCT_TDTMPL`, Temple of Nod) fires Nod's nuclear strike (`SPC_TD_NUKE`), launched like RA's Missile
+  Silo (`House->NukeDest`). In `Mission_Missile`, `BULLET_NUKE_UP` uses `WARHEAD_NONE`, so its top-edge impact shows
+  no explosion, and it launches 0xA0 north of centre: TD's roof opening is centred on the 3x3, where the Missile
+  Silo's tunnel is NNE.
+- **PROC** is the "Tiberium Refinery" and SILO the "Tiberium Silo": TD calls the refinery's output Tiberium, not ore.
+- **FIX:** `[TDFIX] Name=Repair Facility` matches TD's `TXT_FIX_IT`; RA calls its own one the Service Depot.
+- **FACT:** the faction yards and MCVs are `ai-upgrade-plan.md` W2 (b).
+- Where each port's detail lives: TDPROC's bail trickle and dock, `harvester-docking-rework-plan.md`; TDGTWR and TDGUN,
+  `td-gtwr-gun-verification.md`; TDATWR, `td-atwr-deep-dive.md`; TDOBLI's laser line and charge,
+  `td-obli-verification.md`; TDSAM's eight-state launcher, `td-sam-deep-dive.md`; the power plants, barracks and
+  silo, `td-tier1-verification.md`.
 
 ---
 
@@ -632,156 +158,3 @@ Every other house (Allied, Soviet, TS GDI) keeps RA's formula. In a dev build, `
 makes a human player's builds take 15 ticks, about a second; `tf_dev_off.flag` turns it off.
 
 ---
-
-## Not ported
-
-- **HOSP** — Hospital. TD lvl 99 (not normally buildable). Skip.
-- **BIO** — Bio Lab. TD lvl 99 (not normally buildable). Skip.
-- **ARCO** — Tanker. TD lvl 99, $0. Civilian/scenery. Skip.
-
----
-
-## Walkthrough status
-
-| IniName | Faction | Donor (design-era) | Stats? | Status |
-|---|---|---|---|---|
-| TDNUKE | both | POWR | ✓ | ✅ separated + shipped (manual ref impl 2026-05-19) |
-| TDNUK2 | both | APWR | ✓ | ✅ separated + shipped (TD-authentic) |
-| TDPROC | both | PROC | ✓ | ✅ separated + shipped (M4 — bail trickle + harvester dock) |
-| TDSILO | both | SILO | ✓ | ✅ separated + shipped (M2 Tier 1, smoke-verified 2026-05-25) |
-| TDPYLE | GDI | TENT | ✓ | ✅ separated + shipped |
-| TDHAND | Nod | BARR | ✓ | ✅ separated + shipped |
-| TDHPAD | both | HPAD | ✓ | ✅ separated + shipped |
-| TDWEAP | GDI | WEAP | ✓ | ✅ separated + shipped (M4 Tier 3) |
-| TDAFLD | Nod | WEAP | ✓ | ✅ separated + shipped (v0.3.1-phase2d — TDC17 cargo-plane delivery) |
-| TDHQ | both | DOME | ✓ | ✅ separated + shipped |
-| TDEYE | GDI | MSLO | ✓ | ✅ separated + shipped (Ion Cannon superweapon host) |
-| TDTMPL | Nod | MSLO | ✓ | ✅ separated + shipped (Nuclear Strike superweapon host) |
-| TDFIX | both | FIX | ✓ | ✅ separated + shipped |
-| TDGTWR | GDI | PBOX | ✓ | ✅ separated + shipped (M3 Tier 2, TDChainGun port) |
-| TDATWR | GDI | AGUN | ✓ | ✅ separated + shipped (M3 Tier 2, TDTowTwo + TDSSM port) |
-| TDOBLI | Nod | TSLA | ✓ | ✅ separated + shipped (M3 Tier 2, laser-line + charge state) |
-| TDGUN | Nod | GUN | ✓ | ✅ separated + shipped (M3 Tier 2, TDTurretGun) |
-| TDSAM | Nod | SAM | ✓ | ✅ separated + shipped (M3 Tier 2, 8-state launcher 2026-05-25) |
-| TDFACT | both | FACT | ✓ | ✅ separated + shipped; split per faction in 4.1.0 (TDGFACT, TDNFACT) |
-| TDMCV | GoodGuy only | MCV (unit) | — | ✅ separated + shipped; split per faction in 4.1.0 (TDGMCV, TDNMCV) |
-| HOSP/BIO/ARCO | — | — | — | skip (still unbuilt) |
-
----
-
-## Footprint presets — ready to paste into `redalert/bdata.cpp`
-
-Each TD building needs a `Footprint=` preset registered in the `_presets[]` table in `BuildingTypeClass::Read_INI` (currently around line 3780). The shapes below are decoded from `tiberiandawn/bdata.cpp` — TD uses `MCW` (Map Cell Width), RA's equivalent is `MAP_CELL_W`. Substitution is mechanical.
-
-**Shared shapes:** HQ, EYE, NUKE, NUK2 all share the same 2×2 L-shape (3-cell occupy + 1-cell overlap). GTWR and GUN share 1×1. ATWR and OBLI share 1×2.
-
-### Static array declarations
-
-```cpp
-// 2×2 L-shape (3 occupied + 1 visual overlap) — shared by NUKE, NUK2, HQ, EYE
-static short const List_NUK2_OCCUPY[]  = {0, MAP_CELL_W, MAP_CELL_W + 1, REFRESH_EOL};        // existing
-static short const List_NUK2_OVERLAP[] = {1, REFRESH_EOL};                                     // existing
-// (NUKE/HQ/EYE can reference these directly via aliasing in _presets[].)
-
-// 2×2 split (top occupied, bottom overlap) — PYLE
-static short const List_PYLE_OCCUPY[]  = {0, 1, REFRESH_EOL};
-static short const List_PYLE_OVERLAP[] = {MAP_CELL_W, MAP_CELL_W + 1, REFRESH_EOL};
-
-// 2×3 — HAND (Nod barracks, bigger than PYLE)
-static short const List_HAND_OCCUPY[]  = {MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W * 2 + 1, REFRESH_EOL};
-static short const List_HAND_OVERLAP[] = {0, 1, MAP_CELL_W * 2, MAP_CELL_W, REFRESH_EOL};
-
-// 2×2 full-fill — HPAD
-static short const List_HPAD_OCCUPY[]  = {0, 1, MAP_CELL_W, MAP_CELL_W + 1, REFRESH_EOL};
-
-// 3×3 — PROC, WEAP, TMPL, FIX (different shapes per building)
-static short const List_PROC_OCCUPY[]  = {1, MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W + 2, REFRESH_EOL};
-static short const List_PROC_OVERLAP[] = {0, 2, MAP_CELL_W * 2, MAP_CELL_W * 2 + 1, MAP_CELL_W * 2 + 2, REFRESH_EOL};
-
-static short const List_WEAP_OCCUPY[]  = {MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W + 2,
-                                          MAP_CELL_W * 2, MAP_CELL_W * 2 + 1, MAP_CELL_W * 2 + 2, REFRESH_EOL};
-static short const List_WEAP_OVERLAP[] = {0, 1, 2, REFRESH_EOL};
-
-static short const List_TMPL_OCCUPY[]  = {MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W + 2,
-                                          MAP_CELL_W * 2, MAP_CELL_W * 2 + 1, MAP_CELL_W * 2 + 2, REFRESH_EOL};
-static short const List_TMPL_OVERLAP[] = {0, 1, 2, REFRESH_EOL};
-
-static short const List_FIX_OCCUPY[]   = {1, MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W + 2,
-                                          MAP_CELL_W + MAP_CELL_W + 1, REFRESH_EOL};
-static short const List_FIX_OVERLAP[]  = {0, 2, MAP_CELL_W + MAP_CELL_W, MAP_CELL_W + MAP_CELL_W + 2, REFRESH_EOL};
-
-// 3×2 — FACT (note: opposite orientation from 2×3 HAND)
-static short const List_FACT_OCCUPY[]  = {0, 1, 2, MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W + 2, REFRESH_EOL};
-
-// 4×2 — AFLD (big!)
-static short const List_AFLD_OCCUPY[]  = {0, 1, 2, 3, MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W + 2, MAP_CELL_W + 3, REFRESH_EOL};
-
-// 2×1 — SILO, SAM
-static short const List_SILO_OCCUPY[]  = {0, 1, REFRESH_EOL};
-
-static short const List_SAM_OCCUPY[]   = {0, 1, REFRESH_EOL};
-static short const List_SAM_OVERLAP[]  = {-MAP_CELL_W, -(MAP_CELL_W - 1), REFRESH_EOL};
-// ⚠️ SAM's overlap uses NEGATIVE offsets — extends above the bounding box. Verify renderer handles this in RA.
-
-// 1×2 — ATWR, OBLI
-static short const List_ATWR_OCCUPY[]  = {MAP_CELL_W, REFRESH_EOL};
-static short const List_ATWR_OVERLAP[] = {0, REFRESH_EOL};
-
-// 1×1 — GTWR, GUN
-static short const List_1x1_OCCUPY[]   = {0, REFRESH_EOL};
-```
-
-### `_presets[]` table entries
-
-```cpp
-static FootprintPreset const _presets[] = {
-    {"NUKE", BSIZE_22, List_NUK2_OCCUPY,  List_NUK2_OVERLAP},   // shares NUK2's L-shape
-    {"NUK2", BSIZE_22, List_NUK2_OCCUPY,  List_NUK2_OVERLAP},   // existing
-    {"HQ",   BSIZE_22, List_NUK2_OCCUPY,  List_NUK2_OVERLAP},   // shares NUK2's L-shape
-    {"EYE",  BSIZE_22, List_NUK2_OCCUPY,  List_NUK2_OVERLAP},   // shares NUK2's L-shape
-    {"PYLE", BSIZE_22, List_PYLE_OCCUPY,  List_PYLE_OVERLAP},
-    {"HAND", BSIZE_23, List_HAND_OCCUPY,  List_HAND_OVERLAP},
-    {"HPAD", BSIZE_22, List_HPAD_OCCUPY,  NULL},
-    {"PROC", BSIZE_33, List_PROC_OCCUPY,  List_PROC_OVERLAP},
-    {"WEAP", BSIZE_33, List_WEAP_OCCUPY,  List_WEAP_OVERLAP},
-    {"TMPL", BSIZE_33, List_TMPL_OCCUPY,  List_TMPL_OVERLAP},
-    {"FIX",  BSIZE_33, List_FIX_OCCUPY,   List_FIX_OVERLAP},
-    {"FACT", BSIZE_32, List_FACT_OCCUPY,  NULL},
-    {"AFLD", BSIZE_42, List_AFLD_OCCUPY,  NULL},
-    {"SILO", BSIZE_21, List_SILO_OCCUPY,  NULL},
-    {"SAM",  BSIZE_21, List_SAM_OCCUPY,   List_SAM_OVERLAP},
-    {"ATWR", BSIZE_12, List_ATWR_OCCUPY,  List_ATWR_OVERLAP},
-    {"OBLI", BSIZE_12, List_ATWR_OCCUPY,  List_ATWR_OVERLAP},   // shares ATWR's 1×2
-    {"GTWR", BSIZE_11, List_1x1_OCCUPY,   NULL},
-    {"GUN",  BSIZE_11, List_1x1_OCCUPY,   NULL},
-};
-```
-
-### Visual reference (occupied vs overlap)
-
-ASCII shapes — `▓` = occupied cell, `░` = visual overlap, `·` = bounding box only.
-
-| Bldg | Shape | BSIZE |
-|---|---|---|
-| NUKE/NUK2/HQ/EYE | `▓░`<br>`▓▓` | 2×2 |
-| PYLE | `▓▓`<br>`░░` | 2×2 |
-| HPAD | `▓▓`<br>`▓▓` | 2×2 (full) |
-| HAND | `░░`<br>`▓▓`<br>`░▓` | 2×3 |
-| FACT | `▓▓▓`<br>`▓▓▓` | 3×2 |
-| AFLD | `▓▓▓▓`<br>`▓▓▓▓` | 4×2 |
-| PROC | `·░·`<br>`▓▓▓·`<br>`░░░` *(approx)* | 3×3 |
-| WEAP/TMPL | `░░░`<br>`▓▓▓`<br>`▓▓▓` | 3×3 |
-| FIX | `░░░`<br>`░▓▓▓·`<br>`░░` *(approx)* | 3×3 |
-| SILO/SAM | `▓▓` | 2×1 (SAM has overhang) |
-| ATWR/OBLI | `░`<br>`▓` | 1×2 |
-| GTWR/GUN | `▓` | 1×1 |
-
-*(ASCII approximations — refer to the array definitions for exact cells.)*
-
----
-
-## Workflow per entry
-
-1. Pick decisions for the entry (faction, donor, stats — all decided above for v0.3).
-2. Run `td-building-separation-recipe.md`.
-3. Update status: 📝 → 🔨 (built, untested) → ✅ (Deck-verified).

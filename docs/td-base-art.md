@@ -35,10 +35,11 @@ shipped saving is the base-identical part of the 169 MB of `TD*` ZIPs in the bui
 ## The build step
 
 `scripts/td_base_art.py` runs at staging (`stage_asset_packs.py`, after `share_tileset_zips.py`). A
-TD tile whose every frame is byte for byte a frame of a ZIP in `TEXTURES_TD_SRGB.MEG` (matched by
-the frame's and its `.meta`'s CRC and size) moves into `RA_VFX`, with its frames naming the base
-game's; `RA_VFX` is re-rooted at the texture root, its own frames gaining their old root, with an
-opener per ZIP folder (a loose frame folder, such as the rally-point dots, needs none). A TD ZIP no
+TD tile whose every frame is byte for byte a frame of a ZIP in `TEXTURES_TD_SRGB.MEG` moves into
+`RA_VFX` with its frames naming the base game's, and `RA_VFX` is re-rooted with an opener per ZIP folder, as in
+the field manual's
+[TD art from the base game](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-art-from-the-base-game.md#the-mechanism-an-opener-tile)
+(frames matched by size and CRC, as its traps say; the rally-point dots are a loose frame folder). A TD ZIP no
 frame names any more stays out of the build: 89 TD tile names and 78 ZIPs, 126 MB, on this build.
 A tile with frames of its own (`TDFLAME-*`, half of `TDMLRS`) keeps its ZIP. The source tree is
 unchanged. TD buildings (yard, power plant, Hand of Nod and its build-up), the Nod MCV and the
@@ -62,13 +63,13 @@ from the base game.
   only there (`TemplateTypeClass::Init`). On a TD theatre `Get_Template_Info` sends TD's own name
   (`TDSH17` as `SH17`), and trees keep TD's names (`T01`).
 - **What it gives.** Terrain, trees, bibs, smudges and the radar all come from TD's own tileset, as
-  in TD. Smudges need the DLL's theatre to have the classic shape (`Get_Image_Data`), which
-  each TD theatre's row in `Theaters[]` (`const.cpp`) gives it from RA temperate's mix.
-- **Classic data.** A TD template's game data (size, land type per icon) is TD's own iconset from
-  `DESERT.MIX`, `TEMPERAT.MIX` or `WINTER.MIX`, converted to RA's format with TD's land types and
-  packed in `TFASSETS.MIX` as `TD<name>.DES`, `.TEM` or `.WIN`; a river template's water is
-  `LAND_RIVER`. RA's objects on a TD theatre (trees, bibs, smudges) use RA temperate's classic
-  data and palette (`TF_Base_Theater` and the TD rows of `Theaters[]`).
+  in TD. Smudges get their classic shape (`Get_Image_Data`) from each TD theatre's row in
+  `Theaters[]` (`const.cpp`), as in the field manual's
+  [TD theatres in Red Alert](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-theatres-in-red-alert.md#the-dll-side-matching-theatres),
+  step 3.
+- **Classic data.** A TD template's game data is TD's own iconset, converted as in step 4 of the same page and
+  packed in `TFASSETS.MIX` as `TD<name>.DES`, `.TEM` or `.WIN`. RA's objects on a TD theatre (trees, bibs,
+  smudges) use RA temperate's classic data and palette (`TF_Base_Theater` and the TD rows of `Theaters[]`).
 - **Desert terrain.** TD's desert trees and rocks are RA terrain types loaded from TD's shapes
   (`<name>.DES`), as in the field manual's
   [TD theatres in Red Alert](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/using-what-the-player-owns/td-theatres-in-red-alert.md#the-dll-side-matching-theatres),

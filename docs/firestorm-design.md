@@ -12,8 +12,10 @@ left. Engine reference: OpenTS (`reference/OpenTS/code/`); data: TS's own `RULES
 ## What ships
 
 - **The generator** (`TSFGEN`; `TSFIRE` is the Devil's Tongue fire-stream particle's art name): TS
-  stats, prerequisite TSTECH, power −200, grants `SPC_TS_FIRESTORM`. Idle anims at TS's speeds (TS
-  `Rate=` is frames per minute: OpenTS `animtype.cpp` delay = TICKS_PER_MINUTE / Rate). The AI
+  stats, prerequisite TSTECH, power −200, grants `SPC_TS_FIRESTORM`. Idle anims at TS's speeds (`Rate=`
+  read as the field manual's
+  [Porting art from other C&C games](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/porting-art-from-other-games.md#tiberian-sun)
+  says). The AI
   doesn't build it (TS's AI never raises the field either).
 - **Sections** (`TSFSDF`): 1x1, not selectable, insignificant, no build-up, $250, power −2, 200 HP
   concrete, prerequisite TSFGEN, `BaseNormal=no`, `Adjacent=3`. HD art from
@@ -64,16 +66,17 @@ left. Engine reference: OpenTS (`reference/OpenTS/code/`); data: TS's own `RULES
 - **Pad art is TS's pixels rebuilt for RA's grid:** a square 64 px hub centred in the cell with TS's
   dish in it, rails 64 px thick both ways with rungs 21 px apart, TS's beam on both sides of every
   rail, chamfered hub corners where no rail joins, one outline round the shape, no support legs.
-  Dead ends: rotating TS's sprite as it is (lopsided lighting, dish off-centre), the 32° squash of the
+  Rejected: rotating TS's sprite as it is (lopsided lighting, dish off-centre), the 32° squash of the
   hub and east-west rails, a generated flat rim, Blender geometry.
 - **No screen-position click readers:** the click comes through the patched launcher handler.
 
 ## Traps
 
-- **Wall-section seam:** the launcher places a sprite half its classic stub width from its centre,
-  so an odd stub width lands ~2.7 HD px east of its neighbours. Wall pieces keep even stubs: sections
+- **Wall-section seam:** an odd classic stub width lands a piece ~2.7 HD px east of its neighbours (why: the field
+  manual's [Gates](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/gates.md#joining-walls),
+  joining walls). Wall pieces keep even stubs: sections
   256x256 (stub 48, `build_tfassets.sh`), TS walls 128x128 (stub 24), towers 256x384 (stub 48).
-- **TS Service Depot pad seat** (built in this arc): the depot's 3x3 is solid, so a vehicle on it may
+- **TS Service Depot pad seat:** the depot's 3x3 is solid, so a vehicle on it may
   cross its cells to leave; the gantry cells (west column, top two: `TF_Depot_Is_Gantry`) stay
   closed to every vehicle; exits are two cells out. The pad glow is `TSDEPTRP` (GTDEPT_D frames
   0-13, drawn while BSTATE_ACTIVE; GADEPT_C1-C3 are ART.INI sections that draw the one `GADEPT_C` SHP). The pad ring's centre is 6 px

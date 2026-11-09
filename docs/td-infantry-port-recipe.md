@@ -3,9 +3,10 @@
 **Status:** Reference. The pipeline for porting a TD infantry unit; every TD infantry unit ships
 this way.
 
-**Worked examples** (all shipped 2026-05-29): `INFANTRY_TDE1` Minigunner — first port, establishes the infantry pipeline the way TDATWR established buildings; `INFANTRY_TDE2` Grenadier (GDI-only) — its visible 8-frame tumbling-bomb bullet white-boxed, so it reuses RA's shared `Projectile=Lobbed`; `INFANTRY_TDE3` Rocket Soldier (GDI+Nod) — its **homing rotating missile is the first own-bullet visible projectile to render clean** (`Image=TDDRAGON`, reuses TDSSM's sprite, no bundling), confirming the playbook §3.25 rotating-renders / tumbling-white-boxes rule; `INFANTRY_TDE4` Flamethrower (Nod-only) — first **directional muzzle-anim** weapon: the flame jet is 8 facing-specific `ANIM_FLAME_*` anims (not a projectile), and **HD-only anims render a green placeholder until given a donor `ImageData`** — full sub-recipe in playbook **§3.26**; `INFANTRY_TDE5` Chem Warrior (Nod-only, Temple-gated) — the flamethrower's **reskinned twin** (byte-identical DO table + 660-frame layout → reuses `TdFlamethrowerDoControls` + `bundle_unit.py --tileset-donor E4`), and the unit that surfaced the **muzzle-weapon impact-explosion leak** + **classic-SHP parity** fixes (playbook §3.26 (d)/(e)).
+**Worked examples:** `INFANTRY_TDE1` Minigunner, the model for the infantry pipeline as TDATWR is for buildings; `INFANTRY_TDE2` Grenadier (GDI-only) — its visible 8-frame tumbling-bomb bullet white-boxed, so it reuses RA's shared `Projectile=Lobbed`; `INFANTRY_TDE3` Rocket Soldier (GDI+Nod) — its **homing rotating missile is the first own-bullet visible projectile to render clean** (`Image=TDDRAGON`, reuses TDSSM's sprite, no bundling), confirming the playbook §3.25 rotating-renders / tumbling-white-boxes rule; `INFANTRY_TDE4` Flamethrower (Nod-only) — first **directional muzzle-anim** weapon: the flame jet is 8 facing-specific `ANIM_FLAME_*` anims (not a projectile), and **HD-only anims render a green placeholder until given a donor `ImageData`** — full sub-recipe in playbook **§3.26**; `INFANTRY_TDE5` Chem Warrior (Nod-only, Temple-gated) — the flamethrower's **reskinned twin** (byte-identical DO table + 660-frame layout → reuses `TdFlamethrowerDoControls` + `bundle_unit.py --tileset-donor E4`), and the unit that surfaced the **muzzle-weapon impact-explosion leak** + **classic-SHP parity** fixes (playbook §3.26 (d)/(e)).
 
-**Read first:** `docs/td-port-playbook.md` (architecture + traps). This doc is the infantry-specific companion to `docs/td-building-separation-recipe.md`.
+**Read first:** `td-port-playbook.md` (architecture and traps). This doc is the infantry-specific companion to
+`td-building-separation-recipe.md`.
 
 ---
 
@@ -17,7 +18,7 @@ this way.
 4. **THE KEY TRAP — donor ImageData (or the unit is invisible).** See §8. This is the one that bit TDE1.
 5. **Cameo is a reference, not a bundle.** `<BuildIcon>` points at a vanilla TD `BuildIcon_TD_*` region already in the launcher PAK (defined in `CNCBUILDABLES.XML`). Nothing is shipped. All TD infantry/vehicle icons exist: `BuildIcon_TD_Minigunner/Grenadier/RocketSoldier/Flamethrower/ChemWarrior/Engineer/Commando/FlameTank/RocketLauncher`.
 6. **Crew:** TD buildings spawn the minigunner as survivors (`BuildingClass::Crew_Type`, TD IniName → `INFANTRY_TDE1`).
-7. **Voices: free.** GDI/Nod response VOCs are already routed to TD voices (2026-05-28 work). Any TD infantry that fires standard `Response_*` VOCs speaks TD voices automatically when `ActLike` is `HOUSE_GOOD`/`HOUSE_BAD`.
+7. **Voices: free.** GDI/Nod response VOCs are routed to TD voices. Any TD infantry that fires standard `Response_*` VOCs speaks TD voices automatically when `ActLike` is `HOUSE_GOOD`/`HOUSE_BAD`.
 
 ---
 
@@ -56,7 +57,8 @@ scripts/bundle_unit.py E1 TDE1 \
 Extracts `<ASSET>.ZIP` from `TEXTURES_TD_SRGB.MEG`, repacks TD-prefixed → `UNITS/<ININAME>.ZIP`; clones the `<ASSET>` tile run in `RA_UNITS.XML` → `<ININAME>` (verbatim format, frame paths re-pointed); wires the `RABUILDABLES.XML` cameo via the documented `patch_rabuildables_xml`. (Find the build-icon name + text IDs in CONFIG.MEG's `CNCBUILDABLES.XML`.) The repacked ZIP stays in the source tree only: staging's `scripts/td_base_art.py` points an unchanged TD tile at the base game's ZIP through an opener tile and leaves the copy out of the build (`td-base-art.md`).
 
 ### 8. ⚠️ THE DONOR-IMAGEDATA FIX — do this or the unit is INVISIBLE
-`InfantryTypeClass::One_Time` (idata.cpp) loads each SHP via `MFCD::Retrieve`. TD-prefixed infantry have **no SHP in any MIX** (only the TGA tileset), so `ImageData` stays `NULL` → `InfantryClass::Draw_It` bails at its NULL-shape guard → the unit **builds, is selectable, plays voices, but renders nothing**. Infantry need the same donor fallback as **buildings (`bdata.cpp`'s `_td_bdonors`), aircraft (`aadata.cpp`) and units (`udata.cpp`)** — but `idata.cpp` shipped without one. Add after the load loop:
+`InfantryTypeClass::One_Time` (idata.cpp) loads each SHP via `MFCD::Retrieve`. TD-prefixed infantry have **no SHP in any MIX** (only the TGA tileset), so `ImageData` stays `NULL` → `InfantryClass::Draw_It` bails at its NULL-shape guard → the unit **builds, is selectable, plays voices, but renders nothing**. Infantry need the same donor fallback as **buildings (`bdata.cpp`'s `_td_bdonors`), aircraft (`aadata.cpp`) and
+units (`udata.cpp`)**. TF's sits after the load loop (`idata.cpp:1927` for TDE1), one block per type:
 ```cpp
 InfantryTypeClass& tdxx = As_Reference(INFANTRY_TDxx);
 if (tdxx.ImageData == NULL) ((void const*&)tdxx.ImageData) = As_Reference(INFANTRY_E1).ImageData;
@@ -69,7 +71,11 @@ The launcher's `Techno_Draw_Object` overlay then renders the real `TDxx` sprite 
 
 ### 10. Build / deploy / smoke-test
 - Build: mingw remaster preset (CLAUDE.md recipe).
-- Deploy: the 184 MB front-end crest atlas (`MT_COMMANDBAR_COMMON.TGA`) **must live in `resources/.../ART/TEXTURES/SRGB/`** (gitignored, `.gitignore` line 15) — then *both* rebuilds and `deploy.sh` repackage it and `rsync --delete` keeps it. **If it's only in `build/` and not in `resources/`, any rebuild drops it and `deploy.sh --delete` then wipes it off the Deck** (this bit E2 2026-05-29 — restored from `/tmp/atlas_v3.tga`). Always `ls -la resources/.../MT_COMMANDBAR_COMMON.TGA` (≈177 MB) before deploying; regen via `scripts/frontend_atlas_build.py` if absent.
+- Deploy: the UI atlas (`MT_COMMANDBAR_COMMON.TGA`, with the faction crests) is gitignored and **must live in
+  `resources/.../ART/TEXTURES/SRGB/`**, from where every restage packages it. A copy only in `build/` is dropped by
+  the next restage, and the mirroring deploy then deletes it from the target. `deploy.sh` refuses a missing or
+  stale atlas. Copy main's into a new worktree, or rebuild it with `title_logo_build.py`, `menu_art.py`,
+  `lobby_art.py` and `campaigns_page_build.sh` (`ui-atlas-modding.md`).
 - Smoke: builds from the barracks (TDPYLE/TDHAND), **renders at correct scale**, fires the TD weapon (sound/range/damage), TD voice on select/move, crew spawn on building death.
 
 ---
@@ -83,7 +89,7 @@ The launcher's `Techno_Draw_Object` overlay then renders the real `TDxx` sprite 
 | **Borrowed RA weapon** | Wrong range / sound / armor curve | Chain-audit from TD source; port `TDxx` weapon+warhead+bullet+sound |
 | **Visible custom bullet** | Projectile renders as a **white box** | 32-frame rotating missiles port as own bullets; tumbling/arcing bombs reuse RA's `Projectile=Lobbed` (playbook §3.25) |
 | **Muzzle-anim weapon (flame)** | Green placeholder box where the jet should be | HD-only anims have NULL `ImageData` → donor-ImageData in `AnimTypeClass::One_Time`; dispatch directional anim via `Fire_Direction()`; TD-prefix the names (playbook §3.26) |
-| **Atlas only in `build/`** | Crest atlas wiped off Deck on rebuild+deploy | Keep `MT_COMMANDBAR_COMMON.TGA` in `resources/` (gitignored), not just `build/` |
+| **Atlas only in `build/`** | Crest atlas deleted from the target on rebuild and deploy | Keep `MT_COMMANDBAR_COMMON.TGA` in `resources/` (gitignored), not just `build/` |
 
 **EA's HD frames as a reference.** `scripts/ea_infantry_extract.py` packages an EA infantry unit's HD frames
 from the texture MEGs (PNG plus META, as shipped), a contact sheet, one strip per sequence and its DO table
@@ -91,16 +97,16 @@ quoted from EA's source, with the ranges checked, for fitting new infantry art a
 
 ---
 
-## The roster — COMPLETE (2026-05-30)
+## The roster: complete
 
 **Shipped:** E1 Minigunner, E2 Grenadier, E3 Rocket Soldier, **E4 Flamethrower** (first muzzle-anim weapon — §3.26), **E5 Chem Warrior** (Nod, Temple-gated; flamethrower's reskinned twin — §3.26 d/e), **E6 Engineer** (no weapon; faction-conditional capture — §3.27), **Commando** (125-dmg sniper + C4 + the iconic RAMBO voices). The full TD infantry roster is ported.
 
 **Commando (`INFANTRY_TDRMBO`) — key facts:**
-- Weapon is **`WEAPON_RIFLE`** (125-dmg `BULLET_SNIPER`), **NOT M16** — our own roster doc had it wrong (playbook §2.1). Reuses the invisible `BULLET_TD50cal`; new `WARHEAD_TDHollow` (`{1.0,0.03,0.03,0.03,0.03}`) one-shots infantry / ~nil vs armor. Sound `RAMGUN2` (base asset, `RAC/RAR_SFX_RAMGUN2`).
+- Weapon is **`WEAPON_RIFLE`** (125-dmg `BULLET_SNIPER`), **NOT M16**, whatever a summary table says (playbook §2.1). Reuses the invisible `BULLET_TD50cal`; new `WARHEAD_TDHollow` (`{1.0,0.03,0.03,0.03,0.03}`) one-shots infantry / ~nil vs armor. Sound `RAMGUN2` (base asset, `RAC/RAR_SFX_RAMGUN2`).
 - **C4 building-destroy = `C4=yes`**, with no runtime code: see the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#infantry), Infantry ("C4 is a flag").
 - **Both factions build it** via `Prerequisite=atek` — the existing Eye(GDI)/Temple(Nod) `STRUCT_ADVANCED_TECH` remap (house.cpp), same idiom as TDMCV and RA's Tanya. RA's `Prerequisite=` is an AND-list, so this is the only way to OR two faction tech-centres.
 - **RAMBO one-liners already ship in the base `SFX2D_EN-US.MEG`** (`TDC/TDR_SFX_CMD_<NAME>_EN-US`). Wired as `RAC/RAR_SFX_TD<NAME>` localized SFXEvents (IN_NOVAR → no `.V0x` suffix, name passes through clean) + a `*this == INFANTRY_TDRMBO` case in `Response_Select/Move/Attack` **before** the GDI/Nod intercept. `PIP_COMMANDO`. No new asset bundling for voices.
-- **468-frame sprite has no exact-count RA donor** → `bundle_unit.py` now slices a larger donor (E1, 532) down to the ZIP frame count (new `frame_count` param). Generalises to any future unit without a matching donor.
+- **468-frame sprite has no exact-count RA donor** → `bundle_unit.py` slices a larger donor (E1, 532) down to the ZIP frame count (its `frame_count` param). Generalises to any future unit without a matching donor.
 
 **Engineer (`INFANTRY_TDE6`) — key facts:**
 - No weapon; `Infiltrate=yes`. Capture is keyed on `INFANTRY_RENOVATOR` (the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md#infantry), Infantry), so TDE6 joins the **execution** (`infantry.cpp` Per_Cell_Process), **cursor** (`What_Action`) and **AI capture-targeting** (`foot.cpp`) tests. See §3.27.

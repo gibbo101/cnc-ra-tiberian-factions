@@ -46,7 +46,7 @@ sections, and `package-for-workshop.sh` runs it.
 - `td-building-separation-recipe.md` — a TD building as its own `STRUCT_TDxxxx` type.
 - `td-infantry-port-recipe.md` — the infantry pipeline.
 - `td-vehicle-port-recipe.md` — the vehicle pipeline.
-- `catalogue.md` — TD-source stats for every TD building.
+- `catalogue.md` — TD-source stats, wiring and footprints for every TD building, and TF's build times.
 - `naval-and-air-units.md` — GDI and Nod fleets, the A-10, the support powers, 3D ship art.
 - `cargo-plane-port.md` — the Nod Airstrip's cargo-plane delivery.
 - `td-atwr-deep-dive.md` — the Advanced Guard Tower.
@@ -75,7 +75,7 @@ sections, and `package-for-workshop.sh` runs it.
 - `launcher-render-contracts.md` — how the launcher draws art; house rules for TS art.
 - `td-base-art.md` — reading TD art from the base game's MEG instead of shipping copies.
 - `cameo-dds.md` — sidebar cameos as DXT1 DDS, and why the badges stay baked.
-- `sprite-memory.md` — video memory: sprites and the UI atlas as DDS, the always-on splash preload, the match warm-up.
+- `sprite-memory.md` — video memory: sprites as ZIPs and why not DDS, the UI atlas as DDS, the always-on splash preload, the match warm-up.
 - `td-tile-hd-loose-art-investigation.md` — what loose art can add to terrain templates in HD.
 - `classic-mode-palette-remap.md` — classic graphics mode, locked out.
 - `tiberium-ecosystem.md` — Tiberium, blossom trees, infantry damage and Visceroids.
@@ -83,7 +83,7 @@ sections, and `package-for-workshop.sh` runs it.
 ### Audio
 - `td-audio-routing-recipe.md` — routing a sound from the DLL to the launcher; sample formats; the launcher's own EVA lines by faction.
 - `building-sound-routing.md` — TD building, credit and UI sounds for GDI and Nod.
-- `skirmish-music.md` — skirmish, jukebox and menu music: the playlists, music by faction, the TS-Music pack.
+- `skirmish-music.md` — skirmish, jukebox and menu music: the playlists, music by faction, the withdrawn TS-Music pack.
 - `ea-modding-guidelines.md` — EA's C&C modding guidelines: what they forbid, the required disclaimer, and the check the packagers run.
 - `ts-music-import.md` — Tiberian Sun's soundtrack converted from the player's own copy, replacing the TS-Music pack.
 
@@ -103,9 +103,9 @@ sections, and `package-for-workshop.sh` runs it.
 
 ### AI, pathfinding and economy
 - `ai-upgrade-plan.md` — the AI milestone: what shipped and what is left.
-- `ai-improvements.md` — the AI problem inventory.
+- `ai-improvements.md` — the AI problem inventory: the stock skirmish AI's gaps and what TF does about each.
 - `path-failure-livelock-design.md` — units retrying a doomed path.
-- `chokepoint-reservation-design.md` — units queuing at a chokepoint.
+- `chokepoint-reservation-design.md` — vehicles meeting in a one-cell gap: give-way and corridor claims.
 - `harvester-recovery-design.md` — harvesters stuck in walled fields.
 - `harvester-docking-rework-plan.md` — harvester docking across factions.
 - `cfe-port-plan.md` — the CFE Patch Redux features ported.

@@ -9,9 +9,8 @@ thumbnail is repainted to match. The stock map name, lobby entry and start posit
 they are.
 
 **Proven in play** on the Deck: Keep off the Grass against a Medium AI showed the
-East field as Tiberium with the blossom tree standing in it, and the home Ore and centre gems
-untouched. The same night the lobby showed the repainted thumbnail, so a loose DDS does
-override an official map's preview.
+East field as Tiberium with the blossom tree standing in it, the home Ore and centre gems
+untouched, and the repainted thumbnail in the lobby.
 
 ## Delivery
 
@@ -30,11 +29,11 @@ builder finds each map's key by matching its bounds and starts.
 
 A theatre whose tileset lacks `TIB01` draws no Tiberium: see the field manual's
 [A new resource on the official skirmish maps](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/official-maps-with-tiberium.md#every-theatre-needs-the-resources-art). The temperate and interior
-tilesets have carried TIB01 since the Tiberium ecosystem; RA's snow tileset gained it for these
+tilesets carry TIB01 for the Tiberium ecosystem; RA's snow tileset carries it for these
 hybrids (`scripts/build_tiberium_hd.py SNOW`): TD's winter Tiberium frames (`TI1.WIN`) packed into
 `Data/ART/TEXTURES/SRGB/RED_ALERT/TERRAIN/SNOW/TIB01.ZIP`, and 12 TIB01 tiles spliced into the
 mod's existing `RA_TERRAIN_SNOW.XML`. The converted TD winter maps don't use it: they live in the
-temperate slot. **Proven in play 2026-09-14** (desktop, headless): Middle Mayhem's central
+temperate slot. **Proven in play** (desktop, headless): Middle Mayhem's central
 island drew TD's winter Tiberium on the snow with its blossom trees standing in it, and no
 missing-art boxes.
 
@@ -154,11 +153,11 @@ python3 scripts/official_map_hybrid.py        # build the plan plus HYBRIDS
 3. **Build.** Add the map to `HYBRIDS` and run the script.
 4. **Check the map.** Validate and render with the mod loaded:
    ```bash
-   cd ~/Documents/development/cnc-remastered-mods && export PATH="$HOME/.dotnet:$PATH"
+   cd "$(git rev-parse --show-toplevel)/.." && export PATH="$HOME/.dotnet:$PATH"
    env -u DISPLAY dotnet run --project cnc-map-editor/MobiusCli -- validate <ini> --mod cnc-ra-tiberian-factions/build/remaster/Vanilla_RA
    env -u DISPLAY dotnet run --project cnc-map-editor/MobiusCli -- render <ini> <out.png> --mod cnc-ra-tiberian-factions/build/remaster/Vanilla_RA
    ```
-   The render shows the Tiberium but not the blossom trees (see Traps).
+   The render shows the Tiberium but not the blossom trees.
 5. **Check the thumbnail.** Pillow reads the DDS directly:
    `python3 -c "from PIL import Image; Image.open('<dds>').save('<out.png>')"`. Only the
    converted fields should have changed colour.
@@ -167,9 +166,9 @@ python3 scripts/official_map_hybrid.py        # build the plan plus HYBRIDS
 
 ## How the resources behave once placed
 
-- Tiberium and Ore never convert each other. Spreading only lands on an empty cell
-  (`CellClass::Can_Tiberium_Germinate`) and each field spreads as its own type
-  (`CellClass::Spread_Tiberium`), so where two fields meet they hold a border. A remaining ore
+- Tiberium and Ore never convert each other: the two hold a border (the field manual's
+  [Once the map is playing](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/official-maps-with-tiberium.md#once-the-map-is-playing)),
+  and TF's `CellClass::Spread_Tiberium` spreads each field as its own type. A remaining ore
   mine next to a Tiberium field grows Ore up to that border. (`todo.md` holds the open idea of
   Tiberium eating Ore.)
 - The blossom tree seeds TIB01 into empty neighbouring cells.
@@ -180,15 +179,16 @@ python3 scripts/official_map_hybrid.py        # build the plan plus HYBRIDS
 
 ## Traps
 
-- **Build from the MIX, never from an editor save.** A save from the editor flattens GOLD1-4 and
-  GEMS1-4 to GOLD1 / GEMS1 and can drop cells and terrain. `map-edits/scm05ea.ini` is such a save
-  (it lost 7 ore cells and a mine); it is not a source.
+- **Build from the MIX, never from an editor save** (the field manual's
+  [Traps](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/official-maps-with-tiberium.md#traps)):
+  the editor flattens GOLD1-4 and GEMS1-4 to GOLD1 / GEMS1 and can drop terrain.
+  `map-edits/scm05ea.ini` is such a save (it lost 7 ore cells and a mine); it is not a source.
 - **`build_tiberium_hd.py` with no arguments rebuilds the temperate and interior tilesets from
   the base game's**, which drops every tile other scripts have added to them since. Pass the
   theatre you mean (`SNOW`); only the snow row splices into the existing file.
-- **`mapeditor.json` has no TIB01 or TDBLOSSOM entry.** `cncmap edit --place-overlay` cannot
-  place Tiberium by name, and the editor draws no blossom tree. Adding both to
-  `scripts/editor_manifest.py` would fix it.
+- **`mapeditor.json` has no TIB01 overlay entry.** `cncmap edit --place-overlay` cannot place
+  Tiberium by name; an overlay entry in `scripts/editor_manifest.py` would fix it. TDBLOSSOM is
+  there as a building, and `tib01` only as the random map generator's resource (`RESOURCES`).
 - **`MAIN.MIX` is an extended, unencrypted MIX.** `mix_tools.read_mix` and `ra_mix_extract.py` do
   not parse it; the builder has its own reader.
 - **Maps can hide extra mines** ([field manual](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/official-maps-with-tiberium.md#what-to-change-in-the-map)). Keep off the Grass has three; the survey lists them all.
@@ -210,8 +210,8 @@ Every other converted map, with its mix and start gap, is in `official-map-hybri
 
 | Map | Theatre | Mix | Converted | Kept as Ore | Status |
 |---|---|---|---|---|---|
-| `scm05ea.ini` Keep off the Grass (Sm, 2p) | temperate | Tiberium-leaning 55%: 181 / 68 / 78 | mines 5714 (East field), 9901 (South-West field) | both home patches, centre gems, mine 7890 | map and thumbnail proven on the Deck 2026-09-14 |
-| `scm02ea.ini` Middle Mayhem (Sm, 2p) | snow | 33%: 183 / 329 / 49 | four of the island's five fields and their mines | the island field at mine 7888 (it holds gems) and everything outside the ring | played on the desktop 2026-09-14 (first snow map), rebuilt under the gem rules since |
-| `scm09ea.ini` North By Northwest (Lg, 8p) | snow | 54%: 666 / 403 / 168 | the 4 corner fields and their mines, the 4 diagonal fields | the centre (it holds gems), the edge fields and the gem patches | built 2026-09-14 |
-| `scm10ea.ini` First Come, First Serve (84x84, 4p) | temperate | Ore-heavy 10%: 68 / 594 / 0 | the centre field, its mine | both big flank fields and every small field | built 2026-09-14 |
-| `scm111ea.ini` Docklands (8p) | snow | split by the river, 53%: 360 / 144 / 173 | everything west of the river, mixed Ore/Gem fields whole (`take_gems`; 6 mines, 2 mineless fields) | the all-gem box in the west, and everything east of the river | played on the desktop 2026-09-14, all-gem box restored since |
+| `scm05ea.ini` Keep off the Grass (Sm, 2p) | temperate | Tiberium-leaning 55%: 181 / 68 / 78 | mines 5714 (East field), 9901 (South-West field) | both home patches, centre gems, mine 7890 | map and thumbnail proven on the Deck |
+| `scm02ea.ini` Middle Mayhem (Sm, 2p) | snow | 33%: 183 / 329 / 49 | four of the island's five fields and their mines | the island field at mine 7888 (it holds gems) and everything outside the ring | played on the desktop before the gem-rules rebuild; the current build is unplayed |
+| `scm09ea.ini` North By Northwest (Lg, 8p) | snow | 54%: 666 / 403 / 168 | the 4 corner fields and their mines, the 4 diagonal fields | the centre (it holds gems), the edge fields and the gem patches | built |
+| `scm10ea.ini` First Come, First Serve (84x84, 4p) | temperate | Ore-heavy 10%: 68 / 594 / 0 | the centre field, its mine | both big flank fields and every small field | built |
+| `scm111ea.ini` Docklands (8p) | snow | split by the river, 53%: 360 / 144 / 173 | everything west of the river, mixed Ore/Gem fields whole (`take_gems`; 6 mines, 2 mineless fields) | the all-gem box in the west, and everything east of the river | played on the desktop before the all-gem box was restored; the current build is unplayed |

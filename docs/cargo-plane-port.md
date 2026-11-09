@@ -1,105 +1,79 @@
-# Cargo-plane delivery (TDAFLD / TDC17) — port notes
+# Cargo-plane delivery (TDAFLD / TDC17)
 
-**Status:** Reference; shipped in 1.0.0. The Nod Airstrip's cargo-plane delivery (TDAFLD,
-TDC17).
+**Status:** Reference; shipped in 1.0.0. The Nod Airstrip's cargo-plane delivery (TDAFLD, TDC17).
 
-How TD's cargo-plane vehicle delivery runs in RA's engine. `STRUCT_TDAFLD` is its own type; its
-`Exit_Object` dispatch uses TD's verbatim `Create_Special_Reinforcement`. Back-to-back multi-plane
-delivery needs three fixes: the `Place_Object` `intheory=true` retry past radio contact,
-`Do_Reinforcements`' SOURCE_AIR east-edge override with a busy-strip fallback, and `PICK_AIRSTRIP`
-flying straight in with no random circling (`td-port-playbook.md` §3.13–§3.19). The docking-bay
-lookups (`Find_Docking_Bay`, `Docking_Coord`) check `STRUCT_TDAFLD` directly.
+A vehicle built at the Nod Airstrip (`STRUCT_TDAFLD`) isn't driven out: a TDC17 cargo plane flies in from the east
+edge with it, sets it down beside the strip, and leaves west. TD's source is the spec: `tiberiandawn/reinf.cpp`'s
+`Do_Reinforcements` `SOURCE_AIR` path and `tiberiandawn/aircraft.cpp`'s fixed-wing `Mission_Unload`.
 
-The TD source is the spec. RA's port left several mechanics half-finished
-or commented out; this doc enumerates each dormant slice and the
-specific activation we made.
+What RA lacks and the steps a port needs are in the field manual's
+[Air delivery, fleets and support powers](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#cargo-plane-delivery),
+Cargo-plane delivery and Traps. This doc is TF's implementation of each. Back-to-back deliveries need three more
+fixes, in `td-port-playbook.md` §3.19.
 
-## The big picture
+---
 
-When a Nod player builds a vehicle at TDAFLD (the Nod airstrip),
-`BuildingClass::Exit_Object` doesn't drive the vehicle out via a Track.
-Instead it spawns a TDC17 cargo plane at the east map edge, attaches the
-vehicle as cargo, and lets the engine drive a four-stage state machine
-that flies the plane in, drops the vehicle on a strip-adjacent cell, and
-exits the plane off the west edge.
+## The spawn (`BuildingClass::Exit_Object`, `redalert/building.cpp:3547`)
 
-Mirrors `tiberiandawn/reinf.cpp`'s `Do_Reinforcements` `SOURCE_AIR` path
-plus `tiberiandawn/aircraft.cpp`'s fixed-wing `Mission_Unload`, with
-adjustments where RA's surrounding infrastructure differs.
+`case STRUCT_TDAFLD:` calls TD's `Create_Special_Reinforcement(House, TDCARGO, ttype, TMISSION_UNLOAD,
+As_Target())` and deletes the factory's vehicle, since the reinforcement spawns its own copy. In
+`Do_Reinforcements` (`reinf.cpp:468`) the cargo plane enters at the east edge
+(`Cell_To_Lepton(MapCellX + MapCellWidth) | 0x80`), level with its strip's `Docking_Coord()`, facing west, and the
+team's first mission points at the strip. With every strip busy (`Find_Docking_Bay` returns NULL) it takes any
+TDAFLD or airstrip the house owns from `Buildings`, so later planes still fly in convoy.
 
-## The ten dormant mechanics
+Don't set the plane's `NavCom` or radio contact before `Mission_Unload`'s `PICK_AIRSTRIP` runs:
+`AircraftClass::Assign_Destination` resets `Status` to 0 (`aircraft.cpp:5179`) and `Enter_Idle_Mode` reassigns the
+mission every tick, and together they flew the plane in a 580-tick orbit before it delivered. `PICK_AIRSTRIP` owns
+that set-up.
 
-Each item is a piece of RA infrastructure that was missing, half-built,
-or commented out, and what we did to activate it.
+## What TF adds
 
-### 1. AIRCRAFT_TDCARGO type slot
+### 1. The `AIRCRAFT_TDCARGO` type
 
-`redalert/defines.h`, `redalert/aadata.cpp`. RA's aircraft heap had no
-cargo-plane slot. Added `AIRCRAFT_TDCARGO` to the enum (post-HIND, pre-
-COUNT) with matching `AIRCRAFTF_TDCARGO` bitmask, and a `TDCargoPlane`
-static ctor in `aadata.cpp` mirroring TD's `CargoPlane`. RA's 19-param
-`AircraftTypeClass` ctor (vs TD's 36-param) elides build_level / cost /
-strength / armor / weapons / ownable — those come from rules.ini
-instead.
+`redalert/defines.h` and `aadata.cpp:211`: `AIRCRAFT_TDCARGO` in the enum after `AIRCRAFT_HIND`, with an
+`AIRCRAFTF_TDCARGO` bit, and a `TDCargoPlane` constructor from TD's `CargoPlane`. RA's `AircraftTypeClass`
+constructor takes 19 arguments to TD's 36; build level, cost, strength, armour, weapons and owners come from
+`rules.ini` instead. The heap grows with the enum (the field manual's
+[Raising the limits](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/raising-the-limits.md#the-limits)).
 
-The heap grows with the enum: see the field manual's [Raising the limits](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/raising-the-limits.md#the-limits).
+### 2. `[TDC17]` in `rules.ini`
 
-### 2. `[TDC17]` rules.ini section
+Without it the plane sits frozen at the edge: `TechnoTypeClass`'s constructor defaults `MaxSpeed` to
+`MPH_IMMOBILE`. `Speed=16` (`MPH_FAST`, 40), `Strength=25`, `Armor=light`, `TechLevel=-1` (never in the sidebar),
+`Owner=allies,soviet,GoodGuy,BadGuy`, `Cost=10`, `Points=1`, `ROT=5`, `Passengers=1`.
 
-`resources/remaster_mods/Vanilla_RA/CCDATA/rules.ini`. Without it the
-plane spawns frozen (`TechnoTypeClass`'s constructor defaults `MaxSpeed` to `MPH_IMMOBILE`; see the field manual's
-[Air delivery, fleets and support powers](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#traps), Traps). `Speed=16`
-maps to `MPH_FAST=40` internally via `_Scale_To_256`. Also `Strength`,
-`Armor`, `TechLevel=-1` (never appears in sidebar), `Owner=allies,soviet,
-GoodGuy,BadGuy`, `Cost=10`, `Points=1`, `ROT=5`, `Passengers=1`.
+### 3. A donor image
 
-### 3. ImageData fallback in `AircraftTypeClass::One_Time`
+`AircraftTypeClass::One_Time` (`aadata.cpp:656`) copies the Badger's `ImageData` and `CameoData` to TDC17, past
+`AircraftClass::Draw_It`'s `if (!shapefile)` return. The plane isn't buildable, so the cameo only keeps the
+pointer non-NULL. The art is `TDC17.ZIP`.
 
-`redalert/aadata.cpp` copies `BadgerPlane`'s `ImageData` and `CameoData`
-into `TDCargoPlane` (the `if (!shapefile)` guard in `AircraftClass::Draw_It`; the plane isn't
-buildable, so the cameo only keeps the pointer non-NULL); the art itself is
-`resources/.../UNITS/TDC17.ZIP`. See the field manual's
-[Air delivery, fleets and support powers](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#cargo-plane-delivery), Cargo-plane delivery step 2.
+### 4. Its own box (`Dimensions`, `aadata.cpp:904`)
 
-### 4. `Dimensions()` branch for AIRCRAFT_TDCARGO
+`256x160`, for art that peaks at 245x156 across its facings.
 
-`redalert/aadata.cpp`. Vanilla `Dimensions()` is far too small for the C-17 sprite (peaks at 245x156
-across facings): see the field manual's [Air delivery, fleets and support powers](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#cargo-plane-delivery), Cargo-plane delivery step 3. Added a third
-branch: `256x160`.
+### 5. The landing run (`Mission_Unload`, `aircraft.cpp:1251`)
 
-### 5. Fixed-wing `Mission_Unload` state machine
+TD's fixed-wing state machine (`tiberiandawn/aircraft.cpp:1044-1180`), gated to `AIRCRAFT_TDCARGO`, so the Badger,
+U2, MiG and Yak keep RA's hunt:
 
-`redalert/aircraft.cpp`. RA's `AircraftClass::Mission_Unload` had
-`if (Class->IsFixedWing) { Assign_Target(NavCom); return Mission_Hunt(); }`
-— a stub because vanilla RA has no fixed-wing transport. Ported TD's
-state machine from `tiberiandawn/aircraft.cpp:1044-1180` verbatim,
-gated to `AIRCRAFT_TDCARGO` so Badger/U2/Mig/Yak keep their Hunt
-short-circuit:
+- **`PICK_AIRSTRIP`:** the strip from `NavCom`, else `Find_Docking_Bay(STRUCT_TDAFLD)`, else any TDAFLD or airstrip
+  the house owns; fly at it at full speed, facing it, and retry `RADIO_HELLO` each tick until it answers, then
+  `FLY_TO_AIRSTRIP`. Straight in, never circling (playbook §3.19). With no strip at all, `MISSION_RETREAT`.
+- **`FLY_TO_AIRSTRIP`:** face `NavCom` each tick, and within `0x0600` leptons bring `Height` down from
+  `FLIGHT_LEVEL` (`Fixed_To_Cardinal(FLIGHT_LEVEL, Cardinal_To_Fixed(0x0600, navdist))`). At `navdist < 0x0200`
+  (`aircraft.cpp:1322`) set the vehicle down: `Detach_Object`, then `Unlimbo` at
+  `Contact_With_Whom()->Find_Exit_Cell(unit)`. TD's `0x0080` is too tight at about 8 leptons a tick. The vehicle
+  never passes the factory's `RADIO_UNLOADED` exit hook, so the strip's rally point is applied here, with a
+  scatter if that fails. Then `BUG_OUT`.
+- **`BUG_OUT`:** `MISSION_RETREAT`, off the map.
 
-- `PICK_AIRSTRIP`: find airstrip via `Find_Docking_Bay(STRUCT_AIRSTRIP)`,
-  `RADIO_HELLO` handshake, `Assign_Destination(building->As_Target())`,
-  transition to `FLY_TO_AIRSTRIP`. When every strip is busy and `Find_Docking_Bay` returns NULL,
-  it searches `Buildings` for any TDAFLD or airstrip the house owns, so later planes still fly to the
-  strip in convoy; `MISSION_RETREAT` + random direction only if there is none.
-- `FLY_TO_AIRSTRIP`: per-tick set PrimaryFacing toward NavCom, scale
-  `Height` down from `FLIGHT_LEVEL` via `Fixed_To_Cardinal(FLIGHT_LEVEL,
-  Cardinal_To_Fixed(0x0600, navdist))` when within 0x0600 leptons. Drop
-  cargo at navdist < 0x0200 via `Detach_Object` + `Unlimbo` onto
-  `Contact_With_Whom()->Find_Exit_Cell(unit)`. Not TD's 0x0080 (the field manual's [Air delivery, fleets and support powers](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#cargo-plane-delivery), step 5): at RA's
-  Speed=40, about 8 leptons a tick, the plane overshoots it. The delivered vehicle
-  never passes the factory's `RADIO_UNLOADED` exit hook, so the airstrip's rally point is applied
-  here, with a scatter if that fails. Transition to `BUG_OUT`.
-- `BUG_OUT`: `Assign_Mission(MISSION_RETREAT)`, plane heads off-map.
+### 6. The idle branch
 
-### 6. `Enter_Idle_Mode` in-air cargo branch
-
-`redalert/aircraft.cpp`. TD's `Enter_Idle_Mode` (`tiberiandawn/aircraft.cpp:1869-1876`) is what
-starts the unload; RA's lacks the branch, so a fixed-wing loaner fell back to `MISSION_GUARD`: see the field manual's [Air delivery, fleets and support powers](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#cargo-plane-delivery), Cargo-plane delivery
-step 5. Without this hook the engine resets our MISSION_UNLOAD assignment on the next
-AI tick and the state machine never runs.
-
-Added the missing branch as the first check inside the in-air case of
-RA's fixed-wing `Enter_Idle_Mode`:
+TD's `Enter_Idle_Mode` (`tiberiandawn/aircraft.cpp:1869-1876`) starts the unload; without the branch the engine
+replaces `MISSION_UNLOAD` on the next tick. TF's is the first test in the in-air case of RA's fixed-wing
+`Enter_Idle_Mode`:
 
 ```cpp
 if (Is_Something_Attached() && IsALoaner) {
@@ -107,68 +81,37 @@ if (Is_Something_Attached() && IsALoaner) {
 } else if (...) { /* existing weapon-empty hunt path */ }
 ```
 
-Once cargo is dropped (`Is_Something_Attached() == false`) the branch
-falls through to the existing logic and the plane gets MISSION_RETREAT.
+Once the cargo is down the branch falls through, and the plane gets `MISSION_RETREAT`.
 
-### 7. Vestigial AIRCRAFT_CARGO clause in `Edge_Of_World_AI`
+### 7. Leaving the map (`Edge_Of_World_AI`, `aircraft.cpp:5007`)
 
-`redalert/aircraft.cpp:4283`. The commented-out cargo clause in the off-map despawn check: see the
-field manual's [Air delivery, fleets and support powers](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#traps), Traps ("An empty cargo plane doesn't leave by itself"). Activated with our
-AIRCRAFT_TDCARGO enum so empty TDC17s exiting west after delivery despawn cleanly instead of looping
-back to hunt.
+The commented-out cargo clause, restored for `AIRCRAFT_TDCARGO`: an empty TDC17 leaving the map is deleted instead
+of looping back to hunt.
 
-### 8. `Find_Docking_Bay` recognises TDAFLD-as-airstrip
+### 8. `Find_Docking_Bay` (`redalert/techno.cpp`)
 
-`redalert/techno.cpp`. `Find_Docking_Bay` treats a request for the RA airstrip as a request for
-every faction's airstrip (`STRUCT_AIRSTRIP`, `STRUCT_TDAFLD`, `STRUCT_TDGAFLD`), in both the
-early-out count and the per-building match, so PICK_AIRSTRIP finds the TD strip.
+A request for RA's airstrip counts every faction's (`STRUCT_AIRSTRIP`, `STRUCT_TDAFLD`, `STRUCT_TDGAFLD`), in both
+the early-out count and the per-building match, so `PICK_AIRSTRIP` finds the TD strip.
 
-### 9. `Docking_Coord` for TDAFLD
+### 9. `Docking_Coord` (`redalert/building.cpp`)
 
-`redalert/building.cpp`. `STRUCT_TDAFLD` has its own docking-offset case, so the plane lands at the
-visual middle-front of the 4x2 strip instead of the building's geometric centre.
+`STRUCT_TDAFLD` has its own docking offset, so the plane lands at the visual middle-front of the 4x2 strip, not its
+geometric centre.
 
-### 10. `What_Action` force-attack guard
+### 10. Never a target (`What_Action`, `techno.cpp:4405`)
 
-`redalert/techno.cpp`. A landed TDC17 on the airstrip was ctrl-clickable for attack: see the field
-manual's [Air delivery, fleets and support powers](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/air-delivery-and-fleets.md#traps), Traps ("`IsLegalTarget=no` doesn't stop a forced attack on a landed aircraft").
-Added the guard mirroring TD's `*aircraft != AIRCRAFT_CARGO` exclusion at `tiberiandawn/techno.cpp:2646`.
+The cargo plane is never a target, even for a force-attack while landed, as TD leaves out its cargo plane
+(`*aircraft != AIRCRAFT_CARGO`, `tiberiandawn/techno.cpp:2646`).
 
-## Spawn dispatch (`BuildingClass::Exit_Object` STRUCT_WEAP case)
+## Checks after a change
 
-`redalert/building.cpp`. For TDAFLD IniName, fork before the standard
-WEAP exit path:
-
-1. `new AircraftClass(AIRCRAFT_TDCARGO, House->Class->House)`.
-2. Compute spawn position: east edge X
-   (`Cell_To_Lepton(MapCellX + MapCellWidth) | 0x80`), Y-aligned with
-   `Docking_Coord()` so the plane flies straight at the strip.
-3. `Unlimbo(spawn, DIR_W)`.
-4. `IsALoaner = true` (engine despawns at map edge after delivery).
-5. `Attach((FootClass*)base)` — the produced unit becomes cargo.
-6. `Set_Speed(0xFF)` — full speed throughout.
-7. `Assign_Mission(MISSION_UNLOAD)` + `Commence()`.
-8. Return 2 (success).
-
-**NOT done from Exit_Object**: pre-assigning NavCom, pre-establishing
-radio. Both attempts (early sessions) collided with engine state
-transitions — `AircraftClass::Assign_Destination`'s `Status=0` reset
-(`aircraft.cpp:4636`) plus the per-tick `Enter_Idle_Mode`
-reassignment, producing a 580-tick orbit before delivery. Mission_Unload's
-PICK_AIRSTRIP owns the setup; let it do its job.
-
-## Verification
-
-Verified end to end on the Deck:
-- Plane spawns at east edge, no orbit.
-- Flies west in a straight line at constant speed.
-- Altitude scales down from FLIGHT_LEVEL when within ~6 cells of dock.
-- Drops vehicle at strip-adjacent cell when navdist crosses 0x0200.
-- Plane continues west off map, despawns cleanly at edge via the
-  activated AIRCRAFT_TDCARGO branch in `Edge_Of_World_AI`.
+1. The plane enters at the east edge and flies west in a straight line at constant speed, with no orbit.
+2. It descends from `FLIGHT_LEVEL` within about six cells of the dock.
+3. The vehicle is set down beside the strip as `navdist` crosses `0x0200`, and heads for the rally point.
+4. The plane carries on west and is deleted at the edge.
+5. Two vehicles queued back to back arrive one plane after the other (playbook §3.19).
 
 ## Scope
 
-Cargo-plane delivery is Nod's alone. GDI's airfield (`TDGAFLD`) builds the A-10
-(`naval-and-air-units.md`); another delivery airstrip would reuse all of the above with its own type
-check in `Find_Docking_Bay` and `Docking_Coord`.
+Cargo-plane delivery is Nod's alone. GDI's airfield (`TDGAFLD`) builds the A-10 (`naval-and-air-units.md`);
+another delivery airstrip would reuse all of the above with its own type in `Find_Docking_Bay` and `Docking_Coord`.

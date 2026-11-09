@@ -1,6 +1,6 @@
 # Path-failure livelock
 
-**Status:** Reference; closed in 5.0.0.
+**Status:** Reference; closed in 5.0.0, a switch since 5.7.0 (`player-settings.md`, Give up on unreachable moves).
 
 A unit that keeps failing to path from the same cell gives up: infantry after 8 s, vehicles after
 a minute, both handled by the caller (`FootClass::TF_Path_No_Progress`). A re-entrancy guard on
@@ -19,7 +19,7 @@ successful path starts a fresh window, so a queued column that advances one cell
 
 - **Why the source cell and not the (source, destination) pair:** a stuck AI unit's destination
   rotates (hunt logic re-picks among unreachable targets every few attempts), so a pair-keyed
-  window never accumulated; the first version fired zero times against a 200k-fallback storm.
+  window never accumulates: one fired zero times against a 200k-fallback storm.
 - **Infantry** (`infantry.cpp` give-up branch, 8 s): abort `NavCom` regardless of zone and drop a
   `TarCom` it can neither reach nor already shoot; an AI hunter is also scan-limited
   (`IsScanLimited`), so its next pick is an in-range target.
@@ -34,27 +34,24 @@ recursion in the give-way RETREAT: `Start_Of_Move` → gw==2 → `Assign_Destina
 the nested pass now skips give-way and paths straight to the retreat cell. The livelock fed it by
 piling units into the jammed pinch.
 
-## Verdict (live Docklands match, 2026-08-01)
+## What it cures, measured on Docklands
 
-- **The crash is fixed and verified** (the recursion guard; F51,760 and F40,300+ matches, no
+- **The crash is fixed** (the recursion guard; F51,760 and F40,300+ matches, no
   artifacts, under storms up to 427k fallbacks).
-- **The in-base wedge livelock — the bug this doc was opened for — is cured**: short-range
-  wedges (`TDLTNK (60,79)→(61,78)`, the v1 batch of 743 base-traffic aborts) now abort and
+- **The in-base wedge livelock, this doc's subject, is cured**: short-range
+  wedges (`TDLTNK (60,79)→(61,78)`, a batch of 743 base-traffic aborts) abort and
   re-task instead of retrying forever.
-- **The unreachable-target storm is NOT collapsible by give-up logic, and we stop trying.**
-  v2 + scan-limit measured 8.96 fallbacks/frame against the 8.4 baseline: `IsScanLimited`
-  self-lifts by design, hunt re-picks immediately, and a cliff-parked unit re-trips its
-  already-expired window every few frames (same unit logged `stuck=9796f` and climbing).
-  The units mass on the shore because they genuinely have no ground route to the enemy —
-  the correct cure is GIVING THEM A ROUTE (naval transports, `ai-upgrade-plan.md`), not
-  ever-cleverer surrender. Parked until the AI can use naval transports (shipped in 5.0.0;
-  the storm has not been re-measured since).
-  The storm's costs after the crash fix are CPU + dev-log volume only.
+- **The unreachable-target storm is NOT collapsible by give-up logic.** The detector plus the scan limit measured
+  8.96 fallbacks/frame against an 8.4 baseline: `IsScanLimited` self-lifts by design, hunt re-picks immediately,
+  and a cliff-parked unit re-trips its already-expired window every few frames (one unit logged `stuck=9796f` and
+  climbing). The units mass on the shore because they genuinely have no ground route to the enemy — the cure is
+  GIVING THEM A ROUTE (the naval ferry, `ai-upgrade-plan.md` W5.2), not ever-cleverer surrender. The ferry shipped
+  in 5.0.0 and the storm has not been re-measured since. Its cost is CPU and dev-log volume only.
 
 Sibling doc: `harvester-recovery-design.md`. Same underlying engine truth (movement zones
 ignore buildings), same recommended shape of cure (a no-progress detector, not a zone fix).
 
-## Porting TS's pathfinder: no (coach-day dive, 2026-09-11)
+## Porting TS's pathfinder: no
 
 TS's hierarchical A* (`reference/OpenTS`) would not fix what is left. Ours already has the heap
 and the 4096-node cap. TS's zones also ignore ordinary
@@ -104,7 +101,7 @@ Retry cadence is `PathDelay` = `0.016 * 900` ≈ 14 ticks, so roughly 4 attempts
 
 ## Root cause (one condition explains every observed case)
 
-`infantry.cpp:4346`, in the give-up branch reached once `TryTryAgain` is exhausted:
+`InfantryClass`'s give-up branch (`infantry.cpp`, about line 4750), reached once `TryTryAgain` is exhausted:
 
 ```cpp
 /*
@@ -145,24 +142,25 @@ is never reached.
 
 ### Where clearing the destination is legitimate
 
-`drive.cpp:2192` — the engine's own give-up path — calls `Assign_Destination(TARGET_NONE)`
-from the **caller**, after `Basic_Path()` has returned. That is the safe context. See below
-for why this matters more than it looks.
+The engine's own give-up path, in `DriveClass::Start_Of_Move` once `TryTryAgain` is spent, calls
+`Assign_Destination(TARGET_NONE)` from the **caller**, after `Basic_Path()` has returned. That is the safe context
+(the field manual's
+[Giving up on a hopeless path](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/pathfinding.md#giving-up-on-a-hopeless-path),
+Abort from the caller).
 
 ---
 
-## ❌ Failed attempt — CRASHED BOTH MACHINES (read before coding)
+## ❌ Failed attempt — crashed the game (read before coding)
 
-Two changes were made inside `FootClass::Basic_Path()`:
+Two changes inside `FootClass::Basic_Path()`:
 
 1. reject the object's own cell as a `Map.Nearby_Location()` substitute; and
 2. on a destination equal to the current cell: `Stop_Driver(); Assign_Destination(TARGET_NONE); return false;`
 
-Result: `self-cell` went to **0** (part 2 worked, mechanically), and the game crashed on the
-desktop and the Deck within minutes. Reverted; both surfaces returned to the prior build.
-
-**Why it crashed.** `Assign_Destination()` is **virtual**, and the derived overrides do far
-more than assign a field:
+`self-cell` went to **0** (part 2 worked, mechanically), and the game crashed on the
+desktop and the Deck within minutes, for the reason on the field manual's
+[Giving up on a hopeless path](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/ai/pathfinding.md#giving-up-on-a-hopeless-path).
+The overrides that do it:
 
 ```cpp
 // UnitClass::Assign_Destination
@@ -172,19 +170,17 @@ if (Transmit_Message(RADIO_DOCKING, b) != RADIO_ROGER) Transmit_Message(RADIO_OV
 if (Transmit_Message(RADIO_HELLO, b) == RADIO_ROGER) { ... Assign_Mission(MISSION_ENTER); }
 ```
 
-They run radio-contact protocols and reassign missions, and they assume an **order-issuing**
-context. Called from inside the pathfinder, a unit can tear down a radio link (e.g. a
-harvester's dock contact) or change its own mission while the movement code that invoked the
-pathfind is still executing against the pre-call state.
+They assume an **order-issuing** context: called from inside the pathfinder, a unit changes its own mission while
+the movement code that invoked the pathfind is still executing against the pre-call state.
 
 **Rule for any fix: never call `Assign_Destination()` from inside `Basic_Path()`. Clear the
 destination caller-side, where the engine already does it.**
 
 ### ❌ Also falsified: the `Nearby_Location` guard alone
 
-Part 1 was shipped on its own afterwards, on the theory that it was the safe half doing the
-real work. It is **not**: `self-cell` came back at **790** (vs 706 before). The degenerate
-destination does not originate from `Nearby_Location`. Guard reverted; do not re-try it.
+Part 1 on its own, on the theory that it was the safe half doing the real work, is **not** enough: `self-cell`
+came back at **790** (vs 706 without it). The degenerate destination does not originate from `Nearby_Location`.
+Do not re-try it.
 
 ---
 

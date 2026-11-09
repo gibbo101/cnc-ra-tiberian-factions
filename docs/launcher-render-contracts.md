@@ -3,8 +3,6 @@
 **Status:** Reference. How the launcher draws unit, building, anim and beam art, and the house
 rules for TS-sourced art. Check it before shipping any new unit art, anim or beam weapon.
 
-Each contract cost a build-test cycle to find, most of them while porting the TS walkers.
-
 ## 1. Sprites anchor by the VIRTUAL CANVAS CENTER — place content accordingly
 
 The launcher anchors the canvas centre, not the crop: see the field manual's
@@ -47,11 +45,9 @@ a turretless unit that fires forward. Stock RA sets the flag on no unit; the Mk.
 
 ## 6. Pillow `paste` with an RGBA mask corrupts at negative offsets
 
-Pillow 10.2: pasting with a negative position and a mask produces
-interleaved-strip garbage, not a clean clip — this silently shredded the
-Titan's turret frames for several builds (only the thin antenna survived,
-"cannon missing" #0). Use `safe_paste()` (pre-crops the source) everywhere in
-the art pipeline.
+Pillow 10.2: pasting with a negative position and a mask produces interleaved-strip garbage, not a clean clip,
+and it does so silently (on the Titan's turret frames only the thin antenna survived). Crop the source to the
+destination first, then paste at a non-negative position.
 
 ## 7. Building selection boxes: the launcher owns POSITION, we own only SIZE
 
@@ -81,9 +77,9 @@ mottle was std 7 against TS's 19.5.
 What the vortex does when the DLL places it (whole whirlpool, top-left anchor, churns while on, the real
 `ChronalVortex` owns the fields) is in the field manual's
 [How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#worked-example-a-beam-the-launcher-cant-draw),
-the worked example. TF's Disruptor ripple spike placed it through `Get_Dynamic_Map_State`; our 64 px request drew
-a ~350 px whirlpool, so we treat the size as ignored. Useless for a beam ripple; potentially useful for a deliberate
-large one-off screen warp.
+the worked example, with the 64 px request that drew a ~350 px whirlpool; TF treats the size as ignored. TF's
+Disruptor ripple spike placed it through `Get_Dynamic_Map_State`. Useless for a beam ripple; potentially useful for a deliberate large one-off screen
+warp.
 
 ## 11. Voxel units are lit the way Tiberian Sun lights them, and a relight never re-places a sprite
 
@@ -92,9 +88,9 @@ large one-off screen warp.
   **1.5** (`voxlib.cpp Precalculate_Normal_Lookup`). Per voxel, `n·L` is truncated to a table index
   (`int(n·L × 16)`, negative → 0, so 16 = neutral, 24 = fully lit) into **VOXELS.VPL** (TIBSUN.MIX,
   `tools/ts_extract.py`). Each VPL table is a fixed brightness scale of the palette; the 32 measured
-  luminance ratios are `TS_VPL_SCALE`: **0.62 (facing away) → 1.26 (neutral) → 1.70 (lit)**. The old
-  ambient-plus-Lambert blend ran 0.35 → 1.0 — a 1.6–1.8× gap across the whole curve, which was every
-  "too dark" report since the units wave. `--shade legacy --ambient N` reproduces old renders.
+  luminance ratios are `TS_VPL_SCALE`: **0.62 (facing away) → 1.26 (neutral) → 1.70 (lit)**. An
+  ambient-plus-Lambert blend (0.35 → 1.0) is 1.6–1.8× too dark across the whole curve; `--shade legacy
+  --ambient N` keeps it for reproducing older renders.
 - Normals: **the VXL's own per-voxel normal index**, resolved through TS's tables
   (`scripts/ts_vxl_normals.py` = OpenTS `VoxelNormals1..4`, chosen by the section's normal mode byte).
   Geometry-derived normals (`--normals geo`) quantise to 26 directions; under TS's stepped table that
@@ -103,9 +99,8 @@ large one-off screen warp.
   preserves luminance, and remap-heavy hulls (APC, Disruptor, harvester) read dark without it.
 - Shaded RGB is clipped at 255 before the uint8 cast, or bright channels wrap into green fringe pixels.
 
-**The placement rule (the part that "butchered the turrets"):** the pack scripts **do not reproduce
-where the shipped zips put things** — the Disruptor hull and the MLRS rack were moved at zip level in
-later sessions, and a re-render's crop can grow (the rack's antenna pole no longer cut by the pack
+**The placement rule:** the pack scripts **do not reproduce where the shipped zips put things**: the
+Disruptor hull and the MLRS rack were moved at zip level, and a re-render's crop can grow (the rack's antenna pole no longer cut by the pack
 canvas, a shadow one pass taller). The launcher anchors on the canvas centre (§1), so a grown crop re-cut
 asymmetrically, or a bbox-centred paste, moves the pixels on the canvas and **moves the sprite** even when every
 body pixel is in the same place. So:
@@ -121,11 +116,11 @@ body pixel is in the same place. So:
 - Every TS unit and the RA2 tanks are HD rebuilds, rendered from 3D models with one light for every
   facing (`scripts/ts_pack_hd_buildings.py` UNITS; the models are in the TS-HD pack's `3d/`). The
   relight rules above don't apply to them.
-- **Voxel-mesh upscale: tried and rejected (harvester A/B in game).** `scripts/vxl_mesh_render.py`
-  (marching cubes + Taubin smoothing + denoised vertex colours, TS lighting) renders a smoother hull,
-  but at game sprite scale the 1-voxel ribs and panel lines ARE the detail, and any smoothing that
-  rounds the staircase rounds them away (the side panelling went). The voxel render with real normals stays. Script kept for reference only (needs a
-  scikit-image venv). Don't re-chase unless units are drawn larger than the game does.
+- **No voxel-mesh upscale.** `scripts/vxl_mesh_render.py` (marching cubes + Taubin smoothing + denoised
+  vertex colours, TS lighting) renders a smoother hull, but at game sprite scale the 1-voxel ribs and panel
+  lines are the detail, and any smoothing that rounds the staircase rounds them away (a harvester A/B in game
+  lost its side panelling). The voxel render with real normals stays; the script is kept for reference (needs a
+  scikit-image venv) and is worth reopening only if units are drawn larger than the game draws them.
 
 ## 12. A new stub line does nothing until TFASSETS.MIX is rebuilt and committed
 
@@ -145,29 +140,24 @@ has the conversion), and one TS SHP pixel at x6.4 is 8.53. Derive fire points an
 `scripts/ts_hmec_muzzle.py`, read off the Mk. II's 3D model) so the art and the offset cannot
 drift; a hand-dialled constant will read right beside the unit and miss by cells at range.
 
-The Juggernaut's first fire point was a trig formula built on "1 TS px = 2 leptons", a quarter
-of the real rate: its shells left from near the hull centre in every pose, which looks close
-enough on screen at point-blank and is a cell and a half out at range 18.
+A formula built on "1 TS px = 2 leptons" is a quarter of the real rate: on the Juggernaut it put the shells near
+the hull centre in every pose, close enough on screen at point-blank and a cell and a half out at range 18.
 
 ## 14. A unit and the building it deploys into must share a ground line
 
-The launcher centres a selection box on the object and draws its health bar above that box, and
-a unit's art anchors on its canvas centre. So where the art's lowest pixels sit relative to that
-centre is the unit's ground line, and it decides three things at once: whether the box brackets
-the feet, whether the bar clears the hull, and whether the sprite appears to jump when the object
-is replaced by another one on the same cell.
+The ground line, and why two stances of one object or a deployable and its building must share it, is in the
+field manual's
+[How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#the-frame-and-its-meta).
+The launcher draws the health bar above the selection box, so the ground line also decides whether the bar clears
+the hull.
 
-Two stances of one entity, or a deployable and the building it becomes, must therefore agree:
-
-- The Juggernaut's walk frames sat 10 classic px north of its deployed frames, which read as a
-  gap under the box, a bar across the hull, and a hop north on pack-up. Fixed by dropping the
-  walk frames onto the deployed ground line (`WALK_DROP` in `scripts/ts_pack_jugg.py`).
+- The Juggernaut's walk frames share its deployed frames' ground line (its HD rebuild, packed by
+  `scripts/ts_pack_hd_buildings.py`); walk frames 10 classic px north of it read as a gap under the box, a bar
+  across the hull, and a hop north on pack-up.
 - The Limpet Mine sits on the drone's shadow line, 11.6 classic px below the cell centre: a mine
   higher than that hops north the moment the drone deploys.
 
-Measure, do not eyeball, as the field manual's
-[How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#the-frame-and-its-meta)
-says for the ground line. For reference, TS's 1x1 buildings sit about +10 to
+Measure, do not eyeball. For reference, TS's 1x1 buildings sit about +10 to
 +12 classic px below the cell centre, and unit shadows sit further out again the taller the unit
 (Wolverine +13.9, Juggernaut deployed +18, Titan +22.8).
 
@@ -244,20 +234,15 @@ highest quality the pipeline can produce.** Concretely:
   and a blur's faint fringe never shows: measure shadows on the pixels at 128
   and up. Turret frames carry no shadow, which is what keeps TSHVR's rack
   seat out of its reach.
-- **Baked shadows: always the offset-silhouette (`drop_shadow`), never a
-  bottom-anchored shape** (why: the field manual's shadows section above). Both
-  bottom-anchored recipes tried on the Hover MLRS (whole-hull squash at the bbox
-  bottom, then the Mk. II bottom-slice) collapsed at the diagonal facings: a
-  diagonal hull's bbox bottom is one pointy corner, so anything anchored there
-  gathers at the corner instead of following the skirt. Scale
-  the walker offset (14,18 @ 448 canvas) to the unit's canvas. (The Mk. II
-  bottom-slice works there only because a mech's FEET genuinely span its bbox
-  bottom.)
+- **Baked shadows: always the offset silhouette (`drop_shadow`), never a
+  bottom-anchored shape** (why: the field manual's shadows section above). On the
+  Hover MLRS a whole-hull squash at the bbox bottom and the Mk. II bottom-slice both
+  gather at the diagonal facings' corner instead of following the skirt. Scale the
+  walker offset (14,18 @ 448 canvas) to the unit's canvas. The Mk. II bottom-slice
+  works on the Mk. II only because a mech's feet genuinely span its bbox bottom.
 - **Walker gait system:** `WalkFrames=` / `WalkFacings=` / `WalkRate=` unit
   keys, walker branch in `UnitClass::Shape_Number`, turret block at
-  `WalkFacings × WalkFrames`. Per-unit camera elevation is a legitimate dial
-  (`vxl_render.py --elev` — the Mk. II renders at 35° for its TS stance vs the
-  54° house camera).
+  `WalkFacings × WalkFrames`.
 - **Voxel turreted units** lay out hull frames 0-31 and turret 32-63 (TS4TNK, R2APOC, R2PRIS,
   TSSONIC); the layout lives in their pack scripts.
 - **Voxel renders.** RA/TD Remastered HD unit sprites match a **~32° camera** (the 54°

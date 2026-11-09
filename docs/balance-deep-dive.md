@@ -1,495 +1,249 @@
 # Cross-faction balance deep-dive
 
-**Status:** Reference. A stat audit of the four original factions against the v1.0 `rules.ini`
-(TS GDI is not covered), with the deviations from TD-authentic values that shipped in 4.0.0:
-- Orca and Apache at 225 HP for $1200, full parity with the Longbow and Hind (this replaced the
-  F6 price cut to 950);
-- Nod SAM `TDNike` ROF 20 (F7); Nod Light Tank `TD75mm` ROF 40 (F3);
-- GDI Mammoth speed 4 with cost kept at 1500 (F1); GDI APC speed 8 with cost kept at 700;
-- Minigunner `TDM16` range 3 and `TDE1` speed 4; Nod turret `TDTurretGun` ROF 50.
+**Status:** Reference. A stat audit of the four original factions (TS GDI is not covered), the deviations from
+TD's values that shipped in 4.0.0 and since, and the playtest log.
+**Open:** the Recon Bike after the Light Tank's buff; the light-vehicle and artillery discounts against the equal
+economy (F4, F5); the Nod SAM against RA's jets; Nod's cost to defend against GDI's; line-wide tank pace; an early
+GDI Mammoth snowballing.
 
-The AGT keeps plain TDHE damage against heavy armour (F8 reverted, "Base defences" below). Where the
-analysis quotes older values, `rules.ini` is the truth. Log playtest balance reports here, and fix
-fidelity bugs (a stat that differs from the TD source) at once.
+Where this doc and `rules.ini` disagree, `rules.ini` is the truth. Log playtest balance reports in the playtest log
+below, and fix fidelity bugs (a stat that differs from TD's source with no deviation listed here) at once.
 
 ---
 
-## Why now
+## Guardrails
 
-A standing rule deferred *all* stat
-tuning until 1.0 shipped, keeping every unit TD-source-authentic so we had a
-known reference point. v1.0.0 is tagged and the **TD unit roster is real, not
-RA stand-ins** (full TD vehicle + combat-unit + infantry + aircraft rosters
-landed pre-1.0 — `0477d95`, `d879d6c`, TDE1/E2/E3, Orca/Apache). So:
-
-1. The deferral gate is cleared.
-2. We're balancing the units that *stay*, not placeholders.
-3. The four factions fight **cross-faction** (GDI Mammoth vs Soviet Mammoth,
-   Nod Light vs Allied Light) — so TD-vs-RA stat comparisons are the live
-   balance question, not academic.
-
-## Guardrails (unchanged)
-
-- **Difficulty stays behavioural:** IQ /
-  timing / strategy levers only. Never stat-bias multipliers per difficulty.
-- **Every deviation from TD-authentic is deliberate and documented here** with
-  a reason. TD-authentic was the v1 baseline; moving off it is a balance call,
-  not a silent edit.
-- **Prefer a single dial.** Where a unit is mis-tuned, change one lever (usually
-  `Cost=` or `TechLevel=`) rather than rewriting weapon math. Keeps the unit
-  recognisably its TD self.
+- **Difficulty stays behavioural:** IQ, timing and strategy levers only, never stat multipliers per difficulty.
+- **Every deviation from TD's values is deliberate and listed here** with its reason. TD's values are the
+  baseline; moving off one is a balance call, not a silent edit.
+- **Prefer a single dial.** Change one lever (usually `Cost=`, a rate of fire or a speed) rather than rewrite
+  weapon maths, so the unit stays recognisably TD's.
+- **TechLevel is not a lever.** Skirmish is played at TechLevel 10, so a lower `TechLevel` ("available earlier")
+  gives no real advantage: every faction has everything from the start. Never justify a weaker stat line by
+  earliness. The real levers are cost, stats (strength, ROF, range, speed) and prerequisite buildings, which still
+  have to be built.
+- **Apply TD's building doubling before comparing.** A TD building's `Strength=` doubles at load
+  (`BuildingTypeClass::Read_INI`, `bdata.cpp:6265`; `td-port-playbook.md` §3.21), so compare its doubled
+  strength with an RA building's.
 
 ---
 
-## The four factions in one line each
+## The shipped deviations from TD's values
 
-| Faction | Engine house | Doctrine (as the numbers currently express it) |
+| Unit or weapon | Change (TD's, or stock RA's for RA types, → TF) | Since | Reason |
+|---|---|---|---|
+| Orca, Apache | 125 → 225 strength, at TD's $1200 | 4.0.0 | Parity with the Longbow and Hind (F6) |
+| `TDNike` (Nod SAM) | ROF 50 → 20 | 4.0.0 | RA's Nike rate (F7) |
+| `TD75mm` (Nod Light Tank) | ROF 60 → 40 | 4.0.0 | RA's 75mm rate (F3) |
+| TDHTNK (GDI Mammoth) | speed 5 → 4, cost kept at 1500 | 4.0.0 | Match the Soviet Mammoth's speed (F1) |
+| TDAPC (GDI APC) | speed 14 → 8, cost kept at 700 | 4.0.0 | It felt too fast in play; the cheaper APC is the slower one |
+| `TDM16`, TDE1 (Minigunner) | range 2 → 3, speed 3 → 4 | 4.0.0 | Parity with RA's rifleman |
+| `TDTurretGun` (Nod Turret) | ROF 60 → 50 | 4.0.0 | Parity with RA's turret |
+| `155mm` (stock RA), `TD155mm` (TD) (artillery) | range 6 → 8 | | Range 6 couldn't out-stand base defences |
+| `TDMlrsRocket` (GDI MLRS) | range 6 → 7 | | As the artillery, a cell short (playtest log) |
+| `TDPatriot` (Nod SAM missile) | ROT 10 → 20 | | RA's `AAMissile` turn rate, to turn onto RA's faster aircraft |
+| TDHARV | speed 5 → 6 | | RA's harvester's, so no faction's trucks are slower |
+| Every TD building | sight + 3 (`bdata.cpp:6266`) | | TD's sight reads short at RA's scale |
+| TDA10 (A-10) | cost 800 → 1500 | | Above the MiG's 1200 for a nine-bomb sortie |
+| TDFBNK (Nod Flame Bunker) | new, not TD | | Nod's missing anti-infantry emplacement |
+| `[TDSSM]`, `[TDSSM2]` (TD's missiles) | inaccurate → `Inaccurate=no` | | No scatter by type, as RA plays its missiles (commit `c878c0248`); fuelled shots still scatter at infantry and cells |
+
+`[TDAGT]` is `[TDHE]`'s values in a section of its own, named as `[TDTowTwo]`'s warhead, but it does nothing: the
+tower fires `[TDSSM]`, an `IsTDPort` bullet, and `AI_TD` deals damage with the bullet's own `Warhead=TDHE`
+(`bullet.cpp:1744`, `1755`; playbook §3.38). To tune the tower alone, give `[TDTowTwo]` a bullet of its own (a
+`[TDSSM]` copy with `Warhead=TDAGT`); `[TDSSM]` is shared with the Mammoth's `TDTusk`.
+
+---
+
+## The four factions
+
+| Faction | Engine house | Doctrine, as the numbers express it |
 |---|---|---|
-| **Allies** | RA vanilla (allies) | Fast cheap light tanks, best DPS-per-credit armor, durable air (Longbow 225hp), strong navy. Heavy units tech-gated. |
-| **Soviet** | RA vanilla (soviet) | Heavy/Mammoth armor + V2 siege + Hind infantry-shredder. Expensive and late. |
-| **GDI** | TD (GoodGuy) | Durable armor available **early** — Medium at TL3, Mammoth at TL5 cheaper than Soviet's. Fragile air, slower (docking) economy. |
-| **Nod** | TD (BadGuy) | Cheap fast harass (Buggy/Bike), cloak (Stealth Tank), anti-base flame, SSM/arty. Weak mainline tank, fragile air, slower economy. |
+| **Allies** | RA (allies) | Fast cheap light tanks, the best DPS per credit in armour, durable air, a strong navy. Heavy units tech-gated. |
+| **Soviet** | RA (soviet) | Heavy armour and the Mammoth, V2 siege, the Hind against infantry. Expensive and late. |
+| **GDI** | TD (GoodGuy) | Durable armour: the Medium at TL3, a Mammoth cheaper than the Soviets'. |
+| **Nod** | TD (BadGuy) | Cheap fast harassment (Buggy, Bike), the cloaking Stealth Tank, flame against bases, SSM and artillery siege. A light mainline tank. |
 
 ---
 
-## Combat model (how to read the tables)
+## How to read the tables
 
-- **Relative DPS** = `Damage × Burst / ROF`. In this engine **ROF is the reload
-  delay in ticks — lower = faster**. So this index is shots-per-tick × damage;
-  bigger = more sustained damage. It ignores range/projectile-speed/accuracy,
-  so treat it as a first-order screen, not gospel.
-- **Effective DPS vs a target** = relative DPS × the warhead's `Verses` % for
-  that target's armor class. This is where warheads decide matchups.
-- Tanks are `heavy` armor; infantry `none`; light vehicles/aircraft `light`;
-  some Nod structures/units `steel` (also maps to heavy-ish). Buildings use
-  `wood`/`concrete`.
+- **Relative DPS** = `Damage × Burst / ROF`. ROF is the reload delay in ticks, so lower is faster. It ignores
+  range, projectile speed and accuracy: a first-order screen.
+- **Effective DPS against a target** = relative DPS × the warhead's `Verses` for the target's armour. Warheads
+  decide matchups.
+- Tanks and the combat helicopters are `heavy`; infantry `none`; light vehicles `light`; some Nod structures
+  `steel`, which reads as heavy (TF's `Armor_From_Name`, `weapon.cpp:304-310`, maps TD's `steel` to heavy and
+  `aluminum` to light). Buildings are `wood` or `concrete`.
 
-### Warhead Verses tables (none / wood / light / heavy / concrete)
+### Warheads (`Verses`: none / wood / light / heavy / concrete)
 
-| Warhead | none | wood | light | heavy | concrete | used by |
+| Warhead | none | wood | light | heavy | concrete | Used by |
 |---|---|---|---|---|---|---|
 | AP | 30 | 75 | 75 | **100** | 50 | RA tank cannons, missiles |
-| TDAP | 25 | 75 | 75 | **100** | 50 | TD tank cannons (TD-authentic) |
-| HE | 90 | 75 | 60 | 25 | 100 | RA arty, grenade, Mammoth tusk |
-| TDHE | 87 | 75 | 56 | 25 | 100 | TD arty, MLRS, tusk, chaingun |
-| SA | 100 | 50 | 60 | 25 | 25 | RA MG/vulcan/chaingun |
-| TDSA | 100 | 50 | 56 | 25 | 25 | TD minigun/M60 |
+| TDAP | 25 | 75 | 75 | **100** | 50 | TD tank cannons |
+| HE | 90 | 75 | 60 | 25 | 100 | RA artillery, grenades, the Mammoth's tusks |
+| TDHE | 87 | 75 | 56 | 25 | 100 | TD artillery, MLRS, tusks, chain guns |
+| SA | 100 | 50 | 60 | 25 | 25 | RA machine guns |
+| TDSA | 100 | 50 | 56 | 25 | 25 | TD minigun, M60 |
 | Fire | 90 | 100 | 60 | 25 | 50 | RA flamethrower |
-| TDFire | 88 | 100 | 69 | 25 | 50 | TD flame tank/thrower |
+| TDFire | 88 | 100 | 69 | 25 | 50 | TD flame tank, flamethrower, Flame Bunker |
 | HollowPoint | 100 | 5 | 5 | 5 | 5 | sniper, Tanya |
-| TDLaser | 100 | 100 | 100 | 100 | 100 | Obelisk (building only) |
+| TDLaser | 100 | 100 | 100 | 100 | 100 | the Obelisk |
 
-**Takeaways from the warheads alone:**
-- **TDAP ≈ AP, TDHE ≈ HE** — TD warheads are within a few % of their RA
-  equivalents (the n/256 rounding). No faction gets a warhead advantage.
-- Anti-tank (AP/TDAP) does full damage to `heavy` and is weak vs `none` →
-  tanks need infantry/MG support to clear squishies. Symmetric across factions.
-- Flame (TDFire) is anti-infantry/anti-building (25% vs heavy) — Nod's Flame
-  Tank is *not* an anti-armor unit despite its raw DPS.
+- **TDAP is AP and TDHE is HE,** within a few percent (TD's n/256 rounding). No faction has a warhead advantage.
+- Anti-tank warheads are weak against `none`, so tanks need infantry or machine-gun support, on every side.
+- TDFire is anti-infantry and anti-building (25% against heavy): Nod's Flame Tank is not an anti-armour unit.
 
 ---
 
-## Tier-by-tier matchup analysis
+## Mainline battle tanks
 
-### Mainline battle tanks (the core of every cross-faction fight)
-
-| Unit | Faction | Cost | HP | Speed | TL | Weapon | rel-DPS | DPS/cost | HP/cost |
+| Unit | Faction | Cost | Strength | Speed | TL | Weapon | Rel. DPS | DPS/cost | Strength/cost |
 |---|---|---|---|---|---|---|---|---|---|
 | 1TNK Light | Allied | 700 | 300 | 9 | 4 | 75mm | 0.63 | 0.89 | 0.43 |
 | 2TNK Medium | Allied | 800 | 400 | 8 | 6 | 90mm | 0.60 | 0.75 | 0.50 |
-| 3TNK Heavy | Soviet | 950 | 400 | 7 | 4 | 105mm ×2 (double-barrel) | 0.86 | 0.90 | 0.42 |
+| 3TNK Heavy | Soviet | 950 | 400 | 7 | 4 | 105mm ×2 | 0.86 | 0.90 | 0.42 |
 | 4TNK Mammoth | Soviet | 1700 | 600 | 4 | 10 | 120mm b2 + Tusk | 1.00¹ | 0.59 | 0.35 |
-| **TDLTNK Light** | **Nod** | 600 | 300 | 7 | 3 | TD75mm | **0.42** | 0.70 | 0.50 |
+| **TDLTNK Light** | **Nod** | 600 | 300 | 7 | 3 | TD75mm | 0.63 | 1.04 | 0.50 |
 | **TDMTNK Medium** | **GDI** | 800 | 400 | 7 | 3 | TD105mm | 0.60 | 0.75 | 0.50 |
-| **TDHTNK Mammoth** | **GDI** | 1500 | 600 | 5 | 5 | TD120mm b2 + TDTusk | 1.00¹ | 0.67 | 0.40 |
+| **TDHTNK Mammoth** | **GDI** | 1500 | 600 | 4 | 5 | TD120mm b2 + TDTusk | 1.00¹ | 0.67 | 0.40 |
 
-¹ Mammoth primary-cannon DPS only; the Tusk missiles add a large anti-air /
-anti-infantry second weapon on top. Both Mammoths are mechanically identical.
+¹ The cannon only; the tusk missiles add an anti-air and anti-infantry second weapon. Both Mammoths are
+mechanically identical.
 
-**Findings:**
+- **F1, the GDI Mammoth.** Same hull and weapons as the Soviet Mammoth, both self-healing, behind an easier
+  prerequisite (`TDFIX` against `weap,stek`). Its speed matches the Soviets' 4; its cost stays 1500 against 1700
+  for roster depth: the Soviets have the Heavy Tank, Mammoth, V2 and Tesla Tank, and GDI's only real heavy hitter
+  is the Mammoth (the MLRS is fragile artillery). Watch that an early Mammoth doesn't snowball unanswered.
+- **F2, GDI's early armour.** TDMTNK at TL3 against 2TNK's TL6, the Mammoth at TL5. TD's build levels, and not a
+  lever at TechLevel 10; the prerequisite chain is what gates it.
+- **F3, the Nod Light Tank.** At TD's ROF 60 it had about two-thirds of the Allied Light's sustained damage on the
+  same hull, and the Light is Nod's ceiling. `TD75mm` at ROF 40 (used by TDLTNK alone) evens it with the Allied
+  Light; Nod's lower cost then decides, and the Allies keep speed (9 against 7) and the Medium above it. Nod gets no
+  heavier tank: its ceiling is the Stealth Tank and the Flame Tank, a specialist toolkit. The Light is anti-armour
+  only (25% against infantry), so the Buggy, Flame Tank, Stealth Tank and artillery keep their niches. The Recon
+  Bike out-damaged TD's Light Tank (0.50 against 0.42); now the Light beats it on damage, strength and armour for
+  100 more, and the Bike's place is its speed (16 against 7), as a raider. Watch it in play, and don't buff it
+  first.
 
-- **🔴 F1 — GDI Mammoth strictly dominates the Soviet Mammoth.** Same hull,
-  same weapons, both SelfHealing — but TDHTNK is **cheaper (1500 vs 1700),
-  faster (5 vs 4), and arrives at TL5 vs TL10** behind an easier prereq (`fix`
-  vs `weap,stek`). In a cross-faction game GDI fields the best heavy tank for
-  less money, half a tech tree earlier. This is the single clearest imbalance.
-  - **First decision, superseded: keep TDHTNK Cost at 1500**, on the
-    grounds that the cheaper Mammoth offsets the GDI/Nod *economy handicap* (TD
-    harvesters dock = bank slower). **This basis is now gone** — v3.0 (2026-06-18)
-    equalised the harvester economy (dock times halved + made equal for every
-    combination; "both sides' economies in step"). So the economy no longer
-    justifies anything. See the economy section.
-  - **✅ Decided for 4.0.0: match Speed to Soviet, keep Cost.**
-    - **`Speed` 5 → 4** (match the Soviet 4TNK) — removes the one *gratuitous*
-      edge (there was no reason the GDI Mammoth was faster).
-    - **`Cost` stays 1500** (cheaper than 4TNK's 1700) — but the justification is
-      now **roster depth, not economy**: Soviets have a deep heavy/siege roster
-      (Heavy Tank, Mammoth, V2, Tesla Tank) while **GDI's only real heavy hitter
-      is the Mammoth** (the MLRS is fragile artillery). The cost edge compensates
-      for GDI's shallow top-end.
-    - **`TechLevel` stays 5** — early durable armor is GDI's identity.
-    - **Net change vs today: Speed 5→4 only.** ⚠ Watch-item: with speed matched +
-      cost kept, the Mammoth's remaining edge is the **TL5-vs-TL10 earliness** (a
-      600hp Mammoth half a tech tree before Soviets). Fits the compensation logic;
-      watch in playtest that the early Mammoth doesn't snowball unanswered.
-- **🟠 F2 — GDI's whole armor curve is early.** GDI gets a Medium-tank
-  equivalent (TDMTNK) at **TL3** — the Allied Medium (2TNK) is TL6 — and the
-  Mammoth at TL5. Combined, GDI has the strongest *armor timing* of the four
-  factions. TD-authentic (TD build levels), but in RA's tech pacing it's a
-  tempo edge.
-- **🟠 F3 — Nod's mainline tank is DPS-starved.** TDLTNK fires at ROF 60
-  (0.42 DPS) where the Allied Light fires at ROF 40 (0.63) — ~50% less sustained
-  damage for the same 300hp/heavy hull, only 100 credits cheaper. And the Light
-  is Nod's *ceiling* — Nod has no Medium or Heavy tank. Nod's armored core is
-  weak by design (doctrine: cheap harass + tricks), but the gap vs Allied armor
-  is large. TD-authentic.
-  - **✅ Decided for 4.0.0: `TD75mm` ROF 60 → 40** (match the
-    Allied 75mm). Single dial, **zero collateral** (TD75mm is used by *only*
-    TDLTNK). Closes the DPS deficit exactly → even 1v1 vs the Allied Light, after
-    which Nod's cheaper cost (600) + earlier tech (TL3) become the deciding edge:
-    a strong cheap-early mainline, fitting Nod's doctrine. **Not an overcorrection**
-    — Allied keeps mobility (Speed 9 vs 7; TD speed stays per the line-wide pace
-    decision) and escalation to the Medium Tank. Deviation from TD-authentic slow
-    cannon, justified: this is Nod's mainline with no heavier MBT above it.
-  - **"No heavier tank" — leave it.** Nod's armored ceiling is *intentionally* the
-    Stealth Tank (cloak ambush) + Flame Tank (anti-base) specialist toolkit, not a
-    tonnage MBT — that's the identity. The ROF fix fully resolves the mainline
-    problem; a Nod heavy tank is a separate additions call that would dilute the
-    cheap-harass doctrine. Not needed.
-  - **Roster impact — nothing obsoleted, but ⚠ WATCH THE RECON BIKE.** The Light
-    Tank is purely anti-*armor* (AP cannon = 25% vs infantry), so the Buggy
-    (anti-inf MG), Flame Tank (anti-soft), Stealth Tank (cloak), and Arty/SSM
-    (siege) all keep their niches untouched. **The one unit pushed is the Recon
-    Bike (TDBIKE):** pre-buff it actually *out-DPSed* the Light Tank (0.50 vs 0.42,
-    TDDragon rockets); post-buff the Light Tank beats it on DPS *and* HP *and*
-    armor for +100 credits, leaving the Bike's edge as **purely its Speed 16** (vs
-    the Light Tank's 7 — 2× faster) plus earlier tech (TL2 vs TL3) and 100 cheaper.
-    So the Bike's identity narrows from "efficient anti-armor" to "pure fast
-    harasser." **Net positive** — pre-buff Nod had no *durable* anti-armor line
-    (only the fragile Bike + 110hp Stealth Tank); the buffed Light Tank fills that
-    hole, making the roles MORE distinct (Light = hold line / Bike = raid-kite /
-    Stealth = ambush). **Action: ship the ROF fix as-is; watch the Bike in
-    playtest. Do NOT pre-emptively buff it** — if it feels redundant after real
-    games, lean into its speed identity, but it likely holds on mobility +
-    earliness alone.
+## Light and harassment vehicles
 
-### Light / harass vehicles
-
-| Unit | Faction | Cost | HP | Armor | Speed | Weapon | Warhead | Note |
+| Unit | Faction | Cost | Strength | Armour | Speed | Weapon | Warhead | Note |
 |---|---|---|---|---|---|---|---|---|
-| JEEP | Allied | 600 | 150 | light | 10 | M60mg | SA | anti-inf scout |
-| TDJEEP Hum-vee | GDI | 400 | 150 | light | 12 | TDM60mg | TDSA | cheaper+faster than RA Jeep |
-| TDBGGY Buggy | Nod | 300 | 140 | light | 12 | TDM60mg | TDSA | cheapest harasser, TL4 |
-| TDBIKE | Nod | 500 | 160 | wood | 16 | TDDragon (AP) | TDAP | fast anti-tank harass |
-| APC | Allied/Sov | 800 | 200 | heavy | 10 | M60mg | SA | transport |
-| TDAPC | GDI | 700 | 200 | heavy | 14 | TDM60mg | TDSA | faster, cheaper transport |
-| TDSTNK Stealth | Nod | 900 | 110 | light | 12 | TDStnkDragon b2 (AP) | TDAP | **cloaks**, AA+AG missiles, glass |
+| JEEP | Allied | 600 | 150 | light | 10 | M60mg | SA | anti-infantry scout |
+| TDJEEP Hum-vee | GDI | 400 | 150 | light | 12 | TDM60mg | TDSA | cheaper and faster than RA's |
+| TDBGGY Buggy | Nod | 300 | 140 | light | 12 | TDM60mg | TDSA | the cheapest harasser |
+| TDBIKE | Nod | 500 | 160 | wood | 16 | TDDragon | TDAP | fast anti-tank harasser |
+| APC | Allied, Soviet | 800 | 200 | heavy | 10 | M60mg | SA | transport |
+| TDAPC | GDI | 700 | 200 | heavy | 8 | TDM60mg | TDSA | cheaper and slower transport |
+| TDSTNK Stealth | Nod | 900 | 110 | light | 12 | TDStnkDragon b2 | TDAP | cloaks, hits air and ground, glass |
 
-**Findings:**
-- **🟢 F4 — GDI/Nod light vehicles are better per-credit than RA's** (cheaper,
-  faster, same HP). Reinforces GDI/Nod as the mobility/harass factions and
-  partially offsets their slower economy. Probably *fine* — it's the doctrine —
-  but watch Buggy/Bike spam in playtest.
-- The Stealth Tank is a unique Nod tool (cloak + can shoot air) but is glass
-  (110hp light) — dies instantly once revealed. Self-balancing.
+- **F4.** GDI and Nod light vehicles are better per credit than RA's (cheaper, faster, the same strength): the
+  mobility and harassment doctrine. Under review against the equal economy; watch Buggy and Bike spam.
+- **The APC.** TDAPC keeps its cheaper price by being slower (8, above the TD tanks' 7 and below the Hum-vee's 12).
+- **The Stealth Tank** is Nod's own tool (cloak, and it shoots air) but glass at 110 strength light: once revealed
+  it dies fast.
 
-### Artillery / siege
+## Artillery and siege
 
-| Unit | Faction | Cost | HP | Weapon | Dmg | ROF | Range | Warhead | Note |
+| Unit | Faction | Cost | Strength | Weapon | Damage | ROF | Range | Warhead | Note |
 |---|---|---|---|---|---|---|---|---|---|
-| ARTY | Allied | 600 | 75 | 155mm | 150 | 65 | **8** | HE | glass cannon |
-| TDARTY | Nod | 450 | 75 | TD155mm | 150 | 65 | **8** | TDHE | **cheaper** same output |
-| TDMLRS | GDI | 800 | 100 | TDMlrsRocket b2 | 75 | 80 | **7** | TDHE | homing, long, durable |
-| TDMSAM SSM | Nod | 750 | 120 | TDHonestJohn | 100 | 200 | **10** | TDFIRE | napalm siege, huge range |
+| ARTY | Allied | 600 | 75 | 155mm | 150 | 65 | 8 | HE | glass cannon |
+| TDARTY | Nod | 450 | 75 | TD155mm | 150 | 65 | 8 | TDHE | cheaper, same output |
+| TDMLRS | GDI | 800 | 100 | TDMlrsRocket b2 | 75 | 80 | 7 | TDHE | homing, durable |
+| TDMSAM SSM | Nod | 750 | 120 | TDHonestJohn | 100 | 200 | 10 | TDFIRE | napalm siege, long range |
 | V2RL | Soviet | 700 | 150 | SCUD | 600 | 400 | 10 | HE | one big hit, slow reload |
 
-- **🟢 F5 — Nod artillery (TDARTY) is a cheaper Allied artillery** (450 vs 600,
-  identical weapon). Minor Nod economy win on siege. Likely fine.
-- **✅ Artillery range extended and VALIDATED in playtest (2026-07-15, commit `1021b67`).**
-  Cannon arty (Allied `155mm` + Nod `TD155mm`) 6 → **8**; GDI MLRS `TDMlrsRocket` 6 → **7**.
-  Range 6 couldn't out-stand base defence, so artillery failed its siege role. The cannon arty's
-  arcing/inaccurate `Ballistic` shell scatters at the fringe (range-scaled CEP + angular jitter,
-  `bullet.cpp:816-836`), so its effective reliable range stays ~6 and the extra reach is paid for
-  in misses — reach without a pinpoint base-deleter. MLRS held a cell lower at 7 because its homing
-  rocket stays pinpoint at any range; that keeps it below the cannon arty's soft 8 and respecting the
-  Obelisk's 7.5 reach. Playtest confirmed it feels good.
+- **F5.** Nod's artillery is a cheaper Allied artillery (450 against 600, the same weapon). Likely fine.
+- **Range.** At TD's and stock RA's 6 the artillery couldn't out-stand base defences. Its `Ballistic` shell is
+  `Inaccurate=no` (stock sets `Inaccurate=yes`, which EA's misspelt key never read), so a building shelled at 8
+  takes the hit where it is aimed. The MLRS sits a cell lower, at 7: short of the cannon artillery and of the
+  Obelisk's 7.5, still outranging the turrets and the Advanced Guard Tower.
 
-### Aircraft
+## Aircraft and air defence
 
-| Unit | Faction | Cost | HP | Weapon | Ammo | Note |
+| Unit | Faction | Cost | Strength | Weapon | Ammo | Role |
 |---|---|---|---|---|---|---|
-| HELI Longbow | Allied | 1200 | **225** | Hellfire (AP) | 6 | durable gunship |
-| HIND | Soviet | 1200 | **225** | ChainGun (SA, ROF3!) | 12 | infantry shredder |
-| TDORCA | GDI | 1200 | **125** | TDStnkDragon b2 (AP) | 6 | fragile |
-| TDHELI Apache | Nod | 1200 | **125** | TDApacheGun b2 (TDHE) | 15 | fragile |
+| HELI Longbow | Allied | 1200 | 225 | Hellfire (AP) | 6 | anti-armour |
+| HIND | Soviet | 1200 | 225 | ChainGun (SA, ROF 3) | 12 | anti-infantry |
+| TDORCA | GDI | 1200 | 225 | TDStnkDragon b2 (TDAP) | 6 | anti-armour |
+| TDHELI Apache | Nod | 1200 | 225 | TDApacheGun b2 (TDHE) | 15 | anti-infantry |
 
-- **🟠 F6 — GDI/Nod aircraft are far more fragile than RA's** (125 vs 225 HP at
-  the same 1200 cost). Against AA (and the RA SAM/AGUN line), the Orca and
-  Apache evaporate roughly twice as fast as the Longbow/Hind. This is the one
-  place GDI/Nod are clearly *under*-statted cross-faction. TD-authentic (TD
-  aircraft had low HP), but a candidate for a parity bump.
-  - **Damage per ammo load is fine** (effective, after Verses): vs heavy —
-    Longbow 240 / Orca 180 / Hind 120 / Apache 94; vs infantry — Hind 480 /
-    Apache 326 / Longbow 72 / Orca 45. Roles are cleanly differentiated (Orca =
-    GDI anti-armor gunship, Apache = Nod infantry shredder) and each TD heli is
-    within ~75% of its RA counterpart's specialty. **Firepower is not the
-    problem — survivability-at-equal-cost is.** Do NOT buff heli damage.
+- **F6.** At TD's 125 strength for the same 1200, the Orca and Apache died about twice as fast as the Longbow and
+  Hind; they now have the RA helicopters' 225. Firepower wasn't the problem and stays TD's: the effective damage of
+  one ammunition load against heavy armour is Longbow 240, Orca 180, Hind 120, Apache 94, and against infantry Hind
+  480, Apache 326, Longbow 72, Orca 45. The Orca is GDI's anti-armour gunship and the Apache Nod's infantry
+  shredder, each within about 75% of its RA counterpart's specialty. Don't buff helicopter damage.
 
-### Air defense (AA structures) — analysed 2026-06-19
+The combat helicopters are `heavy`, so TDHE does 25% against them. Effective anti-air damage against one, per 60
+ticks, with strengths as played:
 
-Aircraft (the combat helis) are **`heavy` armor**, which is decisive: TDHE does
-only 25% vs heavy. Effective anti-air DPS vs a heavy heli (per ~60 ticks):
-
-| Faction | AA structure | HP | Cost | Tech | AA weapon | DPS vs heli |
-|---|---|---|---|---|---|---|
-| Allies | AA Gun | 400 | 600 | 5 | ZSU-23 (AP) | **150** |
-| Soviet | SAM Site | 400 | 750 | 9 | Nike (AP) | **150** |
-| **Nod** | SAM (TDSAM) | **200** | 750 | 6 | TDNike (TDAP, ROF **50**) | **60** |
-| **GDI** | Adv. Guard Tower (TDATWR) | 300 | 1000 | 4 | TDTowTwo (**TDHE**, AA+AG) | **45** |
-
-- **🟠 F7 — Nod's SAM is ~40% the air-defense of the RA SAMs**, on half the HP
-  (200 vs 400), same 750 cost. Root cause: TD-authentic `ROF=50` on TDNike vs
-  the RA Nike's 20 → 60 DPS vs 150. Nod is badly under-defended vs air.
-- **🟠 F8 — GDI has no dedicated AA; the AGT is its only answer and is weak vs
-  heavy** (TDHE = 25% vs heavy) → 45 DPS vs helis AND 45 vs tanks, despite being
-  the priciest defense (1000). **The same 25%-vs-heavy number makes the AGT a
-  poor anti-tank tower too** — this is why GDI ground defense feels thin.
-  Mitigant: the AGT is **dual-role (air+ground)**, so GDI naturally fields
-  *several*, and aggregate AA across 2-3 towers approaches a single RA SAM.
-
-**The compounding problem:** TD factions are weaker on *both* sides of the air
-war — fragile attack helis AND weak AA defense. Fix air as one system.
-
-### v4.0 air-balance plan (decided for 4.0.0)
-
-Two AA buffs + one heli price-cut + zero weapon-damage changes. The heli price cut was later
-replaced by full parity (225 HP for $1200), and the AGT buff reverted. All
-identity-safe (the "fragile air" pillar is preserved on offense; the buffs are
-defensive).
-
-| Item | Fix (single dial) | Numbers |
-|---|---|---|
-| **F7 Nod SAM** | TDNike `ROF=50 → 20` (RA parity) | 60 → 150 DPS vs heli. Later: HP 200→300 if still too fragile. |
-| **F8 GDI AGT** | **Dedicated AGT warhead** cloned from TDHE with **vs-heavy 25% → 50%** | 45 → **90** DPS vs *both* helis and tanks. Fixes AA + the thin ground-defense in one change. Modest ("a little"), not Obelisk-tier. |
-| **F6 GDI/Nod helis** | `Cost 1200 → 950` (NOT an HP buff) | HP-per-credit parity with RA helis (225/1200 ≈ 125/950). Keeps 125 HP = "fragile air" identity; fixes the equal-cost-half-HP unfairness as a price correction. |
-
-**Why a dedicated AGT warhead, not bumping TDHE:** TDHE is shared by ~12 weapons
-(Apache gun, artillery, SSM, MLRS, grenadiers, flame). Bumping it globally would
-buff half the GDI/Nod arsenal. Clone TDHE → an AGT-only warhead so only the
-tower changes. GDI keeps **only** the AGT (TD-authentic); the per-tower bump +
-its natural dual-role quantity cover both air and ground.
-
-**Why cost-cut not HP-bump on the helis:** "fragile air" is a *documented
-intended weakness* for both GDI and Nod (counterweight to GDI early armor / Nod
-cheap-cloak harass). Raising HP to 225 erases it; cutting cost makes them
-fairly-priced expendable glass cannons and gives the TD factions a distinct
-cheap-air doctrine. Hold the HP bump (125→~190) in reserve if playtest shows
-they still "feel like wasted money" individually.
-
-### Infantry (summary — not matchup-decisive, cheap & spammed)
-
-- TD infantry are slightly worse: TDE1 Minigunner range 2 vs RA E1 range 3,
-  speed 3 vs 4; TDE3 Rocket 25hp vs RA E3 45hp and speed 2 (slowest in game).
-- Net: GDI/Nod infantry are marginally outranged/outpaced but cost the same.
-  Low priority — infantry trades are dominated by buildings (pillbox/turret)
-  and tanks, not 1v1 infantry duels.
-- **✅ Decided for 4.0.0: TDE1 Minigunner → match the E1 Rifleman.**
-  `TDM16` Range 2→3 and TDE1 Speed 3→4 (everything else already identical:
-  50hp/100cr/dmg15/ROF20). The basic backbone rifleman isn't a faction-identity
-  piece — it should be at parity, and TDE1 was strictly-dominated (shorter range +
-  slower, zero compensation). Documented TD-authentic deviation. **Only the basic
-  Minigunner** — specialist TD infantry (TDE3 Rocket etc.) keep their TD stats.
-
-### ⚠ META PRINCIPLE — TechLevel is NOT a balancing lever
-
-**Skirmish games are played at TechLevel 10**, so "available earlier" (a lower
-unit TechLevel) confers **no real advantage** — both factions have everything from
-the start. Do NOT use earliness to justify a weaker stat line; that compensation
-doesn't exist in the actual meta. **Real levers: Cost, stats (HP/ROF/range/speed),
-and prerequisite BUILDINGS** (the prereq chain still has to be built at TL10).
-This retroactively tightens several findings (Turret, Mammoth) — see inline.
-
-### Defensive structures — Nod Turret vs Allied Turret (DECIDED 2026-06-19)
-
-**✅ MATCH THE ALLIED: `TDTurretGun` ROF 60 → 50.** HP is already equal (TDGUN's
-`Strength=200` doubles to 400 at runtime via `bdata.cpp:4743` = the Allied GUN's
-400), as are cost/range/damage **and cloak detection** (both have `Sensors=yes` —
-*all* anti-ground defenses on every faction already detect cloak; correcting an
-earlier note that implied it was Nod-only). The ONLY remaining gap was ROF (Nod 60
-vs Allied 50 = 17% less DPS). At TL10 there is no "earlier" offset (see meta
-principle above), so the Nod Turret was simply **600 credits for an inferior
-defence** — and it's a defining early structure. Matching ROF makes it true parity.
-⚠ **General lesson:** always apply the ×2 TD-building-HP doubling before comparing
-any TD structure's HP to an RA one.
-
-### Nod Flame Pillbox — NEW anti-infantry defence (DECIDED 2026-06-19)
-
-**✅ Give Nod a Flame Pillbox** — a Pillbox-chassis bunker firing Nod's TD flame
-weapon. **Fills a real, persistent hole:** Nod's only static defence is the anti-
-*armor* Turret (TDAP = 25% vs infantry); every other faction has an early anti-
-*infantry* emplacement (Allied Pillbox, Soviet Flame Tower, GDI Guard Tower) but Nod
-had **none** — and the Obelisk (TL7) is no answer (slow single-target charge, swarmed
-by infantry; see `td-obli-verification.md`).
-
-**Why the pillbox over the Soviet Flame Tower (the rejected alt):** the Pillbox
-chassis is compact/cheap (400hp wood, ~400cr) and **neutral-looking** (reads as a
-Nod bunker, not an obvious Soviet tower), and using Nod's own flame weapon
-(`TDFire` warhead + `TDFLAME-N` anim) is thematically airtight — Flame Tank /
-Flamethrower / Chem identity. `TDFire` has **area splash (Spread 8)** = ideal vs
-infantry *swarms* (the exact Obelisk weakness).
-
-**Implementation:**
-- **Nod-specific structure** — can't re-weapon the shared Allied `PBOX` (would hit
-  Allies); needs a cloned Nod pillbox variant (Owner=BadGuy, prereq TDHAND) OR an
-  owner-conditional weapon on PBOX. More work than the FTUR owner-open would've
-  been, but yields a bespoke Nod structure.
-- **Dedicated flame weapon — RANGE IS THE CATCH.** `TDFlameTongue` is **range 2**
-  (fine for the mobile Flame Tank, too short for a static defence — buffed range-3
-  infantry would outrange it and shoot it for free). Clone it to a flame-bunker
-  weapon: keep `TDFire` warhead + flame anim, **bump range to ~3-4** (same
-  clone-the-weapon move as the dedicated AGT warhead).
-- Cost ~400 (pillbox), TL2, tune later.
-
-Result: Nod gets the anti-armor Turret + anti-infantry Flame Pillbox pair every
-other faction has — parity, not power-creep (warheads don't overlap: AP vs Fire).
-
-### Base defences: the AGT, the Obelisk and Nod's defensive economy (2026-07-13)
-
-- **The AGT's anti-tank buff (F8) is reverted.** `[TDAGT]` reads plain TDHE again, 25% vs
-  heavy. The tower is already strong for its price: 1000 credits, −20 power, Burst=2, and it
-  hits ground and air. `WARHEAD_TDAGT` stays separate so the AGT can be tuned without touching
-  the other TDHE weapons.
-- **The Obelisk's 7.5-cell reach is shorter than the Tesla Coil's 8.5 on purpose:** it hits
-  harder and reaches less.
-- **Nod pays far more than GDI to defend.** One AGT covers ground and air for 1000 credits and
-  −20 power. Nod needs an Obelisk (1500, −150, ground only) plus a SAM (750, −20): about 2.25
-  times the cost and 8.5 times the power. Nod's light vehicles and Apaches are what the AGT
-  beats. Levers if a GDI-vs-Nod game shows it: the AGT's cost or power, or cheaper Nod
-  defences. Not the AGT warhead: vs-light was never changed. Stood down for now.
-- **RA's Tesla Coil does not chain** (one target, `Spread=1`); its crowd-clearing feel is the
-  Super warhead one-shotting infantry. An arc to nearby targets would be new code. Parked.
-
----
-
-## Cross-cutting: the economy asymmetry
-
-In vanilla, TD harvesters **dock** at the refinery while RA harvesters **auto-dump**, so RA income
-runs faster and Allied/Soviet economies snowball. That was once the counterweight to GDI/Nod's
-cheaper, earlier units (F2/F4) and the cheaper GDI Mammoth.
-
-**Equalised in 3.0.0:** every harvester docks, with the same dock time at every refinery
-(`harvester-docking-rework-plan.md`), so the economies are equal and that counterweight is gone.
-Every GDI/Nod discount justified as "compensation for a slower economy" was re-derived against the
-equal baseline in 4.0.0 (below), kept only where a different reason (doctrine, roster depth) holds.
-
-### v4.0 cross-faction cost re-derivation (post-v3.0 equal economy)
-
-Going unit-by-unit; the test is "was this discount economy-compensation (now
-remove) or genuine doctrine/roster flavour (keep)?":
-
-- **GDI Mammoth (F1):** Speed 5→4 (match Soviet); **keep Cost
-  1500** — re-justified by *roster depth* (Mammoth is GDI's only real heavy hitter
-  vs Soviet's Heavy Tank/V2/Tesla/Mammoth), not economy. See F1 above.
-- **GDI APC (TDAPC):** **keep Cost 700** (cheaper than Allied
-  800) but **Speed 10 → 8** — the cheaper price is now earned by being *slower*
-  (Allied APC = pricier+faster; GDI = budget+sluggish). Also resolves the
-  long-standing "GDI APC too fast" feel (was 14 → 10 → now 8; still above the TD
-  tank line at 7, below the Hum-vee scout at 12). Keep TL4.
-- **Remaining F4 set** (Buggy/Bike/Hum-vee/arty) — still to review against the
-  equal baseline; mostly low-stakes doctrine discounts, likely keep.
-
-**Pattern emerging:** GDI keeps its *earned* edges (cost where roster-justified,
-earliness as identity) but loses *gratuitous* edges (speed advantages with no
-rationale). Speed is becoming the preferred dial over cost for these.
-
----
-
-## Proposed v1.x balance pass — phased
-
-The honest constraint: most of this needs **playtest numbers**, not just
-spreadsheet DPS. So the plan front-loads the one change that's unambiguous from
-the data, then sets up measured iteration for the rest.
-
-### Phase 0 — instrument (no stat changes)
-
-- Confirm Track A AI fixes are in (the AI must field full armies for matchups to
-  be observable). If not, that's a prerequisite — see `ai-improvements.md`.
-- Run a batch of cross-faction skirmishes (GDI vs Soviet, Nod vs Allied, mirror
-  + cross) and log who wins, when, and on what unit. Use the screenshot/Deck
-  loop. Capture reports in this doc.
-
-### Phase 1 — the unambiguous fix (F1), shipped in 4.0.0 as speed 5→4
-
-The Mammoth's cost stays 1500 and its speed matches the Soviet Mammoth's 4 (F1 above). The cost
-and tech bumps analysed below were not applied.
-
-**GDI Mammoth (TDHTNK):** bring it into line with the Soviet Mammoth it
-directly competes with. Recommended single-dial-first:
-- `Cost=` 1500 → **1700** (match 4TNK). Removes the cheaper-AND-better problem;
-  keeps the faster + SelfHealing identity as GDI's flavour edge.
-- If still dominant after playtest, second dial: `TechLevel=` 5 → higher (the
-  TL5-vs-TL10 timing gap is arguably the bigger lever than cost). Note this
-  deviates from TD build-level authenticity — document the reason.
-
-This is the only change I'd ship *before* playtest data, because it's
-provable from the numbers (strictly-better unit, same role, same engine).
-
-### Phase 2 — timing & air parity (needs playtest to confirm magnitude)
-
-- **F2 (GDI armor timing):** if cross-faction games show GDI snowballing on
-  early Mediums/Mammoths, nudge `TechLevel` on TDMTNK (3→4/5) and/or TDHTNK.
-  Watch the economy counterweight first — slower GDI banking may already
-  absorb this.
-- **F6/F7/F8 (air parity), see "v4.0 air-balance plan" above.** F6 shipped as full parity with
-  the RA helicopters (225 HP, $1200); F7 (Nod SAM ROF 50→20) shipped; F8 (the AGT's vs-heavy
-  25→50) was reverted.
-
-### Phase 3 — doctrine tuning (lowest confidence, most playtest-dependent)
-
-- **F3 (Nod light tank): ✅ DECIDED v4.0 — `TD75mm` ROF 60→40** (see F3 above).
-  The text below is the pre-decision framing, retained for context.
-- **F3 (Nod light tank) [pre-decision framing]:** decide whether Nod's weak armored ceiling is
-  acceptable flavour (cheap harass doctrine + Buggy/Bike/Stealth/Flame toolkit)
-  or whether TDLTNK needs a small `Cost` cut / ROF nudge to stay relevant vs
-  Allied armor. Lean: leave it, lean on the cheaper toolkit, revisit only if
-  Nod loses the armor midgame consistently.
-- **Economy net-even pass:** with unit costs as the dial, tune so GDI/Nod's
-  cheaper-army offsets their slower-bank across a full game (memory lever #1).
-- **F4/F5 (cheap GDI/Nod light vehicles & arty):** likely leave as doctrine;
-  only touch if Buggy/Bike/Hum-vee spam proves oppressive.
-
-### Nod SAM against RA jets (playtest, after 4.0.0)
-
-Four Nod SAM sites let a MiG finish three attack runs before it died, even at ROF 20. TDSAM is tuned
-against TD's slow helicopters, and RA's MiG and Yak are fast, with stand-off missiles. Before
-tuning: compare projectile speed, ROF and range against RA's SAM and AA gun, and check whether the
-open-close animation eats the firing window (`td-sam-deep-dive.md`).
-
-### Tank pace
-
-TD tanks run at `Speed=7` (TD MPHType*100/256) vs the Allied Light's 9. TD vehicle speeds stay at
-the MPHType-derived values; at TD's true pace they'd be kited by RA
-armour. **Do not reduce TD vehicle speeds.** The open question is line-wide pace
-feel, not per-unit; defer to playtest.
-
----
-
-## One-glance priority list
-
-| # | Finding | Severity | Confidence from data | Lever | Phase |
+| Faction | Structure | Strength | Cost | AA weapon | Against a helicopter |
 |---|---|---|---|---|---|
-| F1 | GDI Mammoth > Soviet Mammoth (cheaper/faster/earlier) | 🟠 re-derived | high | **Speed 5→4 (match Soviet); keep Cost 1500** (roster depth, not economy) | 4.0 |
-| F2 | GDI armor available too early (TL3 Medium / TL5 Mammoth) | 🟠 med | med | TechLevel | 2 |
-| F6 | GDI/Nod aircraft fragile (125 vs 225 HP) | 🟠 med | high | **225 HP, $1200: full parity** (shipped) | 4.0 |
-| F7 | Nod SAM weak vs RA SAMs (60 vs 150 DPS, half HP) | 🟠 med | high | **TDNike ROF 50→20** (v4.0, decided) | 4.0 |
-| F8 | GDI AGT weak vs heavy (45 DPS air & ground; no dedicated AA) | 🟠 med | high | dedicated warhead vs-heavy 25→50, **reverted** | — |
-| F3 | Nod mainline tank DPS-starved | 🟠 med | high | **TD75mm ROF 60→40** (v4.0, decided) | 4.0 |
-| Econ | TD-dock vs RA-auto-dump income gap | 🟡 design | high | **equal docking** (shipped) | 3.0 |
-| F4/F5 | GDI/Nod light vehicles & arty cheaper per credit | 🟢 low | high | leave (doctrine) | watch |
+| Allies | AA Gun | 400 | 600 | ZSU-23 (AP) | 150 |
+| Soviet | SAM Site | 400 | 750 | Nike (AP) | 150 |
+| Nod | SAM Site (TDSAM) | 400 (200 doubled) | 750 | TDNike (TDAP, ROF 20) | 150 |
+| GDI | Advanced Guard Tower (TDATWR) | 600 (300 doubled) | 1000 | TDTowTwo (via `[TDSSM]`'s TDHE, air and ground) | 45 |
 
-**Bottom line:** the data exposes exactly one provable imbalance worth fixing
-pre-playtest (F1, the GDI Mammoth) plus a coherent set of design-level
-asymmetries (GDI = durable early armor / fragile air / slow economy; Nod =
-cheap harass / weak heavy armor / slow economy) that mostly self-counterbalance
-and should be *confirmed by playtest* before tuning. The cross-faction model is
-not broken — it's lopsided in one unit and otherwise asymmetric-by-design.
+- **F7.** At TD's ROF 50 the Nod SAM managed 60; at RA's 20 it matches the RA SAMs.
+- **F8.** GDI's only anti-air is the Advanced Guard Tower, and its `TDHE` values do 25% against heavy armour, in
+  the air and on the ground. It stays so: for 1000 credits and −20 power it fires `Burst=2` at ground and air
+  alike, and GDI fields several: three towers (135) come near one RA SAM (150). Tune it through a bullet of its own
+  (above), never `[TDHE]`: six weapon sections name it (`TDTusk`, `TDChainGun`, `TDApacheGun`, `TDGrenade`,
+  `TDMlrsRocket`, `TD155mm`), and the `IsTDPort` bullets `[TDSSM]`, `[TDSSM2]` and `[TDSpreadfire]` carry it, which is
+  how `TDTowTwo` reaches it.
+
+## Base defences
+
+- **The Nod Turret** matches RA's turret: 400 strength in play (200 doubled), the same cost, range and damage,
+  `Sensors=yes` as every anti-ground defence on every faction has, and since 4.0.0 RA's ROF 50. At TD's ROF 60 it
+  was 600 credits for a weaker defence.
+- **The Nod Flame Bunker** (`[TDFBNK]`) fills Nod's gap in anti-infantry emplacements: every other faction has one
+  early (the Allied Pillbox, the Soviet Flame Tower, GDI's Guard Tower), and Nod had only the anti-armour Turret
+  (25% against infantry) and the Obelisk, a slow single-target charge that infantry swarm. It is a type of its own
+  on RA's pillbox art (`Image=PBOX`, not the shared Allied `PBOX`), `Owner=BadGuy` behind TDHAND, 500 credits, 400
+  strength in play on wood, TL2. Its `[TDFlameBunker]` is the Flame Tank's `TDFlameTongue` at range 4, not 2, so
+  range-3 infantry can't outrange it, and without its `Burst=2`, so half the tank's damage a cycle; `TDFire`'s spread of 8 suits swarms. Turret and Flame Bunker give Nod the
+  anti-armour and anti-infantry pair the others have, with no warhead overlap.
+- **The Obelisk's 7.5-cell reach is shorter than the Tesla Coil's 8.5 on purpose:** it hits harder and reaches
+  less.
+- **Nod pays far more than GDI to defend.** One Advanced Guard Tower covers ground and air for 1000 credits and
+  −20 power. Nod needs an Obelisk (1500, −150, ground only) plus a SAM (750, −20): about 2.25 times the cost and 8.5
+  times the power. Nod's light vehicles and Apaches are what the tower beats. If a GDI-against-Nod game shows it,
+  the levers are the tower's cost or power, or cheaper Nod defences, not its warhead.
+- **RA's Tesla Coil does not chain** (one target, `Spread=1`); its crowd-clearing feel is the `Super` warhead
+  one-shotting infantry. An arc to nearby targets would be new code, and is parked.
+
+## Infantry
+
+TD's specialists keep TD's stats: TDE3 has 25 strength against RA's E3's 45, and speed 2 against 3. Infantry trades
+are decided by buildings and tanks more than by infantry duels. The basic Minigunner is no faction identity, so it
+matches RA's rifleman: `TDM16` range 3 and TDE1 speed 4, with 50 strength, 100 credits, 15 damage and ROF 20 as
+both already had.
+
+## The economy
+
+In TD harvesters dock at the refinery while RA's dump, so RA's income ran faster. Since 3.0.0 every harvester docks,
+with the same dock time at every refinery (`harvester-docking-rework-plan.md`), and the economies are equal. Every
+GDI and Nod discount once justified as compensation for a slower economy was re-derived in 4.0.0 and kept only where
+another reason holds: the Mammoth's cost (roster depth), the APC's (it is slower). The F4 and F5 discounts are still
+to review; they are mostly doctrine and likely stay. Speed is the preferred dial over cost for these: GDI keeps the
+edges it earns and loses the ones with no reason.
+
+## Tank pace
+
+TD tanks run at `Speed=7` (TD's `MPH_MEDIUM`) against the Allied Light's 9. TD vehicle speeds stay at their
+MPH-derived values: any slower and RA armour kites them. The open question is the pace of the whole line, not of
+one unit.
+
+---
+
+## Playtest log
+
+- **Artillery range** (commit `1021b67`): cannon artillery at 8 and the MLRS at 7 felt right in play.
+- **The GDI APC** felt too fast in play at TD's 14 and still at 10; it ships at 8.
+- **The Nod SAM against RA jets** (after 4.0.0): four Nod SAM sites let a MiG finish three attack runs before it
+  died, even at ROF 20. TDSAM was tuned against TD's slow helicopters; RA's MiG and Yak are fast, with stand-off
+  missiles. Before tuning, compare projectile speed, ROF and range with RA's SAM and AA gun, and check whether the
+  rise-and-lower cycle eats the firing window (`td-sam-deep-dive.md`).

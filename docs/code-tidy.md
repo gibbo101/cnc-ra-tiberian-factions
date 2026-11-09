@@ -3,8 +3,8 @@
 **Status:** Design. The comment pass shipped on main (every comment of ours to the `CLAUDE.md`
 rules, `scripts/code_check.py` in the packager); the dead-code pass has removed the stubbed and
 shipped-work logs; the rest of it and phase 2 are planned.
-**Open:** the maintainer's calls on the dead-code list below; the rest of the clear deletes; the logs
-held for open items; comments inside the ts-buildings-hd branch's ranges; phase 2.
+**Open:** the rest of the clear deletes; the logs held for open items; comments inside the ts-buildings-hd
+branch's ranges; phase 2.
 
 The rules are in the repo's `CLAUDE.md`. `scripts/code_check.py` fails a package on a personal name,
 an ISO date or a missing `docs/*.md` in a comment; `scripts/code_check_baseline.txt` lists the known
@@ -16,8 +16,8 @@ Deletions are code changes: dev-only blocks (`#if 0`, `#if TF_DEV_BUILD`) go in 
 release-path items in others, and each larger removal in a commit of its own with its doc edits.
 Build dev and release after each commit; a skirmish before merging.
 
-### Needs a call first
-- **Kept:** `TF_Dev_Tunneller` and its tick, the `tf_deploy_now.flag` lever, and the EVA cache
+### Kept on purpose
+- `TF_Dev_Tunneller` and its tick, the `tf_deploy_now.flag` lever, and the EVA cache
   patch's `tf_cache_probe.log` lines in dllinterface.cpp.
 
 ### Clear deletes (features shipped or bugs fixed)
@@ -32,7 +32,7 @@ Build dev and release after each commit; a skirmish before merging.
 
 ## Comments inside the ts-buildings-hd ranges
 
-The comment pass skipped every line that branch edits. Once it merges, these need the same
+The comment pass skipped every line that branch edited. The branch has merged, so these need the same
 treatment, names first: defines.h's `UNIT_TSMDIV` legend; unit.cpp's dock and track blocks around
 `Mission_Unload`, `Mission_Harvest` and the TS refinery seats; bdata.cpp's TS war factory, dropship
 bay and refinery classes and `Height()`; dllinterface.cpp's TSPROC hole seeding, the shutter sort and
@@ -40,7 +40,7 @@ selection-box contract comments; building.cpp's TS refinery, war factory shutter
 `Is_Refinery_Dock_Cell` (which needs its header back); infantry.cpp, drive.cpp, techno.cpp and
 udata.cpp's TS war factory, depot and Juggernaut notes; sdata.cpp's apron smudge notes; rules.ini's
 `[TSHARV]`, `[TSPROC]` and `[TSWEAP]` comments; `tsweap_exit_seats.inc`'s hand lines. Also the
-comment at dllinterface.cpp's include of tf_eva_mailbox.h, under the menu-buttons branch.
+comment at dllinterface.cpp's include of tf_eva_mailbox.h, from the menu-buttons branch (also merged).
 
 ## Small flags
 - Whether `SHAPE_GHOST` darkens the sonic discs is unsettled; check in game before anything claims it.

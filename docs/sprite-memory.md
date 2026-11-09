@@ -38,7 +38,7 @@ Without the preload a match holds 0.7 to 1 GB (Measured), if those ZIPs are open
 `Load_Archive` (`0x1747030`) opens `<type root>\<name>.zip` by name, and a hook on the per-frame update call at
 `0x7AF105` runs on the main thread, through the loading screen too. Opening all 240 such ZIPs at once took 3.4 s and
 1.4 GB, so the warm-up opens each ZIP when its object is first built, by any house; crate drops and reinforcements
-still load on first draw. ClientG never unloads unit, building or effect art within a session.
+still load on first draw.
 
 ## Sprites as DDS
 

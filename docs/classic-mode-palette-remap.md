@@ -13,9 +13,8 @@ colours never follow the player: see the field manual's
 [HD-only mods](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/getting-started/hd-only-mods.md#porting-tds-classic-art-why-not-support-classic-mode-as-well),
 porting TD's classic art.
 
-Reilsss's CnCinRA mod and EMC never solved this — their own changelog lists it as
-a permanent known bug. We can, because we own both the DLL and an offline
-asset-build pipeline.
+Reilsss's CnCinRA mod and EMC never solved this; their own changelog lists it as a permanent known bug. TF's
+remap works because it owns both the DLL and an offline asset-build pipeline.
 
 ## The remap rule
 
@@ -28,8 +27,7 @@ It was checked against TD `CONST.CPP` (`RemapRed`, its 176..191 row at line 325;
 ## The tooling (offline, pack-time — no runtime cost)
 
 - **`scripts/ra_mix_extract.py`** — reads RA's encrypted/nested `REDALERT.MIX` to
-  pull `TEMPERAT.PAL`. See the encrypted-mix-reader notes; WW pubkey →
-  Blowfish → recursive container search.
+  pull `TEMPERAT.PAL` (`mix-file-format.md`).
 - **`scripts/shptools.py`** — Westwood LCW (Format80) codec + XOR-delta SHP
   decoder (ported from VC `lcw.cpp` / `keyframe.cpp` / `xordelta.cpp`),
   `build_remap_lut()`, and `remap` CLI. Every frame is decoded to a full bitmap,
@@ -50,7 +48,7 @@ LUT in `shptools.py`, never the raw TD index.
 
 ## Verifying
 
-`build_tfassets.sh` rebuilds `TFASSETS.MIX`; deploy with `deploy.sh`. In-game
-(Deck), classic graphics: TD buildings render correct colours with house colour
-following the player; Obelisk laser is red. Remastered mode is unaffected
-(launcher uses the TGA tileset, not these SHPs).
+`build_tfassets.sh` rebuilds `TFASSETS.MIX`; deploy with `deploy.sh`. Classic graphics can be checked in game
+only with `CNCDisableLegacyGraphicsOption` taken out of `GameConstants_Mod.xml`: TD buildings then render correct
+colours with house colour following the player, and the Obelisk laser is red. Remastered mode draws the HD
+tilesets, not these SHPs, but its Obelisk beam is red only through the `techno.cpp` indices.

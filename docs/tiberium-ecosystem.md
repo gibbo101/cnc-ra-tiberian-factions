@@ -18,10 +18,10 @@ lobby's Tiberium option.
 ## Blossom trees
 
 A blossom tree is a building, `STRUCT_TDBLOSSOM`, owned by `HOUSE_NEUTRAL`, drawn with TD's SPLIT2
-sprite (`build_tiberium_hd.py`). On each growth tick it
-spreads a neighbouring Tiberium cell, or failing that seeds an empty one (`building.cpp`). An
-ordinary tree with Tiberium in six or more of its eight neighbours turns into a blossom tree
-(`terrain.cpp`). The blossom tree's frame comes from `Frame` plus an ID-based stagger, so it needs
+sprite (`build_tiberium_hd.py`). Its growth-tick spread is in `building.cpp`, and the rule that turns an
+ordinary tree with Tiberium in six or more of its eight neighbours into one is in `terrain.cpp`: see the field
+manual's [The Tiberium ecosystem](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/tiberium-ecosystem.md#blossom-trees).
+The blossom tree's frame comes from `Frame` plus an ID-based stagger, so it needs
 no saved state and never conflicts with the building's static (rate-0) animation.
 
 ## Damage to infantry

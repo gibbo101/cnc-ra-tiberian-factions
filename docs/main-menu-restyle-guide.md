@@ -68,16 +68,16 @@ Step 4 shows how to look up any other region.
 
 ## Rules that will save you hours
 
-1. **Every file inside your `CONFIG.MEG` must keep its exact byte size.** The launcher reads your
-   MEG's files at the *base* archive's offsets, so a file that grows or shrinks shifts every file
-   after it, and the game crashes at boot. The crash names an innocent file further down the
-   archive, not the one you changed. For a `.BUI`, recompress at zlib level 9 and pad with zeros
-   back to the original size. For an XML, delete comments to make room and pad with spaces.
+1. **Every file inside your `CONFIG.MEG` must keep its exact byte size**, or the game crashes at
+   boot naming an innocent file (the field manual's
+   [Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#a-replacement-configmeg)
+   explains why). For a `.BUI`, recompress at zlib level 9 and pad with zeros back to the original
+   size. For an XML, delete comments to make room and pad with spaces.
 2. **Build your `CONFIG.MEG` from the base one.** It replaces the base archive whole rather than
    merging with it, so it has to contain every file. For the same reason, two mods that both ship
    a `CONFIG.MEG` (or both ship an atlas) can't both be in effect.
 3. **Never repaint something the rest of the game shares.** The menu's button set is the in-game
-   sidebar's sell/repair button set, and `24 Point Regular Outline Red` is used by all 19 RA
+   sidebar's sell/repair button set, and `24 Point Regular Outline Red` is used by 19 stock RA
    screens. Repaint those and you restyle the game too. Make new ones instead. Before you repaint
    an atlas region, decompress every `.BUI` in `CONFIG.MEG` and search them for its name, to see
    what else draws it.
@@ -119,7 +119,7 @@ Step 4 shows how to look up any other region.
     [`bui_mainmenu_build.py`](../scripts/bui_mainmenu_build.py),
     [`gui_texturesets_build.py`](../scripts/gui_texturesets_build.py),
     [`fontlib_build.py`](../scripts/fontlib_build.py), and
-    [`build_config_meg.sh`](../scripts/build_config_meg.sh), which runs all of them for our mod.
+    [`build_config_meg.sh`](../scripts/build_config_meg.sh), which runs all of them for TF.
 - `menu_art.py` and `title_art.py` look for `TEXTURES_SRGB.MEG` at the Linux Steam path
   (`TEXTURES_MEG` near the top of each). On Windows, point it at
   `C:\Program Files (x86)\Steam\steamapps\common\CnCRemastered\Data\TEXTURES_SRGB.MEG`, or
@@ -199,25 +199,24 @@ The RA title is drawn from two textures:
 `python3 scripts/title_logo_build.py "<your mod>/Data/ART/TEXTURES/SRGB" my_title.png` does both
 from a 1948×552 RGBA PNG, colour bleed included.
 
-A third copy is baked into `UI_RA_LOADINGSCREEN_BG.DDS`. We never found a screen that shows it.
+A third copy is baked into `UI_RA_LOADINGSCREEN_BG.DDS`. No screen is known to show it.
 
 ### 4. The atlas: box, buttons and glow
 
-`MT_COMMANDBAR_COMMON.TGA` is 6871×6716, 32-bit BGRA, stored bottom row first, with an 18-byte
-header and no footer. Pixel (x, y), counted from the top-left, starts at byte
-`18 + ((6716 - 1 - y) * 6871 + x) * 4`. Write your pixels into the copy in place rather than
-loading and saving the whole image through an image library; that keeps the rest of the file
-byte-identical. `paint_atlas()` in `title_logo_build.py` does this.
+The atlas's pixel layout and the `.MTD` region table are on the field manual's
+[The UI atlas](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/the-ui-atlas.md#the-atlas-and-its-region-table).
+Write your pixels into the copy in place rather than loading and saving the whole image through an
+image library; that keeps the rest of the file byte-identical. `paint_atlas()` in
+`title_logo_build.py` does this, and [`mtd.py`](../scripts/mtd.py) reads every region's box. Read
+each name's length rather than skipping the zero bytes after it: two stock regions have an x that
+starts with a zero byte, and skipping misreads them.
 
-To find a region, search `MT_COMMANDBAR_COMMON.MTD` for its name followed by `.TGA`, skip the zero
-bytes after it (one or two), and read four little-endian int32s: x, y, width, height.
-
-What we painted:
+What TF paints:
 - **The box.** Both box regions, recoloured from red to steel with the stock alpha kept, so the
   box stays see-through. Red art carries all its shading in the red channel, so steel is that
   channel multiplied by a grey per channel (`steel()` in `menu_art.py`).
-- **The buttons.** The stock button art is shared with the in-game sell/repair buttons, so we
-  left it alone and painted steel copies into three regions that only Tiberian Dawn's own main
+- **The buttons.** The stock button art is shared with the in-game sell/repair buttons, so TF
+  leaves it alone and paints steel copies into three regions that only Tiberian Dawn's own main
   menu draws: `UI_BUTTON_MAIN_06_MID` (normal), `UI_BUTTON_MAIN_07_MID` (hover) and
   `UI_BUTTON_MAIN_PRESSED_06_MID` (pressed), each 891×91. Step 5 points the menu's buttons at
   them. TD's pause menu uses other `UI_BUTTON_MAIN_*` regions, so check before taking one.
@@ -249,15 +248,14 @@ pads the rest with spaces before `</TextureSets>`.
 
 ### 6. Edit the menu layout (`RA_MAIN_MENU.BUI`)
 
-A `.BUI` is a 36-byte header (starting `CH`) followed by a zlib stream. Decompressed, it is a
-tree of nodes, each `[u32 id][u32 spec]`. If spec's top bit is set, the node is a container
-holding `spec & 0x7fffffff` child nodes; otherwise it is a leaf of `spec` bytes. Containers count
-children, not bytes, so a leaf can change length without touching anything round it. Widget
-names, texture names, text keys (`TEXT_MISSION_LIST`) and style names are readable ASCII once
-decompressed, which is the quickest way to find what to edit. Full format notes:
-[`bui-front-end-modding.md`](bui-front-end-modding.md).
+The `.BUI` format (a 36-byte `CH` header, a zlib stream, a tree of nodes whose containers count
+children, not bytes) is on the field manual's
+[BUI screens](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/bui-screens.md#the-format);
+this repo's notes are in [`bui-front-end-modding.md`](bui-front-end-modding.md). Widget names,
+texture names, text keys (`TEXT_MISSION_LIST`) and style names are readable ASCII once
+decompressed, which is the quickest way to find what to edit.
 
-What we changed:
+What TF changes:
 
 | Change | How |
 |---|---|
@@ -272,26 +270,22 @@ What we changed:
 
 How the names are stored (all integers little-endian):
 - text style or label text: a leaf `[u32 3][u32 len+2][u16 len][ascii]`
-- texture: a leaf `[u32 2][u32 len+2][u16 len][ascii]`
+- texture (and some text styles): a leaf `[u32 2][u32 len+2][u16 len][ascii]`; keep the id the stock name uses
 - effect: a leaf `[u32 0x16][u32 len+4][byte 0x17][byte len+2][u16 len][ascii]`
 - texture set: a micro-chunk `[byte 0x0f][byte len+2][u16 len][ascii]` inside a widget's header
   leaf. If its length changes, the header leaf's size changes with it;
   `bui_tree.replace_texture_set()` handles that.
 
-The other effects in `GUIEFFECTS.CFX` are `Scanline_Sheen_Blue`, `Button_Sheen`, `Logo_Sheen`,
+The other effects in `GUIEFFECTS.CFX` are `Sheen`, `Scanline_Sheen_Blue`, `Button_Sheen`, `Logo_Sheen`,
 `Logo_Glow`, `Power_Sheen` and `MouseOver`.
 
-Then write the file back:
-1. Recompress the edited payload with zlib at level 9. The stock files are compressed at about
-   level 6, so repacking at level 6 often comes out bigger.
-2. Put the new compressed length at header offset `0x10`. Leave the hash at `0x08` as it is: the
-   launcher never checks it.
-3. Pad with zeros to the original file size (5274 bytes for `RA_MAIN_MENU.BUI`). If the stream
-   doesn't fit, the edit is too big.
-
-`bui_tree.write_same_size()` does all three. `bui_mainmenu_build.py` is our full main-menu edit:
+Then write the file back as the manual's
+[Editing safely](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/front-end/bui-screens.md#editing-safely)
+describes: zlib level 9, the new compressed length at `0x10`, the hash left alone, and zero padding
+to the original size (5274 bytes for `RA_MAIN_MENU.BUI`). `bui_tree.write_same_size()` does all
+three. `bui_mainmenu_build.py` is TF's full main-menu edit:
 it finds the rects by byte offset and checks their stock values first, so it stops rather than
-edit the wrong widget if the base file is ever different. Our newer builders
+edit the wrong widget if the base file is ever different. TF's newer builders
 (`bui_dialogbox_build.py`, `bui_lobby_build.py`) find widgets by name with `bui_tree.headers()`,
 which is the easier way to start.
 
@@ -335,14 +329,14 @@ will crash the game at boot.
 
 ## Going further
 
-The same levers reach the rest of the front end. What we did with them:
+The same levers reach the rest of the front end. What TF does with them:
 
 - **Exit and confirm dialog.** The menu's dialog is `RA_DIALOGBOX_SOVIET.BUI`, chosen by the
   `DialogBox` key in `FACTIONS.XML`. The Soviet factions use the same box in game. See
   `bui_dialogbox_build.py`.
 - **Whole screens.** The RA front end opens the screens named in the `GUIFileNames` of the Soviet
   entry (`Faction5`) in `FACTIONS.XML`. Point one at a Tiberian Dawn screen (its name without the
-  `RA/` prefix) and the whole screen is swapped. We did that for the skirmish lobby, LAN lobby,
+  `RA/` prefix) and the whole screen is swapped. TF does that for the skirmish lobby, LAN lobby,
   LAN match list and Workshop map browser (`factions_build.py`, `bui_lobby_build.py`).
   `FACTIONS.XML` must keep its byte size too: pad the edited line with spaces.
 - **Loading screen.** `RA_UI_LOADINGSCREEN.BUI` and the spinner sheet `ANIM_LOADTWIDDLE_RA.DDS`,

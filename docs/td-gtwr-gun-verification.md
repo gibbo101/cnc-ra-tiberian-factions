@@ -1,28 +1,31 @@
-# TDGTWR + TDGUN — TD-source verification
+# TDGTWR and TDGUN: the Guard Tower and the Gun Turret
 
-**Status:** Reference; shipped before 1.0.0. TDGTWR binds `Primary=TDChainGun` (TD-authentic
-Damage 25, ROF 50); TDGUN runs its own separated chain.
+**Status:** Reference; shipped before 1.0.0. TDGTWR binds `Primary=TDChainGun` (TD's Damage 25, ROF 50); TDGUN
+binds `Primary=TDTurretGun` on its own `[TDAPDS]` projectile.
+**Open:** `[TDTurretGun]`'s `Speed=40` reads as 102; `Speed=39` (99) is the closest to TD's `MPH_VERY_FAST` (100).
 
-The body is the TD-source analysis and the port plan that was carried out; live stats are in
-`rules.ini` and `balance-deep-dive.md`. TD entities run TD's own building, weapon and projectile code, ported from
-`reference/vanilla-conquer/tiberiandawn/`, never RA's nearest equivalent.
+Live stats are in `rules.ini` and `balance-deep-dive.md`. TD entities run TD's own building, weapon and projectile
+code, ported from `reference/vanilla-conquer/tiberiandawn/`, never RA's nearest equivalent (`td-port-playbook.md`).
+The muzzle offsets, the turret's frames and turn rate, and the flash by projectile are in the field manual's
+[Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#weapons-muzzle-flashes-and-offsets),
+Weapons, muzzle flashes and offsets, and The flags that decide the frames.
 
 ---
 
-## TD source values (verified)
+## TD's source
 
-### TDGTWR = TD's `STRUCT_GTOWER` (TD `bdata.cpp:320-370`)
+### TDGTWR is TD's `STRUCT_GTOWER` (`tiberiandawn/bdata.cpp:320-370`)
 
 ```cpp
 static BuildingTypeClass const ClassGTower(STRUCT_GTOWER,
     /* ... */
     true,   // IsSimpleDamage
     /* ... */
-    false,  // IsTurretEquipped       ← static building, no rotation
+    false,  // IsTurretEquipped
     false,  // IsTwoShooter
     true,   // IsRepairable
     true,   // IsBuildable
-    true,   // IsCrew                  ← spawns infantry on death
+    true,   // IsCrew
     /* ... */
     DIR_N,
     200,    // Strength
@@ -37,25 +40,26 @@ static BuildingTypeClass const ClassGTower(STRUCT_GTOWER,
     /* ... */);
 ```
 
-TD dispatches `STRUCT_GTOWER` only in `Fire_Data`/`Fire_Coord` (`building.cpp:2784-2787`, `2815-2821`); no Mission_Attack, Shape_Number, AI, Power_Fraction or crew-spawn-offset case. The muzzle values are in the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#weapons-muzzle-flashes-and-offsets), Weapons, muzzle flashes and offsets ("Where shots leave").
+TD tests `STRUCT_GTOWER` only in `Fire_Data` and `Fire_Coord` (`building.cpp:2784-2787`, `2815-2821`): no
+`Mission_Attack`, `Shape_Number`, `AI`, power or crew case.
 
-### TDGUN = TD's `STRUCT_TURRET` (TD `bdata.cpp:475-530`)
+### TDGUN is TD's `STRUCT_TURRET` (`tiberiandawn/bdata.cpp:475-530`)
 
 ```cpp
 static BuildingTypeClass const ClassTurret(STRUCT_TURRET,
     /* ... */
-    false,  // IsSimpleDamage          ← uses full damaged-frame range
+    false,  // IsSimpleDamage
     /* ... */
-    true,   // IsTurretEquipped        ← actual rotating turret
+    true,   // IsTurretEquipped
     false,  // IsTwoShooter
     true,   // IsRepairable
     true,   // IsBuildable
     true,   // IsCrew
     /* ... */
-    (DirType)208,   // Starting facing — roughly south-southwest
+    (DirType)208,   // Starting facing, west-north-west (DIR_W 192, DIR_NW 224)
     200,    // Strength
     5,      // Sight
-    600,    // Cost (was 250 pre-PATCH)
+    600,    // Cost (250 before TD's patch)
     /* ... */
     WEAPON_TURRET_GUN,
     WEAPON_NONE,
@@ -65,41 +69,37 @@ static BuildingTypeClass const ClassTurret(STRUCT_TURRET,
     /* ... */);
 ```
 
-TD `building.cpp` dispatch for `STRUCT_TURRET`:
-
-| Line | What |
+| TD `building.cpp` | What |
 |---|---|
-| 2784-2787 | Fire_Data (default case via fallthrough) |
-| 2795-2798 | Fire_Data SAM/TURRET branch |
-| 2829-2832 | Fire_Coord SAM/TURRET branch |
-| 4553, 4580 | Version-1.07-pre-MP-quirks (not relevant to us — `GameToPlay != GAME_NORMAL` gate) |
+| 2784-2787 | `Fire_Data`, the default case |
+| 2795-2798 | `Fire_Data`, the SAM/TURRET branch |
+| 2829-2832 | `Fire_Coord`, the SAM/TURRET branch |
 
-Also relies on the generic `AI` rotation block (TD `building.cpp:1281-1290`). The muzzle values and turn rate are in the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#weapons-muzzle-flashes-and-offsets): Weapons, muzzle flashes and offsets ("Where shots leave"), and The SAM site.
+And TD's `bdata.cpp:4553` and `4580`: `BuildingTypeClass::Raw_Cost` and `Cost_Of`, under `#ifdef PATCH`, return 250
+for `IsV107 && STRUCT_TURRET && GameToPlay != GAME_NORMAL`, the cost of version-1.07 multiplayer games behind the
+constructor's "250 before TD's patch". Not ported.
 
-### TD `WEAPON_CHAIN_GUN` (TD `const.cpp:71`)
+The turret turns in the generic `AI` rotation block (TD `building.cpp:1281-1290`).
+
+### The weapons and projectiles (`const.cpp`, `bbdata.cpp`)
 
 ```cpp
-{BULLET_SPREADFIRE, 25, 50, 0x0400, VOC_MINI, ANIM_GUN_N},  // WEAPON_CHAIN_GUN
+{BULLET_SPREADFIRE, 25, 50, 0x0400, VOC_MINI, ANIM_GUN_N},        // WEAPON_CHAIN_GUN (const.cpp:71)
+{BULLET_APDS, 40, 60, 0x0600, VOC_TANK4, ANIM_MUZZLE_FLASH},      // WEAPON_TURRET_GUN (const.cpp:82)
 ```
 
-Per `type.h:50-91` field order `{Fires, Attack, ROF, Range, Sound, Anim}`:
-- Bullet: `BULLET_SPREADFIRE` ("50cal", invisible bullet trail)
-- Damage: 25
-- ROF: 50
-- Range: 0x0400 leptons / 256 = **4 cells**
-- Sound: `VOC_MINI` (= `GUN8` per `audio.cpp:128`)
-- Anim: `ANIM_GUN_N` (8-direction gun-fire overlay)
-
-### TD `BULLET_SPREADFIRE` aka ClassSpreadfire (TD `bbdata.cpp:87`)
+The chain gun: 25 damage, ROF 50, 4 cells, `VOC_MINI` (`GUN8`, `audio.cpp:128`), the 8-direction gun flash. The
+turret gun: 40 damage, ROF 60, 6 cells, `VOC_TANK4` (`TNKFIRE6`), the muzzle flash. Both rows read
+`{Fires, Attack, ROF, Range, Sound, Anim}`, TD's `type.h:50-91`.
 
 ```cpp
-static BulletTypeClass const ClassSpreadfire(BULLET_SPREADFIRE,
+static BulletTypeClass const ClassSpreadfire(BULLET_SPREADFIRE,   // bbdata.cpp:87
     "50cal",         // Image
     true,            // High
     false,           // Homes
     false,           // Arcs
     false,           // Drops
-    true,            // Invisible       ← important
+    true,            // Invisible
     false,           // Proximity arm
     false,           // Animates flame
     false,           // Has fuel
@@ -112,27 +112,8 @@ static BulletTypeClass const ClassSpreadfire(BULLET_SPREADFIRE,
     0,               // ROT
     WARHEAD_HE,
     ANIM_PIFFPIFF);  // Impact
-```
 
-Key TD facts: invisible projectile (no visible bullet, just impact effect), MPH_LIGHT_SPEED (essentially hitscan), HE warhead, ANIM_PIFFPIFF impact ("piff piff" small puff).
-
-### TD `WEAPON_TURRET_GUN` (TD `const.cpp:82`)
-
-```cpp
-{BULLET_APDS, 40, 60, 0x0600, VOC_TANK4, ANIM_MUZZLE_FLASH},  // WEAPON_TURRET_GUN
-```
-
-- Bullet: `BULLET_APDS` ("120mm")
-- Damage: 40
-- ROF: 60
-- Range: 0x0600 / 256 = **6 cells**
-- Sound: `VOC_TANK4` (= `TNKFIRE6`)
-- Anim: `ANIM_MUZZLE_FLASH` (= `GUNFIRE` in RA's `adata.cpp:1075`)
-
-### TD `BULLET_APDS` aka ClassAPDS (TD `bbdata.cpp:109`)
-
-```cpp
-static BulletTypeClass const ClassAPDS(BULLET_APDS,
+static BulletTypeClass const ClassAPDS(BULLET_APDS,               // bbdata.cpp:109
     "120mm",         // Image
     false,           // High
     false,           // Homes
@@ -153,300 +134,88 @@ static BulletTypeClass const ClassAPDS(BULLET_APDS,
     ANIM_VEH_HIT3);  // Impact
 ```
 
-Standard armor-piercing tank shell. Fast, no homing, no AA.
-
 ---
 
-## Diff against current state
+## What TF ships
 
-### TDGTWR — current state in our DLL + rules.ini
+### The constructors
 
-**`ClassTdGtwr` (`redalert/bdata.cpp:708-735`):**
+| | `ClassTdGtwr` (`redalert/bdata.cpp:797`, registered at 5221) | `ClassTdGun` (`bdata.cpp:857`, registered at 5223) |
+|---|---|---|
+| Vertical offset | `0x0030` | `0x0030` |
+| Primary offset | `0x0040` | `0x0080` |
+| `IsSimpleDamage` | true | false |
+| `IsTurretEquipped` | false | true |
+| Initial facing | `DIR_N` | `(DirType)208` |
+| Size, footprint | `BSIZE_11`, `List1` | `BSIZE_11`, `List1` |
 
-| Field | Our value | TD value | Status |
-|---|---|---|---|
-| VerticalOffset | `0x0010` | `0x0030` (from Fire_Coord) | ⚠ DIVERGES |
-| PrimaryOffset | `0x0040` | `0x0040` (from Fire_Coord) | match |
-| PrimaryLateral | `0x0000` | — | OK |
-| IsSimpleDamage | `true` | `true` | match |
-| IsTurretEquipped | `false` | `false` | match |
-| Initial facing | `DIR_N` | `DIR_N` | match |
-| Size | `BSIZE_11` | `BSIZE_11` | match |
-| Foundation | `List1` | `List1` | match |
-| (IsCrew via rules.ini) | `Crewed=true` | `true` | match |
+Both match TD's constructors and `Fire_Coord`. `TDGTWR.ZIP` has 3 frames (simple damage); `TDGUN.ZIP` has 128 (32
+facings in four sets). The turret turns at `ROT=12` through RA's `Rotation_AI`.
 
-Only one constructor-arg bug: `VerticalOffset=0x0010` should be `0x0030`. With the wrong offset, bullets spawn ~0x20 leptons lower than they should — visible as muzzle coming from the building's *waist* rather than the top of the lookout structure. Not a fatal bug, but TD-inaccurate.
+### `rules.ini`
 
-**`[TDGTWR]` rules.ini section (line 3452):**
-
-```ini
-[TDGTWR]
-...
-Armor=wood              ; ✓ TD ARMOR_WOOD
-Primary=Vulcan          ; ⚠ RA's vanilla — wrong values
-Strength=200            ; ✓ TD 200
-Cost=500                ; ✓ TD 500
-Power=-10               ; ✓ TD Drain=10
-Sight=3                 ; ✓ TD 3
-Crewed=true             ; ✓ TD IsCrew
-```
-
-The big one: `Primary=Vulcan`. RA's `[Vulcan]` weapon:
+`[TDGTWR]` is TD's: `Strength=200` (doubled in code, playbook §3.21), `Cost=500`, `Power=-10`, `Sight=3`,
+`Armor=wood`, `Crewed=true`, plus `Points=25` and `Sensors=yes`. `[TDGUN]` likewise: `Strength=200`, `Cost=600`,
+`Power=-20`, `Sight=5`, `Armor=steel`, `ROT=12`, `Crewed=true`, `Points=26`, `Sensors=yes`.
 
 ```ini
-[Vulcan]
-Damage=40        ; TD CHAIN_GUN = 25  (RA is 60% stronger)
-ROF=40           ; TD CHAIN_GUN = 50  (RA fires 25% faster)
-Range=5          ; TD CHAIN_GUN = 4   (RA reaches 1 cell further)
-Projectile=Invisible
-Speed=100        ; TD's MPH_LIGHT_SPEED is approx same magnitude
-Warhead=SA       ; TD CHAIN_GUN = WARHEAD_HE
-Report=GUN13     ; TD CHAIN_GUN = VOC_MINI ("GUN8")
-Anim=MINIGUN     ; TD CHAIN_GUN = ANIM_GUN_N (8-direction overlay)
-```
-
-Every value differs. Net effect: our TDGTWR is **significantly stronger** than TD's authentic Guard Tower (40 dmg vs 25, 40 ROF vs 50, 5 range vs 4). For balance work later, that matters.
-
-Plus the rules.ini comment at line 3467 explicitly admits the issue:
-> `; Vulcan: same MG that PBOX donor used; TD's CHAIN_GUN closest analog.`
-
-That's the donor thinking the separation retired.
-
-### TDGUN — current state in our DLL + rules.ini
-
-**`ClassTdGun` (`redalert/bdata.cpp:766-793`):**
-
-| Field | Our value | TD value | Status |
-|---|---|---|---|
-| VerticalOffset | `0x0030` | `0x0030` (from Fire_Coord) | match |
-| PrimaryOffset | `0x0080` | `0x0080` (from Fire_Coord) | match |
-| PrimaryLateral | `0x0000` | — | OK |
-| IsSimpleDamage | `false` | `false` | match |
-| IsTurretEquipped | `true` | `true` | match |
-| Initial facing | `(DirType)208` | `(DirType)208` | match |
-| Size | `BSIZE_11` | `BSIZE_11` | match |
-| Foundation | `List1` | `List1` | match |
-| (IsCrew via rules.ini) | `Crewed=true` | `true` | match |
-
-**`ClassTdGun` is field-perfect TD-authentic.** No constructor bugs.
-
-**`[TDGUN]` rules.ini section (line 3665):**
-
-```ini
-[TDGUN]
-...
-Armor=steel             ; ✓ TD ARMOR_STEEL
-Primary=TDTurretGun     ; ✓ TD-prefixed dedicated weapon
-ROT=12                  ; ✓ TD's STRUCT_TURRET rotates at Rotation_Adjust(12)
-Strength=200            ; ✓ TD 200
-Cost=600                ; ✓ TD 600 (post-PATCH)
-Power=-20               ; ✓ TD Drain=20
-Sight=5                 ; ✓ TD 5
-Crewed=true             ; ✓ TD IsCrew
-```
-
-**`[TDTurretGun]` weapon (line 2556):**
-
-```ini
-[TDTurretGun]
-Damage=40              ; ✓ TD 40
-ROF=60                 ; ✓ TD 60
-Range=6                ; ✓ TD 0x0600 leptons = 6 cells
-Projectile=Cannon      ; ⚠ RA's vanilla [Cannon] (Image=120MM only, all other fields default)
-Speed=40               ; reads as 102; 39 matches TD MPH_VERY_FAST (T9)
-Warhead=AP             ; ✓ TD WARHEAD_AP
-Report=TNKFIRE6        ; ✓ TD VOC_TANK4
-Anim=GUNFIRE           ; ✓ TD ANIM_MUZZLE_FLASH
-```
-
-The weapon stats are TD-authentic. The one separation issue: `Projectile=Cannon` — RA's vanilla `[Cannon]` section (`Image=120MM`, all defaults) happens to match TD's `BULLET_APDS` field-for-field, but binding to a *vanilla section* means RA-side balance changes to `[Cannon]` (used by RA's tanks/turret) would silently move TDGUN too. Per the separation principle, we want our own `[TDAPDS]` section even if its content is currently identical.
-
----
-
-## Audio routing status
-
-| TD VocType | TD sample | RA mapping | Used by |
-|---|---|---|---|
-| `VOC_MINI` | `GUN8` | **MISSING** — needs to add `{"GUN8", 1, IN_NOVAR},  // VOC_TD_MINI` | TDGTWR's TDChainGun |
-| `VOC_TANK4` | `TNKFIRE6` | `VOC_TD_TANK4` (`audio.cpp:254`) | TDGUN's TDTurretGun ✓ |
-| `VOC_ROCKET2` | `ROCKET2` | `VOC_TD_ROCKET2` (`audio.cpp:253`) | TDSAM (TDNike), TDATWR (TDTowTwo) ✓ |
-| `VOC_LASER` | `OBELRAY1` | `VOC_TD_LASER` (`audio.cpp:255`) | TDOBLI ✓ |
-| `VOC_LASER_POWER` | `OBELPOWR` | `VOC_TD_LASER_POWER` (`audio.cpp:256`) | TDOBLI ✓ |
-| `VOC_CONSTRUCTION` | `CONSTRU2` | `VOC_TD_CONSTRUCTION` (`audio.cpp:257`) | (TD building loop) ✓ |
-
-Add `GUN8` to `audio.cpp` `SoundEffectName[]` table (one line, slots into the existing TF-mod block). Same routing pattern we've already used six times.
-
----
-
-## Port plan
-
-### TDGTWR
-
-**T1 — Fix `ClassTdGtwr` VerticalOffset** (`redalert/bdata.cpp:714`):
-
-```cpp
-0x0030,          // VerticalOffset — TD ClassGTower (Fire_Coord +0x30 DIR_N)
-0x0040,          // PrimaryOffset — TD ClassGTower (Fire_Coord +0x40 forward)
-```
-
-Update the comment to drop "matches PBOX" — we set this from TD source, not by comparing to PBOX.
-
-**T2 — Add `VOC_TD_MINI` audio entry** (`redalert/audio.cpp:257`-ish, slot into the TF block):
-
-```cpp
-{"GUN8",    1, IN_NOVAR},  // VOC_TD_MINI         TD chain gun burst (CHAIN_GUN / TDGTWR)
-```
-
-**T3 — Port `[TDSpreadfire]` projectile** to `rules.ini`:
-
-```ini
-; TD BULLET_SPREADFIRE — "50cal" invisible bullet trail.
-; Source: tiberiandawn/bbdata.cpp ClassSpreadfire at line 87.
-; Distinct from RA's [Invisible] which is bare (no fields beyond Inviso=yes
-; Image=none); TD's BULLET_SPREADFIRE has a specific impact anim and
-; warhead routing handled by the bullet, not the weapon.
-[TDSpreadfire]
-Image=50cal      ; TD says "50cal" — verify Remaster has this sprite, fall back to "none" if not
-Inviso=yes       ; TD Invisible=true
-High=yes         ; TD High=true (over walls)
-; Homes=no, Arcs=no, Proximity=no, Animates=no, Ranged=no — all defaults
-; AA=no by default
-; ROT=0 by default
-; Translucent=no
-```
-
-**T4 — Port `[TDChainGun]` weapon** to `rules.ini` (slot near `[TDTurretGun]`):
-
-```ini
-; TD GDI Guard Tower chain gun.
-; Source: tiberiandawn/const.cpp WEAPON_CHAIN_GUN
-;   {BULLET_SPREADFIRE, 25, 50, 0x0400, VOC_MINI, ANIM_GUN_N}
-; NOT aliased to RA's [Vulcan] — RA's has Damage=40 ROF=40 Range=5 (way
-; stronger). TD-authentic stats below are required for balance work.
 [TDChainGun]
-Damage=25              ; TD Attack=25  (RA's [Vulcan] = 40)
-ROF=50                 ; TD ROF=50     (RA's [Vulcan] = 40)
-Range=4                ; TD Range=0x0400 leptons = 4 cells (RA's [Vulcan] = 5)
+Damage=25
+ROF=50
+Range=4
 Projectile=TDSpreadfire
-Speed=100              ; TD's MPH_LIGHT_SPEED — verify exact integer
-Warhead=HE             ; TD WARHEAD_HE (RA's [Vulcan] = SA)
-Report=GUN8            ; TD VOC_MINI (RA's [Vulcan] = GUN13)
-Anim=GUNFIRE           ; RA's adata.cpp maps GUNFIRE to ANIM_MUZZLE_FLASH;
-                       ; chosen over MINIGUN (the 8-direction ANIM_GUN_N)
-```
+Speed=100          ; RA's percentage: 255, MPH_LIGHT_SPEED, so the invisible round lands at once
+Warhead=TDHE
+Report=GUN8        ; TD VOC_MINI
+Anim=GUNFIRE
 
-`Anim=MINIGUN` as TD's 8-direction gun flash (the directional-anim case in `TechnoClass::Fire_At`): see the field manual's [Porting TD buildings and defences](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#weapons-muzzle-flashes-and-offsets), Weapons, muzzle flashes and offsets.
+[TDSpreadfire]
+Warhead=TDHE
+ImpactAnim=PIFFPIFF
+Inviso=yes
+Image=none
+High=yes
 
-**T5 — Update `[TDGTWR]` to bind the TD weapon**:
-
-```ini
-[TDGTWR]
-; ... other fields unchanged ...
-Primary=TDChainGun     ; was: Primary=Vulcan
-; Drop the "Vulcan: same MG that PBOX donor used; TD's CHAIN_GUN closest
-; analog" comment — no longer relevant under full separation.
-```
-
-**T6 — Manifest sync** (`scripts/buildings_manifest.py`):
-
-Update the `TDGTWR` dict's `"primary"` field to `"TDChainGun"` and update notes to reference this doc.
-
-### TDGUN
-
-TDGUN's weapon stats are already TD-authentic. Two small cleanups:
-
-**T7 — Port `[TDAPDS]` projectile** to `rules.ini`:
-
-```ini
-; TD BULLET_APDS — armor-piercing 120mm shell.
-; Source: tiberiandawn/bbdata.cpp ClassAPDS at line 109.
-; Currently TDTurretGun.Projectile=Cannon which is RA's vanilla bullet
-; (Image=120MM only, all defaults — happens to match TD's BULLET_APDS
-; field-for-field but binds us to RA's balance pool). Port to a TD-prefixed
-; section even though content is value-identical so future RA balance
-; changes to [Cannon] don't silently move TDGUN.
-[TDAPDS]
-Image=120mm
-; All other fields default — matches TD ClassAPDS field-for-field:
-;   High=no, Homes=no, Arcs=no, Invisible=no, Proximity=no, Animates=no,
-;   Ranged=no, Inaccurate=no, Translucent=no, AA=no, ROT=0
-```
-
-**T8 — Update `[TDTurretGun]` to bind the TD projectile**:
-
-```ini
 [TDTurretGun]
-; ... other fields unchanged ...
-Projectile=TDAPDS      ; was: Projectile=Cannon
+Damage=40
+ROF=50             ; the Allied turret's rate of fire (TD: 60) (balance-deep-dive.md)
+Range=6
+Projectile=TDAPDS
+Speed=40           ; the open item
+Warhead=TDAP
+Report=TNKFIRE6    ; TD VOC_TANK4
+Anim=GUNFIRE
+
+[TDAPDS]
+Warhead=TDAP
+ImpactAnim=VEH-HIT3
+Image=120MM
 ```
 
-Update the comment at line 2555 (`; BULLET_APDS ≈ RA's Cannon visually; no new BulletType needed.`) — that's the same donor-think; replace with a pointer to this doc.
+`TDChainGun` and `TDTurretGun` aren't `IsTDPort` weapons (`rules.cpp:735`, `737`), so their `Speed=` is RA's
+percentage; `TDSpreadfire` and `TDAPDS` are `IsTDPort` bullets (`bbdata.cpp:214-215`), detonating with their own
+`Warhead=` and `ImpactAnim=`. The chain gun flashes with `Anim=GUNFIRE`, the plain muzzle flash (RA's `ANIM_MUZZLE_FLASH`, `adata.cpp:1130`), chosen over
+`MINIGUN` (TD's 8-direction `ANIM_GUN_N`; see the field manual's
+[Weapons, muzzle flashes and offsets](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-buildings-and-defences.md#weapons-muzzle-flashes-and-offsets)).
 
-**T9 — Verify `Speed=40` matches TD's `MPH_VERY_FAST`**:
-
-TD's BULLET_APDS uses MPH_VERY_FAST (100, TD `DEFINES.H`). `[TDTurretGun]` isn't an `IsTDPort` weapon (`rules.cpp:735`), so RA's percentage applies: `Speed=39` by the field manual's [Porting Tiberian Dawn units](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/units/porting-td-units.md) formula (Speed): 40 reads as 102 and 39 as 99, the closest to TD's 100. The shipped rules.ini still has `Speed=40`.
-
----
-
-## What's already right (don't touch)
-
-- `STRUCT_TDGTWR` and `STRUCT_TDGUN` enums in `defines.h`, heap registration in `bdata.cpp:3322,3324`.
-- `ClassTdGun` constructor args — 100% TD-authentic to TD's `ClassTurret`.
-- `[TDGUN]` rules.ini fields — all match TD's `ClassTurret`.
-- `[TDTurretGun]` weapon Damage/ROF/Range/Warhead/Report/Anim — all match TD's `WEAPON_TURRET_GUN`.
-- `TDGTWR.ZIP` (3 frames) — correct for `IsSimpleDamage=true`.
-- `TDGUN.ZIP` (128 frames = 32 rotation × 4 states) — correct for `IsTurretEquipped=true`.
-- TDGUN audio: `Report=TNKFIRE6` already wired via `VOC_TD_TANK4` in `audio.cpp:254`.
-- TDGUN rotation: `Rotation_AI` already rotates at `Class->ROT` when `IsTurretEquipped=true` and powered — TDGUN's `ROT=12` matches TD's `Rotation_Adjust(12)`.
-
----
-
-## Acceptance criteria
-
-**TDGTWR:**
-- [ ] `ClassTdGtwr.VerticalOffset = 0x0030` (was `0x0010`).
-- [ ] `[TDChainGun]` weapon section in rules.ini with TD-authentic Damage=25/ROF=50/Range=4/Warhead=HE.
-- [ ] `[TDSpreadfire]` projectile section in rules.ini matching TD's `BULLET_SPREADFIRE`.
-- [ ] `[TDGTWR] Primary=TDChainGun` (was `Primary=Vulcan`).
-- [ ] `VOC_TD_MINI = "GUN8"` in `redalert/audio.cpp`.
-- [ ] Firing audio is the TD-authentic minigun sound (not RA's GUN13).
-- [ ] Per-shot damage on light infantry is consistent with TD's 25-per-shot (vs RA's 40).
-- [ ] All "Vulcan: same MG that PBOX donor used" / "modeled on PBOX" comments removed or pointed at this doc.
-
-**TDGUN:**
-- [ ] `[TDAPDS]` projectile section in rules.ini.
-- [ ] `[TDTurretGun] Projectile=TDAPDS` (was `Projectile=Cannon`).
-- [ ] `Speed=39` to match TD's `MPH_VERY_FAST` (T9; the shipped value is 40).
-- [ ] Firing audio is `TNKFIRE6` (already correct; regression check only).
-- [ ] Damage per shot vs medium tank: TD-authentic 40 damage with WARHEAD_AP (verify against vanilla TD if possible).
+The sounds are `VOC_TD_MINI` (`GUN8`, `audio.cpp:257`) and `VOC_TD_TANK4` (`TNKFIRE6`, `audio.cpp:253`).
 
 ---
 
 ## Decisions
 
-- **No donor framing.** Every value in this plan comes from TD source, not "what RA building has the same shape."
-- **`[TDChainGun]`/`[TDSpreadfire]`/`[TDAPDS]` are new TD-port sections.** Not aliased to RA's `[Vulcan]`/`[Invisible]`/`[Cannon]`.
-- **TDGTWR uses TD-authentic stats even though they make it weaker than the current Vulcan-shaped version.** Don't preserve a balance-buff just because it leaked in via a donor binding. If the building feels too weak in playtest, balance via TD-authentic levers (range, ROF, even a `Strength=` bump on the building) rather than reverting to a non-TD weapon.
-- **TDGUN keeps the current Cannon-equivalent projectile values.** The new `[TDAPDS]` section starts as content-identical to `[Cannon]` because TD's `BULLET_APDS` happens to match RA's defaults. The point of porting it isn't to change behavior, it's to decouple TDGUN from RA's vanilla balance pool so they can drift independently.
+- **No donor.** Every value comes from TD's source, not from the RA building of the same shape.
+- **Own sections.** `[TDChainGun]`, `[TDSpreadfire]` and `[TDAPDS]` are TD ports, never RA's `[Vulcan]`,
+  `[Invisible]` or `[Cannon]`. RA's `[Vulcan]` (40 damage, ROF 40, 5 cells, `SA`, `GUN13`) would make the tower far
+  stronger than TD's. `[TDAPDS]` matched RA's `[Cannon]` value for value when it was split off; its own section
+  stops RA balance changes to `[Cannon]` moving TDGUN.
+- **TD's stats even where weaker.** A tower that feels weak is balanced through TD levers (range, ROF,
+  `Strength=`), never by binding a non-TD weapon.
 
----
+## Checks after a change
 
-## Cargo order
+1. TDGTWR fires `GUN8` from the top of the tower, 25 a shot on light infantry, at 4 cells.
+2. TDGUN turns at `ROT=12` and fires `TNKFIRE6` with the muzzle flash from the barrel, 40 a shot with `TDAP`.
+3. Below half strength each shows its damaged frame.
 
-Three independent commit shapes:
-
-**Smallest (TDGUN polish only):** T7 + T8 (port `[TDAPDS]`, rebind `[TDTurretGun]`). Zero behavioral change, only the projectile section name. Safe to ship anytime.
-
-**Medium (TDGTWR weapon port):** T1 + T2 + T3 + T4 + T5 + T6 (offset fix + audio entry + weapon/projectile port + binding update + manifest). Will measurably change TDGTWR's combat output. Pair with a quick skirmish smoke test before push.
-
-**Optional (T9):** set TDTurretGun's `Speed=39` (the shipped 40 reads as 102, 39 as 99, closest to TD's 100).
-
-Both TDGTWR and TDGUN cargos are independent of the TDSAM and TDATWR work in the parallel deep-dive docs.
-
----
-
-## Cross-reference
-
-- TDSAM: `td-sam-deep-dive.md` / `docs/td-sam-deep-dive.md`
-- TDATWR: `td-atwr-deep-dive.md` / `docs/td-atwr-deep-dive.md`
-- TDOBLI: already-validated TD-port (uses `[TDOblsLaser]` weapon, no shared RA bindings) — keep as reference template for what "fully separated, all TD-prefixed" looks like.
+Related: `td-sam-deep-dive.md`, `td-atwr-deep-dive.md`, `td-obli-verification.md`.

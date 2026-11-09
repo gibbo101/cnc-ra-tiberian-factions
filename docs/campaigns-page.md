@@ -40,6 +40,10 @@ France 6, USSR 7, Ukraine 8, Multi 9.
 
 ## The launcher hooks
 
+The stock code at each site is on the field manual's
+[Custom campaigns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-campaigns.md#tabs-and-houses),
+Tabs and houses.
+
 | Where | What it does |
 |---|---|
 | Tab sort `0x633520`, side tests at `0x63382F` / `0x633878` | Counts GDI as Allied-side and NOD as Soviet-side for expansion missions. |
@@ -103,7 +107,7 @@ A list of 30 missions on one tab lists and scrolls as the stock lists do; there 
 The instance server only launches instances it knew at startup, so a new instance needs one of:
 
 - **A hijacked stock slot**: the field manual's
-  [Custom campaigns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-campaigns.md#replacing-an-official-mission-shadow-its-scenario), Replacing an official mission
+  [Custom campaigns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/custom-campaigns.md#replacing-an-official-mission-shadow-its-scenario), Replacing an official mission.
   The slot's tab follows its base, so an Aftermath Allied slot given `<House>GDI</House>` would land on the GDI
   tab; that edit is untested. `campaigns_instances.py` hides every stock slot, so it would need to show the
   hijacked ones.

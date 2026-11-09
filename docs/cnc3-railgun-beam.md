@@ -9,9 +9,10 @@ The values below come from C&C3 1.9's compiled data, checked against footage of 
 
 ## How it is drawn
 
-The launcher draws every exported sprite unrotated, whatever `CNCObjectStruct::Rotation` says: as an anim, as a
-unit-typed export, with or without `SHAPE_FADING`. So no piece of the shot is turned art; it is built from round
-pieces laid along the line, plus the launcher's own beam line.
+The launcher never rotates a sprite, and its beam line is the one primitive that follows an angle: see the field
+manual's [How the launcher draws sprites](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#rules),
+rules, and [beams](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/art/how-the-launcher-draws-sprites.md#beams).
+So the shot is round pieces laid along the line, plus the beam line.
 
 - **Core:** the launcher's beam line from muzzle to target (`TechnoClass::Set_Beam_Line`, palette colour `0x0A`),
   drawn at any angle with a flare at each end, for 5 render frames.

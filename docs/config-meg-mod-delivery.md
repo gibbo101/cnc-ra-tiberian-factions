@@ -1,38 +1,47 @@
-# CONFIG.MEG mod delivery — front-end launcher data IS moddable + shippable
+# CONFIG.MEG mod delivery
 
 **Status:** Reference. A mod ships its own `Data/CONFIG.MEG` and the launcher loads it over the
 base; every front-end data edit in the mod rides on it.
 
-Proven on the Steam Deck: all CONFIG.MEG-resident front-end data is moddable and ships on the
-Workshop, with no edit to the base install.
+The routes (a replacement archive, loose files, `GameConstants_Mod.xml`), the same-size rule and what none of them
+reach are game-level: see the field manual's
+[Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#three-ways-in)
+(Three ways in, [A replacement `CONFIG.MEG`](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#a-replacement-configmeg)
+and [Traps](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#traps)), and [MEG and MIX archives](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/formats/meg-and-mix-archives.md#meg).
+Before calling a launcher feature locked, follow
+[What the launcher owns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/what-the-launcher-owns.md#search-in-this-order),
+Search in this order. This doc is TF's data-delivery lever; `launcher-vs-dll-ownership.md` is TF's code-ownership
+map, and `config-meg-lever-audit.md` lists the levers.
 
----
+## What TF ships
 
-## The governing principle
+TF ships the full archive (44,201,888 bytes) in every release, at `resources/remaster_mods/Vanilla_RA/Data/CONFIG.MEG`,
+and loose files beside it (`campaigns-page.md` ships its screens loose). `scripts/build_config_meg.sh` rebuilds every
+edit in it idempotently from the pristine base, each by its own script (the `python3` calls in the script's body):
+- **Inside CONFIG.MEG:** the main menu (`RA_MAIN_MENU.BUI`), the HUD's side label hidden (`RA_TACTICAL_UI.BUI`,
+  `hud_label_hide_build.py`), the confirmation box, the loading screen, the lobbies, the faction combo box and the
+  custom-map entry, the font styles (`FONTLIBRARY.BFD`), the music events (`MUSICEVENTS.XML`), the master text
+  (`MASTERTEXTFILE_EN-US.LOC`, `loc_relabel.py`), `FACTIONS.XML`, and `GUITEXTURESETS.XML`
+  (`gui_texturesets_build.py`).
+- **Loose beside it:** the main menu with its added rows, the ADD-ONS screen and its art, the Settings page, the TF
+  playlists (`MUSICEVENTS.XML`), the jukebox list (`AUDIO_SYSTEM_CONSTANTS.XML`) and its titles in `ModText.csv`.
 
-See the field manual's [Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#a-replacement-configmeg), A replacement `CONFIG.MEG`, and
-[What the launcher owns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/what-the-launcher-owns.md#search-in-this-order), Search in this order.
-This doc is TF's data-delivery lever; `launcher-vs-dll-ownership.md` is TF's code-ownership map.
+The script's header comment leaves out the HUD label, the music, the master text and `GUITEXTURESETS.XML`, and
+still describes a `GAMECONSTANTS.XML` bake: its `GAMECONSTANTS` and `INPUTTRANSLATORCONFIGURATIONS` variables are set
+but unused, and no loose copy of either ships. `TF_MEG_TARGET` points it at the packager's staged copy. TF pads each edited member back to size from
+its XML comments, then checks the member and the archive total against the base. A repack can't corrupt the base
+install or trip Steam's file check, since it ships in the mod folder; one that changes any member's size crashes
+the launcher at boot under the mod
+([Crash triage](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/troubleshooting/crash-triage.md#4-a-clientg-crash-at-rva-0x56a539-is-an-assert)
+reads that crash).
 
----
-
-## The proof (so we never re-litigate it)
-
-1. Extracted `DATA/TEXT/MASTERTEXTFILE_EN-US.LOC` from base `CONFIG.MEG` (`meg_extract.py`).
-2. Same-length byte edit: the country-name value `Turkey` → `Nod   ` (UTF-16LE, 12 bytes → 12 bytes, so the inner string-table offsets cannot shift).
-3. Repacked with `scripts/meg_pack.py` → output was **44,201,888 bytes, identical to base** (1 file swapped, everything else byte-clean — the MEG format has no checksum/signature/encryption).
-4. Shipped the repacked file as `<mod>/Data/CONFIG.MEG` (the **mod folder**, base install untouched), deployed to the Deck, relaunched.
-5. **Result:** the skirmish lobby country picker showed **"Nod : No bonus"** and the in-game sidebar label read **"Nod"** — the mod's CONFIG.MEG was loaded.
-
----
-
-## The recipe
+## The recipe for a one-off edit
 
 ```bash
 # 1. extract the inner file you want to change
 python3 scripts/meg_extract.py extract <base CONFIG.MEG> <innerPathFragment> /tmp/out/
 
-# 2. edit it, keeping every member at its exact base size (the same-size rule below).
+# 2. edit it, keeping every member at its exact base size.
 #    XML: pad back to size from comments. .LOC: the file total is fixed, but a string may
 #    grow if it takes bytes from another (byte-neutral redistribution, scripts/loc_relabel.py).
 
@@ -45,60 +54,38 @@ cp /tmp/CONFIG.MEG build/remaster/Vanilla_RA/Data/CONFIG.MEG
 ./deploy.sh --no-build --yes
 ```
 
-`meg_pack.py verify a.meg b.meg` confirms identical file tables (name/size) — use it to sanity-check a repack.
+`meg_pack.py verify a.meg b.meg` confirms identical file tables (name and size); use it to check a repack. List
+what the archive holds with `meg_extract.py list <CONFIG.MEG> | grep -i <feature>`. Not in CONFIG.MEG isn't locked:
+check the UI atlas too (`ui-atlas-modding.md`), where the radar crest is `UI_SIDEBAR_FACTIONLOGO_ALLIES`/`_SOVIET`.
 
----
+**How it was verified:** `MASTERTEXTFILE_EN-US.LOC` extracted from the base archive, the country name `Turkey`
+changed to `Nod   ` (UTF-16LE, 12 bytes for 12, so no string-table offset moves), repacked to the base's exact
+size, shipped as `<mod>/Data/CONFIG.MEG` with the base install untouched. On the Steam Deck the lobby's country
+picker showed "Nod : No bonus" and the in-game sidebar read "Nod".
 
-## Facts & caveats
+## What it reaches
 
-See the field manual's [MEG and MIX archives](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/formats/meg-and-mix-archives.md#meg), MEG, and [Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#three-ways-in), Three ways in and Traps.
-TF ships the full ~44 MB archive in every release, and loose files beside it (`campaigns-page.md` ships its screens
-loose). A repack can't corrupt the base install or trip Steam's verify, but one that changes any member's size crashes the
-launcher at boot under the mod (the same-size rule below).
+- **Faction display names:** `MASTERTEXTFILE` `TEXT_FACTION_NAME_FACTION_*` (`faction-select-identity.md`).
+- **Faction colours and lobby icons:** `FACTIONS.XML`, whose entries are laid out on the field manual's
+  [Adding a faction](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/adding-a-faction.md).
+  Each entry's `FactionObjects` is empty (EA ties it to the structure breakdown screen), and its `CampaignType` is
+  the TD/RA gate.
+- **The Mission Select roster:** `INSTANCES.XML` (`campaign-tabs-research.md`).
+- **Any other CONFIG.MEG XML or table:** theatres and tilesets, audio-faction maps, GUI scene lists. If the data is
+  in CONFIG.MEG, this reaches it.
 
----
-
-## What this unlocks (CONFIG.MEG-resident, therefore now moddable)
-
-- **Faction display names** — `MASTERTEXTFILE` `TEXT_FACTION_NAME_FACTION_*` (proven: Turkey→Nod).
-- **Faction colours / lobby icons** — `FACTIONS.XML` (`Faction1=GDI`, `Faction2=Nod`, `Faction3–10`=RA countries; per-faction `UIColor`, `DefaultIcons`, `FactionObjects` (empty in every entry; EA ties it to the structure breakdown screen), and the TD/RA gate `CampaignType`).
-- **Mission Select roster** — `INSTANCES.XML` (`ShowOnMissionSelect`, `IsUnlockedAtStart`, `ExternalGameID`) — see `campaign-tabs-research.md`.
-- **Any other CONFIG.MEG XML/table** — theatres/tilesets, audio-faction maps, GUI scene lists, etc. *If the data is in CONFIG.MEG, this mechanism reaches it.*
-
-**For a "launcher-locked" feature investigation:** follow the field manual's [What the launcher owns](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/engine/what-the-launcher-owns.md#search-in-this-order), Search in this order.
-List the data with `meg_extract.py list <CONFIG.MEG> | grep -i <feature>`. Not in CONFIG.MEG isn't locked: check the UI
-atlas too (`ui-atlas-modding.md`), where the radar crest is `UI_SIDEBAR_FACTIONLOGO_ALLIES`/`_SOVIET`.
-
----
-
-## The same-size rule
-
-Every member of the mod's CONFIG.MEG keeps its exact base size, and no member is added or removed: the launcher
-reads the data at the base archive's offsets. The rule, its boot crash and how to read the crash are on the field
-manual's [Overriding the launcher's data](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/launcher-data/overriding-launcher-data.md#a-replacement-configmeg), A replacement `CONFIG.MEG`, and
-[Crash triage](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/troubleshooting/crash-triage.md#4-a-clientg-crash-at-rva-0x56a539-is-an-assert), A ClientG crash at RVA `0x56A539` is an assert.
-TF pads each edited member back to size from its XML comments, then checks the member and the archive total
-against the base.
-
-## Scope limit: mod CONFIG.MEG feeds the ClientG FRONT-END only
-
-`InstanceServerG` (the match-host process) resolves instance definitions, map files, and the
-lobby preview content from **base game data**, not the mod's CONFIG.MEG. Why a new entry lists but
-won't start, and the carrier that starts it, are on the field manual's
-[New maps in the skirmish Official list](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/new-maps-in-the-skirmish-list.md#why-a-listed-map-wont-start), Why a listed map won't start and Starting it
-(TF's tests: the assert at `serveripcmessagehandler.cpp(268)`; a hijacked `Community_2` still loaded `SCMC1EA`).
-
-Where map INIs are read from (a mod's `CCDATA/`, never a `Data/CNCDATA/` of its own: the launcher reads them by paths
-relative to its working directory, the base install) is on the field manual's [New maps in the skirmish Official list](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/new-maps-in-the-skirmish-list.md#converting-the-map), Converting the map
-(`campaign-tabs-research.md` for TF's campaign maps).
-
-TF launches its new entries through Hastings' `D6` (`td-base-art.md`, "TD maps in the Official list"). Workshop
-*map items* (custom-maps tab, native pipeline, previews from the shipped TGA) remain the plain route.
-
----
+It feeds the ClientG front end only. `InstanceServerG` resolves instances, map files and the lobby preview from the
+base game's data; why a new entry lists but won't start, the carrier that starts it, and where map INIs are read
+from (a mod's `CCDATA/`, never its own `Data/CNCDATA/`) are on the field manual's
+[New maps in the skirmish Official list](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/new-maps-in-the-skirmish-list.md#why-a-listed-map-wont-start),
+Why a listed map won't start, and its [Converting the map](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/maps-and-lobby/new-maps-in-the-skirmish-list.md#converting-the-map) (the `CCDATA/` rule).
+TF's own tests: the assert at `serveripcmessagehandler.cpp(268)`, and a hijacked `Community_2` that still loaded
+`SCMC1EA`. TF launches its new entries through Hastings' `D6` (`td-base-art.md`, "TD maps in the Official list");
+`campaign-tabs-research.md` covers TF's campaign maps. Workshop map items (the custom-maps tab, the native pipeline,
+previews from the shipped TGA) remain the plain route.
 
 ## Related
 
-- `campaign-tabs-research.md` — Mission Select display model (its "Open issue #1: Distribution" is **resolved by this doc**).
-- `mix-file-format.md` — `meg_extract.py` / `meg_pack.py` tooling + MEG/MIX format detail.
-- `launcher-vs-dll-ownership.md` — the **code**-side boundary (what the launcher does autonomously, which this does *not* change).
+- `campaign-tabs-research.md`: the Mission Select display model, distributed through this archive.
+- `mix-file-format.md`: the `meg_extract.py` and `meg_pack.py` tooling and the format detail.
+- `launcher-vs-dll-ownership.md`: the code-side boundary, which this does not change.

@@ -11,8 +11,8 @@ frame from `LogicClass::AI`.
 
 - **Art:** TS's NASTLH, upscaled hq4x (`TDSTEAL.ZIP`, `TDSTEALMAKE.ZIP`), on a **2x1 footprint**
   (`BSIZE_21` + `List21`), `FACING_NONE` (FACING_S made attackers aim a cell south), art donor
-  `STRUCT_TDSILO` (`ts-asset-import-spike.md`). Dead route: a taller custom HD dome, which no 2x1
-  classic donor could anchor, so the launcher floated it above its footprint.
+  `STRUCT_TDSILO` (`ts-asset-import-spike.md`). A taller custom HD dome isn't used: no 2x1 classic
+  donor could anchor it, so the launcher floated it above its footprint.
 - **AI superweapons:** discovery is sticky (remembered intel) and the cloak is live cover over it, so
   a Stealth Generator field shields buildings from AI superweapons until a detector breaks the cloak
   (`Special_Weapon_AI`).
@@ -34,7 +34,7 @@ frame from `LogicClass::AI`.
 | 7 | **Owner** sees the warped **"un-stealthing"** look (transparent→colour, distorted), not the clean ghost | one branch in `Visual_Character`, exact stage tuned in-game |
 | 8 | **Unstealth/restore** on: low power / destroyed / sold / unit-leaves-radius | free — all collapse to the "not covered → restore" branch |
 | 9 | Enemy sees the gen building but nothing else friendly-to-it in range (incl. no bibs) | free (gen never cloaks) |
-| 10 | Generator **power cost = 100** (down from 200), as the balance concession for being an always-visible target | data (bdata.cpp + rules.ini) |
+| 10 | Generator **power cost = 100**, as the balance concession for being an always-visible target | data (bdata.cpp + rules.ini) |
 | 11 | **Armed defensive buildings** (Obelisk/SAM/AGT/towers): **ambush** — cloak normally, but **uncloak when they acquire an in-range target**, fire, then re-cloak once the threat leaves | building-side uncloak-on-target hook (see below) |
 
 ### Detector set (resolved via `IsScanner`, no hardcoded list)
@@ -58,8 +58,7 @@ from `SubmergeDelay`; there is no `CloakDelay=` key.
   `Visual_Character` shapes the launcher's render is unproven. For the **warped
   owner look** (#7): return a distorted stage for owner-owned cloaked objects instead of the clean
   `VISUAL_SHADOWY` — candidates are `VISUAL_RIPPLE` or a **held mid-`UNCLOAKING` stage** (colour +
-  distortion). Tune empirically via the screenshot loop; **this supersedes the old bug-#8 preference
-  for the clean ghost.**
+  distortion), tuned by eye in game.
 
 - **Bibs** (`Lay_Bib`/`Bib_And_Offset`) need their own hiding (#6): see "Building bibs" under Traps.
 
@@ -111,20 +110,18 @@ The driver does the minimum and `Cloaking_AI` does the rest:
    driver's own `TF_STEALTH_RADIUS_CELLS` = 10, not `Rule.GapShroudRadius`.
 
 ### AI
-- **Nod AI build rule — DONE.** A `STRUCT_TDSTEALTH` slot mirrors the `STRUCT_GAP` block
+- **Nod AI build rule.** A `STRUCT_TDSTEALTH` slot mirrors the `STRUCT_GAP` block
   (house.cpp, `ActLike==HOUSE_BAD`, gated on full power + income); `Can_Build` enforces the
   `TDTMPL` prerequisite, so the AI builds the Stealth Generator organically after the Temple of
-  Nod. (The Temple itself was already organic — Nod's mapped tech center via `TF_Skirmish_Equivalent`.)
-- **`TF_DEV` force-spawn — REMOVED.** The dev crutch that pre-placed `TDNUK2` + `TDSTEALTH` for
-  every Nod AI at scenario start is gone now that the AI builds it organically.
+  Nod, itself Nod's mapped tech center via `TF_Skirmish_Equivalent`.
 
 ---
 
-## Traps (fixed)
+## Traps
 
 Each is on the field manual's [A stealth generator](https://github.com/gibbo101/remastered-modding-field-manual/blob/main/behaviours/stealth-generator.md#traps), traps; TF's side of each:
 
-- **A helipad and its helicopter never cloaked:** the radio-contact gate in `TF_Stealth_Drive` now blocks a fresh
+- **A helipad and its helicopter never cloaked:** the radio-contact gate in `TF_Stealth_Drive` blocks a fresh
   cloak only while the partner is in transit (`partner->Is_Foot() && Target_Legal(partner->NavCom)`), and
   `Process_Stealth_Generators` has an `Aircraft` pass.
 - **The whole base stayed cloaked after the generator died** (buildings built after it stayed visible): `TF_Stealth_Drive` returns whether an object is still
@@ -132,10 +129,10 @@ Each is on the field manual's [A stealth generator](https://github.com/gibbo101/
   nothing left.
 - **Building bibs (#6): hidden at render time, never removed.** `tf_hide_bib` in `dllinterface.cpp` keeps the smudge
   (placement stays blocked: `CellClass::Is_Clear_To_Build` refuses a bib) and suppresses only its draw while the covering building is `VISUAL_HIDDEN`, so the owner
-  still sees it. A `TF_Sync_Bib` that `Disown`ed the smudge was removed; don't reintroduce smudge removal.
+  still sees it. Never `Disown` the smudge.
 
-**Covering-building resolution (`58ae18f`):** the original this-cell-or-one-north probe missed TD foundations — TDPROC's entire bottom
-row is overlap-only (`TdOListProc`), so cloaked TD refineries kept floating bibs. The probe now
+**Covering-building resolution:** a this-cell-or-one-north probe misses TD foundations (TDPROC's entire bottom
+row is overlap-only, `TdOListProc`, so cloaked TD refineries float bibs). The probe
 reconstructs the bib rectangle from `SmudgeData` (col + row·Width; top row is the owner's bottom
 foundation row, column-aligned per `Bib_And_Offset`) and walks north through candidate foundation
 rows, resolving at the first row holding any building, probing every column per row (per-cell

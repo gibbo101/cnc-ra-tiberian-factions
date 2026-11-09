@@ -89,7 +89,7 @@ A pack's XML files are never loaded; the build merges them into the mod's. See t
   ccmod.json.
 - **Publishing:** `python3 scripts/asset_pack_workshop.py` stages each Workshop item (a pack for
   Red Alert, or `<mod>-TD` for Tiberian Dawn) and writes its manifest and preview; the steps are in
-  `docs/workshop-publish-runbook.md` (Asset packs).
+  `workshop-publish-runbook.md` (Asset packs).
 
 ## Required packs
 
