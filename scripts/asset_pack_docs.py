@@ -26,10 +26,14 @@ MORE_MODS = {
           "[Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3729834253), "
           "[ModDB](https://www.moddb.com/mods/tiberian-factions-for-red-alert), "
           f"[GitHub]({REPO_URL})",
+    "Field Manual": "**Red Alert Remastered Modding Field Manual** is what building Tiberian Factions taught us, "
+                    "written up for anyone modding C&C Remastered: [Read it](https://gibbo101.github.io/remastered-modding-field-manual/)",
     "OpenTS Pad": "**OpenTS Pad** ports the OpenTS rebuild of Tiberian Sun to Linux and the Steam Deck, with "
                   "controller play: [GitHub](https://github.com/gibbo101/opents-pad)",
     "Renegade Pad": "**Renegade Pad** brings controller play to C&C Renegade (an OpenW3D fork, built for the Steam "
                     "Deck): [GitHub](https://github.com/gibbo101/renegade-pad)",
+    "RA2 Decomp": "**ra2-decomp** is a matching decompilation of Red Alert 2: Yuri's Revenge, C++ that builds back "
+                  "into the original game: [GitHub](https://github.com/gibbo101/ra2-decomp)",
     "Map Editor": "**C&C Map Editor** is a Linux-native, mod-aware map editor for C&C Remastered (Red Alert and "
                   "Tiberian Dawn): [GitHub](https://github.com/gibbo101/cnc-map-editor)",
     "PS1 Link": "**PS1 Link Cable** plays two-player link-cable PS1 games such as C&C Retaliation between two "

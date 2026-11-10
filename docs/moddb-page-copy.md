@@ -133,8 +133,10 @@ builds walls or gates.</li>
 
 <h2>My other C&amp;C projects</h2>
 <ul>
+<li><a href="https://gibbo101.github.io/remastered-modding-field-manual/">Red Alert Remastered Modding Field Manual</a>: what building Tiberian Factions taught us, written up for anyone modding C&amp;C Remastered.</li>
 <li><a href="https://github.com/gibbo101/renegade-pad">Renegade Pad</a>: C&amp;C Renegade's campaign played like a console shooter on the Steam Deck, with a full controller scheme.</li>
 <li><a href="https://github.com/gibbo101/opents-pad">OpenTS Pad</a>: OpenTS, the open-source Tiberian Sun, on a controller, in the style of Red Alert: Retaliation on the PlayStation.</li>
+<li><a href="https://github.com/gibbo101/ra2-decomp">ra2-decomp</a>: a matching decompilation of Red Alert 2: Yuri's Revenge, C++ that builds back into the original game.</li>
 <li><a href="https://github.com/gibbo101/cnc-map-editor">C&amp;C Remastered Map Editor</a>: a Linux-native map editor for Red Alert and Tiberian Dawn that understands mods, Tiberian Factions included.</li>
 <li><a href="https://github.com/gibbo101/ps1-lan-link">PS1 Link Cable</a>: two-player link-cable play between two Steam Decks over wifi, for Red Alert: Retaliation, Dune 2000 and more.</li>
 </ul>
