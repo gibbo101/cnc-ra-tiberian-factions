@@ -126,6 +126,10 @@ Override the SSH target with `DECK_HOST=user@hostname ./deploy.sh` if your Deck 
 
 The build stages the asset packs into the mod folder (`scripts/stage_asset_packs.py`). After a data-only change, with no DLL rebuild, restage with `python3 scripts/stage_asset_packs.py --full build/remaster/Vanilla_RA`.
 
+## For other modders
+
+The game-level techniques behind Tiberian Factions (new factions, units and behaviours, launcher data, maps, art and sound) are written up for any Remastered modder in the [Red Alert Remastered Modding Field Manual](https://gibbo101.github.io/remastered-modding-field-manual/).
+
 ## AI disclosure
 
 Tiberian Factions' code, scripts and tools are written with AI assistance. How its HD art was made is set out in the asset packs' own READMEs.

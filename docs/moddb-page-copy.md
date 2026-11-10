@@ -266,6 +266,9 @@ for automatic updates.</p>
 <p>Full changelog on
 <a href="https://github.com/gibbo101/cnc-ra-tiberian-factions/blob/main/CHANGELOG.md">GitHub</a>.</p>
 
+<p>Making a Remastered mod of your own? What we learned building this one is in the
+<a href="https://gibbo101.github.io/remastered-modding-field-manual/">Red Alert Remastered Modding Field Manual</a>.</p>
+
 ---
 
 # 5.7.0 download entry

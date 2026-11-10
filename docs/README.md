@@ -6,7 +6,7 @@ Start with `td-port-playbook.md` for any port, `launcher-vs-dll-ownership.md` be
 launcher behaviour impossible, `launcher-render-contracts.md` before shipping art, and `todo.md` /
 `known-issues.md` for what is open.
 
-Game-level facts (engine, launcher, data formats, ClientG) live in the Remastered Modding Field Manual; these docs keep TF's own design and link there.
+Game-level facts (engine, launcher, data formats, ClientG) live in the Red Alert Remastered Modding Field Manual; these docs keep TF's own design and link there.
 
 ## Rules
 
