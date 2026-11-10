@@ -85,6 +85,7 @@ packs against the rest before building them.
 ## Docs
 `docs/README.md` is the index and the rules: a status line under every title, what ships rather
 than how it got there, no names or dated decisions. `scripts/docs_check.py` checks them.
+Game-level findings go into the Field Manual first (`docs/README.md`, rule 7); TF's docs link to it.
 
 ## Review and testing
 - `tests/` holds Vanilla Conquer's renderer tests. Game logic is verified by a build and a

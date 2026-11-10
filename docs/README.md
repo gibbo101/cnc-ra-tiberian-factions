@@ -29,6 +29,11 @@ Game-level facts (engine, launcher, data formats, ClientG) live in the Red Alert
    - **At a branch merge**, update every doc the branch's work touches.
    - **At a release**, review each doc changed since the last tag
      (`git diff --stat vX.Y.Z -- docs/`), and check that its status line names the release.
+   - **A game-level finding** (true for any Remastered mod, not just TF) goes into the Red Alert
+     Remastered Modding Field Manual first, written for strangers with nothing private; the TF doc
+     links to it.
+   - **When a change alters what TF does with a technique**, update that manual page's "In Tiberian
+     Factions" box in the same piece of work.
 8. **Every doc is listed below.** Subfolders hold data and are not checked.
 
 `scripts/docs_check.py` enforces rules 2, 4, 5, 6 and 8, plus resume blocks and correction
