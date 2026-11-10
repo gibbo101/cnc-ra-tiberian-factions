@@ -69,6 +69,8 @@ main checkout is guaranteed to hold the current ones.
   the text describes what ships and the status line names this release; finished work leaves
   `todo.md` and fixed bugs leave `known-issues.md`. `python3 scripts/docs_check.py` must pass; the
   packager runs it and stops on a failure (`docs/README.md` has the rules).
+- **Field Manual:** for each line in this release's `CHANGELOG.md` entry, grep the Red Alert Remastered Modding
+  Field Manual for the feature's name and update the "In Tiberian Factions" box on each page that mentions it.
 
 ### 2. Build and stage the release: `./package-for-workshop.sh`
 
