@@ -484,6 +484,144 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
       <entry> C3AGUN17.WAV </entry>
     </SampleNamesList>
   </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3GGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3GGUN1.WAV </entry>
+      <entry> C3GGUN2.WAV </entry>
+      <entry> C3GGUN3.WAV </entry>
+      <entry> C3GGUN4.WAV </entry>
+      <entry> C3GGUN5.WAV </entry>
+      <entry> C3GGUN6.WAV </entry>
+      <entry> C3GGUN7.WAV </entry>
+      <entry> C3GGUN8.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3GGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3GGUN1.WAV </entry>
+      <entry> C3GGUN2.WAV </entry>
+      <entry> C3GGUN3.WAV </entry>
+      <entry> C3GGUN4.WAV </entry>
+      <entry> C3GGUN5.WAV </entry>
+      <entry> C3GGUN6.WAV </entry>
+      <entry> C3GGUN7.WAV </entry>
+      <entry> C3GGUN8.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3GLAS" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3GLAS1.WAV </entry>
+      <entry> C3GLAS2.WAV </entry>
+      <entry> C3GLAS3.WAV </entry>
+      <entry> C3GLAS4.WAV </entry>
+      <entry> C3GLAS5.WAV </entry>
+      <entry> C3GLAS6.WAV </entry>
+      <entry> C3GLAS7.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3GLAS" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3GLAS1.WAV </entry>
+      <entry> C3GLAS2.WAV </entry>
+      <entry> C3GLAS3.WAV </entry>
+      <entry> C3GLAS4.WAV </entry>
+      <entry> C3GLAS5.WAV </entry>
+      <entry> C3GLAS6.WAV </entry>
+      <entry> C3GLAS7.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3GEMP" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3GEMP.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3GEMP" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3GEMP.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3KGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3KGUN1.WAV </entry>
+      <entry> C3KGUN2.WAV </entry>
+      <entry> C3KGUN3.WAV </entry>
+      <entry> C3KGUN4.WAV </entry>
+      <entry> C3KGUN5.WAV </entry>
+      <entry> C3KGUN6.WAV </entry>
+      <entry> C3KGUN7.WAV </entry>
+      <entry> C3KGUN8.WAV </entry>
+      <entry> C3KGUN9.WAV </entry>
+      <entry> C3KGUN10.WAV </entry>
+      <entry> C3KGUN11.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3KGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3KGUN1.WAV </entry>
+      <entry> C3KGUN2.WAV </entry>
+      <entry> C3KGUN3.WAV </entry>
+      <entry> C3KGUN4.WAV </entry>
+      <entry> C3KGUN5.WAV </entry>
+      <entry> C3KGUN6.WAV </entry>
+      <entry> C3KGUN7.WAV </entry>
+      <entry> C3KGUN8.WAV </entry>
+      <entry> C3KGUN9.WAV </entry>
+      <entry> C3KGUN10.WAV </entry>
+      <entry> C3KGUN11.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3KHIT" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3KHIT1.WAV </entry>
+      <entry> C3KHIT2.WAV </entry>
+      <entry> C3KHIT3.WAV </entry>
+      <entry> C3KHIT4.WAV </entry>
+      <entry> C3KHIT5.WAV </entry>
+      <entry> C3KHIT6.WAV </entry>
+      <entry> C3KHIT7.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3KHIT" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3KHIT1.WAV </entry>
+      <entry> C3KHIT2.WAV </entry>
+      <entry> C3KHIT3.WAV </entry>
+      <entry> C3KHIT4.WAV </entry>
+      <entry> C3KHIT5.WAV </entry>
+      <entry> C3KHIT6.WAV </entry>
+      <entry> C3KHIT7.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
   <!-- END C&C3 tank sounds -->
   <!-- BEGIN C&C3 aircraft sounds (scripts/c3_pack_air.py) -->
   <SFXEvent Name="RAC_SFX_C3OGUN" Preset="_PRESET_MD_MOBIUS_2D">
@@ -786,5 +924,393 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
       <entry> C3NGUN7.WAV </entry>
     </SampleNamesList>
   </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3DMGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3DMGUN1.WAV </entry>
+      <entry> C3DMGUN2.WAV </entry>
+      <entry> C3DMGUN3.WAV </entry>
+      <entry> C3DMGUN4.WAV </entry>
+      <entry> C3DMGUN5.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3DMGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3DMGUN1.WAV </entry>
+      <entry> C3DMGUN2.WAV </entry>
+      <entry> C3DMGUN3.WAV </entry>
+      <entry> C3DMGUN4.WAV </entry>
+      <entry> C3DMGUN5.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3DSGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3DSGUN1.WAV </entry>
+      <entry> C3DSGUN2.WAV </entry>
+      <entry> C3DSGUN3.WAV </entry>
+      <entry> C3DSGUN4.WAV </entry>
+      <entry> C3DSGUN5.WAV </entry>
+      <entry> C3DSGUN6.WAV </entry>
+      <entry> C3DSGUN7.WAV </entry>
+      <entry> C3DSGUN8.WAV </entry>
+      <entry> C3DSGUN9.WAV </entry>
+      <entry> C3DSGUN10.WAV </entry>
+      <entry> C3DSGUN11.WAV </entry>
+      <entry> C3DSGUN12.WAV </entry>
+      <entry> C3DSGUN13.WAV </entry>
+      <entry> C3DSGUN14.WAV </entry>
+      <entry> C3DSGUN15.WAV </entry>
+      <entry> C3DSGUN16.WAV </entry>
+      <entry> C3DSGUN17.WAV </entry>
+      <entry> C3DSGUN18.WAV </entry>
+      <entry> C3DSGUN19.WAV </entry>
+      <entry> C3DSGUN20.WAV </entry>
+      <entry> C3DSGUN21.WAV </entry>
+      <entry> C3DSGUN22.WAV </entry>
+      <entry> C3DSGUN23.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3DSGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3DSGUN1.WAV </entry>
+      <entry> C3DSGUN2.WAV </entry>
+      <entry> C3DSGUN3.WAV </entry>
+      <entry> C3DSGUN4.WAV </entry>
+      <entry> C3DSGUN5.WAV </entry>
+      <entry> C3DSGUN6.WAV </entry>
+      <entry> C3DSGUN7.WAV </entry>
+      <entry> C3DSGUN8.WAV </entry>
+      <entry> C3DSGUN9.WAV </entry>
+      <entry> C3DSGUN10.WAV </entry>
+      <entry> C3DSGUN11.WAV </entry>
+      <entry> C3DSGUN12.WAV </entry>
+      <entry> C3DSGUN13.WAV </entry>
+      <entry> C3DSGUN14.WAV </entry>
+      <entry> C3DSGUN15.WAV </entry>
+      <entry> C3DSGUN16.WAV </entry>
+      <entry> C3DSGUN17.WAV </entry>
+      <entry> C3DSGUN18.WAV </entry>
+      <entry> C3DSGUN19.WAV </entry>
+      <entry> C3DSGUN20.WAV </entry>
+      <entry> C3DSGUN21.WAV </entry>
+      <entry> C3DSGUN22.WAV </entry>
+      <entry> C3DSGUN23.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3DZGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3DZGUN1.WAV </entry>
+      <entry> C3DZGUN2.WAV </entry>
+      <entry> C3DZGUN3.WAV </entry>
+      <entry> C3DZGUN4.WAV </entry>
+      <entry> C3DZGUN5.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3DZGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3DZGUN1.WAV </entry>
+      <entry> C3DZGUN2.WAV </entry>
+      <entry> C3DZGUN3.WAV </entry>
+      <entry> C3DZGUN4.WAV </entry>
+      <entry> C3DZGUN5.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3DCGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3DCGUN1.WAV </entry>
+      <entry> C3DCGUN2.WAV </entry>
+      <entry> C3DCGUN3.WAV </entry>
+      <entry> C3DCGUN4.WAV </entry>
+      <entry> C3DCGUN5.WAV </entry>
+      <entry> C3DCGUN6.WAV </entry>
+      <entry> C3DCGUN7.WAV </entry>
+      <entry> C3DCGUN8.WAV </entry>
+      <entry> C3DCGUN9.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3DCGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3DCGUN1.WAV </entry>
+      <entry> C3DCGUN2.WAV </entry>
+      <entry> C3DCGUN3.WAV </entry>
+      <entry> C3DCGUN4.WAV </entry>
+      <entry> C3DCGUN5.WAV </entry>
+      <entry> C3DCGUN6.WAV </entry>
+      <entry> C3DCGUN7.WAV </entry>
+      <entry> C3DCGUN8.WAV </entry>
+      <entry> C3DCGUN9.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3EFHIT" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3EFHIT1.WAV </entry>
+      <entry> C3EFHIT2.WAV </entry>
+      <entry> C3EFHIT3.WAV </entry>
+      <entry> C3EFHIT4.WAV </entry>
+      <entry> C3EFHIT5.WAV </entry>
+      <entry> C3EFHIT6.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3EFHIT" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3EFHIT1.WAV </entry>
+      <entry> C3EFHIT2.WAV </entry>
+      <entry> C3EFHIT3.WAV </entry>
+      <entry> C3EFHIT4.WAV </entry>
+      <entry> C3EFHIT5.WAV </entry>
+      <entry> C3EFHIT6.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3EBGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3EBGUN1.WAV </entry>
+      <entry> C3EBGUN2.WAV </entry>
+      <entry> C3EBGUN3.WAV </entry>
+      <entry> C3EBGUN4.WAV </entry>
+      <entry> C3EBGUN5.WAV </entry>
+      <entry> C3EBGUN6.WAV </entry>
+      <entry> C3EBGUN7.WAV </entry>
+      <entry> C3EBGUN8.WAV </entry>
+      <entry> C3EBGUN9.WAV </entry>
+      <entry> C3EBGUN10.WAV </entry>
+      <entry> C3EBGUN11.WAV </entry>
+      <entry> C3EBGUN12.WAV </entry>
+      <entry> C3EBGUN13.WAV </entry>
+      <entry> C3EBGUN14.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3EBGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3EBGUN1.WAV </entry>
+      <entry> C3EBGUN2.WAV </entry>
+      <entry> C3EBGUN3.WAV </entry>
+      <entry> C3EBGUN4.WAV </entry>
+      <entry> C3EBGUN5.WAV </entry>
+      <entry> C3EBGUN6.WAV </entry>
+      <entry> C3EBGUN7.WAV </entry>
+      <entry> C3EBGUN8.WAV </entry>
+      <entry> C3EBGUN9.WAV </entry>
+      <entry> C3EBGUN10.WAV </entry>
+      <entry> C3EBGUN11.WAV </entry>
+      <entry> C3EBGUN12.WAV </entry>
+      <entry> C3EBGUN13.WAV </entry>
+      <entry> C3EBGUN14.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3ESGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3ESGUN1.WAV </entry>
+      <entry> C3ESGUN2.WAV </entry>
+      <entry> C3ESGUN3.WAV </entry>
+      <entry> C3ESGUN4.WAV </entry>
+      <entry> C3ESGUN5.WAV </entry>
+      <entry> C3ESGUN6.WAV </entry>
+      <entry> C3ESGUN7.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3ESGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3ESGUN1.WAV </entry>
+      <entry> C3ESGUN2.WAV </entry>
+      <entry> C3ESGUN3.WAV </entry>
+      <entry> C3ESGUN4.WAV </entry>
+      <entry> C3ESGUN5.WAV </entry>
+      <entry> C3ESGUN6.WAV </entry>
+      <entry> C3ESGUN7.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3ECGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3ECGUN1.WAV </entry>
+      <entry> C3ECGUN2.WAV </entry>
+      <entry> C3ECGUN3.WAV </entry>
+      <entry> C3ECGUN4.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3ECGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3ECGUN1.WAV </entry>
+      <entry> C3ECGUN2.WAV </entry>
+      <entry> C3ECGUN3.WAV </entry>
+      <entry> C3ECGUN4.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
   <!-- END C&C3 infantry sounds -->
+  <!-- BEGIN C&C3 walker sounds (scripts/c3_pack_walkers.py) -->
+  <SFXEvent Name="RAC_SFX_C3JGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3JGUN1.WAV </entry>
+      <entry> C3JGUN2.WAV </entry>
+      <entry> C3JGUN3.WAV </entry>
+      <entry> C3JGUN4.WAV </entry>
+      <entry> C3JGUN5.WAV </entry>
+      <entry> C3JGUN6.WAV </entry>
+      <entry> C3JGUN7.WAV </entry>
+      <entry> C3JGUN8.WAV </entry>
+      <entry> C3JGUN9.WAV </entry>
+      <entry> C3JGUN10.WAV </entry>
+      <entry> C3JGUN11.WAV </entry>
+      <entry> C3JGUN12.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3JGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3JGUN1.WAV </entry>
+      <entry> C3JGUN2.WAV </entry>
+      <entry> C3JGUN3.WAV </entry>
+      <entry> C3JGUN4.WAV </entry>
+      <entry> C3JGUN5.WAV </entry>
+      <entry> C3JGUN6.WAV </entry>
+      <entry> C3JGUN7.WAV </entry>
+      <entry> C3JGUN8.WAV </entry>
+      <entry> C3JGUN9.WAV </entry>
+      <entry> C3JGUN10.WAV </entry>
+      <entry> C3JGUN11.WAV </entry>
+      <entry> C3JGUN12.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3QGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3QGUN1.WAV </entry>
+      <entry> C3QGUN2.WAV </entry>
+      <entry> C3QGUN3.WAV </entry>
+      <entry> C3QGUN4.WAV </entry>
+      <entry> C3QGUN5.WAV </entry>
+      <entry> C3QGUN6.WAV </entry>
+      <entry> C3QGUN7.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3QGUN" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3QGUN1.WAV </entry>
+      <entry> C3QGUN2.WAV </entry>
+      <entry> C3QGUN3.WAV </entry>
+      <entry> C3QGUN4.WAV </entry>
+      <entry> C3QGUN5.WAV </entry>
+      <entry> C3QGUN6.WAV </entry>
+      <entry> C3QGUN7.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3QBEAM" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3QBEAM1.WAV </entry>
+      <entry> C3QBEAM2.WAV </entry>
+      <entry> C3QBEAM3.WAV </entry>
+      <entry> C3QBEAM4.WAV </entry>
+      <entry> C3QBEAM5.WAV </entry>
+      <entry> C3QBEAM6.WAV </entry>
+      <entry> C3QBEAM7.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3QBEAM" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3QBEAM1.WAV </entry>
+      <entry> C3QBEAM2.WAV </entry>
+      <entry> C3QBEAM3.WAV </entry>
+      <entry> C3QBEAM4.WAV </entry>
+      <entry> C3QBEAM5.WAV </entry>
+      <entry> C3QBEAM6.WAV </entry>
+      <entry> C3QBEAM7.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_C3QSTEP" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3QSTEP1.WAV </entry>
+      <entry> C3QSTEP2.WAV </entry>
+      <entry> C3QSTEP3.WAV </entry>
+      <entry> C3QSTEP4.WAV </entry>
+      <entry> C3QSTEP5.WAV </entry>
+      <entry> C3QSTEP6.WAV </entry>
+      <entry> C3QSTEP7.WAV </entry>
+      <entry> C3QSTEP8.WAV </entry>
+      <entry> C3QSTEP9.WAV </entry>
+      <entry> C3QSTEP10.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_C3QSTEP" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> C3QSTEP1.WAV </entry>
+      <entry> C3QSTEP2.WAV </entry>
+      <entry> C3QSTEP3.WAV </entry>
+      <entry> C3QSTEP4.WAV </entry>
+      <entry> C3QSTEP5.WAV </entry>
+      <entry> C3QSTEP6.WAV </entry>
+      <entry> C3QSTEP7.WAV </entry>
+      <entry> C3QSTEP8.WAV </entry>
+      <entry> C3QSTEP9.WAV </entry>
+      <entry> C3QSTEP10.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <!-- END C&C3 walker sounds -->
 </SFXEvents>

@@ -24,8 +24,9 @@ the body. --glow adds a self-lit term on the painted blue conduit, our own touch
 
 Parts: 0 hull, 1 turret, 2 treads, 3 fixtures (an upgrade's hull-mounted pieces), drawn with the hull but left
 out of its footprint so the variant keeps its base tank's centre.
-Sheets: a body mesh painted from another unit's texture sheet (the Pitbull's spotlight and mortar, on the Rig's)
-carries sheet 1 and draws from body2, house2 and normal2, its house colour normalised on its own.
+Sheets: a body mesh painted from another texture sheet (the Pitbull's spotlight and mortar, on the Rig's; a Nod
+rider, on the Militant's) carries sheet n and draws from body<n+1>, house<n+1> and normal<n+1>, its house colour
+normalised on its own.
 
 Usage:
   c3_render.py <model.npz> <out_dir> --part hull|turret [--frames 32] [--tread-steps 3]
@@ -107,8 +108,9 @@ class Model:
             self.rail_body = load_rgba(os.path.join(base, tex["rail_body"]))
             self.rail_normal = load_rgba(os.path.join(base, tex["rail_normal"]))
         self.sheets = [(self.body, self.house, self.normal)]
-        if "body2" in tex:
-            self.sheets.append(tuple(load_rgba(os.path.join(base, tex[k])) for k in ("body2", "house2", "normal2")))
+        while f"body{len(self.sheets) + 1}" in tex:
+            n = len(self.sheets) + 1
+            self.sheets.append(tuple(load_rgba(os.path.join(base, tex[f"{k}{n}"])) for k in ("body", "house", "normal")))
         if self.sheet.max(initial=0) >= len(self.sheets):
             raise SystemExit(f"{path}: a mesh is tagged texture sheet {self.sheet.max()}, but the model has "
                              f"{len(self.sheets)}")

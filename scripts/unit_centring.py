@@ -50,7 +50,8 @@ LEPTONS_PER_CLASSIC_PX = 256 / 24
 OPAQUE = 200  # alpha at or above this is the body; the soft drop shadow stays out
 TOLERANCE = 0.5  # classic px: art closer to centre than this is left alone
 EA_SPREAD = 1.5  # classic px: how far EA's own vehicle hulls sit from centre (Mammoths aside)
-WALKERS = {"TSTITN", "TSHMEC", "TSJUGG", "TSSMEC"}
+WALKERS = {"TSTITN", "TSHMEC", "TSJUGG", "TSSMEC", "C3JUGG", "C3AVATAR", "C3AVATARBM", "C3AVATARSD",
+           "C3AVATARSG", "C3AVATARFL"}
 AIRCRAFT = {"TSORCA", "TSORCAB", "TSCARRY"}
 VOXEL_PREFIXES = ("TS", "R2", "C3")
 
@@ -67,6 +68,8 @@ UNITS = {
     "C3PITB": (96, 3, 96, "c3pitb", (("C3PITBMOR", "UNITS", UNIT_DENSITY),)),
     "C3APC": (96, 3, 96, "c3apc", ()),
     "C3RIG": (96, 3, None, None, ()),
+    "C3BUGGY": (96, 3, 96, "c3buggy", (("C3BUGGYEMP", "UNITS", UNIT_DENSITY),)),
+    "C3BIKE": (96, 3, None, None, ()),
     "R2APOC": (32, 1, 32, None, ()),
     "R2PRIS": (32, 1, 32, None, ()),
     "TS4TNK": (32, 1, 32, None, ()),

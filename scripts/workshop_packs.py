@@ -37,16 +37,21 @@ TS_SEATS = os.path.join(A.REPO, "redalert", "udata.cpp")
 SHAPE_LIKE = {"C3MK3RAIL": "C3MK3", "C3PREDRAIL": "C3PRED", "C3SCORP": "C3PRED", "C3SCORPLAS": "C3PRED",
               "C3SCORPDZR": "C3PRED", "C3SCORPLASDZR": "C3PRED", "C3FLAME": "C3PRED", "C3STNK": "C3PRED",
               "C3BEAM": "C3PRED", "C3PITB": "C3PRED", "C3PITBMOR": "C3PRED", "C3APC": "C3PRED", "C3RIG": "C3PRED",
+              "C3BUGGY": "C3PRED", "C3BUGGYEMP": "C3PRED", "C3BIKE": "C3PRED",
               "C3ORCA": "TSORCA", "C3ORCAPOD": "TSORCA", "C3FHAWK": "TSORCA", "C3VENOM": "TSORCA",
               "C3VENOMSG": "TSORCA", "C3VERT": "TSORCA"}
 # Units with no classic stub that take a stock image's (idata.cpp, udata.cpp), and those images' classic sizes as
 # Red Alert's own MIX files hold them (E1.SHP in REDALERT.MIX/HIRES.MIX, MCV.SHP in MAIN.MIX/CONQUER.MIX)
 STOCK_IMAGE = {"TSE1": "E1", "TSE2": "E1", "TSE3": "E1", "TSENGINEER": "E1", "TSGHOST": "E1", "TSMEDIC": "E1",
                "TSMCV": "MCV", "C3RIFLE": "E1", "C3RIFLESQ": "E1", "C3MILIT": "E1", "C3MILITSQ": "E1",
-               "C3CYBORG": "E1", "C3CYBORGSQ": "E1"}
+               "C3CYBORG": "E1", "C3CYBORGSQ": "E1", "C3MISSL": "E1", "C3MISSLSQ": "E1", "C3GREN": "E1",
+               "C3GRENSQ": "E1", "C3ENGI": "E1", "C3SNIPE": "E1", "C3ZONE": "E1", "C3ZONESQ": "E1", "C3GCMDO": "E1",
+               **{n: "E1" for n in ("C3ROCKT", "C3ROCKTSQ", "C3FANAT", "C3FANATSQ", "C3BHAND", "C3BHANDSQ", "C3SHADW",
+                                    "C3SHADWSQ", "C3SABOT", "C3NCMDO")}}
 STOCK_SIZE = {"E1": (50, 39), "MCV": (48, 48)}
 # Objects with no stub to share, and the classic size their canvas maps to (units canvas / 8, buildings canvas x 3/16)
-OWN_SIZE = {"C3OX": (80, 80), "C3CARRY": (80, 80), "C3BBASE": (102, 78), "C3BBASEMAKE": (102, 78)}
+OWN_SIZE = {"C3OX": (80, 80), "C3CARRY": (80, 80), "C3BBASE": (102, 78), "C3BBASEMAKE": (102, 78), "C3JUGG": (96, 96),
+            **{n: (80, 80) for n in ("C3AVATAR", "C3AVATARBM", "C3AVATARSD", "C3AVATARSG", "C3AVATARFL")}}
 SHAPE_SECTION = {"UNITS": "Units", "STRUCTURES": "Structures", "VFX": "Animations"}
 
 # Launcher XML -> (folder under Data/XML, the file name for a pack)
@@ -384,11 +389,11 @@ def layout(mod):
         return []
     lines = ["## Frame layout", "",
              "Every C&C3 tank and vehicle (C3MK3, C3PRED, C3SCORP and their upgrades, C3FLAME, C3STNK, C3BEAM, "
-             "C3PITB, C3PITBMOR, C3APC, C3RIG): frames 0-95 are "
+             "C3PITB, C3PITBMOR, C3APC, C3RIG, C3BUGGY, C3BUGGYEMP, C3BIKE): frames 0-95 are "
              "the hull, 32 facings counter-clockwise from "
              "north with 3 tread steps each (frame = 3 x facing + step; step the treads while the tank drives; "
-             "C3BEAM, C3PITB and C3APC run on wheels, so their three steps are one frame), "
-             "and 96-127 the turret, 32 facings (C3RIG has no turret, so its frames end at 95). "
+             "C3BEAM, C3PITB, C3APC, C3BUGGY and C3BIKE run on wheels, so their three steps are one frame), "
+             "and 96-127 the turret, 32 facings (C3RIG and C3BIKE have no turret, so their frames end at 95). "
              "The turret frames are centred on the canvas and look right drawn "
              "centred on the hull, except the Scorpions': C3SCORP's upper body sits up to 6 classic px off centre "
              "and C3SCORPLAS's laser on the tail mount, so both need their seats. For a "
@@ -399,7 +404,7 @@ def layout(mod):
     text = open(C3_SEATS, encoding="utf-8").read()
     for tank, also in (("C3MK3", "C3MK3RAIL"), ("C3PRED", "C3PREDRAIL"), ("C3SCORP", "C3SCORPDZR"),
                        ("C3SCORPLAS", "C3SCORPLASDZR"), ("C3FLAME", None), ("C3STNK", None), ("C3BEAM", None),
-                       ("C3PITB", "C3PITBMOR"), ("C3APC", None)):
+                       ("C3PITB", "C3PITBMOR"), ("C3APC", None), ("C3BUGGY", "C3BUGGYEMP")):
         seats = re.search(r"_%s_seat_px\[32\]\[2\] = \{(.*?)\};" % tank.lower(), text).group(1)
         pairs = " ".join(f"{x},{y}" for x, y in re.findall(r"\{(-?\d+), (-?\d+)\}", seats))
         lines += [f"{tank} (and {also}): `{pairs}`" if also else f"{tank}: `{pairs}`", ""]
