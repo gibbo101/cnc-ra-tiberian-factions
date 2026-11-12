@@ -1,9 +1,10 @@
 # C&C3 units to C&C Remastered sprites: a working recipe
 
 **Status:** Reference. Pulling a C&C3 unit into HD Remastered sprites, as done for GDI's Mammoth
-Mk. III, Predator, Pitbull, Guardian APC, Rig (with its Battle Base and the deploy between them), Orca, Firehawk,
-V-35 Ox and Rifleman, and Nod's Scorpion, Flame Tank, Stealth Tank, Beam Cannon, Venom, Vertigo, Carryall and
-Kane's Wrath's Militant and Cyborg.
+Mk. III, Predator, Pitbull, Guardian APC, Rig (with its Battle Base and the deploy between them), Juggernaut, Orca,
+Firehawk, V-35 Ox and every Tiberium Wars infantryman, and Nod's Scorpion, Flame Tank, Stealth Tank, Beam Cannon,
+Raider Buggy, Attack Bike, Avatar, Venom, Vertigo, Carryall, every Tiberium Wars infantryman and Kane's Wrath's
+Militant and Cyborg.
 
 How to pull a unit out of Command & Conquer 3: Tiberium Wars (models, textures, audio,
 stats) and turn it into HD sprites for a C&C Remastered Collection mod. Written for an AI
@@ -104,7 +105,14 @@ the Mammoth `GUMAMM`):
   from the unit's: the Scorpion is `GameObject:NODRaiderTank` (from patch 7), model `NURADR` (meshes under
   `NURADR_SKN`), while `NODScorpionBuggy` is the Raider Buggy. Containers are not always `_SKN`: the Flame
   Tank's is `NUFLAMETANK` (skeleton `NUFLAMETANK_SKL`) and the Rig's `GURIG` (skeleton `GURIG`). The others:
-  Stealth Tank `NUSTLTHTNK_SKN`, Beam Cannon `NUBEAM_SKN`, Pitbull `GUPITBULL_SKN`, Guardian APC `GUAPC_SKN`.
+  Stealth Tank `NUSTLTHTNK_SKN`, Beam Cannon `NUBEAM_SKN`, Pitbull `GUPITBULL_SKN`, Guardian APC `GUAPC_SKN`,
+  Raider Buggy `NU_BUGGY_SKN`, Attack Bike `NUATKBIKE_SKN`, Juggernaut `GUJUGG_SKN`, Avatar `NUMECH_SKN`.
+- `PackedTextureImage` portraits are named loosely (`Portrait_GDISniperTeam`, `PORTRAIT_NODSaboteur`,
+  `Portrait_NODMilitantMissile` for the Rocket Militant): search them case-insensitively.
+- A squad's soldiers are not asset references. Each payload entry in the squad's GameObject holds the soldier
+  GameObject's instance ID (the manifest's `instanceId`) then a u32 count, and some squads carry two entries:
+  Riflemen 3 + 3, Militants 4 + 5, Grenadiers 2 + 2, Fanatics 1 + 4, Black Hand 3 + 3, Shadows 2 + 2; Missile
+  Soldiers 2, Zone Troopers 4, Rocket Militants 2, the Sniper 1. Patches 5 to 9 leave these unchanged.
 - Every unit's construct command (`LogicCommand:Command_Construct<GameObject>`) references its GameObject: the
   quickest roster of what a side can build.
 - `PackedTextureImage:PORTRAIT_GDIPredatorTank` / `Portrait_GDIMammothTank`: the sidebar
@@ -167,8 +175,10 @@ u32 namePtr, u32 index}`, mapping sub-mesh name to the pivot it is bound to.
 > **TRAP 3: textures are per mesh.** The tread belts UV into their own tread texture. Painting
 > them with the hull diffuse gives pale garbage stripes that are worst at the north facing.
 > A body mesh can use another unit's sheet too: the Pitbull's spotlight and Mortar tube are painted on
-> the Rig's (`GURig`, `HC_GURig`). The extractor tags such a mesh sheet 1, and the renderer draws it from
-> `body2`, `house2` and `normal2`, with its own house-colour level.
+> the Rig's (`GURig`, `HC_GURig`), the Raider Buggy's and Attack Bike's riders on the Militant's (`NUMiltnB`), the
+> Avatar's commandeered beam cannon and flamethrower on the Beam Cannon's and Flame Tank's. The extractor tags such
+> a mesh sheet n, and the renderer draws it from `body<n+1>`, `house<n+1>` and `normal<n+1>`, each sheet with its
+> own house-colour level.
 
 > The railgun-upgrade meshes (`UGRAIL_*`) decode with the same code (their bounding boxes
 > match) but use `ObjectsNOD.fx` with a scrolling mask texture; they were never rendered.
@@ -196,8 +206,9 @@ part it joins:
 - the Pitbull's Mortar (`Upgrade_GDIArmoryPitbullMortar`, at the Armory) shows `MORTORTUBE`, bound to its own
   pivot off the root, so it rides the hull, not the rocket pod.
 
-The Flame Tank, Stealth Tank, Beam Cannon, Guardian APC and Rig have no Tiberium Wars upgrade (the Flame
-Tank's Purifying Flame is Kane's Wrath).
+The Flame Tank, Stealth Tank, Beam Cannon, Guardian APC, Rig and Attack Bike have no Tiberium Wars upgrade (the
+Flame Tank's Purifying Flame is Kane's Wrath). The Raider Buggy's EMP coil (`Upgrade_NODEmpBurst`) shows `EMP`,
+on its own pivot off the chassis: a hull fixture. Its Laser Capacitors change only the weapon.
 
 Hull-mounted upgrade pieces (the fixed body, the tail mount, the blade on the laser tank, the Mortar tube) are
 "fixtures": drawn with the hull but kept out of the hull's footprint, so every variant keeps its base
@@ -249,6 +260,9 @@ spec map's **blue** channel, which covers exactly the red markings on the diffus
 (`c3_extract_model.py` `house_from_spec`). In C&C3 those strips glow: the shader adds spec blue x a
 scrolling mask x house colour x 3 as light. Painted by step 7's formula alone they read dim on the
 Scorpion's dark panels (median G 96, luminance 64, under the target below).
+A mask that sits part way (the Attack Bike's fairing at spec blue 93) blends the house green half into red and reads
+orange; C&C3's x 3 glow paints it fully, so that model raises its mask (`house_gain`). The Rocket Militant's robe
+trims are the same case in an `HC_` mask.
 
 ### Audio
 `.cdata` audio is EA SNR/SNS (EA-XAS ADPCM). **ffmpeg has a built-in demuxer for exactly
@@ -432,12 +446,21 @@ rather than using Blender: you need exact control of camera, light and colour.
   on a canvas centred on the Rig's ground point at 128 px a cell. Its three sets move with the Rig's art drop
   (`unit_centring.py` partners), so the deploy starts where the Rig's sprite stands. The pads start underground;
   geometry below the ground plane is cut away, as C&C3's terrain hides it.
+- **Walkers:** `tools/cnc3/c3_extract_walker.py` (workspace) poses a walker through one cycle of its walk clip and
+  `scripts/c3_pack_walkers.py` packs it in TF's TS walker layouts. The Juggernaut has a turret bone, so it takes the
+  TS Titan's: 8 facings x 12 stages, the turret at 96-127; its turret bobs 2.5 units in the walk and is drawn at the
+  cycle's mean height. The Avatar has none: its torso turns only in its clips, so it turns to fire, 32 facings x 8
+  stages as the TS Mammoth Mk. II. Its commandeered pieces (`NUBEAM`, `S_DETECTOR`, `S_GENERATOR`, `FLAMETANK`) hang
+  off the root and every clip carries them, so each is a whole variant of the walk. Each walk frame casts its own
+  shadow from the walk part along the light. At the tanks' scale the Juggernaut is 48 units tall and its barrels
+  reach 55 units up the screen facing north: it needs a 768 px canvas, the Avatar 640.
 - **Infantry:** `scripts/c3_pack_infantry.py` poses each soldier into Tiberian Sun's light-infantry layout (292
   tiles) from its run, fire, idle and death clips, on the TS infantry's 267 x 208 canvas with the feet on its line.
-  C&C3 infantry never go prone: the Rifleman's suppressed clips (crawl, prone fire, dive) stand in, and units
-  without them stand. A squad is three or four soldiers in a wedge (the squad's first payload count: three
-  Riflemen or Cyborgs, four Militants), each a few poses
-  out of step. A weapon can be a limb: the Cyborg's body mesh has no left arm, and his two weapon meshes (the EMP
+  C&C3 infantry never go prone: the suppressed clips (crawl, prone fire, dive) stand in, and units
+  without them stand. A squad is its soldiers in a wedge of up to six, each a few poses out of step; the squads
+  after the first three are at C&C3's full payload (section 4), C3RIFLESQ and C3MILITSQ at their first entry's count.
+  A soldier too big for the TS infantry canvas (the Zone Trooper's antenna and thrown deaths) gets a bigger one with
+  the feet at the same place from its centre. A weapon can be a limb: the Cyborg's body mesh has no left arm, and his two weapon meshes (the EMP
   cannon and the particle-beam gauntlet) are his arms. Check a soldier against his portrait before leaving a mesh out.
 
 ## 8. DLL side (needs a Vanilla Conquer based DLL)
