@@ -453,7 +453,9 @@ rather than using Blender: you need exact control of camera, light and colour.
   stages as the TS Mammoth Mk. II. Its commandeered pieces (`NUBEAM`, `S_DETECTOR`, `S_GENERATOR`, `FLAMETANK`) hang
   off the root and every clip carries them, so each is a whole variant of the walk. Each walk frame casts its own
   shadow from the walk part along the light. At the tanks' scale the Juggernaut is 48 units tall and its barrels
-  reach 55 units up the screen facing north: it needs a 768 px canvas, the Avatar 640.
+  reach 55 units up the screen facing north: it needs a 768 px canvas, the Avatar 640. `unit_centring.py` then
+  centres each walker's walk frames on the unit as it does a vehicle's hull (the Juggernaut's turret sticking up):
+  with its feet at the canvas centre instead, a walker's selection box, twice its reach, is twice its height.
 - **Infantry:** `scripts/c3_pack_infantry.py` poses each soldier into Tiberian Sun's light-infantry layout (292
   tiles) from its run, fire, idle and death clips, on the TS infantry's 267 x 208 canvas with the feet on its line.
   C&C3 infantry never go prone: the suppressed clips (crawl, prone fire, dive) stand in, and units

@@ -50,8 +50,7 @@ LEPTONS_PER_CLASSIC_PX = 256 / 24
 OPAQUE = 200  # alpha at or above this is the body; the soft drop shadow stays out
 TOLERANCE = 0.5  # classic px: art closer to centre than this is left alone
 EA_SPREAD = 1.5  # classic px: how far EA's own vehicle hulls sit from centre (Mammoths aside)
-WALKERS = {"TSTITN", "TSHMEC", "TSJUGG", "TSSMEC", "C3JUGG", "C3AVATAR", "C3AVATARBM", "C3AVATARSD",
-           "C3AVATARSG", "C3AVATARFL"}
+WALKERS = {"TSTITN", "TSHMEC", "TSJUGG", "TSSMEC"}
 AIRCRAFT = {"TSORCA", "TSORCAB", "TSCARRY"}
 VOXEL_PREFIXES = ("TS", "R2", "C3")
 
@@ -70,6 +69,9 @@ UNITS = {
     "C3RIG": (96, 3, None, None, ()),
     "C3BUGGY": (96, 3, 96, "c3buggy", (("C3BUGGYEMP", "UNITS", UNIT_DENSITY),)),
     "C3BIKE": (96, 3, None, None, ()),
+    "C3JUGG": (96, 12, 96, "c3jugg", ()),
+    "C3AVATAR": (256, 8, None, None, tuple((n, "UNITS", UNIT_DENSITY) for n in ("C3AVATARBM", "C3AVATARSD", "C3AVATARSG",
+                                                                         "C3AVATARFL"))),
     "R2APOC": (32, 1, 32, None, ()),
     "R2PRIS": (32, 1, 32, None, ()),
     "TS4TNK": (32, 1, 32, None, ()),
@@ -155,15 +157,16 @@ def hull_offset(data, names, hull_frames):
     return statistics.median(centres)
 
 
-def selection_box(data, names, per_facing, turret, seats):
-    """Width and height for _art_boxes (names by shape): median art width; twice the median reach from centre."""
+def selection_box(data, names, per_facing, turret, seats, facings=32):
+    """Width and height for _art_boxes (names by shape): median art width; twice the median reach from centre. A
+    walker in fewer facings takes the 32-facing turret frame and seat nearest each."""
     widths, tops, bottoms = [], [], []
-    for f in range(32):
+    for f in range(facings):
         boxes = [body_box(data, names[f * per_facing], UNIT_DENSITY)]
         if turret is not None:
-            t = body_box(data, names[turret + f], UNIT_DENSITY)
+            t = body_box(data, names[turret + f * 32 // facings], UNIT_DENSITY)
             if t:
-                sx, sy = seats[f]
+                sx, sy = seats[f * 32 // facings]
                 boxes.append((t[0] + sx, t[1] + sy, t[2] + sx, t[3] + sy))
         boxes = [b for b in boxes if b]
         widths.append(max(b[2] for b in boxes) - min(b[0] for b in boxes))
@@ -297,12 +300,13 @@ def main():
     print("\nSelection boxes from the centred art (classic px, for _art_boxes in udata.cpp):")
     for name, (hull_frames, per_facing, turret, seat_key, partners) in UNITS.items():
         _, data = read_zip(asset_packs.art_zip(name, "UNITS"))
-        w, h = selection_box(data, shape_names(name, data), per_facing, turret, seats_for(seat_key))
+        w, h = selection_box(data, shape_names(name, data), per_facing, turret, seats_for(seat_key),
+                             hull_frames // per_facing)
         print(f"        {{UNIT_{name}, {w}, {h}}},")
         for partner in (p for p, kind, _ in partners if kind == "UNITS"):
             data = variant_frames(partner)
             seats = seats_for(partner.lower() if f"_{partner.lower()}_seat_px" in open(C3_HEADER).read() else seat_key)
-            w, h = selection_box(data, shape_names(partner, data), per_facing, turret, seats)
+            w, h = selection_box(data, shape_names(partner, data), per_facing, turret, seats, hull_frames // per_facing)
             print(f"        {{UNIT_{partner}, {w}, {h}}},")
 
 
