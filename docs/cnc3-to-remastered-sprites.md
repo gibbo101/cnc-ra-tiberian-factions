@@ -3,8 +3,8 @@
 **Status:** Reference. Pulling a C&C3 unit into HD Remastered sprites, as done for GDI's Mammoth
 Mk. III, Predator, Pitbull, Guardian APC, Rig (with its Battle Base and the deploy between them), Juggernaut, Orca,
 Firehawk, V-35 Ox and every Tiberium Wars infantryman, and Nod's Scorpion, Flame Tank, Stealth Tank, Beam Cannon,
-Raider Buggy, Attack Bike, Avatar, Venom, Vertigo, Carryall, every Tiberium Wars infantryman and Kane's Wrath's
-Militant and Cyborg.
+Raider Buggy, Attack Bike, Avatar, Venom, Vertigo, Carryall, every Tiberium Wars infantryman but the Militant, and
+Kane's Wrath's Militant and Cyborg.
 
 How to pull a unit out of Command & Conquer 3: Tiberium Wars (models, textures, audio,
 stats) and turn it into HD sprites for a C&C Remastered Collection mod. Written for an AI
@@ -412,10 +412,10 @@ rather than using Blender: you need exact control of camera, light and colour.
   measured offset so the hull sits centred on the unit as EA's vehicles do, records the drop
   (`unit_art_drop.json`, `redalert/unit_art_drop.h`, which the fire points add) and prints the
   selection box. Ours: C3PRED 24 canvas px, C3MK3 32, C3SCORP 14 (its hull sat 1.81 classic px high), C3FLAME 11,
-  C3STNK 7, C3BEAM 24, C3PITB 40, C3APC 26.
-  Upgrade variants move with their base tank.
-- **Wheels:** a wheeled vehicle (the Beam Cannon, Pitbull, Guardian APC) has no tread mesh, so it
-  renders one hull frame per facing (`--tread-steps 1`) and its three step tiles name that one member.
+  C3STNK 7, C3BEAM 24, C3PITB 40, C3APC 26, C3BUGGY 19, C3BIKE 20, and the walkers C3JUGG 71 and C3AVATAR 116.
+  Upgrade variants move with their base unit.
+- **Wheels:** a wheeled vehicle (the Beam Cannon, Pitbull, Guardian APC, Raider Buggy, Attack Bike) has no tread
+  mesh, so it renders one hull frame per facing (`--tread-steps 1`) and its three step tiles name that one member.
 - **Weapon effects:** `scripts/c3_tank_fx.py` builds each unit's firing effects (flame stream, rockets, beam
   charge, muzzle flashes, impacts) from the textures its weapon's FX lists name (`FXFireScroll`,
   `FXFireball4x4`, `FXLenzFlare*`, `FXMuzzle` and others, in `resources/custom-art/c3-tank-fx/`). Particle-system
@@ -460,10 +460,13 @@ rather than using Blender: you need exact control of camera, light and colour.
   tiles) from its run, fire, idle and death clips, on the TS infantry's 267 x 208 canvas with the feet on its line.
   C&C3 infantry never go prone: the suppressed clips (crawl, prone fire, dive) stand in, and units
   without them stand. A squad is its soldiers in a wedge of up to six, each a few poses out of step; the squads
-  after the first three are at C&C3's full payload (section 4), C3RIFLESQ and C3MILITSQ at their first entry's count.
-  A soldier too big for the TS infantry canvas (the Zone Trooper's antenna and thrown deaths) gets a bigger one with
-  the feet at the same place from its centre. A weapon can be a limb: the Cyborg's body mesh has no left arm, and his two weapon meshes (the EMP
-  cannon and the particle-beam gauntlet) are his arms. Check a soldier against his portrait before leaving a mesh out.
+  after the first three are at C&C3's full payload (section 4), C3RIFLESQ and C3MILITSQ at their first entry's count
+  and C3CYBORGSQ at three. A soldier whose poses overflow the TS infantry canvas (the Zone Trooper's antenna and his
+  fall, the Black Hand's flamer deaths, the wide squads) gets a bigger one, a multiple of 16 with the feet at the same
+  place from its centre, and a classic size of canvas x 3/16 in place of E1's. The Zone Trooper dies in DIEA only:
+  his other deaths throw him two cells. A weapon can be a limb: the Cyborg's body mesh has no left arm, and his two
+  weapon meshes (the EMP cannon and the particle-beam gauntlet) are his arms. Check a soldier against his portrait
+  before leaving a mesh out.
 
 ## 8. DLL side (needs a Vanilla Conquer based DLL)
 
