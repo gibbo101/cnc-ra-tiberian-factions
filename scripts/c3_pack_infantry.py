@@ -3,8 +3,9 @@
 Tiberium Wars, GDI's Rifleman (C3RIFLE, C3RIFLESQ), Missile Soldier (C3MISSL, C3MISSLSQ: two), Grenadier (C3GREN,
 C3GRENSQ: four), Engineer (C3ENGI), Sniper (C3SNIPE), Zone Trooper (C3ZONE, C3ZONESQ: four) and Commando (C3GCMDO);
 Nod's Rocket Militant (C3ROCKT, C3ROCKTSQ: two), Fanatic (C3FANAT, C3FANATSQ: five), Black Hand (C3BHAND,
-C3BHANDSQ: six), Shadow (C3SHADW, C3SHADWSQ: four), Saboteur (C3SABOT) and Commando (C3NCMDO); from Kane's Wrath, Nod's Militant (C3MILIT, C3MILITSQ; Kane's Wrath's remade model) and Cyborg (C3CYBORG,
-C3CYBORGSQ).
+C3BHANDSQ: six), Shadow (C3SHADW, C3SHADWSQ: four), Saboteur (C3SABOT) and Commando (C3NCMDO); from Kane's
+Wrath, Nod's Militant (C3MILIT, C3MILITSQ: four; Kane's Wrath's remade model) and Cyborg (C3CYBORG, C3CYBORGSQ:
+three).
 
 Tileset layout per unit (292 tiles): Tiberian Sun's light infantry (idata.cpp TsE1DoControls, TS art.ini
 [E1Sequence]), 8 facings CCW from north where a sequence turns with the soldier:
@@ -45,16 +46,16 @@ PACK_PPU = 4.7
 RENDER_CANVAS = 900
 CANVAS = (267, 208)
 FEET = (133.5, 103)  # the ground point; the feet's lowest pixels then sit where TSE1's do (about y 109)
-# Soldiers too big for the TS infantry canvas, on a larger one with the ground point at the same place from its
-# centre (the launcher anchors by the centre), measured over every pose: the Zone Trooper's antenna and death fall,
-# the Black Hand's flamer deaths, the wide squads. A model's soldier names it; also the render's.
-BIG = {"zonetrooper": ((360, 330), 1200), "blackhand": ((380, 300), 1200), "fanatic": ((300, 220), 1000),
-       "shadow": ((320, 220), 1000)}
+# Soldiers (and their squads) whose poses overflow the TS infantry canvas: (pack canvas, render canvas). Each pack
+# canvas is a multiple of 16, so its classic size (canvas x 3/16, workshop_packs.OWN_SIZE) is whole.
+BIG = {"zonetrooper": ((368, 336), 1200), "blackhand": ((384, 304), 1200), "fanatic": ((304, 224), 1000),
+       "shadow": ((320, 224), 1000)}
 
 
 def canvas_of(model):
-    """(pack canvas, render canvas) for a model file: its soldier's BIG entry, or the TS infantry's."""
+    """(pack canvas, render canvas) for a model file; the feet keep their place from the canvas centre."""
     return BIG.get(model.split("_")[0], (CANVAS, RENDER_CANVAS))
+
 # The cast shadow's opacity: TF's TS infantry shadows sit at a median alpha of about 90.
 SHADOW_ALPHA = 0.36
 # Team colour level over the tanks': the TS infantry's team green has a median G of about 120, the C&C3 soldiers'
@@ -102,11 +103,6 @@ SHAPES = 292
 
 
 
-def picks(stem, model, sample, letters):
-    """One sound event per take C&C3 ships, lettered from A: C3<stem>A plays <sample><letters[0]>, and so on."""
-    return [(f"{stem}{chr(65 + i)}", model, [f"{sample}{c}"]) for i, c in enumerate(letters)]
-
-
 # VOC stem -> (model, C&C3 sample names), every stem listed in asset_packs.PACK_ONLY_SOUNDS. The squads speak and
 # fire with their soldier's sounds.
 SOUNDS = (
@@ -122,7 +118,8 @@ SOUNDS = (
     + tanks.takes("C3NMO", "militant", "NUMilit_VoiMove", "ABCDEFGHIJK")
     + tanks.takes("C3NAT", "militant", "NUMilit_VoiAttack", "ABCDEFG")
     + [("C3NGUN", "militant", [f"NURifle_gunFire2{c}" for c in "abcdefg"])]
-    + picks("C3DMSE", "missile", "GUMissi_VoiSelect", "abcdeg") + picks("C3DMMO", "missile", "GUMissi_VoiMove", "abcdfh")
+    + tanks.picks("C3DMSE", "missile", "GUMissi_VoiSelect", "abcdeg")
+    + tanks.picks("C3DMMO", "missile", "GUMissi_VoiMove", "abcdfh")
     + tanks.takes("C3DMAT", "missile", "GUMissi_VoiAttack", "ABCDEFG")
     + [("C3DMGUN", "missile", [f"GUMissi_wea1fire{c}" for c in "abcde"])]
     + tanks.takes("C3DGSE", "grenadier", "GUGrena_VoiSelect", "ABCDEF")
@@ -134,8 +131,8 @@ SOUNDS = (
     + tanks.takes("C3DSMO", "sniper", "GUSnipe_VoiMove", "ABCDEFG")
     + tanks.takes("C3DSAT", "sniper", "GUSnipe_VoiAttack", "ABCDEFGH")
     + [("C3DSGUN", "sniper", [f"GUSnipe_gunFire2{c}" for c in "abcdefghijklmnopqrstuvw"])]
-    + picks("C3DZSE", "zonetrooper", "GUZoneT_VoiSelect", "acdef")
-    + picks("C3DZMO", "zonetrooper", "GUZoneT_VoiMove", "acdefghi")
+    + tanks.picks("C3DZSE", "zonetrooper", "GUZoneT_VoiSelect", "acdef")
+    + tanks.picks("C3DZMO", "zonetrooper", "GUZoneT_VoiMove", "acdefghi")
     + tanks.takes("C3DZAT", "zonetrooper", "GUZoneT_VoiAttack", "ABCDEFG")
     + [("C3DZGUN", "zonetrooper", [f"GUZoneT_wea1fire{c}" for c in "abcde"])]
     + tanks.takes("C3DCSE", "commando", "GUComma_VoiSelect", "ABCDEFGH")
@@ -211,6 +208,9 @@ def render_shape(args):
     path = f"{ART}/renders/inf_{model}/pose{pose:03d}-f{facing}.png"
     shadow = path[:-4] + "-shadow.png"
     if os.path.exists(path) and os.path.exists(shadow):
+        c3_render.unclipped(Image.open(path), path)
+        mask = Image.open(shadow)
+        c3_render.unclipped(Image.merge("LA", (mask, mask)), shadow)
         return path, shadow
     m = prepared(c3_render.Model(f"{ART}/infantry/{model}.npz"))
     d = np.load(f"{ART}/infantry/{model}.npz")
@@ -219,17 +219,14 @@ def render_shape(args):
     yaw = 90.0 + facing * 45.0
     os.makedirs(os.path.dirname(path), exist_ok=True)
     rc = canvas_of(model)[1]
-    body = c3_render.render(m, yaw, "hull", RENDER_PPU, rc, tanks.ELEV_DEG)
-    a = np.asarray(body.getchannel("A"))
-    if max(a[0].max(), a[-1].max(), a[:, 0].max(), a[:, -1].max()):
-        raise SystemExit(f"{path}: the soldier reaches the {rc} px render's edge -- grow it in BIG")
-    body.save(path)
+    c3_render.unclipped(c3_render.render(m, yaw, "hull", RENDER_PPU, rc, tanks.ELEV_DEG), path).save(path)
     a = np.radians(yaw)
     light = np.array([[np.cos(a), np.sin(a), 0], [-np.sin(a), np.cos(a), 0], [0, 0, 1]]) @ c3_render.LIGHT
     pos = m.pos.copy()
     m.pos = pos - light[None, :] * (np.maximum(pos[:, 2], 0) / light[2])[:, None]
     m.pos[:, 2] = 0.0
-    c3_render.render(m, yaw, "hull", RENDER_PPU, rc, tanks.ELEV_DEG).getchannel("A").save(shadow)
+    cast = c3_render.render(m, yaw, "hull", RENDER_PPU, rc, tanks.ELEV_DEG)
+    c3_render.unclipped(cast, shadow).getchannel("A").save(shadow)
     return path, shadow
 
 

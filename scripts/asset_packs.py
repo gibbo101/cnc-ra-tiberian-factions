@@ -185,22 +185,20 @@ DIRECTIONS = ("N", "NE", "E", "SE", "S", "SW", "W", "NW")
 
 # Objects only the Workshop packs carry: art for other mods that no Tiberian Factions type draws, so its build leaves
 # out their ZIPs, tiles, cameos and sidebar entries (scripts/stage_asset_packs.py).
-PACK_ONLY = ("C3MK3RAIL", "C3PREDRAIL", "C3SCORP", "C3SCORPLAS", "C3SCORPDZR", "C3SCORPLASDZR",
-             "C3FLAME", "C3STNK", "C3BEAM", "C3FLMHIT", "C3FLMPIL", "C3STMIS", "C3STTRL", "C3STMZ", "C3STHIT",
-             "C3BMCHG", "C3BMGLOW", "C3BMMZ", "C3BMHIT", "C3PITB", "C3PITBMOR", "C3APC", "C3RIG", "C3PBMZ",
-             "C3PBSHL", "C3MEDEXP", "C3ORCA", "C3ORCAPOD", "C3FHAWK", "C3OX", "C3VENOM", "C3VENOMSG", "C3VERT",
-             "C3CARRY", "C3BBASE", "C3BBASET", "C3BBASEMAKE", "C3RIFLE", "C3RIFLESQ", "C3CYBORG",
-             "C3CYBORGSQ", "C3MILIT", "C3MILITSQ", "C3BUGGY", "C3BUGGYEMP", "C3BIKE", "C3JUGG", "C3AVATAR", "C3AVATARBM", "C3AVATARSD",
-             "C3AVATARSG", "C3AVATARFL", "C3MISSL", "C3MISSLSQ", "C3GREN", "C3GRENSQ", "C3ENGI", "C3SNIPE", "C3ZONE",
-             "C3ZONESQ", "C3GCMDO", "C3ROCKT", "C3ROCKTSQ", "C3FANAT", "C3FANATSQ", "C3BHAND", "C3BHANDSQ", "C3SHADW",
-             "C3SHADWSQ", "C3SABOT", "C3NCMDO") + tuple(f"C3{fx}{d}" for fx in ("FLM", "APCMZ") for d in DIRECTIONS)
+PACK_ONLY = ("C3MK3RAIL", "C3PREDRAIL", "C3SCORP", "C3SCORPLAS", "C3SCORPDZR", "C3SCORPLASDZR", "C3FLAME", "C3STNK",
+             "C3BEAM", "C3FLMHIT", "C3FLMPIL", "C3STMIS", "C3STTRL", "C3STMZ", "C3STHIT", "C3BMCHG", "C3BMGLOW",
+             "C3BMMZ", "C3BMHIT", "C3PITB", "C3PITBMOR", "C3APC", "C3RIG", "C3PBMZ", "C3PBSHL", "C3MEDEXP", "C3ORCA",
+             "C3ORCAPOD", "C3FHAWK", "C3OX", "C3VENOM", "C3VENOMSG", "C3VERT", "C3CARRY", "C3BBASE", "C3BBASET",
+             "C3BBASEMAKE", "C3RIFLE", "C3RIFLESQ", "C3CYBORG", "C3CYBORGSQ", "C3MILIT", "C3MILITSQ", "C3BUGGY",
+             "C3BUGGYEMP", "C3BIKE", "C3JUGG", "C3AVATAR", "C3AVATARBM", "C3AVATARSD", "C3AVATARSG", "C3AVATARFL",
+             "C3MISSL", "C3MISSLSQ", "C3GREN", "C3GRENSQ", "C3ENGI", "C3SNIPE", "C3ZONE", "C3ZONESQ", "C3GCMDO",
+             "C3ROCKT", "C3ROCKTSQ", "C3FANAT", "C3FANATSQ", "C3BHAND", "C3BHANDSQ", "C3SHADW", "C3SHADWSQ", "C3SABOT",
+             "C3NCMDO") + tuple(f"C3{fx}{d}" for fx in ("FLM", "APCMZ") for d in DIRECTIONS)
 # Sound stems (sample names less their take number) only the packs carry, left out with their sound events.
 PACK_ONLY_SOUNDS = (tuple(f"C3{tank}{kind}{take}" for tank, takes in (("S", "ABCDEF"), ("F", "ABCDEFGHIJ"),
                                                                      ("T", "ABCDEFG"), ("B", "ABCDEF"),
                                                                      ("U", "ABCDEFGHIJ"), ("A", "ABCDEF"),
-                                                                     ("R", "ABCDEFG"), ("G", "ABCDEFG"),
-                                                                     ("K", "ABCDEFGH"), ("J", "ABCDEFGHIJ"),
-                                                                     ("Q", "ABCDEFG"))
+                                                                     ("R", "ABCDEFG"))
                           for kind in ("SE", "MO", "AT") for take in takes)
                     + tuple(f"C3UAM{take}" for take in "ABCD") + ("C3RPKA",)
                     + tuple(f"C3GAE{take}" for take in "ABCDEF")
@@ -218,6 +216,10 @@ PACK_ONLY_SOUNDS = (tuple(f"C3{tank}{kind}{take}" for tank, takes in (("S", "ABC
                         ("L", "SE", "ABCDEF"), ("L", "MO", "ABCDEFGHI"), ("L", "AT", "ABCDEFGH"),
                         ("Y", "SE", "ABCDEFGHIJ"), ("Y", "MO", "ABCDEFGHI"), ("Y", "AT", "ABCDEFGHI"),
                         ("N", "SE", "ABCDEFG"), ("N", "MO", "ABCDEFGHIJK"), ("N", "AT", "ABCDEFG"),
+                        ("G", "SE", "ABCDEFG"), ("G", "MO", "ABCDEFG"), ("G", "AT", "ABCDEF"),
+                        ("K", "SE", "ABCDEFGH"), ("K", "MO", "ABCDEF"), ("K", "AT", "ABCDEF"),
+                        ("J", "SE", "ABCDEFG"), ("J", "MO", "ABCDEFG"), ("J", "AT", "ABCDEFGHIJ"),
+                        ("Q", "SE", "ABCDE"), ("Q", "MO", "ABCDEFG"), ("Q", "AT", "ABCDEF"),
                         ("DM", "SE", "ABCDEF"), ("DM", "MO", "ABCDEF"), ("DM", "AT", "ABCDEFG"),
                         ("DG", "SE", "ABCDEF"), ("DG", "MO", "ABCDEF"), ("DG", "AT", "ABCDEFG"),
                         ("DE", "SE", "ABCDEFG"), ("DE", "MO", "ABCDEFG"),

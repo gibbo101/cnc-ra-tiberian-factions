@@ -110,7 +110,8 @@ class Model:
         self.sheets = [(self.body, self.house, self.normal)]
         while f"body{len(self.sheets) + 1}" in tex:
             n = len(self.sheets) + 1
-            self.sheets.append(tuple(load_rgba(os.path.join(base, tex[f"{k}{n}"])) for k in ("body", "house", "normal")))
+            self.sheets.append(tuple(load_rgba(os.path.join(base, tex[f"{k}{n}"]))
+                                     for k in ("body", "house", "normal")))
         if self.sheet.max(initial=0) >= len(self.sheets):
             raise SystemExit(f"{path}: a mesh is tagged texture sheet {self.sheet.max()}, but the model has "
                              f"{len(self.sheets)}")
@@ -146,6 +147,14 @@ class Model:
             if ac[k] >= ac[k - 1] and ac[k] >= ac[k + 1] and ac[k] > 0.8 * best:
                 return k / w
         return (4 + int(np.argmax(ac[4:]))) / w
+
+
+def unclipped(im, path):
+    """The render, refused if the model reaches its edge (the canvas cut it off); RuntimeError so a pool reports it."""
+    a = np.asarray(im.getchannel("A"))
+    if max(a[0].max(), a[-1].max(), a[:, 0].max(), a[:, -1].max()):
+        raise RuntimeError(f"{path}: the model reaches the {im.width} px render's edge -- grow its canvas")
+    return im
 
 
 def render(m, yaw_deg, part, ppu, canvas, elev_deg, tread_phase=0.0, ss=3, turret_on_hull_origin=False,

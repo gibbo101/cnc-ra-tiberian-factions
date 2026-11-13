@@ -45,13 +45,15 @@ SHAPE_LIKE = {"C3MK3RAIL": "C3MK3", "C3PREDRAIL": "C3PRED", "C3SCORP": "C3PRED",
 STOCK_IMAGE = {"TSE1": "E1", "TSE2": "E1", "TSE3": "E1", "TSENGINEER": "E1", "TSGHOST": "E1", "TSMEDIC": "E1",
                "TSMCV": "MCV", "C3RIFLE": "E1", "C3RIFLESQ": "E1", "C3MILIT": "E1", "C3MILITSQ": "E1",
                "C3CYBORG": "E1", "C3CYBORGSQ": "E1", "C3MISSL": "E1", "C3MISSLSQ": "E1", "C3GREN": "E1",
-               "C3GRENSQ": "E1", "C3ENGI": "E1", "C3SNIPE": "E1", "C3ZONE": "E1", "C3ZONESQ": "E1", "C3GCMDO": "E1",
-               **{n: "E1" for n in ("C3ROCKT", "C3ROCKTSQ", "C3FANAT", "C3FANATSQ", "C3BHAND", "C3BHANDSQ", "C3SHADW",
-                                    "C3SHADWSQ", "C3SABOT", "C3NCMDO")}}
+               "C3GRENSQ": "E1", "C3ENGI": "E1", "C3SNIPE": "E1", "C3GCMDO": "E1",
+               **{n: "E1" for n in ("C3ROCKT", "C3ROCKTSQ", "C3SABOT", "C3NCMDO")}}
 STOCK_SIZE = {"E1": (50, 39), "MCV": (48, 48)}
 # Objects with no stub to share, and the classic size their canvas maps to (units canvas / 8, buildings canvas x 3/16)
 OWN_SIZE = {"C3OX": (80, 80), "C3CARRY": (80, 80), "C3BBASE": (102, 78), "C3BBASEMAKE": (102, 78), "C3JUGG": (96, 96),
-            **{n: (80, 80) for n in ("C3AVATAR", "C3AVATARBM", "C3AVATARSD", "C3AVATARSG", "C3AVATARFL")}}
+            **{n: (80, 80) for n in ("C3AVATAR", "C3AVATARBM", "C3AVATARSD", "C3AVATARSG", "C3AVATARFL")},
+            # infantry on canvases bigger than E1's (scripts/c3_pack_infantry.py BIG), at canvas x 3/16
+            "C3ZONE": (69, 63), "C3ZONESQ": (69, 63), "C3BHAND": (72, 57), "C3BHANDSQ": (72, 57),
+            "C3FANAT": (57, 42), "C3FANATSQ": (57, 42), "C3SHADW": (60, 42), "C3SHADWSQ": (60, 42)}
 SHAPE_SECTION = {"UNITS": "Units", "STRUCTURES": "Structures", "VFX": "Animations"}
 
 # Launcher XML -> (folder under Data/XML, the file name for a pack)
@@ -401,10 +403,14 @@ def layout(mod):
              "in classic pixels (x east, y south), clockwise from north as EA's turret tables run, so index "
              "it with `Dir_To_32(PrimaryFacing)`:",
              ""]
+    lines += ["The walkers walk in place, one cycle of their stride, facings counter-clockwise from north, each walk "
+               "frame with its own shadow. C3JUGG: frames 0-95 are 8 facings x 12 stages (frame = 12 x facing + "
+               "stage) and 96-127 the turret, 32 facings, seated as below. C3AVATAR and its variants: 256 frames, 32 "
+               "facings x 8 stages (frame = 8 x facing + stage); the Avatar has no turret and turns to fire.", ""]
     text = open(C3_SEATS, encoding="utf-8").read()
     for tank, also in (("C3MK3", "C3MK3RAIL"), ("C3PRED", "C3PREDRAIL"), ("C3SCORP", "C3SCORPDZR"),
                        ("C3SCORPLAS", "C3SCORPLASDZR"), ("C3FLAME", None), ("C3STNK", None), ("C3BEAM", None),
-                       ("C3PITB", "C3PITBMOR"), ("C3APC", None), ("C3BUGGY", "C3BUGGYEMP")):
+                       ("C3PITB", "C3PITBMOR"), ("C3APC", None), ("C3BUGGY", "C3BUGGYEMP"), ("C3JUGG", None)):
         seats = re.search(r"_%s_seat_px\[32\]\[2\] = \{(.*?)\};" % tank.lower(), text).group(1)
         pairs = " ".join(f"{x},{y}" for x, y in re.findall(r"\{(-?\d+), (-?\d+)\}", seats))
         lines += [f"{tank} (and {also}): `{pairs}`" if also else f"{tank}: `{pairs}`", ""]

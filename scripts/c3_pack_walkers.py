@@ -82,11 +82,14 @@ def render_walk(args):
     path = f"{ART}/renders/{model}_walk/f{facing:02d}-p{pose:02d}.png"
     shadow = path[:-4] + "-shadow.png"
     if os.path.exists(path) and os.path.exists(shadow):
+        for p in (path, shadow):
+            c3_render.unclipped(Image.open(p), p)
         return path, shadow
     m = posed_model(model, pose)
     yaw = tanks.YAW0 + facing * 360.0 / facings
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    unclipped(c3_render.render(m, yaw, "hull", tanks.RENDER_PPU, RENDER_CANVAS, tanks.ELEV_DEG), path).save(path)
+    c3_render.unclipped(c3_render.render(m, yaw, "hull", tanks.RENDER_PPU, RENDER_CANVAS, tanks.ELEV_DEG),
+                        path).save(path)
     a = math.radians(yaw)
     light = np.array([[math.cos(a), math.sin(a), 0], [-math.sin(a), math.cos(a), 0], [0, 0, 1]]) @ c3_render.LIGHT
     pos = m.pos.copy()
@@ -94,26 +97,21 @@ def render_walk(args):
     m.pos[:, 2] = 0.0
     cast = Image.new("RGBA", (RENDER_CANVAS, RENDER_CANVAS), (0, 0, 0, 0))
     cast.putalpha(c3_render.render(m, yaw, "hull", tanks.RENDER_PPU, RENDER_CANVAS, tanks.ELEV_DEG).getchannel("A"))
-    cast.save(shadow)
+    c3_render.unclipped(cast, shadow).save(shadow)
     return path, shadow
 
 
 def render_turret(args):
+    """The walker's turret at a facing, alone, at the base pose: a PNG path."""
     model, facing = args
     path = f"{ART}/renders/{model}_turret/frame-{facing:04d}.png"
-    if not os.path.exists(path):
+    if os.path.exists(path):
+        c3_render.unclipped(Image.open(path), path)
+    else:
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        unclipped(c3_render.render(posed_model(model, None), tanks.YAW0 + facing * 360.0 / 32, "turret",
-                                   tanks.RENDER_PPU, TURRET_CANVAS, tanks.ELEV_DEG), path).save(path)
+        c3_render.unclipped(c3_render.render(posed_model(model, None), tanks.YAW0 + facing * 360.0 / 32, "turret",
+                                             tanks.RENDER_PPU, TURRET_CANVAS, tanks.ELEV_DEG), path).save(path)
     return path
-
-
-def unclipped(im, path):
-    """The render, refused if the model reaches its edge (the canvas cut it off)."""
-    a = np.asarray(im.getchannel("A"))
-    if max(a[0].max(), a[-1].max(), a[:, 0].max(), a[:, -1].max()):
-        raise SystemExit(f"{path}: the model reaches the {im.width} px render's edge -- grow its canvas")
-    return im
 
 
 def walk_frame(paths, canvas):
@@ -128,6 +126,11 @@ def walk_frame(paths, canvas):
 
 
 def pack(name, model, shape, facings, stages, weapons, cameo):
+    """The walker's ZIP, tiles and cameo: its walk in every facing and stage, then its turret's 32 facings."""
+    poses = len(np.load(f"{ART}/model/{model}.npz")["poses_pos"])
+    if poses != stages:
+        raise SystemExit(f"model/{model}.npz holds {poses} walk poses, the layout {stages}: "
+                         f"extract it with --steps {stages}")
     canvas = shape * 8
     jobs = [(model, f, facings, p) for f in range(facings) for p in range(stages)]
     with multiprocessing.Pool(tanks.RENDER_WORKERS) as pool:
@@ -146,11 +149,14 @@ def header_units():
 
 
 def main(names):
+    """Pack the named walkers with their centring family (all when none), then the header and their sounds."""
     if not ART:
         raise SystemExit("set C3_ART_DIR (holding model/, cameo/, audio/)")
     unknown = set(names) - {w[0] for w in WALKERS}
     if unknown:
         raise SystemExit(f"unknown walker(s): {', '.join(sorted(unknown))}")
+    names = tanks.centring_family(names)
+    tanks.check_header_models()
     for row in WALKERS:
         if not names or row[0] in names:
             pack(*row)
